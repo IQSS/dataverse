@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.Metric;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -24,6 +25,9 @@ public class MetricsUtil {
     private final static String SUBJECT = "subject";
     public static String YEAR_AND_MONTH_PATTERN = "yyyy-MM";
 
+ 
+    
+    
     public static JsonObjectBuilder countToJson(long count) {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add(COUNT, count);
@@ -67,7 +71,7 @@ public class MetricsUtil {
      * Note that along with sanitization, this checks that the inputted month is not after the current one.
      * This will need to be made more robust if we start writing metrics for farther in the future (e.g. the current year)
      */
-    static String sanitizeYearMonthUserInput(String userInput) throws Exception {
+    public static String sanitizeYearMonthUserInput(String userInput) throws Exception {
         logger.fine("string from user to sanitize (hopefully YYYY-MM format): " + userInput);
         DateTimeFormatter dateTimeFormatter = new DateTimeFormatterBuilder()
                 .appendPattern("yyyy-MM")

@@ -47,8 +47,16 @@ public class Metric implements Serializable {
     public Metric() {  
     }
     
+    //For monthly metrics
     public Metric(String metricTitle, String yyyymm, String metricValue) {  
         this.metricName = generateMetricName(metricTitle, yyyymm); 
+        this.metricValue = metricValue;
+        this.lastCalledDate = new Timestamp(new Date().getTime()); //MAD: SHOULD I BE GENERATING THIS IN CODE?
+    }
+    
+    //For all-time metrics
+    public Metric(String metricName, String metricValue) {
+        this.metricName = metricName;
         this.metricValue = metricValue;
         this.lastCalledDate = new Timestamp(new Date().getTime()); //MAD: SHOULD I BE GENERATING THIS IN CODE?
     }
@@ -72,7 +80,11 @@ public class Metric implements Serializable {
     }
     
     public String getMetricTitle() {
-        return metricName.substring(0,metricName.indexOf(seperator));
+        int monthSeperatorIndex = metricName.indexOf(seperator);
+        if(monthSeperatorIndex>=0) {
+            return metricName.substring(0,monthSeperatorIndex);
+        }
+        return metricName;
     }
 
     /**

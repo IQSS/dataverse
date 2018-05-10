@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
@@ -30,6 +31,53 @@ public class MetricsServiceBean implements Serializable {
     private EntityManager em;
     @EJB
     SystemConfig systemConfig;    
+    
+    
+    
+
+    
+    /**
+     * @param yyyymm Month in YYYY-MM format.
+     */
+    public long dataversesByMonth(String yyyymm) throws Exception{
+        Query query = em.createNativeQuery(""
+            + "select count(dvobject.id)\n"
+            + "from dataverse\n"
+            + "join dvobject on dvobject.id = dataverse.id\n"
+            + "where dvobject.publicationdate is not null\n"
+            + "and date_trunc('month', publicationdate) <=  to_date('" + yyyymm + "','YYYY-MM');"
+        );
+        logger.fine("query: " + query);
+        
+        return (long) query.getSingleResult();
+    }
+    
+    /**
+     * @param yyyymm Month in YYYY-MM format.
+     */
+    public long datasetsByMonth(String yyyymm) throws Exception{
+        Query query = em.createNativeQuery(""
+                + "select count(*)\n"
+                + "from datasetversion\n"
+                + "where concat(datasetversion.dataset_id,':', datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) in \n"
+                + "(\n"
+                + "select concat(datasetversion.dataset_id,':', max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))) as max \n"
+                + "from datasetversion\n"
+                + "join dataset on dataset.id = datasetversion.dataset_id\n"
+                + "where versionstate='RELEASED' \n"
+                + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
+                + "and dataset.harvestingclient_id is null\n"
+                + "group by dataset_id \n"
+                + ");"
+        );
+        logger.fine("query: " + query);
+        
+        return (long) query.getSingleResult();
+    }
+    
+    
+    
+    //---MAD: REORG MY NEW CLASSES
     
     //This is for deciding whether to used a cached value on monthly queries
     //Assumes the metric passed in is sane (e.g. not run for past the current month, not a garbled date string, etc)
@@ -77,43 +125,8 @@ public class MetricsServiceBean implements Serializable {
         //allow if today minus query wait is after last called time
         return (todayMinus.after(lastCalled)); 
     }
-
-//MAD: THIS SHOULD DO ITS OWN NULL CHECK
-//    public boolean doWeQueryAgainMonthly(Metric queriedMetric) {
-//        
-//        String title= queriedMetric.getMetricTitle();
-//        String yyyymm= queriedMetric.getMetricDateString();
-//        String thisMonthYYYYMM = MetricsUtil.getCurrentMonth();
-//        
-//        int minutesUntilNextQuery = systemConfig.getMetricsCacheTimeoutMinutes();
-//        
-//        //MAD: What do I actually think the (a?) issue is:
-//        //This only allows requery if the cached value is in the current month.
-//        //Instead, we want to allow re-query also if a query has not been run AFTER the month in question
-//
-//    
-//        String lastRunYYYYMM = yyyymmFormat.format(queriedMetric.getLastCalledDate()); //MAD: We DON"T WANT A STRING, WE NEED TO COMPARE DATES. I feel like this is more complicated than it should be...
-//        
-//        //I'm pretty sure this also misses a case where the date rolls over to the next month or year
-//        //MAD: First if does not take account of what happens if no previous, but then again I think this method is only called when there is a previous passed in...
-//        logger.info("Current yyyymm: " + thisMonthYYYYMM + " Last query yyyymm: " + yyyymm);
-//        if( yyyymm.equals(thisMonthYYYYMM) ) { //if this month
-//            LocalDateTime ldtMinus = LocalDateTime.ofInstant((new Date()).toInstant(), ZoneId.systemDefault()).minusMinutes(minutesUntilNextQuery) ;
-//            Date todayMinus = Date.from(ldtMinus.atZone(ZoneId.systemDefault()).toInstant());
-//            Date lastCalled = queriedMetric.getLastCalledDate();
-//            logger.info("Query allowed. Title: " + title + " yyyymm: " + yyyymm);
-//            
-//            // || (!yyyymm.equals(thisMonthYYYYMM) && lastCalled.getMonth() 
-//            
-//            return (todayMinus.after(lastCalled)); 
-//        } else {
-//            //We do not allow queries of previous months.
-//            //MAD: I bet this also messes up with the rollover. We don't want a month with incomplete data to be never queried again.
-//            logger.info("Query denied. Title: " + title + " yyyymm: " + yyyymm);
-//            return false;
-//        }
-//    }
     
+    //MAD: I DON'T LIKE HOW SAVE HAS A MONTHLY BOOLEAN BUT FOR OTHERS I'VE DUPLICATED CODE
     public Metric save(Metric newMetric, boolean monthly) throws Exception {
         Metric oldMetric;
         if(monthly) {
@@ -151,53 +164,12 @@ public class MetricsServiceBean implements Serializable {
         return metric;
     }
     
-    /**
-     * @param yyyymm Month in YYYY-MM format.
-     */
-    public long dataversesByMonth(String yyyymm) throws Exception{
-        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm); //MAD: THIS SHOULD CHECK INPUT OK I THINK
-        String metricName = "dataversesByMonth";
-        Metric queriedMetric = getMetric(metricName,sanitizedyyyymm);
-        
-        Long result;
-        if(!doWeQueryAgainMonthly(queriedMetric)) {
-            return Long.parseLong(queriedMetric.getMetricValue());
-        }
-        Query query = em.createNativeQuery(""
-            + "select count(dvobject.id)\n"
-            + "from dataverse\n"
-            + "join dvobject on dvobject.id = dataverse.id\n"
-            + "where dvobject.publicationdate is not null\n"
-            + "and date_trunc('month', publicationdate) <=  to_date('" + sanitizedyyyymm + "','YYYY-MM');"
-        );
-        result = (long) query.getSingleResult();
-        save(new Metric(metricName,yyyymm, result.toString()), true);
-        
-        return result;
-    }
 
-    /**
-     * @param yyyymm Month in YYYY-MM format.
-     */
-    public long datasetsByMonth(String yyyymm) throws Exception{
-        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-        Query query = em.createNativeQuery(""
-                + "select count(*)\n"
-                + "from datasetversion\n"
-                + "where concat(datasetversion.dataset_id,':', datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) in \n"
-                + "(\n"
-                + "select concat(datasetversion.dataset_id,':', max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))) as max \n"
-                + "from datasetversion\n"
-                + "join dataset on dataset.id = datasetversion.dataset_id\n"
-                + "where versionstate='RELEASED' \n"
-                + "and date_trunc('month', releasetime) <=  to_date('" + sanitizedyyyymm + "','YYYY-MM')\n"
-                + "and dataset.harvestingclient_id is null\n"
-                + "group by dataset_id \n"
-                + ");"
-        );
-        logger.fine("query: " + query);
-        return (long) query.getSingleResult();
-    }
+
+
+    //MAD: datasets by month...
+    
+    
 
     /**
      * @param yyyymm Month in YYYY-MM format.
@@ -238,32 +210,6 @@ public class MetricsServiceBean implements Serializable {
         logger.fine("query: " + query);
         return (long) query.getSingleResult();
     }
-
-    
-//        /**
-//     * @param yyyymm Month in YYYY-MM format.
-//     */
-//    public long dataversesByMonth(String yyyymm) throws Exception{
-//        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm); //MAD: THIS SHOULD CHECK INPUT OK I THINK
-//        String metricName = "dataversesByMonth";
-//        Metric queriedMetric = getMetric(metricName,sanitizedyyyymm);
-//        
-//        Long result;
-//        if(!doWeQueryAgainMonthly(queriedMetric)) {
-//            return queriedMetric.getMetricValue();
-//        }
-//        Query query = em.createNativeQuery(""
-//            + "select count(dvobject.id)\n"
-//            + "from dataverse\n"
-//            + "join dvobject on dvobject.id = dataverse.id\n"
-//            + "where dvobject.publicationdate is not null\n"
-//            + "and date_trunc('month', publicationdate) <=  to_date('" + sanitizedyyyymm + "','YYYY-MM');"
-//        );
-//        result = (long) query.getSingleResult();
-//        save(new Metric(metricName,yyyymm,result));
-//        
-//        return result;
-//    }
     
     public List<Object[]> dataversesByCategory() throws Exception {
         String metricName = "dataversesByCategory";
@@ -313,4 +259,10 @@ public class MetricsServiceBean implements Serializable {
         
     }
 
+    
+    
+    
+    
+    
+    
 }
