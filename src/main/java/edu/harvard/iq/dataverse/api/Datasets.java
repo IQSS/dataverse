@@ -878,6 +878,11 @@ public class Datasets extends AbstractApiBean {
     } // end: addFileToDataset
 
 
+    /*
+     * Note:
+     * The following method may be combined with the above addFiletoDataset method
+     * if there is a simple way to switch on/off calling the ingest process.
+     */
     
     /*
      * The following API is based on the above addFileToDataset
