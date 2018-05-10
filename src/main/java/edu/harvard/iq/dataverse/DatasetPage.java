@@ -2529,10 +2529,10 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
 
-        // Use the API to save the dataset: 
+        // Use the Create or Update command to save the dataset: 
         Command<Dataset> cmd;
         try {
-            if (editMode == EditMode.CREATE) {
+            if (editMode == EditMode.CREATE) {                
                 if ( selectedTemplate != null ) {
                     if ( isSessionUserAuthenticated() ) {
                         cmd = new CreateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, null, selectedTemplate); 
@@ -2575,9 +2575,36 @@ public class DatasetPage implements java.io.Serializable {
             return returnToDraftVersion();
         }
         
-        newFiles.clear();
+        //newFiles.clear();
         if (editMode != null) {
             if (editMode.equals(EditMode.CREATE)) {
+                // We allow users to upload files on Create: 
+                int nNewFiles = newFiles.size();
+                logger.info("NEW FILES: "+nNewFiles);
+                
+                if (nNewFiles > 0) {
+                    // Save the NEW files permanently and add the to the dataset: 
+                    //logger.info("FILEMETADATAS: "+fileMetadatas.size());
+                    
+                    List<DataFile> filesAdded = ingestService.addFiles(dataset.getEditVersion(), newFiles);
+            
+                    // reset the working list of fileMetadatas, as to only include the ones
+                    // that have been added to the version successfully: 
+                    //fileMetadatas.clear();
+                    //for (DataFile addedFile : filesAdded) {
+                    //    fileMetadatas.add(addedFile.getFileMetadata());
+                    //}
+                    filesAdded = null;
+                    newFiles.clear();
+                    // and another update command: 
+                    cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), new ArrayList<FileMetadata>());
+                    try {
+                        dataset = commandEngine.submit(cmd);
+                    } catch (Exception ex) {
+                        logger.info("failed to update new dataset in order to add files.");
+                    }
+                }
+                
                 JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
             }
             if (editMode.equals(EditMode.METADATA)) {

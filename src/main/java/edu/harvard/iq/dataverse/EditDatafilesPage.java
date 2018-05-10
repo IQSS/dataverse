@@ -1093,6 +1093,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 
         int nOldFiles = workingVersion.getFileMetadatas().size();
         int nNewFiles = newFiles.size();
+        int nExpectedFilesTotal = nOldFiles + nNewFiles; 
         
         if (nNewFiles > 0) {
             // Save the NEW files permanently: 
@@ -1311,12 +1312,13 @@ public class EditDatafilesPage implements java.io.Serializable {
             JsfHelper.addSuccessMessage(getBundleString("file.message.editSuccess"));
             
         } else {
-            if (workingVersion.getFileMetadatas().size() == nOldFiles + nNewFiles) {
+            int nFilesTotal = workingVersion.getFileMetadatas().size();
+            if (nNewFiles == 0 || nFilesTotal == nExpectedFilesTotal) {
                 JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
-            } else if (workingVersion.getFileMetadatas().size() == nOldFiles) {
-                JsfHelper.addErrorMessage("Failed to add files to the dataset");
+            } else if (nFilesTotal == nOldFiles) {
+                JsfHelper.addErrorMessage("Failed to add files to the dataset.");
             } else {
-                JsfHelper.addWarningMessage("Partial success: only some files out of "+nNewFiles+" have been saved.");
+                JsfHelper.addWarningMessage("Partial success: only " + (nFilesTotal - nOldFiles) + " files out of " + nNewFiles + " have been saved.");
             }
         }
         
@@ -1677,10 +1679,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         // Add the file(s) added during this last upload event, single or multiple, 
         // to the full list of new files, and the list of filemetadatas 
         // used to render the page:
-                
-        if (mode == FileEditMode.CREATE) {
-            ingestService.addFilesToDataset(workingVersion, uploadedFiles);
-        }
+             
+        // Uh, maybe we shouldn't be doing this??
+        //if (mode == FileEditMode.CREATE) {
+        //    ingestService.addFilesToDataset(workingVersion, uploadedFiles);
+        //}
         
         for (DataFile dataFile : uploadedFiles) {
             fileMetadatas.add(dataFile.getFileMetadata());

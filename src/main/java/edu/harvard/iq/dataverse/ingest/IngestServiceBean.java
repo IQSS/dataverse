@@ -182,10 +182,10 @@ public class IngestServiceBean {
     // the database by calling the Save command on the dataset and/or version. 
     // TODO: rename the method finalizeFiles()? or something like that?
     public List<DataFile> addFiles(DatasetVersion version, List<DataFile> newFiles) {
-        List<DataFile> ret = null; 
+        List<DataFile> ret = new ArrayList<>();
         
         if (newFiles != null && newFiles.size() > 0) {
-            ret = new ArrayList<>();
+            //ret = new ArrayList<>();
             // final check for duplicate file names; 
             // we tried to make the file names unique on upload, but then 
             // the user may have edited them on the "add files" page, and 
