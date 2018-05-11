@@ -1088,7 +1088,7 @@ public class AddReplaceFileHelper{
         }
         
         if (this.step_040_auto_checkForDuplicates()){
-            ingestService.addFilesToDataset(workingVersion, finalFileList);
+            //ingestService.addFilesToDataset(workingVersion, finalFileList);
             return true;
         }
                        
@@ -1410,9 +1410,15 @@ public class AddReplaceFileHelper{
             this.addErrorSevere(getBundleErr("final_file_list_empty"));                
             return false;
         }
+        
+        int nFiles = finalFileList.size();
+        finalFileList = ingestService.addFiles(workingVersion, finalFileList);
 
-        ingestService.addFiles(workingVersion, finalFileList);
-
+        if (nFiles != finalFileList.size()) {
+            addError("Failed to save at least one of the uploaded files permanently.");
+            return false;
+        }
+        
         return true;
     }
     

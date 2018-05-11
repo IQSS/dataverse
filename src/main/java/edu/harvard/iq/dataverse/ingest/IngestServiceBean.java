@@ -155,7 +155,7 @@ public class IngestServiceBean {
     // addFilesToDataset() takes a list of new DataFiles and attaches them to the parent 
     // Dataset (the files are attached to the dataset, and the fileMetadatas to the
     // supplied version). 
-    public void addFilesToDataset(DatasetVersion version, List<DataFile> newFiles) {
+    /*public void addFilesToDataset(DatasetVersion version, List<DataFile> newFiles) {
         if (newFiles != null && newFiles.size() > 0) {
 
             Dataset dataset = version.getDataset();
@@ -175,7 +175,7 @@ public class IngestServiceBean {
                 dataset.getFiles().add(dataFile);
             }
         }
-    }
+    }*/
     
     // This method tries to permanently store the files on the filesystem. 
     // It should be called before we attempt to permanently save the files in 
