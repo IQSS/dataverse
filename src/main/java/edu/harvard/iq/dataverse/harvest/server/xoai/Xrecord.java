@@ -85,11 +85,7 @@ public class Xrecord extends Record {
                 try {
                     inputStream = ExportService.getInstance().getExport(dataset, formatName);
                 } catch (ExportException ex) {
-                    inputStream = null;
-                }
-
-                if (inputStream == null) {
-                    throw new IOException("Xrecord: failed to open metadata stream.");
+                    throw new IOException("Xrecord: failed to open metadata stream.", ex);
                 }
                 writeMetadataStream(inputStream, outputStream);
             }

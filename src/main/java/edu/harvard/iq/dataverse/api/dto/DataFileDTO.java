@@ -12,6 +12,7 @@ public class DataFileDTO {
     private String id;
     private String storageIdentifier; 
     private String contentType;
+    private Long filesize;
     private String filename;
     private String originalFileFormat;
     private String originalFormatLabel;
@@ -50,6 +51,14 @@ public class DataFileDTO {
 
     public void setContentType(String contentType) {
         this.contentType = contentType;
+    }
+    
+    public Long getFileSize() {
+        return filesize;
+    }
+
+    public void setFileSize(Long fileSize) {
+        this.filesize = fileSize;
     }
 
     public String getFilename() {

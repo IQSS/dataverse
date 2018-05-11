@@ -41,3 +41,6 @@ conf/docker-aio/dv/deps/
 conf/docker-aio/dv/install/dvinstall.zip
 # or copy of test data
 conf/docker-aio/testdata/
+.settings/
+.classpath
+.project
