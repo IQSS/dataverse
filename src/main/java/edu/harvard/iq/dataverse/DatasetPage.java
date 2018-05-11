@@ -2575,7 +2575,6 @@ public class DatasetPage implements java.io.Serializable {
             return returnToDraftVersion();
         }
         
-        //newFiles.clear();
         if (editMode != null) {
             if (editMode.equals(EditMode.CREATE)) {
                 // We allow users to upload files on Create: 
@@ -2584,28 +2583,34 @@ public class DatasetPage implements java.io.Serializable {
                 
                 if (nNewFiles > 0) {
                     // Save the NEW files permanently and add the to the dataset: 
-                    //logger.info("FILEMETADATAS: "+fileMetadatas.size());
                     
                     List<DataFile> filesAdded = ingestService.addFiles(dataset.getEditVersion(), newFiles);
-            
-                    // reset the working list of fileMetadatas, as to only include the ones
-                    // that have been added to the version successfully: 
-                    //fileMetadatas.clear();
-                    //for (DataFile addedFile : filesAdded) {
-                    //    fileMetadatas.add(addedFile.getFileMetadata());
-                    //}
-                    filesAdded = null;
                     newFiles.clear();
+                    
                     // and another update command: 
+                    boolean addFilesSuccess = false;
                     cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), new ArrayList<FileMetadata>());
                     try {
                         dataset = commandEngine.submit(cmd);
+                        addFilesSuccess = true; 
                     } catch (Exception ex) {
-                        logger.info("failed to update new dataset in order to add files.");
+                        addFilesSuccess = false;
                     }
+                    if (addFilesSuccess && dataset.getFiles().size() > 0) {
+                        if (nNewFiles == dataset.getFiles().size()) {
+                            JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
+                        } else {
+                            String partialSuccessMessage = JH.localize("dataset.message.createSuccess.partialSuccessSavingFiles");
+                            partialSuccessMessage = partialSuccessMessage.replace("{0}", "" + dataset.getFiles().size() + "");
+                            partialSuccessMessage = partialSuccessMessage.replace("{1}", "" + nNewFiles + "");
+                            JsfHelper.addWarningMessage(partialSuccessMessage);
+                        }
+                    } else {
+                        JsfHelper.addWarningMessage(JH.localize("dataset.message.createSuccess.failedToSaveFiles"));
+                    }
+                } else {
+                    JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
                 }
-                
-                JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
             }
             if (editMode.equals(EditMode.METADATA)) {
                 JsfHelper.addSuccessMessage(JH.localize("dataset.message.metadataSuccess"));

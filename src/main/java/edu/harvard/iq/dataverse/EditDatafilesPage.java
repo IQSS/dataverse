@@ -197,7 +197,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (fileReplacePageHelper.wasPhase1Successful()){
                 logger.fine("Replace: File metadatas 'list' of 1 from the fileReplacePageHelper.");
                 return fileReplacePageHelper.getNewFileMetadatasBeforeSave();
-            }else{
+            } else {
                 logger.fine("Replace: replacement file not yet uploaded.");
                 return null;
             }            
