@@ -169,6 +169,11 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         
         Dataset theDataset = uningest.getOwner();
         exportMetadata(ctxt.settings(), theDataset);
+        try{
+            dataAccess.deleteAllAuxObjects();
+        } catch (IOException e){
+            logger.warning("Io Exception deleting all aux objects : " + uningest.getId());
+        }
         
     }
     
