@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -123,7 +124,14 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         // (this is a single table entry; ok to just issue an explicit 
         // DELETE query for it - as there's no complex cascade to resolve)
         resetIngestStats(uningest, ctxt);
-                
+        
+        //probably unnecessary - why would you add tags to a file and then say "oops this shouldn't have been ingested"?
+        DataFileTag tag;
+        for (DataFileTag tagLoop: uningest.getTags()){
+            tag = ctxt.em().find(DataFileTag.class, tagLoop.getId());
+            ctxt.em().remove(tag);
+        }
+        uningest.setTags(null);        
         // Do the DB merge:
         ctxt.em().merge(uningest); 
         
