@@ -154,5 +154,10 @@ public class InputStreamIO extends StorageIO<DataFile> {
         throw new UnsupportedOperationException("InputStreamIO: this method is not supported in this DataAccess driver."); 
     }
 
+    @Override
+    public void revertBackupAsAux(String auxItemTag) throws IOException {
+                throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+    }
+
   
 }

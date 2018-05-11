@@ -542,6 +542,13 @@ Example python code to replace a file.  This may be run by changing these parame
     print '-' * 40
     print r.json()
     print r.status_code
+    
+Uningest a File
+~~~~~~~~~~~~~~~
+
+Reverse the ingest process performed on a file where ``id`` is the database id of the file to process. Note that this requires "super user" credentials::
+
+    POST http://$SERVER/api/files/{id}/uningest?key=$apiKey    
 
 
 Provenance
