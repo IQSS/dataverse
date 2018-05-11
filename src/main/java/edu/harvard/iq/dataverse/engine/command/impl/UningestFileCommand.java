@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataTable;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
@@ -21,10 +22,14 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.export.ExportException;
+import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.Query;
 
@@ -161,7 +166,29 @@ public class UningestFileCommand extends AbstractVoidCommand  {
             }
             ctxt.mapLayerMetadata().deleteMapLayerMetadataObject(mapLayerMetadata, getUser());
         }
+        
+        Dataset theDataset = uningest.getOwner();
+        exportMetadata(ctxt.settings(), theDataset);
+        
+    }
+    
+    /**
+     * Attempting to run metadata export, for all the formats for which we have
+     * metadata Exporters.
+     */
+    private void exportMetadata(SettingsServiceBean settingsServiceBean, Dataset theDataset) {
 
+        try {
+            ExportService instance = ExportService.getInstance(settingsServiceBean);
+            instance.exportAllFormats(theDataset);
+
+        } catch (ExportException ex) {
+            // Something went wrong!
+            // Just like with indexing, a failure to export is not a fatal
+            // condition. We'll just log the error as a warning and keep
+            // going:
+            logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", ex.getMessage());
+        }
     }
     
     
