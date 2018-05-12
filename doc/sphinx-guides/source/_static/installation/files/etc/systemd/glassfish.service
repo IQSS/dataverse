@@ -7,6 +7,7 @@ User=glassfish
 ExecStart = /usr/bin/java -jar /usr/local/glassfish4/glassfish/lib/client/appserver-cli.jar start-domain
 ExecStop = /usr/bin/java -jar /usr/local/glassfish4/glassfish/lib/client/appserver-cli.jar stop-domain
 ExecReload = /usr/bin/java -jar /usr/local/glassfish4/glassfish/lib/client/appserver-cli.jar restart-domain
+LimitNOFILE=32768
 Type = forking
 
 [Install]

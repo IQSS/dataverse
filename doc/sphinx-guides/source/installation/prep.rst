@@ -49,7 +49,7 @@ Dataverse permits a fair amount of flexibility in where you choose to install th
 
 |3webservers|
 
-A setup such as this is advanced enough to be considered out of scope for this guide but you are welcome to ask questions about similar configurations via the support channels listed in the :doc:`intro`.
+A setup such as this is advanced enough to be considered out of scope for this guide (apart from a stub in the :doc:`advanced` section) but you are welcome to ask questions about similar configurations via the support channels listed in the :doc:`intro`.
 
 .. _architecture:
 
@@ -90,7 +90,9 @@ Hardware Requirements
 
 A basic installation of Dataverse runs fine on modest hardware. For example, as of this writing the test installation at http://phoenix.dataverse.org is backed by a single virtual machine with two 2.8 GHz processors, 8 GB of RAM and 50 GB of disk.
 
-In contrast, the production installation at https://dataverse.harvard.edu is currently backed by six servers with two Intel Xeon 2.53 Ghz CPUs and either 48 or 64 GB of RAM. The three servers with 48 GB of RAM run are web frontends running Glassfish and Apache and are load balanced by a hardware device. The remaining three servers with 64 GB of RAM are the primary and backup database servers and a server dedicated to running Rserve. Multiple TB of storage are mounted from a SAN via NFS. The :ref:`advanced` section shows a diagram (a seventh server to host Geoconnect will probably be added).
+In contrast, before we moved it to the Amazon Cloud, the production installation at https://dataverse.harvard.edu was backed by six servers with two Intel Xeon 2.53 Ghz CPUs and either 48 or 64 GB of RAM. The three servers with 48 GB of RAM run were web frontends running Glassfish and Apache and were load balanced by a hardware device. The remaining three servers with 64 GB of RAM were the primary and backup database servers and a server dedicated to running Rserve. Multiple TB of storage were mounted from a SAN via NFS.
+
+Currently, Harvard Dataverse is served by four AWS server nodes: two "m4.4xlarge" instances (64GB/16 vCPU) as web frontends, one 32GB/8 vCPU ("m4.2xlarge") instance for the Solr search engine, and one 16GB/4 vCPU ("m4.xlarge") instance for R and TwoRavens. The PostgreSQL database is served by Amazon RDS, and physical files are stored on Amazon S3.
 
 The Dataverse installation script will attempt to give Glassfish the right amount of RAM based on your system.
 

@@ -5,10 +5,10 @@
 mkdir -p data
 #echo "adding to solr..."
 curl -s http://localhost:8080/api/dataverses > data/dataverses.json
-#curl http://localhost:8983/solr/update/json?commit=true -H 'Content-type:application/json' --data-binary @data/dataverses.json
+#curl http://localhost:8983/solr/collection1/update/json?commit=true -H 'Content-type:application/json' --data-binary @data/dataverses.json
 
 curl -s http://localhost:8080/api/datasets > data/datasets.json
-#curl http://localhost:8983/solr/update/json?commit=true -H 'Content-type:application/json' --data-binary @data/datasets.json
+#curl http://localhost:8983/solr/collection1/update/json?commit=true -H 'Content-type:application/json' --data-binary @data/datasets.json
 
 echo "adding to elasticsearch..."
 #curl -XPOST http://localhost:9200/dataverse/datasets/1 --data-binary @data/datasets/1.dump

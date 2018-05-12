@@ -138,7 +138,7 @@ public class UtilIT {
         return usernamePrefix + getRandomIdentifier().substring(0, 8);
     }
 
-    public static String getRandomString(int length) { 
+    public static String getRandomString(int length) {
 //is it worth replacing with something that doesn't error out on getRandomString(8)
         if (length < 0) {
             length = 3;
@@ -333,7 +333,7 @@ public class UtilIT {
 
     // https://github.com/IQSS/dataverse/issues/3777
     static Response updateDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
-       String jsonIn = getDatasetJson(pathToJsonFile);
+        String jsonIn = getDatasetJson(pathToJsonFile);
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
@@ -352,6 +352,20 @@ public class UtilIT {
                 + "";
         return xmlIn;
     }
+    
+    static Response createDatasetLink(Long linkedDatasetId, String linkingDataverseAlias, String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .put("api/datasets/" + linkedDatasetId + "/link/" + linkingDataverseAlias);
+        return response;
+    }   
+    
+    static Response deleteDatasetLink(Long linkedDatasetId, String linkingDataverseAlias, String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .delete("api/datasets/" + linkedDatasetId + "/deleteLink/" + linkingDataverseAlias);
+        return response;
+    } 
 
     public static Response uploadRandomFile(String persistentId, String apiToken) {
         String zipfilename = "trees.zip";
@@ -599,6 +613,13 @@ public class UtilIT {
         Response deleteUserResponse = given()
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
         return deleteUserResponse;
+    }
+    
+    public static Response uningestFile(Long fileId, String apiToken) {
+        
+        Response uningestFileResponse = given()
+                .post("/api/files/" + fileId + "/uningest/?key=" + apiToken);
+        return uningestFileResponse;
     }
 
     public static Response deleteDataverse(String doomed, String apiToken) {
@@ -851,6 +872,27 @@ public class UtilIT {
                 .put("/api/files/" + datafileId + "/restrict");
         return response;
     }
+    
+    static Response moveDataverse(String movedDataverseAlias, String targetDataverseAlias, Boolean force, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("api/dataverses/" + movedDataverseAlias + "/move/" + targetDataverseAlias + "?forceMove=" + force + "&key=" + apiToken);
+        return response;
+    }
+    
+    static Response createDataverseLink(String linkedDataverseAlias, String linkingDataverseAlias, String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .put("api/dataverses/" + linkedDataverseAlias + "/link/" + linkingDataverseAlias);
+        return response;
+    }
+    
+    static Response deleteDataverseLink(String linkedDataverseAlias, String linkingDataverseAlias, String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .delete("api/dataverses/" + linkedDataverseAlias + "/deleteLink/" + linkingDataverseAlias);
+        return response;
+    }
 
     static Response nativeGet(Integer datasetId, String apiToken) {
         Response response = given()
@@ -916,6 +958,130 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
     }
+    
+    static Response getDatasetVersions(String idOrPersistentId, String apiToken) {
+        logger.info("Getting Dataset Versions");
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/datasets/" + idInPath + "/versions" + optionalQueryParam);
+    }
+
+    //TODO: this probably should return a file not a string, but I've mainly implemented it for testing purposes
+    static Response getProvJson(String idOrPersistentId, String apiToken) {
+        logger.info("Getting Provenance JSON");
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/files/" + idInPath + "/prov-json" + optionalQueryParam);
+    }
+    
+    static Response getProvFreeForm(String idOrPersistentId, String apiToken) {
+         logger.info("Getting Provenance Free Form");
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
+    }
+    
+    static Response uploadProvJson(String idOrPersistentId, JsonObject jsonObject, String apiToken, String entityName) {
+        logger.info("Uploading Provenance JSON");
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        optionalQueryParam += "?entityName="+entityName;
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                    // This "[]" is here to quickly test that a JSON array is considered invalid.
+                    //.body("[]")
+                    .body(jsonObject.toString())
+                    .contentType("application/json");
+        }
+        return requestSpecification.post("/api/files/" + idInPath + "/prov-json" + optionalQueryParam);
+    }
+    
+    static Response deleteProvJson(String idOrPersistentId, String apiToken) {
+        logger.info("Deleting Provenance JSON");
+        //TODO: Repeated code, refactor
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.delete("/api/files/" + idInPath + "/prov-json" + optionalQueryParam);
+    }
+
+    static Response uploadProvFreeForm(String idOrPersistentId, JsonObject jsonObject, String apiToken) {
+        logger.info("Uploading Provenance Free Form");
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
+                    // This "[]" is here to quickly test that a JSON array is considered invalid.
+                    //.body("[]")
+                    .body(jsonObject.toString())
+                    .contentType("application/json");
+        }
+        return requestSpecification.post("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
+    }
+    
+//    static Response deleteProvFreeForm(String idOrPersistentId, String apiToken) {
+//         logger.info("Deleting Provenance Free Form");
+//        //TODO: Repeated code, refactor
+//        String idInPath = idOrPersistentId; // Assume it's a number.
+//        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+//        if (!NumberUtils.isNumber(idOrPersistentId)) {
+//            idInPath = ":persistentId";
+//            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+//        }
+//        RequestSpecification requestSpecification = given();
+//        if (apiToken != null) {
+//            requestSpecification = given()
+//                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+//        }
+//        return requestSpecification.delete("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
+//    }
 
     static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
 //        http://localhost:8080/api/datasets/export?exporter=dataverse_json&persistentId=doi%3A10.5072/FK2/W6WIMQ
@@ -1178,15 +1344,51 @@ public class UtilIT {
 
     static Response addExternalTool(JsonObject jsonObject) {
         RequestSpecification requestSpecification = given();
-            requestSpecification = given()
-                    .body(jsonObject.toString())
-                    .contentType(ContentType.JSON);
+        requestSpecification = given()
+                .body(jsonObject.toString())
+                .contentType(ContentType.JSON);
         return requestSpecification.post("/api/admin/externalTools");
     }
 
     static Response deleteExternalTool(long externalToolid) {
         return given()
                 .delete("/api/admin/externalTools/" + externalToolid);
+    }
+
+    static Response submitFeedback(JsonObjectBuilder job) {
+        return given()
+                .body(job.build().toString())
+                .contentType("application/json")
+                .post("/api/admin/feedback");
+    }
+
+    static Response listStorageSites() {
+        return given()
+                .get("/api/admin/storageSites");
+    }
+
+    static Response getStorageSitesById(long id) {
+        return given()
+                .get("/api/admin/storageSites/" + id);
+    }
+
+    static Response setPrimaryLocationBoolean(long id, String input) {
+        return given()
+                .body(input)
+                .put("/api/admin/storageSites/" + id + "/primaryStorage");
+    }
+
+    static Response addStorageSite(JsonObject jsonObject) {
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given()
+                .body(jsonObject.toString())
+                .contentType(ContentType.JSON);
+        return requestSpecification.post("/api/admin/storageSites");
+    }
+
+    static Response deleteStorageSite(long storageSiteId) {
+        return given()
+                .delete("/api/admin/storageSites/" + storageSiteId);
     }
 
     @Test
@@ -1234,5 +1436,6 @@ public class UtilIT {
         String title = getTitleFromSwordStatement(swordStatementWithNoFiles);
         assertEquals("A Dataset with a File", title);
     }
+    
 
 }

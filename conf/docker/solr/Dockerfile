@@ -3,21 +3,12 @@ MAINTAINER Dataverse (support@dataverse.org)
 
 RUN yum install -y wget unzip perl git java-1.8.0-openjdk-devel postgresql.x86_64
 
-# Install Solr 4.6.0
+# Install Solr 7.3.0
 # The context of the build is the "conf" directory.
-COPY solr/4.6.0/schema.xml /tmp
+COPY solr/7.3.0/schema.xml /tmp
+COPY solr/7.3.0/solrconfig.xml /tmp
 
-RUN cd /tmp && wget https://archive.apache.org/dist/lucene/solr/4.6.0/solr-4.6.0.tgz  && \
-	tar xvzf solr-4.6.0.tgz  && \
-	mv solr-4.6.0 /usr/local/  && \
-	cd /usr/local/solr-4.6.0/example/solr/collection1/conf/  && \
-	mv schema.xml schema.xml.backup  && \
-	cp /tmp/schema.xml . && \
-	rm /tmp/solr-4.6.0.tgz
-
-RUN ln -s /usr/local/solr-4.6.0/example/logs /var/log/solr
-
-VOLUME  /usr/local/solr-4.6.0/example/solr/collection1/data
+RUN cd /tmp && wget https://archive.apache.org/dist/lucene/solr/7.3.0/solr-7.3.0.tgz
 
 EXPOSE 8983
 

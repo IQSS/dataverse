@@ -94,7 +94,7 @@ Unit tests are run automatically on every build, but dev environments and server
 
 The :doc:`dev-environment` section currently refers developers here for advice on getting set up to run REST Assured tests, but we'd like to add some sort of "dev" flag to the installer to put Dataverse in "insecure" mode, with lots of scary warnings that this dev mode should not be used in production.
 
-The instructions below assume a relatively static dev environment on a Mac. There is a newer "all in one" Docker-based approach documented in the :doc:`dev-environment` section under "Docker" that you may like to play with as well.
+The instructions below assume a relatively static dev environment on a Mac. There is a newer "all in one" Docker-based approach documented in the :doc:`/developers/containers` section under "Docker" that you may like to play with as well.
 
 The Burrito Key
 ^^^^^^^^^^^^^^^

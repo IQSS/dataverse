@@ -1,6 +1,10 @@
 nb-configuration.xml
 target
 nbactions.xml
+# eclipse IDE
+.settings/
+.classpath
+.project
 michael-local
 GPATH
 GTAGS
@@ -41,6 +45,4 @@ conf/docker-aio/dv/deps/
 conf/docker-aio/dv/install/dvinstall.zip
 # or copy of test data
 conf/docker-aio/testdata/
-.settings/
-.classpath
-.project
+scripts/installer/default.config

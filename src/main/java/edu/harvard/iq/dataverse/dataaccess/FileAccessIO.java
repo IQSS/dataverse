@@ -305,6 +305,12 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         Files.move(getFileSystemPath(), auxPath, StandardCopyOption.REPLACE_EXISTING);
     }
     
+    @Override 
+    public void revertBackupAsAux(String auxItemTag) throws IOException {
+        Path auxPath = getAuxObjectAsPath(auxItemTag);
+        Files.move(auxPath, getFileSystemPath(), StandardCopyOption.REPLACE_EXISTING);
+    }
+    
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
     @Override
     public void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException {

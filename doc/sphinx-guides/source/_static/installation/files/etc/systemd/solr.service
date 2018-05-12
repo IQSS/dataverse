@@ -5,8 +5,9 @@ After = syslog.target network.target remote-fs.target nss-lookup.target
 [Service]
 User = solr
 Type = simple
-WorkingDirectory = /usr/local/solr/example
-ExecStart = /usr/bin/java -jar -server /usr/local/solr/example/start.jar
+WorkingDirectory = /usr/local/solr/solr-7.3.0
+ExecStart = /usr/local/solr/solr-7.3.0/bin/solr start -m 1g
+LimitNOFILE=65000
 Restart=on-failure
 
 [Install]

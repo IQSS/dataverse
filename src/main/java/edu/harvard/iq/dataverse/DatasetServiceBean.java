@@ -111,6 +111,28 @@ public class DatasetServiceBean implements java.io.Serializable {
             return retList;
         }
     }
+    
+    public List<Long> findIdsByOwnerId(Long ownerId) {
+        return findIdsByOwnerId(ownerId, false);
+    }
+    
+    private List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished) {
+        List<Long> retList = new ArrayList<>();
+        if (!onlyPublished) {
+            TypedQuery<Long> query = em.createQuery("select o.id from Dataset as o where o.owner.id =:ownerId order by o.id", Long.class);
+            query.setParameter("ownerId", ownerId);
+            return query.getResultList();
+        } else {
+            TypedQuery<Dataset> query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id", Dataset.class);
+            query.setParameter("ownerId", ownerId);
+            for (Dataset ds : query.getResultList()) {
+                if (ds.isReleased() && !ds.isDeaccessioned()) {
+                    retList.add(ds.getId());
+                }
+            }
+            return retList;
+        }
+    }
 
     public List<Dataset> findAll() {
         return em.createQuery("select object(o) from Dataset as o order by o.id", Dataset.class).getResultList();
@@ -294,8 +316,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.persist(dsv);
         return dsv;
     }
-    
-    
+      
     public String createCitationRIS(DatasetVersion version) {
         return createCitationRIS(version, null);
     } 

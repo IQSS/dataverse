@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -57,6 +58,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -99,6 +101,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
+
 
 /**
  *
@@ -173,7 +176,6 @@ public class DatasetPage implements java.io.Serializable {
     PrivateUrlServiceBean privateUrlService;
     @EJB
     ExternalToolServiceBean externalToolService;
-
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -188,7 +190,8 @@ public class DatasetPage implements java.io.Serializable {
     ThumbnailServiceWrapper thumbnailServiceWrapper;
     @Inject
     SettingsWrapper settingsWrapper; 
-    
+    @Inject 
+    ProvPopupFragmentBean provPopupFragmentBean;
 
 
     private Dataset dataset = new Dataset();
@@ -353,6 +356,86 @@ public class DatasetPage implements java.io.Serializable {
         this.lazyModel = lazyModel;
     }
     
+    public List<Entry<String,String>> getCartList() {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            return ((AuthenticatedUser) session.getUser()).getCart().getContents();
+        }
+        return null;
+    }
+    
+    public boolean checkCartForItem(String title, String persistentId) {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            return ((AuthenticatedUser) session.getUser()).getCart().checkCartForItem(title, persistentId);
+        }
+        return false;
+    }
+
+    public void addItemtoCart(String title, String persistentId) throws Exception{
+        if (canComputeAllFiles(true)) {
+            if (session.getUser() instanceof AuthenticatedUser) {
+                AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+                try {
+                    authUser.getCart().addItem(title, persistentId);
+                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+                } catch (Exception ex){
+                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+                }
+            }
+        }
+    }
+    
+    public void removeCartItem(String title, String persistentId) throws Exception {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            try {
+                authUser.getCart().removeItem(title, persistentId);
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+            } catch (Exception ex){
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+            }
+        }
+    }
+    
+    public void clearCart() throws Exception {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            try {
+                authUser.getCart().clear();
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+            } catch (Exception ex){
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
+            }
+        }
+    }
+    
+    public boolean isCartEmpty() {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            return authUser.getCart().getContents().isEmpty();
+        }
+        return true;
+    }
+    
+        
+    public String getCartComputeUrl() {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            String url = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl);
+            if (url == null) {
+                return "";
+            }
+            // url indicates that you are computing with multiple datasets
+            url += "/multiparty?";
+            List<Entry<String,String>> contents = authUser.getCart().getContents();
+            for (Entry<String,String> entry : contents) {
+                String persistentIdUrl = entry.getValue();
+                url +=  persistentIdUrl + "&";
+            }
+            return url.substring(0, url.length() - 1);
+        }
+        return "";
+    }
+
     private String fileLabelSearchTerm;
 
     public String getFileLabelSearchTerm() {
@@ -370,7 +453,7 @@ public class DatasetPage implements java.io.Serializable {
     public List<FileMetadata> getFileMetadatasSearch() {
         return fileMetadatasSearch;
     }
-
+    
     public void setFileMetadatasSearch(List<FileMetadata> fileMetadatasSearch) {
         this.fileMetadatasSearch = fileMetadatasSearch;
     }
@@ -541,13 +624,22 @@ public class DatasetPage implements java.io.Serializable {
         return result;
     }
 
-    public boolean canDownloadAllFiles(){
-       for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (!fileDownloadHelper.canDownloadFile(fmd)) {
-                return false;
-            }
+    public boolean canComputeAllFiles(boolean isCartCompute){
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+             if (!fileDownloadHelper.canDownloadFile(fmd)) {
+                 RequestContext requestContext = RequestContext.getCurrentInstance();
+                 requestContext.execute("PF('computeInvalid').show()");
+                 return false;
+             }
         }
-       return true;
+        if (!isCartCompute) {
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect(getComputeUrl());
+             } catch (IOException ioex) {
+                 logger.warning("Failed to issue a redirect.");
+             }
+        }
+        return true;
     }
     /*
     in getComputeUrl(), we are sending the container/dataset name and the exipiry and signature 
@@ -561,16 +653,11 @@ public class DatasetPage implements java.io.Serializable {
     --SF
     */
     public String getComputeUrl() throws IOException {
-        SwiftAccessIO swiftObject = getSwiftObject();
-        if (swiftObject != null) {
-            swiftObject.open();
-            if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
-                return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName();
-            }
-            //assuming we are able to get a temp url for a dataset
-            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
-        }
-        return "";
+
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getPersistentId();
+            //WHEN we are able to get a temp url for a dataset
+            //return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+
         
     }
     
@@ -588,10 +675,10 @@ public class DatasetPage implements java.io.Serializable {
             logger.info("DatasetPage: Failed to get storageIO");
         }
         if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
-            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName();
+            return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getPersistentId() + "=" + swiftObject.getSwiftFileName();
         }
         
-        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?containerName=" + swiftObject.getSwiftContainerName() + "&objectName=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getPersistentId() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
 
     }
     
@@ -652,7 +739,7 @@ public class DatasetPage implements java.io.Serializable {
         setReleasedVersionTabList(resetReleasedVersionTabList());
         
     }
-    
+
     public void updateLinkableDataverses() {
         dataversesForLinking = new ArrayList<>();
         linkingDVSelectItems = new ArrayList<>();
@@ -1224,28 +1311,6 @@ public class DatasetPage implements java.io.Serializable {
     private void msg(String s){
         // System.out.println(s);
     }
-    
-    /**
-     * For development
-     * 
-     * Flag for whether to show sample insert statements for Geoconnect Debug
-     * 
-     * Conditions to meet: Person is superuser and GeoconnectDebug active 
-     * 
-     * @return 
-     */
-    public boolean isGeoconnectDebugAvailable(){
-
-        if (!this.isSuperUser()){
-            return false;
-        }
-
-        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.GeoconnectDebug, false)){
-            return true;
-        }    
-        return false;
-      
-    }
 
     /**
      * Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
@@ -1282,15 +1347,6 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private boolean readOnly = true; 
-    private String originalSourceUrl = null;
-
-    public String getOriginalSourceUrl() {
-        return originalSourceUrl; 
-    }
-    
-    public void setOriginalSourceUrl(String originalSourceUrl) {
-        this.originalSourceUrl = originalSourceUrl;
-    }
     
     public String init() {
         return init(true);
@@ -1302,7 +1358,6 @@ public class DatasetPage implements java.io.Serializable {
     
     private String init(boolean initFull) {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-               
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
 
@@ -1370,6 +1425,7 @@ public class DatasetPage implements java.io.Serializable {
             }
 
             // Is the Dataset harvested?
+            
             if (dataset.isHarvested()) {
                 // if so, we'll simply forward to the remote URL for the original
                 // source of this harvested dataset:
@@ -1389,7 +1445,7 @@ public class DatasetPage implements java.io.Serializable {
 
                 return permissionsWrapper.notFound();
             }
-
+              
             // Check permisisons           
             if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !this.canViewUnpublishedDataset()) {
                 return permissionsWrapper.notAuthorized();
@@ -2459,6 +2515,11 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String save() {
+         //Before dataset saved, write cached prov freeform to version
+        if(systemConfig.isProvCollectionEnabled()) {
+            provPopupFragmentBean.saveStageProvFreeformToLatestVersion();
+        }
+        
         // Validate
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
@@ -2541,10 +2602,22 @@ public class DatasetPage implements java.io.Serializable {
         editMode = null;
         bulkFileDeleteInProgress = false;
 
+
+        
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution: 
         ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
 
+        //After dataset saved, then persist prov json data
+        if(systemConfig.isProvCollectionEnabled()) {
+            try {
+                provPopupFragmentBean.saveStagedProvJson(false);
+            } catch (AbstractApiBean.WrappedResponse ex) {
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
         logger.fine("Redirecting to the Dataset page.");
         
         return returnToDraftVersion();
@@ -2554,7 +2627,7 @@ public class DatasetPage implements java.io.Serializable {
         if (editMode == null) {
             // that must have been a bulk file update or delete:
             if (bulkFileDeleteInProgress) {
-                JsfHelper.addSuccessMessage(JH.localize("dataset.message.bulkFileDeleteFailure"));
+                JsfHelper.addErrorMessage(JH.localize("dataset.message.bulkFileDeleteFailure"));
 
             } else {
                 JsfHelper.addErrorMessage(JH.localize("dataset.message.filesFailure"));
@@ -2625,7 +2698,7 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
-        public void refreshIngestLock() {
+    public void refreshIngestLock() {
         //RequestContext requestContext = RequestContext.getCurrentInstance();
         logger.fine("checking ingest lock");
         if (isStillLockedForIngest()) {
