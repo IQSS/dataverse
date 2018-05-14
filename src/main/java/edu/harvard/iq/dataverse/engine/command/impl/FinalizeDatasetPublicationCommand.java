@@ -299,7 +299,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      */
     private void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt) throws CommandException {
         IdServiceBean idServiceBean = IdServiceBean.getBean(theDataset.getProtocol(), ctxt);
-        if (theDataset.getGlobalIdCreateTime() == null) {
+        if (!theDataset.isIdentifierRegistered()) {
           if (idServiceBean!=null) {
             try {
               if (!idServiceBean.alreadyExists(theDataset)) {

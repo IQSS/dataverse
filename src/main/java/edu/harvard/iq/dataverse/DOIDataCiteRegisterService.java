@@ -87,6 +87,13 @@ public class DOIDataCiteRegisterService {
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
             }
+        } else{
+            try (DataCiteRESTfullClient client = openClient()) {
+                retString = client.postMetadata(xmlMetadata);
+                client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
+            }           
         }
         return retString;
     }
