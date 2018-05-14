@@ -300,10 +300,14 @@ public class Files extends AbstractApiBean {
     
     @Path("{id}/uningest")
     @POST
-    public Response uningestDatafile(@PathParam("id") Long idSupplied) {
+    public Response uningestDatafile(@PathParam("id") String id) {
 
-        DataFile dataFile = fileService.find(idSupplied);
-
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(id);
+        } catch (WrappedResponse ex) {
+            return error(BAD_REQUEST, "Could not find datafile with id " + id);
+        }
         if (dataFile == null) {
             return error(Response.Status.NOT_FOUND, "File not found for given id.");
         }
@@ -315,10 +319,11 @@ public class Files extends AbstractApiBean {
         try {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             execCommand(new UningestFileCommand(req, dataFile));
-            dataFile = fileService.find(idSupplied);
+            Long dataFileId = dataFile.getId();
+            dataFile = fileService.find(dataFileId);
             Dataset theDataset = dataFile.getOwner();
             exportMetadata(settingsService, theDataset);
-            return ok("Datafile " + idSupplied + " uningested.");
+            return ok("Datafile " + dataFileId + " uningested.");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

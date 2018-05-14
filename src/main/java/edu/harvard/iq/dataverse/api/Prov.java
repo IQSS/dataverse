@@ -172,20 +172,4 @@ public class Prov extends AbstractApiBean {
         }
     }
     
-    
-    /** Helper Methods */
-    // FIXME: Delete this and switch to the version in AbstractApiBean.java once this is merged: https://github.com/IQSS/dataverse/pull/4350
-    private DataFile findDataFileOrDie(String idSupplied) throws WrappedResponse {
-        long idSuppliedAsLong;
-        try {
-            idSuppliedAsLong = new Long(idSupplied);
-        } catch (NumberFormatException ex) {
-            throw new WrappedResponse(badRequest(BundleUtil.getStringFromBundle("api.prov.error.badDataFileId")));
-        }
-        DataFile dataFile = fileSvc.find(idSuppliedAsLong);
-        if (dataFile == null) {
-            throw new WrappedResponse(badRequest(BundleUtil.getStringFromBundle("api.prov.error.noDataFileFound")));
-        }
-        return dataFile;
-    }
 }
