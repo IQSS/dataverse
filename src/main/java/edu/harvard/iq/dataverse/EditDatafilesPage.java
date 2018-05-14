@@ -1679,11 +1679,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         // Add the file(s) added during this last upload event, single or multiple, 
         // to the full list of new files, and the list of filemetadatas 
         // used to render the page:
-             
-        // Uh, maybe we shouldn't be doing this??
-        //if (mode == FileEditMode.CREATE) {
-        //    ingestService.addFilesToDataset(workingVersion, uploadedFiles);
-        //}
         
         for (DataFile dataFile : uploadedFiles) {
             fileMetadatas.add(dataFile.getFileMetadata());
