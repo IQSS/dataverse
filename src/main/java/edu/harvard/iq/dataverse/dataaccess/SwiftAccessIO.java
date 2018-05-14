@@ -303,6 +303,34 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException(failureMsg);
         }
     }
+    
+    @Override
+    public void revertBackupAsAux(String auxItemTag) throws IOException {
+        // We are going to try and overwrite the current main file 
+        // with the contents of the stored original, currently saved as an 
+        // Aux file. So we need WRITE access on the main file: 
+        
+        if (swiftFileObject == null || swiftContainer == null || !this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+
+        try {
+            // We are writing FROM the saved AUX object, back to the main object;
+            // So we need READ access on the AUX object:
+            
+            StoredObject swiftAuxObject = openSwiftAuxFile(auxItemTag);
+            swiftAuxObject.copyObject(swiftContainer, swiftFileObject);
+
+        } catch (Exception ex) {
+            String failureMsg = ex.getMessage();
+            if (failureMsg == null) {
+                failureMsg = "Swift AccessIO: Unknown exception occured while renaming orig file";
+            }
+
+            throw new IOException(failureMsg);
+        }
+
+    }
 
     @Override
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:

@@ -4,15 +4,14 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import edu.harvard.iq.dataverse.authorization.Permission;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
@@ -20,17 +19,16 @@ import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.export.ExportException;
+import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.InputStream;
-import java.sql.Timestamp;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,6 +75,8 @@ public class Files extends AbstractApiBean {
     UserNotificationServiceBean userNotificationService;
     @EJB
     SystemConfig systemConfig;
+    @EJB
+    SettingsServiceBean settingsService;
     
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -274,7 +274,7 @@ public class Files extends AbstractApiBean {
         }
             
     } // end: replaceFileInDataset
-
+    
     @DELETE
     @Path("{id}/map")
     public Response getMapLayerMetadatas(@PathParam("id") Long idSupplied) {
@@ -294,6 +294,52 @@ public class Files extends AbstractApiBean {
             }
         } catch (CommandException ex) {
             return error(BAD_REQUEST, "Problem trying to delete map from file id " + dataFile.getId() + ": " + ex.getLocalizedMessage());
+        }
+    }
+    
+    @Path("{id}/uningest")
+    @POST
+    public Response uningestDatafile(@PathParam("id") Long idSupplied) {
+
+        DataFile dataFile = fileService.find(idSupplied);
+
+        if (dataFile == null) {
+            return error(Response.Status.NOT_FOUND, "File not found for given id.");
+        }
+
+        if (!dataFile.isTabularData()) {
+            return error(Response.Status.BAD_REQUEST, "Cannot uningest non-tabular file.");
+        }
+
+        try {
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            execCommand(new UningestFileCommand(req, dataFile));
+            dataFile = fileService.find(idSupplied);
+            Dataset theDataset = dataFile.getOwner();
+            exportMetadata(settingsService, theDataset);
+            return ok("Datafile " + idSupplied + " uningested.");
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+    }
+            
+    /**
+     * Attempting to run metadata export, for all the formats for which we have
+     * metadata Exporters.
+     */
+    private void exportMetadata(SettingsServiceBean settingsServiceBean, Dataset theDataset) {
+
+        try {
+            ExportService instance = ExportService.getInstance(settingsServiceBean);
+            instance.exportAllFormats(theDataset);
+
+        } catch (ExportException ex) {
+            // Something went wrong!
+            // Just like with indexing, a failure to export is not a fatal
+            // condition. We'll just log the error as a warning and keep
+            // going:
+            logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", ex.getMessage());
         }
     }
 

@@ -614,6 +614,13 @@ public class UtilIT {
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
         return deleteUserResponse;
     }
+    
+    public static Response uningestFile(Long fileId, String apiToken) {
+        
+        Response uningestFileResponse = given()
+                .post("/api/files/" + fileId + "/uningest/?key=" + apiToken);
+        return uningestFileResponse;
+    }
 
     public static Response deleteDataverse(String doomed, String apiToken) {
         return given().delete("/api/dataverses/" + doomed + "?key=" + apiToken);
