@@ -74,7 +74,6 @@ public class DublinCoreExportUtil {
             //xmlw.writeAttribute("xsi:schemaLocation", DCTERMS_DEFAULT_NAMESPACE+" "+DCTERMS_XML_SCHEMALOCATION);
             createDC(xmlw, datasetDto, dcFlavor);
         } else if (DC_FLAVOR_OAI.equals(dcFlavor)) {      
-		xmlw.writeStartDocument();
             xmlw.writeStartElement("oai_dc:dc");        
             xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
             xmlw.writeAttribute("xmlns:oai_dc", OAI_DC_XML_NAMESPACE);
