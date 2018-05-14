@@ -383,18 +383,19 @@ public abstract class AbstractApiBean {
         return dv;
     }
     
-    protected DataverseLinkingDataverse findDataverseLinkingDataverseOrDie(String dataverseId, Long linkedDataverseId) throws WrappedResponse {
+    protected DataverseLinkingDataverse findDataverseLinkingDataverseOrDie(String dataverseId, String linkedDataverseId) throws WrappedResponse {
         DataverseLinkingDataverse dvld;
         Dataverse dataverse = findDataverseOrDie(dataverseId);
+        Dataverse linkedDataverse = findDataverseOrDie(linkedDataverseId);
         try {
-            dvld = dvLinkingService.findDataverseLinkingDataverse(dataverse.getId(), linkedDataverseId);
+            dvld = dvLinkingService.findDataverseLinkingDataverse(dataverse.getId(), linkedDataverse.getId());
             if (dvld == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.ids", Arrays.asList(dataverseId, linkedDataverseId.toString()))));
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.ids", Arrays.asList(dataverseId, linkedDataverseId))));
             }
             return dvld;
         } catch (NumberFormatException nfe) {
             throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.bad.ids", Arrays.asList(dataverseId, linkedDataverseId.toString()))));
+                    badRequest(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.bad.ids", Arrays.asList(dataverseId, linkedDataverseId))));
         }
     }
 
@@ -453,8 +454,10 @@ public abstract class AbstractApiBean {
         }
     }
     
-    protected DatasetLinkingDataverse findDatasetLinkingDataverseOrDie(String datasetId, String linkedDataverseId) throws WrappedResponse {
+    protected DatasetLinkingDataverse findDatasetLinkingDataverseOrDie(String datasetId, String linkingDataverseId) throws WrappedResponse {
         DatasetLinkingDataverse dsld;
+        Dataverse linkingDataverse = findDataverseOrDie(linkingDataverseId);
+
         if (datasetId.equals(PERSISTENT_ID_KEY)) {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
             if (persistentId == null) {
@@ -469,14 +472,14 @@ public abstract class AbstractApiBean {
             datasetId = dataset.getId().toString();
         } 
         try {
-            dsld = dsLinkingService.findDatasetLinkingDataverse(Long.parseLong(datasetId), Long.parseLong(linkedDataverseId));
+            dsld = dsLinkingService.findDatasetLinkingDataverse(Long.parseLong(datasetId), linkingDataverse.getId());
             if (dsld == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datasetlinking.error.not.found.ids", Arrays.asList(datasetId, linkedDataverseId))));
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datasetlinking.error.not.found.ids", Arrays.asList(datasetId, linkingDataverse.getId().toString()))));
             }
             return dsld;
         } catch (NumberFormatException nfe) {
             throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("find.datasetlinking.error.not.found.bad.ids", Arrays.asList(datasetId, linkedDataverseId))));
+                    badRequest(BundleUtil.getStringFromBundle("find.datasetlinking.error.not.found.bad.ids", Arrays.asList(datasetId, linkingDataverse.getId().toString()))));
         }
     }
 

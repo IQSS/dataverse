@@ -223,6 +223,15 @@ public class SystemConfig {
         return solrHostColonPort;
     }
 
+    public boolean isProvCollectionEnabled() {
+        String provCollectionEnabled = settingsService.getValueForKey(SettingsServiceBean.Key.ProvCollectionEnabled, null);
+        if("true".equalsIgnoreCase(provCollectionEnabled)){         
+            return true;
+        }
+        return false;
+
+    }
+    
     public int getMinutesUntilConfirmEmailTokenExpires() {
         final int minutesInOneDay = 1440;
         final int reasonableDefault = minutesInOneDay;

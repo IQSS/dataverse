@@ -194,6 +194,8 @@ Linked Dataverses + Linked Datasets
 
 Currently, the ability to link a dataverse to another dataverse or a dataset to a dataverse is a super user only feature. 
 
+If you link a dataset to your dataverse, that means that the dataset will appear in the list of datasets contained within your dataverse. Linking another dataverse to your dataverse works the same way. You can link other users' dataverses and datasets to your dataverse, but that does not transfer editing or other special permissions to you. The linked dataverse or dataset will still be under the original user's control.
+
 If you need to have a dataverse or dataset linked to your dataverse, please contact the support team for the Dataverse installation you are using.
 
 Publish Your Dataverse

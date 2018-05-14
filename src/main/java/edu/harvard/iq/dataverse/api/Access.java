@@ -207,7 +207,8 @@ public class Access extends AbstractApiBean {
         GuestbookResponse gbr = null;
         
         if (df.isHarvested()) {
-            throw new NotFoundException();
+            String errorMessage = "Datafile " + fileId + " is a harvested file that cannot be accessed in this Dataverse";
+            throw new NotFoundException(errorMessage);
             // (nobody should ever be using this API on a harvested DataFile)!
         }
         
@@ -535,8 +536,9 @@ public class Access extends AbstractApiBean {
                                 } 
 
                             } else {
-                                // Or should we just drop it and make a note in the Manifest?    
-                                throw new NotFoundException();
+                                // Or should we just drop it and make a note in the Manifest?
+                                String errorMessage = "Datafile " + fileId + ": no such object in the database";
+                                throw new NotFoundException(errorMessage);
                             }
                         }
                     }

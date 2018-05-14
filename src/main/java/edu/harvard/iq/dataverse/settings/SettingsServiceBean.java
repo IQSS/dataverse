@@ -53,6 +53,11 @@ public class SettingsServiceBean {
          */
         ComputeBaseUrl,
         /**
+         * Enables the provenance collection popup.
+         * Allows users to store their provenance json and description
+         */
+        ProvCollectionEnabled,
+        /**
          * For example, https://datacapture.example.org
          */
         DataCaptureModuleUrl,
@@ -237,14 +242,6 @@ public class SettingsServiceBean {
         Default is false;
         */
         GeoconnectViewMaps,
-        /**
-        For DEVELOPMENT ONLY. Generate SQL statements for populating
-        MapLayerMetadata objects when Geoconnect is not available.
-        
-        When files have related MapLayerMetadata objects, the "Explore button
-        will be available to users.
-        */
-        GeoconnectDebug,
         /**
          The message added to a popup upon dataset publish
          * 

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -102,8 +103,6 @@ import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
 
-import java.net.URLEncoder;
-
 
 /**
  *
@@ -192,7 +191,8 @@ public class DatasetPage implements java.io.Serializable {
     ThumbnailServiceWrapper thumbnailServiceWrapper;
     @Inject
     SettingsWrapper settingsWrapper; 
-    
+    @Inject 
+    ProvPopupFragmentBean provPopupFragmentBean;
 
 
     private Dataset dataset = new Dataset();
@@ -1311,28 +1311,6 @@ public class DatasetPage implements java.io.Serializable {
 
     private void msg(String s){
         // System.out.println(s);
-    }
-    
-    /**
-     * For development
-     * 
-     * Flag for whether to show sample insert statements for Geoconnect Debug
-     * 
-     * Conditions to meet: Person is superuser and GeoconnectDebug active 
-     * 
-     * @return 
-     */
-    public boolean isGeoconnectDebugAvailable(){
-
-        if (!this.isSuperUser()){
-            return false;
-        }
-
-        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.GeoconnectDebug, false)){
-            return true;
-        }    
-        return false;
-      
     }
 
     /**
@@ -2556,6 +2534,11 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String save() {
+         //Before dataset saved, write cached prov freeform to version
+        if(systemConfig.isProvCollectionEnabled()) {
+            provPopupFragmentBean.saveStageProvFreeformToLatestVersion();
+        }
+        
         // Validate
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
@@ -2638,10 +2621,22 @@ public class DatasetPage implements java.io.Serializable {
         editMode = null;
         bulkFileDeleteInProgress = false;
 
+
+        
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution: 
         ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
 
+        //After dataset saved, then persist prov json data
+        if(systemConfig.isProvCollectionEnabled()) {
+            try {
+                provPopupFragmentBean.saveStagedProvJson(false);
+            } catch (AbstractApiBean.WrappedResponse ex) {
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
         logger.fine("Redirecting to the Dataset page.");
         
         return returnToDraftVersion();
@@ -2724,7 +2719,7 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
-        public void refreshIngestLock() {
+    public void refreshIngestLock() {
         //RequestContext requestContext = RequestContext.getCurrentInstance();
         logger.fine("checking ingest lock");
         if (isStillLockedForIngest()) {

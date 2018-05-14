@@ -233,7 +233,7 @@ public class DataversesIT {
     }
     
     @Test
-    public void testMoveDataverse() throws FileNotFoundException {
+    public void testMoveDataverse() {
         Response createUser = UtilIT.createRandomUser();
         
         createUser.prettyPrint();
@@ -267,6 +267,37 @@ public class DataversesIT {
                 .statusCode(200);
     }
     
-    
+    @Test
+    public void testCreateDeleteDataverseLink() {
+        Response createUser = UtilIT.createRandomUser();
+        
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        Response superuserResponse = UtilIT.makeSuperUser(username);
+        
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
+        
+        Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse2.prettyPrint();
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
+        
+        Response createLinkingDataverseResponse = UtilIT.createDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
+        createLinkingDataverseResponse.prettyPrint();
+        
+        createLinkingDataverseResponse.then().assertThat()
+                .body("data.message", equalTo("Dataverse " + dataverseAlias + " linked successfully to " + dataverseAlias2))
+                .statusCode(200);
+        
+        Response deleteLinkingDataverseResponse = UtilIT.deleteDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
+        deleteLinkingDataverseResponse.prettyPrint();
+        deleteLinkingDataverseResponse.then().assertThat()
+                .body("data.message", equalTo("Link from Dataverse " + dataverseAlias + " to linked Dataverse " + dataverseAlias2 + " deleted"))
+                .statusCode(200);
+    }
     
 }
