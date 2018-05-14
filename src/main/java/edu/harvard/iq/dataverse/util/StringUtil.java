@@ -52,6 +52,20 @@ public class StringUtil {
       return true;
     }
     
+    public static String substringIncludingLast(String str, String separator) {
+      if (isEmpty(str)) {
+          return str;
+      }
+      if (isEmpty(separator)) {
+          return "";
+      }
+      int pos = str.lastIndexOf(separator);
+      if (pos == -1 || pos == (str.length() - separator.length())) {
+          return "";
+      }
+      return str.substring(pos);
+  }
+    
     public static Optional<String> toOption(String s) {
         if ( s == null ) {
             return Optional.empty();
