@@ -1096,10 +1096,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         int nExpectedFilesTotal = nOldFiles + nNewFiles; 
         
         if (nNewFiles > 0) {
-            // Save the NEW files permanently: 
-            logger.info("FILEMETADATAS: "+fileMetadatas.size());
-            logger.info("NEW FILES: "+nNewFiles);
-            logger.info("EXISTING FILES "+nOldFiles);
+            // Try to save the NEW files permanently: 
             List<DataFile> filesAdded = ingestService.addFiles(workingVersion, newFiles);
             
             // reset the working list of fileMetadatas, as to only include the ones
@@ -1316,9 +1313,12 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (nNewFiles == 0 || nFilesTotal == nExpectedFilesTotal) {
                 JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
             } else if (nFilesTotal == nOldFiles) {
-                JsfHelper.addErrorMessage("Failed to add files to the dataset.");
+                JsfHelper.addErrorMessage(getBundleString("dataset.message.addFiles.Failure"));
             } else {
-                JsfHelper.addWarningMessage("Partial success: only " + (nFilesTotal - nOldFiles) + " files out of " + nNewFiles + " have been saved.");
+                String warningMessage = getBundleString("dataset.message.addFiles.partialSuccess");
+                warningMessage = warningMessage.replace("{0}", "" + (nFilesTotal - nOldFiles));
+                warningMessage = warningMessage.replace("{1}", "" + nNewFiles);
+                JsfHelper.addWarningMessage(warningMessage);
             }
         }
         

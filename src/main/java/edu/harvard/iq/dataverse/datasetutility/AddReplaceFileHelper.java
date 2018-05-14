@@ -1415,7 +1415,11 @@ public class AddReplaceFileHelper{
         finalFileList = ingestService.addFiles(workingVersion, finalFileList);
 
         if (nFiles != finalFileList.size()) {
-            addError("Failed to save at least one of the uploaded files permanently.");
+            if (nFiles == 1) {
+                addError("Failed to save the content of the uploaded file.");
+            } else {
+                addError("Failed to save the content of at least one of the uploaded files.");
+            }
             return false;
         }
         

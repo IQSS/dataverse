@@ -167,7 +167,13 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             
         }
         //logger.fine("Saving the files permanently.");
-        //theDataset.setFiles(ctxt.ingest().addFiles(dsv, theDataset.getFiles()));
+        // IMPORTANT! IngestService.addFiles() tries to save the physical files 
+        // in storage (disk, S3, etc.). We should NOT be doing this inside the 
+        // command. (UpdateDatasetCommand does not save physical files; CreateDatasetCommand
+        // should behave the same way. Let's make sure this is prserved, when these
+        // changes are merged with the branch 3083-support-migration-with-dois 
+        // (Michael's refactoring project).
+        //ctxt.ingest().addFiles(dsv, theDataset.getFiles());
         logger.log(Level.FINE,"doiProvider={0} protocol={1}  importType={2}  GlobalIdCreateTime=={3}", new Object[]{doiProvider, protocol,  importType, theDataset.getGlobalIdCreateTime()});
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
         if ((importType == null || importType.equals(ImportType.NEW))
