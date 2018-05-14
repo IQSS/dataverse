@@ -590,19 +590,20 @@ public class GuestbookResponseServiceBean {
     }
     
     
-    public GuestbookResponse initGuestbookResponseForFragment(Dataset dataset, FileMetadata fileMetadata, DataverseSession session){   
+    public GuestbookResponse initGuestbookResponseForFragment(DatasetVersion workingVersion, FileMetadata fileMetadata, DataverseSession session){   
         
-        DatasetVersion workingVersion;
+        /*DatasetVersion workingVersion;
         if (fileMetadata != null){
             workingVersion = fileMetadata.getDatasetVersion();
         } else {
             workingVersion = dataset.getLatestVersion();
-        }
+        }*/
        
+        Dataset dataset = workingVersion.getDataset();
        
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         
-        if(workingVersion != null && workingVersion.isDraft()){           
+        if(workingVersion.isDraft()){           
             guestbookResponse.setWriteResponse(false);
         } 
         
@@ -613,7 +614,7 @@ public class GuestbookResponseServiceBean {
         }
 
         if (dataset.getGuestbook() != null) {
-            guestbookResponse.setGuestbook(workingVersion.getDataset().getGuestbook());
+            guestbookResponse.setGuestbook(dataset.getGuestbook());
             setUserDefaultResponses(guestbookResponse, session);
             if (fileMetadata != null){
                 guestbookResponse.setDataFile(fileMetadata.getDataFile());
@@ -638,7 +639,7 @@ public class GuestbookResponseServiceBean {
     
     public GuestbookResponse initGuestbookResponseForFragment(FileMetadata fileMetadata, DataverseSession session){    
 
-        return initGuestbookResponseForFragment(fileMetadata.getDatasetVersion().getDataset(), fileMetadata, session);
+        return initGuestbookResponseForFragment(fileMetadata.getDatasetVersion(), fileMetadata, session);
     }
     
     public void initGuestbookResponse(FileMetadata fileMetadata, String downloadType, DataverseSession session){
@@ -818,11 +819,15 @@ public class GuestbookResponseServiceBean {
     }
     
     public GuestbookResponse modifyDatafile(GuestbookResponse in, FileMetadata fm) {
+        logger.info("Entering modifyDatafile");
         if (in != null && fm.getDataFile() != null) {
             in.setDataFile(fm.getDataFile());
         }
         if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {
+            logger.info("Setting setWriteResponse to FALSE");
             in.setWriteResponse(false);
+        } else {
+            logger.info("isWriteReponse(): "+in.isWriteResponse());
         }
         return in;
     }
