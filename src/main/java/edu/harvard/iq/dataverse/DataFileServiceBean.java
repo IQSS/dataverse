@@ -186,19 +186,35 @@ public class DataFileServiceBean implements java.io.Serializable {
             authority = globalId.substring(index1 + 1, index2);
         }
         if (protocol.equals("doi")) {
-
-            index3 = globalId.indexOf(separator, index2 + 1);
-            if (index3 == -1 ) { 
-                identifier = globalId.substring(index2 + 1); //.toUpperCase();
-            } else {
-                if (index3 > -1) {
-                    authority = globalId.substring(index1 + 1, index3);
-                    identifier = globalId.substring(index3 + 1).toUpperCase();
+            String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+            if (!doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())) {
+                index3 = globalId.indexOf(separator, index2 + 1);
+                if (index3 == -1) {
+                    identifier = globalId.substring(index2 + 1); //.toUpperCase();
+                } else {
+                    if (index3 > -1) {
+                        authority = globalId.substring(index1 + 1, index3);
+                        identifier = globalId.substring(index3 + 1).toUpperCase();
+                    }
                 }
+            } else {
+                index3 = globalId.indexOf(separator, index2 + 1);
+                int index4 = globalId.indexOf("/", index3 + 1);
+                if (index4 == -1) {
+                    identifier = globalId.substring(index2 + 1); //.toUpperCase();
+                } else {
+                    if (index4 > -1) {
+                        authority = globalId.substring(index2 + 1, index3);
+                        identifier = globalId.substring(index3 + 1).toUpperCase();
+                    }
+                }
+
             }
+
         } else {
             identifier = globalId.substring(index2 + 1).toUpperCase();
         }
+
         DataFile file = null;
         try {
             file = (DataFile) em.createNamedQuery("DataFile.findDataFileByIdProtocolAuth")
