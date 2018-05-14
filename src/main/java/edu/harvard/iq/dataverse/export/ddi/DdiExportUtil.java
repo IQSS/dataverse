@@ -79,7 +79,6 @@ public class DdiExportUtil {
     
     private static void dtoddi(DatasetDTO datasetDto, OutputStream outputStream) throws XMLStreamException {
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
-	//xmlw.writeStartDocument();
         xmlw.writeStartElement("codeBook");
         xmlw.writeDefaultNamespace("ddi:codebook:2_5");
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
@@ -99,7 +98,6 @@ public class DdiExportUtil {
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
         
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
-	//xmlw.writeStartDocument();
         xmlw.writeStartElement("codeBook");
         xmlw.writeDefaultNamespace("ddi:codebook:2_5");
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
