@@ -164,63 +164,16 @@ public class DataFileServiceBean implements java.io.Serializable {
         
     }*/
     
-    public DataFile findByGlobalId(String globalId){
-        String protocol = "";
-        String authority = "";
-        String identifier = "";
-        int index1 = globalId.indexOf(':');
-        String nonNullDefaultIfKeyNotFound = ""; 
-        String separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);        
-        int index2 = globalId.indexOf(separator, index1 + 1);
-        int index3;
-        if (index1 == -1) {            
-            logger.info("Error parsing identifier: " + globalId + ". ':' not found in string");
-            return null;
-        } else {
-            protocol = globalId.substring(0, index1);
-        }
-        if (index2 == -1 ) {
-            logger.info("Error parsing identifier: " + globalId + ". Second separator not found in string");
-            return null;
-        } else {
-            authority = globalId.substring(index1 + 1, index2);
-        }
-        if (protocol.equals("doi")) {
-            String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-            if (!doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())) {
-                index3 = globalId.indexOf(separator, index2 + 1);
-                if (index3 == -1) {
-                    identifier = globalId.substring(index2 + 1); //.toUpperCase();
-                } else {
-                    if (index3 > -1) {
-                        authority = globalId.substring(index1 + 1, index3);
-                        identifier = globalId.substring(index3 + 1).toUpperCase();
-                    }
-                }
-            } else {
-                index3 = globalId.indexOf(separator, index2 + 1);
-                int index4 = globalId.indexOf("/", index3 + 1);
-                if (index4 == -1) {
-                    identifier = globalId.substring(index2 + 1); //.toUpperCase();
-                } else {
-                    if (index4 > -1) {
-                        authority = globalId.substring(index2 + 1, index3);
-                        identifier = globalId.substring(index3 + 1).toUpperCase();
-                    }
-                }
+    public DataFile findByGlobalId(String globalId) {
 
-            }
-
-        } else {
-            identifier = globalId.substring(index2 + 1).toUpperCase();
-        }
+        String queryStr = "select s.id from dvobject s where Concat(s.protocol, ':' , s.authority , s.doiseparator , s.identifier) = '" + globalId + "'";
 
         DataFile file = null;
         try {
-            file = (DataFile) em.createNamedQuery("DataFile.findDataFileByIdProtocolAuth")
-                            .setParameter("identifier", identifier).setParameter("protocol", protocol)
-                            .setParameter("authority", authority)
-                                    .getSingleResult();
+            Query query = em.createNativeQuery(queryStr);
+            Long fileId = new Long((Integer) query.getSingleResult());
+            file = em.find(DataFile.class, fileId);
+
         } catch (javax.persistence.NoResultException e) {
             // (set to .info, this can fill the log file with thousands of 
             // these messages during a large harvest run)
@@ -228,7 +181,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             // DO nothing, just return null.
         }
         return file;
-        
+
     }
     
     public DataFile findReplacementFile(Long previousFileId){

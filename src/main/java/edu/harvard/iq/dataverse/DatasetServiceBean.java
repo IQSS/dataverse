@@ -192,62 +192,12 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     public Dataset findByGlobalId(String globalId) {
 
-        String protocol = "";
-        String authority = "";
-        String identifier = "";
-        int index1 = globalId.indexOf(':');
-        String nonNullDefaultIfKeyNotFound = ""; 
-        // This is kind of wrong right here: we should not assume that this is *our* DOI - 
-        // it can be somebody else's registered DOI that we harvested. And they can 
-        // have their own separator characters defined - so we should not assume 
-        // that everybody's DOIs will look like ours! 
-        // Also, this separator character gets applied to handles lookups too, below. 
-        // Which is probably wrong too...
-        // -- L.A. 4.2.4
-        String separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);        
-        int index2 = globalId.indexOf(separator, index1 + 1);
-        int index3;
-        if (index1 == -1) {            
-            logger.info("Error parsing identifier: " + globalId + ". ':' not found in string");
-            return null;
-        } else {
-            protocol = globalId.substring(0, index1);
-        }
-        if (index2 == -1 ) {
-            logger.info("Error parsing identifier: " + globalId + ". Second separator not found in string");
-            return null;
-        } else {
-            authority = globalId.substring(index1 + 1, index2);
-        }
-        if (protocol.equals("doi")) {
-
-            index3 = globalId.indexOf(separator, index2 + 1);
-            if (index3 == -1 ) {
-                // As of now (4.2.4, Feb. 2016) the ICPSR DOIs are the only 
-                // use case where the authority has no "shoulder", so there's only 
-                // 1 slash in the full global id string... hence, we get here. 
-                // Their DOIs also have some lower case characters (for ex., 
-                // 10.3886/ICPSR04599.v1), and that's how are they saved in the 
-                // IQSS production database. So the .toUpperCase() below is 
-                // causing a problem. -- L.A. 
-                identifier = globalId.substring(index2 + 1); //.toUpperCase();
-            } else {
-                if (index3 > -1) {
-                    authority = globalId.substring(index1 + 1, index3);
-                    identifier = globalId.substring(index3 + 1).toUpperCase();
-                }
-            }
-        } else {
-            identifier = globalId.substring(index2 + 1).toUpperCase();
-        }
-        String queryStr = "SELECT s from Dataset s where s.identifier = :identifier  and s.protocol= :protocol and s.authority= :authority";
+        String queryStr = "select s.id from dvobject s where Concat(s.protocol, ':' , s.authority , s.doiseparator , s.identifier) = '" + globalId +"'";
         Dataset foundDataset = null;
         try {
-            Query query = em.createQuery(queryStr);
-            query.setParameter("identifier", identifier);
-            query.setParameter("protocol", protocol);
-            query.setParameter("authority", authority);
-            foundDataset = (Dataset) query.getSingleResult();
+            Query query = em.createNativeQuery(queryStr);
+            Long datasetId = new Long((Integer) query.getSingleResult());
+            foundDataset = em.find(Dataset.class, datasetId);
         } catch (javax.persistence.NoResultException e) {
             // (set to .info, this can fill the log file with thousands of 
             // these messages during a large harvest run)
