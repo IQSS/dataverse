@@ -262,10 +262,6 @@
                     </ui:repeat>
                 </ui:fragment>
             </div>
-            <ui:fragment rendered="#{DatasetPage.isGeoconnectDebugAvailable()}">
-            <!-- query to add sample map data to a tabular file -->
-                <ui:include src="filesFragmentWorldMapTestQuery.xhtml"/>
-            </ui:fragment>
 
         </p:column>
         <p:column class="col-file-action text-right #{settingsWrapper.rsyncDownload ? 'col-file-access' : ''}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">

@@ -26,7 +26,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-
+    
     /**
      * @param linkingDataverseId
      * @return 
@@ -66,15 +66,15 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
         return retList;
     }
     
-    public DatasetLinkingDataverse findDatasetLinkingDataverse(Long datasetId, Long linkedDataverseId) {
+    public DatasetLinkingDataverse findDatasetLinkingDataverse(Long datasetId, Long linkingDataverseId) {
         DatasetLinkingDataverse foundDatasetLinkingDataverse = null;
         try {
             foundDatasetLinkingDataverse = em.createQuery("SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId AND o.dataset.id = :datasetId", DatasetLinkingDataverse.class)
                     .setParameter("datasetId", datasetId)
-                    .setParameter("dataverseId", linkedDataverseId)
+                    .setParameter("dataverseId", linkingDataverseId)
                     .getSingleResult();
         } catch (javax.persistence.NoResultException e) {
-            logger.fine("no datasetLinkingDataverse found for datasetId " + datasetId + " and linkedDataverseId " + linkedDataverseId);        
+            logger.fine("no datasetLinkingDataverse found for datasetId " + datasetId + " and linkingDataverseId " + linkingDataverseId);        
         }
         return foundDatasetLinkingDataverse;
     }
