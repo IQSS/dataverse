@@ -179,7 +179,7 @@ public class Datasets extends AbstractApiBean {
     
     @GET
     @Path("/export")
-    @Produces({"application/xml", "application/json"})
+    @Produces({"application/xml", "application/json", "application/octet-stream"})
     public Response exportDataset(@QueryParam("persistentId") String persistentId, @QueryParam("exporter") String exporter) {
 
         try {
@@ -202,10 +202,15 @@ public class Datasets extends AbstractApiBean {
             // (the way Access API streams its output). 
             // -- L.A., 4.5
             
-            logger.fine("xml to return: " + xml);
+            
             String mediaType = MediaType.TEXT_PLAIN;
             if (instance.isXMLFormat(exporter)){
+            	logger.fine("xml to return: " + xml);
                 mediaType = MediaType.APPLICATION_XML;
+            } else if(exporter == "BagIt") {
+            	mediaType = MediaType.APPLICATION_OCTET_STREAM;
+            } else if(exporter == "OAI_ORE") {
+            	mediaType = MediaType.APPLICATION_JSON; 
             }
             return allowCors(Response.ok()
                     .entity(xml)
