@@ -105,7 +105,7 @@ public class MetricsUtilTest {
     public void testSanitizeFullIso() throws Exception {
         MetricsUtil.sanitizeYearMonthUserInput("2018-01-01");
     }
-    
+
     //Create JsonArray, turn into string and back into array to confirm data integrity
     @Test
     public void testStringToJsonArrayBuilder() {
@@ -113,33 +113,33 @@ public class MetricsUtilTest {
         List<Object[]> list = new ArrayList<>();
         Object[] obj00 = {"Social Sciences", 24955l};
         list.add(obj00);
-        
+
         JsonArray jsonArrayBefore = MetricsUtil.datasetsBySubjectToJson(list).build();
         System.out.println(JsonUtil.prettyPrint(jsonArrayBefore));
-        
+
         JsonArray jsonArrayAfter = MetricsUtil.stringToJsonArrayBuilder(jsonArrayBefore.toString()).build();
         System.out.println(JsonUtil.prettyPrint(jsonArrayAfter));
-        
+
         assertEquals(
-            jsonArrayBefore.getJsonObject(0).getString("subject"),
-            jsonArrayAfter.getJsonObject(0).getString("subject")
+                jsonArrayBefore.getJsonObject(0).getString("subject"),
+                jsonArrayAfter.getJsonObject(0).getString("subject")
         );
     }
-    
+
     //Create JsonObject, turn into string and back into array to confirm data integrity
     @Test
     public void testStringToJsonObjectBuilder() {
         System.out.println("testStringToJsonObjectBuilder");
 
-        JsonObject jsonObjBefore = Json.createObjectBuilder().add("Test","result").build();
+        JsonObject jsonObjBefore = Json.createObjectBuilder().add("Test", "result").build();
         System.out.println(JsonUtil.prettyPrint(jsonObjBefore));
-        
+
         JsonObject jsonObjAfter = MetricsUtil.stringToJsonObjectBuilder(jsonObjBefore.toString()).build();
         System.out.println(JsonUtil.prettyPrint(jsonObjAfter));
-        
+
         assertEquals(
-            jsonObjBefore.getString("Test"),
-            jsonObjAfter.getString("Test")
+                jsonObjBefore.getString("Test"),
+                jsonObjAfter.getString("Test")
         );
     }
 }

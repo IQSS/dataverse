@@ -31,9 +31,6 @@ public class MetricsUtil {
     private final static String SUBJECT = "subject";
     public static String YEAR_AND_MONTH_PATTERN = "yyyy-MM";
 
- 
-    
-    
     public static JsonObjectBuilder countToJson(long count) {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add(COUNT, count);
@@ -73,9 +70,10 @@ public class MetricsUtil {
      *
      * @param userInput A year and month in YYYY-MM format.
      * @return A year and month in YYYY-MM format.
-     * 
-     * Note that along with sanitization, this checks that the inputted month is not after the current one.
-     * This will need to be made more robust if we start writing metrics for farther in the future (e.g. the current year)
+     *
+     * Note that along with sanitization, this checks that the inputted month is
+     * not after the current one. This will need to be made more robust if we
+     * start writing metrics for farther in the future (e.g. the current year)
      */
     public static String sanitizeYearMonthUserInput(String userInput) throws Exception {
         logger.fine("string from user to sanitize (hopefully YYYY-MM format): " + userInput);
@@ -90,13 +88,13 @@ public class MetricsUtil {
         } catch (DateTimeParseException ex) {
             throw new Exception("The expected format is YYYY-MM but an exception was thrown: " + ex.getLocalizedMessage());
         }
-        
+
         LocalDate currentDate = (new Date()).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        
-        if(inputLocalDate.isAfter(currentDate)) { 
+
+        if (inputLocalDate.isAfter(currentDate)) {
             throw new Exception("The inputted date is set past the current month.");
         }
-        
+
         String sanitized = inputLocalDate.format(DateTimeFormatter.ofPattern(YEAR_AND_MONTH_PATTERN));
         return sanitized;
     }
@@ -104,14 +102,14 @@ public class MetricsUtil {
     public static String getCurrentMonth() {
         return LocalDate.now().format(DateTimeFormatter.ofPattern(MetricsUtil.YEAR_AND_MONTH_PATTERN));
     }
-    
+
     //Responses need jsonObjectBuilder's to return correct json
     //Sadly this first requires creating a non-builder object and then populating a builder
     public static JsonObjectBuilder stringToJsonObjectBuilder(String str) {
         JsonReader jsonReader = Json.createReader(new StringReader(str));
-        JsonObject jo = jsonReader.readObject(); 
+        JsonObject jo = jsonReader.readObject();
         jsonReader.close();
-        
+
         JsonObjectBuilder job = Json.createObjectBuilder();
 
         for (Map.Entry<String, JsonValue> entry : jo.entrySet()) {
@@ -120,7 +118,7 @@ public class MetricsUtil {
 
         return job;
     }
-    
+
     //Responses need jsonObjectBuilder's to return correct json
     //Sadly this first requires creating a non-builder object and then populating a builder
     public static JsonArrayBuilder stringToJsonArrayBuilder(String str) {
@@ -129,17 +127,17 @@ public class MetricsUtil {
         jsonReader.close();
 
         JsonArrayBuilder jab = Json.createArrayBuilder();
-       
+
         for (int i = 0; i < ja.size(); i++) {
             JsonObjectBuilder job = Json.createObjectBuilder();
-                   
+
             for (Map.Entry<String, JsonValue> entry : ja.getJsonObject(i).entrySet()) {
                 job.add(entry.getKey(), entry.getValue());
             }
-            
+
             jab.add(job);
         }
-                
+
         return jab;
     }
 }

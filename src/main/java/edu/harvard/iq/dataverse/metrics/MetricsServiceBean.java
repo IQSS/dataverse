@@ -21,33 +21,33 @@ public class MetricsServiceBean implements Serializable {
 
     private static final Logger logger = Logger.getLogger(MetricsServiceBean.class.getCanonicalName());
 
-    private static final SimpleDateFormat yyyymmFormat = new SimpleDateFormat(MetricsUtil.YEAR_AND_MONTH_PATTERN);    
-    
+    private static final SimpleDateFormat yyyymmFormat = new SimpleDateFormat(MetricsUtil.YEAR_AND_MONTH_PATTERN);
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     @EJB
-    SystemConfig systemConfig;    
-    
-    /**
-     * @param yyyymm Month in YYYY-MM format.
-     */   
-    public long dataversesByMonth(String yyyymm) throws Exception{
-        Query query = em.createNativeQuery(""
-            + "select count(dvobject.id)\n"
-            + "from dataverse\n"
-            + "join dvobject on dvobject.id = dataverse.id\n"
-            + "where dvobject.publicationdate is not null\n"
-            + "and date_trunc('month', publicationdate) <=  to_date('" + yyyymm + "','YYYY-MM');"
-        );
-        logger.fine("query: " + query);
-        
-        return (long) query.getSingleResult();
-    }
-    
+    SystemConfig systemConfig;
+
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long datasetsByMonth(String yyyymm) throws Exception{
+    public long dataversesByMonth(String yyyymm) throws Exception {
+        Query query = em.createNativeQuery(""
+                + "select count(dvobject.id)\n"
+                + "from dataverse\n"
+                + "join dvobject on dvobject.id = dataverse.id\n"
+                + "where dvobject.publicationdate is not null\n"
+                + "and date_trunc('month', publicationdate) <=  to_date('" + yyyymm + "','YYYY-MM');"
+        );
+        logger.fine("query: " + query);
+
+        return (long) query.getSingleResult();
+    }
+
+    /**
+     * @param yyyymm Month in YYYY-MM format.
+     */
+    public long datasetsByMonth(String yyyymm) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from datasetversion\n"
@@ -63,14 +63,14 @@ public class MetricsServiceBean implements Serializable {
                 + ");"
         );
         logger.fine("query: " + query);
-        
+
         return (long) query.getSingleResult();
     }
 
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long filesByMonth(String yyyymm) throws Exception{
+    public long filesByMonth(String yyyymm) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from filemetadata\n"
@@ -82,7 +82,6 @@ public class MetricsServiceBean implements Serializable {
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "where versionstate='RELEASED'\n"
                 //                + "and date_trunc('month', releasetime) <=  to_date('2018-03','YYYY-MM')\n"
-                // FIXME: Remove SQL injection vector: https://software-security.sans.org/developer-how-to/fix-sql-injection-in-java-persistence-api-jpa
                 + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
                 + "and dataset.harvestingclient_id is null\n"
                 + "group by dataset_id \n"
@@ -95,7 +94,7 @@ public class MetricsServiceBean implements Serializable {
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long downloadsByMonth(String yyyymm) throws Exception{
+    public long downloadsByMonth(String yyyymm) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
@@ -104,9 +103,9 @@ public class MetricsServiceBean implements Serializable {
         logger.fine("query: " + query);
         return (long) query.getSingleResult();
     }
-    
+
     public List<Object[]> dataversesByCategory() throws Exception {
-        
+
         Query query = em.createNativeQuery(""
                 + "select dataversetype, count(dataversetype) from dataverse\n"
                 + "join dvobject on dvobject.id = dataverse.id\n"
@@ -114,9 +113,9 @@ public class MetricsServiceBean implements Serializable {
                 + "group by dataversetype\n"
                 + "order by count desc;"
         );
-        
+
         logger.fine("query: " + query);
-        return query.getResultList(); 
+        return query.getResultList();
     }
 
     public List<Object[]> datasetsBySubject() {
@@ -137,107 +136,106 @@ public class MetricsServiceBean implements Serializable {
                 + "ORDER BY count(dataset.id) desc;"
         );
         logger.info("query: " + query);
-        
-        return query.getResultList(); 
+
+        return query.getResultList();
     }
 
-    /* Helper functions for metric caching */ 
-    
+    /* Helper functions for metric caching */
     public String returnUnexpiredCacheMonthly(String metricName, String yyyymm) throws Exception {
-        Metric queriedMetric = getMetric(metricName,yyyymm);
-        
-        if(!doWeQueryAgainMonthly(queriedMetric)) {
+        Metric queriedMetric = getMetric(metricName, yyyymm);
+
+        if (!doWeQueryAgainMonthly(queriedMetric)) {
             return queriedMetric.getMetricValue();
         }
         return null;
     }
-    
-    public String returnUnexpiredCacheAllTime(String metricName) throws Exception{
+
+    public String returnUnexpiredCacheAllTime(String metricName) throws Exception {
         Metric queriedMetric = getMetric(metricName);
-        
-        if(!doWeQueryAgainMonthly(queriedMetric)) {
+
+        if (!doWeQueryAgainMonthly(queriedMetric)) {
             return queriedMetric.getMetricValue();
         }
         return null;
     }
-    
+
     //This is for deciding whether to used a cached value on monthly queries
     //Assumes the metric passed in is sane (e.g. not run for past the current month, not a garbled date string, etc)
     public boolean doWeQueryAgainMonthly(Metric queriedMetric) {
-        if(null == queriedMetric) { //never queried before
+        if (null == queriedMetric) { //never queried before
             return true;
         }
-        
-        String yyyymm= queriedMetric.getMetricDateString();
+
+        String yyyymm = queriedMetric.getMetricDateString();
         String thisMonthYYYYMM = MetricsUtil.getCurrentMonth();
-        
+
         Date lastCalled = queriedMetric.getLastCalledDate();
         LocalDateTime ldt = LocalDateTime.ofInstant((new Date()).toInstant(), ZoneId.systemDefault());
-                
+
         int minutesUntilNextQuery = systemConfig.getMetricsCacheTimeoutMinutes();
-        
-        if( yyyymm.equals(thisMonthYYYYMM) ) { //if this month
-            LocalDateTime ldtMinus = ldt.minusMinutes(minutesUntilNextQuery) ;
+
+        if (yyyymm.equals(thisMonthYYYYMM)) { //if this month
+            LocalDateTime ldtMinus = ldt.minusMinutes(minutesUntilNextQuery);
             Date todayMinus = Date.from(ldtMinus.atZone(ZoneId.systemDefault()).toInstant());
-            
+
             //allow if today minus query wait is after last called time
-            return (todayMinus.after(lastCalled)); 
+            return (todayMinus.after(lastCalled));
         } else {
             String lastRunYYYYMM = yyyymmFormat.format(lastCalled);
-            
+
             //if queried was last run during the month it was querying.  
             //Allows one requery of a past month to make it up to date.
-            return (lastRunYYYYMM.equals(yyyymm)); 
+            return (lastRunYYYYMM.equals(yyyymm));
         }
     }
-    
+
     //This is for deciding whether to used a cached value over all time
     public boolean doWeQueryAgainAllTime(Metric queriedMetric) {
-        if(null == queriedMetric) { //never queried before
+        if (null == queriedMetric) { //never queried before
             return true;
         }
-        
+
         int minutesUntilNextQuery = systemConfig.getMetricsCacheTimeoutMinutes();
         Date lastCalled = queriedMetric.getLastCalledDate();
         LocalDateTime ldt = LocalDateTime.ofInstant((new Date()).toInstant(), ZoneId.systemDefault());
-        
-        LocalDateTime ldtMinus = ldt.minusMinutes(minutesUntilNextQuery) ;
+
+        LocalDateTime ldtMinus = ldt.minusMinutes(minutesUntilNextQuery);
         Date todayMinus = Date.from(ldtMinus.atZone(ZoneId.systemDefault()).toInstant());
 
         //allow if today minus query wait is after last called time
-        return (todayMinus.after(lastCalled)); 
+        return (todayMinus.after(lastCalled));
     }
-    
+
     public Metric save(Metric newMetric, boolean monthly) throws Exception {
         Metric oldMetric;
-        if(monthly) {
+        if (monthly) {
             oldMetric = getMetric(newMetric.getMetricTitle(), newMetric.getMetricDateString());
         } else {
             oldMetric = getMetric(newMetric.getMetricTitle());
         }
-        if(oldMetric != null) {
+        if (oldMetric != null) {
             em.remove(oldMetric);
             em.flush();
         }
         em.persist(newMetric);
         return em.merge(newMetric);
     }
-    
+
     public Metric getMetric(String metricTitle, String yymmmm) throws Exception {
         String searchMetricName = Metric.generateMetricName(metricTitle, yymmmm);
-        
+
         return getMetric(searchMetricName);
     }
-    
-    public Metric getMetric(String searchMetricName) throws Exception{
+
+    public Metric getMetric(String searchMetricName) throws Exception {
         Query query = em.createQuery("select object(o) from Metric as o where o.metricName = :metricName", Metric.class);
         query.setParameter("metricName", searchMetricName);
         Metric metric = null;
         try {
             metric = (Metric) query.getSingleResult();
-        } catch (javax.persistence.NoResultException nr){
+        } catch (javax.persistence.NoResultException nr) {
             //do nothing
-        }  catch (NonUniqueResultException nur) {
+        } catch (NonUniqueResultException nur) {
             throw new Exception("Multiple cached results found for this query. Contact your system administrator.");
         }
         return metric;

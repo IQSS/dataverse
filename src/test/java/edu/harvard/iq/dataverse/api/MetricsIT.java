@@ -15,7 +15,7 @@ public class MetricsIT {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
         UtilIT.clearMetricCache();
     }
-    
+
     @AfterClass
     public static void cleanUpClass() {
         UtilIT.clearMetricCache();
@@ -29,13 +29,13 @@ public class MetricsIT {
         String precache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         //Run each query twice and compare results to tests caching
-        response = UtilIT.metricsDataversesByMonth(yyyymm); 
+        response = UtilIT.metricsDataversesByMonth(yyyymm);
         String postcache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         assertEquals(precache, postcache);
     }
 
@@ -47,13 +47,13 @@ public class MetricsIT {
         String precache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         //Run each query twice and compare results to tests caching
         response = UtilIT.metricsDatasetsByMonth(yyyymm);
         String postcache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         assertEquals(precache, postcache);
     }
 
@@ -65,13 +65,13 @@ public class MetricsIT {
         String precache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         //Run each query twice and compare results to tests caching
         response = UtilIT.metricsFilesByMonth(yyyymm);
         String postcache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         assertEquals(precache, postcache);
     }
 
@@ -83,13 +83,13 @@ public class MetricsIT {
         String precache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         //Run each query twice and compare results to tests caching
         response = UtilIT.metricsDownloadsByMonth(yyyymm);
         String postcache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         assertEquals(precache, postcache);
     }
 
@@ -99,13 +99,13 @@ public class MetricsIT {
         String precache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         //Run each query twice and compare results to tests caching
         response = UtilIT.metricsDataverseByCategory();
         String postcache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         assertEquals(precache, postcache);
     }
 
@@ -115,13 +115,13 @@ public class MetricsIT {
         String precache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         //Run each query twice and compare results to tests caching
         response = UtilIT.metricsDatasetsBySubject();
         String postcache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         assertEquals(precache, postcache);
     }
 

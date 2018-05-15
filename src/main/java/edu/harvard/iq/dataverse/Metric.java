@@ -34,10 +34,10 @@ public class Metric implements Serializable {
     @Column(nullable = false)
     private int id;
 
-    @Column(nullable = false, unique=true)
+    @Column(nullable = false, unique = true)
     private String metricName;
 
-    @Column(columnDefinition="TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String metricValue;
 
     @Temporal(value = TemporalType.TIMESTAMP)
