@@ -180,8 +180,7 @@ public class SettingsServiceBean {
         Authority,
         /** DoiProvider for global id */
         DoiProvider,
-        /** DoiShoulder for global id - should not include '/'.
-         */
+        /** DoiShoulder for global id */
         DoiShoulder,
         //Do not force DOIs to uppercase before searching in database
         DoiUseMixedCase,
