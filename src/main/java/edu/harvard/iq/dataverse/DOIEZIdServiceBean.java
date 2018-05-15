@@ -40,7 +40,7 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
             logger.log(Level.WARNING, "cause: ", e.getCause());
             logger.log(Level.WARNING, "message {0}", e.getMessage());
         } catch (Exception e) {
-            System.out.print("Other Error on ezidService.login(USERNAME, PASSWORD) - not EZIDException ");
+            logger.log(Level.SEVERE, "Other Error on ezidService.login(USERNAME, PASSWORD) - not EZIDException ", e.getMessage());
         }
     }
 
@@ -50,19 +50,23 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
     }
 
     @Override
-    public boolean alreadyExists(Dataset dataset) throws Exception {
+    public boolean alreadyExists(DvObject dvObject) throws Exception {
         logger.log(Level.FINE,"alreadyExists");
         try {
-            HashMap<String, String> result = ezidService.getMetadata(getIdentifierFromDataset(dataset));            
+            HashMap<String, String> result = ezidService.getMetadata(getIdentifier(dvObject));            
             return result != null && !result.isEmpty();
             // TODO just check for HTTP status code 200/404, sadly the status code is swept under the carpet
         } catch (EZIDException e ){
             //No such identifier is treated as an exception
             //but if that is the case then we want to just return false
+            if(dvObject.getIdentifier() == null){
+                return false;
+            }
             if (e.getLocalizedMessage().contains("no such identifier")){
                 return false;
             }
             logger.log(Level.WARNING, "alreadyExists failed");
+            logger.log(Level.WARNING, "getIdentifier(dvObject) {0}", getIdentifier(dvObject));
             logger.log(Level.WARNING, "String {0}", e.toString());
             logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
             logger.log(Level.WARNING, "cause", e.getCause());
@@ -72,31 +76,9 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
     }
 
     @Override
-    public String createIdentifier(Dataset dataset) throws Exception {
-        logger.log(Level.FINE,"createIdentifier");
-        String identifier = getIdentifierFromDataset(dataset);
-        HashMap<String, String> metadata = getMetadataFromStudyForCreateIndicator(dataset);
-        metadata.put("datacite.resourcetype", "Dataset");
-        metadata.put("_status", "reserved");
-        try {
-            String retString = ezidService.createIdentifier(identifier, metadata);
-            logger.log(Level.FINE, "create DOI identifier retString : " + retString);
-            return retString;
-        } catch (EZIDException e) {
-            logger.log(Level.WARNING, "Identifier not created: create failed");
-            logger.log(Level.WARNING, "String {0}", e.toString());
-            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
-            throw e;
-        }
-    }
-
-
-    @Override
-    public HashMap<String, String> getIdentifierMetadata(Dataset dataset) {
+    public HashMap<String, String> getIdentifierMetadata(DvObject dvObject) {
         logger.log(Level.FINE,"getIdentifierMetadata");
-        String identifier = getIdentifierFromDataset(dataset);
+        String identifier = getIdentifier(dvObject);
         HashMap<String, String> metadata = new HashMap<>();
         try {
             metadata = ezidService.getMetadata(identifier);
@@ -141,14 +123,15 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
     /**
      * Modifies the EZID metadata for a Dataset
      *
-     * @param dataset the Dataset whose metadata needs to be modified
-     * @param metadata the new metadata for the Dataset
+     * @param dvObject the Dataset whose metadata needs to be modified
      * @return the Dataset identifier, or null if the modification failed
      */
+    
     @Override
-    public String modifyIdentifier(Dataset dataset, HashMap<String, String> metadata) throws Exception {
-        logger.log(Level.FINE,"modifyIdentifier");
-        String identifier = getIdentifierFromDataset(dataset);
+    public String modifyIdentifierTargetURL(DvObject dvObject) throws Exception {
+        String identifier = getIdentifier(dvObject);
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("_target", getTargetUrl(dvObject));
         try {
             ezidService.setMetadata(identifier, metadata);
             return identifier;
@@ -161,11 +144,11 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
             throw e;
         }
     }
-
+        
     @Override
-    public void deleteIdentifier(Dataset datasetIn) {
-        logger.log(Level.FINE,"deleteIdentifier");
-        String identifier = getIdentifierFromDataset(datasetIn);
+    public void deleteIdentifier(DvObject dvObject) throws Exception {
+                logger.log(Level.FINE,"deleteIdentifier");
+        String identifier = getIdentifier(dvObject);
         HashMap<String, String> doiMetadata;
         try {
             doiMetadata = ezidService.getMetadata(identifier);
@@ -195,30 +178,47 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
         }
         if (idStatus.equals("public")) {
             //if public then it has been released set to unavaialble and reset target to n2t url
-            updateIdentifierStatus(datasetIn, "unavailable | withdrawn by author");
+            updateIdentifierStatus(dvObject, "unavailable | withdrawn by author");
             HashMap<String, String> metadata = new HashMap<>();
-            metadata.put("_target", "http://ezid.cdlib.org/id/" + datasetIn.getProtocol() + ":" + datasetIn.getAuthority() 
-              + datasetIn.getDoiSeparator()      + datasetIn.getIdentifier());
+            metadata.put("_target", "http://ezid.cdlib.org/id/" + dvObject.getProtocol() + ":" + dvObject.getAuthority()
+                    + dvObject.getDoiSeparator() + dvObject.getIdentifier());
             try {
-                modifyIdentifier(datasetIn, metadata);
+                modifyIdentifierTargetURL(dvObject);
+                if (dvObject instanceof Dataset ) {
+                    Dataset dataset = (Dataset) dvObject;
+                    for (DataFile df : dataset.getFiles()) {
+                        metadata = new HashMap<>();
+                        metadata.put("_target", "http://ezid.cdlib.org/id/" + df.getProtocol() + ":" + df.getAuthority()
+                                + df.getDoiSeparator() + df.getIdentifier());
+                                        modifyIdentifierTargetURL(df);
+                    }
+                }
+
             } catch (Exception e) {
                 // TODO already logged, how to react here?
             }
         }
     }
-
+    
     @Override
-    public boolean publicizeIdentifier(Dataset dataset) {
-        logger.log(Level.FINE,"publicizeIdentifier");
-        return updateIdentifierStatus(dataset, "public");
+    public boolean publicizeIdentifier(DvObject dvObject) {
+        logger.log(Level.FINE,"publicizeIdentifier - dvObject");
+        if(!dvObject.isIdentifierRegistered()){
+            try {
+                createIdentifier(dvObject);
+            } catch (Throwable e){
+                return false;
+            }
+        }
+        return updateIdentifierStatus(dvObject, "public");
     }
 
-    private boolean updateIdentifierStatus(Dataset dataset, String statusIn) {
+    private boolean updateIdentifierStatus(DvObject dvObject, String statusIn) {
         logger.log(Level.FINE,"updateIdentifierStatus");
-        String identifier = getIdentifierFromDataset(dataset);
-        HashMap<String, String> metadata = getUpdateMetadataFromDataset(dataset);
+        String identifier = getIdentifier(dvObject);
+        HashMap<String, String> metadata = getUpdateMetadata(dvObject);
         metadata.put("_status", statusIn);
-        metadata.put("_target", getTargetUrl(dataset));
+        metadata.put("_target", getTargetUrl(dvObject));
         try {
             ezidService.setMetadata(identifier, metadata);
             return true;
@@ -241,5 +241,32 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
         providerInfo.add(providerLink);
         return providerInfo;
     }
+
+    @Override
+    public String createIdentifier(DvObject dvObject) throws Throwable {
+
+            logger.log(Level.FINE, "createIdentifier");
+            if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
+                dvObject = generateIdentifier(dvObject);
+            }
+            String identifier = getIdentifier(dvObject);
+            HashMap<String, String> metadata = getMetadataForCreateIndicator(dvObject);
+            metadata.put("datacite.resourcetype", "Dataset");
+            metadata.put("_status", "reserved");
+            try {
+                String retString = ezidService.createIdentifier(identifier, metadata);
+                logger.log(Level.FINE, "create DOI identifier retString : " + retString);
+                return retString;
+            } catch (EZIDException e) {
+                logger.log(Level.WARNING, "Identifier not created: create failed");
+                logger.log(Level.WARNING, "String {0}", e.toString());
+                logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
+                logger.log(Level.WARNING, "cause", e.getCause());
+                logger.log(Level.WARNING, "message {0}", e.getMessage());
+                logger.log(Level.WARNING, "identifier: ", identifier);
+                throw e;
+            }
+    }
+
 }
 

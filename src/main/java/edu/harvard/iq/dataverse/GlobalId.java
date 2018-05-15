@@ -41,11 +41,12 @@ public class GlobalId implements java.io.Serializable {
         this.authority = authority;
         this.identifier = identifier;
     }
-
-    public GlobalId(Dataset dataset){
-        this.authority = dataset.getAuthority();
-        this.protocol = dataset.getProtocol();
-        this.identifier = dataset.getIdentifier();
+    
+    public GlobalId(DvObject dvObject)
+    {
+        this.authority = dvObject.getAuthority();
+        this.protocol = dvObject.getProtocol();
+        this.identifier = dvObject.getIdentifier(); 
     }
         
     private String protocol;
@@ -77,11 +78,17 @@ public class GlobalId implements java.io.Serializable {
     }
 
     public String toString() {
+        if (protocol == null || authority == null || identifier == null) {
+            return "";
+        }
         return protocol + ":" + authority + "/" + identifier;
     }
     
     public URL toURL() {
         URL url = null;
+        if (identifier == null){
+            return null;
+        }
         try {
             if (protocol.equals(DOI_PROTOCOL)){
                url = new URL(DOI_RESOLVER_URL + authority + "/" + identifier); 

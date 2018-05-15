@@ -314,6 +314,17 @@ public class UtilIT {
         return createDatasetResponse;
     }
 
+    static Response migrateDataset(String filename, String parentDataverse, String apiToken) throws IOException {
+        if (filename == null || filename.isEmpty()) {
+            throw new IOException("null or empty filename");
+        }
+        logger.info(parentDataverse + "dataverse targeted for import of " + filename);
+        Response response = given()
+                .contentType("application/atom+xml")
+                .get("/api/batch/migrate/?dv=" + parentDataverse + "&key=" + apiToken + "&path=" + filename + "&createDV=true");
+        return response;
+    }
+
     static Response listDatasetsViaSword(String dataverseAlias, String apiToken) {
         Response response = given()
                 .auth().basic(apiToken, EMPTY_STRING)
@@ -457,16 +468,22 @@ public class UtilIT {
         return requestSpecification.post("/api/datasets/" + datasetId + "/add");
     }
 
-    static Response replaceFile(long fileId, String pathToFile, String apiToken) {
+    static Response replaceFile(String fileIdOrPersistentId, String pathToFile, String apiToken) {
         String jsonAsString = null;
-        return replaceFile(fileId, pathToFile, jsonAsString, apiToken);
+        return replaceFile(fileIdOrPersistentId, pathToFile, jsonAsString, apiToken);
     }
 
-    static Response replaceFile(long fileId, String pathToFile, JsonObject jsonObject, String apiToken) {
-        return replaceFile(fileId, pathToFile, jsonObject.toString(), apiToken);
+    static Response replaceFile(String fileIdOrPersistentId, String pathToFile, JsonObject jsonObject, String apiToken) {
+        return replaceFile(fileIdOrPersistentId, pathToFile, jsonObject.toString(), apiToken);
     }
 
-    static Response replaceFile(long fileId, String pathToFile, String jsonAsString, String apiToken) {
+    static Response replaceFile(String fileIdOrPersistentId, String pathToFile, String jsonAsString, String apiToken) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("file", new File(pathToFile));
@@ -474,7 +491,7 @@ public class UtilIT {
             requestSpecification.multiPart("jsonData", jsonAsString);
         }
         return requestSpecification
-                .post("/api/files/" + fileId + "/replace");
+                .post("/api/files/" + idInPath + "/replace" + optionalQueryParam);
     }
 
     static Response downloadFile(Integer fileId) {
@@ -491,6 +508,34 @@ public class UtilIT {
                  */
                 //.header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
+    }
+
+    static Response getFileMetadata(String fileIdOrPersistentId, String optionalFormat, String apiToken) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + fileIdOrPersistentId;
+        }
+        String optionalFormatInPath = "";
+        if (optionalFormat != null) {
+            optionalFormatInPath = "/" + optionalFormat;
+        }
+        System.out.println("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + "?key=" + apiToken + optionalQueryParam);
+        return given()
+                .urlEncodingEnabled(false)
+                .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + "?key=" + apiToken + optionalQueryParam);
+    }
+
+    static Response getMetaDatafileDeprecated(String fileIdOrPersistentId, String apiToken) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + fileIdOrPersistentId;
+        }
+        return given()
+                .get("/api/meta/datafile/" + idInPath + "?key=" + apiToken + optionalQueryParam);
     }
 
     static Response getSwordAtomEntry(String persistentId, String apiToken) {
@@ -865,11 +910,17 @@ public class UtilIT {
         return response;
     }
 
-    static Response restrictFile(Long datafileId, boolean restrict, String apiToken) {
+    static Response restrictFile(String fileIdOrPersistentId, boolean restrict, String apiToken) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(restrict)
-                .put("/api/files/" + datafileId + "/restrict");
+                .put("/api/files/" + idInPath + "/restrict" + optionalQueryParam);
         return response;
     }
     

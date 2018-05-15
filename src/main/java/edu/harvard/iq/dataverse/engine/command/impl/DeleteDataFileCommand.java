@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -183,7 +184,14 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 }
             }
         }
-
+        IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
+        try {
+            if (idServiceBean.alreadyExists(doomed)) {
+                idServiceBean.deleteIdentifier(doomed);
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Identifier deletion was not successfull:", e.getMessage());
+        }
         DataFile doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
         /**
