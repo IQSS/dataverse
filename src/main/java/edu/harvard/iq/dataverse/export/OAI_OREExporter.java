@@ -15,20 +15,16 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringReader;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
 import javax.json.JsonValue;
 
 @AutoService(Exporter.class)
