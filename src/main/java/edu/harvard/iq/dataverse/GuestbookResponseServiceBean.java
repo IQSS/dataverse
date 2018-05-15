@@ -591,13 +591,6 @@ public class GuestbookResponseServiceBean {
     
     
     public GuestbookResponse initGuestbookResponseForFragment(DatasetVersion workingVersion, FileMetadata fileMetadata, DataverseSession session){   
-        
-        /*DatasetVersion workingVersion;
-        if (fileMetadata != null){
-            workingVersion = fileMetadata.getDatasetVersion();
-        } else {
-            workingVersion = dataset.getLatestVersion();
-        }*/
        
         Dataset dataset = workingVersion.getDataset();
        
@@ -819,16 +812,12 @@ public class GuestbookResponseServiceBean {
     }
     
     public GuestbookResponse modifyDatafile(GuestbookResponse in, FileMetadata fm) {
-        logger.info("Entering modifyDatafile");
         if (in != null && fm.getDataFile() != null) {
             in.setDataFile(fm.getDataFile());
         }
         if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {
-            logger.info("Setting setWriteResponse to FALSE");
             in.setWriteResponse(false);
-        } else {
-            logger.info("isWriteReponse(): "+in.isWriteResponse());
-        }
+        } 
         return in;
     }
     
