@@ -228,9 +228,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     public String generateDatasetIdentifier(Dataset dataset, IdServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String doiShoulder = settingsService.getValueForKey(SettingsServiceBean.Key.DoiShoulder, "");
-        if(doiShoulder.indexOf("/")>=0) {
-          logger.warning("doiShoulder cannot contain '/' ");
-        }  
+       
         switch (doiIdentifierType) {
             case "randomString":
                 return generateIdentifierAsRandomString(dataset, idServiceBean);
