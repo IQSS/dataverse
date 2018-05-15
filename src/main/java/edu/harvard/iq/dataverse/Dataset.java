@@ -84,8 +84,7 @@ public class Dataset extends DvObjectContainer {
 
     private String protocol;
     private String authority;
-    private String doiSeparator;
-
+   
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date globalIdCreateTime;
     
@@ -238,14 +237,6 @@ public class Dataset extends DvObjectContainer {
 
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
-    }
-
-    public String getDoiSeparator() {
-        return doiSeparator;
-    }
-
-    public void setDoiSeparator(String doiSeparator) {
-        this.doiSeparator = doiSeparator;
     }
 
     public Date getGlobalIdCreateTime() {

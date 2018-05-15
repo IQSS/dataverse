@@ -422,7 +422,6 @@ public class JsonParserTest {
             System.out.println(dsJson != null);
             Dataset actual = sut.parseDataset(dsJson);
             assertEquals("10.5072/FK2", actual.getAuthority());
-            assertEquals("/", actual.getDoiSeparator());
             assertEquals("doi", actual.getProtocol());
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
@@ -628,8 +627,6 @@ public class JsonParserTest {
                     return "10.5072/FK2";
                 case Protocol:
                     return "doi";
-                case DoiSeparator:
-                    return "/";
                 default:
                     break;
             }

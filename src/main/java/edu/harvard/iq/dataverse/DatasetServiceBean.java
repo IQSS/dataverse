@@ -184,16 +184,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         String authority = "";
         String identifier = "";
         int index1 = globalId.indexOf(':');
-        String nonNullDefaultIfKeyNotFound = ""; 
-        // This is kind of wrong right here: we should not assume that this is *our* DOI - 
-        // it can be somebody else's registered DOI that we harvested. And they can 
-        // have their own separator characters defined - so we should not assume 
-        // that everybody's DOIs will look like ours! 
-        // Also, this separator character gets applied to handles lookups too, below. 
-        // Which is probably wrong too...
-        // -- L.A. 4.2.4
-        String separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);        
-        int index2 = globalId.indexOf(separator, index1 + 1);
+        int index2 = globalId.indexOf('/', index1 + 1);
 
 		if (index1 == -1) {
 			logger.info("Error parsing identifier: " + globalId + ". ':' not found in string");
@@ -202,22 +193,20 @@ public class DatasetServiceBean implements java.io.Serializable {
 			protocol = globalId.substring(0, index1);
 		}
 		if (index2 == -1) {
-			logger.info("Error parsing identifier: " + globalId + ". Second separator not found in string");
+			logger.info("Error parsing identifier: " + globalId + ". '/' not found in string");
 			return null;
 		} else {
 			authority = globalId.substring(index1 + 1, index2);
 		}
-		if (protocol.equals("doi")) {
+		// //ICPSR DOIs have some lower case characters (for ex.,
+		// 10.3886/ICPSR04599.v1), and that's how are they saved in the
+		// IQSS production database. So .toUpperCase() is now optional
+		Boolean useMixedCase = settingsService.isTrueForKey(SettingsServiceBean.Key.DoiUseMixedCase, false);
 
-			// //ICPSR DOIs have some lower case characters (for ex.,
-			// 10.3886/ICPSR04599.v1), and that's how are they saved in the
-			// IQSS production database. So .toUpperCase() is now optional
-			Boolean useMixedCase = settingsService.isTrueForKey(SettingsServiceBean.Key.DoiUseMixedCase, false);
-
-			identifier = globalId.substring(index2 + 1); // .toUpperCase();
-			if (!useMixedCase) {
-				identifier = identifier.toUpperCase();
-			}
+		identifier = globalId.substring(index2 + 1); 
+		//Handles are case sensitive, DOIs are not by default, but can be forced to be case sensitive with the useMixedCase flag
+		if (protocol.equals("doi") && !useMixedCase) {
+			identifier = identifier.toUpperCase();
 		}
         String queryStr = "SELECT s from Dataset s where s.identifier = :identifier  and s.protocol= :protocol and s.authority= :authority";
         Dataset foundDataset = null;
@@ -239,8 +228,8 @@ public class DatasetServiceBean implements java.io.Serializable {
     public String generateDatasetIdentifier(Dataset dataset, IdServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String doiShoulder = settingsService.getValueForKey(SettingsServiceBean.Key.DoiShoulder, "");
-        if(doiShoulder.indexOf(settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, "/"))>=0) {
-          logger.warning("doiShoulder cannot contain / or doiSeparator");
+        if(doiShoulder.indexOf("/")>=0) {
+          logger.warning("doiShoulder cannot contain '/' ");
         }  
         switch (doiIdentifierType) {
             case "randomString":

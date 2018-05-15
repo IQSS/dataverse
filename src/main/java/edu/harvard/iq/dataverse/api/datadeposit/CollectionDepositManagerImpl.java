@@ -97,10 +97,8 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                     String nonNullDefaultIfKeyNotFound = "";
                     String protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
                     String authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-                    String separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
                     dataset.setProtocol(protocol);
                     dataset.setAuthority(authority);
-                    dataset.setDoiSeparator(separator);
                     //Wait until the create command before actually getting an identifier                    
                     //dataset.setIdentifier(datasetService.generateDatasetIdentifier(protocol, authority, separator));
                     logger.log(Level.FINE, "DS Deposit identifier: {0}", dataset.getIdentifier());

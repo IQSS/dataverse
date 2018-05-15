@@ -220,7 +220,6 @@ public class DatasetPage implements java.io.Serializable {
     private String version;
     private String protocol = "";
     private String authority = "";
-    private String separator = "";
     private String customFields="";
 
     private boolean noDVsAtAll = false;
@@ -1388,7 +1387,6 @@ public class DatasetPage implements java.io.Serializable {
         String nonNullDefaultIfKeyNotFound = "";
         protocol = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        separator = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
         
         if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset     
 
@@ -1537,9 +1535,7 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setOwner(dataverseService.find(ownerId));
             dataset.setProtocol(protocol);
             dataset.setAuthority(authority);
-            dataset.setDoiSeparator(separator);
             //Wait until the create command before actually getting an identifier  
-            //dataset.setIdentifier(datasetService.generateDatasetIdentifier(protocol, authority, separator));
 
             if (dataset.getOwner() == null) {
                 return permissionsWrapper.notFound();

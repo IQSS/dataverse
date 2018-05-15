@@ -180,11 +180,7 @@ public class SettingsServiceBean {
         Authority,
         /** DoiProvider for global id */
         DoiProvider,
-        DoiSeparator,
-        /** DoiShoulder for global id - should not include DoiSeparator unless/until logic for separating authority and identifier is more robust.
-         *  This case can be handled by combining the authority and shoulder as part of the Authority setting. Use this DoiShoulder for cases
-         *  where there is no character separating the shoulder from the rest of the identifier or where the 
-         *  character separating the shoulder from the rest of the identifier is not '/' or DoiSeparator.
+        /** DoiShoulder for global id - should not include '/'.
          */
         DoiShoulder,
         //Do not force DOIs to uppercase before searching in database
