@@ -126,10 +126,17 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));       
         metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
-        metadataTemplate.setDescription(dataset.getLatestVersion().getDescriptionPlainText());
+        if (dvObject.isInstanceofDataset()) {
+            metadataTemplate.setDescription(dataset.getLatestVersion().getDescriptionPlainText());
+        }
+        if (dvObject.isInstanceofDataFile()) {
+            DataFile df = (DataFile) dvObject;
+            String fileDescription =df.getDescription();
+            metadataTemplate.setDescription(fileDescription == null ? "" :fileDescription );
+        }
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
-        metadataTemplate.setTitle(dataset.getLatestVersion().getTitle());
+        metadataTemplate.setTitle(dvObject.getDisplayName());
         String producerString =  dataverseService.findRootDataverse().getName();
         if (producerString.isEmpty()) {
             producerString = ":unav";
