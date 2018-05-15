@@ -17,6 +17,7 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 /**
  *
@@ -24,43 +25,46 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(indexes = {
-        @Index(columnList = "id")
-}) 
+    @Index(columnList = "id")
+})
 public class Metric implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false)
     private int id;
-    
-    @Column( nullable = false )
+
+    @Column(nullable = false, unique=true)
     private String metricName;
 
-    @Column
+    @Column(columnDefinition="TEXT", nullable = false)
     private String metricValue;
-    
+
     @Temporal(value = TemporalType.TIMESTAMP)
+    @Column(nullable = false)
     private Date lastCalledDate;
 
-    private static final String seperator = "_";
+    @Transient
+    private static final String separator = "_";
 
     @Deprecated
-    public Metric() {  
+    public Metric() {
     }
-    
+
     //For monthly metrics
-    public Metric(String metricTitle, String yyyymm, String metricValue) {  
-        this.metricName = generateMetricName(metricTitle, yyyymm); 
+    public Metric(String metricTitle, String yyyymm, String metricValue) {
+        this.metricName = generateMetricName(metricTitle, yyyymm);
         this.metricValue = metricValue;
         this.lastCalledDate = new Timestamp(new Date().getTime());
     }
-    
+
     //For all-time metrics
     public Metric(String metricName, String metricValue) {
         this.metricName = metricName;
         this.metricValue = metricValue;
         this.lastCalledDate = new Timestamp(new Date().getTime());
     }
-    
+
     /**
      * @return the id
      */
@@ -76,13 +80,13 @@ public class Metric implements Serializable {
     }
 
     public String getMetricDateString() {
-        return metricName.substring(metricName.indexOf(seperator)+1);
+        return metricName.substring(metricName.indexOf(separator) + 1);
     }
-    
+
     public String getMetricTitle() {
-        int monthSeperatorIndex = metricName.indexOf(seperator);
-        if(monthSeperatorIndex>=0) {
-            return metricName.substring(0,monthSeperatorIndex);
+        int monthSeperatorIndex = metricName.indexOf(separator);
+        if (monthSeperatorIndex >= 0) {
+            return metricName.substring(0, monthSeperatorIndex);
         }
         return metricName;
     }
@@ -114,15 +118,15 @@ public class Metric implements Serializable {
     public void setLastCalledDate(Date calledDate) {
         this.lastCalledDate = calledDate;
     }
-    
+
     public static String generateMetricName(String title, String dateString) {
-        if(title.contains(seperator) || dateString.contains(seperator)) {
+        if (title.contains(separator) || dateString.contains(separator)) {
             throw new IllegalArgumentException("Metric title or date contains character reserved for seperator");
         }
-        if(seperator.contains("-")) {
+        if (separator.contains("-")) {
             throw new IllegalArgumentException("Metric seperator cannot be '-', value reserved for dates");
         }
-        return title + seperator + dateString;
+        return title + separator + dateString;
     }
-    
+
 }
