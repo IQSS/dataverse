@@ -191,7 +191,20 @@ fi
 
 ###
 # Set up the data source for the timers
-./asadmin $ASADMIN_OPTS set configs.config.server-config.ejb-container.ejb-timer-service.timer-datasource=jdbc/VDCNetDS
+
+if [ -z "$MY_POD_NAME" ]
+ then
+	./asadmin $ASADMIN_OPTS set configs.config.server-config.ejb-container.ejb-timer-service.timer-datasource=jdbc/VDCNetDS
+
+ else
+    echo $MY_POD_NAME
+    if [ $MY_POD_NAME == "dataverse-glassfish-0" ]
+      then
+    	./asadmin $ASADMIN_OPTS set configs.config.server-config.ejb-container.ejb-timer-service.timer-datasource=jdbc/VDCNetDS
+        echo "Only I Run The Jobs"
+      fi
+  fi
+
 
 ###
 # Add the necessary JVM options: 
@@ -216,7 +229,20 @@ fi
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=apitest"
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=https\://ezid.cdlib.org"
 # "I am the timer server" option:
-./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
+
+if [ -z "$MY_POD_NAME" ]
+  then
+	./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
+
+   else
+       if [ $MY_POD_NAME == "dataverse-glassfish-0" ]
+          then
+              ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
+
+    fi
+ fi
+
+
 
 # enable comet support
 ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"

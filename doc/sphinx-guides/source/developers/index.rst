@@ -12,6 +12,7 @@ Developer Guide
 
    intro
    dev-environment
+   windows
    tips
    troubleshooting
    version-control
