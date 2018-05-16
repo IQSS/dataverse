@@ -1,0 +1,44 @@
+nb-configuration.xml
+target
+nbactions.xml
+michael-local
+GPATH
+GTAGS
+GRTAGS
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vagrant
+*.pyc
+*.swp
+scripts/api/py_api_wrapper/demo-data/*
+scripts/api/py_api_wrapper/test_data/*
+scripts/api/py_api_wrapper/local-data/*
+doc/sphinx-guides/build
+faces-config.NavData
+src/main/java/BuildNumber.properties
+scripts/installer/dvinstall.zip
+scripts/installer/dvinstall/
+/nbproject/
+oauth-credentials.md
+
+/src/main/webapp/oauth2/newAccount.html
+scripts/api/setup-all.sh*
+
+# ctags generated tag file
+tags
+
+# dependencies I'm not sure we're allowed to redistribute / have in version control
+conf/docker-aio/dv/deps/
+
+# no need to check aoi installer zip into vc
+conf/docker-aio/dv/install/dvinstall.zip
+# or copy of test data
+conf/docker-aio/testdata/
+scripts/installer/default.config
