@@ -461,8 +461,13 @@ public class SwordIT {
         listDatasetsAtRootAsSuperuser.then().assertThat().statusCode(OK.getStatusCode());
         assertTrue(listDatasetsAtRootAsSuperuser.body().asString().contains(identifier));
 
-        Response rootDataverseContents = UtilIT.showDataverseContents(rootDataverseAlias, apiTokenContributor);
+        // apiTokenContributor used to be enough to run showDataverseContents but after
+        // the 2438-4295-dois-for-files branch was merged (pull request #4350) we've had
+        // to switch this to apiTokenSuperuser. Very strange. It's unknown why this changed or when.
+        Response rootDataverseContents = UtilIT.showDataverseContents(rootDataverseAlias, apiTokenSuperuser);
         rootDataverseContents.prettyPrint();
+        rootDataverseContents.then().assertThat()
+                .statusCode(OK.getStatusCode());
         logger.info("We expect to find \"" + identifier + "\" from the persistent ID to be present.");
         assertTrue(rootDataverseContents.body().asString().contains(identifier));
 

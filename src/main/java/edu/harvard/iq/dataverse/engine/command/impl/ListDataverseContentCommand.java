@@ -38,6 +38,7 @@ public class ListDataverseContentCommand extends AbstractCommand<List<DvObject>>
                 ds = ctxt.engine().submit(new GetDatasetCommand(getRequest(), ds));
                 result.add(ds);
             } catch (PermissionException ex) {
+                // The PermissionException is ignored because we are iterating through all datasets, collecting the ones the user has permission to see.
             }
         }
         for (Dataverse dv : ctxt.dataverses().findByOwnerId(dvToList.getId())) {
@@ -45,6 +46,7 @@ public class ListDataverseContentCommand extends AbstractCommand<List<DvObject>>
                 dv = ctxt.engine().submit(new GetDataverseCommand(getRequest(), dv));
                 result.add(dv);
             } catch (PermissionException ex) {
+                // The PermissionException is ignored because we are iterating through all dataverses, collecting the ones the user has permission to see.
             }
         }
 
