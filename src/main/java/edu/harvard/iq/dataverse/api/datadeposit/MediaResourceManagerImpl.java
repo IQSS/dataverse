@@ -305,7 +305,9 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     ConstraintViolation violation = constraintViolations.iterator().next();
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + violation.getMessage() + " The invalid value was \"" + violation.getInvalidValue() + "\".");
                 } else {
-                    ingestService.addFiles(editVersion, dataFiles);
+
+                    ingestService.finalizeFiles(editVersion, dataFiles);
+
                 }
             } else {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "No files to add to dataset. Perhaps the zip file was empty.");

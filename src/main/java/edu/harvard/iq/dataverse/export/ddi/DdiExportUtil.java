@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
@@ -1042,7 +1044,12 @@ public class DdiExportUtil {
             if (fileDTo.getDataFile().getDataTables() == null || fileDTo.getDataFile().getDataTables().isEmpty()) {
                 xmlw.writeStartElement("otherMat");
                 writeAttribute(xmlw, "ID", "f" + fileDTo.getDataFile().getId());
-                writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileDTo.getDataFile().getId());
+                String pidURL = fileDTo.getDataFile().getPidURL();
+                if (pidURL != null && !pidURL.isEmpty()){
+                    writeAttribute(xmlw, "URI", pidURL);
+                } else {
+                    writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileDTo.getDataFile().getId());
+                }
                 writeAttribute(xmlw, "level", "datafile");
                 xmlw.writeStartElement("labl");
                 xmlw.writeCharacters(fileDTo.getDataFile().getFilename());
@@ -1084,7 +1091,14 @@ public class DdiExportUtil {
             if (fileMetadata.getDataFile() != null && !fileMetadata.getDataFile().isTabularData()) {
                 xmlw.writeStartElement("otherMat");
                 writeAttribute(xmlw, "ID", "f" + fileMetadata.getDataFile().getId());
-                writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileMetadata.getDataFile().getId());
+                String dfIdentifier = fileMetadata.getDataFile().getIdentifier();
+                if (dfIdentifier != null && !dfIdentifier.isEmpty()){
+                    GlobalId globalId = new GlobalId(fileMetadata.getDataFile());
+                    writeAttribute(xmlw, "URI",  globalId.toURL().toString()); 
+                }  else {
+                    writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileMetadata.getDataFile().getId()); 
+                }
+
                 writeAttribute(xmlw, "level", "datafile");
                 xmlw.writeStartElement("labl");
                 xmlw.writeCharacters(fileMetadata.getLabel());
