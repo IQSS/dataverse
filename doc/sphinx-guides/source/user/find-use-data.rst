@@ -60,6 +60,11 @@ After performing a search and finding the dataverse or dataset you are looking f
 
 Once on a dataset page, you will see the title, citation, description, and several other fields, as well as a button to email the dataset contact and a button to share the dataset on social media. Below that information, the files, metadata, terms of use, and version information for the dataset are available. 
 
+View Files
+----------
+
+Files in Dataverse each have their own page that can be reached through the search results or through the Files table on their parent dataset's page. The dataset page and file page offer much the same functionality in terms of viewing and editing files, with a few small exceptions. The file page includes the file's persistent identifier (DOI or handle), which can be found under the Metadata tab. Also, the file page's Versions tab gives you a version history that is more focused on the individual file rather than the dataset as a whole. 
+
 Cite Data
 ---------
 
@@ -72,8 +77,9 @@ Download Files
 
 Within the Files tab on a dataset page, you can download the files in that dataset. To download more than one file at a time, select the files you would like to download and then click the Download button above the files. The selected files will download in zip format.
 
-Tabular data files offer additional options: You can explore using the TwoRavens data visualization tool (or other :doc:`/installation/external-tools` if they have been enabled) by clicking the Explore button, or choose from a number of tabular-data-specific download options available as a dropdown under the Download button.
+You may also download a file from its file page by clicking the Download button in the upper right corner of the page, or by using the Download URL listed under the Metadata tab on the lower half of the page. The Download URL can be used to directly access the file via API (or in a web browser, if needed). Certain files do not provide Download URLs for technical reasons: those that are restricted, have terms of use associated with them, or are part of a dataverse with a guestbook enabled.
 
+Tabular data files offer additional options: You can explore using the TwoRavens data visualization tool (or other :doc:`/installation/external-tools` if they have been enabled) by clicking the Explore button, or choose from a number of tabular-data-specific download options available as a dropdown under the Download button.
 
 .. _rsync_download:
 

@@ -31,6 +31,8 @@ import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Resource;
+import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
@@ -162,6 +164,9 @@ public class EjbDataverseEngine {
     
     @EJB
     WorkflowServiceBean workflowService;
+    
+    @Resource
+    EJBContext ejbCtxt;
 
     private CommandContext ctxt;
     
@@ -218,13 +223,15 @@ public class EjbDataverseEngine {
                 return aCommand.execute(getContext());
                 
             } catch ( EJBException ejbe ) {
-                logRec.setActionResult(ActionLogRecord.Result.InternalError);                
                 throw new CommandException("Command " + aCommand.toString() + " failed: " + ejbe.getMessage(), ejbe.getCausedByException(), aCommand);
-            }
-            
+            } 
+        } catch (CommandException cmdEx) {
+            logRec.setActionResult(ActionLogRecord.Result.InternalError); 
+            logRec.setInfo(logRec.getInfo() + " (" + cmdEx.getMessage() +")");
+            throw cmdEx;
         } catch ( RuntimeException re ) {
             logRec.setActionResult(ActionLogRecord.Result.InternalError);
-            logRec.setInfo( re.getMessage() );   
+            logRec.setInfo(logRec.getInfo() + " (" + re.getMessage() +")");   
             
             Throwable cause = re;          
             while (cause != null) {
@@ -237,7 +244,7 @@ public class EjbDataverseEngine {
                     }
                     logger.log(Level.SEVERE, sb.toString());
                     // set this more detailed info in action log
-                    logRec.setInfo( sb.toString() );
+                    logRec.setInfo(logRec.getInfo() + " (" +  sb.toString() +")");
                 }
                 cause = cause.getCause();
             }           
@@ -247,6 +254,8 @@ public class EjbDataverseEngine {
         } finally {
             if ( logRec.getActionResult() == null ) {
                 logRec.setActionResult( ActionLogRecord.Result.OK );
+            } else {
+                ejbCtxt.setRollbackOnly();
             }
             logRec.setEndTime( new java.util.Date() );
             logSvc.log(logRec);
