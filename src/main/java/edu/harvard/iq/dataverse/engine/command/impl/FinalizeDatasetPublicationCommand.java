@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import static edu.harvard.iq.dataverse.DatasetVersion.VersionState.*;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
@@ -56,10 +55,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         registerExternalIdentifier(theDataset, ctxt);
         
         // is this the first publication of the dataset?
-        if (theDataset.getPublicationDate() == null || theDataset.getLatestVersion().getVersionState() == RELEASED) {
+        if ( theDataset.getReleaseUser() == null ) {
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
         }
-        if (theDataset.getPublicationDate() == null) {
+        if ( theDataset.getPublicationDate() == null ) {
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
         } 
 
@@ -77,6 +76,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         // comes from there. There's a chance that the final merge, at the end of this
         // command, would be sufficient. -- L.A. Sep. 6 2017
         theDataset = ctxt.em().merge(theDataset);
+        
+        updateDatasetUser(ctxt);
         
         updateParentDataversesSubjectsField(theDataset, ctxt);
 
@@ -297,7 +298,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 }
               }
               idServiceBean.createIdentifier(theDataset);
-              theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+              theDataset.setGlobalIdCreateTime(getTimestamp());
 
             } catch (Throwable e) {
               throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 

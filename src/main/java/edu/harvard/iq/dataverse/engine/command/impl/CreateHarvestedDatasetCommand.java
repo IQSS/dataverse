@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -23,11 +22,7 @@ public class CreateHarvestedDatasetCommand extends AbstractCreateDatasetCommand 
     
     @Override
     protected void handlePid(Dataset theDataset, CommandContext ctxt) {
-        if (theDataset.getLatestVersion().getVersionState().equals(DatasetVersion.VersionState.RELEASED)) {
-            theDataset.setGlobalIdCreateTime(new Date());
-        }
+        theDataset.setGlobalIdCreateTime(new Date());
     }
-    
-    
     
 }

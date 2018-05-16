@@ -275,17 +275,6 @@ public class IndexServiceBean {
     }
     
     @Asynchronous
-    public Future<String> asyncIndexDataset(long datasetId, boolean doNormalSolrDocCleanUp) {
-        Dataset toIndex = datasetService.find(datasetId);
-        if ( toIndex == null ) {
-            logger.log(Level.WARNING, "Cannot find dataset with id {0}", datasetId);
-            return new AsyncResult<>(null);
-        } else {
-            return indexDataset(toIndex, doNormalSolrDocCleanUp);
-        }
-    }
-    
-    @Asynchronous
     public Future<String> asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         return indexDataset(dataset, doNormalSolrDocCleanUp);
     }

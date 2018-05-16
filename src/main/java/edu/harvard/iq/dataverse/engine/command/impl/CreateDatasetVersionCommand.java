@@ -71,9 +71,8 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
     public void prepareDatasetAndVersion() throws CommandException {
         newVersion.setDataset(dataset);
         newVersion.setDatasetFields(newVersion.initDatasetFields());
-        Timestamp now = new Timestamp(new Date().getTime());
-        newVersion.setCreateTime(now);
-        newVersion.setLastUpdateTime(now);
+        newVersion.setCreateTime(getTimestamp());
+        newVersion.setLastUpdateTime(getTimestamp());
         
         tidyUpFields(newVersion);
         validateOrDie(newVersion, false);
@@ -83,7 +82,7 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         dsvs.addAll(currentVersions);
         dsvs.add(0, newVersion);
         dataset.setVersions( dsvs );
-        dataset.setModificationTime(now);
+        dataset.setModificationTime(getTimestamp());
     }
     
 }

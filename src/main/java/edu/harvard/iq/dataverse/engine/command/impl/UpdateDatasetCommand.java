@@ -71,10 +71,6 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         getDataset().getEditVersion().setDatasetFields(getDataset().getEditVersion().initDatasetFields());
         validateOrDie( getDataset().getEditVersion(), isValidateLenient() );
         
-        return save(ctxt);
-    }
-
-    public Dataset save(CommandContext ctxt)  throws CommandException {
         final DatasetVersion editVersion = getDataset().getEditVersion();
         tidyUpFields(editVersion);
         
@@ -209,7 +205,7 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         updateDatasetUser(ctxt);
         ctxt.index().indexDataset(savedDataset, true);
 
-        return savedDataset;
+        return savedDataset; 
     }
 
 }

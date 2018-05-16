@@ -241,7 +241,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         String identifier = null;
         do {
             identifier = RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
-        } while (!isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean));
+        } while (!isIdentifierUnique(identifier, dataset, idServiceBean));
 
         return identifier;
     }
@@ -259,7 +259,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                 return null; 
             }
             identifier = identifierNumeric.toString();
-        } while (!isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean));
+        } while (!isIdentifierUnique(identifier, dataset, idServiceBean));
         
         return identifier;
     }
@@ -268,19 +268,13 @@ public class DatasetServiceBean implements java.io.Serializable {
      * Check that a identifier entered by the user is unique (not currently used
      * for any other study in this Dataverse Network) also check for duplicate
      * in persistent identifier service if needed
-     * @param userIdentifier
+     * @param identifier
      * @param dataset
      * @param persistentIdSvc
      * @return {@code true} if the identifier is unique, {@code false} otherwise.
      */
-    public boolean isIdentifierUniqueInDatabase(String userIdentifier, Dataset dataset, PersistentIdentifierServiceBean persistentIdSvc) {
-        boolean u = em.createNamedQuery("Dataset.findByIdentifierAuthorityProtocol")
-            .setParameter("identifier", userIdentifier)
-            .setParameter("protocol", dataset.getProtocol())
-            .setParameter("authority", dataset.getAuthority())
-            .getResultList().isEmpty();
-        
-        if ( !u ) return false; // duplication found in local database
+    public boolean isIdentifierUnique(String identifier, Dataset dataset, PersistentIdentifierServiceBean persistentIdSvc) {
+        if ( ! isIdentifierLocallyUnique(identifier, dataset) ) return false; // duplication found in local database
         
         // not in local DB, look in the persistent identifier service
         try {
@@ -293,8 +287,12 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     public boolean isIdentifierLocallyUnique(Dataset dataset) {
+        return isIdentifierLocallyUnique(dataset.getIdentifier(), dataset);
+    }
+    
+    public boolean isIdentifierLocallyUnique(String identifier, Dataset dataset) {
         boolean u = em.createNamedQuery("Dataset.findByIdentifierAuthorityProtocol")
-            .setParameter("identifier", dataset.getIdentifier())
+            .setParameter("identifier", identifier)
             .setParameter("protocol", dataset.getProtocol())
             .setParameter("authority", dataset.getAuthority())
             .getResultList().isEmpty();

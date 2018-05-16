@@ -80,7 +80,6 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         }
 
         theDataset = ctxt.em().merge(theDataset);
-        updateDatasetUser(ctxt);
         
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, "");

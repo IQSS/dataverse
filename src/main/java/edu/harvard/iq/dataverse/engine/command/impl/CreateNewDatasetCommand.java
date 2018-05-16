@@ -50,7 +50,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
         if ( nonEmpty(getDataset().getIdentifier()) ) {
             PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(getDataset().getProtocol(), ctxt);
-            if ( ctxt.datasets().isIdentifierUniqueInDatabase(getDataset().getIdentifier(), getDataset(), idServiceBean) ) {
+            if ( ctxt.datasets().isIdentifierUnique(getDataset().getIdentifier(), getDataset(), idServiceBean) ) {
                 throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
                                                                  getDataset().getIdentifier(), getDataset().getProtocol(), getDataset().getAuthority()), 
                     this);
