@@ -31,7 +31,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
 import javax.annotation.PostConstruct;
@@ -176,8 +176,8 @@ public class FileRecordWriter extends AbstractItemWriter {
         // update version using the command engine to enforce user permissions and constraints
         if (dataset.getVersions().size() == 1 && version.getVersionState() == DatasetVersion.VersionState.DRAFT) {
             try {
-                Command<DatasetVersion> cmd;
-                cmd = new UpdateDatasetVersionCommand(new DataverseRequest(user, (HttpServletRequest) null), version);
+                Command<Dataset> cmd;
+                cmd = new UpdateDatasetCommand(version.getDataset(), new DataverseRequest(user, (HttpServletRequest) null));
                 commandEngine.submit(cmd);
             } catch (CommandException ex) {
                 String commandError = "CommandException updating DatasetVersion from batch job: " + ex.getMessage();
