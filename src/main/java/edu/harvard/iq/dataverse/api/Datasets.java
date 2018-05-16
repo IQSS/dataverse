@@ -65,6 +65,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
+import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
@@ -76,7 +77,10 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -102,8 +106,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+
+import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -190,30 +198,33 @@ public class Datasets extends AbstractApiBean {
             
             ExportService instance = ExportService.getInstance(settingsSvc);
             
-            String xml = instance.getExportAsString(dataset, exporter);
-            // I'm wondering if this going to become a performance problem 
-            // with really GIANT datasets,
-            // the fact that we are passing these exports, blobs of JSON, and, 
-            // especially, DDI XML as complete strings. It would be nicer 
-            // if we could stream instead - and the export service already can
-            // give it to as as a stream; then we could start sending the 
-            // output to the remote client as soon as we got the first bytes, 
-            // without waiting for the whole thing to be generated and buffered... 
-            // (the way Access API streams its output). 
-            // -- L.A., 4.5
-            
-            
             String mediaType = MediaType.TEXT_PLAIN;
             if (instance.isXMLFormat(exporter)){
-            	logger.fine("xml to return: " + xml);
                 mediaType = MediaType.APPLICATION_XML;
             } else if(exporter == "BagIt") {
             	mediaType = MediaType.APPLICATION_OCTET_STREAM;
             } else if(exporter == "OAI_ORE") {
             	mediaType = MediaType.APPLICATION_JSON; 
             }
-            return allowCors(Response.ok()
-                    .entity(xml)
+            
+            StreamingOutput stream = new StreamingOutput() {
+                @Override
+                public void write(OutputStream os) throws IOException, WebApplicationException {
+                	try {
+                		InputStream in;
+					
+						in = instance.getExport(dataset, exporter);
+					
+                	 IOUtils.copy(in, os);
+                	 IOUtils.closeQuietly(in);
+                	 IOUtils.closeQuietly(os);
+                	} catch (ExportException e) {
+						throw new IOException(e.getMessage());						
+					}
+                }
+            };
+            
+            return allowCors(Response.ok(stream)
                     .type(mediaType).
                     build());
         } catch (Exception wr) {
