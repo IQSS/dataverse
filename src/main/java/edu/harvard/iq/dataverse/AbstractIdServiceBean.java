@@ -1,10 +1,7 @@
 package edu.harvard.iq.dataverse;
 
-import static edu.harvard.iq.dataverse.IdServiceBean.logger;
-import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.text.SimpleDateFormat;
 
 import javax.ejb.EJB;
 import java.util.*;
@@ -20,6 +17,12 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
     @EJB
     SettingsServiceBean settingsService;
     @EJB
+    EjbDataverseEngine commandEngine;
+    @EJB
+    DatasetServiceBean datasetService;
+    @EJB
+    DataFileServiceBean datafileService;
+    @EJB
     SystemConfig systemConfig;
 
     @Override
@@ -28,26 +31,27 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
         return protocol + ":" + authority + separator + identifier;
     }
 
+    
     @Override
-    public HashMap<String, String> getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
-        logger.log(Level.FINE,"getMetadataFromStudyForCreateIndicator");
+    public HashMap<String, String> getMetadataForCreateIndicator(DvObject dvObjectIn) {
+        logger.log(Level.FINE,"getMetadataForCreateIndicator(DvObject)");
         HashMap<String, String> metadata = new HashMap<>();
-
-        metadata = addBasicMetadata(datasetIn, metadata);
-        metadata.put("datacite.publicationyear", generateYear(datasetIn));
-        metadata.put("_target", getTargetUrl(datasetIn));
+        metadata = addBasicMetadata(dvObjectIn, metadata);
+        metadata.put("datacite.publicationyear", generateYear(dvObjectIn));
+        metadata.put("_target", getTargetUrl(dvObjectIn));
         return metadata;
     }
 
-    protected HashMap<String, String> getUpdateMetadataFromDataset(Dataset datasetIn) {
+    protected HashMap<String, String> getUpdateMetadata(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getUpdateMetadataFromDataset");
         HashMap<String, String> metadata = new HashMap<>();
-        metadata = addBasicMetadata(datasetIn, metadata);
+        metadata = addBasicMetadata(dvObjectIn, metadata);
         return metadata;
     }
     
-    protected HashMap<String, String> addBasicMetadata(Dataset datasetIn, HashMap<String, String> metadata){
-        String authorString = datasetIn.getLatestVersion().getAuthorsStr();
+    protected HashMap<String, String> addBasicMetadata(DvObject dvObjectIn, HashMap<String, String> metadata) {
+
+        String authorString = dvObjectIn.getAuthorString();
 
         if (authorString.isEmpty()) {
             authorString = ":unav";
@@ -55,41 +59,59 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
 
         String producerString = dataverseService.findRootDataverse().getName();
 
-        if(producerString.isEmpty()) {
+        if (producerString.isEmpty()) {
             producerString = ":unav";
         }
+        
         metadata.put("datacite.creator", authorString);
-        metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
+        metadata.put("datacite.title", dvObjectIn.getDisplayName());
         metadata.put("datacite.publisher", producerString);
-        
-        
         return metadata;
-    }
+    }   
 
-    @Override
-    public HashMap<String, String> getMetadataFromDatasetForTargetURL(Dataset datasetIn) {
-        logger.log(Level.FINE,"getMetadataFromDatasetForTargetURL");
-        HashMap<String, String> metadata = new HashMap<>();
-        metadata.put("_target", getTargetUrl(datasetIn));
-        return metadata;
-    }
-
-    protected String getTargetUrl(Dataset datasetIn) {
+    protected String getTargetUrl(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getTargetUrl");
-        return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + datasetIn.getGlobalId();
-    }
-
-    @Override
-    public String getIdentifierFromDataset(Dataset dataset) {
-        logger.log(Level.FINE,"getIdentifierFromDataset");
-        return dataset.getGlobalId();
+        return systemConfig.getDataverseSiteUrl() + dvObjectIn.getTargetUrl() + dvObjectIn.getGlobalId();
     }
     
-    protected String generateYear (Dataset datasetIn){
-        if (datasetIn.isReleased()) {
-            return datasetIn.getPublicationDateFormattedYYYYMMDD().substring(0, 4);
-        }
-        return new SimpleDateFormat("yyyy").format(datasetIn.getCreateDate()); 
+    @Override
+    public String getIdentifier(DvObject dvObject) {
+        return dvObject.getGlobalId();
     }
+    
+    protected String generateYear (DvObject dvObjectIn){
+        return dvObjectIn.getYearPublishedCreated(); 
+    }
+    
+    @Override
+    public HashMap<String, String> getMetadataForTargetURL(DvObject dvObject) {
+        logger.log(Level.FINE,"getMetadataForTargetURL");
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("_target", getTargetUrl(dvObject));
+        return metadata;
+    }
+    
+    @Override
+    public DvObject generateIdentifier(DvObject dvObject) {
 
+        String protocol = dvObject.getProtocol() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : dvObject.getProtocol();
+        String authority = dvObject.getAuthority() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : dvObject.getAuthority();
+        String doiSeparator = dvObject.getDoiSeparator() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator) : dvObject.getDoiSeparator();
+        IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, commandEngine.getContext());
+        if (dvObject.isInstanceofDataset()) {
+            dvObject.setIdentifier(datasetService.generateDatasetIdentifier((Dataset) dvObject, idServiceBean));
+        } else {
+            dvObject.setIdentifier(datafileService.generateDataFileIdentifier((DataFile) dvObject, idServiceBean));
+        }
+        if (dvObject.getProtocol() == null) {
+            dvObject.setProtocol(protocol);
+        }
+        if (dvObject.getAuthority() == null) {
+            dvObject.setAuthority(authority);
+        }
+        if (dvObject.getDoiSeparator() == null) {
+            dvObject.setDoiSeparator(doiSeparator);
+        }
+        return dvObject;
+    }
 }

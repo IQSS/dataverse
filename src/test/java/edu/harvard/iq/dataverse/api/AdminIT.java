@@ -7,6 +7,7 @@ import static edu.harvard.iq.dataverse.api.UtilIT.getRandomString;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
+import static java.lang.Thread.sleep;
 import java.util.ArrayList;
 import java.util.List;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
@@ -17,9 +18,12 @@ import org.junit.BeforeClass;
 import java.util.UUID;
 import javax.validation.constraints.AssertTrue;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.OK;
+import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class AdminIT {
 
@@ -468,6 +472,8 @@ public class AdminIT {
         Response deleteUserToConvert = UtilIT.deleteUser(persistentUserId);
         assertEquals(200, deleteUserToConvert.getStatusCode());
     }
+    
+
 
     @Test
     public void testFindPermissonsOn() {
