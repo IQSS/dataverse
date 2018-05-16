@@ -13,15 +13,19 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 @Stateless
 @Path("batch")
@@ -104,6 +108,54 @@ public class BatchImport extends AbstractApiBean {
         }
     }
 
+    /**
+     * Import a new Dataset with DDI xml data posted in the request
+     *
+     * 
+     * @param parentIdtf the dataverse to import into (id or alias)
+     * @param apiKey user's api key
+     * @param fileInputStream InputStream of the uploaded Json File
+     * @return import status (including id of the dataset created)
+     */
+    
+    @POST
+    @Path("importwoi")
+    @Consumes({MediaType.MULTIPART_FORM_DATA})
+    public Response postImportWoI(
+            @FormDataParam("dv") String parentIdtf, 
+            @FormDataParam("key") String apiKey, 
+            @FormDataParam("file") InputStream fileInputStream) {
+        
+        DataverseRequest dataverseRequest;
+        
+        try {
+            dataverseRequest = createDataverseRequest(findAuthenticatedUserOrDie());
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        if (parentIdtf == null) {
+            parentIdtf = "root";
+        }
+        
+        Dataverse owner = findDataverse(parentIdtf);
+        
+        if (owner == null) {
+            return error(Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
+        }
+        
+        try {
+            PrintWriter cleanupLog = null; // Cleanup log isn't needed for ImportType == NEW. We don't do any data cleanup in this mode.
+
+            JsonObjectBuilder status = importService.doImportWoI(dataverseRequest, owner, fileInputStream, ImportType.NEW, cleanupLog);
+            return this.ok(status);
+        } catch (ImportException | IOException e) {
+            return this.error(Response.Status.BAD_REQUEST, e.getMessage());
+        }
+    }
+    
+    
+    
     /**
      * Import single or multiple datasets that are in the local filesystem
      *

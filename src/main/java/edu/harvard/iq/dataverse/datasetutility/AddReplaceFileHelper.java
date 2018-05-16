@@ -95,7 +95,7 @@ public class AddReplaceFileHelper{
 
     
     public static String FILE_ADD_OPERATION = "FILE_ADD_OPERATION";
-    public static String FILE_ADD_WI_OPERATION = "FILE_ADD_WI_OPERATION";
+    public static String FILE_ADD_WOI_OPERATION = "FILE_ADD_WOI_OPERATION";
     public static String FILE_REPLACE_OPERATION = "FILE_REPLACE_OPERATION";
     public static String FILE_REPLACE_FORCE_OPERATION = "FILE_REPLACE_FORCE_OPERATION";
     
@@ -285,7 +285,7 @@ public class AddReplaceFileHelper{
      * @param optionalFileParams  
      * @return 
      */
-    public boolean runAddFileWIByDataset(Dataset chosenDataset, 
+    public boolean runAddFileWOIByDataset(Dataset chosenDataset, 
             String newFileName, 
             String newFileContentType, 
             InputStream newFileInputStream,
@@ -295,14 +295,14 @@ public class AddReplaceFileHelper{
 
         initErrorHandling();
         
-        this.currentOperation = FILE_ADD_WI_OPERATION;
+        this.currentOperation = FILE_ADD_WOI_OPERATION;
         
         if (!this.step_001_loadDataset(chosenDataset)){
             return false;
         }
         
         //return this.runAddFile(this.dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
-        return this.runAddReplaceFileWI(dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
+        return this.runAddReplaceFileWOI(dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
     }
     
     
@@ -485,7 +485,7 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    private boolean runAddReplaceFileWI(Dataset dataset,  
+    private boolean runAddReplaceFileWOI(Dataset dataset,  
             String newFileName, String newFileContentType, 
             InputStream newFileInputStream,
             OptionalFileParams optionalFileParams){
@@ -493,7 +493,7 @@ public class AddReplaceFileHelper{
         // Run "Phase 1" - Initial ingest of file + error check
         // But don't save the dataset version yet
         //
-        boolean phase1Success = runAddReplacePhase1WI(dataset,  
+        boolean phase1Success = runAddReplacePhase1WOI(dataset,  
                                         newFileName,  
                                         newFileContentType,  
                                         newFileInputStream,
@@ -505,7 +505,7 @@ public class AddReplaceFileHelper{
         }
         
        
-        return runAddReplacePhase2WI();
+        return runAddReplacePhase2WOI();
         
     }
     
@@ -624,7 +624,7 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    private boolean runAddReplacePhase1WI(Dataset dataset,  
+    private boolean runAddReplacePhase1WOI(Dataset dataset,  
             String newFileName, 
             String newFileContentType,
             InputStream newFileInputStream,
@@ -820,7 +820,7 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    private boolean runAddReplacePhase2WI(){
+    private boolean runAddReplacePhase2WOI(){
         
         if (this.hasError()){
             return false;   // possible to have errors already...

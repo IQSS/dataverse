@@ -40,6 +40,7 @@ import edu.harvard.iq.dataverse.util.json.JsonParser;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
@@ -523,6 +524,136 @@ public class ImportServiceBean {
             logger.log(Level.INFO, "Error excuting Create dataset command: {0}", ex.getMessage());
             throw new ImportException("Error excuting dataverse command: " + ex.getMessage(), ex);
         }
+        return Json.createObjectBuilder().add("message", status);
+    }
+    
+//     
+    /**
+    creates a new Dataset with provided Json file without invoking ingest requests.
+    
+    */
+    public JsonObjectBuilder doImportWoI(DataverseRequest dataverseRequest, Dataverse owner, InputStream fileInputStream, ImportType importType, PrintWriter cleanupLog) throws ImportException, IOException {
+        String status = "";
+        Long createdId = null;
+        String fileName = "";
+
+        try (JsonReader jsonReader = Json.createReader(fileInputStream);) {
+            JsonObject obj = jsonReader.readObject();
+
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
+            parser.setLenient(false);
+            Dataset ds = parser.parseDataset(obj);
+
+            // For ImportType.NEW, if the user supplies a global identifier, and it's not a protocol
+            // we support, it will be rejected.
+            if (importType.equals(ImportType.NEW)) {
+                if (ds.getGlobalId() != null && !ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""))) {
+                    throw new ImportException("Could not register id " + ds.getGlobalId() + ", protocol not supported");
+                }
+            }
+
+            ds.setOwner(owner);
+            ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
+
+            // Check data against required contraints
+            List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
+            if (!violations.isEmpty()) {
+                if (importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) {
+                    // For migration and harvest, add NA for missing required values
+                    for (ConstraintViolation<DatasetField> v : violations) {
+                        DatasetField f = v.getRootBean();
+                        f.setSingleValue(DatasetField.NA_VALUE);
+                    }
+                } else {
+                    // when importing a new dataset, the import will fail
+                    // if required values are missing.
+                    String errMsg = "Error importing data:";
+                    for (ConstraintViolation<DatasetField> v : violations) {
+                        errMsg += " " + v.getMessage();
+                    }
+                    throw new ImportException(errMsg);
+                }
+            }
+
+            // Check data against validation constraints
+            // If we are migrating and "scrub migration data" is true we attempt to fix invalid data
+            // if the fix fails stop processing of this file by throwing exception
+            Set<ConstraintViolation> invalidViolations = ds.getVersions().get(0).validate();
+            ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+            Validator validator = factory.getValidator();
+            if (!invalidViolations.isEmpty()) {
+                for (ConstraintViolation<DatasetFieldValue> v : invalidViolations) {
+                    DatasetFieldValue f = v.getRootBean();
+                    boolean fixed = false;
+                    boolean converted = false;
+                    if ((importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) && settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
+                        fixed = processMigrationValidationError(f, cleanupLog, fileName);
+                        converted = true;
+                        if (fixed) {
+                            Set<ConstraintViolation<DatasetFieldValue>> scrubbedViolations = validator.validate(f);
+                            if (!scrubbedViolations.isEmpty()) {
+                                fixed = false;
+                            }
+                        }
+                    }
+                    if (!fixed) {
+                        if (importType.equals(ImportType.HARVEST)) {
+                            String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                                    + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + DatasetField.NA_VALUE + "'";
+                            cleanupLog.println(msg);
+                            f.setValue(DatasetField.NA_VALUE);
+
+                        } else {
+                            String msg = " Validation error for ";
+                            if (converted) {
+                                msg += "converted ";
+                            }
+                            msg += "value: " + f.getValue() + ", " + f.getValidationMessage();
+                            throw new ImportException(msg);
+                        }
+                    }
+                }
+            }
+
+            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
+
+            if (existingDs != null) {
+                if (importType.equals(ImportType.HARVEST)) {
+                    // For harvested datasets, there should always only be one version.
+                    // We will replace the current version with the imported version.
+                    if (existingDs.getVersions().size() != 1) {
+                        throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDs.getVersions().size() + " versions");
+                    }
+                    engineSvc.submit(new DestroyDatasetCommand(existingDs, dataverseRequest));
+                    Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, importType));
+                    status = " updated dataset, id=" + managedDs.getId() + ".";
+                } else {
+                    // If we are adding a new version to an existing dataset,
+                    // check that the version number isn't already in the dataset
+                    for (DatasetVersion dsv : existingDs.getVersions()) {
+                        if (dsv.getVersionNumber().equals(ds.getLatestVersion().getVersionNumber())) {
+                            throw new ImportException("VersionNumber " + ds.getLatestVersion().getVersionNumber() + " already exists in dataset " + existingDs.getGlobalId());
+                        }
+                    }
+                    DatasetVersion dsv = engineSvc.submit(new CreateDatasetVersionCommand(dataverseRequest, existingDs, ds.getVersions().get(0)));
+                    status = " created datasetVersion, for dataset " + dsv.getDataset().getGlobalId();
+                    createdId = dsv.getId();
+                }
+
+            } else {
+                Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, importType));
+                status = " created dataset, id=" + managedDs.getId() + ".";
+                createdId = managedDs.getId();
+            }
+
+        } catch (JsonParseException ex) {
+            logger.log(Level.INFO, "Error parsing datasetVersion: {0}", ex.getMessage());
+            throw new ImportException("Error parsing datasetVersion: " + ex.getMessage(), ex);
+        } catch (CommandException ex) {
+            logger.log(Level.INFO, "Error excuting Create dataset command: {0}", ex.getMessage());
+            throw new ImportException("Error excuting dataverse command: " + ex.getMessage(), ex);
+        }
+
         return Json.createObjectBuilder().add("message", status);
     }
     
