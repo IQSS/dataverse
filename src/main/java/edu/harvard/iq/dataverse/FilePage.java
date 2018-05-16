@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
@@ -63,6 +64,7 @@ public class FilePage implements java.io.Serializable {
     private Dataset dataset;
     private List<DatasetVersion> datasetVersionsForTab;
     private List<FileMetadata> fileMetadatasForTab;
+    private String persistentId;
     private List<ExternalTool> configureTools;
     private List<ExternalTool> exploreTools;
 
@@ -116,7 +118,7 @@ public class FilePage implements java.io.Serializable {
     public String init() {
      
         
-        if ( fileId != null ) { 
+         if ( fileId != null || persistentId != null ) { 
            
             // ---------------------------------------
             // Set the file and datasetVersion 
@@ -124,12 +126,36 @@ public class FilePage implements java.io.Serializable {
             if (fileId != null) {
                file = datafileService.find(fileId);   
 
-            }  else if (fileId == null){
+            }  else if (persistentId != null){
+               file = datafileService.findByGlobalId(persistentId);
+               if (file != null){
+                                  fileId = file.getId();
+               }
+
+            }
+            
+            if (file == null || fileId == null){
                return permissionsWrapper.notFound();
             }
+            
+            // Is the Dataset harvested?
+            if (file.getOwner().isHarvested()) {
+                // if so, we'll simply forward to the remote URL for the original
+                // source of this harvested dataset:
+                String originalSourceURL = file.getOwner().getRemoteArchiveURL();
+                if (originalSourceURL != null && !originalSourceURL.equals("")) {
+                    logger.fine("redirecting to "+originalSourceURL);
+                    try {
+                        FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceURL);
+                    } catch (IOException ioex) {
+                        // must be a bad URL...
+                        // we don't need to do anything special here - we'll redirect
+                        // to the local 404 page, below.
+                        logger.warning("failed to issue a redirect to "+originalSourceURL);
+                    }
+                }
 
-            if (file == null){
-               return permissionsWrapper.notFound();
+                return permissionsWrapper.notFound();
             }
 
                 RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
@@ -249,6 +275,23 @@ public class FilePage implements java.io.Serializable {
             }
         }
         return retList;  
+    }
+    
+    public String saveProvFreeform(String freeformTextInput, DataFile dataFileFromPopup) throws CommandException {
+        editDataset = this.file.getOwner();
+        file.setProvEntityName(dataFileFromPopup.getProvEntityName()); //passing this value into the file being saved here is pretty hacky.
+        Command cmd;
+        
+        for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
+            if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
+                cmd = new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), file, freeformTextInput);
+                commandEngine.submit(cmd);
+            }
+        }
+        
+        save();
+        init();
+        return returnToDraftVersion();
     }
     
     public String restrictFile(boolean restricted) throws CommandException{
@@ -453,6 +496,14 @@ public class FilePage implements java.io.Serializable {
         this.fileMetadatasForTab = fileMetadatasForTab;
     }
     
+    public String getPersistentId() {
+        return persistentId;
+    }
+
+    public void setPersistentId(String persistentId) {
+        this.persistentId = persistentId;
+    }
+    
     
     public List<DatasetVersion> getDatasetVersionsForTab() {
         return datasetVersionsForTab;
@@ -637,7 +688,7 @@ public class FilePage implements java.io.Serializable {
             return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalId() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
         }
         return "";
-        }
+    }
 
     private List<DataFile> allRelatedFiles() {
         List<DataFile> dataFiles = new ArrayList<>();
@@ -662,7 +713,6 @@ public class FilePage implements java.io.Serializable {
             dataset = fileMetadata.getDataFile().getOwner();
         }
         
-        //MAD: Can we use the file variable already existing?
         DataFile dataFileToTest = fileMetadata.getDataFile(); 
         
         DatasetVersion currentVersion = dataset.getLatestVersion();
@@ -782,7 +832,7 @@ public class FilePage implements java.io.Serializable {
             e.printStackTrace();
         }
         
-        return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), fileId);
+        return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), persistentId);
     }
 
     public List<ExternalTool> getConfigureTools() {
@@ -791,6 +841,12 @@ public class FilePage implements java.io.Serializable {
 
     public List<ExternalTool> getExploreTools() {
         return exploreTools;
+    }
+    
+    //Provenance fragment bean calls this to show error dialogs after popup failure
+    //This can probably be replaced by calling JsfHelper from the provpopup bean
+    public void showProvError() {
+        JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.metadataTab.provenance.error"));
     }
 
 }

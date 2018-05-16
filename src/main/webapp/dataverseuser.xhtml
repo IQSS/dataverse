@@ -70,7 +70,7 @@
 
                     <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
                         <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" oncomplete="javascript:dataverseuser_page_rebind();" />
-                        <p:tab id="myData" title="My Data">
+                        <p:tab id="myData" title="#{bundle['user.dataRelatedToMe']}">
                             <ui:include src="mydata_fragment.xhtml"></ui:include>
                         </p:tab>
                         <p:tab id="notifications" title="#{bundle['header.user.selectTab.notifications']}">
@@ -392,10 +392,10 @@
                                         <div class="col-sm-2 form-col-container">
                                             <p class="form-control-static #{DataverseUserPage.emailIsVerified ? 'text-success' : 'text-danger'}">
                                                 <ui:fragment rendered="#{DataverseUserPage.emailNotVerified}">
-                                                    <span class="glyphicon glyphicon-ban-circle"/> Not Verified
+                                                    <span class="glyphicon glyphicon-ban-circle"/> #{bundle['confirmEmail.notVerified']}
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!DataverseUserPage.emailNotVerified}">
-                                                    <span class="glyphicon glyphicon-ok"/> Verified
+                                                    <span class="glyphicon glyphicon-ok"/> #{bundle['confirmEmail.verified']}
                                                 </ui:fragment>
                                             </p>
                                         </div>
@@ -530,7 +530,7 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-4 col-sm-offset-3">
-                                        <p:password id="inputPassword" tabindex="2" label="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
+                                        <p:password id="inputPassword" tabindex="2" label="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.password'] : bundle['user.newPassword']}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
                                         <p:message for="inputPassword" display="text" />
                                     </div>
                                 </div>

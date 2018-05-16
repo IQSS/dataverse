@@ -82,7 +82,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             s3 = AmazonS3ClientBuilder.standard().defaultClient();
         } catch (Exception e) {
             throw new AmazonClientException(
-                    "Cannot instantiate a S3 client using AWS SDK defaults for credentials and region",
+                    "Cannot instantiate a S3 client using; check your AWS credentials and region",
                     e);
         }
     }
@@ -99,8 +99,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("ERROR: s3 not initialised. ");
         }
 
-        if (bucketName == null || !s3.doesBucketExist(bucketName)) {
-            throw new IOException("ERROR: S3AccessIO - You must create and configure a bucket before creating datasets.");
+        try {
+            if (bucketName == null || !s3.doesBucketExist(bucketName)) {
+                throw new IOException("ERROR: S3AccessIO - You must create and configure a bucket before creating datasets.");
+            }
+        } catch (SdkClientException sce) {
+            throw new IOException("ERROR: S3AccessIO - Failed to look up bucket "+bucketName+" (is AWS properly configured?)");
         }
 
         DataAccessRequest req = this.getRequest();
@@ -128,11 +132,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             if (isReadAccess) {
                 key = getMainFileKey();
-                S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, key));
+                S3Object s3object = null; 
+                try {
+                    s3object = s3.getObject(new GetObjectRequest(bucketName, key));
+                } catch (SdkClientException sce) {
+                    throw new IOException("Cannot get S3 object " + key + " ("+sce.getMessage()+")");
+                }
                 InputStream in = s3object.getObjectContent();
 
                 if (in == null) {
-                    throw new IOException("Cannot get Object" + key);
+                    throw new IOException("Cannot get InputStream for S3 Object" + key);
                 }
 
                 this.setInputStream(in);
@@ -203,7 +212,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } catch (SdkClientException ioex) {
             String failureMsg = ioex.getMessage();
             if (failureMsg == null) {
-                failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3Object";
+                failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3Object "+key;
             }
 
             throw new IOException(failureMsg);
@@ -280,20 +289,23 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException(failureMsg);
         }
         tempFile.delete();
-        setSize(s3.getObjectMetadata(bucketName, key).getContentLength());
+        ObjectMetadata objectMetadata = s3.getObjectMetadata(bucketName, key);
+        if (objectMetadata != null) {
+            setSize(objectMetadata.getContentLength());
+        }
     }
 
     @Override
     public void delete() throws IOException {
         open();
         if (key == null) {
-            throw new IOException("Failed to delete the object because the key was null");
+            throw new IOException("Delete called with null key");
         }
         try {
             DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
             s3.deleteObject(deleteObjRequest);
         } catch (AmazonClientException ase) {
-            logger.warning("Caught an AmazonServiceException in S3AccessIO.delete():    " + ase.getMessage());
+            logger.warning("Caught an AmazonClientException in S3AccessIO.delete(): " + ase.getMessage());
             throw new IOException("Failed to delete object" + dvObject.getId());
         }
     }
@@ -321,7 +333,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             return s3.doesObjectExist(bucketName, destinationKey);
         } catch (AmazonClientException ase) {
-            logger.warning("Caught an AmazonServiceException in S3AccessIO.isAuxObjectCached:    " + ase.getMessage());
+            logger.warning("Caught an AmazonClientException in S3AccessIO.isAuxObjectCached:    " + ase.getMessage());
             throw new IOException("S3AccessIO: Failed to cache auxilary object : " + auxItemTag);
         }
     }
@@ -333,7 +345,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             return s3.getObjectMetadata(bucketName, destinationKey).getContentLength();
         } catch (AmazonClientException ase) {
-            logger.warning("Caught an AmazonServiceException in S3AccessIO.getAuxObjectSize:    " + ase.getMessage());
+            logger.warning("Caught an AmazonClientException in S3AccessIO.getAuxObjectSize:    " + ase.getMessage());
         }
         return -1;
     }
@@ -349,8 +361,21 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             s3.copyObject(new CopyObjectRequest(bucketName, key, bucketName, destinationKey));
         } catch (AmazonClientException ase) {
-            logger.warning("Caught an AmazonServiceException in S3AccessIO.backupAsAux:    " + ase.getMessage());
+            logger.warning("Caught an AmazonClientException in S3AccessIO.backupAsAux:    " + ase.getMessage());
             throw new IOException("S3AccessIO: Unable to backup original auxiliary object");
+        }
+    }
+    
+    
+    @Override
+    public void revertBackupAsAux(String auxItemTag) throws IOException {
+        String destinationKey = getDestinationKey(auxItemTag);
+        try {
+            s3.copyObject(new CopyObjectRequest(bucketName, destinationKey,  bucketName, key));
+            deleteAuxObject(auxItemTag);
+        } catch (AmazonClientException ase) {
+            logger.warning("Caught an AmazonServiceException in S3AccessIO.backupAsAux:    " + ase.getMessage());
+            throw new IOException("S3AccessIO: Unable to revert backup auxiliary object");
         }
     }
 
@@ -365,7 +390,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             File inputFile = fileSystemPath.toFile();
             s3.putObject(new PutObjectRequest(bucketName, destinationKey, inputFile));            
         } catch (AmazonClientException ase) {
-            logger.warning("Caught an AmazonServiceException in S3AccessIO.savePathAsAux():    " + ase.getMessage());
+            logger.warning("Caught an AmazonClientException in S3AccessIO.savePathAsAux():    " + ase.getMessage());
             throw new IOException("S3AccessIO: Failed to save path as an auxiliary object.");
         }
     }
@@ -387,7 +412,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 String failureMsg = ioex.getMessage();
 
                 if (failureMsg == null) {
-                    failureMsg = "S3AccessIO: Unknown exception occured while saving a local InputStream as S3Object";
+                    failureMsg = "S3AccessIO: SdkClientException occured while saving a local InputStream as S3Object";
                 }
                 throw new IOException(failureMsg);
             }
@@ -434,7 +459,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             String failureMsg = ioex.getMessage();
 
             if (failureMsg == null) {
-                failureMsg = "S3AccessIO: Unknown exception occured while saving a local InputStream as S3Object";
+                failureMsg = "S3AccessIO: SdkClientException occured while saving a local InputStream as S3Object";
             }
             tempFile.delete();
             throw new IOException(failureMsg);
@@ -468,16 +493,26 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         List<String> ret = new ArrayList<>();
         ListObjectsRequest req = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
-        ObjectListing storedAuxFilesList = s3.listObjects(req);
+        ObjectListing storedAuxFilesList = null; 
+        try {
+            storedAuxFilesList = s3.listObjects(req);
+        } catch (SdkClientException sce) {
+            throw new IOException ("S3 listAuxObjects: failed to get a listing for "+prefix);
+        }
+        if (storedAuxFilesList == null) {
+            return ret;
+        }
         List<S3ObjectSummary> storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
         try {
             while (storedAuxFilesList.isTruncated()) {
                 logger.fine("S3 listAuxObjects: going to next page of list");
                 storedAuxFilesList = s3.listNextBatchOfObjects(storedAuxFilesList);
-                storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
+                if (storedAuxFilesList != null) {
+                    storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
+                }
             }
         } catch (AmazonClientException ase) {
-            logger.warning("Caught an AmazonServiceException in S3AccessIO.listAuxObjects():    " + ase.getMessage());
+            //logger.warning("Caught an AmazonServiceException in S3AccessIO.listAuxObjects():    " + ase.getMessage());
             throw new IOException("S3AccessIO: Failed to get aux objects for listing.");
         }
 
@@ -515,13 +550,18 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             ListObjectsRequest req = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
             ObjectListing storedAuxFilesList = s3.listObjects(req);
+            if (storedAuxFilesList == null) {
+                // nothing to delete
+                return; 
+            }
             storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
             while (storedAuxFilesList.isTruncated()) {
                 storedAuxFilesList = s3.listNextBatchOfObjects(storedAuxFilesList);
-                storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
+                if (storedAuxFilesList != null) {
+                    storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
+                }
             }
         } catch (AmazonClientException ase) {
-            logger.warning("Caught an AmazonServiceException:    " + ase.getMessage());
             throw new IOException("S3AccessIO: Failed to get aux objects for listing to delete.");
         }
 
@@ -540,12 +580,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         multiObjectDeleteRequest.setKeys(keys);
 
         logger.fine("Trying to delete auxiliary files...");
-            try {
-                s3.deleteObjects(multiObjectDeleteRequest);
-            } catch (MultiObjectDeleteException e) {
-                logger.warning("S3AccessIO: Unable to delete auxilary objects" + e.getMessage());
-                throw new IOException("S3AccessIO: Failed to delete one or more auxiliary objects.");
-            }
+        try {
+            s3.deleteObjects(multiObjectDeleteRequest);
+        } catch (SdkClientException e) {
+            throw new IOException("S3AccessIO: Failed to delete one or more auxiliary objects.");
+        }
     }
 
     //TODO: Do we need this?
@@ -570,7 +609,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             return s3.doesObjectExist(bucketName, destinationKey);
         } catch (AmazonClientException ase) {
-            logger.warning("Caught an AmazonServiceException in S3AccessIO.exists():    " + ase.getMessage());
+            logger.warning("Caught an AmazonClientException in S3AccessIO.exists():    " + ase.getMessage());
             return false;
         }
     }
@@ -590,9 +629,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         String destinationKey = getDestinationKey(auxItemTag);
         try {
             S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, destinationKey));
-            return s3object.getObjectContent();
+            if (s3object != null) {
+                return s3object.getObjectContent();
+            } 
+            return null; 
         } catch (AmazonClientException ase) {
-            logger.fine("Caught an AmazonServiceException in S3AccessIO.getAuxFileAsInputStream() (object not cached?):    " + ase.getMessage());
+            logger.fine("Caught an AmazonClientException in S3AccessIO.getAuxFileAsInputStream() (object not cached?):    " + ase.getMessage());
             return null;
         }
     }
@@ -667,15 +709,26 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             responseHeaders.setContentType(this.getDataFile().getContentType());
             generatePresignedUrlRequest.setResponseHeaders(responseHeaders);
 
-            URL s = s3.generatePresignedUrl(generatePresignedUrlRequest); 
+            URL s; 
+            try {
+                s = s3.generatePresignedUrl(generatePresignedUrlRequest);
+            } catch (SdkClientException sce) {
+                //throw new IOException("SdkClientException generating temporary S3 url for "+key+" ("+sce.getMessage()+")");
+                s = null; 
+            }
 
-            return s.toString();
+            if (s != null) {
+                return s.toString();
+            }
+            
+            //throw new IOException("Failed to generate temporary S3 url for "+key);
+            return null;
         } else if (dvObject instanceof Dataset) {
             throw new IOException("Data Access: GenerateTemporaryS3Url: Invalid DvObject type : Dataset");
         } else if (dvObject instanceof Dataverse) {
-            throw new IOException("Data Access: Invalid DvObject type : Dataverse");
+            throw new IOException("Data Access: GenerateTemporaryS3Url: Invalid DvObject type : Dataverse");
         } else {
-            throw new IOException("Data Access: Invalid DvObject type");
+            throw new IOException("Data Access: GenerateTemporaryS3Url: Unknown DvObject type");
         }
     }
     

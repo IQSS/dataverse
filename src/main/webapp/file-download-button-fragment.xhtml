@@ -228,7 +228,7 @@
                                actionListener="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse,fileMetadata, 'subset')}"
                                update="@widgetVar(downloadDataSubsetPopup)"
                                oncomplete="PF('downloadDataSubsetPopup').show()"
-                               value="Data Subset"
+                               value="#{bundle['file.downloadBtn.format.datasubset']}"
                                />
                 <p:commandLink id="fileDowloadDataSubsetButtonPopupReq" rendered="#{downloadPopupRequired}"
                                process="@this"
@@ -236,7 +236,7 @@
                                actionListener="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse,fileMetadata, 'subset')}"
                                update="@widgetVar(downloadPopup)"
                                oncomplete="PF('downloadPopup').show()"
-                               value="Data Subset"
+                               value="#{bundle['file.downloadBtn.format.datasubset']}"
                                />
             </li>
             <li class="dropdown-submenu pull-left">

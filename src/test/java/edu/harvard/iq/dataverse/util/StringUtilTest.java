@@ -130,17 +130,5 @@ public class StringUtilTest {
         assertEquals(source, decrypted);
     }
     
-    @Test
-    public void testIsValidEmail() {
-        assertTrue( StringUtil.isValidEmail("hello@world.com") );
-        assertTrue( StringUtil.isValidEmail("hello@world.co.il") );
-        assertTrue( StringUtil.isValidEmail("hello@under.world.co.il") );
-        
-        assertFalse( StringUtil.isValidEmail("hello at under.world.co.il") );
-        assertFalse( StringUtil.isValidEmail("hellounder.world.co.il") );
-        assertFalse( StringUtil.isValidEmail("hellounder@.world.co.il") );
-        assertFalse( StringUtil.isValidEmail("hellounder") );
-        assertFalse( StringUtil.isValidEmail("") );
-        assertFalse( StringUtil.isValidEmail(null) );
-    }
+
 }

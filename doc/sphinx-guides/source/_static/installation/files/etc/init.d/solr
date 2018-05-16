@@ -13,6 +13,8 @@ SOLR_USER=solr
 case $1 in
     start)
         echo "Starting Solr"
+        # Increase file descriptor limit:
+        ulimit -n 65000
         cd $SOLR_DIR
         sudo -u $SOLR_USER $SOLR_COMMAND start $SOLR_ARGS
         ;;

@@ -37,10 +37,12 @@ import org.hibernate.validator.constraints.NotBlank;
  *
  * @author skraffmiller
  */
-@NamedQueries(
+@NamedQueries({
         @NamedQuery(name = "Dataset.findByIdentifier",
-                query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier")
-)
+                query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier"), 
+        @NamedQuery(name = "Dataset.findByOwnerIdentifier", 
+                query = "SELECT o.identifier FROM DvObject o WHERE o.owner.id=:owner_id")
+})
 
 /*
     Below is the stored procedure for getting a numeric value from a database 
@@ -210,43 +212,6 @@ public class Dataset extends DvObjectContainer {
         return !getLocks().isEmpty();
     }
     
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
-
-    public String getAuthority() {
-        return authority;
-    }
-
-    public void setAuthority(String authority) {
-        this.authority = authority;
-    }
-
-    /**
-     * @return dataset identifier.
-     *         For example, a dataset with database id (primary key) 3, persistent ID
-     *         doi:10.5072/FK2/abcde, this should return "abcde".
-     */
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
-    }
-
-    public Date getGlobalIdCreateTime() {
-        return globalIdCreateTime;
-    }
-
-    public void setGlobalIdCreateTime(Date globalIdCreateTime) {
-        this.globalIdCreateTime = globalIdCreateTime;
-    }
-
     public Date getLastExportTime() {
         return lastExportTime;
     }
@@ -371,6 +336,8 @@ public class Dataset extends DvObjectContainer {
                 newFm.setRestricted(fm.isRestricted());
                 newFm.setDataFile(fm.getDataFile());
                 newFm.setDatasetVersion(dsv);
+                newFm.setProvFreeForm(fm.getProvFreeForm());
+                
                 dsv.getFileMetadatas().add(newFm);
             }
         }

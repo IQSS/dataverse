@@ -14,6 +14,12 @@ Basic access URI:
 
 ``/api/access/datafile/$id``
 
+.. note:: Files can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+
+  Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::
+
+    GET http://$SERVER/api/access/datafile/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+
 
 Parameters:
 ~~~~~~~~~~~

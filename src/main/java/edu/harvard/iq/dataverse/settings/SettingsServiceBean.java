@@ -53,6 +53,11 @@ public class SettingsServiceBean {
          */
         ComputeBaseUrl,
         /**
+         * Enables the provenance collection popup.
+         * Allows users to store their provenance json and description
+         */
+        ProvCollectionEnabled,
+        /**
          * For example, https://datacapture.example.org
          */
         DataCaptureModuleUrl,
@@ -241,14 +246,6 @@ public class SettingsServiceBean {
         */
         GeoconnectViewMaps,
         /**
-        For DEVELOPMENT ONLY. Generate SQL statements for populating
-        MapLayerMetadata objects when Geoconnect is not available.
-        
-        When files have related MapLayerMetadata objects, the "Explore button
-        will be available to users.
-        */
-        GeoconnectDebug,
-        /**
          The message added to a popup upon dataset publish
          * 
          */
@@ -348,7 +345,17 @@ public class SettingsServiceBean {
         /**
          * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
          */
-        PVCustomPasswordResetAlertMessage
+        PVCustomPasswordResetAlertMessage,
+        /*
+        String to describe DOI format for data files. Default is INDEPENDENT. (That is independent 
+        from the Dataset DOI
+        If 'DEPENEDENT' then the DOI will be the Dataset DOI plus a file DOI with a slash in between.
+        */
+        DataFilePIDFormat, 
+        /*
+        Number for the minimum number of files to send PID registration to asynchronous workflow
+        */
+        PIDAsynchRegFileCount
         ;
 
         @Override

@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.ProvPopupFragmentBean.UpdatesEntry;
+import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -109,6 +111,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     @Inject PermissionsWrapper permissionsWrapper;
     @Inject FileDownloadHelper fileDownloadHelper;
+    @Inject ProvPopupFragmentBean provPopupFragmentBean;
 
     private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
@@ -1086,10 +1089,28 @@ public class EditDatafilesPage implements java.io.Serializable {
                 return null;
             }            
         }
+
                 
         // Save the NEW files permanently: 
-        ingestService.addFiles(workingVersion, newFiles);
-        //boolean newDraftVersion = false; 
+        ingestService.finalizeFiles(workingVersion, newFiles);
+        //boolean newDraftVersion = false;    
+
+        Boolean provJsonChanges = false;
+        
+        if(systemConfig.isProvCollectionEnabled()) {
+            Boolean provFreeChanges = provPopupFragmentBean.updatePageMetadatasWithProvFreeform(fileMetadatas);
+
+            try {
+                provJsonChanges = provPopupFragmentBean.saveStagedProvJson(false);
+            } catch (AbstractApiBean.WrappedResponse ex) {
+                JsfHelper.addErrorMessage(getBundleString("file.metadataTab.provenance.error"));
+                Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            //Always update the whole dataset if updating prov
+            //The flow that happens when datasetUpdateRequired is false has problems with doing saving actions after its merge
+            //This was the simplest way to work around this issue for prov. --MAD 4.8.6.
+            datasetUpdateRequired = datasetUpdateRequired || provFreeChanges || provJsonChanges;
+        }
         
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
             logger.fine("issuing the dataset update command");
@@ -1106,6 +1127,22 @@ public class EditDatafilesPage implements java.io.Serializable {
                         if (fileMetadata.getDataFile().getStorageIdentifier() != null) {
                             if (fileMetadata.getDataFile().getStorageIdentifier().equals(workingVersion.getFileMetadatas().get(i).getDataFile().getStorageIdentifier())) {
                                 workingVersion.getFileMetadatas().set(i, fileMetadata);
+                            }
+                        }
+                    }
+                }
+                
+                
+                //Moves DataFile updates from popupFragment to page for saving
+                //This does not seem to collide with the tags updating below
+                if(systemConfig.isProvCollectionEnabled() && provJsonChanges) {
+                    HashMap<String,ProvPopupFragmentBean.UpdatesEntry> provenanceUpdates = provPopupFragmentBean.getProvenanceUpdates();
+                    for (int i = 0; i < dataset.getFiles().size(); i++) {
+                        for (UpdatesEntry ue : provenanceUpdates.values()) { 
+                            if (ue.dataFile.getStorageIdentifier() != null ) {
+                                if (ue.dataFile.getStorageIdentifier().equals(dataset.getFiles().get(i).getStorageIdentifier())) {
+                                    dataset.getFiles().set(i, ue.dataFile);
+                                }
                             }
                         }
                     }
@@ -1166,8 +1203,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             // requested that the entire dataset is updated). So we'll try to update 
             // only the filemetadatas and/or files affected, and not the 
             // entire version. 
-            // TODO: in 4.3, create SaveDataFileCommand!
-            // -- L.A. Sep. 21 2015, 4.2
             Timestamp updateTime = new Timestamp(new Date().getTime());
         
             workingVersion.setLastUpdateTime(updateTime);
@@ -1248,19 +1283,29 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             }
         }
-           
-        newFiles.clear();
+        
+        if (newFiles.size() > 0) {
+            logger.fine("clearing newfiles list.");
+            newFiles.clear();
+            /*
+             - We decided not to bother obtaining persistent ids for new files 
+             as they are uploaded and created. The identifiers will be assigned 
+             later, when the version is published. 
+             
+            logger.info("starting async job for obtaining persistent ids for files.");
+            datasetService.obtainPersistentIdentifiersForDatafiles(dataset);
+            */
+        }
                 
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());
-        
+       
         if (mode == FileEditMode.SINGLE){
             JsfHelper.addSuccessMessage(getBundleString("file.message.editSuccess"));
             
         } else {
             JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
         }
-
         
 
         // Call Ingest Service one more time, to 
@@ -2663,6 +2708,5 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
     }
-
     
 }

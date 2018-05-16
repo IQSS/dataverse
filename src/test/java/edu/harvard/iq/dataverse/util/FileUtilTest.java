@@ -152,7 +152,7 @@ public class FileUtilTest {
         assertEquals("/api/access/datafile/bundle/42", FileUtil.getFileDownloadUrlPath("bundle", fileId, false));
         assertEquals("/api/access/datafile/42?format=original", FileUtil.getFileDownloadUrlPath("original", fileId, false));
         assertEquals("/api/access/datafile/42?format=RData", FileUtil.getFileDownloadUrlPath("RData", fileId, false));
-        assertEquals("/api/meta/datafile/42", FileUtil.getFileDownloadUrlPath("var", fileId, false));
+        assertEquals("/api/access/datafile/42/metadata", FileUtil.getFileDownloadUrlPath("var", fileId, false));
         assertEquals("/api/access/datafile/42?format=tab", FileUtil.getFileDownloadUrlPath("tab", fileId, false));
         assertEquals("/api/access/datafile/42?format=tab&gbrecs=true", FileUtil.getFileDownloadUrlPath("tab", fileId, true));
         assertEquals("/api/access/datafile/42?gbrecs=true", FileUtil.getFileDownloadUrlPath(null, fileId, true));
@@ -160,8 +160,8 @@ public class FileUtilTest {
 
     @Test
     public void testGetPublicDownloadUrl() {
-        assertEquals(null, FileUtil.getPublicDownloadUrl(null, null));
-        assertEquals("https://demo.dataverse.org/api/access/datafile/42", FileUtil.getPublicDownloadUrl("https://demo.dataverse.org", 42l));
+        assertEquals("null/api/access/datafile/:persistentId?persistentId=null", FileUtil.getPublicDownloadUrl(null, null));
+        assertEquals("https://demo.dataverse.org/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/TLU3EP", FileUtil.getPublicDownloadUrl("https://demo.dataverse.org", "doi:10.5072/FK2/TLU3EP"));
     }
 
     @Test
