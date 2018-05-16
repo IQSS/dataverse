@@ -50,7 +50,7 @@
                                     <div>
                                         <p:fragment id="userGroupsRequests" rendered="#{!empty manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}">
                                             <p>
-                                                <span class="highlightBold">#{manageFilePermissionsPage.fileAccessRequestMap.size()} Requests</span>
+                                                <span class="highlightBold">#{manageFilePermissionsPage.fileAccessRequestMap.size()} #{bundle['dataverse.permissions.requests']} </span>
                                             </p>
                                             
                                             <p:dataTable id="fileAccessRequests" styleClass="margin-bottom" var="access" value="#{manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}">
@@ -96,7 +96,7 @@
                                         </p:fragment>
                                         <p:fragment id="userGroups">
                                             <p>
-                                                <span class="highlightBold">#{manageFilePermissionsPage.roleAssigneeMap.size()} Users/Groups</span>
+                                                <span class="highlightBold">#{manageFilePermissionsPage.roleAssigneeMap.size()} #{bundle['dataverse.permissions.usersOrGroups']}</span>
                                             </p>
                                             
                                             <p:dataTable id="userGroupsAccess" var="ra" value="#{manageFilePermissionsPage.roleAssigneeMap.entrySet().toArray()}"
