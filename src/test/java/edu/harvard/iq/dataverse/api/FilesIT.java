@@ -1073,6 +1073,44 @@ public class FilesIT {
                 Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
     }
     
+    @Test
+    public void testUningestFileViaApi() throws InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        String pathToJsonFile = "scripts/api/data/dataset-create-new.json";
+        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // -------------------------
+        // Add initial file
+        // -------------------------
+        String pathToFile = "scripts/search/data/tabular/50by1000.dta";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        addResponse.prettyPrint();
+
+        addResponse.then().assertThat()
+                .body("data.files[0].dataFile.contentType", equalTo("application/x-stata"))
+                .body("data.files[0].label", equalTo("50by1000.dta"))
+                .statusCode(OK.getStatusCode());
+
+        long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        assertNotNull(origFileId);    // If checkOut fails, display message
+        sleep(10000);
+        Response uningestFileResponse = UtilIT.uningestFile(origFileId, apiToken);
+        assertEquals(200, uningestFileResponse.getStatusCode());       
+    }
+    
     
     private void msg(String m){
         System.out.println(m);

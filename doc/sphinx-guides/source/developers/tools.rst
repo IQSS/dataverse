@@ -13,6 +13,11 @@ Netbeans Connector Chrome Extension
 The `Netbeans Connector <https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa?hl=en>`_ extension for Chrome allows you to see changes you've made to HTML pages the moment you save the file without having to refresh your browser. See also 
 http://wiki.netbeans.org/ChromeExtensionInstallation
 
+pgAdmin3
+++++++++
+
+You probably installed pgAdmin3 when following the steps in the :doc:`dev-environment` section but if not, you can download it from https://www.pgadmin.org
+
 Maven
 +++++
 

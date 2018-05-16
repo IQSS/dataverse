@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 sudo -u postgres /usr/bin/postgres -D /var/lib/pgsql/data &
-cd /opt/solr-7.2.1/
+cd /opt/solr-7.3.0/
 # TODO: Run Solr as non-root and remove "-force".
 bin/solr start -force
 bin/solr create_core -c collection1 -d server/solr/collection1/conf -force

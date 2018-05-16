@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.search.IndexAllServiceBean;
+import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -24,7 +24,7 @@ public class SuperUserPage implements java.io.Serializable {
     @EJB
     IndexServiceBean indexService;
     @EJB
-    IndexAllServiceBean indexAllService;
+    IndexBatchServiceBean indexAllService;
 
     private String indexAllStatus = "No status available";
 

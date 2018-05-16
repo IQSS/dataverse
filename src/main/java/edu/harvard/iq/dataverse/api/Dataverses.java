@@ -30,15 +30,18 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetExplicitGroupCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListExplicitGroupsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRolesCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveRoleAssigneesFromExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
@@ -265,6 +268,16 @@ public class Dataverses extends AbstractApiBean {
         return response( req -> {
 			execCommand( new DeleteDataverseCommand(req, findDataverseOrDie(idtf)));
 			return ok( "Dataverse " + idtf  +" deleted");
+        });
+	}
+        
+        @DELETE
+	@Path("{linkingDataverseId}/deleteLink/{linkedDataverseId}")
+	public Response deleteDataverseLinkingDataverse( @PathParam("linkingDataverseId") String linkingDataverseId, @PathParam("linkedDataverseId") String linkedDataverseId) {
+                boolean index = true;
+		return response(req -> {
+			execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(linkingDataverseId), findDataverseLinkingDataverseOrDie(linkingDataverseId, linkedDataverseId), index));
+			return ok("Link from Dataverse " + linkingDataverseId + " to linked Dataverse " + linkedDataverseId + " deleted");
         });
 	}
 	
@@ -759,6 +772,47 @@ public class Dataverses extends AbstractApiBean {
 
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        }
+    }
+    
+    @POST
+    @Path("{id}/move/{targetDataverseAlias}") 
+    public Response moveDataverse(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {        
+        try{
+            User u = findUserOrDie();            
+            Dataverse dv = findDataverseOrDie(id);
+            Dataverse target = findDataverseOrDie(targetDataverseAlias);
+            if (target == null){
+                return error(Response.Status.BAD_REQUEST, "Target Dataverse not found.");
+            }            
+            execCommand(new MoveDataverseCommand(
+                    createDataverseRequest(u), dv, target, force
+                    ));
+            return ok("Dataverse moved successfully");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    @PUT
+    @Path("{linkedDataverseAlias}/link/{linkingDataverseAlias}") 
+    public Response linkDataverse(@PathParam("linkedDataverseAlias") String linkedDataverseAlias, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {        
+        try{
+            User u = findUserOrDie();            
+            Dataverse linked = findDataverseOrDie(linkedDataverseAlias);
+            Dataverse linking = findDataverseOrDie(linkingDataverseAlias);
+            if (linked == null){
+                return error(Response.Status.BAD_REQUEST, "Linked Dataverse not found.");
+            } 
+            if (linking == null){
+                return error(Response.Status.BAD_REQUEST, "Linking Dataverse not found.");
+            }   
+            execCommand(new LinkDataverseCommand(
+                    createDataverseRequest(u), linking, linked
+                    ));
+            return ok("Dataverse " + linked.getAlias() + " linked successfully to " + linking.getAlias());
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
         }
     }
 
