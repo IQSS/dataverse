@@ -74,10 +74,6 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         final DatasetVersion editVersion = getDataset().getEditVersion();
         tidyUpFields(editVersion);
         
-        if ( editVersion.getCreateTime() == null ) {
-            editVersion.setCreateTime(getTimestamp());
-        }
-        
         for (DataFile dataFile : getDataset().getFiles()) {
             if (dataFile.getCreateDate() == null) {
                 dataFile.setCreateDate(getTimestamp());

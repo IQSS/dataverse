@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.PersistentIdentifier;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
@@ -48,6 +49,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -88,6 +90,7 @@ import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * A REST API for dataverses.
@@ -249,13 +252,13 @@ public class Dataverses extends AbstractApiBean {
             }
             
             if ( nonEmpty(pidParam) ) {
-                String[] comps = pidParam.split(":");
-                if ( comps.length != 3 ) {
-                    return badRequest("parameter 'pid' should be of the form protocol:authority:identifier. E.g. doi:10.700/DVN:iddsqq");
+                Optional<PersistentIdentifier> maybePid = PersistentIdentifier.parse(pidParam, settingsSvc.getValueForKey(SettingsServiceBean.Key.DoiSeparator, ""));
+                if ( maybePid.isPresent() ) {
+                    ds.setPersistentIdentifier(maybePid.get());
+                } else {
+                    // unparsable PID passed. Terminate.
+                    return badRequest("Cannot parse the PID parameter. Make sure it is in valid form - see Dataverse Native API documentation.");
                 }
-                ds.setProtocol(comps[0]);
-                ds.setAuthority(comps[1]);
-                ds.setIdentifier(comps[2]);
             }
             
             if ( ds.getIdentifier() == null ) {

@@ -152,15 +152,9 @@ Import a Dataset into a Dataverse
 
 To import a dataset with an existing persistent identifier (pid), the dataset's metadata should be prepared in Dataverse's native JSON format. The pid can be provided in the JSON, or as a parameter at the URL. The following line imports a dataset with the pid ``prt:auth:id`` to Dataverse, and then releases it::
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets/:import?pid=prt:auth:id&release=yes --upload-file dataset.json
+  curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets/:import?pid=$PERSISTENT_IDENTIFIER&release=yes --upload-file dataset.json
 
-The pid is composed of three parts:
-
-* *prt* The protocol part of the pid. Currently ``doi`` or ``hdl``.
-* *auth* The authority part of the pid. E.g. ``10.7910/DVN``.
-* *id* The identifier part of the pid.
-
-If the ``pid`` parameter is not present, Dataverse will try to get the pid from the JSON. If there are no pid data in the JSON, the command will fail.
+The ``pid`` parameter holds a persistent identifier (such as a DOI or Handle). If it is not present, Dataverse will try to get the pid from the JSON. If there are no pid data in the JSON, the command will fail.
 
 The optional ``release`` parameter tells Dataverse to immediatly publish the dataset. If the parameter is changed to ``no``, the imported dataset will remain in ``DRAFT`` status.
 

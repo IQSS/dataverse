@@ -769,7 +769,27 @@ public class Dataset extends DvObjectContainer {
     public DatasetThumbnail getDatasetThumbnail() {
         return DatasetUtil.getThumbnail(this);
     }
-
+    
+    public void setPersistentIdentifier( PersistentIdentifier pid ) {
+        if ( pid == null ) {
+            setProtocol(null);
+            setAuthority(null);
+            setIdentifier(null);
+        } else {
+            setProtocol(pid.getProtocol());
+            setAuthority(pid.getAuthority());
+            setIdentifier(pid.getIdentifier());
+        }
+    }
+    
+    public PersistentIdentifier getPersistenIdentifier() {
+        if ( getProtocol() == null && getAuthority()==null && getIdentifier()==null ) {
+            return null;
+        } else {
+            return new PersistentIdentifier(getProtocol(), getAuthority(), getIdentifier());
+        }
+    }
+    
     /** 
      * Handle the case where we also have the datasetVersionId.
      * This saves trying to find the latestDatasetVersion, and 

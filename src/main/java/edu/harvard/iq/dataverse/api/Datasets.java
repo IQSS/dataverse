@@ -196,7 +196,6 @@ public class Datasets extends AbstractApiBean {
             // (the way Access API streams its output). 
             // -- L.A., 4.5
             
-            logger.fine("xml to return: " + xml);
             String mediaType = MediaType.TEXT_PLAIN;
             if (instance.isXMLFormat(exporter)){
                 mediaType = MediaType.APPLICATION_XML;
