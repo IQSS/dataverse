@@ -18,4 +18,5 @@ cd scripts/installer
 cp pgdriver/postgresql-8.4-703.jdbc4.jar $GLASSFISH_ROOT/glassfish/lib
 #cp ../../conf/jhove/jhove.conf $GLASSFISH_ROOT/glassfish/domains/$GLASSFISH_DOMAIN/config/jhove.conf
 cp /opt/dv/testdata/jhove.conf $GLASSFISH_ROOT/glassfish/domains/$GLASSFISH_DOMAIN/config/jhove.conf
+cp /opt/dv/testdata/jhoveConfig.xsd $GLASSFISH_ROOT/glassfish/domains/$GLASSFISH_DOMAIN/config/jhoveConfig.xsd
 ./glassfish-setup.sh
