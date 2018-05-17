@@ -185,10 +185,8 @@ public class SettingsServiceBean {
         Authority,
         /** DoiProvider for global id */
         DoiProvider,
-        /** DoiShoulder for global id */
+        /** DoiShoulder for global id - used to create a common prefix on identifiers */
         DoiShoulder,
-        //Do not force DOIs to uppercase before searching in database
-        DoiUseMixedCase,
         /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
         DoiUsername,
         DoiPassword,
