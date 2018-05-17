@@ -21,7 +21,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -1430,8 +1430,8 @@ public class AddReplaceFileHelper{
         }
 
         Command<Dataset> update_cmd;
-        update_cmd = new UpdateDatasetCommand(dataset, dvRequest);
-        ((UpdateDatasetCommand) update_cmd).setValidateLenient(true);  
+        update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest);
+        ((UpdateDatasetVersionCommand) update_cmd).setValidateLenient(true);  
         
         try {            
             // Submit the update dataset command 

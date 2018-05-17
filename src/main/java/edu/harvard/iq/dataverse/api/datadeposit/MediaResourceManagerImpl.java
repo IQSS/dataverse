@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -167,7 +167,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                              * last argument to isUserAllowedOn be changed from
                              * "dataset" to "fileToDelete"?
                              */
-                            UpdateDatasetCommand updateDatasetCommand = new UpdateDatasetCommand(dataset, dvReq, fileToDelete);
+                            UpdateDatasetVersionCommand updateDatasetCommand = new UpdateDatasetVersionCommand(dataset, dvReq, fileToDelete);
                             if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dataverseThatOwnsFile.getAlias());
                             }
@@ -211,7 +211,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset with global ID of " + globalId);
             }
-            UpdateDatasetCommand updateDatasetCommand = new UpdateDatasetCommand(dataset, dvReq);
+            UpdateDatasetVersionCommand updateDatasetCommand = new UpdateDatasetVersionCommand(dataset, dvReq);
             if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalIdString());
             }

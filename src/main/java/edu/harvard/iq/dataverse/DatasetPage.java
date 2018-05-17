@@ -25,7 +25,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
@@ -1977,7 +1977,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public String registerDataset() {
         try {
-            UpdateDatasetCommand cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
+            UpdateDatasetVersionCommand cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
             cmd.setValidateLenient(true); 
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
@@ -2559,8 +2559,8 @@ public class DatasetPage implements java.io.Serializable {
                 }
                 
             } else {
-                cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
-                ((UpdateDatasetCommand) cmd).setValidateLenient(true);  
+                cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
+                ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);  
             }
             dataset = commandEngine.submit(cmd);
             if (editMode == EditMode.CREATE) {
@@ -2799,7 +2799,7 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isLockedFromEdits() {
         if(null == lockedFromEditsVar) {
             try {
-                permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
+                permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest()));
                 lockedFromEditsVar = false;
             } catch (IllegalCommandException ex) {
                 lockedFromEditsVar = true;

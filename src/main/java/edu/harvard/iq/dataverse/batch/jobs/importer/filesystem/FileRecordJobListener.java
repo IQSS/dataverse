@@ -38,7 +38,7 @@ import edu.harvard.iq.dataverse.batch.entities.JobExecutionEntity;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.listener.ItemReadListener;
@@ -272,7 +272,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
 
         boolean canIssueCommand = permissionServiceBean
                 .requestOn(new DataverseRequest(user, (HttpServletRequest) null), dataset)
-                .canIssue(UpdateDatasetCommand.class);
+                .canIssue(UpdateDatasetVersionCommand.class);
         if (!canIssueCommand) {
             getJobLogger().log(Level.SEVERE, "User doesn't have permission to import files into this dataset.");
             return false;

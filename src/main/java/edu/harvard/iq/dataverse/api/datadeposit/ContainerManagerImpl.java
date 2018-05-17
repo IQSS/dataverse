@@ -15,7 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
@@ -130,7 +130,7 @@ public class ContainerManagerImpl implements ContainerManager {
                 Dataset dataset = datasetService.findByGlobalId(globalId);
                 if (dataset != null) {
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
-                    UpdateDatasetCommand updateDatasetCommand = new UpdateDatasetCommand(dataset, dvReq);
+                    UpdateDatasetVersionCommand updateDatasetCommand = new UpdateDatasetVersionCommand(dataset, dvReq);
                     if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
                     }

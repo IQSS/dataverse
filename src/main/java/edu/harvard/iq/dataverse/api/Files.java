@@ -19,7 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
@@ -120,7 +120,7 @@ public class Files extends AbstractApiBean {
 
         // update the dataset
         try {
-            engineSvc.submit(new UpdateDatasetCommand(dataFile.getOwner(), dataverseRequest));
+            engineSvc.submit(new UpdateDatasetVersionCommand(dataFile.getOwner(), dataverseRequest));
         } catch (CommandException ex) {
             return error(BAD_REQUEST, "Problem saving datafile " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
         }

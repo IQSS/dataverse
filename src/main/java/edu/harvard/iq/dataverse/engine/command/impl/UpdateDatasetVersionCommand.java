@@ -17,23 +17,23 @@ import java.util.logging.Logger;
  * @author skraffmiller
  */
 @RequiredPermissions(Permission.EditDataset)
-public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
+public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset> {
 
-    private static final Logger logger = Logger.getLogger(UpdateDatasetCommand.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(UpdateDatasetVersionCommand.class.getCanonicalName());
     private final List<FileMetadata> filesToDelete;
     private boolean validateLenient = false;
     
-    public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
+    public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
         this.filesToDelete = new ArrayList<>();
     }    
     
-    public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete) {
+    public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete) {
         super(aRequest, theDataset);
         this.filesToDelete = filesToDelete;
     }
     
-    public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, DataFile fileToDelete) {
+    public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, DataFile fileToDelete) {
         super(aRequest, theDataset);
         
         // get the latest file metadata for the file; ensuring that it is a draft version
@@ -61,7 +61,7 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         }
         
         ctxt.permissions().checkEditDatasetLock(getDataset(), getRequest(), this);
-        // Dataset has no locks prventing the update
+        // Invariant: Dataset has no locks prventing the update
         
         getDataset().getEditVersion().setDatasetFields(getDataset().getEditVersion().initDatasetFields());
         validateOrDie( getDataset().getEditVersion(), isValidateLenient() );

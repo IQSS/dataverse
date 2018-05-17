@@ -16,7 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
@@ -476,7 +476,7 @@ public class FilePage implements java.io.Serializable {
 
         Command<Dataset> cmd;
         try {
-            cmd = new UpdateDatasetCommand(editDataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
+            cmd = new UpdateDatasetVersionCommand(editDataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
             commandEngine.submit(cmd);
 
         } catch (EJBException ex) {
@@ -731,7 +731,7 @@ public class FilePage implements java.io.Serializable {
         
         if(null == lockedFromEditsVar) {
             try {
-                permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
+                permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest()));
                 lockedFromEditsVar = false;
             } catch (IllegalCommandException ex) {
                 lockedFromEditsVar = true;

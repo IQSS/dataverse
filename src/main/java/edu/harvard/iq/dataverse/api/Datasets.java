@@ -59,7 +59,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
@@ -379,7 +379,7 @@ public class Datasets extends AbstractApiBean {
                 final DatasetVersion editVersion = ds.getEditVersion();
                 editVersion.setDatasetFields(incomingVersion.getDatasetFields());
                 editVersion.setTermsOfUseAndAccess( incomingVersion.getTermsOfUseAndAccess() );
-                Dataset managedDataset = execCommand( new UpdateDatasetCommand(ds, req));
+                Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
                 managedVersion = managedDataset.getEditVersion();
             } else {
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, incomingVersion));
