@@ -298,7 +298,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             if (idResults != null) {
                 for (Object raw: idResults){
                     String identifier = (String) raw;
-                    identifier =  identifier.substring(identifier.lastIndexOf("/") + 1);
+                    identifier =  identifier.substring(identifier.indexOf("/") + 1);
                     testVal = new Long(identifier) ;
                     if (testVal > retVal){
                         retVal = testVal;

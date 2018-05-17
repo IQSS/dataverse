@@ -126,7 +126,7 @@ public class GlobalId implements java.io.Serializable {
         } 
         
         int index1 = identifierString.indexOf(':');
-        int index2 = identifierString.lastIndexOf('/');
+        int index2 = identifierString.indexOf('/');
         if (index1==-1) {
             return false; 
         }  
