@@ -1532,7 +1532,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     
     public String generateDataFileIdentifier(DataFile datafile, IdServiceBean idServiceBean) {
-        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.DatafileIdentifierGenerationStyle, "randomString");
         String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
         
         String datasetIdentifer = "";

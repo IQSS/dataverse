@@ -208,7 +208,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     public String generateDatasetIdentifier(Dataset dataset, IdServiceBean idServiceBean) {
-        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetIdentifierGenerationStyle, "randomString");
         String doiShoulder = settingsService.getValueForKey(SettingsServiceBean.Key.DoiShoulder, "");
        
         switch (doiIdentifierType) {
@@ -298,7 +298,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             if (idResults != null) {
                 for (Object raw: idResults){
                     String identifier = (String) raw;
-                    identifier =  identifier.substring(identifier.indexOf("/") + 1);
+                    identifier =  identifier.substring(identifier.lastIndexOf("/") + 1);
                     testVal = new Long(identifier) ;
                     if (testVal > retVal){
                         retVal = testVal;
