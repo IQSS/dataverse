@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -15,6 +17,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.json.JsonObjectBuilder;
@@ -45,7 +49,9 @@ public class BatchImport extends AbstractApiBean {
     ImportServiceBean importService;
     @EJB
     BatchServiceBean batchService;
-
+    
+    private static final Logger logger = Logger.getLogger(BatchImport.class.getName());
+    static XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
     /**
      * migrate - only needed for importing studies from old DVN installations
      * into Dataverse 4.0 read ddi files from the filesystem, and import them in
@@ -114,6 +120,7 @@ public class BatchImport extends AbstractApiBean {
      * 
      * @param parentIdtf the dataverse to import into (id or alias)
      * @param apiKey user's api key
+     * @param fileName Dataset Id string
      * @param fileInputStream InputStream of the uploaded Json File
      * @return import status (including id of the dataset created)
      */
@@ -124,7 +131,13 @@ public class BatchImport extends AbstractApiBean {
     public Response postImportWoI(
             @FormDataParam("dv") String parentIdtf, 
             @FormDataParam("key") String apiKey, 
+            @FormDataParam("filename") String fileName,
             @FormDataParam("file") InputStream fileInputStream) {
+        logger.log(Level.INFO, " ========= BatchImport#importwoi() is called  =========");
+        logger.log(Level.INFO, "datavarse Id: number or alias={0}", parentIdtf);
+        logger.log(Level.INFO, "api key={0}", apiKey);
+        logger.log(Level.INFO, "filename={0}", fileName);
+        
         
         DataverseRequest dataverseRequest;
         
@@ -139,7 +152,7 @@ public class BatchImport extends AbstractApiBean {
         }
         
         Dataverse owner = findDataverse(parentIdtf);
-        
+        logger.log(Level.INFO, "dataverse:owner={0}", owner);
         if (owner == null) {
             return error(Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
         }
@@ -147,7 +160,8 @@ public class BatchImport extends AbstractApiBean {
         try {
             PrintWriter cleanupLog = null; // Cleanup log isn't needed for ImportType == NEW. We don't do any data cleanup in this mode.
 
-            JsonObjectBuilder status = importService.doImportWoI(dataverseRequest, owner, fileInputStream, ImportType.NEW, cleanupLog);
+            JsonObjectBuilder status = importService.doImportWoI(dataverseRequest, owner, fileInputStream, fileName, ImportType.NEW, cleanupLog);
+            logger.log(Level.INFO, "returned status={0}", xstream.toXML(status));
             return this.ok(status);
         } catch (ImportException | IOException e) {
             return this.error(Response.Status.BAD_REQUEST, e.getMessage());

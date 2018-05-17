@@ -7,6 +7,8 @@ package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -84,7 +86,7 @@ public class ImportServiceBean {
     private EntityManager em;
     
     private static final Logger logger = Logger.getLogger(ImportServiceBean.class.getCanonicalName());
-
+    static XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
     @EJB
     protected EjbDataverseEngine engineSvc;
     @EJB
@@ -530,12 +532,20 @@ public class ImportServiceBean {
 //     
     /**
     creates a new Dataset with provided Json file without invoking ingest requests.
-    
+     * @param dataverseRequest    
+     * @param owner    
+     * @param fileInputStream    
+     * @param importType    
+     * @param cleanupLog    
+     * @return     
+     * @throws edu.harvard.iq.dataverse.api.imports.ImportException     
+     * @throws java.io.IOException     
     */
-    public JsonObjectBuilder doImportWoI(DataverseRequest dataverseRequest, Dataverse owner, InputStream fileInputStream, ImportType importType, PrintWriter cleanupLog) throws ImportException, IOException {
+    public JsonObjectBuilder doImportWoI(DataverseRequest dataverseRequest, Dataverse owner, InputStream fileInputStream, String fileName, ImportType importType, PrintWriter cleanupLog) throws ImportException, IOException {
+        
+        logger.log(Level.INFO, "========== ImportServiceBean#doImportWoI() is called ==========", cleanupLog);
         String status = "";
         Long createdId = null;
-        String fileName = "";
 
         try (JsonReader jsonReader = Json.createReader(fileInputStream);) {
             JsonObject obj = jsonReader.readObject();
@@ -543,6 +553,8 @@ public class ImportServiceBean {
             JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
             parser.setLenient(false);
             Dataset ds = parser.parseDataset(obj);
+            
+            logger.log(Level.INFO, "dataset={0}", xstream.toXML(ds));
 
             // For ImportType.NEW, if the user supplies a global identifier, and it's not a protocol
             // we support, it will be rejected.
@@ -554,6 +566,8 @@ public class ImportServiceBean {
 
             ds.setOwner(owner);
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
+            
+            logger.log(Level.INFO, "dataset: after setting the owner={0}", xstream.toXML(ds));
 
             // Check data against required contraints
             List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
@@ -615,35 +629,60 @@ public class ImportServiceBean {
                 }
             }
 
+            // check whether the imported dataset exists
             Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
-
+            
             if (existingDs != null) {
+                // case #1: the dataset exists
+                // case #1.1: harvesting case
                 if (importType.equals(ImportType.HARVEST)) {
+                    logger.log(Level.INFO, "case #1.1 harvested case");
                     // For harvested datasets, there should always only be one version.
                     // We will replace the current version with the imported version.
                     if (existingDs.getVersions().size() != 1) {
                         throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDs.getVersions().size() + " versions");
                     }
+                    
+                    logger.log(Level.INFO, "calling DestroyDatasetCommand");
                     engineSvc.submit(new DestroyDatasetCommand(existingDs, dataverseRequest));
                     Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, importType));
                     status = " updated dataset, id=" + managedDs.getId() + ".";
+                    
+                    logger.log(Level.INFO, "case #1.1: status={0}", status);
                 } else {
+                    // case #1.2 non-harvesting import
                     // If we are adding a new version to an existing dataset,
                     // check that the version number isn't already in the dataset
+                    logger.log(Level.INFO, "case #1.2 non-harvesting import case");
+                    logger.log(Level.INFO, "datasetVersion from the uploaded data", ds.getLatestVersion().getVersionNumber());
                     for (DatasetVersion dsv : existingDs.getVersions()) {
+                        logger.log(Level.INFO, "this datasetVersion={0}", dsv.getVersionNumber());
                         if (dsv.getVersionNumber().equals(ds.getLatestVersion().getVersionNumber())) {
                             throw new ImportException("VersionNumber " + ds.getLatestVersion().getVersionNumber() + " already exists in dataset " + existingDs.getGlobalId());
                         }
                     }
+                    logger.log(Level.INFO, "existing versions do not have this one");
+                    
+                    logger.log(Level.INFO, "calling CreateDatasetVersionCommand");
                     DatasetVersion dsv = engineSvc.submit(new CreateDatasetVersionCommand(dataverseRequest, existingDs, ds.getVersions().get(0)));
+                    
+                    
                     status = " created datasetVersion, for dataset " + dsv.getDataset().getGlobalId();
+                    logger.log(Level.INFO, "case #1.2 status={0}", status);
+                    
                     createdId = dsv.getId();
+                    logger.log(Level.INFO, "createdId={0}", createdId);
                 }
 
             } else {
+                // case #2 dataset does not exist
+                logger.log(Level.INFO, "case #2: dataset does not exist=> new dataset");
+                logger.log(Level.INFO, "calling CreateDatasetCommand");
                 Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, importType));
                 status = " created dataset, id=" + managedDs.getId() + ".";
+                logger.log(Level.INFO, "case #2: new dataset: status={0}", status);
                 createdId = managedDs.getId();
+                logger.log(Level.INFO, "case #2: createdId={0}", createdId);
             }
 
         } catch (JsonParseException ex) {
