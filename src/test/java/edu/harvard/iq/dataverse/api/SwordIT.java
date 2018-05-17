@@ -461,15 +461,7 @@ public class SwordIT {
         listDatasetsAtRootAsSuperuser.then().assertThat().statusCode(OK.getStatusCode());
         assertTrue(listDatasetsAtRootAsSuperuser.body().asString().contains(identifier));
 
-        // apiTokenContributor used to be enough to run showDataverseContents but after
-        // the 2438-4295-dois-for-files branch was merged (pull request #4350) we've had
-        // to switch this to apiTokenSuperuser. Very strange. It's unknown why this changed or when.
-        Response rootDataverseContents = UtilIT.showDataverseContents(rootDataverseAlias, apiTokenSuperuser);
-        rootDataverseContents.prettyPrint();
-        rootDataverseContents.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        logger.info("We expect to find \"" + identifier + "\" from the persistent ID to be present.");
-        assertTrue(rootDataverseContents.body().asString().contains(identifier));
+
 
         Response publishShouldFailForContributorViaSword = UtilIT.publishDatasetViaSword(persistentId, apiTokenContributor);
         publishShouldFailForContributorViaSword.prettyPrint();
@@ -551,7 +543,15 @@ public class SwordIT {
                  */
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("error.summary", equalTo("User " + usernameNoPrivs + " " + usernameNoPrivs + " is not authorized to modify dataverse " + dataverseAlias));
+        
+        Response thisDataverseContents = UtilIT.showDataverseContents(dataverseAlias, apiTokenNoPrivs);
+        thisDataverseContents.prettyPrint();
+        thisDataverseContents.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        logger.info("Without priviledges we do not expect to find \"" + persistentId + "\" from the persistent ID to be present for random user");
+        assertFalse(thisDataverseContents.body().asString().contains(persistentId.toString()));
 
+        
         Response publishDataset = UtilIT.publishDatasetViaSword(persistentId, apiToken);
         publishDataset.prettyPrint();
         publishDataset.then().assertThat()
@@ -585,6 +585,15 @@ public class SwordIT {
 
         Integer datasetId = JsonPath.from(reindexDatasetToFindDatabaseId.asString()).getInt("data.id");
 
+        /* get contents again after publication - should see id*/
+        thisDataverseContents = UtilIT.showDataverseContents(dataverseAlias, apiToken);
+        thisDataverseContents.prettyPrint();
+        thisDataverseContents.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        logger.info("We expect to find \"" + datasetId + "\" from the persistent ID to be present.");
+        assertTrue(thisDataverseContents.body().asString().contains(datasetId.toString()));
+        
+        
         /**
          * @todo The "destroy" endpoint should accept a persistentId:
          * https://github.com/IQSS/dataverse/issues/1837

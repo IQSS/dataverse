@@ -33,20 +33,16 @@ public class ListDataverseContentCommand extends AbstractCommand<List<DvObject>>
     @Override
     public List<DvObject> execute(CommandContext ctxt) throws CommandException {
         LinkedList<DvObject> result = new LinkedList<>();
-        for (Dataset ds : ctxt.datasets().findByOwnerId(dvToList.getId())) {
-            try {
-                ds = ctxt.engine().submit(new GetDatasetCommand(getRequest(), ds));
+        
+        for (Dataset ds : ctxt.datasets().findByOwnerId(dvToList.getId())) {            
+            if (ds.isReleased() || ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)) {
                 result.add(ds);
-            } catch (PermissionException ex) {
-                // The PermissionException is ignored because we are iterating through all datasets, collecting the ones the user has permission to see.
             }
         }
+        
         for (Dataverse dv : ctxt.dataverses().findByOwnerId(dvToList.getId())) {
-            try {
-                dv = ctxt.engine().submit(new GetDataverseCommand(getRequest(), dv));
+            if (dv.isReleased() || ctxt.permissions().requestOn(getRequest(), dv).has(Permission.ViewUnpublishedDataverse)) {
                 result.add(dv);
-            } catch (PermissionException ex) {
-                // The PermissionException is ignored because we are iterating through all dataverses, collecting the ones the user has permission to see.
             }
         }
 
