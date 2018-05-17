@@ -365,7 +365,8 @@ public class FileRecordWriter extends AbstractItemWriter {
         String nonNullDefaultIfKeyNotFound = "";
         String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        String doiSeparator = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
+        //Hardcoded as '/' which is what's required for DOIs and Handles as the authority - identifier separator.
+        String doiSeparator = "/";
         if (packageFile.getProtocol() == null) {
             packageFile.setProtocol(protocol);
         }
