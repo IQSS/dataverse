@@ -154,6 +154,10 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         if (theDataset.getAuthority() == null) {
             theDataset.setAuthority(authority);
         }
+        if (theDataset.getDoiSeparator() == null) {
+        	// '/', the required authority - identifier separator for DOI and Handle is hardcoded in many places
+            theDataset.setDoiSeparator("/");
+        }
         if (theDataset.getStorageIdentifier() == null) {
             try {
                 DataAccess.createNewStorageIO(theDataset, "placeholder");

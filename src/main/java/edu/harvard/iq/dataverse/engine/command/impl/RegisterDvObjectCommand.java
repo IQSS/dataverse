@@ -37,7 +37,9 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         String nonNullDefaultIfKeyNotFound = "";
         String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        String doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
+        // Current code assumes in many places that the authority - identifier separator for new identifiers 
+        // is '/' as is true for DOI and Handle
+        String doiSeparator = "/";
         IdServiceBean idServiceBean = IdServiceBean.getBean(target.getProtocol(), ctxt);
         try {
             //Test to see if identifier already present

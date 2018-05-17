@@ -957,7 +957,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                     datafile.setAuthority(settingsService.getValueForKey(SettingsServiceBean.Key.Authority, ""));
                 }
                 if (datafile.getDoiSeparator() == null) {
-                    datafile.setDoiSeparator(settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, ""));
+                    datafile.setDoiSeparator("/");
                 }
 
                 logger.info("identifier: " + datafile.getIdentifier());

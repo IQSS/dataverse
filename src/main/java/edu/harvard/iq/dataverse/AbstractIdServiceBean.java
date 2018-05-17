@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 public abstract class AbstractIdServiceBean implements IdServiceBean {
 
     private static final Logger logger = Logger.getLogger(AbstractIdServiceBean.class.getCanonicalName());
+    private static final String ID_SEPARATOR="/";
 
     @EJB
     DataverseServiceBean dataverseService;
@@ -96,7 +97,7 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
 
         String protocol = dvObject.getProtocol() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : dvObject.getProtocol();
         String authority = dvObject.getAuthority() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : dvObject.getAuthority();
-        String doiSeparator = dvObject.getDoiSeparator() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator) : dvObject.getDoiSeparator();
+        String doiSeparator = dvObject.getDoiSeparator() == null ? ID_SEPARATOR : dvObject.getDoiSeparator();
         IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, commandEngine.getContext());
         if (dvObject.isInstanceofDataset()) {
             dvObject.setIdentifier(datasetService.generateDatasetIdentifier((Dataset) dvObject, idServiceBean));
