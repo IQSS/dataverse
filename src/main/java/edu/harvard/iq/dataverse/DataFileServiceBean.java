@@ -1534,6 +1534,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     public String generateDataFileIdentifier(DataFile datafile, IdServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.DatafileIdentifierGenerationStyle, "randomString");
         String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+        String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.DoiShoulder, "");
         
         String datasetIdentifer = "";
         //If format is dependent then pre-pend the dataset identifier
@@ -1543,30 +1544,34 @@ public class DataFileServiceBean implements java.io.Serializable {
  
         switch (doiIdentifierType) {
             case "randomString":               
-                return datasetIdentifer + generateIdentifierAsRandomString(datafile, idServiceBean);
+            	 if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){
+                return datasetIdentifer + generateIdentifierAsRandomString(datafile, idServiceBean, shoulder);
+            	 } else {
+            		 return datasetIdentifer + generateIdentifierAsRandomString(datafile, idServiceBean, "");
+            	 }     
             case "sequentialNumber":
                 if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
-                    return generateIdentifierAsIndependentSequentialNumber(datafile, idServiceBean);
+                    return generateIdentifierAsIndependentSequentialNumber(datafile, idServiceBean, shoulder);
                 } else {
                     return generateIdentifierAsDependentSequentialNumber(datafile, idServiceBean);
                 }
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return datasetIdentifer + generateIdentifierAsRandomString(datafile, idServiceBean);
+                return datasetIdentifer + generateIdentifierAsRandomString(datafile, idServiceBean, "");
         }
     }
     
-    private String generateIdentifierAsRandomString(DataFile datafile, IdServiceBean idServiceBean) {
+    private String generateIdentifierAsRandomString(DataFile datafile, IdServiceBean idServiceBean, String shoulder) {
 
         String identifier = null;
         do {
-            identifier = RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+            identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
         } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
 
         return identifier;
     }
 
-    private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, IdServiceBean idServiceBean) {
+    private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, IdServiceBean idServiceBean, String shoulder) {
         
         String identifier; 
         do {
@@ -1578,7 +1583,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             if (identifierNumeric == null) {
                 return null; 
             }
-            identifier = identifierNumeric.toString();
+            identifier = shoulder + identifierNumeric.toString();
         } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
         
         return identifier;

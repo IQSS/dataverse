@@ -208,35 +208,35 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     public String generateDatasetIdentifier(Dataset dataset, IdServiceBean idServiceBean) {
-        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetIdentifierGenerationStyle, "randomString");
-        String doiShoulder = settingsService.getValueForKey(SettingsServiceBean.Key.DoiShoulder, "");
+        String identifierType = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetIdentifierGenerationStyle, "randomString");
+        String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.DoiShoulder, "");
        
-        switch (doiIdentifierType) {
+        switch (identifierType) {
             case "randomString":
-                return generateIdentifierAsRandomString(dataset, idServiceBean);
+                return generateIdentifierAsRandomString(dataset, idServiceBean, "");
             case "sequentialNumber":
-                return generateIdentifierAsSequentialNumber(dataset, idServiceBean);
+                return generateIdentifierAsSequentialNumber(dataset, idServiceBean, "");
             case "shoulderWithRandomString":
-            	 return doiShoulder + generateIdentifierAsRandomString(dataset, idServiceBean);
+            	 return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
             case "shoulderWithSequentialNumber":
-           	 	 return doiShoulder + generateIdentifierAsSequentialNumber(dataset, idServiceBean);
+           	 	 return generateIdentifierAsSequentialNumber(dataset, idServiceBean, shoulder);
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return generateIdentifierAsRandomString(dataset, idServiceBean);
+                return generateIdentifierAsRandomString(dataset, idServiceBean,"");
         }
     }
     
-    private String generateIdentifierAsRandomString(Dataset dataset, IdServiceBean idServiceBean) {
+    private String generateIdentifierAsRandomString(Dataset dataset, IdServiceBean idServiceBean, String shoulder) {
 
         String identifier = null;
         do {
-            identifier = RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+            identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
         } while (!isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean));
 
         return identifier;
     }
 
-    private String generateIdentifierAsSequentialNumber(Dataset dataset, IdServiceBean idServiceBean) {
+    private String generateIdentifierAsSequentialNumber(Dataset dataset, IdServiceBean idServiceBean, String shoulder) {
         
         String identifier; 
         do {
@@ -248,7 +248,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             if (identifierNumeric == null) {
                 return null; 
             }
-            identifier = identifierNumeric.toString();
+            identifier = shoulder + identifierNumeric.toString();
         } while (!isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean));
         
         return identifier;
@@ -256,7 +256,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     /**
      * Check that a identifier entered by the user is unique (not currently used
-     * for any other study in this Dataverse Network) alos check for duplicate
+     * for any other study in this Dataverse Network) also check for duplicate
      * in EZID if needed
      * @param userIdentifier
      * @param dataset
