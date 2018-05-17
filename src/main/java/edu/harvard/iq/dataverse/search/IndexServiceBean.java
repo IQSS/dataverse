@@ -651,8 +651,8 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataset.getId());
         String dataverseVersion = systemConfig.getVersion();
         solrInputDocument.addField(SearchFields.DATAVERSE_VERSION_INDEXED_BY, dataverseVersion);
-        solrInputDocument.addField(SearchFields.IDENTIFIER, dataset.getGlobalId());
-        solrInputDocument.addField(SearchFields.DATASET_PERSISTENT_ID, dataset.getGlobalId());
+        solrInputDocument.addField(SearchFields.IDENTIFIER, dataset.getGlobalIdString());
+        solrInputDocument.addField(SearchFields.DATASET_PERSISTENT_ID, dataset.getGlobalIdString());
         solrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
 
@@ -988,7 +988,7 @@ public class IndexServiceBean {
 //            datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataFile.getOwner().getOwner().getName());
                     // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
                     datafileSolrInputDocument.addField(SearchFields.PARENT_ID, fileMetadata.getDataFile().getOwner().getId());
-                    datafileSolrInputDocument.addField(SearchFields.PARENT_IDENTIFIER, fileMetadata.getDataFile().getOwner().getGlobalId());
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_IDENTIFIER, fileMetadata.getDataFile().getOwner().getGlobalIdString());
                     datafileSolrInputDocument.addField(SearchFields.PARENT_CITATION, fileMetadata.getDataFile().getOwner().getCitation());
 
                     datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, parentDatasetTitle);

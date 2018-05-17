@@ -146,7 +146,7 @@ public class ExportService {
         try {
             DatasetVersion releasedVersion = dataset.getReleasedVersion();
             if (releasedVersion == null) {
-                throw new ExportException("No released version for dataset " + dataset.getGlobalId());
+                throw new ExportException("No released version for dataset " + dataset.getGlobalIdString());
             }
             JsonPrinter jsonPrinter = new JsonPrinter(settingsService);
             final JsonObjectBuilder datasetAsJsonBuilder = jsonPrinter.jsonAsDatasetDto(releasedVersion);
@@ -208,7 +208,7 @@ public class ExportService {
         } catch (ServiceConfigurationError serviceError) {
             throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
         } catch (IllegalStateException e) {
-            throw new ExportException("No published version found during export. " + dataset.getGlobalId());
+            throw new ExportException("No published version found during export. " + dataset.getGlobalIdString());
         }
     }
 

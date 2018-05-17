@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import java.util.Date;
 
 /**
  * Creates a new harvested dataset. Harvested datasets are indexed locally, while their
@@ -22,7 +21,7 @@ public class CreateHarvestedDatasetCommand extends AbstractCreateDatasetCommand 
     
     @Override
     protected void handlePid(Dataset theDataset, CommandContext ctxt) {
-        theDataset.setGlobalIdCreateTime(new Date());
+        theDataset.setGlobalIdCreateTime(getTimestamp());
     }
     
 }

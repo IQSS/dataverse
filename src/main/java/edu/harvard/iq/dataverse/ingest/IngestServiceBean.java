@@ -416,7 +416,7 @@ public class IngestServiceBean {
 
                     scheduledFiles.add(dataFile);
                 
-                    logger.fine("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest, for dataset: " + dataset.getGlobalId());
+                    logger.fine("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest, for dataset: " + dataset.getGlobalIdString());
                     count++;
                 } else {
                     dataFile.setIngestDone();

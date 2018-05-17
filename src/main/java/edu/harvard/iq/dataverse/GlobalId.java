@@ -11,6 +11,7 @@ import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
+import java.util.Optional;
 import javax.ejb.EJB;
 
 /**
@@ -27,11 +28,20 @@ public class GlobalId implements java.io.Serializable {
     
     @EJB
     SettingsServiceBean settingsService;
-
+    
+    public static Optional<GlobalId> parse(String identifier, String doiSeparator) {
+        return Optional.ofNullable(parsePersistentId(identifier, doiSeparator, new GlobalId(null, null, null)));
+    }
+    
+    /**
+     * 
+     * @param identifier
+     * @deprecated use {@link #parse}. This method assumes that the DOI separator is "/", instead of reading it from the database.
+     */
+    @Deprecated
     public GlobalId(String identifier) {
-        
         // set the protocol, authority, and identifier via parsePersistentId        
-        if (!this.parsePersistentId(identifier)){
+        if (parsePersistentId(identifier, "/", this) == null ){
             throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
         }
     }
@@ -109,47 +119,47 @@ public class GlobalId implements java.io.Serializable {
      *       identifier: 111012
      *
      * @param identifierString
-     * 
+     * @param separator the string that separates the authority from the identifier.
+     * @param destination the global id that will contain the parsed data.
+     * @return {@code destination}, after its fields have been updated, or
+     *         {@code null} if parsing failed.
      */
-    
-    private boolean parsePersistentId(String identifierString){
+    private static GlobalId parsePersistentId(String identifierString, String separator, GlobalId destination){
 
         if (identifierString == null){
-            return false;
+            return null;
         } 
         
         int index1 = identifierString.indexOf(':');
-        int index2 = identifierString.lastIndexOf('/');
         if (index1==-1) {
-            return false; 
+            return null; 
         }  
+        int index2 = identifierString.lastIndexOf(separator);
        
         String protocol = identifierString.substring(0, index1);
         
         if (!"doi".equals(protocol) && !"hdl".equals(protocol)) {
-            return false;
+            return null;
         }
-        
         
         if (index2 == -1) {
-            return false;
+            return null;
         } 
         
-        this.protocol = protocol;
-        this.authority = formatIdentifierString(identifierString.substring(index1+1, index2));
-        this.identifier = formatIdentifierString(identifierString.substring(index2+1));
+        destination.protocol = protocol;
+        destination.authority = formatIdentifierString(identifierString.substring(index1+1, index2));
+        destination.identifier = formatIdentifierString(identifierString.substring(index2+1));
         
-        if (this.protocol.equals(DOI_PROTOCOL)) {
-            if (!this.checkDOIAuthority(this.authority)) {
-                return false;
+        if (destination.protocol.equals(DOI_PROTOCOL)) {
+            if (!destination.checkDOIAuthority(destination.authority)) {
+                return null;
             }
         }
-        return true;
-
+        return destination;
     }
 
     
-    private String formatIdentifierString(String str){
+    private static String formatIdentifierString(String str){
         
         if (str == null){
             return null;

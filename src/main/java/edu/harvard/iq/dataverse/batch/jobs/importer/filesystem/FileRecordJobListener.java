@@ -370,14 +370,14 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             
             dataset = datasetServiceBean.find(new Long(datasetId));
             getJobLogger().log(Level.INFO, "Dataset Identifier (datasetId=" + datasetId + "): " + dataset.getIdentifier());
-            return dataset.getGlobalId();
+            return dataset.getGlobalIdString();
         }
         if (jobParams.containsKey("datasetPrimaryKey")) {
             long datasetPrimaryKey = Long.parseLong(jobParams.getProperty("datasetPrimaryKey"));
             dataset = datasetServiceBean.find(datasetPrimaryKey);
             getJobLogger().log(Level.INFO, "Dataset Identifier (datasetPrimaryKey=" + datasetPrimaryKey + "): " 
                     + dataset.getIdentifier());
-            return dataset.getGlobalId();
+            return dataset.getGlobalIdString();
         }
         getJobLogger().log(Level.SEVERE, "Can't find dataset.");
         dataset = null;

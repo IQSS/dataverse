@@ -12,7 +12,7 @@
     <p class="help-block">
         <span class="glyphicon glyphicon-info-sign"/>
         <h:outputFormat value=" #{bundle['file.dataFilesTab.versions.widget.viewMoreInfo']}" escape="false">
-            <f:param value="#{FilePage.fileMetadata.datasetVersion.dataset.globalId}"/>
+            <f:param value="#{FilePage.fileMetadata.datasetVersion.dataset.globalIdString}"/>
             <f:param value="#{FilePage.fileMetadata.datasetVersion.dataset.displayName}"/>
             <f:param value="#{dataverseServiceBean.findRootDataverse().displayName}"/>
         </h:outputFormat>

@@ -287,10 +287,26 @@ public class Dataset extends DvObjectContainer {
         return new GlobalId(this).toURL().toString();
     }
 
-    public String getGlobalId() {       
+    public String getGlobalIdString() {       
         return new GlobalId(this).toString();
     }
-
+    
+    public void setGlobalId( GlobalId pid ) {
+        if ( pid == null ) {
+            setProtocol(null);
+            setAuthority(null);
+            setIdentifier(null);
+        } else {
+            setProtocol(pid.getProtocol());
+            setAuthority(pid.getAuthority());
+            setIdentifier(pid.getIdentifier());
+        }
+    }
+    
+    public GlobalId getGlobalId() {
+        return new GlobalId(getProtocol(), getAuthority(), getIdentifier());
+    }
+    
     public List<DataFile> getFiles() {
         return files;
     }
@@ -662,13 +678,13 @@ public class Dataset extends DvObjectContainer {
     public String getRemoteArchiveURL() {
         if (isHarvested()) {
             if (HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(this.getHarvestedFrom().getHarvestStyle())) {
-                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId();
+                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalIdString();
             } else if (HarvestingClient.HARVEST_STYLE_VDC.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 String rootArchiveUrl = this.getHarvestedFrom().getHarvestingUrl();
                 int c = rootArchiveUrl.indexOf("/OAIHandler");
                 if (c > 0) {
                     rootArchiveUrl = rootArchiveUrl.substring(0, c);
-                    return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId();
+                    return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalIdString();
                 }
             } else if (HarvestingClient.HARVEST_STYLE_ICPSR.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 // For the ICPSR, it turns out that the best thing to do is to 
@@ -768,26 +784,6 @@ public class Dataset extends DvObjectContainer {
 
     public DatasetThumbnail getDatasetThumbnail() {
         return DatasetUtil.getThumbnail(this);
-    }
-    
-    public void setPersistentIdentifier( PersistentIdentifier pid ) {
-        if ( pid == null ) {
-            setProtocol(null);
-            setAuthority(null);
-            setIdentifier(null);
-        } else {
-            setProtocol(pid.getProtocol());
-            setAuthority(pid.getAuthority());
-            setIdentifier(pid.getIdentifier());
-        }
-    }
-    
-    public PersistentIdentifier getPersistenIdentifier() {
-        if ( getProtocol() == null && getAuthority()==null && getIdentifier()==null ) {
-            return null;
-        } else {
-            return new PersistentIdentifier(getProtocol(), getAuthority(), getIdentifier());
-        }
     }
     
     /** 

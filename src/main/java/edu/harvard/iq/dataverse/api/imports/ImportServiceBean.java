@@ -319,26 +319,26 @@ public class ImportServiceBean {
             
             // A Global ID is required, in order for us to be able to harvest and import
             // this dataset:
-            if (StringUtils.isEmpty(ds.getGlobalId())) {
+            if (StringUtils.isEmpty(ds.getGlobalIdString())) {
                 throw new ImportException("The harvested metadata record with the OAI server identifier "+harvestIdentifier+" does not contain a global unique identifier that we could recognize, skipping.");
             }
 
             ds.setHarvestedFrom(harvestingClient);
             ds.setHarvestIdentifier(harvestIdentifier);
             
-            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
+            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalIdString());
 
             if (existingDs != null) {
                 // If this dataset already exists IN ANOTHER DATAVERSE
                 // we are just going to skip it!
                 if (existingDs.getOwner() != null && !owner.getId().equals(existingDs.getOwner().getId())) {
-                    throw new ImportException("The dataset with the global id "+ds.getGlobalId()+" already exists, in the dataverse "+existingDs.getOwner().getAlias()+", skipping.");
+                    throw new ImportException("The dataset with the global id "+ds.getGlobalIdString()+" already exists, in the dataverse "+existingDs.getOwner().getAlias()+", skipping.");
                 }
                 // And if we already have a dataset with this same id, in this same
                 // dataverse, but it is  LOCAL dataset (can happen!), we're going to 
                 // skip it also: 
                 if (!existingDs.isHarvested()) {
-                    throw new ImportException("A LOCAL dataset with the global id "+ds.getGlobalId()+" already exists in this dataverse; skipping.");
+                    throw new ImportException("A LOCAL dataset with the global id "+ds.getGlobalIdString()+" already exists in this dataverse; skipping.");
                 }
                 // For harvested datasets, there should always only be one version.
                 // We will replace the current version with the imported version.
@@ -409,8 +409,8 @@ public class ImportServiceBean {
             // For ImportType.NEW, if the user supplies a global identifier, and it's not a protocol
             // we support, it will be rejected.
             if (importType.equals(ImportType.NEW)) {
-                if (ds.getGlobalId() != null && !ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""))) {
-                    throw new ImportException("Could not register id " + ds.getGlobalId() + ", protocol not supported");
+                if (ds.getGlobalIdString() != null && !ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""))) {
+                    throw new ImportException("Could not register id " + ds.getGlobalIdString() + ", protocol not supported");
                 }
             }
 
@@ -479,7 +479,7 @@ public class ImportServiceBean {
             }
 
 
-            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
+            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalIdString());
 
             if (existingDs != null) {
                 if (importType.equals(ImportType.HARVEST)) {
@@ -497,11 +497,11 @@ public class ImportServiceBean {
                     // check that the version number isn't already in the dataset
                     for (DatasetVersion dsv : existingDs.getVersions()) {
                         if (dsv.getVersionNumber().equals(ds.getLatestVersion().getVersionNumber())) {
-                            throw new ImportException("VersionNumber " + ds.getLatestVersion().getVersionNumber() + " already exists in dataset " + existingDs.getGlobalId());
+                            throw new ImportException("VersionNumber " + ds.getLatestVersion().getVersionNumber() + " already exists in dataset " + existingDs.getGlobalIdString());
                         }
                     }
                     DatasetVersion dsv = engineSvc.submit(new CreateDatasetVersionCommand(dataverseRequest, existingDs, ds.getVersions().get(0)));
-                    status = " created datasetVersion, for dataset "+ dsv.getDataset().getGlobalId();
+                    status = " created datasetVersion, for dataset "+ dsv.getDataset().getGlobalIdString();
                     createdId = dsv.getId();
                 }
 

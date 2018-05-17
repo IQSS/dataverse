@@ -9,8 +9,8 @@ import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.PersistentIdentifier;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
@@ -224,7 +224,7 @@ public class Dataverses extends AbstractApiBean {
             return created("/datasets/" + managedDs.getId(),
                     Json.createObjectBuilder()
                             .add("id", managedDs.getId())
-                            .add("persistentId", managedDs.getGlobalId())
+                            .add("persistentId", managedDs.getGlobalIdString())
             );
                 
         } catch ( WrappedResponse ex ) {
@@ -252,9 +252,9 @@ public class Dataverses extends AbstractApiBean {
             }
             
             if ( nonEmpty(pidParam) ) {
-                Optional<PersistentIdentifier> maybePid = PersistentIdentifier.parse(pidParam, settingsSvc.getValueForKey(SettingsServiceBean.Key.DoiSeparator, ""));
+                Optional<GlobalId> maybePid = GlobalId.parse(pidParam, settingsSvc.getValueForKey(SettingsServiceBean.Key.DoiSeparator, ""));
                 if ( maybePid.isPresent() ) {
-                    ds.setPersistentIdentifier(maybePid.get());
+                    ds.setGlobalId(maybePid.get());
                 } else {
                     // unparsable PID passed. Terminate.
                     return badRequest("Cannot parse the PID parameter. Make sure it is in valid form - see Dataverse Native API documentation.");
@@ -283,7 +283,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset managedDs = execCommand(new ImportDatasetCommand(ds, request));
             JsonObjectBuilder responseBld = Json.createObjectBuilder()
                     .add("id", managedDs.getId())
-                    .add("persistentId", managedDs.getGlobalId());
+                    .add("persistentId", managedDs.getGlobalIdString());
             
             if ( shouldRelease ) {
                 PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));

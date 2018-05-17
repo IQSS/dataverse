@@ -39,7 +39,6 @@ import edu.harvard.iq.dataverse.PersistentIdentifierServiceBean;
 public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(FinalizeDatasetPublicationCommand.class.getName());
-    private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
     
     String doiProvider;
     
@@ -255,59 +254,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             .distinct() // prevent double-send
             //.forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()) ); //not sure why this line doesn't work instead
             .forEach( au -> ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.PUBLISHEDDS, getDataset().getLatestVersion().getId()) ); 
-    }
-    
-    /**
-     * Whether it's EZID or DataCite, if the registration is 
-     * refused because the identifier already exists, we'll generate another one
-     * and try to register again... but only up to some
-     * reasonably high number of times - so that we don't 
-     * go into an infinite loop here, if EZID is giving us 
-     * these duplicate messages in error. 
-     * 
-     * (and we do want the limit to be a "reasonably high" number! 
-     * true, if our identifiers are randomly generated strings, 
-     * then it is highly unlikely that we'll ever run into a 
-     * duplicate race condition repeatedly; but if they are sequential
-     * numeric values, than it is entirely possible that a large
-     * enough number of values will be legitimately registered 
-     * by another entity sharing the same authority...)
-     * @param theDataset
-     * @param ctxt
-     * @param doiProvider
-     * @throws CommandException 
-     */
-    private void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt) throws CommandException {
-        PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(theDataset.getProtocol(), ctxt);
-        if (theDataset.getGlobalIdCreateTime() == null) {
-          if (idServiceBean!=null) {
-            try {
-              if (idServiceBean.alreadyExists(theDataset)) {
-                int attempts = 0;
-
-                while (idServiceBean.alreadyExists(theDataset) && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
-                  theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
-                  logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).", 
-                             new Object[]{theDataset.getId(), theDataset.getIdentifier()});
-                  attempts++;
-                }
-
-                if (idServiceBean.alreadyExists(theDataset)) {
-                  throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset; " + 
-                                                     "gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
-                }
-              }
-              idServiceBean.createIdentifier(theDataset);
-              theDataset.setGlobalIdCreateTime(getTimestamp());
-
-            } catch (Throwable e) {
-              throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
-            }
-          } else {
-            throw new IllegalCommandException("This dataset may not be published because its id registry service is not supported.", this);
-          }
-          
-        }
     }
 
 }

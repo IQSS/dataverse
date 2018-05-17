@@ -129,7 +129,7 @@ public class PrivateUrlUtil {
         if (draft != null) {
             Dataset dataset = draft.getDataset();
             if (dataset != null) {
-                String persistentId = dataset.getGlobalId();
+                String persistentId = dataset.getGlobalIdString();
                 /**
                  * @todo Investigate why dataset.getGlobalId() yields the String
                  * "null:null/null" when I expect null value. This smells like a

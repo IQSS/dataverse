@@ -158,10 +158,10 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     public Dataset findByGlobalId(String globalId) {
-        Optional<PersistentIdentifier> maybePid = PersistentIdentifier.parse(globalId, settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, ""));
+        Optional<GlobalId> maybePid = GlobalId.parse(globalId, settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, ""));
         if ( !maybePid.isPresent() ) return null;
 
-        PersistentIdentifier pid = maybePid.get();
+        GlobalId pid = maybePid.get();
         try {
             return em.createNamedQuery("Dataset.findByIdentifierAuthorityProtocol", Dataset.class)
             .setParameter("protocol", pid.getProtocol())
@@ -745,10 +745,10 @@ public class DatasetServiceBean implements java.io.Serializable {
                         countAll++;
                         try {
                             recordService.exportAllFormatsInNewTransaction(dataset);
-                            exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId());
+                            exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString());
                             countSuccess++;
                         } catch (Exception ex) {
-                            exportLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId() + "; " + ex.getMessage());
+                            exportLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString() + "; " + ex.getMessage());
                             countError++;
                         }
                     }

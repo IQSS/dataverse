@@ -74,13 +74,13 @@ public abstract class AbstractPersistentIdentifierServiceBean implements Persist
 
     protected String getTargetUrl(Dataset datasetIn) {
         logger.log(Level.FINE,"getTargetUrl");
-        return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + datasetIn.getGlobalId();
+        return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + datasetIn.getGlobalIdString();
     }
 
     @Override
     public String getIdentifierFromDataset(Dataset dataset) {
         logger.log(Level.FINE,"getIdentifierFromDataset");
-        return dataset.getGlobalId();
+        return dataset.getGlobalIdString();
     }
     
     protected String generateYear (Dataset datasetIn){

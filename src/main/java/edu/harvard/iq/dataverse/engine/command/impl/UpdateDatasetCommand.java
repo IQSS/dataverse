@@ -8,12 +8,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -26,7 +22,6 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
     private static final Logger logger = Logger.getLogger(UpdateDatasetCommand.class.getCanonicalName());
     private final List<FileMetadata> filesToDelete;
     private boolean validateLenient = false;
-    private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
@@ -133,64 +128,6 @@ public class UpdateDatasetCommand extends AbstractDatasetCommand<Dataset> {
         if (recalculateUNF) {
             ctxt.ingest().recalculateDatasetVersionUNF(tempDataset.getEditVersion());
         }
-        
-        String nonNullDefaultIfKeyNotFound = "";
-        String pidProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        
-        PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(ctxt);
-        boolean registerWhenPublished = idServiceBean.registerWhenPublished();
-        logger.log(Level.FINE,"doiProvider={0} protocol={1} GlobalIdCreateTime=={2}", new Object[]{pidProvider, tempDataset.getProtocol(), tempDataset.getGlobalIdCreateTime()});
-        if ( !registerWhenPublished && tempDataset.getGlobalIdCreateTime() == null) {
-            try {
-                logger.fine("creating identifier");
-               
-                String doiRetString = idServiceBean.createIdentifier(tempDataset);
-                int attempts = 0;
-                while (!doiRetString.contains(tempDataset.getIdentifier())
-                       && doiRetString.contains("identifier already exists")
-                       && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
-                    // if the identifier exists, we'll generate another one
-                    // and try to register again... but only up to some
-                    // reasonably high number of times - so that we don't 
-                    // go into an infinite loop here, if PID service is giving us 
-                    // these duplicate messages in error. 
-                    // 
-                    // (and we do want the limit to be a "reasonably high" number! 
-                    // true, if our identifiers are randomly generated strings, 
-                    // then it is highly unlikely that we'll ever run into a 
-                    // duplicate race condition repeatedly; but if they are sequential
-                    // numeric values, than it is entirely possible that a large
-                    // enough number of values will be legitimately registered 
-                    // by another entity sharing the same authority...)
-                
-                    tempDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(tempDataset, idServiceBean));
-                    doiRetString = idServiceBean.createIdentifier(tempDataset);
-
-                    attempts++;
-                }
-                // And if the registration failed for some reason other that an 
-                // existing duplicate identifier - for example, EZID down --
-                // we simply give up. 
-                if (doiRetString.contains(tempDataset.getIdentifier())) {
-                    tempDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                    
-                } else if (doiRetString.contains("identifier already exists")) {
-                    logger.log(Level.WARNING, "EZID refused registration, requested id(s) already in use; gave up after {0} attempts. Current (last requested) identifier: {1}", new Object[]{attempts, tempDataset.getIdentifier()});
-                    
-                } else {
-                    logger.log(Level.WARNING, "Failed to create identifier ({0}) with {2}: {1}", 
-                        new Object[]{tempDataset.getIdentifier(),
-                            doiRetString, idServiceBean.getProviderInformation().toString()
-                        });
-                    
-                }
-                   
-            } catch (Throwable e) {
-                logger.log(Level.WARNING, "Failed to create identifier: " + e.getMessage(), e);
-                // Remote PID service probably down
-            }
-        }
-        
         
         tempDataset.getEditVersion().setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());

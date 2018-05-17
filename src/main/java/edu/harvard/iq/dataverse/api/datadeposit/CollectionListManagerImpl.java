@@ -78,8 +78,8 @@ public class CollectionListManagerImpl implements CollectionListManager {
                     if (!permissionService.isUserAllowedOn(user, new UpdateDatasetCommand(dataset, dvReq), dataset)) {
                         continue;
                     }
-                    String editUri = baseUrl + "/edit/study/" + dataset.getGlobalId();
-                    String editMediaUri = baseUrl + "/edit-media/study/" + dataset.getGlobalId();
+                    String editUri = baseUrl + "/edit/study/" + dataset.getGlobalIdString();
+                    String editMediaUri = baseUrl + "/edit-media/study/" + dataset.getGlobalIdString();
                     Entry entry = feed.addEntry();
                     entry.setId(editUri);
                     entry.setTitle(datasetService.getTitleFromLatestVersion(dataset.getId()));

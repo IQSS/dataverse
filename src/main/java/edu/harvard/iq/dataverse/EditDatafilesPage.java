@@ -1294,12 +1294,12 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     
     private String returnToDraftVersion(){      
-         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&version=DRAFT&faces-redirect=true";    
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&version=DRAFT&faces-redirect=true";    
     }
     
     private String returnToDatasetOnly(){
          dataset = datasetService.find(dataset.getId());
-         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId()  +  "&faces-redirect=true";       
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString()  +  "&faces-redirect=true";       
     }
     
     private String returnToFileLandingPage() {
