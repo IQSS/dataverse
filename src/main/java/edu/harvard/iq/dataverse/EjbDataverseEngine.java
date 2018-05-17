@@ -226,7 +226,9 @@ public class EjbDataverseEngine {
                 throw new CommandException("Command " + aCommand.toString() + " failed: " + ejbe.getMessage(), ejbe.getCausedByException(), aCommand);
             } 
         } catch (CommandException cmdEx) {
-            logRec.setActionResult(ActionLogRecord.Result.InternalError); 
+            if (!(cmdEx instanceof PermissionException)) {            
+                logRec.setActionResult(ActionLogRecord.Result.InternalError); 
+            } 
             logRec.setInfo(logRec.getInfo() + " (" + cmdEx.getMessage() +")");
             throw cmdEx;
         } catch ( RuntimeException re ) {
