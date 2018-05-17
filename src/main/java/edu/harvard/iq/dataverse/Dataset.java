@@ -32,6 +32,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 import org.hibernate.validator.constraints.NotBlank;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 /**
  *
@@ -434,13 +435,13 @@ public class Dataset extends DvObjectContainer {
         // present by default:
         // (TODO: ? - provide these as constants somewhere? -- L.A. beta15)
         if (!ret.contains("Documentation")) {
-            ret.add("Documentation");
+            ret.add(BundleUtil.getStringFromBundle("dataset.category.documentation"));
         }
         if (!ret.contains("Data")) {
-            ret.add("Data");
+            ret.add(BundleUtil.getStringFromBundle("dataset.category.data"));
         }
         if (!ret.contains("Code")) {
-            ret.add("Code");
+            ret.add(BundleUtil.getStringFromBundle("dataset.category.code"));
         }
 
         return ret;
