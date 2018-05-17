@@ -502,15 +502,15 @@ public class JsonParser {
     public List<DataTable> parseDataTables(JsonArray dataTablesJson){
         List<DataTable> dataTables = new LinkedList<>();
         if ((dataTablesJson !=null) && (!dataTablesJson.isEmpty())){
-            for (JsonObject dataTableJson : dataTablesJson.getValuesAs(JsonObject.class)){
-                
+            for (JsonObject dataTableJsonL : dataTablesJson.getValuesAs(JsonObject.class)){
+                JsonObject dataTableJson = dataTableJsonL.getJsonObject("dataFile");
                 DataTable dataTable = new DataTable();
                 // capture scalar items
                 // varQuantity
                 long varQuantity =  dataTableJson.getJsonNumber("varQuantity").longValue();
                 dataTable.setVarQuantity(varQuantity);
                 // caseQuantity
-                long caseQuantity = dataTableJson.getJsonNumber("varQuantity").longValue();
+                long caseQuantity = dataTableJson.getJsonNumber("caseQuantity").longValue();
                 dataTable.setCaseQuantity(caseQuantity);
                 // UNF
                 String UNF = dataTableJson.getString("UNF", null);
