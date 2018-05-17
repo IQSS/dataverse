@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
@@ -165,6 +166,13 @@ public class FileRecordWriter extends AbstractItemWriter {
                     getJobLogger().log(Level.SEVERE, "File package import failed.");
                     jobContext.setExitStatus("FAILED");
                     return;
+                }
+                DatasetLock dcmLock = dataset.getLockFor(DatasetLock.Reason.DcmUpload);
+                if (dcmLock == null) {
+                    getJobLogger().log(Level.WARNING, "Dataset not locked for DCM upload");
+                } else {
+                    datasetServiceBean.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.pidRegister);
+                    dataset.removeLock(dcmLock);
                 }
                 updateDatasetVersion(dataset.getLatestVersion());
             } else {
