@@ -262,7 +262,7 @@ public class ExportService {
                     exporter.exportDataset(version, datasetAsJson, cachedExportOutputStream);
                     cachedExportOutputStream.flush();
                     cachedExportOutputStream.close();
-
+                    outputStream.close();
                 } else {
                     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
                     exporter.exportDataset(version, datasetAsJson, outputStream);
