@@ -2479,20 +2479,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         */
         
         fileMetadataSelectedForTagsPopup.setCategories(new ArrayList<>());
-        if (newCategoryName != null) {
-            fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
-        }
-        // 2. Tabular DataFile Tags: 
-        if (selectedTags != null) {
-            for (String selectedTag : selectedTags) {
-                
-                fileMetadataSelectedForTagsPopup.addCategoryByName(selectedTag);
-            }
-        }
-
-
+        
+        // New, custom file category (if specified):
         logger.fine("New category name: " + newCategoryName);
-
         if (fileMetadataSelectedForTagsPopup != null && newCategoryName != null) {
             logger.fine("Adding new category, for file " + fileMetadataSelectedForTagsPopup.getLabel());
             fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
@@ -2500,6 +2489,14 @@ public class EditDatafilesPage implements java.io.Serializable {
             logger.fine("No FileMetadata selected, or no category specified!");
         }
         newCategoryName = null;
+        
+        // File Categories selected from the list of existing categories: 
+        if (selectedTags != null) {
+            for (String selectedTag : selectedTags) {
+                
+                fileMetadataSelectedForTagsPopup.addCategoryByName(selectedTag);
+            }
+        }        
         
         // 2. Tabular DataFile Tags: 
 
@@ -2529,6 +2526,13 @@ public class EditDatafilesPage implements java.io.Serializable {
             // reset:
             selectedTags = null;
         }
+        
+        // If this file is not attached to dataset just yet, make sure the 
+        // filemetadata is not attached to a version either: 
+        
+        //if (fileMetadataSelectedForTagsPopup.getDataFile().getOwner() == null) {
+        //    fileMetadataSelectedForTagsPopup.setDatasetVersion(null);
+        //}
         
         fileMetadataSelectedForTagsPopup = null;
 

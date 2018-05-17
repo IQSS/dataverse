@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -99,6 +100,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.ListIterator;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -368,6 +370,25 @@ public class IngestServiceBean {
                         version.getFileMetadatas().add(dataFile.getFileMetadata());
                         dataFile.getFileMetadata().setDatasetVersion(version);
                         dataset.getFiles().add(dataFile);
+                        
+                        if (dataFile.getFileMetadata().getCategories() != null) {
+                            ListIterator<DataFileCategory> dfcIt = dataFile.getFileMetadata().getCategories().listIterator();
+
+                            while (dfcIt.hasNext()) {
+                                DataFileCategory dataFileCategory = dfcIt.next();
+                                
+                                if (dataFileCategory.getDataset() == null) {
+                                    DataFileCategory newCategory = dataset.getCategoryByName(dataFileCategory.getName());
+                                    if (newCategory != null) {
+                                        newCategory.addFileMetadata(dataFile.getFileMetadata());
+                                        //dataFileCategory = newCategory;
+                                        dfcIt.set(newCategory);
+                                    } else { 
+                                        dfcIt.remove();
+                                    }
+                                }
+                            }
+                        }
                     }
                     
                     ret.add(dataFile);
