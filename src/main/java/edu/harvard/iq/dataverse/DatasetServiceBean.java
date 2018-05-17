@@ -213,13 +213,9 @@ public class DatasetServiceBean implements java.io.Serializable {
        
         switch (identifierType) {
             case "randomString":
-                return generateIdentifierAsRandomString(dataset, idServiceBean, "");
+                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
             case "sequentialNumber":
-                return generateIdentifierAsSequentialNumber(dataset, idServiceBean, "");
-            case "shoulderWithRandomString":
-            	 return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
-            case "shoulderWithSequentialNumber":
-           	 	 return generateIdentifierAsSequentialNumber(dataset, idServiceBean, shoulder);
+                return generateIdentifierAsSequentialNumber(dataset, idServiceBean, shoulder);
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
                 return generateIdentifierAsRandomString(dataset, idServiceBean,"");
