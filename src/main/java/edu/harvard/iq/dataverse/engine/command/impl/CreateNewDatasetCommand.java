@@ -64,21 +64,11 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     }
 
     @Override
-    protected void handlePid(Dataset theDataset, CommandContext ctxt) {
-        if ( theDataset.getGlobalIdCreateTime() == null) {
-            String doiRetString = "";
-            PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(ctxt);
-            try {
-                logger.log(Level.FINE,"creating identifier");
-                doiRetString = idServiceBean.createIdentifier(theDataset);
-            } catch (Throwable e){
-                logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
-            }
-
-            // Check return value to make sure registration succeeded
-            if (!idServiceBean.registerWhenPublished() && doiRetString.contains(theDataset.getIdentifier())) {
-                theDataset.setGlobalIdCreateTime(getTimestamp());
-            }
+    protected void handlePid(Dataset theDataset, CommandContext ctxt) throws CommandException {
+        PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(ctxt);
+        if ( !idServiceBean.registerWhenPublished() ) {
+            // pre-register a persistent id
+            registerExternalIdentifier(theDataset, ctxt);
         }
     }
     

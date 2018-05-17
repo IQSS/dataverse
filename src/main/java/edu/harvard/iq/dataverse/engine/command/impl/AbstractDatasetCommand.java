@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
@@ -159,7 +160,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                 }
 
                 if (idServiceBean.alreadyExists(theDataset)) {
-                  throw new IllegalCommandException("This dataset may not be published because its identifier is already in use by another dataset; " + 
+                  throw new CommandExecutionException("This dataset may not be published because its identifier is already in use by another dataset; " + 
                                                      "gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
                 }
               }

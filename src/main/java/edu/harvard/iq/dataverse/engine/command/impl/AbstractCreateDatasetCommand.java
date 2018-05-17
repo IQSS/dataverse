@@ -58,7 +58,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // base class - default to nothing.
     }
     
-    protected abstract void handlePid( Dataset theDataset, CommandContext ctxt );
+    protected abstract void handlePid( Dataset theDataset, CommandContext ctxt ) throws CommandException ;
     
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
