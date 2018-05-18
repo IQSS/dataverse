@@ -53,6 +53,7 @@ public class ExternalTools extends AbstractApiBean {
         }
     }
 
+    // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
     @GET
     @Path("file/{id}")
     public Response getExternalToolsByFile(@PathParam("id") Long fileIdFromUser) {

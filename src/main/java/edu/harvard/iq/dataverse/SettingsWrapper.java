@@ -149,6 +149,10 @@ public class SettingsWrapper implements java.io.Serializable {
         return systemConfig.isRsyncDownload();
     }
     
+    public boolean isDataFilePIDSequentialDependent(){
+        return systemConfig.isDataFilePIDSequentialDependent();
+    }
+    
     public String getSupportTeamName() {
         String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
         InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);

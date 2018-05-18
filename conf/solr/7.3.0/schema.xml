@@ -217,6 +217,7 @@
     <field name="description" type="text_en" multiValued="false" stored="true" indexed="true"/>
 
     <field name="dsPersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="filePersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <!-- Dynamic Dataverse fields from http://localhost:8080/api/admin/index/solr/schema -->
     <field name="ARCS1" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="ARCS2" type="text_en" multiValued="false" stored="true" indexed="true"/>

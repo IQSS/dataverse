@@ -130,6 +130,7 @@ public class UrlManager {
                     try {
                         // a user might reasonably pass in a filename as well [.get(2)] since
                         // we expose it in the statement of a study but we ignore it here
+                        // Some day it might be nice to support persistent IDs for files.
                         fileIdString = targetTypeAndIdentifier.get(1);
                     } catch (IndexOutOfBoundsException ex) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "No file id provided in URL: " + url);
