@@ -384,9 +384,9 @@ public class JsonParser {
                 fileMetadata.setDirectoryLabel(directoryLabel);
                 fileMetadata.setDescription(description);
                 fileMetadata.setDatasetVersion(dsv);
-
+                
                 DataFile dataFile = parseDataFile(filemetadataJson.getJsonObject("dataFile"));
-
+                
                 fileMetadata.setDataFile(dataFile);
                 dataFile.getFileMetadatas().add(fileMetadata);
                 dataFile.setOwner(dsv.getDataset());
@@ -411,6 +411,10 @@ public class JsonParser {
         dataFile.setCreateDate(timestamp);
         dataFile.setModificationTime(timestamp);
         dataFile.setPermissionModificationTime(timestamp);
+        
+        if ( !datafileJson.isNull("filesize") ) {
+            dataFile.setFilesize(datafileJson.getJsonNumber("filesize").longValueExact());
+        }
         
         String contentType = datafileJson.getString("contentType", null);
         if (contentType == null) {

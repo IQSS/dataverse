@@ -51,7 +51,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     public Dataset execute(CommandContext ctxt) throws CommandException {
         Dataset theDataset = getDataset();
         
-        registerExternalIdentifier(theDataset, ctxt);
+        if ( theDataset.getGlobalIdCreateTime() == null ) {
+            registerExternalIdentifier(theDataset, ctxt);
+        }
         
         // is this the first publication of the dataset?
         if ( theDataset.getReleaseUser() == null ) {
