@@ -1,0 +1,2 @@
+=== major changes to version 4.8.6
+* ImportType.IMPORT_METADATA_ONLY was added to ImportUtil
