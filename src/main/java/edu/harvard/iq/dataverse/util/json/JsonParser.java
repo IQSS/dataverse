@@ -493,6 +493,9 @@ public class JsonParser {
             List<DataTable> dataTables = parseDataTables(dataTablesJson);
             dataFile.setDataTables(dataTables);
             dataFile.setDataTable(dataTables.get(0));
+            dataTables.get(0).setDataFile(dataFile);
+            dataTables.get(0).setOriginalFileFormat(originalFileFormat);
+            
         }
         
         return dataFile;
