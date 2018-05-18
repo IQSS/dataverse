@@ -33,11 +33,11 @@ public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<Da
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
         DatasetVersion d = null;
 
-        if (ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)) {
+        if (ds.getLatestVersion().isDraft() && ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)) {
             d = ctxt.engine().submit(new GetDraftDatasetVersionCommand(getRequest(), ds));
         } 
         
-        if (d == null || d.getId() == null) {
+        if (d == null) {
             d = ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(getRequest(), ds));
         }
 
