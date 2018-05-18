@@ -126,7 +126,7 @@ public class FileRecordWriter extends AbstractItemWriter {
                 suppliedSize = new Long(jobParams.getProperty("totalSize"));
                 getJobLogger().log(Level.INFO, "Size parameter supplied: "+suppliedSize);
             } catch (NumberFormatException ex) {
-                getJobLogger().log(Level.WARNING, "Invalid file size supplied: "+jobParams.getProperty("totalSize"));
+                getJobLogger().log(Level.WARNING, "Invalid file size supplied (in FileRecordWriter.init()): "+jobParams.getProperty("totalSize"));
                 suppliedSize = null; 
             }
         }
@@ -134,7 +134,7 @@ public class FileRecordWriter extends AbstractItemWriter {
     
     @Override
     public void open(Serializable checkpoint) throws Exception {
-        // no-op    
+        // no-op   
     }
 
     @Override
@@ -171,7 +171,7 @@ public class FileRecordWriter extends AbstractItemWriter {
                 if (dcmLock == null) {
                     getJobLogger().log(Level.WARNING, "Dataset not locked for DCM upload");
                 } else {
-                    datasetServiceBean.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.pidRegister);
+                    datasetServiceBean.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.DcmUpload);
                     dataset.removeLock(dcmLock);
                 }
                 updateDatasetVersion(dataset.getLatestVersion());
