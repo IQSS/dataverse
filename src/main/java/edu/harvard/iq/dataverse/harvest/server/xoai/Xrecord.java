@@ -75,6 +75,7 @@ public class Xrecord extends Record {
         
         outputStream.write(headerString.getBytes());
         
+        // header.getStatus() is only non-null when it's indicating "deleted".
         if (header.getStatus() == null) { // Deleted records should not show metadata
             if (!isExtendedDataverseMetadataMode(formatName)) {
                 outputStream.write(METADATA_START_ELEMENT.getBytes());
