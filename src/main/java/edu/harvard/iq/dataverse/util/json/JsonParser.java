@@ -45,6 +45,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -503,7 +504,7 @@ public class JsonParser {
         List<DataTable> dataTables = new LinkedList<>();
         if ((dataTablesJson !=null) && (!dataTablesJson.isEmpty())){
             for (JsonObject dataTableJsonL : dataTablesJson.getValuesAs(JsonObject.class)){
-                JsonObject dataTableJson = dataTableJsonL.getJsonObject("dataFile");
+                JsonObject dataTableJson = dataTableJsonL.getJsonObject("dataTable");
                 DataTable dataTable = new DataTable();
                 // capture scalar items
                 // varQuantity
@@ -537,10 +538,19 @@ public class JsonParser {
                 dataVariable.setLabel(dataVariableJson.getString("label", null));
                 // weighted
                 dataVariable.setWeighted(dataVariableJson.getBoolean("weighted", false));
-                // variableIntervalType
-                dataVariable.setInterval(DataVariable.VariableInterval.valueOf(dataVariableJson.getString("variableIntervalType", null)));
+                String variableIntervalType= dataVariableJson.getString("variableIntervalType", null);
+                if (variableIntervalType!=null){
+                    String variableIntervalTypeFinal = variableIntervalType.toUpperCase();
+                    if (variableIntervalType.equals("contin")){
+                        variableIntervalTypeFinal="CONTINUOUS";
+                    }
+                    dataVariable.setInterval(DataVariable.VariableInterval.valueOf(variableIntervalTypeFinal));
+                }
                 // variableFormatType
-                dataVariable.setType(DataVariable.VariableType.valueOf(dataVariableJson.getString("variableFormatType", null)));
+                String variableFormatType = dataVariableJson.getString("variableFormatType", null);
+                if (variableFormatType!=null){
+                    dataVariable.setType(DataVariable.VariableType.valueOf(variableFormatType));
+                }
                 // orderedFactor
                 dataVariable.setOrderedCategorical(dataVariableJson.getBoolean("orderedFactor", false));
                 // fileOrder
