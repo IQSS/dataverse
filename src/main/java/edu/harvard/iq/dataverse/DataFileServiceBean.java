@@ -166,7 +166,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     public DataFile findByGlobalId(String globalId) {
 
-        String queryStr = "select s.id from dvobject s where Concat(s.protocol, ':' , s.authority , s.doiseparator , s.identifier) = '" + globalId + "'";
+        String queryStr = "select s.id from dvobject s where Concat(s.protocol, ':' , s.authority , '/' , s.identifier) = '" + globalId + "'";
 
         DataFile file = null;
         try {

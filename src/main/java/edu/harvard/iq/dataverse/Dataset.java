@@ -74,7 +74,7 @@ import org.hibernate.validator.constraints.NotBlank;
 @Table(indexes = {
     @Index(columnList = "guestbook_id"),
     @Index(columnList = "thumbnailfile_id")},
-        uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier,doiseparator"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier"}))
 public class Dataset extends DvObjectContainer {
 
     public static final String TARGET_URL = "/citation?persistentId=";

@@ -154,10 +154,6 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         if (theDataset.getAuthority() == null) {
             theDataset.setAuthority(authority);
         }
-        if (theDataset.getDoiSeparator() == null) {
-        	// '/', the required authority - identifier separator for DOI and Handle is hardcoded in many places
-            theDataset.setDoiSeparator("/");
-        }
         if (theDataset.getStorageIdentifier() == null) {
             try {
                 DataAccess.createNewStorageIO(theDataset, "placeholder");
@@ -165,7 +161,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                 // if setting the storage identifier through createNewStorageIO fails, dataset creation
                 // does not have to fail. we just set the storage id to a default -SF
                 String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file";
-                theDataset.setStorageIdentifier(storageDriver + "://" + theDataset.getAuthority() + theDataset.getDoiSeparator() + theDataset.getIdentifier());
+                theDataset.setStorageIdentifier(storageDriver + "://" + theDataset.getAuthority() + "/" + theDataset.getIdentifier());
                 logger.info("Failed to create StorageIO. StorageIdentifier set to default. Not fatal." + "(" + ioex.getMessage() + ")");
             }
         }

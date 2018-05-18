@@ -118,7 +118,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
    
     private String protocol;
     private String authority;
-    private String doiSeparator;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date globalIdCreateTime;
@@ -255,14 +254,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
 
     public void setAuthority(String authority) {
         this.authority = authority;
-    }
-
-    public String getDoiSeparator() {
-        return doiSeparator;
-    }
-
-    public void setDoiSeparator(String doiSeparator) {
-        this.doiSeparator = doiSeparator;
     }
 
     public Date getGlobalIdCreateTime() {

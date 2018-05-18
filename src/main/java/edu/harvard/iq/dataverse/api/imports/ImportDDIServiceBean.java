@@ -1580,7 +1580,6 @@ public class ImportDDIServiceBean {
         } else {
             datasetDTO.setAuthority(_id.substring(index1+1, index2));
         }
-        datasetDTO.setDoiSeparator("/");
         datasetDTO.setProtocol("hdl");
         datasetDTO.setIdentifier(_id.substring(index2+1));
     }
@@ -1599,7 +1598,6 @@ public class ImportDDIServiceBean {
                datasetDTO.setAuthority(_id.substring(index1+1, index2));
         }
         datasetDTO.setProtocol("doi");
-        datasetDTO.setDoiSeparator("/");
        
         datasetDTO.setIdentifier(_id.substring(index2+1));
     }
@@ -1624,7 +1622,6 @@ public class ImportDDIServiceBean {
         
         datasetDTO.setAuthority(_id.substring(0, index));
         datasetDTO.setProtocol("doi");
-        datasetDTO.setDoiSeparator("/");
        
         datasetDTO.setIdentifier(_id.substring(index+1));
     }

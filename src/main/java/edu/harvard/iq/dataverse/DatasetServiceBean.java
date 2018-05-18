@@ -192,7 +192,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     public Dataset findByGlobalId(String globalId) {
 
-        String queryStr = "select s.id from dvobject s where Concat(s.protocol, ':' , s.authority , s.doiseparator , s.identifier) = '" + globalId +"'";
+        String queryStr = "select s.id from dvobject s where Concat(s.protocol, ':' , s.authority , '/' , s.identifier) = '" + globalId +"'";
         Dataset foundDataset = null;
         try {
             Query query = em.createNativeQuery(queryStr);
@@ -327,7 +327,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         for (DatasetAuthor author : authorList) {
             retString += "AU  - " + author.getName().getDisplayValue() + "\r\n";
         }
-        retString += "DO  - " + version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + version.getDataset().getDoiSeparator() + version.getDataset().getIdentifier() + "\r\n";
+        retString += "DO  - " + version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + "/" + version.getDataset().getIdentifier() + "\r\n";
         retString += "PY  - " + version.getVersionYear() + "\r\n";
         retString += "UR  - " + version.getDataset().getPersistentURL() + "\r\n";
         retString += "PB  - " + publisher + "\r\n";
@@ -479,7 +479,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
         xmlw.writeStartElement("electronic-resource-num");
-        String electResourceNum = version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + version.getDataset().getDoiSeparator() + version.getDataset().getIdentifier();
+        String electResourceNum = version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + "/" + version.getDataset().getIdentifier();
         xmlw.writeCharacters(electResourceNum);
         xmlw.writeEndElement();
         //<electronic-resource-num>10.3886/ICPSR03259.v1</electronic-resource-num>                  
@@ -951,9 +951,6 @@ public class DatasetServiceBean implements java.io.Serializable {
                 }
                 if (datafile.getAuthority() == null) {
                     datafile.setAuthority(settingsService.getValueForKey(SettingsServiceBean.Key.Authority, ""));
-                }
-                if (datafile.getDoiSeparator() == null) {
-                    datafile.setDoiSeparator("/");
                 }
 
                 logger.info("identifier: " + datafile.getIdentifier());

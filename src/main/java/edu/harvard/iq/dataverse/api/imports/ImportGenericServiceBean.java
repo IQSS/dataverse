@@ -427,7 +427,7 @@ public class ImportGenericServiceBean {
         }
         
         if (index2 == -1) {
-            logger.warning("Error parsing identifier: " + identifierString + ". Second separator not found in string");
+            logger.warning("Error parsing identifier: " + identifierString + ". Second '/' not found in string");
             return null;
         }
 
@@ -435,7 +435,6 @@ public class ImportGenericServiceBean {
         String identifier = identifierString.substring(index2 + 1);
 
         datasetDTO.setProtocol(protocol);
-        datasetDTO.setDoiSeparator("/");
         datasetDTO.setAuthority(authority);
         datasetDTO.setIdentifier(identifier);
 
