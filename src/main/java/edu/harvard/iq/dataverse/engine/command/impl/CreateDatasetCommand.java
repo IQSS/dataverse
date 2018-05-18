@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -93,6 +94,9 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         // If we are importing with the API, then we don't want to create an editable version, 
         // just save the version is already in theDataset.
         DatasetVersion dsv = importType!=null? theDataset.getLatestVersion() : theDataset.getEditVersion();
+        if (importType.equals(ImportType.IMPORT_METADATA_ONLY)){
+            dsv = theDataset.getEditVersion();
+        }
         // validate
         // @todo for now we run through an initFields method that creates empty fields for anything without a value
         // that way they can be checked for required
@@ -167,10 +171,16 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             
         }
         logger.fine("Saving the files permanently.");
-        ctxt.ingest().addFiles(dsv, theDataset.getFiles());
+        if (!importType.equals(ImportType.IMPORT_METADATA_ONLY)){
+            ctxt.ingest().addFiles(dsv, theDataset.getFiles());
+        } else {
+            IngestUtil.checkForDuplicateFileNamesFinal(dsv, theDataset.getFiles());
+        }
+        
+        
         logger.log(Level.FINE,"doiProvider={0} protocol={1}  importType={2}  GlobalIdCreateTime=={3}", new Object[]{doiProvider, protocol,  importType, theDataset.getGlobalIdCreateTime()});
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
-        if ((importType == null || importType.equals(ImportType.NEW))
+        if ((importType == null || importType.equals(ImportType.NEW) || importType.equals(ImportType.IMPORT_METADATA_ONLY))
                 && theDataset.getGlobalIdCreateTime() == null) {
                 String doiRetString = "";
                 idServiceBean = IdServiceBean.getBean(ctxt);
@@ -197,8 +207,9 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         logger.log(Level.FINE, "after doi {0}", formatter.format(new Date().getTime()));
         Dataset savedDataset = ctxt.em().merge(theDataset);
         logger.log(Level.FINE, "after db update {0}", formatter.format(new Date().getTime()));
+        
         // set the role to be default contributor role for its dataverse
-        if (importType==null || importType.equals(ImportType.NEW)) {
+        if (importType==null || importType.equals(ImportType.NEW) || importType.equals(ImportType.IMPORT_METADATA_ONLY)) {
             String privateUrlToken = null;
             ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(), getRequest().getUser(), savedDataset, privateUrlToken));
          }
@@ -250,7 +261,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         logger.log(Level.FINE, "after index {0}", formatter.format(new Date().getTime()));      
         
         // if we are not migrating, assign the user to this version
-        if (importType==null || importType.equals(ImportType.NEW)) {  
+        if (importType==null || importType.equals(ImportType.NEW) || importType.equals(ImportType.IMPORT_METADATA_ONLY)) {  
             DatasetVersionUser datasetVersionDataverseUser = new DatasetVersionUser();     
             String id =  getRequest().getUser().getIdentifier();
             id = id.startsWith("@") ? id.substring(1) : id;

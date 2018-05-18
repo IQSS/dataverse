@@ -554,20 +554,21 @@ public class ImportServiceBean {
             parser.setLenient(false);
             Dataset ds = parser.parseDataset(obj);
             
-            logger.log(Level.INFO, "dataset={0}", xstream.toXML(ds));
+            logger.log(Level.INFO, "dataset={0}", ds);
 
             // For ImportType.NEW, if the user supplies a global identifier, and it's not a protocol
             // we support, it will be rejected.
-            if (importType.equals(ImportType.NEW)) {
+            if (importType.equals(ImportType.NEW) || importType.equals(ImportType.IMPORT_METADATA_ONLY)) {
                 if (ds.getGlobalId() != null && !ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""))) {
                     throw new ImportException("Could not register id " + ds.getGlobalId() + ", protocol not supported");
                 }
             }
 
             ds.setOwner(owner);
+            logger.log(Level.INFO, "dataset owner alias={0}", ds.getOwner().getAlias());
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
             
-            logger.log(Level.INFO, "dataset: after setting the owner={0}", xstream.toXML(ds));
+            logger.log(Level.INFO, "dataset version: after setting the owner={0}", ds.getLatestVersion());
 
             // Check data against required contraints
             List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
@@ -628,7 +629,7 @@ public class ImportServiceBean {
                     }
                 }
             }
-
+            logger.log(Level.INFO, "check whether this dataset exists");
             // check whether the imported dataset exists
             Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
             

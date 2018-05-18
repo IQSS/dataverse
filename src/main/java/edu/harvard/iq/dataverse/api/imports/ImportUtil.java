@@ -10,6 +10,6 @@ package edu.harvard.iq.dataverse.api.imports;
  * @author ellenk
  */
 public interface ImportUtil {
-   public enum ImportType{ NEW, MIGRATION, HARVEST, HARVEST_WITH_FILES};
+   public enum ImportType{ NEW, MIGRATION, HARVEST, HARVEST_WITH_FILES, IMPORT_METADATA_ONLY};
      
 }
