@@ -54,8 +54,8 @@ public class DatasetsIT {
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 
-        Response removeDatasetIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.DatasetIdentifierGenerationStyle);
-        removeDatasetIdentifierGenerationStyle.then().assertThat()
+        Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
+        removeIdentifierGenerationStyle.then().assertThat()
                 .statusCode(200);
 
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
@@ -74,8 +74,8 @@ public class DatasetsIT {
     @AfterClass
     public static void afterClass() {
 
-        Response removeDatasetIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.DatasetIdentifierGenerationStyle);
-        removeDatasetIdentifierGenerationStyle.then().assertThat()
+        Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
+        removeIdentifierGenerationStyle.then().assertThat()
                 .statusCode(200);
 
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
@@ -487,7 +487,7 @@ public class DatasetsIT {
     }
 
     @Test
-    public void testSequentialNumberAsDatasetIdentifierGenerationStyle() {
+    public void testSequentialNumberAsIdentifierGenerationStyle() {
 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -498,8 +498,8 @@ public class DatasetsIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        Response setSequentialNumberAsDatasetIdentifierGenerationStyle = UtilIT.setSetting(SettingsServiceBean.Key.DatasetIdentifierGenerationStyle, "sequentialNumber");
-        setSequentialNumberAsDatasetIdentifierGenerationStyle.then().assertThat()
+        Response setSequentialNumberAsIdentifierGenerationStyle = UtilIT.setSetting(SettingsServiceBean.Key.IdentifierGenerationStyle, "sequentialNumber");
+        setSequentialNumberAsIdentifierGenerationStyle.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
@@ -526,7 +526,7 @@ public class DatasetsIT {
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
 
-        Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.DatasetIdentifierGenerationStyle);
+        Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
         remove.then().assertThat()
                 .statusCode(200);
 

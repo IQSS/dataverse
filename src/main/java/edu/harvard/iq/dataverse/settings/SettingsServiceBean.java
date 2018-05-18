@@ -73,8 +73,7 @@ public class SettingsServiceBean {
          * StorageSite database table.
          */
         LocalDataAccessPath,
-        DatafileIdentifierGenerationStyle,
-        DatasetIdentifierGenerationStyle,
+        IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,
         FooterCopyright,
