@@ -383,11 +383,13 @@ public class JsonParser {
         if (metadatasJson != null) {
             for (JsonObject filemetadataJson : metadatasJson.getValuesAs(JsonObject.class)) {
                 String label = filemetadataJson.getString("label");
+                boolean restricted = filemetadataJson.getBoolean("restricted", false);
                 String directoryLabel = filemetadataJson.getString("directoryLabel", null);
                 String description = filemetadataJson.getString("description", null);
 
                 FileMetadata fileMetadata = new FileMetadata();
                 fileMetadata.setLabel(label);
+                fileMetadata.setRestricted(restricted);
                 fileMetadata.setDirectoryLabel(directoryLabel);
                 fileMetadata.setDescription(description);
                 fileMetadata.setDatasetVersion(dsv);
@@ -397,6 +399,7 @@ public class JsonParser {
                 fileMetadata.setDataFile(dataFile);
                 dataFile.getFileMetadatas().add(fileMetadata);
                 dataFile.setOwner(dsv.getDataset());
+                dataFile.setRestricted(restricted);
                 
                 if (dsv.getDataset().getFiles() == null) {
                     dsv.getDataset().setFiles(new ArrayList<>());

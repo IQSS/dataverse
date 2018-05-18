@@ -570,7 +570,7 @@ public class JsonPrinter {
                 .add("filesize", df.getFilesize())            
                 .add("description", df.getDescription())    
                 //.add("released", df.isReleased())
-                //.add("restricted", df.isRestricted())
+                .add("restricted", df.isRestricted())
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
