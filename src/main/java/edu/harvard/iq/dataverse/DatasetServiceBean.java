@@ -192,7 +192,10 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     public Dataset findByGlobalId(String globalId) {
 
-        String queryStr = "select s.id from dvobject s where Concat(s.protocol, ':' , s.authority , '/' , s.identifier) = '" + globalId +"'";
+/*
+        Concatenate pieces of global Id for selection until more permanent fix implemented
+        */
+        String queryStr = "select s.id from dvobject s where s.protocol || ':' || s.authority || '/' || s.identifier = '" + globalId +"'";
         Dataset foundDataset = null;
         try {
             Query query = em.createNativeQuery(queryStr);
