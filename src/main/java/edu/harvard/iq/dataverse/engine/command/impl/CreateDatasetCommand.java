@@ -94,9 +94,9 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         // If we are importing with the API, then we don't want to create an editable version, 
         // just save the version is already in theDataset.
         DatasetVersion dsv = importType!=null? theDataset.getLatestVersion() : theDataset.getEditVersion();
-        if (importType.equals(ImportType.IMPORT_METADATA_ONLY)){
-            dsv = theDataset.getEditVersion();
-        }
+//        if (importType.equals(ImportType.IMPORT_METADATA_ONLY)){
+//            dsv = theDataset.getEditVersion();
+//        }
         // validate
         // @todo for now we run through an initFields method that creates empty fields for anything without a value
         // that way they can be checked for required
