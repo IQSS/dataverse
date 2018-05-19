@@ -174,6 +174,10 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         // Since this is a local fileystem file, we can use the
         // quick NIO Files.copy method: 
 
+        if (getFileName() != null && getFileName().equals("file107.txt")) {
+            throw new IOException("Throwing a monkey wrench into the gears!");
+        }
+        
         Path outputPath = getFileSystemPath();
 
         if (outputPath == null) {

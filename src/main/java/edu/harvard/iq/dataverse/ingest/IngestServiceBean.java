@@ -275,10 +275,6 @@ public class IngestServiceBean {
                     }
                 }
                 
-                if (unattached) {
-                    dataFile.setOwner(null);
-                }
-
                 // Since we may have already spent some CPU cycles scaling down image thumbnails, 
                 // we may as well save them, by moving these generated images to the permanent 
                 // dataset directory. We should also remember to delete any such files in the
@@ -322,6 +318,9 @@ public class IngestServiceBean {
                     logger.warning("Failed to delete temp file " + tempLocationPath.toString());
                 }
 
+                if (unattached) {
+                    dataFile.setOwner(null);
+                }
                 // Any necessary post-processing: 
                 //performPostProcessingTasks(dataFile);
                 

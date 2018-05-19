@@ -1169,6 +1169,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // similarly to what we've just done, above, for the filemetadatas.
                 // Otherwise, when we call UpdateDatasetCommand, it's not going 
                 // to update the tags in the database (issue #2798). 
+                // TODO: Is the above still true/is this still necessary?
+                // (and why?...)
                 
                 if (tabularDataTagsUpdated) {
                     for (int i = 0; i < dataset.getFiles().size(); i++) {
@@ -1205,8 +1207,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 populateDatasetUpdateFailureMessage();
                 return null;
             } catch (CommandException ex) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
-                logger.severe(ex.getMessage());
+                //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
+                logger.log(Level.INFO, "Couldn''t save dataset: {0}", ex.getMessage());
                 populateDatasetUpdateFailureMessage();
                 return null;
             }
@@ -1236,7 +1238,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 try {
                     //DataFile savedDatafile = datafileService.save(fileMetadata.getDataFile());
                     fileMetadata = datafileService.mergeFileMetadata(fileMetadata);
-                    logger.fine("Successfully saved DataFile "+fileMetadata.getLabel()+" in the database.");
+                    logger.info("Successfully saved DataFile "+fileMetadata.getLabel()+" in the database.");
                 } catch (EJBException ex) {
                     saveError.append(ex).append(" ");
                     saveError.append(ex.getMessage()).append(" ");
@@ -2309,7 +2311,6 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void  setFileMetadataSelectedForTagsPopup(FileMetadata fm){
         fileMetadataSelectedForTagsPopup = fm;
-        fileMetadataSelectedForTagsPopup.setDatasetVersion(this.getDataset().getLatestVersion());
     }
     
     public FileMetadata getFileMetadataSelectedForTagsPopup() {
@@ -2471,6 +2472,10 @@ public class EditDatafilesPage implements java.io.Serializable {
      * "file categories" (which are also considered "tags" in 4.0)
     */
     public void saveFileTagsAndCategories() {
+        if (fileMetadataSelectedForTagsPopup == null) {
+            logger.fine("No FileMetadata selected for the categories popup");
+            return; 
+        }
         // 1. File categories:
         /*
         In order to get the cancel button to work we had to separate the selected tags 
@@ -2481,12 +2486,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         fileMetadataSelectedForTagsPopup.setCategories(new ArrayList<>());
         
         // New, custom file category (if specified):
-        logger.fine("New category name: " + newCategoryName);
-        if (fileMetadataSelectedForTagsPopup != null && newCategoryName != null) {
-            logger.fine("Adding new category, for file " + fileMetadataSelectedForTagsPopup.getLabel());
+        if (newCategoryName != null) {
+            logger.fine("Adding new category, " + newCategoryName + " for file " + fileMetadataSelectedForTagsPopup.getLabel());
             fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
         } else {
-            logger.fine("No FileMetadata selected, or no category specified!");
+            logger.fine("no category specified");
         }
         newCategoryName = null;
         
@@ -2497,52 +2501,38 @@ public class EditDatafilesPage implements java.io.Serializable {
                 fileMetadataSelectedForTagsPopup.addCategoryByName(selectedTag);
             }
         }        
-        
+                
         // 2. Tabular DataFile Tags: 
+        
+        if (fileMetadataSelectedForTagsPopup.getDataFile() != null && tabularDataTagsUpdated && selectedTabFileTags != null) {
+            fileMetadataSelectedForTagsPopup.getDataFile().setTags(null);
+            for (String selectedTabFileTag : selectedTabFileTags) {
+                DataFileTag tag = new DataFileTag();
+                try {
+                    tag.setTypeByLabel(selectedTabFileTag);
+                    tag.setDataFile(fileMetadataSelectedForTagsPopup.getDataFile());
+                    fileMetadataSelectedForTagsPopup.getDataFile().addTag(tag);
 
-        if (tabularDataTagsUpdated && selectedTabFileTags != null) {
-            if (fileMetadataSelectedForTagsPopup != null && fileMetadataSelectedForTagsPopup.getDataFile() != null) {
-                fileMetadataSelectedForTagsPopup.getDataFile().setTags(null);
-                for (String selectedTabFileTag : selectedTabFileTags) {
-                    DataFileTag tag = new DataFileTag();
-                    try {
-                        tag.setTypeByLabel(selectedTabFileTag);
-                        tag.setDataFile(fileMetadataSelectedForTagsPopup.getDataFile());
-                        fileMetadataSelectedForTagsPopup.getDataFile().addTag(tag);
-                        
-                    } catch (IllegalArgumentException iax) {
-                        // ignore 
-                    }
+                } catch (IllegalArgumentException iax) {
+                    // ignore 
                 }
-                
-                datasetUpdateRequired = true;
-                
-                // success message: 
-                String successMessage = getBundleString("file.assignedTabFileTags.success");
-                logger.fine(successMessage);
-                successMessage = successMessage.replace("{0}", fileMetadataSelectedForTagsPopup.getLabel());
-                JsfHelper.addFlashMessage(successMessage);
             }
-            // reset:
-            selectedTags = null;
+
+            datasetUpdateRequired = true;
         }
-        
-        // If this file is not attached to dataset just yet, make sure the 
-        // filemetadata is not attached to a version either: 
-        
-        //if (fileMetadataSelectedForTagsPopup.getDataFile().getOwner() == null) {
-        //    fileMetadataSelectedForTagsPopup.setDatasetVersion(null);
-        //}
         
         fileMetadataSelectedForTagsPopup = null;
 
     }
     
-    public void handleSelection(final AjaxBehaviorEvent event) {
-        tabularDataTagsUpdated = true;
+    public void handleFileCategoriesSelection(final AjaxBehaviorEvent event) {
         if (selectedTags != null) {
             selectedTags = selectedTags.clone();
         }
+    }
+    
+    public void handleTabularTagsSelection(final AjaxBehaviorEvent event) {
+        tabularDataTagsUpdated = true;
     }
     
     
