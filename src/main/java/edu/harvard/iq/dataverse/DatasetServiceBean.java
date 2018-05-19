@@ -221,7 +221,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                 return generateIdentifierAsSequentialNumber(dataset, idServiceBean, shoulder);
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return generateIdentifierAsRandomString(dataset, idServiceBean,"");
+                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
         }
     }
     
