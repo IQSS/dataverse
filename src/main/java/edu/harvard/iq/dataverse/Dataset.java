@@ -39,7 +39,7 @@ import org.hibernate.validator.constraints.NotBlank;
  */
 @NamedQueries({
         @NamedQuery(name = "Dataset.findByIdentifier",
-                query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier"), 
+                query = "SELECT d FROM DvObject d WHERE d.identifier=:identifier"), 
         @NamedQuery(name = "Dataset.findByOwnerIdentifier", 
                 query = "SELECT o.identifier FROM DvObject o WHERE o.owner.id=:owner_id")
 })
@@ -74,7 +74,7 @@ import org.hibernate.validator.constraints.NotBlank;
 @Table(indexes = {
     @Index(columnList = "guestbook_id"),
     @Index(columnList = "thumbnailfile_id")},
-        uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"identifier"}))
 public class Dataset extends DvObjectContainer {
 
     public static final String TARGET_URL = "/citation?persistentId=";
@@ -84,9 +84,6 @@ public class Dataset extends DvObjectContainer {
     @OrderBy("id")
     private List<DataFile> files = new ArrayList<>();
 
-    private String protocol;
-    private String authority;
-   
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date globalIdCreateTime;
     
@@ -631,7 +628,7 @@ public class Dataset extends DvObjectContainer {
                 // the study: 
                 //String icpsrId = identifier;
                 //return this.getOwner().getHarvestingClient().getArchiveUrl() + "/icpsrweb/ICPSR/studies/"+icpsrId+"?q="+icpsrId+"&amp;searchSource=icpsr-landing";
-                return "http://doi.org/" + authority + "/" + identifier;
+                return "http://doi.org/" + this.getAuthority() + "/" + identifier;
             } else if (HarvestingClient.HARVEST_STYLE_NESSTAR.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 String nServerURL = this.getHarvestedFrom().getArchiveUrl();
                 // chop any trailing slashes in the server URL - or they will result
