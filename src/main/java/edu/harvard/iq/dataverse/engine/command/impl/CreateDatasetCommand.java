@@ -171,10 +171,12 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             
         }
         logger.fine("Saving the files permanently.");
-        if (!importType.equals(ImportType.IMPORT_METADATA_ONLY)){
-            ctxt.ingest().addFiles(dsv, theDataset.getFiles());
-        } else {
+        if ((importType!=null) && importType.equals(ImportType.IMPORT_METADATA_ONLY)) {
+            logger.log(Level.INFO, "IMPORT_METADATA_ONLY special case");
             IngestUtil.checkForDuplicateFileNamesFinal(dsv, theDataset.getFiles());
+        } else {
+            logger.log(Level.INFO, "cases other than IMPORT_METADATA_ONLY");
+            ctxt.ingest().addFiles(dsv, theDataset.getFiles());
         }
         
         
