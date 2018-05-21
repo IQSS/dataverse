@@ -893,6 +893,26 @@ public class SystemConfig {
         }
         
     }
+    
+    public enum DataFilePIDFormat {
+        DEPENDENT("DEPENDENT"),
+        INDEPENDENT("INDEPENDENT");
+        private final String text;
+
+        public String getText() {
+            return text;
+        }
+        
+        private DataFilePIDFormat(final String text){
+            this.text = text;
+        }
+        
+        @Override
+        public String toString() {
+            return text;
+        }
+        
+    }
 
     /**
      * See FileUploadMethods.
@@ -947,5 +967,24 @@ public class SystemConfig {
         return downloadMethods !=null && downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString());
     }
     
-
+    public boolean isDataFilePIDSequentialDependent(){
+        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+        if (doiIdentifierType.equals("sequentialNumber") && doiDataFileFormat.equals("DEPENDENT")){
+            return true;
+        }
+        return false;
+    }
+    
+    public int getPIDAsynchRegFileCount() {
+        String fileCount = settingsService.getValueForKey(SettingsServiceBean.Key.PIDAsynchRegFileCount, "10");
+        int retVal = 10;
+        try {
+            retVal = Integer.parseInt(fileCount);
+        } catch (NumberFormatException e) {           
+            //if no number in the setting we'll return 10
+        }
+        return retVal;
+    }
+    
 }

@@ -27,8 +27,10 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,7 +38,6 @@ import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -44,23 +45,15 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
-/**
- *
- * @author rmp553
- */
 @Path("files")
 public class Files extends AbstractApiBean {
     
     @EJB
     DatasetServiceBean datasetService;
-    @EJB
-    DataFileServiceBean fileService;
     @EJB
     DatasetVersionServiceBean datasetVersionService;
     @EJB
@@ -102,15 +95,14 @@ public class Files extends AbstractApiBean {
      */
     @PUT
     @Path("{id}/restrict")
-    public Response restrictFileInDataset(
-                           @PathParam("id") Long fileToRestrictId,
-                           String restrictStr
-                           ){
+    public Response restrictFileInDataset(@PathParam("id") String fileToRestrictId, String restrictStr) {
         //create request
         DataverseRequest dataverseRequest = null;
         //get the datafile
-        DataFile dataFile = fileService.find(fileToRestrictId);
-        if (dataFile == null) {
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(fileToRestrictId);
+        } catch (WrappedResponse ex) {
             return error(BAD_REQUEST, "Could not find datafile with id " + fileToRestrictId);
         }
 
@@ -154,7 +146,7 @@ public class Files extends AbstractApiBean {
     @Path("{id}/replace")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response replaceFileInDataset(
-                    @PathParam("id") Long fileToReplaceId,
+                    @PathParam("id") String fileIdOrPersistentId,
                     @FormDataParam("jsonData") String jsonData,
                     @FormDataParam("file") InputStream testFileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
@@ -227,8 +219,15 @@ public class Files extends AbstractApiBean {
         //-------------------
         // (5) Run "runReplaceFileByDatasetId"
         //-------------------
-        
-        
+        long fileToReplaceId = 0;
+        try {
+            DataFile dataFile = findDataFileOrDie(fileIdOrPersistentId);
+            fileToReplaceId = dataFile.getId();
+        } catch (WrappedResponse ex) {
+            String error = BundleUtil.getStringFromBundle("file.addreplace.error.existing_file_to_replace_not_found_by_id", Arrays.asList(fileIdOrPersistentId));
+            // TODO: Some day, return ex.getResponse() instead. Also run FilesIT and updated expected status code and message.
+            return error(BAD_REQUEST, error);
+        }
         if (forceReplace){
             addFileHelper.runForceReplaceFile(fileToReplaceId,
                                     newFilename,
@@ -274,7 +273,9 @@ public class Files extends AbstractApiBean {
         }
             
     } // end: replaceFileInDataset
-    
+
+    // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
+    // TODO: Rename this start with "delete" rather than "get".
     @DELETE
     @Path("{id}/map")
     public Response getMapLayerMetadatas(@PathParam("id") Long idSupplied) {
@@ -299,10 +300,14 @@ public class Files extends AbstractApiBean {
     
     @Path("{id}/uningest")
     @POST
-    public Response uningestDatafile(@PathParam("id") Long idSupplied) {
+    public Response uningestDatafile(@PathParam("id") String id) {
 
-        DataFile dataFile = fileService.find(idSupplied);
-
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(id);
+        } catch (WrappedResponse ex) {
+            return error(BAD_REQUEST, "Could not find datafile with id " + id);
+        }
         if (dataFile == null) {
             return error(Response.Status.NOT_FOUND, "File not found for given id.");
         }
@@ -314,10 +319,11 @@ public class Files extends AbstractApiBean {
         try {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             execCommand(new UningestFileCommand(req, dataFile));
-            dataFile = fileService.find(idSupplied);
+            Long dataFileId = dataFile.getId();
+            dataFile = fileService.find(dataFileId);
             Dataset theDataset = dataFile.getOwner();
             exportMetadata(settingsService, theDataset);
-            return ok("Datafile " + idSupplied + " uningested.");
+            return ok("Datafile " + dataFileId + " uningested.");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

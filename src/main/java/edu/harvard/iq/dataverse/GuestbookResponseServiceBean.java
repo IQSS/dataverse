@@ -590,19 +590,13 @@ public class GuestbookResponseServiceBean {
     }
     
     
-    public GuestbookResponse initGuestbookResponseForFragment(Dataset dataset, FileMetadata fileMetadata, DataverseSession session){   
-        
-        DatasetVersion workingVersion;
-        if (fileMetadata != null){
-            workingVersion = fileMetadata.getDatasetVersion();
-        } else {
-            workingVersion = dataset.getLatestVersion();
-        }
+    public GuestbookResponse initGuestbookResponseForFragment(DatasetVersion workingVersion, FileMetadata fileMetadata, DataverseSession session){   
        
+        Dataset dataset = workingVersion.getDataset();
        
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         
-        if(workingVersion != null && workingVersion.isDraft()){           
+        if(workingVersion.isDraft()){           
             guestbookResponse.setWriteResponse(false);
         } 
         
@@ -613,7 +607,7 @@ public class GuestbookResponseServiceBean {
         }
 
         if (dataset.getGuestbook() != null) {
-            guestbookResponse.setGuestbook(workingVersion.getDataset().getGuestbook());
+            guestbookResponse.setGuestbook(dataset.getGuestbook());
             setUserDefaultResponses(guestbookResponse, session);
             if (fileMetadata != null){
                 guestbookResponse.setDataFile(fileMetadata.getDataFile());
@@ -638,7 +632,7 @@ public class GuestbookResponseServiceBean {
     
     public GuestbookResponse initGuestbookResponseForFragment(FileMetadata fileMetadata, DataverseSession session){    
 
-        return initGuestbookResponseForFragment(fileMetadata.getDatasetVersion().getDataset(), fileMetadata, session);
+        return initGuestbookResponseForFragment(fileMetadata.getDatasetVersion(), fileMetadata, session);
     }
     
     public void initGuestbookResponse(FileMetadata fileMetadata, String downloadType, DataverseSession session){
@@ -823,7 +817,7 @@ public class GuestbookResponseServiceBean {
         }
         if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {
             in.setWriteResponse(false);
-        }
+        } 
         return in;
     }
     
