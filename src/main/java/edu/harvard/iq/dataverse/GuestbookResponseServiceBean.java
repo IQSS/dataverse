@@ -334,8 +334,7 @@ public class GuestbookResponseServiceBean {
                 + "and o.owner_id = " + dataverseId;
                 
         if (guestbookId != null) {
-            // FIXME: add space before "and".
-            cqString += ( "and g.guestbook_id = " + guestbookId);
+            cqString += ( " and g.guestbook_id = " + guestbookId);
         }
         
         if (firstResponse != null) {
