@@ -1097,7 +1097,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         if (nNewFiles > 0) {
             // Try to save the NEW files permanently: 
-            List<DataFile> filesAdded = ingestService.addFiles(workingVersion, newFiles);
+            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles);
             
             // reset the working list of fileMetadatas, as to only include the ones
             // that have been added to the version successfully: 
@@ -1219,8 +1219,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             // requested that the entire dataset is updated). So we'll try to update 
             // only the filemetadatas and/or files affected, and not the 
             // entire version. 
-            // TODO: in 4.3, create SaveDataFileCommand!
-            // -- L.A. Sep. 21 2015, 4.2
             Timestamp updateTime = new Timestamp(new Date().getTime());
         
             workingVersion.setLastUpdateTime(updateTime);
@@ -1238,7 +1236,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 try {
                     //DataFile savedDatafile = datafileService.save(fileMetadata.getDataFile());
                     fileMetadata = datafileService.mergeFileMetadata(fileMetadata);
-                    logger.info("Successfully saved DataFile "+fileMetadata.getLabel()+" in the database.");
+                    logger.fine("Successfully saved DataFile "+fileMetadata.getLabel()+" in the database.");
                 } catch (EJBException ex) {
                     saveError.append(ex).append(" ");
                     saveError.append(ex.getMessage()).append(" ");
@@ -1302,7 +1300,19 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
         
-        newFiles.clear();
+
+        if (newFiles.size() > 0) {
+            logger.fine("clearing newfiles list.");
+            newFiles.clear();
+            /*
+             - We decided not to bother obtaining persistent ids for new files 
+             as they are uploaded and created. The identifiers will be assigned 
+             later, when the version is published. 
+             
+            logger.info("starting async job for obtaining persistent ids for files.");
+            datasetService.obtainPersistentIdentifiersForDatafiles(dataset);
+            */
+        }
                 
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());

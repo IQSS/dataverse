@@ -633,6 +633,7 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+    // TODO: Rather than only supporting looking up files by their database IDs (dataFileIdSupplied), consider supporting persistent identifiers.
     @POST
     @Path("{id}/thumbnail/{dataFileId}")
     public Response setDataFileAsThumbnail(@PathParam("id") String idSupplied, @PathParam("dataFileId") long dataFileIdSupplied) {

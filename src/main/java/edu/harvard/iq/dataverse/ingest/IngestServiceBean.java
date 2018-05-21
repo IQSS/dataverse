@@ -152,38 +152,16 @@ public class IngestServiceBean {
     private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
     private static String dateFormat_ymd = "yyyy-MM-dd";
     
-   
-
-    // addFilesToDataset() takes a list of new DataFiles and attaches them to the parent 
-    // Dataset (the files are attached to the dataset, and the fileMetadatas to the
-    // supplied version). 
-    /*public void addFilesToDataset(DatasetVersion version, List<DataFile> newFiles) {
-        if (newFiles != null && newFiles.size() > 0) {
-
-            Dataset dataset = version.getDataset();
-
-            for (DataFile dataFile : newFiles) {
-
-                // These are all brand new files, so they should all have 
-                // one filemetadata total. -- L.A. 
-                FileMetadata fileMetadata = dataFile.getFileMetadatas().get(0);
-                String fileName = fileMetadata.getLabel();
-
-                // Attach the file to the dataset and to the version: 
-                dataFile.setOwner(dataset);
-
-                version.getFileMetadatas().add(dataFile.getFileMetadata());
-                dataFile.getFileMetadata().setDatasetVersion(version);
-                dataset.getFiles().add(dataFile);
-            }
-        }
-    }*/
-    
-    // This method tries to permanently store the files on the filesystem. 
-    // It should be called before we attempt to permanently save the files in 
+    // This method tries to permanently store new files on the filesystem. 
+    // Then it adds the files that *have been successfully saved* to the 
+    // dataset (by attaching the DataFiles to the Dataset, and the corresponding
+    // FileMetadatas to the DatasetVersion). It also tries to ensure that none 
+    // of the parts of the DataFiles that failed to be saved (if any) are still
+    // attached to the Dataset via some cascade path (for example, via 
+    // DataFileCategory objects, if any were already assigned to the files). 
+    // It must be called before we attempt to permanently save the files in 
     // the database by calling the Save command on the dataset and/or version. 
-    // TODO: rename the method finalizeFiles()? or something like that?
-    public List<DataFile> addFiles(DatasetVersion version, List<DataFile> newFiles) {
+    public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version, List<DataFile> newFiles) {
         List<DataFile> ret = new ArrayList<>();
         
         if (newFiles != null && newFiles.size() > 0) {
@@ -394,7 +372,7 @@ public class IngestServiceBean {
                 }
             }
 
-            logger.fine("Done! Finished saving new files in permanent storage.");
+            logger.fine("Done! Finished saving new files in permanent storage and adding them to the dataset.");
         }
         
         return ret;
@@ -426,6 +404,9 @@ public class IngestServiceBean {
 
         return generatedFiles;
     }
+    
+    
+   
     
     // TODO: consider creating a version of this method that would take 
     // datasetversion as the argument. 
