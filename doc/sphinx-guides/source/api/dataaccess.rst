@@ -34,6 +34,7 @@ Value           Description
 original        "Saved Original", the proprietary (SPSS, Stata, R, etc.) file from which the tabular data was ingested;
 RData           Tabular data as an R Data frame (generated; unless the "original" file was in R);
 prep		"Pre-processed data", in JSON.
+subset          Column-wise subsetting. You must also supply a comma separated list of variables in the "variables" query parameter. In this example, 123 and 127 are the ids of data variables that belong to the data file with the id 6: ``curl 'http://localhost:8080/api/access/datafile/6?format=subset&variables=123,127'``.
 ==============  ===========
 
 ---------------------------
@@ -48,18 +49,6 @@ Value           Description
 true            Generates a thumbnail image, by rescaling to the default thumbnail size (64 pixels)
 ``N``           Rescales the image to ``N`` pixels.
 ==============  ===========
-
----------------------------
-
-``vars``
-
-For column-wise subsetting (available for tabular data files only).
-
-Example: 
-
-``http://localhost:8080/api/meta/datafile/6?vars=123,127``
-
-where 123 and 127 are the ids of data variables that belong to the data file with the id 6.
 
 Multiple File ("bundle") download
 ---------------------------------
