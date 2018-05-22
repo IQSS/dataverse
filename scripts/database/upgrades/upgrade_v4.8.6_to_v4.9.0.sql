@@ -10,17 +10,36 @@ ALTER TABLE datafile ADD COLUMN prov_entityname text;
 -- so that Identifiers may be added to DataFiles
 
 ALTER TABLE dvobject ADD COLUMN
-  authority character varying(255),
-  ADD COLUMN globalidcreatetime timestamp without time zone,
-  ADD COLUMN identifierRegistered boolean,
-  ADD COLUMN identifier character varying(255),
-  ADD COLUMN protocol character varying(255);
+ authority character varying(255),
+ ADD COLUMN globalidcreatetime timestamp without time zone,
+ ADD COLUMN identifierRegistered boolean,
+ ADD COLUMN identifier character varying(255),
+ ADD COLUMN protocol character varying(255);
 
-
+--add authority shoulder to identifier
 UPDATE dvobject
-SET authority=(SELECT dataset.authority
+SET identifier=(SELECT substring(authority, strpos(authority,doiseparator)+1) || doiseparator || identifier
 FROM dataset
-WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset') where dvobject.dtype='Dataset';
+WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset' and strpos(authority,doiseparator)>0) where dvobject.dtype='Dataset';
+
+--just copy if there's no shoulder
+UPDATE dvobject
+SET identifier=(SELECT identifier
+FROM dataset
+WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset' and strpos(authority,doiseparator)=0) where dvobject.dtype='Dataset';
+
+--strip shoulder from authority 
+UPDATE dvobject
+SET authority=(SELECT substring(authority from 0 for strpos(authority,doiseparator))  
+FROM dataset
+WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset' and strpos(authority,doiseparator)>0) where dvobject.dtype='Dataset' ;
+
+-- no shoulder 
+UPDATE dvobject
+SET authority=(SELECT authority 
+FROM dataset
+WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset' and strpos(authority,doiseparator)=0) where dvobject.dtype='Dataset';
+
 
 UPDATE dvobject
 SET globalidcreatetime=(SELECT dataset.globalidcreatetime
@@ -29,11 +48,6 @@ WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset') where dvobject.dtype=
 
 UPDATE dvobject
 SET identifierRegistered= true where globalidcreatetime is not null;
-
-UPDATE dvobject
-SET identifier=(SELECT dataset.identifier
-FROM dataset
-WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset') where dvobject.dtype='Dataset';
 
 UPDATE dvobject
 SET protocol=(SELECT dataset.protocol
@@ -47,7 +61,3 @@ ALTER TABLE dataset DROP COLUMN doiseparator;
 ALTER TABLE dataset DROP COLUMN globalidcreatetime;
 ALTER TABLE dataset DROP COLUMN identifier;
 ALTER TABLE dataset DROP COLUMN protocol;
-
-UPDATE dvObject SET identifier=substring(authority, strpos(authority,'/')+1) || '/' || identifier WHERE
-strpos(authority,'/')>0;
-UPDATE dvObject SET authority=substring(authority from 0 for strpos(authority,'/')) WHERE strpos(authority,'/')>0;
