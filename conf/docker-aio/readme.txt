@@ -9,7 +9,7 @@ Per-build:
 - `cd conf/docker-aio`, and run `./1prep.sh` to copy files for integration test data into docker build context; `1prep.sh` will also build the war file and installation zip file
 - build the docker image: `docker build -t dv0 -f c7.dockerfile .`
 
-- Run image: `docker run -d -p 8083:8080 -p 8084:80 --name dv dv0` (aka - forward port 8083 locally to 8080 in the container for glassfish, and 8084 to 80 for apache)
+- Run image: `docker run -d -p 8083:8080 -p 8084:80 --name dv dv0` (aka - forward port 8083 locally to 8080 in the container for glassfish, and 8084 to 80 for apache); if you'd like to connect a java debugger to glassfish, use `docker run -d -p 8083:8080 -p 8084:80 -p 9010:9009 --name dv dv0`
 
 Note: If you see an error like this... `docker: Error response from daemon: Conflict. The container name "/dv" is already in use by container "5f72a45b68c86c7b0f4305b83ce7d663020329ea4e30fa2a3ce9ddb05223533d". You have to remove (or rename) that container to be able to reuse that name.` ... run something like `docker ps -a | grep dv` to see the container left over from the last run and something like `docker rm 5f72a45b68c8` to remove it. Then try the `docker run` command above again.
 
