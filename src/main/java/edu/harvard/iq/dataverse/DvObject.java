@@ -22,7 +22,7 @@ import javax.persistence.*;
 	@NamedQuery(name = "DvObject.ownedObjectsById",
 			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
     @NamedQuery(name = "DvObject.findByGlobalId",
-    query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol")
+    query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype")
 })
 @Entity
 // Inheritance strategy "JOINED" will create 4 db tables - 
@@ -114,6 +114,8 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     
     @Column
     private String storageIdentifier;
+    
+    @Column(insertable = false, updatable = false) private String dtype;
     
     /*
     * Add DOI related fields

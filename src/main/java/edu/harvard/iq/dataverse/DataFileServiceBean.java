@@ -165,7 +165,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }*/
     
     public DataFile findByGlobalId(String globalId) {
-            return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.class);
+            return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.DATAFILE_DTYPE_STRING);
     }
     
     public DataFile findReplacementFile(Long previousFileId){

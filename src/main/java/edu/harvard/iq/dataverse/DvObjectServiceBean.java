@@ -59,7 +59,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         return em.createNamedQuery("DvObject.findAll", DvObject.class).getResultList();
     }
 
-    public <T extends DvObject> T findByGlobalId(String globalId, Class<T> resultClass) {
+    public DvObject findByGlobalId(String globalId, String typeString) {
 
         String protocol = "";
         String authority = "";
@@ -76,18 +76,20 @@ public class DvObjectServiceBean implements java.io.Serializable {
                 DvObject foundDvObject = null;
                 try {
                     Query query;
-                    query = em.createNamedQuery("DvObject.findByGlobalId", resultClass);
+                    query = em.createNamedQuery("DvObject.findByGlobalId");
                     query.setParameter("identifier", identifier);
                     query.setParameter("protocol", protocol);
                     query.setParameter("authority", authority);
+                    query.setParameter("dtype", typeString);
                     foundDvObject = (DvObject) query.getSingleResult();
                 } catch (javax.persistence.NoResultException e) {
                     // (set to .info, this can fill the log file with thousands of
                     // these messages during a large harvest run)
                     logger.fine("no dvObject found: " + globalId);
                     // DO nothing, just return null.
+                    return null;
                 }
-                return resultClass.cast(foundDvObject);
+                return foundDvObject;
             } else {
                 logger.info(
                         "Error parsing identifier: " + globalId + ": ':<authority>/<identifier>' not found in string");
