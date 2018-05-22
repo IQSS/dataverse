@@ -11,7 +11,6 @@ ALTER TABLE datafile ADD COLUMN prov_entityname text;
 
 ALTER TABLE dvobject ADD COLUMN
   authority character varying(255),
-  ADD COLUMN doiseparator character varying(255),
   ADD COLUMN globalidcreatetime timestamp without time zone,
   ADD COLUMN identifierRegistered boolean,
   ADD COLUMN identifier character varying(255),
@@ -20,11 +19,6 @@ ALTER TABLE dvobject ADD COLUMN
 
 UPDATE dvobject
 SET authority=(SELECT dataset.authority
-FROM dataset
-WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset') where dvobject.dtype='Dataset';
-
-UPDATE dvobject
-SET doiseparator=(SELECT dataset.doiseparator
 FROM dataset
 WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset') where dvobject.dtype='Dataset';
 
@@ -54,6 +48,6 @@ ALTER TABLE dataset DROP COLUMN globalidcreatetime;
 ALTER TABLE dataset DROP COLUMN identifier;
 ALTER TABLE dataset DROP COLUMN protocol;
 
-UPDATE dvObject SET identifier=substring(authority, strpos(authority,doiseparator)+1) || doiseparator || identifier WHERE
-strpos(authority,doiseparator)>0;
-UPDATE dvObject SET authority=substring(authority from 0 for strpos(authority,doiseparator)) WHERE strpos(authority,doiseparator)>0;
+UPDATE dvObject SET identifier=substring(authority, strpos(authority,'/')+1) || '/' || identifier WHERE
+strpos(authority,'/')>0;
+UPDATE dvObject SET authority=substring(authority from 0 for strpos(authority,'/')) WHERE strpos(authority,'/')>0;
