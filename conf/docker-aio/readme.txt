@@ -1,6 +1,16 @@
-first pass docker all-in-one image, intended for running integration tests against.
+First pass docker all-in-one image, intended for running integration tests against.
+Also usable for normal development and system evaluation; not intended for production.
 
-Could be potentially usable for normal development as well.
+Quickstart:
+ - in the root of the repository, run `./conf/docker-aio/prep_it.bash`
+ - if all goes well, you should see XXX. If not, you may need to read the non-quickstart instructions.
+ - run integration tests: `./conf/docker-aio/run-test-suite.sh`
+
+
+----
+
+More in-depth documentation:
+
 
 Initial setup (aka - do once):
 - `cd conf/docker-aio` and run `./0prep_deps.sh` to created Glassfish and Solr tarballs in `conf/docker-aio/dv/deps`.
