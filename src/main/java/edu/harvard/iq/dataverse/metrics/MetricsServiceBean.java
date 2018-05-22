@@ -31,7 +31,7 @@ public class MetricsServiceBean implements Serializable {
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long dataversesByMonth(String yyyymm) throws Exception {
+    public long dataversesToMonth(String yyyymm) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(dvobject.id)\n"
                 + "from dataverse\n"
@@ -47,7 +47,7 @@ public class MetricsServiceBean implements Serializable {
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long datasetsByMonth(String yyyymm) throws Exception {
+    public long datasetsToMonth(String yyyymm) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from datasetversion\n"
@@ -70,7 +70,7 @@ public class MetricsServiceBean implements Serializable {
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long filesByMonth(String yyyymm) throws Exception {
+    public long filesToMonth(String yyyymm) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from filemetadata\n"
@@ -94,7 +94,7 @@ public class MetricsServiceBean implements Serializable {
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long downloadsByMonth(String yyyymm) throws Exception {
+    public long downloadsToMonth(String yyyymm) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
@@ -135,7 +135,6 @@ public class MetricsServiceBean implements Serializable {
                + "from datasetversion\n"
                + "join dataset on dataset.id = datasetversion.dataset_id\n"
                + "where versionstate='RELEASED'\n"
-               + "and date_trunc('month', releasetime) <=  to_date('2018-05','YYYY-MM')\n"
                + "and dataset.harvestingclient_id is null\n"
                + "group by dataset_id \n"
                + ")\n"

@@ -1442,44 +1442,44 @@ public class UtilIT {
                 .delete("/api/admin/storageSites/" + storageSiteId);
     }
 
-    static Response metricsDataversesByMonth(String yyyymm) {
+    static Response metricsDataversesToMonth(String yyyymm) {
         String optionalYyyyMm = "";
         if (yyyymm != null) {
             optionalYyyyMm = "/" + yyyymm;
         }
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/dataverses/byMonth" + optionalYyyyMm);
+        return requestSpecification.get("/api/info/metrics/dataverses/toMonth" + optionalYyyyMm);
     }
 
-    static Response metricsDatasetsByMonth(String yyyymm) {
+    static Response metricsDatasetsToMonth(String yyyymm) {
         String optionalYyyyMm = "";
         if (yyyymm != null) {
             optionalYyyyMm = "/" + yyyymm;
         }
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/datasets/byMonth" + optionalYyyyMm);
+        return requestSpecification.get("/api/info/metrics/datasets/toMonth" + optionalYyyyMm);
     }
 
-    static Response metricsFilesByMonth(String yyyymm) {
+    static Response metricsFilesToMonth(String yyyymm) {
         String optionalYyyyMm = "";
         if (yyyymm != null) {
             optionalYyyyMm = "/" + yyyymm;
         }
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/files/byMonth" + optionalYyyyMm);
+        return requestSpecification.get("/api/info/metrics/files/toMonth" + optionalYyyyMm);
     }
 
-    static Response metricsDownloadsByMonth(String yyyymm) {
+    static Response metricsDownloadsToMonth(String yyyymm) {
         String optionalYyyyMm = "";
         if (yyyymm != null) {
             optionalYyyyMm = "/" + yyyymm;
         }
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/downloads/byMonth" + optionalYyyyMm);
+        return requestSpecification.get("/api/info/metrics/downloads/toMonth" + optionalYyyyMm);
     }
 
     static Response metricsDataverseByCategory() {

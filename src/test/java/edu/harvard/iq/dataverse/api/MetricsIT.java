@@ -22,16 +22,16 @@ public class MetricsIT {
     }
 
     @Test
-    public void testGetDataversesByMonth() {
+    public void testGetDataversesToMonth() {
         String yyyymm = "2018-04";
 //        yyyymm = null;
-        Response response = UtilIT.metricsDataversesByMonth(yyyymm);
+        Response response = UtilIT.metricsDataversesToMonth(yyyymm);
         String precache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         //Run each query twice and compare results to tests caching
-        response = UtilIT.metricsDataversesByMonth(yyyymm);
+        response = UtilIT.metricsDataversesToMonth(yyyymm);
         String postcache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -40,16 +40,16 @@ public class MetricsIT {
     }
 
     @Test
-    public void testGetDatasetsByMonth() {
+    public void testGetDatasetsToMonth() {
         String yyyymm = "2018-04";
 //        yyyymm = null;
-        Response response = UtilIT.metricsDatasetsByMonth(yyyymm);
+        Response response = UtilIT.metricsDatasetsToMonth(yyyymm);
         String precache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         //Run each query twice and compare results to tests caching
-        response = UtilIT.metricsDatasetsByMonth(yyyymm);
+        response = UtilIT.metricsDatasetsToMonth(yyyymm);
         String postcache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -58,16 +58,16 @@ public class MetricsIT {
     }
 
     @Test
-    public void testGetFilesByMonth() {
+    public void testGetFilesToMonth() {
         String yyyymm = "2018-04";
 //        yyyymm = null;
-        Response response = UtilIT.metricsFilesByMonth(yyyymm);
+        Response response = UtilIT.metricsFilesToMonth(yyyymm);
         String precache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         //Run each query twice and compare results to tests caching
-        response = UtilIT.metricsFilesByMonth(yyyymm);
+        response = UtilIT.metricsFilesToMonth(yyyymm);
         String postcache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -76,16 +76,16 @@ public class MetricsIT {
     }
 
     @Test
-    public void testGetDownloadsByMonth() {
+    public void testGetDownloadsToMonth() {
         String yyyymm = "2018-04";
 //        yyyymm = null;
-        Response response = UtilIT.metricsDownloadsByMonth(yyyymm);
+        Response response = UtilIT.metricsDownloadsToMonth(yyyymm);
         String precache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         //Run each query twice and compare results to tests caching
-        response = UtilIT.metricsDownloadsByMonth(yyyymm);
+        response = UtilIT.metricsDownloadsToMonth(yyyymm);
         String postcache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());

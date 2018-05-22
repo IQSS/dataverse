@@ -33,22 +33,22 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 public class Metrics extends AbstractApiBean {
 
     @GET
-    @Path("dataverses/byMonth")
-    public Response getDataversesByMonthCurrent() {
-        return getDataversesByMonth(MetricsUtil.getCurrentMonth());
+    @Path("dataverses/toMonth")
+    public Response getDataversesToMonthCurrent() {
+        return getDataversesToMonth(MetricsUtil.getCurrentMonth());
     }
 
     @GET
-    @Path("dataverses/byMonth/{yyyymm}")
-    public Response getDataversesByMonth(@PathParam("yyyymm") String yyyymm) {
-        String metricName = "dataversesByMonth";
+    @Path("dataverses/toMonth/{yyyymm}")
+    public Response getDataversesToMonth(@PathParam("yyyymm") String yyyymm) {
+        String metricName = "dataversesToMonth";
 
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.dataversesByMonth(sanitizedyyyymm);
+                Long count = metricsSvc.dataversesToMonth(sanitizedyyyymm);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
                 metricsSvc.save(new Metric(metricName, sanitizedyyyymm, jsonString), true); //if not using cache save new
@@ -62,22 +62,22 @@ public class Metrics extends AbstractApiBean {
     }
 
     @GET
-    @Path("datasets/byMonth")
-    public Response getDatasetsByMonthCurrent() {
-        return getDatasetsByMonth(MetricsUtil.getCurrentMonth());
+    @Path("datasets/toMonth")
+    public Response getDatasetsToMonthCurrent() {
+        return getDatasetsToMonth(MetricsUtil.getCurrentMonth());
     }
 
     @GET
-    @Path("datasets/byMonth/{yyyymm}")
-    public Response getDatasetsByMonth(@PathParam("yyyymm") String yyyymm) {
-        String metricName = "datasetsByMonth";
+    @Path("datasets/toMonth/{yyyymm}")
+    public Response getDatasetsToMonth(@PathParam("yyyymm") String yyyymm) {
+        String metricName = "datasetsToMonth";
 
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.datasetsByMonth(sanitizedyyyymm);
+                Long count = metricsSvc.datasetsToMonth(sanitizedyyyymm);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
                 metricsSvc.save(new Metric(metricName, sanitizedyyyymm, jsonString), true); //if not using cache save new
@@ -91,22 +91,22 @@ public class Metrics extends AbstractApiBean {
     }
 
     @GET
-    @Path("files/byMonth")
-    public Response getFilesByMonthCurrent() {
-        return getFilesByMonth(MetricsUtil.getCurrentMonth());
+    @Path("files/toMonth")
+    public Response getFilesToMonthCurrent() {
+        return getFilesToMonth(MetricsUtil.getCurrentMonth());
     }
 
     @GET
-    @Path("files/byMonth/{yyyymm}")
-    public Response getFilesByMonth(@PathParam("yyyymm") String yyyymm) {
-        String metricName = "filesByMonth";
+    @Path("files/toMonth/{yyyymm}")
+    public Response getFilesToMonth(@PathParam("yyyymm") String yyyymm) {
+        String metricName = "filesToMonth";
 
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.filesByMonth(sanitizedyyyymm);
+                Long count = metricsSvc.filesToMonth(sanitizedyyyymm);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
                 metricsSvc.save(new Metric(metricName, sanitizedyyyymm, jsonString), true); //if not using cache save new
@@ -119,22 +119,22 @@ public class Metrics extends AbstractApiBean {
     }
 
     @GET
-    @Path("downloads/byMonth")
-    public Response getDownloadsByMonthCurrent() {
-        return getDownloadsByMonth(MetricsUtil.getCurrentMonth());
+    @Path("downloads/toMonth")
+    public Response getDownloadsToMonthCurrent() {
+        return getDownloadsToMonth(MetricsUtil.getCurrentMonth());
     }
 
     @GET
-    @Path("downloads/byMonth/{yyyymm}")
-    public Response getDownloadsByMonth(@PathParam("yyyymm") String yyyymm) {
-        String metricName = "downloadsByMonth";
+    @Path("downloads/toMonth/{yyyymm}")
+    public Response getDownloadsToMonth(@PathParam("yyyymm") String yyyymm) {
+        String metricName = "downloadsToMonth";
 
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.downloadsByMonth(sanitizedyyyymm);
+                Long count = metricsSvc.downloadsToMonth(sanitizedyyyymm);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
                 metricsSvc.save(new Metric(metricName, sanitizedyyyymm, jsonString), true); //if not using cache save new
