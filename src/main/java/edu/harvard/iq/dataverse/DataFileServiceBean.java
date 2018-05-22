@@ -53,7 +53,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger(DataFileServiceBean.class.getCanonicalName());
     @EJB
-    DatasetServiceBean datasetService;
+    DvObjectServiceBean dvObjectService;
     @EJB
     PermissionServiceBean permissionService;
     @EJB
@@ -165,26 +165,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }*/
     
     public DataFile findByGlobalId(String globalId) {
-
-/*
-        Concatenate pieces of global Id for selection until more permanent fix implemented
-        */
-        String queryStr = "select s.id from dvobject s where s.protocol || ':' || s.authority || '/' || s.identifier = '" + globalId +"'";
-
-        DataFile file = null;
-        try {
-            Query query = em.createNativeQuery(queryStr);
-            Long fileId = new Long((Integer) query.getSingleResult());
-            file = em.find(DataFile.class, fileId);
-
-        } catch (javax.persistence.NoResultException e) {
-            // (set to .info, this can fill the log file with thousands of 
-            // these messages during a large harvest run)
-            logger.fine("no file found: " + globalId);
-            // DO nothing, just return null.
-        }
-        return file;
-
+            return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.class);
     }
     
     public DataFile findReplacementFile(Long previousFileId){

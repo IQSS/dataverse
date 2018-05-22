@@ -38,8 +38,6 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author skraffmiller
  */
 @NamedQueries({
-        @NamedQuery(name = "Dataset.findByIdentifier",
-                query = "SELECT d FROM DvObject d WHERE d.identifier=:identifier"), 
         @NamedQuery(name = "Dataset.findByOwnerIdentifier", 
                 query = "SELECT o.identifier FROM DvObject o WHERE o.owner.id=:owner_id")
 })
@@ -73,8 +71,7 @@ import org.hibernate.validator.constraints.NotBlank;
 @Entity
 @Table(indexes = {
     @Index(columnList = "guestbook_id"),
-    @Index(columnList = "thumbnailfile_id")},
-        uniqueConstraints = @UniqueConstraint(columnNames = {"identifier"}))
+    @Index(columnList = "thumbnailfile_id")})
 public class Dataset extends DvObjectContainer {
 
     public static final String TARGET_URL = "/citation?persistentId=";
@@ -84,9 +81,6 @@ public class Dataset extends DvObjectContainer {
     @OrderBy("id")
     private List<DataFile> files = new ArrayList<>();
 
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date globalIdCreateTime;
-    
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date lastExportTime;
 

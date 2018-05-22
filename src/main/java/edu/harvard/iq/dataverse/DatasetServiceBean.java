@@ -74,6 +74,9 @@ public class DatasetServiceBean implements java.io.Serializable {
     DatasetVersionServiceBean versionService;
     
     @EJB
+    DvObjectServiceBean dvObjectService;
+    
+    @EJB
     AuthenticationServiceBean authentication;
     
     @EJB
@@ -191,23 +194,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     public Dataset findByGlobalId(String globalId) {
-
-/*
-        Concatenate pieces of global Id for selection until more permanent fix implemented
-        */
-        String queryStr = "select s.id from dvobject s where s.protocol || ':' || s.authority || '/' || s.identifier = '" + globalId +"'";
-        Dataset foundDataset = null;
-        try {
-            Query query = em.createNativeQuery(queryStr);
-            Long datasetId = new Long((Integer) query.getSingleResult());
-            foundDataset = em.find(Dataset.class, datasetId);
-        } catch (javax.persistence.NoResultException e) {
-            // (set to .info, this can fill the log file with thousands of 
-            // these messages during a large harvest run)
-            logger.fine("no ds found: " + globalId);
-            // DO nothing, just return null.
-        }
-        return foundDataset;
+        return (Dataset) dvObjectService.findByGlobalId(globalId, Dataset.class);
     }
 
     public String generateDatasetIdentifier(Dataset dataset, IdServiceBean idServiceBean) {
