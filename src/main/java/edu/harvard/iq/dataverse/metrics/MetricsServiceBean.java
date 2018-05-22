@@ -153,7 +153,7 @@ public class MetricsServiceBean implements Serializable {
     public String returnUnexpiredCacheAllTime(String metricName) throws Exception {
         Metric queriedMetric = getMetric(metricName);
 
-        if (!doWeQueryAgainMonthly(queriedMetric)) {
+        if (!doWeQueryAgainAllTime(queriedMetric)) {
             return queriedMetric.getMetricValue();
         }
         return null;
