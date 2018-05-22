@@ -54,3 +54,6 @@ ALTER TABLE dataset DROP COLUMN globalidcreatetime;
 ALTER TABLE dataset DROP COLUMN identifier;
 ALTER TABLE dataset DROP COLUMN protocol;
 
+UPDATE dvObject SET identifier=substring(authority, strpos(authority,doiseparator)+1) || doiseparator || identifier WHERE
+strpos(authority,doiseparator)>0;
+UPDATE dvObject SET authority=substring(authority from 0 for strpos(authority,doiseparator)) WHERE strpos(authority,doiseparator)>0;
