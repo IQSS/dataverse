@@ -43,6 +43,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -98,7 +99,7 @@ public class DatasetsIT {
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-
+        
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
@@ -110,7 +111,7 @@ public class DatasetsIT {
         Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
         datasetAsJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
+       
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         System.out.println("identifier: " + identifier);
         assertEquals(6, identifier.length());
@@ -142,6 +143,10 @@ public class DatasetsIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         Response makeSuperUser = UtilIT.makeSuperUser(username);
         assertEquals(200, makeSuperUser.getStatusCode());
+        
+        Response createNoAccessUser = UtilIT.createRandomUser();
+        createNoAccessUser.prettyPrint();
+        String apiTokenNoAccess= UtilIT.getApiTokenFromResponse(createNoAccessUser);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
@@ -157,7 +162,11 @@ public class DatasetsIT {
         String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
         String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
-
+        
+        Response datasetAsJsonNoAccess = UtilIT.nativeGet(datasetId, apiTokenNoAccess);
+        datasetAsJsonNoAccess.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());        
+ 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
         Response attemptToPublishZeroDotOne = UtilIT.publishDatasetViaNativeApiDeprecated(datasetPersistentId, "minor", apiToken);
@@ -177,6 +186,11 @@ public class DatasetsIT {
                 // FIXME: make this less brittle by removing "2" and "0". See also test below.
                 .body("data.latestVersion.metadataBlocks.citation.fields[2].value[0].datasetContactEmail.value", equalTo("finch@mailinator.com"))
                 .statusCode(OK.getStatusCode());
+        
+        Response datasetAsJsonNoAccessPostPublish = UtilIT.nativeGet(datasetId, apiTokenNoAccess);
+        datasetAsJsonNoAccessPostPublish.then().assertThat()
+                .statusCode(OK.getStatusCode());        
+        assertTrue(datasetAsJsonNoAccessPostPublish.body().asString().contains(identifier));
 
         List<JsonObject> datasetContactsFromNativeGet = with(getDatasetJsonAfterPublishing.body().asString()).param("datasetContact", "datasetContact")
                 .getJsonObject("data.latestVersion.metadataBlocks.citation.fields.findAll { fields -> fields.typeName == datasetContact }");

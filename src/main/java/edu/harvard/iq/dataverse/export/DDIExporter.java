@@ -11,6 +11,8 @@ import java.io.OutputStream;
 import javax.ejb.EJB;
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import javax.xml.stream.XMLOutputFactory;
 
 /**
  *
@@ -42,6 +44,9 @@ public class DDIExporter implements Exporter {
     @Override
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
         try {
+		XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
+		xmlw.writeStartDocument();
+		xmlw.flush();
             DdiExportUtil.datasetJson2ddi(json, version, outputStream);
         } catch (XMLStreamException xse) {
             throw new ExportException ("Caught XMLStreamException performing DDI export");
