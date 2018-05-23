@@ -59,44 +59,31 @@ public class DvObjectServiceBean implements java.io.Serializable {
         return em.createNamedQuery("DvObject.findAll", DvObject.class).getResultList();
     }
 
-    public DvObject findByGlobalId(String globalId, String typeString) {
+    public DvObject findByGlobalId(String globalIdString, String typeString) {
 
-        String protocol = "";
-        String authority = "";
-        String identifier = "";
-        int index1 = globalId.indexOf(':');
-        if (index1 > 0) { // ':' found with one or more characters before it
-            int index2 = globalId.indexOf('/', index1 + 1);
-            if (index2 > 0 && (index2 + 1) < globalId.length()) { // '/' found with one or more characters between ':'
-                                                                  // and '/' and there are characters after '/'
-                protocol = globalId.substring(0, index1);
-                authority = globalId.substring(index1 + 1, index2);
-                identifier = globalId.substring(index2 + 1);
+        try {
+            GlobalId gid = new GlobalId(globalIdString);
 
-                DvObject foundDvObject = null;
-                try {
-                    Query query;
-                    query = em.createNamedQuery("DvObject.findByGlobalId");
-                    query.setParameter("identifier", identifier);
-                    query.setParameter("protocol", protocol);
-                    query.setParameter("authority", authority);
-                    query.setParameter("dtype", typeString);
-                    foundDvObject = (DvObject) query.getSingleResult();
-                } catch (javax.persistence.NoResultException e) {
-                    // (set to .info, this can fill the log file with thousands of
-                    // these messages during a large harvest run)
-                    logger.fine("no dvObject found: " + globalId);
-                    // DO nothing, just return null.
-                    return null;
-                }
-                return foundDvObject;
-            } else {
-                logger.info(
-                        "Error parsing identifier: " + globalId + ": ':<authority>/<identifier>' not found in string");
+            DvObject foundDvObject = null;
+            try {
+                Query query;
+                query = em.createNamedQuery("DvObject.findByGlobalId");
+                query.setParameter("identifier", gid.getIdentifier());
+                query.setParameter("protocol", gid.getProtocol());
+                query.setParameter("authority", gid.getAuthority());
+                query.setParameter("dtype", typeString);
+                foundDvObject = (DvObject) query.getSingleResult();
+            } catch (javax.persistence.NoResultException e) {
+                // (set to .info, this can fill the log file with thousands of
+                // these messages during a large harvest run)
+                logger.fine("no dvObject found: " + globalIdString);
+                // DO nothing, just return null.
                 return null;
             }
-        } else {
-            logger.info("Error parsing identifier: " + globalId + ": '<protocol>:' not found in string");
+            return foundDvObject;
+
+        } catch (IllegalArgumentException iae) {
+            logger.info("Invalid identifier: " + globalIdString);
             return null;
         }
     }
