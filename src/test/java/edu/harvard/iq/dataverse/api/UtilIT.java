@@ -538,6 +538,11 @@ public class UtilIT {
                 .get("/api/meta/datafile/" + idInPath + "?key=" + apiToken + optionalQueryParam);
     }
 
+    static Response testIngest(String fileName, String fileType) {
+        return given()
+                .get("/api/ingest/test/file?fileName=" + fileName + "&fileType=" + fileType);
+    }
+
     static Response getSwordAtomEntry(String persistentId, String apiToken) {
         Response response = given()
                 .auth().basic(apiToken, EMPTY_STRING)

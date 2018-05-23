@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataTable;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -121,6 +122,8 @@ public class TestIngest {
                     
                     DataFile dataFile = new DataFile();
                     dataFile.setStorageIdentifier(tabFilename);
+                    Dataset dataset = new Dataset();
+                    dataFile.setOwner(dataset);
                     
                     FileMetadata fileMetadata = new FileMetadata();
                     fileMetadata.setLabel(fileName);
