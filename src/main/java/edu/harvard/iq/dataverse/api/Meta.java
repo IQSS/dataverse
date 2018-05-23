@@ -40,13 +40,13 @@ import edu.harvard.iq.dataverse.api.exceptions.AuthorizationRequiredException;
 /**
  *
  * PLEASE NOTE that the "/api/meta" endpoints are deprecated! All code should
- * point to the newer "/api/access/datafile/.../access" endpoints instead.
+ * point to the newer "/api/access/datafile/..." endpoints instead.
  *
  * @author Leonid Andreev
  * 
  * The metadata access API is based on the DVN metadata API v.1.0 (that came 
  * with the v.3.* of the DVN app) and extended for DVN 4.0 to include more
- * granular access to subsets of the metatada that describe the dataaset: 
+ * granular access to subsets of the metadata that describe the dataset:
  * access to individual datafile and datavariable sections, as well as  
  * specific fragments of these sections. 
  */
