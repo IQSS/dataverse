@@ -305,22 +305,23 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         if (!readOnly) {
-        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
-        if (datasetThumbnail == null) {
-            thumbnailString = "";
-            return null; 
-        } 
-        
-        if (datasetThumbnail.isFromDataFile()) {
-            if (!datasetThumbnail.getDataFile().equals(dataset.getThumbnailFile())) {
-                datasetService.assignDatasetThumbnailByNativeQuery(dataset, datasetThumbnail.getDataFile());
-                dataset = datasetService.find(dataset.getId());
+            DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+            if (datasetThumbnail == null) {
+                thumbnailString = "";
+                return null;
             }
-        }
-           
-        thumbnailString = datasetThumbnail.getBase64image();
+
+            if (datasetThumbnail.isFromDataFile()) {
+                if (!datasetThumbnail.getDataFile().equals(dataset.getThumbnailFile())) {
+                    datasetService.assignDatasetThumbnailByNativeQuery(dataset, datasetThumbnail.getDataFile());
+                    // refresh the dataset:
+                    dataset = datasetService.find(dataset.getId());
+                }
+            }
+
+            thumbnailString = datasetThumbnail.getBase64image();
         } else {
-            thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, workingVersion.getId());
+            thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, workingVersion.getId(),!workingVersion.isDraft());
             if (thumbnailString == null) {
                 thumbnailString = "";
                 return null;
@@ -4110,17 +4111,6 @@ public class DatasetPage implements java.io.Serializable {
         assert (null != workingVersion);
         return workingVersion.getRootDataverseNameforCitation();
     }
-    
-    /*
-    public String getThumbnail() {
-        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
-        if (datasetThumbnail != null) {
-            return datasetThumbnail.getBase64image();
-        } else {
-            return null;
-        }
-    }*/
-    
     
     public void downloadRsyncScript() {
 
