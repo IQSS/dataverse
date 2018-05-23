@@ -13,15 +13,15 @@ public interface PersistentIdentifierServiceBean {
 
     static final Logger logger = Logger.getLogger(PersistentIdentifierServiceBean.class.getCanonicalName());
 
-    boolean alreadyExists(Dataset dataset) throws Exception;
+    boolean alreadyExists(DvObject dvo) throws Exception;
 
     boolean registerWhenPublished();
     
     List<String> getProviderInformation();
 
-    String createIdentifier(Dataset dataset) throws Throwable;
+    String createIdentifier(DvObject dvo) throws Throwable;
 
-    Map<String,String> getIdentifierMetadata(Dataset dataset);
+    Map<String,String> getIdentifierMetadata(DvObject dvo);
 
     Map<String,String> lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier);
 
@@ -35,17 +35,19 @@ public interface PersistentIdentifierServiceBean {
      */
     String getIdentifierForLookup(String protocol, String authority, String separator, String identifier);
 
-    String modifyIdentifier(Dataset dataset, Map<String, String> metadata) throws Exception;
+    String modifyIdentifierTargetURL(DvObject dvo) throws Exception;
 
-    void deleteIdentifier(Dataset datasetIn) throws Exception;
-
-    Map<String,String> getMetadataFromStudyForCreateIndicator(Dataset datasetIn);
-
-    Map<String,String> getMetadataFromDatasetForTargetURL(Dataset datasetIn);
-
-    String getIdentifierFromDataset(Dataset dataset);
-
-    boolean publicizeIdentifier(Dataset studyIn);
+    void deleteIdentifier(DvObject dvo) throws Exception;
+    
+    Map<String, String> getMetadataForCreateIndicator(DvObject dvObject);
+    
+    Map<String,String> getMetadataForTargetURL(DvObject dvObject);
+    
+    DvObject generateIdentifier(DvObject dvObject);
+    
+    String getIdentifier(DvObject dvObject);
+    
+    boolean publicizeIdentifier(DvObject studyIn);
     
     static PersistentIdentifierServiceBean getBean(String protocol, CommandContext ctxt) {
         final Function<CommandContext, PersistentIdentifierServiceBean> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);

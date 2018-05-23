@@ -106,7 +106,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         }
         
         logger.fine("Saving the files permanently.");
-        ctxt.ingest().addFiles(dsv, theDataset.getFiles());        
+        ctxt.ingest().finalizeFiles(dsv, theDataset.getFiles());        
         
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)
         handlePid(theDataset, ctxt);

@@ -93,7 +93,6 @@ import org.ocpsoft.common.util.Strings;
 public class AddReplaceFileHelper{
     
     private static final Logger logger = Logger.getLogger(AddReplaceFileHelper.class.getCanonicalName());
-
     
     public static String FILE_ADD_OPERATION = "FILE_ADD_OPERATION";
     public static String FILE_REPLACE_OPERATION = "FILE_REPLACE_OPERATION";
@@ -1411,9 +1410,7 @@ public class AddReplaceFileHelper{
             this.addErrorSevere(getBundleErr("final_file_list_empty"));                
             return false;
         }
-
-        ingestService.addFiles(workingVersion, finalFileList);
-
+        ingestService.finalizeFiles(workingVersion, finalFileList);
         return true;
     }
     

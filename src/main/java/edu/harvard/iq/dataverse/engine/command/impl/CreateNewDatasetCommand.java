@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**

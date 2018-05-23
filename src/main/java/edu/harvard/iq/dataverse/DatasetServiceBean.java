@@ -6,9 +6,14 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -35,6 +40,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
@@ -79,6 +85,12 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @EJB
     OAIRecordServiceBean recordService;
+    
+    @EJB
+    EjbDataverseEngine commandEngine;
+    
+    @EJB
+    SystemConfig systemConfig;
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
@@ -107,6 +119,28 @@ public class DatasetServiceBean implements java.io.Serializable {
             for (Dataset ds : query.getResultList()) {
                 if (ds.isReleased() && !ds.isDeaccessioned()) {
                     retList.add(ds);
+                }
+            }
+            return retList;
+        }
+    }
+    
+    public List<Long> findIdsByOwnerId(Long ownerId) {
+        return findIdsByOwnerId(ownerId, false);
+    }
+    
+    private List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished) {
+        List<Long> retList = new ArrayList<>();
+        if (!onlyPublished) {
+            TypedQuery<Long> query = em.createQuery("select o.id from Dataset as o where o.owner.id =:ownerId order by o.id", Long.class);
+            query.setParameter("ownerId", ownerId);
+            return query.getResultList();
+        } else {
+            TypedQuery<Dataset> query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id", Dataset.class);
+            query.setParameter("ownerId", ownerId);
+            for (Dataset ds : query.getResultList()) {
+                if (ds.isReleased() && !ds.isDeaccessioned()) {
+                    retList.add(ds.getId());
                 }
             }
             return retList;
@@ -158,16 +192,16 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     public Dataset findByGlobalId(String globalId) {
-        Optional<GlobalId> maybePid = GlobalId.parse(globalId, settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, ""));
-        if ( !maybePid.isPresent() ) return null;
-
-        GlobalId pid = maybePid.get();
         try {
-            return em.createNamedQuery("Dataset.findByIdentifierAuthorityProtocol", Dataset.class)
-            .setParameter("protocol", pid.getProtocol())
-            .setParameter("authority", pid.getAuthority())
-            .setParameter("identifier", pid.getIdentifier())
-            .getSingleResult();
+            DvObject obj = em.createNamedQuery("DvObject.findByGlobalId", DvObject.class)
+                                .setParameter("globalId", globalId)
+                                .getSingleResult();
+            if ( obj instanceof Dataset ) {
+                return (Dataset)obj;
+            } else {
+                logger.log(Level.INFO, "User requested Dataset with globalId {0}, but it is not a dataset: {1}", new Object[]{globalId, obj.toString()});
+                return null;
+            }
             
         } catch (javax.persistence.NoResultException e) {
             // (set to .info, this can fill the log file with thousands of 
@@ -255,6 +289,35 @@ public class DatasetServiceBean implements java.io.Serializable {
         return u; 
     }
     
+    public Long getMaximumExistingDatafileIdentifier(Dataset dataset) {
+        //Cannot rely on the largest table id having the greatest identifier counter
+        long zeroFiles = new Long(0);
+        Long retVal = zeroFiles;
+        Long testVal;
+        List<Object> idResults;
+        Long dsId = dataset.getId();
+        if (dsId != null) {
+            try {
+                idResults = em.createNamedQuery("Dataset.findByOwnerIdentifier")
+                                .setParameter("owner_id", dsId).getResultList();
+            } catch (NoResultException ex) {
+                logger.log(Level.FINE, "No files found in dataset id {0}. Returning a count of zero.", dsId);
+                return zeroFiles;
+            }
+            if (idResults != null) {
+                for (Object raw: idResults){
+                    String identifier = (String) raw;
+                    identifier =  identifier.substring(identifier.lastIndexOf("/") + 1);
+                    testVal = new Long(identifier) ;
+                    if (testVal > retVal){
+                        retVal = testVal;
+                    }               
+                }
+            }
+        }
+        return retVal;
+    }
+
     public DatasetVersion storeVersion( DatasetVersion dsv ) {
         em.persist(dsv);
         return dsv;
@@ -467,6 +530,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
         lock.setDataset(dataset);
         dataset.addLock(lock);
+        lock.setStartTime( new Date() );
         em.persist(lock);
         em.merge(dataset); 
         return lock;
@@ -833,5 +897,100 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.persist(workflowComment);
         return workflowComment;
     }
+    
+    @Asynchronous
+    public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request) throws CommandException {
 
+        // Since we are calling the next command asynchronously anyway - sleep here 
+        // for a few seconds, just in case, to make sure the database update of 
+        // the dataset initiated by the PublishDatasetCommand has finished, 
+        // to avoid any concurrency/optimistic lock issues. 
+        try {
+            Thread.sleep(15000);
+        } catch (Exception ex) {
+            logger.warning("Failed to sleep for 15 seconds.");
+        }
+        logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
+        Dataset theDataset = find(datasetId);
+        String nonNullDefaultIfKeyNotFound = "";
+        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+        commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, doiProvider, request));
+    }
+    
+    /*
+     Experimental asynchronous method for requesting persistent identifiers for 
+     datafiles. We decided not to run this method on upload/create (so files 
+     will not have persistent ids while in draft; when the draft is published, 
+     we will force obtaining persistent ids for all the files in the version. 
+     
+     If we go back to trying to register global ids on create, care will need to 
+     be taken to make sure the asynchronous changes below are not conflicting with 
+     the changes from file ingest (which may be happening in parallel, also 
+     asynchronously). We would also need to lock the dataset (similarly to how 
+     tabular ingest logs the dataset), to prevent the user from publishing the
+     version before all the identifiers get assigned - otherwise more conflicts 
+     are likely. (It sounds like it would make sense to treat these two tasks -
+     persistent identifiers for files and ingest - as one post-upload job, so that 
+     they can be run in sequence). -- L.A. Mar. 2018
+    */
+    @Asynchronous
+    public void obtainPersistentIdentifiersForDatafiles(Dataset dataset) {
+        PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(dataset.getProtocol(), commandEngine.getContext());
+
+        //If the Id type is sequential and Dependent then write file idenitifiers outside the command
+        String datasetIdentifier = dataset.getIdentifier();
+        Long maxIdentifier = null;
+
+        if (systemConfig.isDataFilePIDSequentialDependent()) {
+            maxIdentifier = getMaximumExistingDatafileIdentifier(dataset);
+        }
+
+        for (DataFile datafile : dataset.getFiles()) {
+            logger.info("Obtaining persistent id for datafile id=" + datafile.getId());
+
+            if (datafile.getIdentifier() == null || datafile.getIdentifier().isEmpty()) {
+
+                logger.info("Obtaining persistent id for datafile id=" + datafile.getId());
+
+                if (maxIdentifier != null) {
+                    maxIdentifier++;
+                    datafile.setIdentifier(datasetIdentifier + "/" + maxIdentifier.toString());
+                } else {
+                    datafile.setIdentifier(fileService.generateDataFileIdentifier(datafile, idServiceBean));
+                }
+
+                if (datafile.getProtocol() == null) {
+                    datafile.setProtocol(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""));
+                }
+                if (datafile.getAuthority() == null) {
+                    datafile.setAuthority(settingsService.getValueForKey(SettingsServiceBean.Key.Authority, ""));
+                }
+                if (datafile.getDoiSeparator() == null) {
+                    datafile.setDoiSeparator(settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, ""));
+                }
+
+                logger.info("identifier: " + datafile.getIdentifier());
+
+                String doiRetString;
+
+                try {
+                    logger.log(Level.FINE, "creating identifier");
+                    doiRetString = idServiceBean.createIdentifier(datafile);
+                } catch (Throwable e) {
+                    logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
+                    doiRetString = "";
+                }
+
+                // Check return value to make sure registration succeeded
+                if (!idServiceBean.registerWhenPublished() && doiRetString.contains(datafile.getIdentifier())) {
+                    datafile.setIdentifierRegistered(true);
+                    datafile.setGlobalIdCreateTime(new Date());
+                }
+                
+                DataFile merged = em.merge(datafile);
+                merged = null; 
+            }
+
+        }
+    }
 }

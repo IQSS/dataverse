@@ -20,7 +20,6 @@
 
 package edu.harvard.iq.dataverse.ingest;
 
-import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -40,12 +39,8 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
-import edu.harvard.iq.dataverse.dataaccess.UnsupportedDataAccessOperationException;
-import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
-import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
@@ -78,8 +73,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.nio.channels.Channel;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -107,7 +100,6 @@ import javax.jms.Queue;
 import javax.jms.QueueConnectionFactory;
 import javax.annotation.Resource;
 import javax.ejb.Asynchronous;
-import javax.ejb.EJBException;
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 import javax.jms.QueueSender;
@@ -115,7 +107,6 @@ import javax.jms.QueueSession;
 import javax.jms.Message;
 import javax.faces.bean.ManagedBean;
 import javax.faces.application.FacesMessage;
-import javax.persistence.Query;
 
 /**
  *
@@ -177,11 +168,12 @@ public class IngestServiceBean {
         }
     }
     
-    // This method tries to permanently store the files on the filesystem. 
-    // It should be called before we attempt to permanently save the files in 
-    // the database by calling the Save command on the dataset and/or version. 
-    // TODO: rename the method finalizeFiles()? or something like that?
-    public void addFiles (DatasetVersion version, List<DataFile> newFiles) {
+
+    //Method to finalize files that are added to a dataset.
+    //Sets Ingest flag
+    //saves to file system
+    
+    public void finalizeFiles (DatasetVersion version, List<DataFile> newFiles) {
         if (newFiles != null && newFiles.size() > 0) {
             // final check for duplicate file names; 
             // we tried to make the file names unique on upload, but then 
@@ -385,6 +377,9 @@ public class IngestServiceBean {
 
         return generatedFiles;
     }
+    
+    
+   
     
     // TODO: consider creating a version of this method that would take 
     // datasetversion as the argument. 

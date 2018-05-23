@@ -334,7 +334,7 @@
                                                     <p:ajax process="editFacets" update="editFacets" listener="#{DataversePage.changeFacetsMetadataBlock}"/>
                                                 </p:selectOneMenu>
                                             </f:facet>
-                                            <f:facet name="targetCaption">Selected</f:facet>
+                                            <f:facet name="targetCaption">#{bundle['dataverse.selected']}</f:facet>
                                             <p:ajax event="transfer" listener="#{DataversePage.onFacetTransfer}" update="editFacets" />
                                         </p:pickList>
                                     </div>

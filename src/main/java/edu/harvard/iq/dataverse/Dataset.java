@@ -31,7 +31,6 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
@@ -42,7 +41,8 @@ import org.hibernate.validator.constraints.NotBlank;
                query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier"),
     @NamedQuery(name = "Dataset.findByIdentifierAuthorityProtocol",
                query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier AND d.protocol=:protocol AND d.authority=:authority"),
-            
+    @NamedQuery(name = "Dataset.findByOwnerIdentifier", 
+                query = "SELECT o.identifier FROM DvObject o WHERE o.owner.id=:owner_id")
 })
 
 /*
@@ -95,7 +95,6 @@ public class Dataset extends DvObjectContainer {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date lastExportTime;
 
-    @NotBlank(message = "Please enter an identifier for your dataset.")
     @Column(nullable = false)
     private String identifier;
     
@@ -214,51 +213,6 @@ public class Dataset extends DvObjectContainer {
         return !getLocks().isEmpty();
     }
     
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
-
-    public String getAuthority() {
-        return authority;
-    }
-
-    public void setAuthority(String authority) {
-        this.authority = authority;
-    }
-
-    /**
-     * @return dataset identifier.
-     *         For example, a dataset with database id (primary key) 3, persistent ID
-     *         doi:10.5072/FK2/abcde, this should return "abcde".
-     */
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
-    }
-
-    public String getDoiSeparator() {
-        return doiSeparator;
-    }
-
-    public void setDoiSeparator(String doiSeparator) {
-        this.doiSeparator = doiSeparator;
-    }
-
-    public Date getGlobalIdCreateTime() {
-        return globalIdCreateTime;
-    }
-
-    public void setGlobalIdCreateTime(Date globalIdCreateTime) {
-        this.globalIdCreateTime = globalIdCreateTime;
-    }
-
     public Date getLastExportTime() {
         return lastExportTime;
     }
@@ -285,26 +239,6 @@ public class Dataset extends DvObjectContainer {
 
     public String getPersistentURL() {
         return new GlobalId(this).toURL().toString();
-    }
-
-    public String getGlobalIdString() {       
-        return new GlobalId(this).toString();
-    }
-    
-    public void setGlobalId( GlobalId pid ) {
-        if ( pid == null ) {
-            setProtocol(null);
-            setAuthority(null);
-            setIdentifier(null);
-        } else {
-            setProtocol(pid.getProtocol());
-            setAuthority(pid.getAuthority());
-            setIdentifier(pid.getIdentifier());
-        }
-    }
-    
-    public GlobalId getGlobalId() {
-        return new GlobalId(getProtocol(), getAuthority(), getIdentifier());
     }
     
     public List<DataFile> getFiles() {
@@ -399,6 +333,8 @@ public class Dataset extends DvObjectContainer {
                 newFm.setRestricted(fm.isRestricted());
                 newFm.setDataFile(fm.getDataFile());
                 newFm.setDatasetVersion(dsv);
+                newFm.setProvFreeForm(fm.getProvFreeForm());
+                
                 dsv.getFileMetadatas().add(newFm);
             }
         }

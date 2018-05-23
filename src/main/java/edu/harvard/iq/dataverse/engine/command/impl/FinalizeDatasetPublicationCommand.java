@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetLock;
 import static edu.harvard.iq.dataverse.DatasetVersion.VersionState.*;
+import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.UserNotification;
@@ -15,7 +16,6 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
@@ -54,9 +54,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         if ( theDataset.getGlobalIdCreateTime() == null ) {
             registerExternalIdentifier(theDataset, ctxt);
         }
-        
+                
         // is this the first publication of the dataset?
-        if ( theDataset.getReleaseUser() == null ) {
+        if (theDataset.getPublicationDate() == null) {
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
         }
         if ( theDataset.getPublicationDate() == null ) {
@@ -80,7 +80,22 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         updateDatasetUser(ctxt);
         
+        //if the publisher hasn't contributed to this version
+        DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), getUser());
+        
+        if (ddu == null) {
+            ddu = new DatasetVersionUser();
+            ddu.setDatasetVersion(theDataset.getLatestVersion());
+            String id = getUser().getIdentifier();
+            id = id.startsWith("@") ? id.substring(1) : id;
+            AuthenticatedUser au = ctxt.authentication().getAuthenticatedUser(id);
+            ddu.setAuthenticatedUser(au);
+        }
+        ddu.setLastUpdateDate(getTimestamp());
+        ctxt.em().merge(ddu);
+        
         updateParentDataversesSubjectsField(theDataset, ctxt);
+        publicizeExternalIdentifier(theDataset, ctxt); 
 
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
         if (privateUrl != null) {
@@ -100,6 +115,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
         // Remove locks
         ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
+        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.pidRegister));
         if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
             ctxt.engine().submit( 
                     new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
@@ -167,7 +183,16 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         if ( idServiceBean != null ){
             try {
                 idServiceBean.publicizeIdentifier(dataset);
+                dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
+                dataset.setIdentifierRegistered(true);
+                for (DataFile df : dataset.getFiles()) {
+                    logger.log(Level.FINE, "registering global id for file {0}", df.getId());
+                    idServiceBean.publicizeIdentifier(df);
+                    df.setGlobalIdCreateTime(getTimestamp());
+                    df.setIdentifierRegistered(true);
+                }
             } catch (Throwable e) {
+                ctxt.datasets().removeDatasetLocks(dataset.getId(), DatasetLock.Reason.pidRegister);
                 throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
             }
         }

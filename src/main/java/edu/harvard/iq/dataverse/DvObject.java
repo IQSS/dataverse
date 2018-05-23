@@ -2,7 +2,9 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.*;
@@ -17,6 +19,8 @@ import javax.persistence.*;
             query = "SELECT o FROM DvObject o ORDER BY o.id"),
     @NamedQuery(name = "DvObject.findById",
             query = "SELECT o FROM DvObject o WHERE o.id=:id"),
+    @NamedQuery( name = "DvObject.findByGlobalId",
+            query = "SELECT o from DvObject o where CONCAT(o.protocol, ':', o.authority, o.doiseparator, o.identifier) = :globalId"),
 	@NamedQuery(name = "DvObject.ownedObjectsById",
 			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id")
 })
@@ -105,6 +109,21 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     
     @Column
     private String storageIdentifier;
+    
+    /*
+    * Add DOI related fields
+    */
+   
+    private String protocol;
+    private String authority;
+    private String doiSeparator;
+
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date globalIdCreateTime;
+
+    private String identifier;
+    
+    private boolean identifierRegistered;
     
     /**
      * previewImageAvailable could also be thought of as "thumbnail has been
@@ -220,6 +239,78 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         this.creator = creator;
     }
     
+     public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public String getAuthority() {
+        return authority;
+    }
+
+    public void setAuthority(String authority) {
+        this.authority = authority;
+    }
+
+    public String getDoiSeparator() {
+        return doiSeparator;
+    }
+
+    public void setDoiSeparator(String doiSeparator) {
+        this.doiSeparator = doiSeparator;
+    }
+
+    public Date getGlobalIdCreateTime() {
+        return globalIdCreateTime;
+    }
+
+    public void setGlobalIdCreateTime(Date globalIdCreateTime) {
+        this.globalIdCreateTime = globalIdCreateTime;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public boolean isIdentifierRegistered() {
+        return identifierRegistered;
+    } 
+
+    public void setIdentifierRegistered(boolean identifierRegistered) {
+        this.identifierRegistered = identifierRegistered;
+    }  
+    
+    public String getGlobalIdString() {       
+        final GlobalId globalId = getGlobalId();
+        return globalId != null ? globalId.toString() : null;
+    }
+    
+    public void setGlobalId( GlobalId pid ) {
+        if ( pid == null ) {
+            setProtocol(null);
+            setAuthority(null);
+            setIdentifier(null);
+        } else {
+            setProtocol(pid.getProtocol());
+            setAuthority(pid.getAuthority());
+            setIdentifier(pid.getIdentifier());
+        }
+    }
+    
+    public GlobalId getGlobalId() {
+        // FIXME should return NULL when the fields are null. Currenntly, 
+        //       a lot of code depends call this method, so this fix can't be 
+        //       a part of the current PR.
+        return new GlobalId(getProtocol(), getAuthority(), getIdentifier());
+    }
+    
     public abstract <T> T accept(Visitor<T> v);
 
     @Override
@@ -285,7 +376,47 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         }
         
         return null;
-    }    
+    }
+    
+    public String getAuthorString(){
+        if (this instanceof Dataverse){
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        if (this instanceof Dataset){
+            Dataset dataset = (Dataset) this;
+            return dataset.getLatestVersion().getAuthorsStr();
+        }
+        if (this instanceof DataFile){
+            Dataset dataset = (Dataset) this.getOwner();
+            return dataset.getLatestVersion().getAuthorsStr();
+        }
+        throw new UnsupportedOperationException("Not supported yet. New DVObject Instance?");
+    }
+    
+    public String getTargetUrl(){
+        if (this instanceof Dataverse){
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        if (this instanceof Dataset){
+            return Dataset.TARGET_URL;
+        }
+        if (this instanceof DataFile){
+            return DataFile.TARGET_URL;
+        }
+        throw new UnsupportedOperationException("Not supported yet. New DVObject Instance?");
+        
+    }
+    
+    public String getYearPublishedCreated(){
+        //if published get the year if draft get when created
+        if (this.isReleased()){
+            return new SimpleDateFormat("yyyy").format(this.getPublicationDate());
+        } else if (this.getCreateDate() != null) {
+           return  new SimpleDateFormat("yyyy").format(this.getCreateDate());
+        } else {
+            return new SimpleDateFormat("yyyy").format(new Date());
+        }
+    }
     
     public String getStorageIdentifier() {
         return storageIdentifier;

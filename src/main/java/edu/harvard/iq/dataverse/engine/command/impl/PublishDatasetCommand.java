@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -11,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
+import java.util.Date;
 import java.util.Optional;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
@@ -28,10 +30,9 @@ import static java.util.stream.Collectors.joining;
  */
 @RequiredPermissions(Permission.PublishDataset)
 public class PublishDatasetCommand extends AbstractPublishDatasetCommand<PublishDatasetResult> {
-    
     private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getName());
-        
     boolean minorRelease;
+    DataverseRequest request;
     
     /** 
      * The dataset was already released by an external system, and now Dataverse
@@ -48,7 +49,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         super(datasetIn, aRequest);
         minorRelease = minor;
         datasetExternallyReleased = isPidPrePublished;
-            
+        request = aRequest;
     }
 
     @Override
@@ -78,23 +79,35 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber() + 1));
             theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
         }
-
-        theDataset = ctxt.em().merge(theDataset);
         
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, "");
         if ( prePubWf.isPresent() ) {
             // We start a workflow
+            theDataset = ctxt.em().merge(theDataset);
             ctxt.workflows().start(prePubWf.get(), buildContext(doiProvider, TriggerType.PrePublishDataset) );
             return new PublishDatasetResult(theDataset, false);
             
         } else {
-            // Synchronous publishing (no workflow involved)
-            theDataset = ctxt.engine().submit( new FinalizeDatasetPublicationCommand(theDataset, doiProvider, getRequest()) );
-            return new PublishDatasetResult(ctxt.em().merge(theDataset), true);
+            //if there are more than required size files  then call Finalize asychronously (default is 10)
+            if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount()) {     
+                String info = "Adding File PIDs asynchronously";
+                AuthenticatedUser user = request.getAuthenticatedUser();
+                
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.pidRegister, user);
+                lock.setDataset(theDataset);
+                lock.setInfo(info);
+                ctxt.datasets().addDatasetLock(theDataset, lock);
+                ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request);
+                return new PublishDatasetResult(theDataset, false);
+                
+            } else {
+                // Synchronous publishing (no workflow involved)
+                theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(ctxt.em().merge(theDataset), doiProvider, getRequest()));
+                return new PublishDatasetResult(theDataset, true);
+            }
         }
     }
-    
     
     /**
      * See that publishing the dataset in the requested manner makes sense, at
@@ -137,7 +150,6 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
             }
         }
-        
     }   
     
 }

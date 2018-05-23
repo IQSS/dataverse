@@ -6,28 +6,23 @@
 
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
 import java.util.Optional;
-import javax.ejb.EJB;
 
 /**
  *
  * @author skraffmiller
  */
 public class GlobalId implements java.io.Serializable {
-
     
     public static final String DOI_PROTOCOL = "doi";
     public static final String HDL_PROTOCOL = "hdl";
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
     public static final String DOI_RESOLVER_URL = "https://doi.org/";
-    
-    @EJB
-    SettingsServiceBean settingsService;
     
     public static Optional<GlobalId> parse(String identifier, String doiSeparator) {
         return Optional.ofNullable(parsePersistentId(identifier, doiSeparator, new GlobalId(null, null, null)));
@@ -51,17 +46,26 @@ public class GlobalId implements java.io.Serializable {
         this.authority = authority;
         this.identifier = identifier;
     }
-
-    public GlobalId(Dataset dataset){
-        this.authority = dataset.getAuthority();
-        this.protocol = dataset.getProtocol();
-        this.identifier = dataset.getIdentifier();
+    
+    public GlobalId(DvObject dvObject) {
+        this.authority = dvObject.getAuthority();
+        this.protocol = dvObject.getProtocol();
+        this.identifier = dvObject.getIdentifier(); 
     }
         
     private String protocol;
     private String authority;
     private String identifier;
 
+    /**
+     * Tests whether {@code this} instance has all the data required for a 
+     * global id.
+     * @return {@code true} iff all the fields are non-empty; {@code false} otherwise.
+     */
+    public boolean isComplete() {
+        return !(isEmpty(protocol)||isEmpty(authority)||isEmpty(identifier));
+    }
+    
     public String getProtocol() {
         return protocol;
     }
@@ -85,13 +89,19 @@ public class GlobalId implements java.io.Serializable {
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
-
+    
     public String toString() {
+        if (protocol == null || authority == null || identifier == null) {
+            return "";
+        }
         return protocol + ":" + authority + "/" + identifier;
     }
     
     public URL toURL() {
         URL url = null;
+        if (identifier == null){
+            return null;
+        }
         try {
             if (protocol.equals(DOI_PROTOCOL)){
                url = new URL(DOI_RESOLVER_URL + authority + "/" + identifier); 

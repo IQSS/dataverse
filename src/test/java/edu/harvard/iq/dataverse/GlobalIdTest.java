@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import java.net.URL;
@@ -52,7 +47,6 @@ public class GlobalIdTest {
         assertEquals("doi", instance.getProtocol());
         assertEquals("10.5072/FK2", instance.getAuthority());
         assertEquals("BYM3IW", instance.getIdentifier());
-        // TODO review the generated test code and remove the default call to fail.
     }
     
     
@@ -64,7 +58,6 @@ public class GlobalIdTest {
         assertEquals("hdl", instance.getProtocol());
         assertEquals("1902.1", instance.getAuthority());
         assertEquals("111012", instance.getIdentifier());
-        // TODO review the generated test code and remove the default call to fail.
     }
     
     @Test
@@ -131,7 +124,14 @@ public class GlobalIdTest {
         exception.expectMessage("Failed to parse identifier: doi:2part/blah");
         new GlobalId("doi:2part/blah");
     }
-
+    
+    @Test
+    public void testIsComplete() {
+        assertFalse( new GlobalId( "doi", "10.123", null).isComplete() );
+        assertFalse( new GlobalId( "doi", null, "123").isComplete() );
+        assertFalse( new GlobalId( null, "10.123", "123").isComplete() );
+        assertTrue( new GlobalId( "doi", "10.123", "123").isComplete() );
+    }
     
     /**
      * Test of toURL method, of class GlobalId.

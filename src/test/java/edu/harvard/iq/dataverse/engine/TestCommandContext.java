@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
@@ -51,6 +52,11 @@ public class TestCommandContext implements CommandContext {
     public IndexServiceBean index() {
         return null;
     }
+        
+    @Override
+	public IndexBatchServiceBean indexBatch() {
+		return null;
+	}
 
     @Override
     public SolrIndexServiceBean solrIndex() {
