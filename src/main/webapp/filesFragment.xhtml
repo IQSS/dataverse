@@ -218,7 +218,7 @@
                     #{fileMetadata.label}
                 </a>
             </ui:fragment>
-            <ui:fragment rendered="#{empty fileMetadata.datglobalIdStringobalId}">
+            <ui:fragment rendered="#{empty fileMetadata.dataFile.globalIdString}">
                 <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
                     #{fileMetadata.label}
                 </a>

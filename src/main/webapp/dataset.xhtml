@@ -630,7 +630,7 @@
                                     <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
                                     <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
                                     <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
-                                    <ui:param name="globalId" value="#{DatasetPage.daglobalIdStringobalId}"/>
+                                    <ui:param name="globalId" value="#{DatasetPage.globalId}"/>
                                 </ui:include>
                             </p:tab>
 

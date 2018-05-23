@@ -20,7 +20,7 @@ import javax.persistence.*;
     @NamedQuery(name = "DvObject.findById",
             query = "SELECT o FROM DvObject o WHERE o.id=:id"),
     @NamedQuery( name = "DvObject.findByGlobalId",
-            query = "SELECT o from DvObject o where CONCAT(o.protocol, ':', o.authority, o.doiseparator, o.identifier) = :globalId"),
+            query = "SELECT o from DvObject o where CONCAT(o.protocol, ':', o.authority, o.doiSeparator, o.identifier) = :globalId"),
 	@NamedQuery(name = "DvObject.ownedObjectsById",
 			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id")
 })
