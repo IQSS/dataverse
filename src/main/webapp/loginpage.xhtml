@@ -194,10 +194,10 @@
                                         </h:outputLink>
                                         <ui:fragment rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}">
                                             <p class="help-block small" style="margin-top:1em;">
-                                                <h:outputText value="#{auth.providers.orcid.helpmessage1}"  escape="false"/>
+                                                <h:outputText value="#{bundle['auth.providers.orcid.helpmessage1']}"  escape="false"/>
                                             </p>
                                             <p class="help-block small" style="margin-top:1em;">
-                                                <h:outputText value="#{auth.providers.orcid.helpmessage2}"  escape="false"/>
+                                                <h:outputText value="#{bundle['auth.providers.orcid.helpmessage2']}"  escape="false"/>
                                             </p>
                                         </ui:fragment>
                                     </div>
