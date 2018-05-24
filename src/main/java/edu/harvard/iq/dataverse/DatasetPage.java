@@ -2662,7 +2662,7 @@ public class DatasetPage implements java.io.Serializable {
         //After dataset saved, then persist prov json data
         if(systemConfig.isProvCollectionEnabled()) {
             try {
-                provPopupFragmentBean.saveStagedProvJson(false);
+                provPopupFragmentBean.saveStagedProvJson(false, dataset.getLatestVersion().getFileMetadatas());
             } catch (AbstractApiBean.WrappedResponse ex) {
                 JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);

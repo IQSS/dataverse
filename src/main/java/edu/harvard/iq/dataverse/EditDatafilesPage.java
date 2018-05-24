@@ -1115,7 +1115,16 @@ public class EditDatafilesPage implements java.io.Serializable {
             Boolean provFreeChanges = provPopupFragmentBean.updatePageMetadatasWithProvFreeform(fileMetadatas);
 
             try {
-                provJsonChanges = provPopupFragmentBean.saveStagedProvJson(false);
+                // Note that the user may have uploaded provenance metadata file(s)
+                // for some of the new files that have since failed to be permanently saved 
+                // in storage (in the ingestService.saveAndAddFilesToDataset() step, above); 
+                // these files have been dropped from the fileMetadatas list, and we 
+                // are not adding them to the dataset; but the 
+                // provenance update set still has entries for these failed files,
+                // so we are passing the fileMetadatas list to the saveStagedProvJson()
+                // method below - so that it doesn't attempt to save the entries 
+                // that are no longer valid. 
+                provJsonChanges = provPopupFragmentBean.saveStagedProvJson(false, fileMetadatas);
             } catch (AbstractApiBean.WrappedResponse ex) {
                 JsfHelper.addErrorMessage(getBundleString("file.metadataTab.provenance.error"));
                 Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
@@ -1125,7 +1134,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             //This was the simplest way to work around this issue for prov. --MAD 4.8.6.
             datasetUpdateRequired = datasetUpdateRequired || provFreeChanges || provJsonChanges;
         }
-        
+                
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
             logger.fine("issuing the dataset update command");
             // We are creating a new draft version; 
@@ -1185,8 +1194,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     tabularDataTagsUpdated = false;
                 }
             }
-            
-            
+                        
             Command<Dataset> cmd;
             try {
                 cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
