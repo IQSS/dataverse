@@ -132,20 +132,20 @@ public class GlobalId implements java.io.Serializable {
             int index2 = identifierString.indexOf('/', index1 + 1);
             if (index2 > 0 && (index2 + 1) < identifierString.length()) { // '/' found with one or more characters
                                                                           // between ':'
-                String protocol = identifierString.substring(0, index1); // and '/' and there are characters after '/'
+                protocol = identifierString.substring(0, index1); // and '/' and there are characters after '/'
                 if (!"doi".equals(protocol) && !"hdl".equals(protocol)) {
                     return false;
                 }
+                //Strip any whitespace, ; and ' from authority (should finding them cause a failure instead?)
+                authority = formatIdentifierString(identifierString.substring(index1 + 1, index2));
                 if (protocol.equals(DOI_PROTOCOL)) {
                     if (!this.checkDOIAuthority(authority)) {
                         return false;
                     }
                 }
                 // Passed all checks
-                this.protocol = protocol;
-                //Strip any whitespace, ; and ' from authority and identifier parts (should finding them cause a failure instead?)
-                this.authority = formatIdentifierString(identifierString.substring(index1 + 1, index2));
-                this.identifier = formatIdentifierString(identifierString.substring(index2 + 1));
+                //Strip any whitespace, ; and ' from identifier (should finding them cause a failure instead?)
+                identifier = formatIdentifierString(identifierString.substring(index2 + 1));
             } else {
                 logger.info("Error parsing identifier: " + identifierString
                         + ": ':<authority>/<identifier>' not found in string");
