@@ -18,14 +18,21 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.gson.Gson;
 
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
-import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.inject.Named;
 
+@Stateless
+@Named
 public class OpenAireExportUtil {
+  @EJB
+  private DataverseServiceBean dataverseService;
 
 	private static final Logger logger = Logger.getLogger(OpenAireExportUtil.class.getCanonicalName());
     
@@ -36,7 +43,7 @@ public class OpenAireExportUtil {
 	
 	public static String SCHEMA_VERSION = "4.1";
 	
-	public static String RESOURCE_NAMESPACE = "http://schema.datacite.org/meta/kernel-4.1";
+	public static String RESOURCE_NAMESPACE = "http://datacite.org/schema/kernel-4";
 	public static String RESOURCE_SCHEMA_LOCATION = "http://schema.datacite.org/meta/kernel-4.1/metadata.xsd";
     
 	public static String language = null;
@@ -52,7 +59,7 @@ public class OpenAireExportUtil {
     private static void dto2openaire(DatasetDTO datasetDto, OutputStream outputStream) throws XMLStreamException {
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         
-        xmlw.writeStartElement("oai_datacite"); // <oai_datacite>
+/*        xmlw.writeStartElement("oai_datacite"); // <oai_datacite>
         
         xmlw.writeAttribute("xmlns:xsi", SCHEMA_INSTANCE);
         // xmlw.writeAttribute("xmlns:doc", XOAI);
@@ -63,17 +70,18 @@ public class OpenAireExportUtil {
         xmlw.writeCharacters(SCHEMA_VERSION);
         xmlw.writeEndElement(); // </schemaVersion>
         
-        xmlw.writeStartElement("payload"); // <payload>
+        xmlw.writeStartElement("payload"); // <payload>*/
         
         xmlw.writeStartElement("resource"); // <resource>
-        
+        xmlw.writeAttribute("xmlns:xsi", SCHEMA_INSTANCE);
+        xmlw.writeAttribute("xmlns", RESOURCE_NAMESPACE);
         xmlw.writeAttribute("xsi:schemaLocation", RESOURCE_NAMESPACE + " " + RESOURCE_SCHEMA_LOCATION);
         
         createOpenAire(xmlw, datasetDto);
         
         xmlw.writeEndElement(); // </resource>
-        xmlw.writeEndElement(); // </payload>
-        xmlw.writeEndElement(); // </oai_datacite>
+        //xmlw.writeEndElement(); // </payload>
+        //xmlw.writeEndElement(); // </oai_datacite>
         
         xmlw.flush();
     }
@@ -131,20 +139,38 @@ public class OpenAireExportUtil {
         
         writeEndTag(xmlw, title_check);
         
-        
-        
         // publisher
+        // OpenAIRE guidelines remarks: "An entity responsible for making the resource available.
+        // Examples of a Publisher include a person, an organization, or a service. Typically, the 
+        // name of a Publisher should be used to indicate the entity". Publisher is mandatory in xsd
+        // file (not in guidelines). If there are not another publisher, I think that the publisher
+        // is the dataverse repository.
+
         String publisher = dto2Primitive(version, datasetDto.getPublisher());
         writeFullElement(xmlw, null, "publisher", null, publisher);
         
-        
-        
         // publicationYear
-        String publicationYear = dto2Primitive(version, DatasetFieldConstant.distributionDate);
-        if (StringUtils.isNotBlank(publicationYear)) {
-        	writeFullElement(xmlw, null, "publicationYear", null, publicationYear.substring(0, 4));
-        }
+        // OpenAIRE guidelines remarks: "The year when the data was or will be made publicly available." 
+        //I think that publicationDate and date should be considered too
+        String distributionDate = dto2Primitive(version, DatasetFieldConstant.distributionDate);
+        String publicationDate = dto2Primitive(version, datasetDto.getPublicationDate());
+        String depositDate = dto2Primitive(version, DatasetFieldConstant.dateOfDeposit);
+        int distributionYear = -1;
+        int publicationYear = -1;
+        int yearOfDeposit = -1;
+        int pubYear= 0;
+        if (distributionDate!= null)
+            distributionYear = Integer.parseInt(distributionDate.substring(0, 4));
+        if (publicationDate!= null)
+            publicationYear = Integer.parseInt(publicationDate.substring(0, 4));
+        if (depositDate!= null)
+            yearOfDeposit = Integer.parseInt(depositDate.substring(0, 4));
         
+        pubYear= Integer.max(Integer.max(distributionYear, publicationYear), yearOfDeposit);
+        
+        if (pubYear > -1) {
+            writeFullElement(xmlw, null, "publicationYear", null, String.valueOf(pubYear));
+        }        
         
         
         // subjects -> subject with subjectScheme and schemeURI attributes
@@ -328,8 +354,7 @@ public class OpenAireExportUtil {
         
         writeEndTag(xmlw, contributor_check);
         
-        
-        
+       
         // dates -> date with dateType attribute
         boolean date_check = false;
         
@@ -428,6 +453,7 @@ public class OpenAireExportUtil {
         
         
         // resourceType with resourceTypeGeneral attribute
+        boolean resourceTypeFound = false;
         for (Map.Entry<String, MetadataBlockDTO> entry : version.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
@@ -435,16 +461,22 @@ public class OpenAireExportUtil {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.kindOfData.equals(fieldDTO.getTypeName())){
                         for (String resourceType : fieldDTO.getMultipleVocab()){
-                        	if (StringUtils.isNotBlank(resourceType)) {
-                        		Map <String, String> resourceType_map = new HashMap <String, String> ();
-                            	resourceType_map.put("resourceTypeGeneral", "Dataset");
-	                            writeFullElement(xmlw, null, "resourceType", resourceType_map, resourceType);
-                        		break;
-                        	}
+                          if (StringUtils.isNotBlank(resourceType)) {
+                              Map <String, String> resourceType_map = new HashMap <String, String> ();
+                              resourceType_map.put("resourceTypeGeneral", "Dataset");
+                              writeFullElement(xmlw, null, "resourceType", resourceType_map, resourceType);
+                              resourceTypeFound = true;
+                              break;
+                          }
                         }
                     }
                 }
             }
+        }
+        if (!resourceTypeFound) {
+           	xmlw.writeStartElement("resourceType"); // <rightsList>
+            xmlw.writeAttribute("resourceTypeGeneral", "Dataset");
+            xmlw.writeEndElement();
         }
         
         
@@ -525,8 +557,16 @@ public class OpenAireExportUtil {
                             	relatedIdentifier_check = writeOpenTag(xmlw, "relatedIdentifiers", relatedIdentifier_check);
                             	
                         		Map <String, String> relatedIdentifier_map = new HashMap <String, String> ();
+                            if (relatedIdentifierType.equals("ark") || relatedIdentifierType.equals("ean13") || relatedIdentifierType.equals("eissn") || 
+                                    relatedIdentifierType.equals("istc") || relatedIdentifierType.equals("lissn") || relatedIdentifierType.equals("lsid") || 
+                                    relatedIdentifierType.equals("pmid") || relatedIdentifierType.equals("purl") || relatedIdentifierType.equals("upc") || 
+                                    relatedIdentifierType.equals("url") || relatedIdentifierType.equals("urbn") )
+                                relatedIdentifierType = relatedIdentifierType.toUpperCase();
+                            else if (relatedIdentifierType.equals("handle"))
+                                relatedIdentifierType = "Handle";
+                                
                         		relatedIdentifier_map.put("relatedIdentifierType", relatedIdentifierType);
-                        		relatedIdentifier_map.put("relationType", "isCitedBy");
+                        		relatedIdentifier_map.put("relationType", "IsCitedBy");
                         		
                             	if (StringUtils.containsIgnoreCase(relatedIdentifierType, "url")) {
                             		writeFullElement(xmlw, null, "relatedIdentifier", relatedIdentifier_map, relatedURL);
@@ -778,6 +818,7 @@ public class OpenAireExportUtil {
 	    	
 	    	if (StringUtils.containsIgnoreCase(identifier, GlobalId.DOI_RESOLVER_URL)) {
 	    		identifier_map.put("identifierType", "DOI");
+          identifier= identifier.substring(16);
 	    	}
 	    	else if (StringUtils.containsIgnoreCase(identifier, GlobalId.HDL_RESOLVER_URL)) {
 	    		identifier_map.put("identifierType", "Handle");
@@ -857,10 +898,6 @@ public class OpenAireExportUtil {
 	                            	writeFullElement(xmlw, null, "familyName", null, creatorLastName);
 	                            }*/
 	                            
-	                            if (StringUtils.isNotBlank(affiliation)) {
-	                            	writeFullElement(xmlw, null, "affiliation", null, affiliation);
-	                            }
-	                            
 	                            if (StringUtils.isNotBlank(nameIdentifier)) {
 	                            	creator_map.clear();
 	                            	if (StringUtils.isNotBlank(nameIdentifierScheme)) {
@@ -870,6 +907,10 @@ public class OpenAireExportUtil {
 	                            	else {
 	                            		writeFullElement(xmlw, null, "nameIdentifier", null, nameIdentifier);
 	                            	}
+	                            }
+	                            
+	                            if (StringUtils.isNotBlank(affiliation)) {
+	                            	writeFullElement(xmlw, null, "affiliation", null, affiliation);
 	                            }
 	                            
 	                            xmlw.writeEndElement(); // </creator>
@@ -1003,7 +1044,7 @@ public class OpenAireExportUtil {
         		}
         	}
         	else if (StringUtils.isNotBlank(version.getTermsOfUse())) {
-        		if (StringUtils.containsIgnoreCase(version.getTermsOfUse(), "http")) {
+        		if (StringUtils.startsWithIgnoreCase(version.getTermsOfUse().trim(), "http")) {
             		xmlw.writeAttribute("rightsURI", version.getTermsOfUse());
             		// xmlw.writeCharacters(version.getLicense());
             	}
@@ -1013,7 +1054,7 @@ public class OpenAireExportUtil {
         	}
         }
         else if (StringUtils.isNotBlank(version.getTermsOfUse())) {
-    		if (StringUtils.containsIgnoreCase(version.getTermsOfUse(), "http")) {
+    		if (StringUtils.startsWith(version.getTermsOfUse().trim(), "http")) {
         		xmlw.writeAttribute("rightsURI", version.getTermsOfUse());
         		// xmlw.writeCharacters(version.getLicense());
         	}
