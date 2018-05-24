@@ -110,8 +110,8 @@ public class GlobalId implements java.io.Serializable {
      * 
      *   Example 1: doi:10.5072/FK2/BYM3IW
      *       protocol: doi
-     *       authority: 10.5072/FK2
-     *       identifier: BYM3IW
+     *       authority: 10.5072
+     *       identifier: FK2/BYM3IW
      * 
      *   Example 2: hdl:1902.1/111012
      *       protocol: hdl
