@@ -136,8 +136,8 @@ public class GlobalId implements java.io.Serializable {
                 if (!"doi".equals(protocol) && !"hdl".equals(protocol)) {
                     return false;
                 }
-                if (this.protocol.equals(DOI_PROTOCOL)) {
-                    if (!this.checkDOIAuthority(this.authority)) {
+                if (protocol.equals(DOI_PROTOCOL)) {
+                    if (!this.checkDOIAuthority(authority)) {
                         return false;
                     }
                 }
