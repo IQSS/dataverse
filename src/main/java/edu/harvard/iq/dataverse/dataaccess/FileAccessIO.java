@@ -171,9 +171,15 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     
     @Override
     public void savePath(Path fileSystemPath) throws IOException {
+        // Purposefull failure (for testing only!)
+        // TODO: REMOVE before merging the branch. 
+        if (getFileName() != null && getFileName().equals("pleaseFail.txt")) {
+            throw new IOException("Throwing a monkey wrench into the gears!");
+        }
+
         // Since this is a local fileystem file, we can use the
         // quick NIO Files.copy method: 
-
+        
         Path outputPath = getFileSystemPath();
 
         if (outputPath == null) {

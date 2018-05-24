@@ -186,10 +186,6 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
 
         }
-        logger.fine("Saving the files permanently.");
-        ctxt.ingest().finalizeFiles(dsv, theDataset.getFiles());
-
-        logger.log(Level.FINE, "doiProvider={0} protocol={1}  importType={2}  IdentifierRegistered=={3}", new Object[]{doiProvider, protocol, importType, theDataset.isIdentifierRegistered()});
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
         if ((importType == null || importType.equals(ImportType.NEW))
                 && !theDataset.isIdentifierRegistered()) {
