@@ -87,6 +87,8 @@
 	distributorAbbreviation	Abbreviation	The abbreviation by which this distributor is commonly known (e.g., IQSS, ICPSR).		text	83	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
 	distributorURL	URL	Distributor URL points to the distributor's web presence, if appropriate. Enter an absolute URL where the distributor's web site is found, such as http://www.my.org.		url	84	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
 	distributionDate	Distribution Date	Date that the work was made available for distribution/presentation.	YYYY-MM-DD	date	85		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
+	subtitle	NoLongerUsedSubtitle	A secondary title used to amplify or state certain limitations on the main title.		text	86		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	dsDescriptionDate	NoLongerUsedDate	In cases where a Data Project contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. The date attribute follows the ISO convention of YYYY-MM-DD.	YYYY-MM-DD	date	18	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dsDescription	citation
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
 	subject	Arts and Humanities	D0	1											
 	subject	Business and Management	D2	2											
