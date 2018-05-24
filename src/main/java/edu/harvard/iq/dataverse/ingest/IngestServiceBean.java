@@ -177,11 +177,12 @@ public class IngestServiceBean {
         }
     }
     
-    // This method tries to permanently store the files on the filesystem. 
-    // It should be called before we attempt to permanently save the files in 
-    // the database by calling the Save command on the dataset and/or version. 
-    // TODO: rename the method finalizeFiles()? or something like that?
-    public void addFiles (DatasetVersion version, List<DataFile> newFiles) {
+
+    //Method to finalize files that are added to a dataset.
+    //Sets Ingest flag
+    //saves to file system
+    
+    public void finalizeFiles (DatasetVersion version, List<DataFile> newFiles) {
         if (newFiles != null && newFiles.size() > 0) {
             // final check for duplicate file names; 
             // we tried to make the file names unique on upload, but then 
@@ -385,6 +386,9 @@ public class IngestServiceBean {
 
         return generatedFiles;
     }
+    
+    
+   
     
     // TODO: consider creating a version of this method that would take 
     // datasetversion as the argument. 

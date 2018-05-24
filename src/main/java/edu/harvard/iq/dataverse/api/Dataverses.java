@@ -424,7 +424,13 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }    
-    
+
+    // FIXME: This listContent method is way too optimistic, always returning "ok" and never "error".
+    // FIXME: This listContent method should be reformatted. The indentation and whitespace is odd.
+    // FIXME: This method is too slow with lots of data: https://github.com/IQSS/dataverse/issues/2122
+    // TODO: Investigate why there was a change in the timeframe of when pull request #4350 was merged
+    // (2438-4295-dois-for-files branch) such that a contributor API token no longer allows this method
+    // to be called without a PermissionException being thrown.
 	@GET
 	@Path("{identifier}/contents")
 	public Response listContent( @PathParam("identifier") String dvIdtf ) {

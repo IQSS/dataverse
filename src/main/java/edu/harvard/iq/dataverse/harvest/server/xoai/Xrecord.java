@@ -75,23 +75,30 @@ public class Xrecord extends Record {
         
         outputStream.write(headerString.getBytes());
         
-        if (!isExtendedDataverseMetadataMode(formatName)) {
-            outputStream.write(METADATA_START_ELEMENT.getBytes());
-
-            outputStream.flush();
-
-            if (dataset != null && formatName != null) {
-                InputStream inputStream = null;
-                try {
-                    inputStream = ExportService.getInstance().getExport(dataset, formatName);
-                } catch (ExportException ex) {
-                    throw new IOException("Xrecord: failed to open metadata stream.", ex);
+        // header.getStatus() is only non-null when it's indicating "deleted".
+        if (header.getStatus() == null) { // Deleted records should not show metadata
+            if (!isExtendedDataverseMetadataMode(formatName)) {
+                outputStream.write(METADATA_START_ELEMENT.getBytes());
+  
+                outputStream.flush();
+  
+                if (dataset != null && formatName != null) {
+                    InputStream inputStream = null;
+                    try {
+                        inputStream = ExportService.getInstance().getExport(dataset, formatName);
+                    } catch (ExportException ex) {
+                        inputStream = null;
+                    }
+    
+                    if (inputStream == null) {
+                        throw new IOException("Xrecord: failed to open metadata stream.");
+                    }
+                    writeMetadataStream(inputStream, outputStream);
                 }
-                writeMetadataStream(inputStream, outputStream);
+                outputStream.write(METADATA_END_ELEMENT.getBytes());
+            } else {
+                outputStream.write(customMetadataExtensionRef(this.dataset.getGlobalId()).getBytes());
             }
-            outputStream.write(METADATA_END_ELEMENT.getBytes());
-        } else {
-            outputStream.write(customMetadataExtensionRef(this.dataset.getGlobalId()).getBytes());
         }
         outputStream.flush();
 

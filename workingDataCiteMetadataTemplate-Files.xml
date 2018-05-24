@@ -1,0 +1,20 @@
+<resource xsi:schemaLocation="http://datacite.org/schema/kernel-3 http://schema.datacite.org/meta/kernel-3/metadata.xsd"
+          xmlns="http://datacite.org/schema/kernel-3"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <identifier identifierType="DOI">${identifier}</identifier>
+    <creators>
+      ${creators}
+    </creators>
+    <titles>
+        <title>${title}</title>
+    </titles>
+    <publisher>${publisher}</publisher>
+    <publicationYear>${publisherYear}</publicationYear>
+    <resourceType resourceTypeGeneral="Dataset"/>
+    <relatedIdentifiers>
+        <relatedIdentifier relationType="IsPartOf" relatedIdentifierType="DOI">${datasetIdentifier}</relatedIdentifier>
+    </relatedIdentifiers>
+    <descriptions>
+        <description descriptionType="Abstract">${description}</description>
+    </descriptions>
+</resource>

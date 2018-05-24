@@ -245,7 +245,7 @@ List Single Metadata Block for a Dataset
 Update Metadata For a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Updates the metadata for a dataset. If a draft of the dataset already exists, the metadata of that draft is overwritten; otherwise, a new draft is created with this metadata. 
+Updates the metadata for a dataset. If a draft of the dataset already exists, the metadata of that draft is overwritten; otherwise, a new draft is created with this metadata.
 
 You cannot currently target a specific field such as the title of a dataset and only update that one field. Instead, you must download a JSON representation of the dataset, edit the JSON you download, and then send the updated JSON to the Dataverse server.
 
@@ -449,31 +449,36 @@ The review process can sometimes resemble a tennis match, with the authors submi
 
 
 Files
------
+~~~~~
+
+.. note:: Files can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+
+  Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::
+
+    GET http://$SERVER/api/access/datafile/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+
+Adding Files
+^^^^^^^^^^^^
 
 .. note:: Please note that files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the "Datasets" endpoint above for more information.
 
-Restrict a File
-~~~~~~~~~~~~~~~
+Restrict Files
+^^^^^^^^^^^^^^
 
-Restrict or unrestrict an existing file where ``id`` is the database id of the file to restrict::
-    
-    PUT http://$SERVER/api/files/{id}/restrict
+Restrict or unrestrict an existing file where ``id`` is the database id of the file or ``pid`` is the persistent id (DOI or Handle) of the file to restrict. Note that some Dataverse installations do not allow the ability to restrict files.
 
-Note that some Dataverse installations do not allow the ability to restrict files.
-
-A more detailed "restrict" example using curl::
+A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/{id}/restrict
 
-Replace a File
-~~~~~~~~~~~~~~
+A curl example using a ``pid``::
 
-Replace an existing file where ``id`` is the database id of the file to replace. Note that metadata such as description and tags are not carried over from the file being replaced::
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/:persistentId/restrict?persistentId={pid}
 
-    POST http://$SERVER/api/files/{id}/replace?key=$apiKey
+Replacing Files
+^^^^^^^^^^^^^^^
 
-A more detailed "replace" example using curl (note that ``forceReplace`` is for replacing one file type with another)::
+Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note that metadata such as description and tags are not carried over from the file being replaced.
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://demo.dataverse.org/api/files/$FILE_ID/replace"
 
@@ -719,7 +724,7 @@ Get API Terms of Use URL
 Get API Terms of Use. The response contains the text value inserted as API Terms of use which uses the database setting  ``:ApiTermsOfUse``::
 
   GET http://$SERVER/api/info/apiTermsOfUse
-  
+
 Metadata Blocks
 ---------------
 
@@ -850,6 +855,116 @@ Create Global Role
 Creates a global role in the Dataverse installation. The data POSTed are assumed to be a role JSON. ::
 
     POST http://$SERVER/api/admin/roles
+
+List Users
+~~~~~~~~~~
+
+List users with the options to search and "page" through results. Only accessible to superusers. Optional parameters:
+
+* ``searchTerm`` A string that matches the beginning of a user identifier, first name, last name or email address.
+* ``itemsPerPage`` The number of detailed results to return.  The default is 25.  This number has no limit. e.g. You could set it to 1000 to return 1,000 results
+* ``selectedPage`` The page of results to return.  The default is 1.
+
+::
+
+    GET http://$SERVER/api/admin/list-users
+
+
+Sample output appears below.
+
+* When multiple pages of results exist, the ``selectedPage`` parameters may be specified.
+* Note, the resulting ``pagination`` section includes ``pageCount``, ``previousPageNumber``, ``nextPageNumber``, and other variables that may be used to re-create the UI.
+
+.. code-block:: text
+
+    {
+        "status":"OK",
+        "data":{
+            "userCount":27,
+            "selectedPage":1,
+            "pagination":{
+                "isNecessary":true,
+                "numResults":27,
+                "numResultsString":"27",
+                "docsPerPage":25,
+                "selectedPageNumber":1,
+                "pageCount":2,
+                "hasPreviousPageNumber":false,
+                "previousPageNumber":1,
+                "hasNextPageNumber":true,
+                "nextPageNumber":2,
+                "startResultNumber":1,
+                "endResultNumber":25,
+                "startResultNumberString":"1",
+                "endResultNumberString":"25",
+                "remainingResults":2,
+                "numberNextResults":2,
+                "pageNumberList":[
+                    1,
+                    2
+                ]
+            },
+            "bundleStrings":{
+                "userId":"ID",
+                "userIdentifier":"Username",
+                "lastName":"Last Name ",
+                "firstName":"First Name ",
+                "email":"Email",
+                "affiliation":"Affiliation",
+                "position":"Position",
+                "isSuperuser":"Superuser",
+                "authenticationProvider":"Authentication",
+                "roles":"Roles",
+                "createdTime":"Created Time",
+                "lastLoginTime":"Last Login Time",
+                "lastApiUseTime":"Last API Use Time"
+            },
+            "users":[
+                {
+                    "id":8,
+                    "userIdentifier":"created1",
+                    "lastName":"created1",
+                    "firstName":"created1",
+                    "email":"created1@g.com",
+                    "affiliation":"hello",
+                    "isSuperuser":false,
+                    "authenticationProvider":"BuiltinAuthenticationProvider",
+                    "roles":"Curator",
+                    "createdTime":"2017-06-28 10:36:29.444"
+                },
+                {
+                    "id":9,
+                    "userIdentifier":"created8",
+                    "lastName":"created8",
+                    "firstName":"created8",
+                    "email":"created8@g.com",
+                    "isSuperuser":false,
+                    "authenticationProvider":"BuiltinAuthenticationProvider",
+                    "roles":"Curator",
+                    "createdTime":"2000-01-01 00:00:00.0"
+                },
+                {
+                    "id":1,
+                    "userIdentifier":"dataverseAdmin",
+                    "lastName":"Admin",
+                    "firstName":"Dataverse",
+                    "email":"dataverse@mailinator2.com",
+                    "affiliation":"Dataverse.org",
+                    "position":"Admin",
+                    "isSuperuser":true,
+                    "authenticationProvider":"BuiltinAuthenticationProvider",
+                    "roles":"Admin, Contributor",
+                    "createdTime":"2000-01-01 00:00:00.0",
+                    "lastLoginTime":"2017-07-03 12:22:35.926",
+                    "lastApiUseTime":"2017-07-03 12:55:57.186"
+                }
+
+                // ... 22 more user documents ...
+            ]
+        }
+    }
+
+.. note:: "List all users" ``GET http://$SERVER/api/admin/authenticatedUsers`` is deprecated, but supported.
 
 List Single User
 ~~~~~~~~~~~~~~~~
@@ -1001,9 +1116,19 @@ Restore the whitelist of IP addresses allowed to resume workflows to default (lo
 
   DELETE http://$SERVER/api/admin/workflows/ip-whitelist
 
+Metrics
+~~~~~~~
+
+Clear all cached metric results::
+
+    DELETE http://$SERVER/api/admin/clearMetricsCache
+
+Clear a specific metric cache. Currently this must match the name of the row in the table, which is named *metricName*_*metricYYYYMM* (or just *metricName* if there is no date range for the metric). For example dataversesToMonth_2018-05::
+
+    DELETE http://$SERVER/api/admin/clearMetricsCache/$metricDbName
 
 .. |CORS| raw:: html
-      
+
       <span class="label label-success pull-right">
         CORS
       </span>

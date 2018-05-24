@@ -19,6 +19,16 @@ public class DataFileDTO {
     private String UNF;
     private String md5;
     private String description;
+    private String pidURL;
+
+    public String getPidURL() {
+        return pidURL;
+    }
+
+    public void setPidURL(String pidURL) {
+        this.pidURL = pidURL;
+    }
+    
     private List<DataTableDTO> dataTables = new ArrayList<>();
 
     public List<DataTableDTO> getDataTables() {

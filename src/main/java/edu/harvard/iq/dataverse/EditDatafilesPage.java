@@ -1092,7 +1092,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
                 
         // Save the NEW files permanently: 
-        ingestService.addFiles(workingVersion, newFiles);
+        ingestService.finalizeFiles(workingVersion, newFiles);
         //boolean newDraftVersion = false;    
 
         Boolean provJsonChanges = false;
@@ -1203,8 +1203,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             // requested that the entire dataset is updated). So we'll try to update 
             // only the filemetadatas and/or files affected, and not the 
             // entire version. 
-            // TODO: in 4.3, create SaveDataFileCommand!
-            // -- L.A. Sep. 21 2015, 4.2
             Timestamp updateTime = new Timestamp(new Date().getTime());
         
             workingVersion.setLastUpdateTime(updateTime);
@@ -1285,8 +1283,19 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             }
         }
-           
-        newFiles.clear();
+        
+        if (newFiles.size() > 0) {
+            logger.fine("clearing newfiles list.");
+            newFiles.clear();
+            /*
+             - We decided not to bother obtaining persistent ids for new files 
+             as they are uploaded and created. The identifiers will be assigned 
+             later, when the version is published. 
+             
+            logger.info("starting async job for obtaining persistent ids for files.");
+            datasetService.obtainPersistentIdentifiersForDatafiles(dataset);
+            */
+        }
                 
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());

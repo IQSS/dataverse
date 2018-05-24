@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -38,6 +39,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
@@ -155,9 +157,12 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected DatasetServiceBean datasetSvc;
+    
+    @EJB
+    protected DataFileServiceBean fileService;
 
-	@EJB
-	protected DataverseServiceBean dataverseSvc;
+    @EJB
+    protected DataverseServiceBean dataverseSvc;
 
     @EJB
     protected AuthenticationServiceBean authSvc;
@@ -233,6 +238,9 @@ public abstract class AbstractApiBean {
 
     @EJB
     StorageSiteServiceBean storageSiteSvc;
+
+    @EJB
+    MetricsServiceBean metricsSvc;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
@@ -419,6 +427,33 @@ public abstract class AbstractApiBean {
             } catch (NumberFormatException nfe) {
                 throw new WrappedResponse(
                         badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
+            }
+        }
+    }
+    
+    protected DataFile findDataFileOrDie(String id) throws WrappedResponse {
+        DataFile datafile;
+        if (id.equals(PERSISTENT_ID_KEY)) {
+            String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
+            if (persistentId == null) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+            }
+            datafile = fileService.findByGlobalId(persistentId);
+            if (datafile == null) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
+            }
+            return datafile;
+        } else {
+            try {
+                datafile = fileService.find(Long.parseLong(id));
+                if (datafile == null) {
+                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.id", Collections.singletonList(id))));
+                }
+                return datafile;
+            } catch (NumberFormatException nfe) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.bad.id", Collections.singletonList(id))));
             }
         }
     }
