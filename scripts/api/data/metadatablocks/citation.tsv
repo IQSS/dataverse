@@ -2,126 +2,109 @@
 	citation		Citation Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
 	title	Title	Full title by which the Data Project is known.	Enter title...	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation
-	subtitle	Subtitle	A secondary title used to amplify or state certain limitations on the main title.		text	1		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	alternativeTitle	Alternative Title	A title by which the work is commonly referred, or an abbreviation of the title.		text	2		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	alternativeURL	Alternative URL	A URL where the Data Project can be viewed, such as a personal or project website.  	Enter full URL, starting with http://	url	3		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	otherId	QDRID	The QDR ID assigned to the project		none	4	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	otherIdAgency	QDRID	Name of agency which generated this identifier.		text	5	Qualitative Data Repository	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
-	otherIdValue	Identifier	Other identifier that corresponds to this Data Project.	Added by QDR staff	text	6	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
-	author	Creator	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		none	7		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
-	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this Data Project.	FamilyName, GivenName or Organization	text	8	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	citation
-	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	9	(#VALUE)	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	author	citation
-	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	10	ORCID	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation
-	authorIdentifier	ORCID	Creator's ORCID ID		text	11	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation
-	datasetContact	Contact	The contact(s) for this Data Project.		none	12		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
-	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	13	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
-	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	14	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
-	datasetContactEmail	E-mail	The e-mail address(es) of the contact(s) for the Data Project. This will not be displayed.		email	15	#EMAIL	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	datasetContact	citation
-	dsDescription	Description	A summary describing the purpose, nature, and scope of the Data Project.		none	16		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
-	dsDescriptionValue	Text	A summary describing the purpose, nature, and scope of the Data Project.		textbox	17	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dsDescription	citation
-	dsDescriptionDate	Date	In cases where a Data Project contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. The date attribute follows the ISO convention of YYYY-MM-DD.	YYYY-MM-DD	date	18	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	dsDescription	citation
-	subject	Subject	Domain-specific Subject Categories that are topically relevant to the Data Project.		text	19		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		citation
-	keyword	Keywords	Key terms that describe important aspects of the Data Project.		none	20		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
-	keywordValue	Term	Key terms that describe important aspects of the Data Project. Can be used for building keyword indexes and for classification and retrieval purposes. A controlled vocabulary can be employed. The vocab attribute is provided for specification of the controlled vocabulary in use, such as LCSH, MeSH, or others. The vocabURI attribute specifies the location for the full controlled vocabulary.		text	21	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	keyword	citation
-	keywordVocabulary	Vocabulary	For the specification of the keyword controlled vocabulary in use, such as LCSH, MeSH, or others.	provided by QDR	text	22	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation
-	keywordVocabularyURI	Vocabulary URL	Keyword vocabulary URL points to the web presence that describes the keyword vocabulary, if appropriate. Enter an absolute URL where the keyword vocabulary web site is found, such as http://www.my.org.	provided by QDR	url	23	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation
-	topicClassification	Topic Classification	The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.  		none	24		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	topicClassValue	Term	Topic or Subject term that is relevant to this Data Project.		text	25	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	topicClassification	citation
-	topicClassVocab	Vocabulary	Provided for specification of the controlled vocabulary in use, e.g., LCSH, MeSH, etc.		text	26	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
-	topicClassVocabURI	Vocabulary URL	Specifies the URL location for the full controlled vocabulary.	Enter full URL, starting with http://	url	27	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
-	publication	Related Publication	Publications that use the data from this Data Project.		none	28		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
-	publicationCitation	Citation	The full bibliographic citation for this related publication.		textbox	29	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation
-	publicationIDType	Identifier Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	30	#VALUE: 	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	publication	citation
-	publicationIDNumber	Identifier	The identifier for the selected ID type.		text	31	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation
-	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).	Enter full URL, starting with http://	url	32	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
-	notesText	Notes	Additional important information about the Data Project.		textbox	33		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation
-	language	Language	Language of the Data Project		text	34		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		citation
-	producer	Producer	Person or organization with the financial or administrative responsibility over this Data Project		none	35		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	producerName	Name	Producer name	FamilyName, GivenName or Organization	text	36	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	producer	citation
-	producerAffiliation	Affiliation	The organization with which the producer is affiliated.		text	37	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
-	producerAbbreviation	Abbreviation	The abbreviation by which the producer is commonly known. (ex. IQSS, ICPSR)		text	38	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
-	producerURL	URL	Producer URL points to the producer's web presence, if appropriate. Enter an absolute URL where the producer's web site is found, such as http://www.my.org.  	Enter full URL, starting with http://	url	39	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
-	producerLogoURL	Logo URL	URL for the producer's logo, which points to this  producer's web-accessible logo image. Enter an absolute URL where the producer's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	40	<img src="#VALUE" alt="#NAME" class="metadata-logo"/><br/>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
-	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, published or archived).	YYYY-MM-DD	date	41		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
-	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	42		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	contributor	Contributor	The organization or person responsible for either collecting, managing, or otherwise contributing in some form to the development of the resource.		none	43	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	contributorType	Type	The type of contributor of the  resource.  		text	44	#VALUE 	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	citation
-	contributorName	Name	The Family Name, Given Name or organization name of the contributor.	FamilyName, GivenName or Organization	text	45	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	contributor	citation
-	grantNumber	Grant Information	Grant Information		none	46	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	grantNumberAgency	Grant Agency	Grant Number Agency		text	47	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	grantNumber	citation
-	grantNumberValue	Grant Number	The grant or contract number of the project that  sponsored the effort.		text	48	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	grantNumber	citation
-	distributor	Distributor	The organization designated by the author or producer to generate copies of the particular work including any necessary editions or revisions.		none	49		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	distributorName	Name	Distributor name	FamilyName, GivenName or Organization	text	50	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	distributor	citation
-	distributorAffiliation	Affiliation	The organization with which the distributor contact is affiliated.		text	51	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
-	distributorAbbreviation	Abbreviation	The abbreviation by which this distributor is commonly known (e.g., IQSS, ICPSR).		text	52	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
-	distributorURL	URL	Distributor URL points to the distributor's web presence, if appropriate. Enter an absolute URL where the distributor's web site is found, such as http://www.my.org.	Enter full URL, starting with http://	url	53	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
-	distributorLogoURL	Logo URL	URL of the distributor's logo, which points to this  distributor's web-accessible logo image. Enter an absolute URL where the distributor's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	54	<img src="#VALUE" alt="#NAME" class="metadata-logo"/><br/>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
-	distributionDate	Distribution Date	Date that the work was made available for distribution/presentation.	YYYY-MM-DD	date	55		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
-	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Data Project to the repository.		text	56		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	dateOfDeposit	Deposit Date	Date that the Data Project was deposited into the repository.	YYYY-MM-DD	date	57		FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
-	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.		none	58	;	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
-	timePeriodCoveredStart	Start	Start date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	59	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
-	timePeriodCoveredEnd	End	End date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	60	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
-	dateOfCollection	Date of Data Collection	Contains the date(s) when the data were collected.		none	61	;	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	dateOfCollectionStart	Start	Date when the data collection started.	YYYY-MM-DD	date	62	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation
-	dateOfCollectionEnd	End	Date when the data collection ended.	YYYY-MM-DD	date	63	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation
-	kindOfData	Type of Data Project	Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical data, event/transaction data, program source code, machine-readable text, administrative records data, experimental data, psychological test, textual data, coded textual, coded documents, time budget diaries, observation data/ratings, process-produced data, or other.		text	64		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation
-	series	Series	Information about the Data Project series.		none	65	:	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	seriesName	Name	Name of the Data Project series to which the Data Project belongs.		text	66	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	series	citation
-	seriesInformation	Information	History of the series and summary of those features that apply to the series as a whole.		textbox	67	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	citation
-	software	Software	Information about the software used to generate the Data Project.		none	68	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	softwareName	Name	Name of software used to generate the Data Project.		text	69	#VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	software	citation
-	softwareVersion	Version	Version of the software used to generate the Data Project.		text	70	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	citation
-	relatedMaterial	Related Material	Any material related to this Data Project.		textbox	71		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	relatedDatasets	Related Data Projects	Any Data Projects that are related to this Data Project, such as previous research on this subject.		textbox	72		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	otherReferences	Other References	Any references that would serve as background or supporting material to this Data Project.		text	73		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	dataSources	Data Sources	List of books, articles, serials, or machine-readable data files that served as the sources of the data collection.		textbox	74		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	originOfSources	Origin of Sources	For historical materials, information about the origin of the sources and the rules followed in establishing the sources should be specified.		textbox	75		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	characteristicOfSources	Characteristic of Sources Noted	Assessment of characteristics and source material.		textbox	76		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	77		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	geographicCoverage	Geographic Coverage	Information on the geographic coverage of the data. Includes the total geographic scope of the data.		none	78		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	country	Country / Nation	The country or nation that the Data Project is about.		text	79		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
-	state	State / Province	The state or province that the Data Project is about. Use GeoNames for correct spelling and avoid abbreviations.		text	80		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
-	city	City	The name of the city that the Data Project is about. Use GeoNames for correct spelling and avoid abbreviations.		text	81		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
-	otherGeographicCoverage	Other	Other information on the geographic coverage of the data.		text	82		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicCoverage	citation
-	geographicUnit	Geographic Unit	Lowest level of geographic aggregation covered by the Data Project, e.g., village, county, region.		text	83		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation
-	geographicBoundingBox	Geographic Bounding Box	The fundamental geometric description for any Data Project that models geography is the geographic bounding box. It describes the minimum box, defined by west and east longitudes and north and south latitudes, which includes the largest geographic extent of the  Data Project's geographic coverage. This element is used in the first pass of a coordinate-based search. Inclusion of this element in the codebook is recommended, but is required if the bound polygon box is included. 		none	84		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	westLongitude	West Longitude	Westernmost coordinate delimiting the geographic extent of the Data Project. A valid range of values,  expressed in decimal degrees, is -180,0 <= West  Bounding Longitude Value <= 180,0.		text	85		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
-	eastLongitude	East Longitude	Easternmost coordinate delimiting the geographic extent of the Data Project. A valid range of values,  expressed in decimal degrees, is -180,0 <= East Bounding Longitude Value <= 180,0.		text	86		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
-	northLongitude	North Latitude	Northernmost coordinate delimiting the geographic extent of the Data Project. A valid range of values,  expressed in decimal degrees, is -90,0 <= North Bounding Latitude Value <= 90,0.		text	87		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
-	southLongitude	South Latitude	Southernmost coordinate delimiting the geographic extent of the Data Project. A valid range of values,  expressed in decimal degrees, is -90,0 <= South Bounding Latitude Value <= 90,0.		text	88		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
+	alternativeTitle	Alternative Title	A title by which the work is commonly referred, or an abbreviation of the title.		text	1		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	alternativeURL	Alternative URL	A URL where the Data Project can be viewed, such as a personal or project website.	Enter full URL, starting with http://	url	2		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	otherId	QDRID	The QDR ID assigned to the project		none	3	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	otherIdAgency	QDRID	Name of agency which generated this identifier.	provided by QDR	text	4		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
+	otherIdValue	Identifier	Other identifier that corresponds to this Data Project.	provided by QDR	text	5	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
+	author	Creator	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		none	6		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this Data Project.	FamilyName, GivenName or Organization	text	7	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	citation
+	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	8	(#VALUE)	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	author	citation
+	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	9	ORCID	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation
+	authorIdentifier	ORCID	Creator's ORCID ID	QDR strongly encourages the use of ORCIDs	text	10	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation
+	datasetContact	Contact	The contact(s) for this Data Project.		none	11		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	12	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
+	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	13	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
+	datasetContactEmail	E-mail	The e-mail address(es) of the contact(s) for the Data Project. This will not be displayed.		email	14	#EMAIL	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	datasetContact	citation
+	dsDescription	Description	A summary describing the purpose, nature, and scope of the Data Project.		none	15		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	dsDescriptionValue	Text	A summary describing the purpose, nature, and scope of the Data Project.	What type of data does the project consist of? How was it collected? How is it organized?	textbox	16	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dsDescription	citation
+	subject	Subject	Subject area(s) of the data project		text	17		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		citation
+	keyword	Keywords	Key terms that describe important aspects of the Data Project.		none	18		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	keywordValue	Term	Key terms that describe important aspects of the Data Project. Can be used for building keyword indexes and for classification and retrieval purposes. A controlled vocabulary can be employed. The vocab attribute is provided for specification of the controlled vocabulary in use, such as LCSH, MeSH, or others. The vocabURI attribute specifies the location for the full controlled vocabulary.		text	19	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	keyword	citation
+	keywordVocabulary	Vocabulary	QDR mainly uses the ICPSR subject thesaurus	provided by QDR	text	20	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation
+	keywordVocabularyURI	Vocabulary URL	QDR mainly uses the ICPSR subject thesaurus	provided by QDR	url	21	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation
+	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Data Project to the repository.		text	22		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	dateOfDeposit	Deposit Date	Date that the Data Project was deposited into the repository.	YYYY-MM-DD	date	23		FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
+	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.		none	24	;	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	timePeriodCoveredStart	Start	Start date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	25	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
+	timePeriodCoveredEnd	End	End date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	26	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
+	dateOfCollection	Date of Data Collection	Contains the date(s) when the data were collected.		none	27	;	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	dateOfCollectionStart	Start	Date when the data collection started.	YYYY-MM-DD	date	28	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation
+	dateOfCollectionEnd	End	Date when the data collection ended.	YYYY-MM-DD	date	29	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation
+	kindOfData	Type of Data Project	Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical data, event/transaction data, program source code, machine-readable text, administrative records data, experimental data, psychological test, textual data, coded textual, coded documents, time budget diaries, observation data/ratings, process-produced data, or other.		text	30		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation
+	geographicCoverage	Geographic Coverage	Information on the geographic coverage of the data. Includes the total geographic scope of the data.		none	31		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	country	Country / Nation	The country or nation that the Data Project is about.		text	32		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
+	state	State / Province	The state or province that the Data Project is about. Use GeoNames for correct spelling and avoid abbreviations.		text	33		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
+	city	City	The name of the city that the Data Project is about. Use GeoNames for correct spelling and avoid abbreviations.		text	34		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
+	otherGeographicCoverage	Other	Other information on the geographic coverage of the data.		text	35		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicCoverage	citation
+	geographicUnit	Geographic Unit	Lowest level of geographic aggregation covered by the Data Project, e.g., village, county, region.		text	36		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation
+	publication	Related Publication	Publications that use the data from this Data Project.		none	37		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	publicationCitation	Citation	The full bibliographic citation for this related publication.		textbox	38	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation
+	publicationIDType	Identifier Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI), URL).		text	39	#VALUE: 	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	publication	citation
+	publicationIDNumber	Identifier	The identifier for the selected ID type.		text	40	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation
+	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).	Enter full URL, starting with http://	url	41	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
+	notesText	Notes	Additional important information about the Data Project.		textbox	42		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation
+	language	Language	Language(s) of materials in the Data Project		text	43		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		citation
+	contributor	Contributor	The organization or person responsible for either collecting, managing, or otherwise contributing in some form to the development of the resource.		none	44	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	contributorType	Type	The type of contributor of the  resource.  		text	45	#VALUE 	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	citation
+	contributorName	Name	The Family Name, Given Name or organization name of the contributor.	FamilyName, GivenName or Organization	text	46	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	contributor	citation
+	grantNumber	Grant Information	Grant Information		none	47	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	grantNumberAgency	Grant Agency	Grant Number Agency		text	48	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	grantNumber	citation
+	grantNumberValue	Grant Number	The grant or contract number of the project that  sponsored the effort.		text	49	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	grantNumber	citation
+	relatedMaterial	Related Material	Any material related to this Data Project.		textbox	50		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	relatedDatasets	Related Data Projects	Any Data Projects that are related to this Data Project, such as previous research on this subject.		textbox	51		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	otherReferences	Other References	Any references that would serve as background or supporting material to this Data Project.		text	52		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	dataSources	Data Sources	List of books, articles, serials, or machine-readable data files that served as the sources of the data collection.		textbox	53		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	originOfSources	Origin of Sources	For historical materials, information about the origin of the sources and the rules followed in establishing the sources should be specified.		textbox	54		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	characteristicOfSources	Characteristic of Sources Noted	Assessment of characteristics and source material.		textbox	55		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	56		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	geographicBoundingBox	Geographic Bounding Box	The fundamental geometric description for any Data Project that models geography is the geographic bounding box. It describes the minimum box, defined by west and east longitudes and north and south latitudes, which includes the largest geographic extent of the  Data Project's geographic coverage. This element is used in the first pass of a coordinate-based search. Inclusion of this element in the codebook is recommended, but is required if the bound polygon box is included. 		none	57		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	westLongitude	West Longitude	Westernmost coordinate delimiting the geographic extent of the Data Project. A valid range of values,  expressed in decimal degrees, is -180,0 <= West  Bounding Longitude Value <= 180,0.		text	58		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
+	eastLongitude	East Longitude	Easternmost coordinate delimiting the geographic extent of the Data Project. A valid range of values,  expressed in decimal degrees, is -180,0 <= East Bounding Longitude Value <= 180,0.		text	59		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
+	northLongitude	North Latitude	Northernmost coordinate delimiting the geographic extent of the Data Project. A valid range of values,  expressed in decimal degrees, is -90,0 <= North Bounding Latitude Value <= 90,0.		text	60		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
+	southLongitude	South Latitude	Southernmost coordinate delimiting the geographic extent of the Data Project. A valid range of values,  expressed in decimal degrees, is -90,0 <= South Bounding Latitude Value <= 90,0.		text	61		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	citation
+	series	Series	Information about the Data Project series.		none	62	:	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	seriesName	Name	Name of the Data Project series to which the Data Project belongs.		text	63	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	series	citation
+	seriesInformation	Information	History of the series and summary of those features that apply to the series as a whole.		textbox	64	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	citation
+	software	Software	Information about the software used to generate the Data Project.		none	65	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	softwareName	Name	Name of software used to generate the Data Project.		text	66	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	citation
+	softwareVersion	Version	Version of the software used to generate the Data Project.		text	67	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	citation
+	producer	Producer	Person or organization with the financial or administrative responsibility over this Data Project, e.g. where collected on behalf of an NGO		none	68		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	producerName	Name	Producer name	FamilyName, GivenName or Organization	text	69	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	producer	citation
+	producerAffiliation	Affiliation	The organization with which the producer is affiliated.		text	70	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
+	producerAbbreviation	Abbreviation	The abbreviation by which the producer is commonly known.		text	71	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
+	producerURL	URL	Producer URL points to the producer's web presence, if appropriate. Enter an absolute URL where the producer's web site is found, such as http://www.my.org.  	Enter full URL, starting with http://	url	72	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
+	producerLogoURL	Logo URL	URL for the producer's logo, which points to this  producer's web-accessible logo image. Enter an absolute URL where the producer's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	73	<img src="#VALUE" alt="#NAME" class="metadata-logo"/><br/>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
+	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, published or archived).	YYYY-MM-DD	date	74		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
+	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	75		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	topicClassification	Topic Classification	The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.  		none	76		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	topicClassValue	Term	Topic or Subject term that is relevant to this Data Project.		text	77	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	topicClassification	citation
+	topicClassVocab	Vocabulary	Provided for specification of the controlled vocabulary in use, e.g., LCSH, MeSH, etc.		text	78	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
+	topicClassVocabURI	Vocabulary URL	Specifies the URL location for the full controlled vocabulary.	Enter full URL, starting with http://	url	79	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
+	distributor	Distributor	The organization designated by the author or producer to generate copies of the particular work including any necessary editions or revisions.		none	80		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	distributorName	Name	Distributor name	FamilyName, GivenName or Organization	text	81	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	distributor	citation
+	distributorAffiliation	Affiliation	The organization with which the distributor contact is affiliated.		text	82	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
+	distributorAbbreviation	Abbreviation	The abbreviation by which this distributor is commonly known (e.g., IQSS, ICPSR).		text	83	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
+	distributorURL	URL	Distributor URL points to the distributor's web presence, if appropriate. Enter an absolute URL where the distributor's web site is found, such as http://www.my.org.		url	84	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
+	distributionDate	Distribution Date	Date that the work was made available for distribution/presentation.	YYYY-MM-DD	date	85		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
-	subject	Agricultural Sciences	D01	0											
 	subject	Arts and Humanities	D0	1											
-	subject	Astronomy and Astrophysics	D1	2											
-	subject	Business and Management	D2	3											
-	subject	Chemistry	D3	4
-	subject	Computer and Information Science	D7	5									
-	subject	Earth and Environmental Sciences	D4	6											
-	subject	Engineering	D5	7
-	subject	Law	D8	8	
-	subject	Mathematical Sciences	D9	9																	
-	subject	Medicine, Health and Life Sciences	D6	10											
-	subject	Physics	D10	11											
-	subject	Social Sciences	D11	12											
-	subject	Other	D12	13											
+	subject	Business and Management	D2	2											
+	subject	Computer and Information Science	D7	3											
+	subject	Earth and Environmental Sciences	D4	4											
+	subject	Law	D8	5											
+	subject	Medicine, Health and Life Sciences	D6	6											
+	subject	Social Sciences	D11	7											
+	subject	Other	D12	8											
 	publicationIDType	ark		0											
 	publicationIDType	arXiv		1	arxiv										
-	publicationIDType	bibcode		2											
-	publicationIDType	doi		3											
-	publicationIDType	ean13		4											
-	publicationIDType	eissn		5											
-	publicationIDType	handle		6											
-	publicationIDType	isbn		7											
-	publicationIDType	issn		8											
-	publicationIDType	istc		9											
-	publicationIDType	lissn		10											
-	publicationIDType	lsid		11											
-	publicationIDType	pmid		12											
-	publicationIDType	purl		13											
-	publicationIDType	upc		14											
-	publicationIDType	url		15											
-	publicationIDType	urn		16											
+	publicationIDType	doi		2											
+	publicationIDType	handle		3											
+	publicationIDType	isbn		4											
+	publicationIDType	issn		5											
+	publicationIDType	pmid		6											
+	publicationIDType	url		7											
+	publicationIDType	urn		8											
 	contributorType	Data Collector		0											
 	contributorType	Data Curator		1											
 	contributorType	Data Manager		2											
