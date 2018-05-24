@@ -164,32 +164,23 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         jobLogger.log(Level.INFO, "Job Status = " + jobContext.getBatchStatus());
         
         jobParams.setProperty("datasetGlobalId", getDatasetGlobalId());
+        
+        if (dataset == null) {
+            getJobLogger().log(Level.SEVERE, "Can't find dataset.");
+            jobContext.setExitStatus("FAILED");
+            throw new IOException("Can't find dataset.");
+        }
+        
+        if (!dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+            getJobLogger().log(Level.SEVERE, "Dataset " + dataset.getGlobalId() + " is not locked for DCM upload. Exiting");
+            jobContext.setExitStatus("FAILED");
+            throw new IOException("Dataset " + dataset.getGlobalId() + " is not locked for DCM upload");
+        }
+        
         jobParams.setProperty("userId", getUserId());
         jobParams.setProperty("mode", getMode());
         
         uploadFolder = jobParams.getProperty("uploadFolder");
-        
-        /*
-        // lock the dataset
-        jobLogger.log(Level.INFO, "Locking dataset");
-        String info = "Starting batch file import job.";
-        */
-        
-        // TODO: 
-        // In the current #3348 implementation, we are no longer locking the 
-        // Dataset here. Because it gets locked immediately after the user 
-        // downloads the rsync scipt. Once this branch (#3561) is merged into 
-        // #3348, let's revisit this. We should probably check here that 
-        // the dataset is locked, and that it's locked waiting for an 
-        // rsync upload to happen. And then we may want to "re-lock" it, with 
-        // the info field in the new lock specifying that there is now a 
-        // file crawler job in progress (to prevent another one from happening
-        // in parallel. -- L.A. Aug 31 2017
-        
-        //datasetServiceBean.addDatasetLock(dataset.getId(),
-        //            DatasetLock.Reason.Ingest, 
-        //            (user!=null)?user.getId():null,
-        //            info);
 
         // check constraints for running the job
         if (canRunJob()) {
@@ -214,7 +205,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
     }
 
     /**
-     * After the job, generate a report and remove the dataset lock
+     * After the job is done, generate a report
      */
     @Override
     public void afterJob() throws Exception {
@@ -235,15 +226,6 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             getJobLogger().log(Level.SEVERE, "File listed in checksum manifest not found: " + key);
         }
 
-        // remove dataset lock
-        // Disabled now, see L.A.'s comment at beforeJob()
-//        if (dataset != null && dataset.getId() != null) {
-//            datasetServiceBean.removeDatasetLock(dataset.getId(), DatasetLock.Reason.Ingest);
-//        }
-
-
-        getJobLogger().log(Level.INFO, "Removing dataset lock.");
-        
         // job step info
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         StepExecution step = jobOperator.getStepExecutions(jobContext.getInstanceId()).get(0);
@@ -369,17 +351,21 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             String datasetId = jobParams.getProperty("datasetId");
             
             dataset = datasetServiceBean.find(new Long(datasetId));
-            getJobLogger().log(Level.INFO, "Dataset Identifier (datasetId=" + datasetId + "): " + dataset.getIdentifier());
-            return dataset.getGlobalId();
+            if (dataset != null) {
+                getJobLogger().log(Level.INFO, "Dataset Identifier (datasetId=" + datasetId + "): " + dataset.getIdentifier());
+                return dataset.getGlobalId();
+            }
         }
         if (jobParams.containsKey("datasetPrimaryKey")) {
             long datasetPrimaryKey = Long.parseLong(jobParams.getProperty("datasetPrimaryKey"));
             dataset = datasetServiceBean.find(datasetPrimaryKey);
-            getJobLogger().log(Level.INFO, "Dataset Identifier (datasetPrimaryKey=" + datasetPrimaryKey + "): " 
+            if (dataset != null) {
+                getJobLogger().log(Level.INFO, "Dataset Identifier (datasetPrimaryKey=" + datasetPrimaryKey + "): " 
                     + dataset.getIdentifier());
-            return dataset.getGlobalId();
+                return dataset.getGlobalId();
+            }
         }
-        getJobLogger().log(Level.SEVERE, "Can't find dataset.");
+        
         dataset = null;
         return null;
     }

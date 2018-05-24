@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -49,6 +50,8 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     IndexServiceBean indexService;
     @EJB 
     DatasetServiceBean datasetService;
+    @EJB 
+    SettingsServiceBean settingsService;
     //@EJB
     //ExportService exportService;
 
@@ -245,7 +248,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     
     public void exportAllFormats(Dataset dataset) {
         try {
-            ExportService exportServiceInstance = ExportService.getInstance();
+            ExportService exportServiceInstance = ExportService.getInstance(settingsService);
             logger.fine("Attempting to run export on dataset "+dataset.getGlobalId());
             exportServiceInstance.exportAllFormats(dataset);
             datasetService.updateLastExportTimeStamp(dataset.getId());
@@ -256,7 +259,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     @TransactionAttribute(REQUIRES_NEW)
     public void exportAllFormatsInNewTransaction(Dataset dataset) throws ExportException {
         try {
-            ExportService exportServiceInstance = ExportService.getInstance();
+            ExportService exportServiceInstance = ExportService.getInstance(settingsService);
             exportServiceInstance.exportAllFormats(dataset);
             datasetService.updateLastExportTimeStamp(dataset.getId());
         } catch (Exception e) {
