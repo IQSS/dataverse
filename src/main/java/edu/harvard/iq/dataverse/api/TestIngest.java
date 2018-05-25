@@ -102,7 +102,7 @@ public class TestIngest {
         try {
             tabDataIngest = ingestPlugin.read(fileInputStream, null);
         } catch (IOException ingestEx) {
-            output = output.concat("Caught an exception trying to ingest file "+fileName+".");
+            output = output.concat("Caught an exception trying to ingest file " + fileName + ": " + ingestEx.getLocalizedMessage());
             return output;
         }
         

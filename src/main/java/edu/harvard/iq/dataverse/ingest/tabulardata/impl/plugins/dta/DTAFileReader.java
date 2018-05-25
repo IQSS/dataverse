@@ -63,6 +63,9 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
  */
 
 public class DTAFileReader extends TabularDataFileReader{
+
+    private static final Logger logger = Logger.getLogger(DTAFileReader.class.getCanonicalName());
+
     //@Inject
     //VariableServiceBean varService;
     // static fields, STATA-specific constants, etc. 
@@ -545,8 +548,12 @@ public class DTAFileReader extends TabularDataFileReader{
                     + new String(Hex.encodeHex(magic_number)) + "<-");
         }
 
+        logger.info("magic_number[0]: " + magic_number[0]);
+        logger.info("magic_number[1]: " + magic_number[1]);
+        logger.info("magic_number[2]: " + magic_number[2]);
         if (magic_number[2] != 1) {
             dbgLog.fine("3rd byte is not 1: given file is not stata-dta type");
+            // FIXME: Figure out the magic number for Stata 14.
             throw new IllegalArgumentException("The file is not in a STATA format that we can read or support.");
         } else if ((magic_number[1] != 1) && (magic_number[1] != 2)) {
             dbgLog.fine("2nd byte is neither 0 nor 1: this file is not stata-dta type");

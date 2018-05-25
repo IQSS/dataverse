@@ -527,17 +527,6 @@ public class UtilIT {
                 .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + "?key=" + apiToken + optionalQueryParam);
     }
 
-    static Response getMetaDatafileDeprecated(String fileIdOrPersistentId, String apiToken) {
-        String idInPath = fileIdOrPersistentId; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
-            idInPath = ":persistentId";
-            optionalQueryParam = "&persistentId=" + fileIdOrPersistentId;
-        }
-        return given()
-                .get("/api/meta/datafile/" + idInPath + "?key=" + apiToken + optionalQueryParam);
-    }
-
     static Response testIngest(String fileName, String fileType) {
         return given()
                 .get("/api/ingest/test/file?fileName=" + fileName + "&fileType=" + fileType);

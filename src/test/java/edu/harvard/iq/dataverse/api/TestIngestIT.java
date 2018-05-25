@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.response.Response;
 import static org.junit.Assert.assertEquals;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestIngestIT {
@@ -27,35 +28,34 @@ public class TestIngestIT {
     }
 
     @Test
-    public void testStata14Auto() {
-        // curl https://www.stata-press.com/data/r14/auto.dta > /tmp/stata14-auto.dta
-        String fileName = "/tmp/stata14-auto.dta";
+    public void testStata14Aggregated() {
+        // https://dataverse.harvard.edu/file.xhtml?fileId=3140457 Stata 14: 2018_04_06_Aggregated_dataset_v2.dta
+        String fileName = "/tmp/2018_04_06_Aggregated_dataset_v2.dta";
         // No mention of stata at https://www.iana.org/assignments/media-types/media-types.xhtml
-        String fileType = "application/x-stata";
+        String fileType = "application/x-stata-14";
         Response response = UtilIT.testIngest(fileName, fileType);
         response.prettyPrint();
-        boolean stata14Supported = false;
-        if (!stata14Supported) {
-            return;
-        }
-        // Not sure if there are 12 vars or not.
+        assertEquals("NVARS: 227", response.body().asString().split("\n")[0]);
+    }
+
+    @Ignore
+    @Test
+    public void testStata14MmPublic() {
+        // TODO: This file was downloaded at random. We could keep trying to get it to ingest.
+        // https://dataverse.harvard.edu/file.xhtml?fileId=2775556 Stata 14: mm_public_120615_v14.dta
+        String fileName = "/tmp/mm_public_120615_v14.dta";
+        // No mention of stata at https://www.iana.org/assignments/media-types/media-types.xhtml
+        String fileType = "application/x-stata-14";
+        Response response = UtilIT.testIngest(fileName, fileType);
+        response.prettyPrint();
+        // We don't know how many variables it has. Probably not 12.
         assertEquals("NVARS: 12", response.body().asString().split("\n")[0]);
     }
 
+    @Ignore
     @Test
-    public void testStata15Auto() {
-        // curl https://www.stata-press.com/data/r15/auto.dta > /tmp/stata15-auto.dta
-        String fileName = "/tmp/stata15-auto.dta";
-        // No mention of stata at https://www.iana.org/assignments/media-types/media-types.xhtml
-        String fileType = "application/x-stata";
-        Response response = UtilIT.testIngest(fileName, fileType);
-        response.prettyPrint();
-        boolean stata15Supported = false;
-        if (!stata15Supported) {
-            return;
-        }
-        // Not sure if there are 12 vars or not.
-        assertEquals("NVARS: 12", response.body().asString().split("\n")[0]);
+    public void testStata15() {
+        // TODO: Find a Stata 15 file to test with
     }
 
 }

@@ -60,6 +60,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileR
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv.CSVFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv.CSVFileReaderSpi;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTA118FileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReader;
@@ -660,6 +661,7 @@ public class IngestServiceBean {
         // it up with the Ingest Service Provider Registry:
         String fileName = dataFile.getFileMetadata().getLabel();
         TabularDataFileReader ingestPlugin = getTabDataReaderByMimeType(dataFile.getContentType());
+        logger.fine("Using ingest plugin " + ingestPlugin.getClass());
 
         if (ingestPlugin == null) {
             dataFile.SetIngestProblem();
@@ -724,7 +726,7 @@ public class IngestServiceBean {
             dataFile = fileService.save(dataFile);
             
             dataFile = fileService.save(dataFile);
-            logger.fine("Ingest failure (IO Exception): "+ingestEx.getMessage()+ ".");
+            logger.warning("Ingest failure (IO Exception): " + ingestEx.getMessage() + ".");
             return false;
         } catch (Exception unknownEx) {
             // this is a bit of a kludge, to make sure no unknown exceptions are
@@ -786,6 +788,7 @@ public class IngestServiceBean {
                 }
 
                 if (!postIngestTasksSuccessful) {
+                    logger.warning("Ingest failure (!postIngestTasksSuccessful).");
                     return false;
                 }
 
@@ -832,6 +835,7 @@ public class IngestServiceBean {
                 }
 
                 if (!databaseSaveSuccessful) {
+                    logger.warning("Ingest failure (!databaseSaveSuccessful).");
                     return false;
                 }
 
@@ -882,6 +886,7 @@ public class IngestServiceBean {
             logger.warning("Ingest failed to produce data obect.");
         }
 
+        logger.fine("Returning ingestSuccessful: " + ingestSuccessful);
         return ingestSuccessful;
     }
 
@@ -935,6 +940,8 @@ public class IngestServiceBean {
             ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
         } else if (mimeType.equals(FileUtil.MIME_TYPE_STATA13)) {
             ingestPlugin = new DTA117FileReader(new DTAFileReaderSpi());
+        } else if (mimeType.equals(FileUtil.MIME_TYPE_STATA14)) {
+            ingestPlugin = new DTA118FileReader(new DTAFileReaderSpi());
         } else if (mimeType.equals(FileUtil.MIME_TYPE_RDATA)) {
             ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
         } else if (mimeType.equals(FileUtil.MIME_TYPE_CSV) || mimeType.equals(FileUtil.MIME_TYPE_CSV_ALT)) {

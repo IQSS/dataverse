@@ -106,7 +106,7 @@ public class StoredOriginalFile {
             return ".sav";
         } else if (fileType.equalsIgnoreCase("application/x-spss-por")) {
             return ".por";
-        } else if (fileType.equalsIgnoreCase("application/x-stata") || fileType.equalsIgnoreCase("application/x-stata-13")) {
+        } else if (fileType.equalsIgnoreCase("application/x-stata") || fileType.equalsIgnoreCase("application/x-stata-13") || fileType.equalsIgnoreCase("application/x-stata-14")) {
             return ".dta";
         } else if (fileType.equalsIgnoreCase("application/x-dvn-csvspss-zip")) {
             return ".zip";
