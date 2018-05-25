@@ -62,9 +62,9 @@ ALTER TABLE dataset DROP COLUMN globalidcreatetime;
 ALTER TABLE dataset DROP COLUMN identifier;
 ALTER TABLE dataset DROP COLUMN protocol;
 
---Add new setting into content for doishoulder
+--Add new setting into content for shoulder
 INSERT INTO setting(name, content)
-VALUES (':DoiShoulder', (SELECT substring(content, strpos(content,'/')+1) || '/' from setting  where name = ':Authority'));
+VALUES (':Shoulder', (SELECT substring(content, strpos(content,'/')+1) || '/' from setting  where name = ':Authority'));
 
  --strip shoulder from authority setting
  UPDATE setting

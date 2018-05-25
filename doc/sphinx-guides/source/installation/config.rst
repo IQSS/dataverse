@@ -124,7 +124,7 @@ Out of the box, Dataverse is configured for DOIs. Here are the configuration opt
 - :ref:`:DoiProvider <:DoiProvider>`
 - :ref:`:Protocol <:Protocol>`
 - :ref:`:Authority <:Authority>`
-- :ref:`:DoiShoulder <:DoiShoulder>`
+- :ref:`:Shoulder <:Shoulder>`
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 
@@ -552,7 +552,7 @@ See also these related database settings below:
 - :ref:`:DoiProvider`
 - :ref:`:Protocol`  
 - :ref:`:Authority`
-- :ref:`:DoiShoulder`
+- :ref:`:Shoulder`
 
 .. _doi.username:
 
@@ -717,7 +717,7 @@ As of this writing "EZID" and "DataCite" are the only valid options. DoiProvider
 
 ``curl -X PUT -d EZID http://localhost:8080/api/admin/settings/:DoiProvider``
 
-This setting relates to the ``:Protocol``, ``:Authority``, ``:DoiShoulder``, and ``:IdentifierGenerationStyle`` database settings below as well as the following JVM options:
+This setting relates to the ``:Protocol``, ``:Authority``, ``:Shoulder``, and ``:IdentifierGenerationStyle`` database settings below as well as the following JVM options:
 
 - :ref:`doi.baseurlstring`
 - :ref:`doi.username`
@@ -741,25 +741,23 @@ Use the authority assigned to you by your DoiProvider or HandleProvider.
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
-.. _:DoiShoulder:
+.. _:Shoulder:
 
-:DoiShoulder
+:Shoulder
 ++++++++++++
 
 Out of the box, the DOI shoulder is set to "FK2/" but this is for testing only! When you apply for your DOI namespace, you may have requested a shoulder. The following is only an example and a trailing slash is optional.
 
-``curl -X PUT -d "MyShoulder/" http://localhost:8080/api/admin/settings/:DoiShoulder``
-
-**Note:** The name DoiShoulder is a misnomer. This setting is applied in the generation of new **handles** as well.
+``curl -X PUT -d "MyShoulder/" http://localhost:8080/api/admin/settings/:Shoulder``
 
 .. _:IdentifierGenerationStyle:
 
 :IdentifierGenerationStyle
 ++++++++++++++++++++++++++
 
-By default, Dataverse generates a random 6 character string, pre-pended by the doiShoulder if set, to use as the identifier
+By default, Dataverse generates a random 6 character string, pre-pended by the Shoulder if set, to use as the identifier
 for a Dataset. Set this to ``sequentialNumber`` to use sequential numeric values 
-instead (again pre-pended by the doiShoulder if set). (the assumed default setting is ``randomString``). 
+instead (again pre-pended by the Shoulder if set). (the assumed default setting is ``randomString``). 
 In addition to this setting, a database sequence must be created in the database. 
 We provide the script below (downloadable :download:`here </_static/util/createsequence.sql>`).
 You may need to make some changes to suit your system setup, see the comments for more information: 

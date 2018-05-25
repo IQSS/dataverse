@@ -1525,7 +1525,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             prepend = datafile.getOwner().getIdentifier() + "/";
         } else {
             //If there's a shoulder prepend independent identifiers with it
-        	prepend = settingsService.getValueForKey(SettingsServiceBean.Key.DoiShoulder, "");
+        	prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
         }
  
         switch (doiIdentifierType) {
