@@ -124,7 +124,7 @@ Out of the box, Dataverse is configured for DOIs. Here are the configuration opt
 - :ref:`:DoiProvider <:DoiProvider>`
 - :ref:`:Protocol <:Protocol>`
 - :ref:`:Authority <:Authority>`
-- :ref:`:DoiSeparator <:DoiSeparator>`
+- :ref:`:DoiShoulder <:DoiShoulder>`
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 
@@ -552,7 +552,7 @@ See also these related database settings below:
 - :ref:`:DoiProvider`
 - :ref:`:Protocol`  
 - :ref:`:Authority`
-- :ref:`:DoiSeparator`
+- :ref:`:DoiShoulder`
 
 .. _doi.username:
 
@@ -717,7 +717,7 @@ As of this writing "EZID" and "DataCite" are the only valid options. DoiProvider
 
 ``curl -X PUT -d EZID http://localhost:8080/api/admin/settings/:DoiProvider``
 
-This setting relates to the ``:Protocol``, ``:Authority``, ``:DoiSeparator``, and ``:IdentifierGenerationStyle`` database settings below as well as the following JVM options:
+This setting relates to the ``:Protocol``, ``:Authority``, ``:DoiShoulder``, and ``:IdentifierGenerationStyle`` database settings below as well as the following JVM options:
 
 - :ref:`doi.baseurlstring`
 - :ref:`doi.username`
@@ -741,16 +741,16 @@ Use the authority assigned to you by your DoiProvider or HandleProvider.
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
-.. _:DoiSeparator:
+.. _:DoiShoulder:
 
-:DoiSeparator
-+++++++++++++
+:DoiShoulder
+++++++++++++
 
-It is recommended that you keep this as a slash ("/").
+Out of the box, the DOI shoulder is set to "FK2/" but this is for testing only! When you apply for your DOI namespace, you may have requested a shoulder. The following is only an example and a trailing slash is optional.
 
-``curl -X PUT -d "/" http://localhost:8080/api/admin/settings/:DoiSeparator``
+``curl -X PUT -d "MyShoulder/" http://localhost:8080/api/admin/settings/:DoiShoulder``
 
-**Note:** The name DoiSeparator is a misnomer. This setting is used by some **handles**-specific code too. It *must* be set to '/' when using handles.
+**Note:** The name DoiShoulder is a misnomer. This setting is used by some **handles**-specific code too. It *must* be set to '/' when using handles.
 
 .. _:IdentifierGenerationStyle:
 

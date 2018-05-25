@@ -49,9 +49,9 @@ curl -X PUT -d yes "$SERVER/admin/settings/:AllowSignUp"
 curl -X PUT -d /dataverseuser.xhtml?editMode=CREATE "$SERVER/admin/settings/:SignUpUrl"
 
 curl -X PUT -d doi "$SERVER/admin/settings/:Protocol"
-curl -X PUT -d 10.5072/FK2 "$SERVER/admin/settings/:Authority"
+curl -X PUT -d 10.5072 "$SERVER/admin/settings/:Authority"
+curl -X PUT -d "FK2/" "$SERVER/admin/settings/:DoiShoulder"
 curl -X PUT -d EZID "$SERVER/admin/settings/:DoiProvider"
-curl -X PUT -d / "$SERVER/admin/settings/:DoiSeparator"
 curl -X PUT -d burrito $SERVER/admin/settings/BuiltinUsers.KEY
 curl -X PUT -d localhost-only $SERVER/admin/settings/:BlockedApiPolicy
 echo
