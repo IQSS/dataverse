@@ -88,7 +88,8 @@
 	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Data Project to the repository.		text	84		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	dateOfDeposit	Deposit Date	Date that the Data Project was deposited into the repository.	YYYY-MM-DD	date	85		FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
 	subtitle	NoLongerUsedSubtitle	A secondary title used to amplify or state certain limitations on the main title.		text	86		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	dsDescriptionDate	NoLongerUsedDate	In cases where a Data Project contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. The date attribute follows the ISO convention of YYYY-MM-DD.	YYYY-MM-DD	date	18	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dsDescription	citation
+	dsDescriptionDate	NoLongerUsedDate	In cases where a Data Project contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. The date attribute follows the ISO convention of YYYY-MM-DD.	YYYY-MM-DD	date	87	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	distributorLogoURL	Logo URL	URL of the distributor's logo, which points to this  distributor's web-accessible logo image. Enter an absolute URL where the distributor's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	88	<img src="#VALUE" alt="#NAME" class="metadata-logo"/><br/>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
 	subject	Arts and Humanities	D0	1											
 	subject	Business and Management	D2	2											
@@ -367,10 +368,10 @@
 	country	Costa Rica		53											
 	country	Croatia		54											
 	country	Cuba		55											
-	country	Cura?ao		56											
+	country	Curaçao		56											
 	country	Cyprus		57											
 	country	Czech Republic		58											
-	country	C?te d'Ivoire		59											
+	country	Côte d'Ivoire		59											
 	country	Denmark		60											
 	country	Djibouti		61											
 	country	Dominica		62											
@@ -494,8 +495,8 @@
 	country	Romania		180											
 	country	Russian Federation		181											
 	country	Rwanda		182											
-	country	R?union		183											
-	country	Saint Barth?lemy		184											
+	country	Réunion		183											
+	country	Saint Barthélemy		184											
 	country	Saint Helena, Ascension and Tristan da Cunha		185											
 	country	Saint Kitts and Nevis		186											
 	country	Saint Lucia		187											
