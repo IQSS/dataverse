@@ -61,3 +61,13 @@ ALTER TABLE dataset DROP COLUMN doiseparator;
 ALTER TABLE dataset DROP COLUMN globalidcreatetime;
 ALTER TABLE dataset DROP COLUMN identifier;
 ALTER TABLE dataset DROP COLUMN protocol;
+
+--Add new setting into content for doishoulder
+INSERT INTO setting(name, content)
+VALUES (':DoiShoulder', (SELECT substring(content, strpos(content,'/')+1) || '/' from setting  where name = ':Authority'));
+
+ --strip shoulder from authority setting
+ UPDATE setting
+ SET content=(SELECT substring(content from 0 for strpos(content,'/'))
+ FROM setting
+ WHERE name=':Authority' and strpos(content,'/')>0) where name=':Authority';
