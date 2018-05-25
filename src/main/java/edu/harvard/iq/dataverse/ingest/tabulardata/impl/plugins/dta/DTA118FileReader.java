@@ -474,7 +474,7 @@ public class DTA118FileReader extends TabularDataFileReader {
         dataTable.setCaseQuantity(new Long(obsNumber));
 
         dataTable.setOriginalFileFormat(MIME_TYPE[0]);
-        dataTable.setOriginalFormatVersion("STATA 13");
+        dataTable.setOriginalFormatVersion("STATA 14");
         dataTable.setUnf("UNF:pending");
 
         // The word "dataset" below is used in its STATA parlance meaning, 
@@ -1391,13 +1391,11 @@ public class DTA118FileReader extends TabularDataFileReader {
             logger.info("text_length: " + text_length);
             logger.info("total_label_bytes: " + total_label_bytes);
             if (total_label_bytes != text_length) {
-                // disabled by pdurbin
-//                throw new IOException("<read mismatch in readLabels()>");
+                throw new IOException("<read mismatch in readLabels()>");
             }
 
             if (value_category_offset != label_table_length) {
-                // disabled by pdurbin
-//                throw new IOException("<read mismatch in readLabels() 2>");
+                throw new IOException("<read mismatch in readLabels() 2>");
             }
             reader.readClosingTag(TAG_VALUE_LABELS_LBL_DEF);
 
@@ -2098,30 +2096,20 @@ public class DTA118FileReader extends TabularDataFileReader {
 
         public String readLabelSection(String tag, int limit) throws IOException {
             readOpeningTag(tag);
-//            short number = readByte();
-//            short number = readByte2();
             /**
              * ll The byte length of the UTF-8 characters, whose length is
              * recorded in a 2-byte unsigned integer encoded according to
              * byteorder.
              */
-            byte[] bytes = readBytes(2);
-            short number = 0; // FIXME: Don't hard code this to 0. Some files will have labels.
-//            String str = new String(bytes, StandardCharsets.UTF_8);
-//            logger.info("str: " + str);
-//            int number = bytes.length;
-//            short number2 = readByte();
-            logger.info("number: " + number);
-            if (number < 0 || number > limit) {
-                throw new IOException("<more than limit characters in the section \"tag\">");
+            int lengthOfLabel = readInteger(2);
+            logger.fine("length of label: " + lengthOfLabel);
+            String label = null;
+            if (lengthOfLabel > 0) {
+                label = new String(readBytes(lengthOfLabel), "US-ASCII");
             }
-            String ret = null;
-            if (number > 0) {
-//                ret = new String(readBytes(number), "US-ASCII");
-            }
-            logger.info("ret: " + ret);
+            logger.fine("ret: " + label);
             readClosingTag(tag);
-            return ret;
+            return label;
         }
 
         /* 
@@ -2210,6 +2198,7 @@ public class DTA118FileReader extends TabularDataFileReader {
             byte[] openTag = readBytes(tag.length() + 2);
 
             String openTagString = new String(openTag, "US-ASCII");
+            logger.info("openTagString: " + openTagString);
             if (openTagString == null || !openTagString.equals("<" + tag + ">")) {
                 throw new IOException("Could not read opening tag <" + tag + ">");
             }
