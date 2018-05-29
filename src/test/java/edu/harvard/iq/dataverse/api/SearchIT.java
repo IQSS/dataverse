@@ -563,19 +563,6 @@ public class SearchIT {
                 .body("data.message", CoreMatchers.equalTo("Thumbnail set to " + treesAsBase64))
                 .statusCode(200);
 
-//MAD: CONFIRM THIS TESTS WHAT WE EXPECT EVEN IF IT PASSES
-        
-        
-//        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
-//        publishDataverse.prettyPrint();
-//        publishDataverse.then().assertThat()
-//                .statusCode(OK.getStatusCode());
-//
-//        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
-//        publishDataset.prettyPrint();
-//        publishDataset.then().assertThat()
-//                .statusCode(OK.getStatusCode());
-
         Response getThumbnailImageNoSpecialAccess99 = UtilIT.getDatasetThumbnail(datasetPersistentId, noSpecialAcessApiToken);
 //        getThumbnailImageNoSpecialAccess99.prettyPrint();
         getThumbnailImageNoSpecialAccess99.then().assertThat()
