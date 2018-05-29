@@ -167,10 +167,15 @@ public class TabularIT {
         assertEquals("NVARS: 12", response.body().asString().split("\n")[0]);
     }
 
-    @Ignore
     @Test
     public void testStata15() {
-        // TODO: Find a Stata 15 file to test with
+        // for i in `echo {0..33000}`; do echo -n "var$i,"; done > 33k.csv
+        // Then open Stata 15, run `set maxvar 40000` and import.
+        String fileName = "/tmp/33k.dta";
+        String fileType = "application/x-stata-15";
+        Response response = UtilIT.testIngest(fileName, fileType);
+        response.prettyPrint();
+        assertEquals("NVARS: 33001", response.body().asString().split("\n")[0]);
     }
 
 }

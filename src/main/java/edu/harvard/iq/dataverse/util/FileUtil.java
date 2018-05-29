@@ -111,6 +111,7 @@ public class FileUtil implements java.io.Serializable  {
     public static final String MIME_TYPE_STATA = "application/x-stata";
     public static final String MIME_TYPE_STATA13 = "application/x-stata-13";
     public static final String MIME_TYPE_STATA14 = "application/x-stata-14";
+    public static final String MIME_TYPE_STATA15 = "application/x-stata-15";
     public static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
     
     public static final String MIME_TYPE_CSV   = "text/csv";
@@ -1091,6 +1092,8 @@ public class FileUtil implements java.io.Serializable  {
         } else if (mimeType.equals(MIME_TYPE_STATA13)) {
             return true;
         } else if (mimeType.equals(MIME_TYPE_STATA14)) {
+            return true;
+        } else if (mimeType.equals(MIME_TYPE_STATA15)) {
             return true;
         } else if (mimeType.equals(MIME_TYPE_RDATA)) {
             return true;

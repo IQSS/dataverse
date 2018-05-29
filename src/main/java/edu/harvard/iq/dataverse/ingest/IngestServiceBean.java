@@ -61,6 +61,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileR
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv.CSVFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv.CSVFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTA118FileReader;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTA119FileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReader;
@@ -942,6 +943,8 @@ public class IngestServiceBean {
             ingestPlugin = new DTA117FileReader(new DTAFileReaderSpi());
         } else if (mimeType.equals(FileUtil.MIME_TYPE_STATA14)) {
             ingestPlugin = new DTA118FileReader(new DTAFileReaderSpi());
+        } else if (mimeType.equals(FileUtil.MIME_TYPE_STATA15)) {
+            ingestPlugin = new DTA119FileReader(new DTAFileReaderSpi());
         } else if (mimeType.equals(FileUtil.MIME_TYPE_RDATA)) {
             ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
         } else if (mimeType.equals(FileUtil.MIME_TYPE_CSV) || mimeType.equals(FileUtil.MIME_TYPE_CSV_ALT)) {

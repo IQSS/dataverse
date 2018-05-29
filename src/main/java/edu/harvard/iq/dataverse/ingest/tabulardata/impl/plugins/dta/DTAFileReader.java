@@ -554,6 +554,7 @@ public class DTAFileReader extends TabularDataFileReader{
         if (magic_number[2] != 1) {
             dbgLog.fine("3rd byte is not 1: given file is not stata-dta type");
             // FIXME: Figure out the magic number for Stata 14.
+            // FIXME: Figure out the magic number for Stata 15.
             throw new IllegalArgumentException("The file is not in a STATA format that we can read or support.");
         } else if ((magic_number[1] != 1) && (magic_number[1] != 2)) {
             dbgLog.fine("2nd byte is neither 0 nor 1: this file is not stata-dta type");
