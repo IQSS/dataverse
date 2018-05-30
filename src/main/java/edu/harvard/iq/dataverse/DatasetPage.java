@@ -1749,32 +1749,7 @@ public class DatasetPage implements java.io.Serializable {
 						}
 					}
 				}
-
 			}
-
-                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact) && dsf.isEmpty()) {
-                    for (DatasetFieldCompoundValue contactValue : dsf.getDatasetFieldCompoundValues()) {
-                        for (DatasetField subField : contactValue.getChildDatasetFields()) {
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactName)) {
-                                subField.getDatasetFieldValues().get(0).setValue(au.getLastName() + ", " + au.getFirstName());
-                            }
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
-                                subField.getDatasetFieldValues().get(0).setValue(au.getAffiliation());
-                            }
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
-                                subField.getDatasetFieldValues().get(0).setValue(au.getEmail());
-                            }
-                        }
-                    }
-                }
-            
-            
-            
-            
-            
-            
-            
-            
             
             JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editMetadata"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
