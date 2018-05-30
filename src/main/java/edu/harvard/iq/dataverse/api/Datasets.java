@@ -1,11 +1,14 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -83,6 +86,7 @@ import java.io.StringReader;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -92,6 +96,7 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -404,6 +409,90 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
             
+        }
+    }
+    
+    @PUT
+    @Path("{id}/addData/{versionId}")
+    public Response addDataToVersion(String jsonBody, @PathParam("id") String id, @PathParam("versionId") String versionId) {
+
+        if (!":draft".equals(versionId)) {
+            return error(Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
+        }
+
+        try (StringReader rdr = new StringReader(jsonBody)) {
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            Dataset ds = findDatasetOrDie(id);
+            JsonObject json = Json.createReader(rdr).readObject();
+            DatasetVersion dsv = ds.getEditVersion();
+            /*
+            List<DatasetField> parseMultipleFields(JsonObject json);
+            
+            
+            */
+            List<DatasetField> fields = new LinkedList<>();
+            DatasetField singleField = null; 
+            
+            JsonArray fieldsJson = json.getJsonArray("fields");
+            if( fieldsJson == null ){
+                singleField  = jsonParser().parseField(json, Boolean.FALSE);
+                fields.add(singleField);
+            } else{
+                fields = jsonParser().parseMultipleFields(json);
+            }
+
+            dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
+           
+            System.out.print("Fields size: " + fields.size());
+                
+
+            for (DatasetField dsf : dsv.getDatasetFields()) {
+                for (DatasetField addField : fields) {
+                    if (dsf.getDatasetFieldType().equals(addField.getDatasetFieldType())) {
+                        if (dsf.isEmpty() || dsf.getDatasetFieldType().isAllowMultiples()) {
+                            if (addField.getDatasetFieldType().isControlledVocabulary()) {
+                                for (ControlledVocabularyValue cvv : addField.getControlledVocabularyValues()) {
+                                    if (!dsf.getDisplayValue().contains(cvv.getStrValue())) {
+                                        dsf.getControlledVocabularyValues().add(cvv);
+                                    }
+                                }
+
+                            } else {
+                                if (!addField.getDatasetFieldType().isCompound()) {
+                                    for (DatasetFieldValue dfv : addField.getDatasetFieldValues()) {
+                                        if (!dsf.getDisplayValue().contains(dfv.getDisplayValue())) {
+                                            dsf.getDatasetFieldValues().add(dfv);
+                                        }
+                                    }
+                                } else {
+                                    for (DatasetFieldCompoundValue dfcv : addField.getDatasetFieldCompoundValues()) {
+                                        if (!dsf.getDatasetFieldCompoundValues().contains(dfcv)) {
+                                            dfcv.setParentDatasetField(dsf);
+                                            dsf.setDatasetVersion(dsv);
+                                            dsf.getDatasetFieldCompoundValues().add(dfcv);
+
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            boolean updateDraft = ds.getLatestVersion().isDraft();
+            DatasetVersion managedVersion = execCommand(updateDraft
+                    ? new UpdateDatasetVersionCommand(req, dsv)
+                    : new CreateDatasetVersionCommand(req, ds, dsv));
+            return ok(json(managedVersion));
+
+        } catch (JsonParseException ex) {
+            logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
+            return error(Response.Status.BAD_REQUEST, "Error parsing dataset update: " + ex.getMessage());
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+
         }
     }
     

@@ -420,6 +420,10 @@ public class DatasetField implements Serializable {
         } else if (template != null) {
             return template.getDataverse();
         } else {
+
+            System.out.print("getDataverseException: " + this.datasetFieldType.getDisplayName());
+            System.out.print("getDataverseException Compound: " + this.getCompoundDisplayValue());
+            System.out.print("getDataverseException Regular: " + this.getDisplayValue());
             throw new IllegalStateException("DatasetField is in an illegal state: no dataset version, compound value, or template is set as its parent.");
         }
     }

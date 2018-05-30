@@ -1,0 +1,22 @@
+
+{
+"fields": [
+        {
+        "typeName": "subject",
+                "value": [
+                    "Astronomy and Astrophysics"
+                ]
+        },
+        {
+          "typeName": "author",
+          "value": [
+            {
+              "authorName": {
+                "typeName": "authorName",
+                "value": "Spruce, Sabrina"
+              }
+            }
+          ]
+        }
+]
+}

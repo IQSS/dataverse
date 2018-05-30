@@ -351,9 +351,24 @@ public class JsonParser {
         for (String blockName : keys) {
             JsonObject blockJson = json.getJsonObject(blockName);
             JsonArray fieldsJson = blockJson.getJsonArray("fields");
-            for (JsonObject fieldJson : fieldsJson.getValuesAs(JsonObject.class)) {
+            fields.addAll(parseFieldsFromArray(fieldsJson, true));
+        }
+        convertKeywordsToSubjects(fields);
+        return fields;
+    }
+    
+    public List<DatasetField> parseMultipleFields(JsonObject json) throws JsonParseException {
+        JsonArray fieldsJson = json.getJsonArray("fields");
+        List<DatasetField> fields = parseFieldsFromArray(fieldsJson, false);
+        convertKeywordsToSubjects(fields);
+        return fields;
+    }
+    
+    private List<DatasetField> parseFieldsFromArray(JsonArray fieldsArray, Boolean testType) throws JsonParseException {
+            List<DatasetField> fields = new LinkedList<>();
+            for (JsonObject fieldJson : fieldsArray.getValuesAs(JsonObject.class)) {
                 try {
-                    fields.add(parseField(fieldJson));
+                    fields.add(parseField(fieldJson, testType));
                 } catch (CompoundVocabularyException ex) {
                     DatasetFieldType fieldType = datasetFieldSvc.findByNameOpt(fieldJson.getString("typeName", ""));
                     if (lenient && (DatasetFieldConstant.geographicCoverage).equals(fieldType.getName())) {
@@ -362,12 +377,12 @@ public class JsonParser {
                         // if not lenient mode, re-throw exception
                         throw ex;
                     }
-                }
+                } 
 
             }
-        }
         convertKeywordsToSubjects(fields);
         return fields;
+        
     }
     
     public List<FileMetadata> parseFiles(JsonArray metadatasJson, DatasetVersion dsv) throws JsonParseException {
@@ -496,9 +511,12 @@ public class JsonParser {
     }
      
     
+    public DatasetField parseField(JsonObject json) throws JsonParseException{
+        return parseField(json, true);
+    }
   
 
-    public DatasetField parseField(JsonObject json) throws JsonParseException {
+    public DatasetField parseField(JsonObject json, Boolean testType) throws JsonParseException {
         if (json == null) {
             return null;
         }
@@ -510,23 +528,23 @@ public class JsonParser {
         if (type == null) {
             throw new JsonParseException("Can't find type '" + json.getString("typeName", "") + "'");
         }
-        if (type.isAllowMultiples() != json.getBoolean("multiple")) {
+        if (testType && type.isAllowMultiples() != json.getBoolean("multiple")) {
             throw new JsonParseException("incorrect multiple   for field " + json.getString("typeName", ""));
         }
-        if (type.isCompound() && !json.getString("typeClass").equals("compound")) {
+        if (testType && type.isCompound() && !json.getString("typeClass").equals("compound")) {
             throw new JsonParseException("incorrect  typeClass for field " + json.getString("typeName", "") + ", should be compound.");
         }
-        if (!type.isControlledVocabulary() && type.isPrimitive() && !json.getString("typeClass").equals("primitive")) {
+        if (testType && !type.isControlledVocabulary() && type.isPrimitive() && !json.getString("typeClass").equals("primitive")) {
             throw new JsonParseException("incorrect  typeClass for field: " + json.getString("typeName", "") + ", should be primitive");
         }
-        if (type.isControlledVocabulary() && !json.getString("typeClass").equals("controlledVocabulary")) {
+        if (testType && type.isControlledVocabulary() && !json.getString("typeClass").equals("controlledVocabulary")) {
             throw new JsonParseException("incorrect  typeClass for field " + json.getString("typeName", "") + ", should be controlledVocabulary");
         }
        
         ret.setDatasetFieldType(type);
                
         if (type.isCompound()) {
-            List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json);
+            List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json, testType);
             for (DatasetFieldCompoundValue dsfcv : vals) {
                 dsfcv.setParentDatasetField(ret);
             }
@@ -541,7 +559,7 @@ public class JsonParser {
 
         } else {
             // primitive
-            List<DatasetFieldValue> values = parsePrimitiveValue(json);
+            List<DatasetFieldValue> values = parsePrimitiveValue(type.isAllowMultiples(), json);
             for (DatasetFieldValue val : values) {
                 val.setDatasetField(ret);
             }
@@ -619,10 +637,14 @@ public class JsonParser {
 
     }
     
-    public List<DatasetFieldCompoundValue> parseCompoundValue(DatasetFieldType compoundType, JsonObject json) throws JsonParseException {
+     public List<DatasetFieldCompoundValue> parseCompoundValue(DatasetFieldType compoundType, JsonObject json) throws JsonParseException {
+         return parseCompoundValue(compoundType, json, true);
+     }
+    
+    public List<DatasetFieldCompoundValue> parseCompoundValue(DatasetFieldType compoundType, JsonObject json, Boolean testType) throws JsonParseException {
         List<ControlledVocabularyException> vocabExceptions = new ArrayList<>();
         List<DatasetFieldCompoundValue> vals = new LinkedList<>();
-        if (json.getBoolean("multiple")) {
+        if (compoundType.isAllowMultiples()) {
             int order = 0;
             for (JsonObject obj : json.getJsonArray("value").getValuesAs(JsonObject.class)) {
                 DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
@@ -631,7 +653,7 @@ public class JsonParser {
                     JsonObject childFieldJson = obj.getJsonObject(fieldName);
                     DatasetField f=null;
                     try {
-                        f = parseField(childFieldJson);
+                        f = parseField(childFieldJson, testType);
                     } catch(ControlledVocabularyException ex) {
                         vocabExceptions.add(ex);
                     }
@@ -663,7 +685,7 @@ public class JsonParser {
                 JsonObject childFieldJson = value.getJsonObject(key);
                 DatasetField f = null;
                 try {
-                    f=parseField(childFieldJson);
+                    f=parseField(childFieldJson, testType);
                 } catch(ControlledVocabularyException ex ) {
                     vocabExceptions.add(ex);
                 }
@@ -684,10 +706,10 @@ public class JsonParser {
           return vals;
     }
 
-    public List<DatasetFieldValue> parsePrimitiveValue(JsonObject json) throws JsonParseException {
+    public List<DatasetFieldValue> parsePrimitiveValue(Boolean multiple, JsonObject json) throws JsonParseException {
 
         List<DatasetFieldValue> vals = new LinkedList<>();
-        if (json.getBoolean("multiple")) {
+        if (multiple) {
             for (JsonString val : json.getJsonArray("value").getValuesAs(JsonString.class)) {
                 DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
                 datasetFieldValue.setDisplayOrder(vals.size() - 1);
@@ -742,7 +764,7 @@ public class JsonParser {
     }
     
     public List<ControlledVocabularyValue> parseControlledVocabularyValue(DatasetFieldType cvvType, JsonObject json) throws JsonParseException {
-        if (json.getBoolean("multiple")) {
+        if (cvvType.isAllowMultiples()) {
             List<ControlledVocabularyValue> vals = new LinkedList<>();
             for (JsonString strVal : json.getJsonArray("value").getValuesAs(JsonString.class)) {
                 String strValue = strVal.getString();
