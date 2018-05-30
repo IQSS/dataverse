@@ -219,7 +219,7 @@ Export Metadata of a Dataset in Various Formats
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
-.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , and ``dataverse_json``.
+.. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org``, ``oai_datacite``, and ``dataverse_json``.
 
 List Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~

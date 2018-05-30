@@ -26,7 +26,7 @@ public class OpenAireExporter implements Exporter {
 
 	@Override
 	public String getDisplayName() {
-		return  BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dataciteOpenAIRE") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dataciteOpenAIRE") : "DataCite OpenAIRE";
+            return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dataciteOpenAIRE");
 	}
 
 	@Override
@@ -51,7 +51,7 @@ public class OpenAireExporter implements Exporter {
 
 	@Override
 	public Boolean isAvailableToUsers() {
-		return false;
+		return true;
 	}
 
 	@Override
