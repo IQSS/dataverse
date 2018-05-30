@@ -521,6 +521,12 @@ public class UtilIT {
                 .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
     }
 
+    static Response subset(String fileId, String variables, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + fileId + "?format=subset&variables=" + variables);
+    }
+
     static Response getFileMetadata(String fileIdOrPersistentId, String optionalFormat, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
@@ -934,7 +940,7 @@ public class UtilIT {
                 .put("/api/files/" + idInPath + "/restrict" + optionalQueryParam);
         return response;
     }
-    
+
     static Response moveDataverse(String movedDataverseAlias, String targetDataverseAlias, Boolean force, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -1451,6 +1457,64 @@ public class UtilIT {
     static Response deleteStorageSite(long storageSiteId) {
         return given()
                 .delete("/api/admin/storageSites/" + storageSiteId);
+    }
+
+    static Response metricsDataversesToMonth(String yyyymm) {
+        String optionalYyyyMm = "";
+        if (yyyymm != null) {
+            optionalYyyyMm = "/" + yyyymm;
+        }
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/dataverses/toMonth" + optionalYyyyMm);
+    }
+
+    static Response metricsDatasetsToMonth(String yyyymm) {
+        String optionalYyyyMm = "";
+        if (yyyymm != null) {
+            optionalYyyyMm = "/" + yyyymm;
+        }
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/datasets/toMonth" + optionalYyyyMm);
+    }
+
+    static Response metricsFilesToMonth(String yyyymm) {
+        String optionalYyyyMm = "";
+        if (yyyymm != null) {
+            optionalYyyyMm = "/" + yyyymm;
+        }
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/files/toMonth" + optionalYyyyMm);
+    }
+
+    static Response metricsDownloadsToMonth(String yyyymm) {
+        String optionalYyyyMm = "";
+        if (yyyymm != null) {
+            optionalYyyyMm = "/" + yyyymm;
+        }
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/downloads/toMonth" + optionalYyyyMm);
+    }
+
+    static Response metricsDataverseByCategory() {
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/dataverses/byCategory");
+    }
+
+    static Response metricsDatasetsBySubject() {
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/datasets/bySubject");
+    }
+    
+    static Response clearMetricCache() {
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given();
+        return requestSpecification.delete("/api/admin/clearMetricsCache");
     }
 
     @Test

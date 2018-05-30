@@ -1274,8 +1274,15 @@ Dataverse 4.8.1 and below allowed API Token lookup via API but for better securi
 ``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:AllowApiTokenLookupViaApi``
 
 :ProvCollectionEnabled
-++++++++++++++++++++++++++
+++++++++++++++++++++++
 
 Enable the collection of provenance metadata on Dataverse via the provenance popup.
 
 ``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:ProvCollectionEnabled``
+
+:MetricsCacheTimeoutMinutes
++++++++++++++++++++++++++++
+
+Sets how long a cached metrics result is used before re-running the query for a request. Note this only effects queries on the current month, previous months queries are cached indefinitely. The default timeout is 7 days (10080 minutes).
+
+``curl -X PUT -d 10080 http://localhost:8080/api/admin/settings/:MetricsCacheTimeoutMinutes``

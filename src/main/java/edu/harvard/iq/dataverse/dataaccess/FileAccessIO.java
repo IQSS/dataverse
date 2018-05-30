@@ -171,9 +171,10 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     
     @Override
     public void savePath(Path fileSystemPath) throws IOException {
+        
         // Since this is a local fileystem file, we can use the
         // quick NIO Files.copy method: 
-
+        
         Path outputPath = getFileSystemPath();
 
         if (outputPath == null) {

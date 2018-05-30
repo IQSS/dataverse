@@ -1174,8 +1174,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
                  */
                 result.setImageUrl(thumbnailServiceWrapper.getDataverseCardImageAsBase64Url(result));
             } else if (result.getType().equals("datasets")) {
-                
-                result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(result));
+                if (result.getEntity() != null) {
+                    result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(result));
+                }
                 
                 if (result.isHarvested()) {
                     if (harvestedDatasetIds == null) {
