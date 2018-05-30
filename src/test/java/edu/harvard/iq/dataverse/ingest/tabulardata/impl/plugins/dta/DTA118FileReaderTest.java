@@ -29,15 +29,18 @@ public class DTA118FileReaderTest {
         TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/2018_04_06_Aggregated_dataset_v2.dta"))), nullDataFile);
         assertEquals(227, result.getDataTable().getDataVariables().size());
     }
-
+    
+    //For now this test really just shows that we can parse a file with strls
+    //There is no obvious output of parsing the strls as the are just added to our tab delimited file like other data
+    //The test file use was based off auto.dta, adding an extra strL variable (column).
+    //Also see here for a real Stata 14 file with strls: https://dataverse.harvard.edu/file.xhtml?fileId=2775556 mm_public_120615_v14.dta
     @Ignore
     @Test
-    public void testMmPublic() throws Exception {
-        // TODO: This file was downloaded at random. We could keep trying to get it to ingest.
-        // https://dataverse.harvard.edu/file.xhtml?fileId=2775556 Stata 14: mm_public_120615_v14.dta
-        // For this file "hasSTRLs" is true so it might be nice to get it working.
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/mm_public_120615_v14.dta"))), nullDataFile);
-        assertEquals(227, result.getDataTable().getDataVariables().size());
+    public void testStrls() throws Exception {        
+        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("scripts/search/data/tabular/stata14-auto-withstrls.dta"))), nullDataFile);
+        assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
+        assertEquals("STATA 14", result.getDataTable().getOriginalFormatVersion());
+        assertEquals(13, result.getDataTable().getDataVariables().size());
     }
 
 }
