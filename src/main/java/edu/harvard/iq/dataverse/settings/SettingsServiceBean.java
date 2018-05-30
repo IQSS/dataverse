@@ -199,6 +199,12 @@ public class SettingsServiceBean {
          * some other metrics app.
          */
         MetricsUrl,
+        
+        /**
+         * Number of minutes before a metrics query can be rerun. Otherwise a cached value is returned.
+         * Previous month dates always return cache. Only applies to new internal caching system (not miniverse).
+         */
+        MetricsCacheTimeoutMinutes,
         /* zip download size limit */
         /** Optionally override version number in guides. */
         GuidesVersion,
@@ -242,14 +248,6 @@ public class SettingsServiceBean {
         Default is false;
         */
         GeoconnectViewMaps,
-        /**
-        For DEVELOPMENT ONLY. Generate SQL statements for populating
-        MapLayerMetadata objects when Geoconnect is not available.
-        
-        When files have related MapLayerMetadata objects, the "Explore button
-        will be available to users.
-        */
-        GeoconnectDebug,
         /**
          The message added to a popup upon dataset publish
          * 
@@ -350,7 +348,17 @@ public class SettingsServiceBean {
         /**
          * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
          */
-        PVCustomPasswordResetAlertMessage
+        PVCustomPasswordResetAlertMessage,
+        /*
+        String to describe DOI format for data files. Default is INDEPENDENT. (That is independent 
+        from the Dataset DOI
+        If 'DEPENEDENT' then the DOI will be the Dataset DOI plus a file DOI with a slash in between.
+        */
+        DataFilePIDFormat, 
+        /*
+        Number for the minimum number of files to send PID registration to asynchronous workflow
+        */
+        PIDAsynchRegFileCount
         ;
 
         @Override

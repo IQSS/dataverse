@@ -44,8 +44,8 @@ We currently only support the following HTML tags for any of our textbox meatdat
 <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, 
 <strong>, <strike>, <ul>.
 
-File Handling + Uploading
-=========================
+File Handling and Uploading
+===========================
 
 To upload new files to a dataset, click the "Edit" button at the top of the dataset page and from the dropdown list select "Files (Upload)" or click the "Upload Files" button above the files table in the Files tab. From either option you will be brought to the Upload Files page for that dataset.
 
@@ -414,7 +414,7 @@ Once you have more than one version (this can simply be version 1 and a draft), 
 
 .. _deaccession:
 
-Deaccession Dataset
+Dataset Deaccession
 ===================
 
 .. warning:: It is not recommended that you deaccession a dataset or a version of a dataset. This is a very serious action that should only occur if there is a legal or valid reason for the dataset to no longer be accessible to the public. If you absolutely must deaccession, you can deaccession a version of a dataset or an entire dataset.

@@ -10,7 +10,7 @@ COPY testdata/solrconfig.xml /tmp/dv
 # IPv6 and localhost appears to be related to some of the intermittant connection issues
 COPY disableipv6.conf /etc/sysctl.d/
 RUN rm /etc/httpd/conf/*
-COPY testdata/httpd.conf /etc/httpd/conf 
+COPY httpd.conf /etc/httpd/conf 
 RUN cd /opt ; tar zxf /tmp/dv/deps/solr-7.3.0dv.tgz 
 RUN cd /opt ; tar zxf /tmp/dv/deps/glassfish4dv.tgz
 

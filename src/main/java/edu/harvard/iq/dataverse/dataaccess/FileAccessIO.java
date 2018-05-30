@@ -171,9 +171,10 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     
     @Override
     public void savePath(Path fileSystemPath) throws IOException {
+        
         // Since this is a local fileystem file, we can use the
         // quick NIO Files.copy method: 
-
+        
         Path outputPath = getFileSystemPath();
 
         if (outputPath == null) {
@@ -303,6 +304,12 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         Path auxPath = getAuxObjectAsPath(auxItemTag);
         
         Files.move(getFileSystemPath(), auxPath, StandardCopyOption.REPLACE_EXISTING);
+    }
+    
+    @Override 
+    public void revertBackupAsAux(String auxItemTag) throws IOException {
+        Path auxPath = getAuxObjectAsPath(auxItemTag);
+        Files.move(auxPath, getFileSystemPath(), StandardCopyOption.REPLACE_EXISTING);
     }
     
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:

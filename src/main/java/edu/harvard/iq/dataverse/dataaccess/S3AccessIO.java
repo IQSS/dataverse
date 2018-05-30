@@ -365,6 +365,19 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("S3AccessIO: Unable to backup original auxiliary object");
         }
     }
+    
+    
+    @Override
+    public void revertBackupAsAux(String auxItemTag) throws IOException {
+        String destinationKey = getDestinationKey(auxItemTag);
+        try {
+            s3.copyObject(new CopyObjectRequest(bucketName, destinationKey,  bucketName, key));
+            deleteAuxObject(auxItemTag);
+        } catch (AmazonClientException ase) {
+            logger.warning("Caught an AmazonServiceException in S3AccessIO.backupAsAux:    " + ase.getMessage());
+            throw new IOException("S3AccessIO: Unable to revert backup auxiliary object");
+        }
+    }
 
     @Override
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:

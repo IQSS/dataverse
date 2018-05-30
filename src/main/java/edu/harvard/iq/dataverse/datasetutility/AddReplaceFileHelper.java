@@ -92,7 +92,6 @@ import org.ocpsoft.common.util.Strings;
 public class AddReplaceFileHelper{
     
     private static final Logger logger = Logger.getLogger(AddReplaceFileHelper.class.getCanonicalName());
-
     
     public static String FILE_ADD_OPERATION = "FILE_ADD_OPERATION";
     public static String FILE_REPLACE_OPERATION = "FILE_REPLACE_OPERATION";
@@ -1088,7 +1087,6 @@ public class AddReplaceFileHelper{
         }
         
         if (this.step_040_auto_checkForDuplicates()){
-            ingestService.addFilesToDataset(workingVersion, finalFileList);
             return true;
         }
                        
@@ -1410,9 +1408,19 @@ public class AddReplaceFileHelper{
             this.addErrorSevere(getBundleErr("final_file_list_empty"));                
             return false;
         }
+        
+        int nFiles = finalFileList.size();
+        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList);
 
-        ingestService.addFiles(workingVersion, finalFileList);
-
+        if (nFiles != finalFileList.size()) {
+            if (nFiles == 1) {
+                addError("Failed to save the content of the uploaded file.");
+            } else {
+                addError("Failed to save the content of at least one of the uploaded files.");
+            }
+            return false;
+        }
+        
         return true;
     }
     
@@ -1930,7 +1938,7 @@ public class AddReplaceFileHelper{
             // (but should we really be doing it here? - maybe a better approach to do it
             // in the ingest service bean, when the files get uploaded.)
             // Finally, save the files permanently: 
-            ingestService.addFiles(workingVersion, newFiles);
+            ingestService.saveAndAddFilesToDataset(workingVersion, newFiles);
 
          (3) Use the API to save the dataset
             - make new CreateDatasetCommand

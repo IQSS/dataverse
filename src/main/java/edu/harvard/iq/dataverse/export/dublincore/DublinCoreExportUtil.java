@@ -65,6 +65,7 @@ public class DublinCoreExportUtil {
     private static void dto2dublincore(DatasetDTO datasetDto, OutputStream outputStream, String dcFlavor) throws XMLStreamException {
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         if (DC_FLAVOR_DCTERMS.equals(dcFlavor)) {
+		xmlw.writeStartDocument();
             xmlw.writeStartElement("metadata");
             xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
             xmlw.writeAttribute("xmlns:dc", DC_XML_NAMESPACE);
