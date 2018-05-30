@@ -1705,46 +1705,53 @@ public class DatasetPage implements java.io.Serializable {
 			for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
 				if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.otherIdAgency) && dsf.isEmpty()) {
 					dsf.getDatasetFieldValues().get(0).setValue("Qualitative Data Repository");
-				} else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
+				} else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
 					for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
-						for (DatasetField subField : authorValue.getChildDatasetFields()) {
-							if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)) {
-								DatasetFieldType authorIdTypeDatasetField = fieldService
-										.findByName(DatasetFieldConstant.authorIdType);
-								subField.setSingleControlledVocabularyValue(
-										fieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(
-												authorIdTypeDatasetField, "ORCID", false));
+						if (authorValue.isEmpty()) {
+							for (DatasetField subField : authorValue.getChildDatasetFields()) {
+								if (subField.getDatasetFieldType().getName()
+										.equals(DatasetFieldConstant.authorIdType)) {
+									DatasetFieldType authorIdTypeDatasetField = fieldService
+											.findByName(DatasetFieldConstant.authorIdType);
+									subField.setSingleControlledVocabularyValue(
+											fieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(
+													authorIdTypeDatasetField, "ORCID", false));
+								}
 							}
 						}
 					}
-				} else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.keyword) && dsf.isEmpty()) {
+				} else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.keyword)) {
 					for (DatasetFieldCompoundValue keywordValue : dsf.getDatasetFieldCompoundValues()) {
-						for (DatasetField subField : keywordValue.getChildDatasetFields()) {
-							if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.keywordVocab)) {
-								subField.getDatasetFieldValues().get(0).setValue("ICPSR Subject Thesaurus");
-							} else if (subField.getDatasetFieldType().getName()
-									.equals(DatasetFieldConstant.keywordVocabURI)) {
-								subField.getDatasetFieldValues().get(0)
-										.setValue("https://www.icpsr.umich.edu/icpsrweb/ICPSR/thesaurus/index");
+						if (keywordValue.isEmpty()) {
+							for (DatasetField subField : keywordValue.getChildDatasetFields()) {
+								if (subField.getDatasetFieldType().getName()
+										.equals(DatasetFieldConstant.keywordVocab)) {
+									subField.getDatasetFieldValues().get(0).setValue("ICPSR Subject Thesaurus");
+								} else if (subField.getDatasetFieldType().getName()
+										.equals(DatasetFieldConstant.keywordVocabURI)) {
+									subField.getDatasetFieldValues().get(0)
+											.setValue("https://www.icpsr.umich.edu/icpsrweb/ICPSR/thesaurus/index");
+								}
 							}
-
 						}
 					}
-				} else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.distributor)
-						&& dsf.isEmpty()) {
+				} else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.distributor)) {
 					for (DatasetFieldCompoundValue distributorValue : dsf.getDatasetFieldCompoundValues()) {
-						for (DatasetField subField : distributorValue.getChildDatasetFields()) {
-							if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.distributorName)) {
-								subField.getDatasetFieldValues().get(0).setValue("Qualitative Data Repository");
-							} else if (subField.getDatasetFieldType().getName()
-									.equals(DatasetFieldConstant.distributorAffiliation)) {
-								subField.getDatasetFieldValues().get(0).setValue("Syracuse University");
-							} else if (subField.getDatasetFieldType().getName()
-									.equals(DatasetFieldConstant.distributorAbbreviation)) {
-								subField.getDatasetFieldValues().get(0).setValue("QDR");
-							} else if (subField.getDatasetFieldType().getName()
-									.equals(DatasetFieldConstant.distributorURL)) {
-								subField.getDatasetFieldValues().get(0).setValue("https://qdr.syr.edu");
+						if (distributorValue.isEmpty()) {
+							for (DatasetField subField : distributorValue.getChildDatasetFields()) {
+								if (subField.getDatasetFieldType().getName()
+										.equals(DatasetFieldConstant.distributorName)) {
+									subField.getDatasetFieldValues().get(0).setValue("Qualitative Data Repository");
+								} else if (subField.getDatasetFieldType().getName()
+										.equals(DatasetFieldConstant.distributorAffiliation)) {
+									subField.getDatasetFieldValues().get(0).setValue("Syracuse University");
+								} else if (subField.getDatasetFieldType().getName()
+										.equals(DatasetFieldConstant.distributorAbbreviation)) {
+									subField.getDatasetFieldValues().get(0).setValue("QDR");
+								} else if (subField.getDatasetFieldType().getName()
+										.equals(DatasetFieldConstant.distributorURL)) {
+									subField.getDatasetFieldValues().get(0).setValue("https://qdr.syr.edu");
+								}
 							}
 						}
 					}
