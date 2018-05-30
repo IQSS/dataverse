@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import org.junit.Ignore;
@@ -14,8 +15,10 @@ public class DTA118FileReaderTest {
     File nullDataFile = null;
 
     @Test
-    public void testOs() throws Exception {
+    public void testOs() throws IOException {
         TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("scripts/search/data/tabular/open-source-at-harvard118.dta"))), nullDataFile);
+        assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
+        assertEquals("STATA 14", result.getDataTable().getOriginalFormatVersion());
         assertEquals(10, result.getDataTable().getDataVariables().size());
     }
 

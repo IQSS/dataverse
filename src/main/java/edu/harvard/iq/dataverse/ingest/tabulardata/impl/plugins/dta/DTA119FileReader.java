@@ -481,7 +481,7 @@ public class DTA119FileReader extends TabularDataFileReader {
         dataTable.setCaseQuantity(new Long(obsNumber));
 
         dataTable.setOriginalFileFormat(MIME_TYPE[0]);
-        dataTable.setOriginalFormatVersion("STATA 14");
+        dataTable.setOriginalFormatVersion("STATA 15");
         dataTable.setUnf("UNF:pending");
 
         // The word "dataset" below is used in its STATA parlance meaning, 
