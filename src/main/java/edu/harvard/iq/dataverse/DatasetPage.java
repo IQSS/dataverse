@@ -1700,6 +1700,82 @@ public class DatasetPage implements java.io.Serializable {
         } else if (editMode.equals(EditMode.METADATA)) {
             datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, true);
             updateDatasetFieldInputLevels();
+
+			// QDR: set pre-populated fields during edit
+			for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
+				if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.otherIdAgency) && dsf.isEmpty()) {
+					dsf.getDatasetFieldValues().get(0).setValue("Qualitative Data Repository");
+				} else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
+					for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+						for (DatasetField subField : authorValue.getChildDatasetFields()) {
+							if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)) {
+								DatasetFieldType authorIdTypeDatasetField = fieldService
+										.findByName(DatasetFieldConstant.authorIdType);
+								subField.setSingleControlledVocabularyValue(
+										fieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(
+												authorIdTypeDatasetField, "ORCID", false));
+							}
+						}
+					}
+				} else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.keyword) && dsf.isEmpty()) {
+					for (DatasetFieldCompoundValue keywordValue : dsf.getDatasetFieldCompoundValues()) {
+						for (DatasetField subField : keywordValue.getChildDatasetFields()) {
+							if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.keywordVocab)) {
+								subField.getDatasetFieldValues().get(0).setValue("ICPSR Subject Thesaurus");
+							} else if (subField.getDatasetFieldType().getName()
+									.equals(DatasetFieldConstant.keywordVocabURI)) {
+								subField.getDatasetFieldValues().get(0)
+										.setValue("https://www.icpsr.umich.edu/icpsrweb/ICPSR/thesaurus/index");
+							}
+
+						}
+					}
+				} else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.distributor)
+						&& dsf.isEmpty()) {
+					for (DatasetFieldCompoundValue distributorValue : dsf.getDatasetFieldCompoundValues()) {
+						for (DatasetField subField : distributorValue.getChildDatasetFields()) {
+							if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.distributorName)) {
+								subField.getDatasetFieldValues().get(0).setValue("Qualitative Data Repository");
+							} else if (subField.getDatasetFieldType().getName()
+									.equals(DatasetFieldConstant.distributorAffiliation)) {
+								subField.getDatasetFieldValues().get(0).setValue("Syracuse University");
+							} else if (subField.getDatasetFieldType().getName()
+									.equals(DatasetFieldConstant.distributorAbbreviation)) {
+								subField.getDatasetFieldValues().get(0).setValue("QDR");
+							} else if (subField.getDatasetFieldType().getName()
+									.equals(DatasetFieldConstant.distributorURL)) {
+								subField.getDatasetFieldValues().get(0).setValue("https://qdr.syr.edu");
+							}
+						}
+					}
+				}
+
+			}
+
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact) && dsf.isEmpty()) {
+                    for (DatasetFieldCompoundValue contactValue : dsf.getDatasetFieldCompoundValues()) {
+                        for (DatasetField subField : contactValue.getChildDatasetFields()) {
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactName)) {
+                                subField.getDatasetFieldValues().get(0).setValue(au.getLastName() + ", " + au.getFirstName());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
+                                subField.getDatasetFieldValues().get(0).setValue(au.getAffiliation());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
+                                subField.getDatasetFieldValues().get(0).setValue(au.getEmail());
+                            }
+                        }
+                    }
+                }
+            
+            
+            
+            
+            
+            
+            
+            
+            
             JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editMetadata"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         } else if (editMode.equals(EditMode.LICENSE)){
