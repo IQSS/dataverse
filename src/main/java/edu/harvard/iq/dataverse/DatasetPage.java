@@ -2549,10 +2549,10 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
 
-        // Use the API to save the dataset: 
+        // Use the Create or Update command to save the dataset: 
         Command<Dataset> cmd;
         try {
-            if (editMode == EditMode.CREATE) {
+            if (editMode == EditMode.CREATE) {                
                 if ( selectedTemplate != null ) {
                     if ( isSessionUserAuthenticated() ) {
                         cmd = new CreateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, null, selectedTemplate); 
@@ -2595,10 +2595,42 @@ public class DatasetPage implements java.io.Serializable {
             return returnToDraftVersion();
         }
         
-        newFiles.clear();
         if (editMode != null) {
             if (editMode.equals(EditMode.CREATE)) {
-                JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
+                // We allow users to upload files on Create: 
+                int nNewFiles = newFiles.size();
+                logger.fine("NEW FILES: "+nNewFiles);
+                
+                if (nNewFiles > 0) {
+                    // Save the NEW files permanently and add the to the dataset: 
+                    
+                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles);
+                    newFiles.clear();
+                    
+                    // and another update command: 
+                    boolean addFilesSuccess = false;
+                    cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), new ArrayList<FileMetadata>());
+                    try {
+                        dataset = commandEngine.submit(cmd);
+                        addFilesSuccess = true; 
+                    } catch (Exception ex) {
+                        addFilesSuccess = false;
+                    }
+                    if (addFilesSuccess && dataset.getFiles().size() > 0) {
+                        if (nNewFiles == dataset.getFiles().size()) {
+                            JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
+                        } else {
+                            String partialSuccessMessage = JH.localize("dataset.message.createSuccess.partialSuccessSavingFiles");
+                            partialSuccessMessage = partialSuccessMessage.replace("{0}", "" + dataset.getFiles().size() + "");
+                            partialSuccessMessage = partialSuccessMessage.replace("{1}", "" + nNewFiles + "");
+                            JsfHelper.addWarningMessage(partialSuccessMessage);
+                        }
+                    } else {
+                        JsfHelper.addWarningMessage(JH.localize("dataset.message.createSuccess.failedToSaveFiles"));
+                    }
+                } else {
+                    JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
+                }
             }
             if (editMode.equals(EditMode.METADATA)) {
                 JsfHelper.addSuccessMessage(JH.localize("dataset.message.metadataSuccess"));
@@ -2631,7 +2663,7 @@ public class DatasetPage implements java.io.Serializable {
         //After dataset saved, then persist prov json data
         if(systemConfig.isProvCollectionEnabled()) {
             try {
-                provPopupFragmentBean.saveStagedProvJson(false);
+                provPopupFragmentBean.saveStagedProvJson(false, dataset.getLatestVersion().getFileMetadatas());
             } catch (AbstractApiBean.WrappedResponse ex) {
                 JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
