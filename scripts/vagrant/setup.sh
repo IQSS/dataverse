@@ -27,10 +27,10 @@ yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x
 yum makecache fast
 yum install -y postgresql96-server
 /usr/pgsql-9.6/bin/postgresql96-setup initdb
-service postgresql-9.6 stop
+/usr/bin/systemctl stop postgresql-9.6
 cp /dataverse/conf/vagrant/var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/9.6/data/pg_hba.conf
-service postgresql-9.6 start
-chkconfig postgresql-9.6 on
+/usr/bin/systemctl start postgresql-9.6
+/usr/bin/systemctl enable postgresql-9.6
 
 GLASSFISH_USER=glassfish
 echo "Ensuring Unix user '$GLASSFISH_USER' exists"
