@@ -23,7 +23,7 @@ public class DTA117FileReaderTest {
         assertEquals(12, result.getDataTable().getDataVariables().size());
     }
     
-    //For now this test really just shows that we can parse a file without strls and without explosions
+    //For now this test really just shows that we can parse a file with strls
     //There is no obvious output of parsing the strls as the are just added to our tab delimited file like other data
     //The test file use was based off auto.dta, adding an extra strL variable (column).
     //See https://github.com/IQSS/dataverse/issues/1016 for info on Stata 13 strl support
