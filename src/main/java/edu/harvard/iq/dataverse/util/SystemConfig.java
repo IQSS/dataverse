@@ -232,6 +232,24 @@ public class SystemConfig {
 
     }
     
+    public int getMetricsCacheTimeoutMinutes() {
+        int defaultValue = 10080; //one week in minutes
+        SettingsServiceBean.Key key = SettingsServiceBean.Key.MetricsCacheTimeoutMinutes;
+        String metricsCacheTimeString = settingsService.getValueForKey(key);
+        int returnInt = 0;
+        try {
+            returnInt = Integer.parseInt(metricsCacheTimeString);
+            if (returnInt >= 0) {
+                return returnInt;
+            } else {
+                logger.info("Returning " + defaultValue + " for " + key + " because value must be greater than zero, not \"" + metricsCacheTimeString + "\".");
+            }
+        } catch (NumberFormatException ex) {
+            logger.info("Returning " + defaultValue + " for " + key + " because value must be an integer greater than zero, not \"" + metricsCacheTimeString + "\".");
+        }
+        return defaultValue;
+    }
+    
     public int getMinutesUntilConfirmEmailTokenExpires() {
         final int minutesInOneDay = 1440;
         final int reasonableDefault = minutesInOneDay;

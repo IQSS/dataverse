@@ -200,6 +200,12 @@ public class SettingsServiceBean {
          * some other metrics app.
          */
         MetricsUrl,
+        
+        /**
+         * Number of minutes before a metrics query can be rerun. Otherwise a cached value is returned.
+         * Previous month dates always return cache. Only applies to new internal caching system (not miniverse).
+         */
+        MetricsCacheTimeoutMinutes,
         /* zip download size limit */
         /** Optionally override version number in guides. */
         GuidesVersion,

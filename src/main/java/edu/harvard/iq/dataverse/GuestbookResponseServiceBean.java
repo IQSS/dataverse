@@ -133,6 +133,7 @@ public class GuestbookResponseServiceBean {
         }
         
         queryString += ";";
+        logger.fine("stream responses query: " + queryString);
         
         List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
 
@@ -247,7 +248,7 @@ public class GuestbookResponseServiceBean {
         
         queryString += ";";
         
-        logger.info("search query: "+queryString);
+        logger.fine("search query: " + queryString);
         
         List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
         
@@ -333,7 +334,7 @@ public class GuestbookResponseServiceBean {
                 + "and o.owner_id = " + dataverseId;
                 
         if (guestbookId != null) {
-            cqString += ( "and g.guestbook_id = " + guestbookId);
+            cqString += ( " and g.guestbook_id = " + guestbookId);
         }
         
         if (firstResponse != null) {
@@ -344,7 +345,11 @@ public class GuestbookResponseServiceBean {
             cqString += (" and r.guestbookResponse_id <= " + lastResponse);
         }
         
+        // Preserve the order of the question/answer pairs.
+        cqString += " order by g.id, q.id";
+
         cqString += ";";
+        logger.fine("custom questions query: " + cqString);
 
         List<Object[]> customResponses = em.createNativeQuery(cqString).getResultList();
 
@@ -375,7 +380,7 @@ public class GuestbookResponseServiceBean {
             }
         }
 
-        logger.info("Found " + count + " responses to custom questions");
+        logger.fine("Found " + count + " responses to custom questions");
 
         return ret;
     }

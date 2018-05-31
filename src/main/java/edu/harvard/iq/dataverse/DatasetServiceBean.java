@@ -525,7 +525,15 @@ public class DatasetServiceBean implements java.io.Serializable {
             user = em.find(AuthenticatedUser.class, userId);
         }
 
-        DatasetLock lock = new DatasetLock(reason, user);
+        // Check if the dataset is already locked for this reason:
+        // (to prevent multiple, duplicate locks on the dataset!)
+        DatasetLock lock = dataset.getLockFor(reason); 
+        if (lock != null) {
+            return lock;
+        }
+        
+        // Create new:
+        lock = new DatasetLock(reason, user);
         lock.setDataset(dataset);
         lock.setInfo(info);
         lock.setStartTime(new Date());
