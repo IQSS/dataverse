@@ -2,8 +2,9 @@
 SERVER=http://localhost:8080/api
 
 echo "Setting up Harvard-specific settings"
-curl -X PUT -d 10.7910 "$SERVER/admin/settings/:Authority"
-curl -X PUT -d "DVN/" "$SERVER/admin/settings/:Shoulder"
+# :Authority and :Shoulder are commented out so this script can be used on test servers
+#curl -X PUT -d 10.7910 "$SERVER/admin/settings/:Authority"
+#curl -X PUT -d "DVN/" "$SERVER/admin/settings/:Shoulder"
 echo "- Application Status header"
 curl -s -X PUT -d 'Upgrade in progress...' $SERVER/admin/settings/:StatusMessageHeader
 echo "- Application Status message"
