@@ -100,15 +100,28 @@
                     </div>
 
                     <!-- Create/Save Dataset Button Panel -->
-                    <div class="button-block">
-                        <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockFileForm').show();" />
-                        <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
-                        </p:commandButton>
-                        <p:commandButton value="Direct" id="datasetSave"
-                                         style="display:none"
-                                         update=":datasetForm,:messagePanel"
-                                         oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
-                                         action="#{EditDatafilesPage.save}" />
+                    <div jsf:id="filesButtons" class="button-block">
+                        <div jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                            <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockFileForm').show();" />
+                            <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
+                            </p:commandButton>
+                            <p:commandButton value="Direct" id="datasetSave"
+                                             style="display:none"
+                                             update=":datasetForm,:messagePanel"
+                                             oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
+                                             action="#{EditDatafilesPage.save}" />
+                        </div>
+
+                        <div jsf:rendered="#{empty EditDatafilesPage.fileMetadatas}">
+                            
+                            <!-- TODO: New Done button replaces Save Changes + Cancel btns when the page is empty/no file/nothing to save -->
+                            <!-- TODO: Investigate + fix Delete Files > Done bug? -->
+                            
+                            <p:commandButton tabindex="1000" id="done" value="#{bundle.done}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
+                            </p:commandButton>
+                            
+                        </div>
+                        
                     </div>
                     <!-- END: Create/Save Dataset Button Panel -->
 

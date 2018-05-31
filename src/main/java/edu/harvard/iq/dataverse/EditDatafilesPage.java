@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -551,7 +552,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         saveEnabled = true; 
 
         if (mode == FileEditMode.UPLOAD) {
-            JH.addMessage(FacesMessage.SEVERITY_INFO, getBundleString("dataset.message.uploadFiles"));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFiles.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
         }
         
         if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){

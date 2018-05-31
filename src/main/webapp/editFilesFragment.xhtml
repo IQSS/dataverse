@@ -20,8 +20,46 @@
         </ul>
         <div class="ui-tabs-panels">
             <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
+                
                 <!-- Upload -->
-                <ui:fragment id="fileUploadFragment" rendered="#{datasetPage || EditDatafilesPage.showFileUploadFragment()}">
+                <div class="panel-group" role="tablist" aria-multiselectable="true"
+                      id="fileUploadFragment" jsf:rendered="#{datasetPage || EditDatafilesPage.showFileUploadFragment()}">
+                    
+                    <!-- TODO: ACCORDION OPTIONS SCALABLE >1? -->
+                    
+                    <div class="panel panel-default">
+                        
+                        <!-- TODO: New help text needed for these panels, replace placeholder text here and add final msg text to bundle -->
+                        
+                        <div class="panel-heading" role="tab" id="headingOne">
+                            <h4 class="panel-title">
+                              <a role="button" data-toggle="collapse" data-parent="#fileUploadFragment" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                Upload with HTTP via your browser
+                              </a>
+                            </h4>
+                        </div>
+                        
+                        <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                            
+                                                
+                            <div class="panel-body">
+
+                                <p class="help-block">
+                                    Help message proving value and info about HTTP upload to the user.
+                                </p>
+
+                                <p class="help-block">
+                                    <span class="glyphicon glyphicon-info-sign"/>
+                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false" 
+                                                    rendered="#{systemConfig.maxFileUploadSize !=null and !empty systemConfig.maxFileUploadSize}">
+                                        <f:param value="#{systemConfig.maxFileUploadSize}"/>
+                                    </h:outputFormat>
+                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipMoreInformation']}" escape="false">
+                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                        <f:param value="#{systemConfig.guidesVersion}"/>
+                                    </h:outputFormat>
+                                </p>
+                    
                     <script>
 //<![CDATA[
                         function uploadWidgetDropMsg() {
@@ -140,20 +178,8 @@
                         });
 //]]>
                     </script>
-                    <p class="help-block">
-                        <span class="glyphicon glyphicon-info-sign"/>
-                        <ui:fragment rendered="#{systemConfig.maxFileUploadSize !=null and !empty systemConfig.maxFileUploadSize}">
-                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false">
-                            <f:param value="#{systemConfig.maxFileUploadSize}"/>
-                        </h:outputFormat>                      
-                        </ui:fragment>  
-                        <ui:fragment rendered="true">
-                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipMoreInformation']}" escape="false">
-                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                            <f:param value="#{systemConfig.guidesVersion}"/>
-                        </h:outputFormat>                      
-                        </ui:fragment> 
-                    </p>
+                    
+                                        
                     <!-- ATTENTION: the update= attribute in the fileUpload component --> 
                     <!-- below appears to be super important -->
                     <!-- Note the "oncomplete=" attribute in the p:fileUpload --> 
@@ -198,29 +224,100 @@
                                   invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" 
                                   sequential="true"
                                   widgetVar="fileUploadWidget"/>
-                    <!-- Dropbox Upload -->
-                    <div jsf:id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{(!(empty EditDatafilesPage.dropBoxKey))}">
-                        <div class="panel-body">
-                            <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
-                            <p:commandButton id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
-                            <p:commandButton id="dropBoxUserButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
-                            
-                            <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
+                    
+                            </div>
                         </div>
-                        <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" redisplay="false" />
                     </div>
+                    
+                    
+                    <div class="panel panel-default">
+                        
+                        <!-- TODO: Need proper Dropbox render logic -->
+                        <!-- TODO: New help text needed for these panels, replace placeholder text here and add final msg text to bundle -->
+                        
+                        <div class="panel-heading" role="tab" id="headingTwo">
+                          <h4 class="panel-title">
+                            <a class="collapsed" role="button" data-toggle="collapse" data-parent="#fileUploadFragment" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                              Upload with Dropbox
+                            </a>
+                          </h4>
+                        </div>
+                        <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                            <div class="panel-body">
+                                
+                                <p class="help-block">
+                                    Help message proving value and info about Dropbox to the user.
+                                </p>
+                                
+                                <!-- Dropbox Upload -->
+                                <div jsf:id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{(!(empty EditDatafilesPage.dropBoxKey))}">
+                                    <div class="panel-body">
+                                        <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
+                                        <p:commandButton id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
+                                        <p:commandButton id="dropBoxUserButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
+
+                                        <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
+                                    </div>
+                                    <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" redisplay="false" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div jsf:id="rsyncPanel" class="panel panel-default">
+                        
+                        <!-- TODO: Need proper rsync render logic -->
+                        <!-- TODO: New help text needed for these panels, replace placeholder text here and add final msg text to bundle -->
+                        
+                        <div class="panel-heading" role="tab" id="headingThree">
+                          <h4 class="panel-title">
+                            <a class="collapsed" role="button" data-toggle="collapse" data-parent="#fileUploadFragment" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                              Upload with rsync+ssh via Data Capture Module (DCM)
+                            </a>
+                          </h4>
+                        </div>
+                        <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                          <div class="panel-body">
+                            <p jsf:rendered="#{empty EditDatafilesPage.fileMetadatas}" class="help-block">
+                                Help message proving value and info about rsync to the user.
+                            </p>
+                            <p jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}" class="help-block">
+                                <span class="text-danger">Warning message about how this option is not available because of uploaded files to this dataset.</span>
+                            </p>
+                          </div>
+                        </div>
+                    </div>                    
+                    
                     
                     <p:message for="fileUpload" id="uploadMessage" display="text" />
                     
                     <p:commandButton id="uploadStarted" action="#{EditDatafilesPage.uploadStarted()}" update="" style="display:none"/>
-                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:filesTable" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
-                    <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:filesTable" style="display:none"/>
-                </ui:fragment>
+                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable,datasetForm:filesButtons" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
+                    <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable,datasetForm:filesButtons" style="display:none"/>
+                    
+                    <!-- ????? TODO: How scalable are all these hidden update buttons ????? -->
+                    <!-- ????? 
+                    datasetForm:fileUpload,
+                    datasetForm:dropBoxUserButton,
+                    datasetForm:uploadMessage,
+                    datasetForm:filesCounts,
+                    datasetForm:filesTable,
+                    datasetForm:filesButtons 
+                    ????? -->
+                    
+                </div>
+                <!-- END: Upload -->
+                
+                <div jsf:id="filesCounts">
+                
+                    <!-- TODO: ADDED filesCounts id to commandButtons above in Line 291-292, is there a better way to do this other than listing out 5-6 elements to update? -->
+                
 
                 <!-- Files Table -->
                 <p:dataTable id="filesTable" 
                              value="#{EditDatafilesPage.fileMetadatas}"
-                             rendered="#{datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}"
+                             rendered="#{!empty EditDatafilesPage.fileMetadatas and (datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset)))}"
                              rowIndexVar="rowNum" 
                              rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                              selection="#{EditDatafilesPage.selectedFiles}" 
@@ -422,6 +519,11 @@
                         </div>
                     </p:column>
                 </p:dataTable>
+                
+                
+                </div>
+                
+                
             </div>
         </div>
     </div>
