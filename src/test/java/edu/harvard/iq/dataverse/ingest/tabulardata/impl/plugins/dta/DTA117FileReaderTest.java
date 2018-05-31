@@ -1,10 +1,13 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta;
 
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import org.junit.Ignore;
@@ -22,17 +25,31 @@ public class DTA117FileReaderTest {
         assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
         assertEquals("STATA 13", result.getDataTable().getOriginalFormatVersion());
         assertEquals(12, result.getDataTable().getDataVariables().size());
+        DataVariable foreign = result.getDataTable().getDataVariables().get(11);
+        assertEquals("foreign", foreign.getName());
+        assertEquals("Car type", foreign.getLabel());
+        assertEquals(2, foreign.getCategories().size());
+        List<VariableCategory> origins = (List) foreign.getCategories();
+        assertEquals("Domestic", origins.get(0).getLabel());
+        assertEquals("Foreign", origins.get(1).getLabel());
     }
 
-    // TODO: A 2.9 KB, this "HouseImputing" Stata 13 file is nice and small and it would be great to get it working.
+    // TODO: Can we create a small file to check into the code base that exercises the value-label names non-zero offset issue?
     @Ignore
     @Test
-    public void testHouse() throws IOException {
+    public void testFirstCategoryNonZeroOffset() throws IOException {
         // https://dataverse.harvard.edu/file.xhtml?fileId=2865667
         TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/HouseImputingCivilRightsInfo.dta"))), nullDataFile);
         assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
         assertEquals("STATA 13", result.getDataTable().getOriginalFormatVersion());
-        assertEquals(12, result.getDataTable().getDataVariables().size());
+        assertEquals(5, result.getDataTable().getDataVariables().size());
+        DataVariable imputing = result.getDataTable().getDataVariables().get(4);
+        assertEquals("imputingincludes10perofmembers", imputing.getName());
+        assertEquals("Dummy Variable: 1 = More than 10% of votes cast were imputed; 0 = Less than 10%", imputing.getLabel());
+        assertEquals(2, imputing.getCategories().size());
+        List<VariableCategory> origins = (List) imputing.getCategories();
+        assertEquals("More than 10% Imputed", origins.get(0).getLabel());
+        assertEquals("Fewer than 10% Imputed", origins.get(1).getLabel());
     }
 
     //For now this test really just shows that we can parse a file with strls

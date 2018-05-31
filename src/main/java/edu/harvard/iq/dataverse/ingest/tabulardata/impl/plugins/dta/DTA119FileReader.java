@@ -1377,17 +1377,7 @@ public class DTA119FileReader extends TabularDataFileReader {
             for (int i = 0; i < number_of_categories; i++) {
                 label_offset = value_label_offsets[i];
                 label_end = i < number_of_categories - 1 ? value_label_offsets[i + 1] : text_length;
-                // FIXME!!! Remove this awful, awful hack that is specific to the file at https://dataverse.harvard.edu/file.xhtml?fileId=3140457
-                // It's unclear why the first offset isn't zero, which messes everything up.
-                if ("matching".equals(label_table_name)) {
-                    if (i == 0) {
-                        label_offset = 0;
-                        label_end = 12;
-                    } else if (i == 1) {
-                        label_offset = 12;
-                        label_end = 25;
-                    }
-                }
+                // TODO: Do we need the same non-zero offset hack here from 117 or 118?
                 logger.info("label_offset: " + label_offset);
                 logger.info("label_end: " + label_end);
                 label_length = (int) (label_end - label_offset);

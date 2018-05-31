@@ -1363,18 +1363,29 @@ public class DTA118FileReader extends TabularDataFileReader {
             logger.info("label_table_name: " + label_table_name);
             logger.info("text_length: " + text_length);
             logger.info("number_of_categories: " + number_of_categories);
+            boolean firstCategoryNonZeroOffsetMode = false;
+            long firstCategoryLabelEnd = 0;
             for (int i = 0; i < number_of_categories; i++) {
                 label_offset = value_label_offsets[i];
                 label_end = i < number_of_categories - 1 ? value_label_offsets[i + 1] : text_length;
-                // FIXME!!! Remove this awful, awful hack that is specific to the file at https://dataverse.harvard.edu/file.xhtml?fileId=3140457
-                // It's unclear why the first offset isn't zero, which messes everything up.
-                if ("matching".equals(label_table_name)) {
-                    if (i == 0) {
+                if (number_of_categories == 2) {
+                    // This hack is here for Stata 14 files such as https://dataverse.harvard.edu/file.xhtml?fileId=3140457
+                    if (i == 0 && label_offset != 0) {
+                        logger.warning("The first label offset should always be zero!");
+                        long nonZeroOffset = label_offset;
                         label_offset = 0;
-                        label_end = 12;
-                    } else if (i == 1) {
-                        label_offset = 12;
-                        label_end = 25;
+                        label_end = nonZeroOffset;
+                        firstCategoryNonZeroOffsetMode = true;
+                        // We assume there are only two categories.
+                        // The weird non-zero offset becomes the label end for the first category.
+                        firstCategoryLabelEnd = label_end;
+                    }
+                    if (i == 1 && firstCategoryNonZeroOffsetMode) {
+                        // We assume there are only two categories.
+                        // Start reading the second category from value we saved as the end of the first category.
+                        label_offset = firstCategoryLabelEnd;
+                        // Stop reading the second (last!) category at the end of the entire string from all (both) categories.
+                        label_end = text_length;
                     }
                 }
                 logger.info("label_offset: " + label_offset);

@@ -1422,9 +1422,31 @@ public class DTA117FileReader extends TabularDataFileReader{
             long label_end = 0;
             int label_length = 0;
 
+            boolean firstCategoryNonZeroOffsetMode = false;
+            long firstCategoryLabelEnd = 0;
             for (int i = 0; i < number_of_categories; i++) {
                 label_offset = value_label_offsets[i];
                 label_end = i < number_of_categories - 1 ? value_label_offsets[i + 1] : text_length;
+                if (number_of_categories == 2) {
+                    // This hack is here for Stata 13 files such as https://dataverse.harvard.edu/file.xhtml?fileId=2865667
+                    if (i == 0 && label_offset != 0) {
+                        logger.warning("The first label offset should always be zero!");
+                        long nonZeroOffset = label_offset;
+                        label_offset = 0;
+                        label_end = nonZeroOffset;
+                        firstCategoryNonZeroOffsetMode = true;
+                        // We assume there are only two categories.
+                        // The weird non-zero offset becomes the label end for the first category.
+                        firstCategoryLabelEnd = label_end;
+                    }
+                    if (i == 1 && firstCategoryNonZeroOffsetMode) {
+                        // We assume there are only two categories.
+                        // Start reading the second category from value we saved as the end of the first category.
+                        label_offset = firstCategoryLabelEnd;
+                        // Stop reading the second (last!) category at the end of the entire string from all (both) categories.
+                        label_end = text_length;
+                    }
+                }
                 label_length = (int)(label_end - label_offset);
 
                 category_value_labels[i] = reader.readString(label_length);
