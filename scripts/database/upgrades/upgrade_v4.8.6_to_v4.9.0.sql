@@ -16,30 +16,16 @@ ALTER TABLE dvobject ADD COLUMN
  ADD COLUMN identifier character varying(255),
  ADD COLUMN protocol character varying(255);
 
---add authority shoulder to identifier
+--Migrate data from Dataset to DvObject
 UPDATE dvobject
-SET identifier=(SELECT substring(authority, strpos(authority,doiseparator)+1) || doiseparator || identifier
+SET authority=(SELECT dataset.authority
 FROM dataset
-WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset' and strpos(authority,doiseparator)>0) where dvobject.dtype='Dataset';
+WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset') where dvobject.dtype='Dataset';
 
---just copy if there's no shoulder
 UPDATE dvobject
-SET identifier=(SELECT identifier
+SET doiseparator=(SELECT dataset.doiseparator
 FROM dataset
-WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset' and strpos(authority,doiseparator)=0) where dvobject.dtype='Dataset';
-
---strip shoulder from authority 
-UPDATE dvobject
-SET authority=(SELECT substring(authority from 0 for strpos(authority,doiseparator))  
-FROM dataset
-WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset' and strpos(authority,doiseparator)>0) where dvobject.dtype='Dataset' ;
-
--- no shoulder 
-UPDATE dvobject
-SET authority=(SELECT authority 
-FROM dataset
-WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset' and strpos(authority,doiseparator)=0) where dvobject.dtype='Dataset';
-
+WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset' ) where dvobject.dtype='Dataset';
 
 UPDATE dvobject
 SET globalidcreatetime=(SELECT dataset.globalidcreatetime
@@ -50,9 +36,18 @@ UPDATE dvobject
 SET identifierRegistered= true where globalidcreatetime is not null;
 
 UPDATE dvobject
-SET protocol=(SELECT dataset.protocol
+SET identifier=(SELECT dataset.identifier
 FROM dataset
 WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset') where dvobject.dtype='Dataset';
+
+UPDATE dvobject
+SET protocol=(SELECT dataset.protocol
+FROM dataset
+WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset' ) where dvobject.dtype='Dataset';
+
+--Once in DvObject re-parse identifier and authority
+UPDATE dvobject SET identifier=substring(authority, strpos(authority,doiseparator)+1) || doiseparator || identifier WHERE strpos(authority,doiseparator)>0;
+UPDATE dvobject SET authority=substring(authority from 0 for strpos(authority,doiseparator)) WHERE strpos(authority,doiseparator)>0;
 
 ALTER TABLE dataset ALTER identifier DROP NOT NULL;
 
