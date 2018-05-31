@@ -1077,12 +1077,13 @@ public class DTA118FileReader extends TabularDataFileReader {
                     String voPair = null;
                     // first v:
 
-                    v = reader.readInteger();
-                    byte_offset += 4;
+                    v = reader.readInteger(2);
+                    byte_offset += 2;   //Stata 14/15 switched from 4,4 to 2,6 for the pointer in the data section
+                                        //In the the strls section tho it'll be 4,8
 
                     // then o:
-                    o = reader.readInteger();
-                    byte_offset += 4;
+                    o = reader.readInteger(6);
+                    byte_offset += 6;
 
                     // create v,o pair; save, for now:
                     voPair = v + "," + o;
@@ -1239,8 +1240,8 @@ public class DTA118FileReader extends TabularDataFileReader {
         reader.readBytes(STRL_GSO_HEAD.length());
 
         // Reading the stored (v,o) pair: 
-        long vStored = reader.readInteger();
-        long oStored = reader.readInteger();
+        long vStored = reader.readInteger(4);
+        long oStored = reader.readInteger(8);
 
         String voPair = v + "," + o;
 
@@ -1754,7 +1755,7 @@ public class DTA118FileReader extends TabularDataFileReader {
                     StackTraceElement stackTraceElement = stackTrace[i];
                     msg += stackTraceElement.toString() + "\n";
                 }
-                throw new IOException("DataReader.readBytes called to read zero or negative number of bytes. Stacktrace:\n" + msg);
+                throw new IOException("DataReader.readBytes called to read zero or negative number of bytes. Number of bytes attempted: "+ n +" . Stacktrace:\n" + msg);
             }
             byte[] bytes = new byte[n];
 
@@ -1942,6 +1943,8 @@ public class DTA118FileReader extends TabularDataFileReader {
         private int readInteger(int n) throws IOException {
             byte[] raw_bytes = readBytes(n);
 
+            
+            
             return (int) bytesToInt(raw_bytes);
         }
 
@@ -1987,7 +1990,7 @@ public class DTA118FileReader extends TabularDataFileReader {
             int n = raw_bytes.length;
 
 //            if (n != 2 && n != 4) {
-            if (n != 2 && n != 4 && n != 8) {
+            if (n != 2 && n != 4 && n != 8 && n != 6) {
                 throw new IOException("Unsupported number of bytes in an integer: " + n);
             }
             long ret = 0;
