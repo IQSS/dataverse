@@ -58,4 +58,36 @@ public class DTA118FileReaderTest {
         assertEquals(13, result.getDataTable().getDataVariables().size());
     }
 
+    @Ignore
+    @Test
+    public void testBrooke3079508() throws IOException {
+        // https://dataverse.harvard.edu/file.xhtml?fileId=3079508 Stata 14: Brooke_Ketchley_APSR_replicationII.dta
+        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/Brooke_Ketchley_APSR_replicationII.dta"))), nullDataFile);
+        assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
+        assertEquals("STATA 14", result.getDataTable().getOriginalFormatVersion());
+        assertEquals(2, result.getDataTable().getDataVariables().size());
+        DataVariable year = result.getDataTable().getDataVariables().get(0);
+        assertEquals("year", year.getName());
+        assertEquals("year", year.getLabel());
+        DataVariable missionaries = result.getDataTable().getDataVariables().get(1);
+        assertEquals("missionaries", missionaries.getName());
+        assertEquals("Number of Church Missionary Society missionaries", missionaries.getLabel());
+    }
+
+    @Ignore
+    @Test
+    public void testBrooke3079511() throws IOException {
+        // https://dataverse.harvard.edu/file.xhtml?fileId=3079511 Stata 14: Brooke_Ketchley_APSR_replicationI.dta
+        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/Brooke_Ketchley_APSR_replicationI.dta"))), nullDataFile);
+        assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
+        assertEquals("STATA 14", result.getDataTable().getOriginalFormatVersion());
+        assertEquals(40, result.getDataTable().getDataVariables().size());
+        DataVariable muhafatha = result.getDataTable().getDataVariables().get(0);
+        assertEquals("muhafatha", muhafatha.getName());
+        assertEquals("muhafatha", muhafatha.getLabel());
+        DataVariable qism = result.getDataTable().getDataVariables().get(1);
+        assertEquals("qism", qism.getName());
+        assertEquals("qism", qism.getLabel());
+    }
+
 }
