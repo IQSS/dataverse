@@ -29,6 +29,11 @@ FROM dataset
 WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset') where dvobject.dtype='Dataset';
 
 UPDATE dvobject
+SET doiseparator=(SELECT dataset.doiseparator
+FROM dataset
+WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset') where dvobject.dtype='Dataset';
+
+UPDATE dvobject
 SET identifierRegistered= true where globalidcreatetime is not null;
 
 UPDATE dvobject
