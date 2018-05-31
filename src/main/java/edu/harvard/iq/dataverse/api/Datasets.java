@@ -442,8 +442,6 @@ public class Datasets extends AbstractApiBean {
             }
 
             dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
-           
-            System.out.print("Fields size: " + fields.size());
                 
 
             for (DatasetField dsf : dsv.getDatasetFields()) {
