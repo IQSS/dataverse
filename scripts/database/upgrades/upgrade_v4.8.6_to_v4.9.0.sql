@@ -23,11 +23,6 @@ FROM dataset
 WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset') where dvobject.dtype='Dataset';
 
 UPDATE dvobject
-SET doiseparator=(SELECT dataset.doiseparator
-FROM dataset
-WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset' ) where dvobject.dtype='Dataset';
-
-UPDATE dvobject
 SET globalidcreatetime=(SELECT dataset.globalidcreatetime
 FROM dataset
 WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset') where dvobject.dtype='Dataset';
@@ -46,8 +41,8 @@ FROM dataset
 WHERE dataset.id=dvobject.id AND dvobject.dtype='Dataset' ) where dvobject.dtype='Dataset';
 
 --Once in DvObject re-parse identifier and authority
-UPDATE dvobject SET identifier=substring(authority, strpos(authority,doiseparator)+1) || doiseparator || identifier WHERE strpos(authority,doiseparator)>0;
-UPDATE dvobject SET authority=substring(authority from 0 for strpos(authority,doiseparator)) WHERE strpos(authority,doiseparator)>0;
+UPDATE dvobject SET identifier=substring(authority, strpos(authority,'/')+1) || '/' || identifier WHERE strpos(authority,'/')>0;
+UPDATE dvobject SET authority=substring(authority from 0 for strpos(authority,'/')) WHERE strpos(authority,'/')>0;
 
 ALTER TABLE dataset ALTER identifier DROP NOT NULL;
 
