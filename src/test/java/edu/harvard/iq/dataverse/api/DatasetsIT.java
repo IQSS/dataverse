@@ -168,13 +168,20 @@ public class DatasetsIT {
         addSubjectViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
         
+
+        
         RestAssured.registerParser("text/plain", Parser.JSON);
         Response exportDatasetAsJson = UtilIT.exportDataset(datasetPersistentId, "dataverse_json", apiToken);
         exportDatasetAsJson.prettyPrint();
         
+        String subject = JsonPath.from(exportDatasetAsJson.getBody().asString()).getString("data.metadataBlocks.citation.fields.");
         
-        //What if I run it again?
-        addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
+
+        String pathToJsonFileSingle = "doc/sphinx-guides/source/_static/api/dataset-add-single-field-metadata.json";
+        Response addSubjectSingleViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingle, apiToken);
+        addSubjectSingleViaNative.prettyPrint();
+        addSubjectSingleViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
         /*
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
