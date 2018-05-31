@@ -21,17 +21,16 @@ public interface IdServiceBean {
     
     HashMap getIdentifierMetadata(DvObject dvObject);
 
-    HashMap lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier);
+    HashMap lookupMetadataFromIdentifier(String protocol, String authority, String identifier);
 
     /**
      * Concatenate the parts that make up a Global Identifier.
      * @param protocol the identifier system, e.g. "doi"
      * @param authority the namespace that the authority manages in the identifier system
-     * @param separator the string that separates authority from local identifier part
      * @param identifier the local identifier part
      * @return the Global Identifier, e.g. "doi:10.12345/67890"
      */
-    String getIdentifierForLookup(String protocol, String authority, String separator, String identifier);
+    String getIdentifierForLookup(String protocol, String authority, String identifier);
     
     String modifyIdentifierTargetURL(DvObject dvObject) throws Exception;
 

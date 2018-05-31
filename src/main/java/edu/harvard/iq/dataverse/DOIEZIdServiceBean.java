@@ -99,16 +99,15 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
      * @param protocol the identifier system, e.g. "doi"
      * @param authority the namespace that the authority manages in the
      * identifier system
-     * @param separator the string that separates authority from local
      * identifier part
      * @param identifier the local identifier part
      * @return a Map of metadata. It is empty when the lookup failed, e.g. when
      * the identifier does not exist.
      */
     @Override
-    public HashMap<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier) {
+    public HashMap<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String identifier) {
         logger.log(Level.FINE,"lookupMetadataFromIdentifier");
-        String identifierOut = getIdentifierForLookup(protocol, authority, separator, identifier);
+        String identifierOut = getIdentifierForLookup(protocol, authority, identifier);
         HashMap<String, String> metadata = new HashMap<>();
         try {
             metadata = ezidService.getMetadata(identifierOut);
@@ -181,7 +180,7 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
             updateIdentifierStatus(dvObject, "unavailable | withdrawn by author");
             HashMap<String, String> metadata = new HashMap<>();
             metadata.put("_target", "http://ezid.cdlib.org/id/" + dvObject.getProtocol() + ":" + dvObject.getAuthority()
-                    + dvObject.getDoiSeparator() + dvObject.getIdentifier());
+                    + "/" + dvObject.getIdentifier());
             try {
                 modifyIdentifierTargetURL(dvObject);
                 if (dvObject instanceof Dataset ) {
@@ -189,7 +188,7 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
                     for (DataFile df : dataset.getFiles()) {
                         metadata = new HashMap<>();
                         metadata.put("_target", "http://ezid.cdlib.org/id/" + df.getProtocol() + ":" + df.getAuthority()
-                                + df.getDoiSeparator() + df.getIdentifier());
+                                + "/" + df.getIdentifier());
                                         modifyIdentifierTargetURL(df);
                     }
                 }
