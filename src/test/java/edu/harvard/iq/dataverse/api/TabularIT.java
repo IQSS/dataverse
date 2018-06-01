@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import java.io.File;
+import java.util.Arrays;
 import java.util.logging.Logger;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -167,6 +169,7 @@ public class TabularIT {
         assertEquals("NVARS: 12", response.body().asString().split("\n")[0]);
     }
 
+    @Ignore
     @Test
     public void testStata15() {
         // for i in `echo {0..33000}`; do echo -n "var$i,"; done > 33k.csv
@@ -176,6 +179,26 @@ public class TabularIT {
         Response response = UtilIT.testIngest(fileName, fileType);
         response.prettyPrint();
         assertEquals("NVARS: 33001", response.body().asString().split("\n")[0]);
+    }
+
+    @Ignore
+    @Test
+    public void testStata13Multiple() {
+        String fileType = "application/x-stata-13";
+        // From /usr/local/dvn-admin/stata on dvn-build 
+        String stata13directory = "/tmp/stata-13";
+        File folder = new File(stata13directory);
+        File[] listOfFiles = folder.listFiles();
+        for (int i = 0; i < listOfFiles.length; i++) {
+            File file = listOfFiles[i];
+            String filename = file.getName();
+            String filenameFullPath = file.getAbsolutePath();
+            Response response = UtilIT.testIngest(filenameFullPath, fileType);
+            String firstLine = response.body().asString().split("\n")[0];
+            String[] parts = firstLine.split(":");
+            String[] justErrors = Arrays.copyOfRange(parts, 1, parts.length);
+            System.out.println(i + "\t" + filename + "\t" + Arrays.toString(justErrors) + "\t" + firstLine);
+        }
     }
 
 }
