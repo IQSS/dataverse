@@ -335,7 +335,7 @@ public class HandlenetServiceBean extends AbstractIdServiceBean {
     }
 
     @Override
-    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier)  {
+    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String identifier)  {
         throw new NotImplementedException();
     }
 

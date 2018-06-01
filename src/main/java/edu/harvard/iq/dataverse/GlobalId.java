@@ -12,6 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
 import javax.ejb.EJB;
+import javax.persistence.Query;
 
 /**
  *
@@ -24,6 +25,8 @@ public class GlobalId implements java.io.Serializable {
     public static final String HDL_PROTOCOL = "hdl";
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
     public static final String DOI_RESOLVER_URL = "https://doi.org/";
+    
+    private static final Logger logger = Logger.getLogger(GlobalId.class.getName());
     
     @EJB
     SettingsServiceBean settingsService;
@@ -96,7 +99,7 @@ public class GlobalId implements java.io.Serializable {
                url = new URL(HDL_RESOLVER_URL + authority + "/" + identifier);  
             }           
         } catch (MalformedURLException ex) {
-            Logger.getLogger(GlobalId.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
         }       
         return url;
     }    
@@ -107,8 +110,8 @@ public class GlobalId implements java.io.Serializable {
      * 
      *   Example 1: doi:10.5072/FK2/BYM3IW
      *       protocol: doi
-     *       authority: 10.5072/FK2
-     *       identifier: BYM3IW
+     *       authority: 10.5072
+     *       identifier: FK2/BYM3IW
      * 
      *   Example 2: hdl:1902.1/111012
      *       protocol: hdl
@@ -119,42 +122,41 @@ public class GlobalId implements java.io.Serializable {
      * 
      */
     
-    private boolean parsePersistentId(String identifierString){
+    private boolean parsePersistentId(String identifierString) {
 
-        if (identifierString == null){
-            return false;
-        } 
-        
-        int index1 = identifierString.indexOf(':');
-        int index2 = identifierString.lastIndexOf('/');
-        if (index1==-1) {
-            return false; 
-        }  
-       
-        String protocol = identifierString.substring(0, index1);
-        
-        if (!"doi".equals(protocol) && !"hdl".equals(protocol)) {
+        if (identifierString == null) {
             return false;
         }
-        
-        
-        if (index2 == -1) {
-            return false;
-        } 
-        
-        this.protocol = protocol;
-        this.authority = formatIdentifierString(identifierString.substring(index1+1, index2));
-        this.identifier = formatIdentifierString(identifierString.substring(index2+1));
-        
-        if (this.protocol.equals(DOI_PROTOCOL)) {
-            if (!this.checkDOIAuthority(this.authority)) {
+        int index1 = identifierString.indexOf(':');
+        if (index1 > 0) { // ':' found with one or more characters before it
+            int index2 = identifierString.indexOf('/', index1 + 1);
+            if (index2 > 0 && (index2 + 1) < identifierString.length()) { // '/' found with one or more characters
+                                                                          // between ':'
+                protocol = identifierString.substring(0, index1); // and '/' and there are characters after '/'
+                if (!"doi".equals(protocol) && !"hdl".equals(protocol)) {
+                    return false;
+                }
+                //Strip any whitespace, ; and ' from authority (should finding them cause a failure instead?)
+                authority = formatIdentifierString(identifierString.substring(index1 + 1, index2));
+                if (protocol.equals(DOI_PROTOCOL)) {
+                    if (!this.checkDOIAuthority(authority)) {
+                        return false;
+                    }
+                }
+                // Passed all checks
+                //Strip any whitespace, ; and ' from identifier (should finding them cause a failure instead?)
+                identifier = formatIdentifierString(identifierString.substring(index2 + 1));
+            } else {
+                logger.info("Error parsing identifier: " + identifierString
+                        + ": ':<authority>/<identifier>' not found in string");
                 return false;
             }
+        } else {
+            logger.info("Error parsing identifier: " + identifierString + ": '<protocol>:' not found in string");
+            return false;
         }
         return true;
-
     }
-
     
     private String formatIdentifierString(String str){
         
