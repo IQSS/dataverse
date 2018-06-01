@@ -59,6 +59,35 @@ public class DvObjectServiceBean implements java.io.Serializable {
         return em.createNamedQuery("DvObject.findAll", DvObject.class).getResultList();
     }
 
+    public DvObject findByGlobalId(String globalIdString, String typeString) {
+
+        try {
+            GlobalId gid = new GlobalId(globalIdString);
+
+            DvObject foundDvObject = null;
+            try {
+                Query query;
+                query = em.createNamedQuery("DvObject.findByGlobalId");
+                query.setParameter("identifier", gid.getIdentifier());
+                query.setParameter("protocol", gid.getProtocol());
+                query.setParameter("authority", gid.getAuthority());
+                query.setParameter("dtype", typeString);
+                foundDvObject = (DvObject) query.getSingleResult();
+            } catch (javax.persistence.NoResultException e) {
+                // (set to .info, this can fill the log file with thousands of
+                // these messages during a large harvest run)
+                logger.fine("no dvObject found: " + globalIdString);
+                // DO nothing, just return null.
+                return null;
+            }
+            return foundDvObject;
+
+        } catch (IllegalArgumentException iae) {
+            logger.info("Invalid identifier: " + globalIdString);
+            return null;
+        }
+    }
+
     public DvObject updateContentIndexTime(DvObject dvObject) {
         /**
          * @todo to avoid a possible OptimisticLockException, should we merge

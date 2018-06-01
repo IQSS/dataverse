@@ -520,7 +520,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
                 //swiftFolderPath = dataFile.getOwner().getDisplayName();
                 String swiftFolderPathSeparator = "-";
-                String authorityNoSlashes = owner.getAuthority().replace(owner.getDoiSeparator(), swiftFolderPathSeparator);
+                String authorityNoSlashes = owner.getAuthority().replace("/", swiftFolderPathSeparator);
                 swiftFolderPath = owner.getProtocol() + swiftFolderPathSeparator
                                   + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
                                   + swiftFolderPathSeparator + owner.getIdentifier();
@@ -570,7 +570,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 Properties p = getSwiftProperties();
                 swiftEndPoint = p.getProperty("swift.default.endpoint");
                 String swiftFolderPathSeparator = "-";
-                String authorityNoSlashes = dataset.getAuthority().replace(dataset.getDoiSeparator(), swiftFolderPathSeparator);
+                String authorityNoSlashes = dataset.getAuthority().replace("/", swiftFolderPathSeparator);
                 swiftFolderPath = dataset.getProtocol() + swiftFolderPathSeparator +
                     authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
                     swiftFolderPathSeparator + dataset.getIdentifier();
@@ -830,7 +830,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             swiftFolderPathSeparator = "_";
         }
         if (dvObject instanceof DataFile) {
-            String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
+            String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace("/", swiftFolderPathSeparator);
             return this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator
                    +            authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
                 swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();
