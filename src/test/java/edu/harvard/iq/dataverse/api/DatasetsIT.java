@@ -113,8 +113,7 @@ public class DatasetsIT {
                 .statusCode(OK.getStatusCode());
        
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
-        System.out.println("identifier: " + identifier);
-        assertEquals(6, identifier.length());
+        assertEquals(10, identifier.length());
 
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
@@ -594,7 +593,8 @@ public class DatasetsIT {
 
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         System.out.println("identifier: " + identifier);
-        assertTrue(StringUtils.isNumeric(identifier));
+        String numericPart = identifier.replace("FK2/", ""); //remove shoulder from identifier
+        assertTrue(StringUtils.isNumeric(numericPart));
 
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();

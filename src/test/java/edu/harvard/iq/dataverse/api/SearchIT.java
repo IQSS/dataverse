@@ -616,7 +616,8 @@ public class SearchIT {
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         System.out.println("identifier: " + identifier);
 
-        Response searchUnpublished = UtilIT.search(identifier, apiToken);
+        String searchPart = identifier.replace("FK2/", "");
+        Response searchUnpublished = UtilIT.search(searchPart, apiToken);
         searchUnpublished.prettyPrint();
         searchUnpublished.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -631,13 +632,14 @@ public class SearchIT {
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response searchTargeted = UtilIT.search("dsPersistentId:" + identifier, apiToken);
+        searchPart = identifier.replace("FK2/", "");
+        Response searchTargeted = UtilIT.search("dsPersistentId:" + searchPart, apiToken);
         searchTargeted.prettyPrint();
         searchTargeted.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
 
-        Response searchUntargeted = UtilIT.search(identifier, apiToken);
+        Response searchUntargeted = UtilIT.search(searchPart, apiToken);
         searchUntargeted.prettyPrint();
         searchUntargeted.then().assertThat()
                 .statusCode(OK.getStatusCode())
