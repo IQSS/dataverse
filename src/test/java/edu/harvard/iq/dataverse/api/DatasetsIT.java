@@ -174,7 +174,7 @@ public class DatasetsIT {
         Response exportDatasetAsJson = UtilIT.exportDataset(datasetPersistentId, "dataverse_json", apiToken);
         exportDatasetAsJson.prettyPrint();
         
-        String subject = JsonPath.from(exportDatasetAsJson.getBody().asString()).getString("data.metadataBlocks.citation.fields.");
+       // String subject = JsonPath.from(exportDatasetAsJson.getBody().asString()).getString("data.metadataBlocks.citation.fields.");
         
 
         String pathToJsonFileSingle = "doc/sphinx-guides/source/_static/api/dataset-add-single-field-metadata.json";

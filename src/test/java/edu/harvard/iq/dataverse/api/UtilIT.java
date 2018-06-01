@@ -360,7 +360,7 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
                 .contentType("application/json")
-                .put("/api/datasets/:persistentId/addData/:draft?persistentId=" + persistentId);
+                .put("/api/datasets/:persistentId/addData/?persistentId=" + persistentId);
         return response;
     }
 

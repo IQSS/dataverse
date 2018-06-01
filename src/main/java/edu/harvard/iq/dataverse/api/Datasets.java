@@ -413,23 +413,31 @@ public class Datasets extends AbstractApiBean {
     }
     
     @PUT
-    @Path("{id}/addData/{versionId}")
-    public Response addDataToVersion(String jsonBody, @PathParam("id") String id, @PathParam("versionId") String versionId) {
+    @Path("{id}/addData")
+    public Response addDataToVersion(String jsonBody, @PathParam("id") String id) throws WrappedResponse{
 
-        if (!":draft".equals(versionId)) {
-            return error(Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
-        }
+        DataverseRequest req = createDataverseRequest(findUserOrDie());
 
+        return processDatasetUpdate(jsonBody, id, req, true);
+    }
+    
+    @PUT
+    @Path("{id}/updateData")
+    public Response updateDataInVersion(String jsonBody, @PathParam("id") String id)  throws WrappedResponse {
+        
+        DataverseRequest req = createDataverseRequest(findUserOrDie());
+
+        return processDatasetUpdate(jsonBody, id, req, true);
+        
+    } 
+    
+    private Response processDatasetUpdate(String jsonBody, String id, DataverseRequest req, Boolean replaceData){
         try (StringReader rdr = new StringReader(jsonBody)) {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+           
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = Json.createReader(rdr).readObject();
             DatasetVersion dsv = ds.getEditVersion();
-            /*
-            List<DatasetField> parseMultipleFields(JsonObject json);
-            
-            
-            */
+
             List<DatasetField> fields = new LinkedList<>();
             DatasetField singleField = null; 
             
