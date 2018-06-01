@@ -20,7 +20,9 @@ import javax.persistence.*;
     @NamedQuery(name = "DvObject.findById",
             query = "SELECT o FROM DvObject o WHERE o.id=:id"),
 	@NamedQuery(name = "DvObject.ownedObjectsById",
-			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id")
+			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
+    @NamedQuery(name = "DvObject.findByGlobalId",
+    query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype")
 })
 @Entity
 // Inheritance strategy "JOINED" will create 4 db tables - 
@@ -32,7 +34,8 @@ import javax.persistence.*;
 @Table(indexes = {@Index(columnList="dtype")
 		, @Index(columnList="owner_id")
 		, @Index(columnList="creator_id")
-		, @Index(columnList="releaseuser_id")})
+		, @Index(columnList="releaseuser_id")},
+		uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier"}))
 public abstract class DvObject extends DataverseEntity implements java.io.Serializable {
     
     public static final String DATAVERSE_DTYPE_STRING = "Dataverse";
@@ -112,13 +115,14 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     @Column
     private String storageIdentifier;
     
+    @Column(insertable = false, updatable = false) private String dtype;
+    
     /*
     * Add DOI related fields
     */
    
     private String protocol;
     private String authority;
-    private String doiSeparator;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date globalIdCreateTime;
@@ -255,14 +259,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
 
     public void setAuthority(String authority) {
         this.authority = authority;
-    }
-
-    public String getDoiSeparator() {
-        return doiSeparator;
-    }
-
-    public void setDoiSeparator(String doiSeparator) {
-        this.doiSeparator = doiSeparator;
     }
 
     public Date getGlobalIdCreateTime() {

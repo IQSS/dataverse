@@ -74,6 +74,9 @@ public class DatasetServiceBean implements java.io.Serializable {
     DatasetVersionServiceBean versionService;
     
     @EJB
+    DvObjectServiceBean dvObjectService;
+    
+    @EJB
     AuthenticationServiceBean authentication;
     
     @EJB
@@ -191,48 +194,35 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     public Dataset findByGlobalId(String globalId) {
-/*
-        Concatenate pieces of global Id for selection until more permanent fix implemented
-        */
-        String queryStr = "select s.id from dvobject s where s.protocol || ':' || s.authority || s.doiseparator || s.identifier = '" + globalId +"'";
-        Dataset foundDataset = null;
-        try {
-            Query query = em.createNativeQuery(queryStr);
-            Long datasetId = new Long((Integer) query.getSingleResult());
-            foundDataset = em.find(Dataset.class, datasetId);
-        } catch (javax.persistence.NoResultException e) {
-            // (set to .info, this can fill the log file with thousands of 
-            // these messages during a large harvest run)
-            logger.fine("no ds found: " + globalId);
-            // DO nothing, just return null.
-        }
-        return foundDataset;
+        return (Dataset) dvObjectService.findByGlobalId(globalId, Dataset.DATASET_DTYPE_STRING);
     }
 
     public String generateDatasetIdentifier(Dataset dataset, IdServiceBean idServiceBean) {
-        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        switch (doiIdentifierType) {
+        String identifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
+       
+        switch (identifierType) {
             case "randomString":
-                return generateIdentifierAsRandomString(dataset, idServiceBean);
+                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
             case "sequentialNumber":
-                return generateIdentifierAsSequentialNumber(dataset, idServiceBean);
+                return generateIdentifierAsSequentialNumber(dataset, idServiceBean, shoulder);
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return generateIdentifierAsRandomString(dataset, idServiceBean);
+                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
         }
     }
     
-    private String generateIdentifierAsRandomString(Dataset dataset, IdServiceBean idServiceBean) {
+    private String generateIdentifierAsRandomString(Dataset dataset, IdServiceBean idServiceBean, String shoulder) {
 
         String identifier = null;
         do {
-            identifier = RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+            identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
         } while (!isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean));
 
         return identifier;
     }
 
-    private String generateIdentifierAsSequentialNumber(Dataset dataset, IdServiceBean idServiceBean) {
+    private String generateIdentifierAsSequentialNumber(Dataset dataset, IdServiceBean idServiceBean, String shoulder) {
         
         String identifier; 
         do {
@@ -244,7 +234,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             if (identifierNumeric == null) {
                 return null; 
             }
-            identifier = identifierNumeric.toString();
+            identifier = shoulder + identifierNumeric.toString();
         } while (!isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean));
         
         return identifier;
@@ -252,7 +242,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     /**
      * Check that a identifier entered by the user is unique (not currently used
-     * for any other study in this Dataverse Network) alos check for duplicate
+     * for any other study in this Dataverse Network) also check for duplicate
      * in EZID if needed
      * @param userIdentifier
      * @param dataset
@@ -327,7 +317,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         for (DatasetAuthor author : authorList) {
             retString += "AU  - " + author.getName().getDisplayValue() + "\r\n";
         }
-        retString += "DO  - " + version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + version.getDataset().getDoiSeparator() + version.getDataset().getIdentifier() + "\r\n";
+        retString += "DO  - " + version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + "/" + version.getDataset().getIdentifier() + "\r\n";
         retString += "PY  - " + version.getVersionYear() + "\r\n";
         retString += "UR  - " + version.getDataset().getPersistentURL() + "\r\n";
         retString += "PB  - " + publisher + "\r\n";
@@ -479,7 +469,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
         xmlw.writeStartElement("electronic-resource-num");
-        String electResourceNum = version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + version.getDataset().getDoiSeparator() + version.getDataset().getIdentifier();
+        String electResourceNum = version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + "/" + version.getDataset().getIdentifier();
         xmlw.writeCharacters(electResourceNum);
         xmlw.writeEndElement();
         //<electronic-resource-num>10.3886/ICPSR03259.v1</electronic-resource-num>                  
@@ -959,9 +949,6 @@ public class DatasetServiceBean implements java.io.Serializable {
                 }
                 if (datafile.getAuthority() == null) {
                     datafile.setAuthority(settingsService.getValueForKey(SettingsServiceBean.Key.Authority, ""));
-                }
-                if (datafile.getDoiSeparator() == null) {
-                    datafile.setDoiSeparator(settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, ""));
                 }
 
                 logger.info("identifier: " + datafile.getIdentifier());
