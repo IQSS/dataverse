@@ -89,4 +89,16 @@ public class DTA118FileReaderTest {
         assertEquals("qism", qism.getLabel());
     }
 
+    // TODO: Get this file to ingest.
+    @Ignore
+    @Test
+    public void testSectionTagsAcrossByteBuffers() throws IOException {
+        // https://data.aussda.at/file.xhtml?fileId=188 Stata 14: 10007_da_de_v1_2.dta
+        // Via https://groups.google.com/d/msg/dataverse-community/QAX3LaMsbjI/jHrf089QAgAJ
+        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/10007_da_de_v1_2.dta"))), nullDataFile);
+        assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
+        assertEquals("STATA 14", result.getDataTable().getOriginalFormatVersion());
+        // TODO: Change size from 0 once we can parse the file.
+        assertEquals(0, result.getDataTable().getDataVariables().size());
+    }
 }
