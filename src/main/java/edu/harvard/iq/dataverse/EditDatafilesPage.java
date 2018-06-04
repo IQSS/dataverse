@@ -1043,7 +1043,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             JsfHelper.addSuccessMessage(getBundleString("file.message.replaceSuccess"));
             // It worked!!!  Go to page of new file!!
             return returnToFileLandingPageAfterReplace(fileReplacePageHelper.getFirstNewlyAddedFile());
-        }else{
+        } else {
             // Uh oh.
             String errMsg = fileReplacePageHelper.getErrorMessages();
             
