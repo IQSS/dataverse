@@ -7,6 +7,8 @@ package edu.harvard.iq.dataverse;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.validator.routines.EmailValidator;
 
 /**
@@ -37,7 +39,7 @@ public class EMailValidator implements ConstraintValidator<ValidateEmail, String
         boolean isValid = EmailValidator.getInstance().isValid(value);
         if (!isValid) {
             if (context != null) {
-                context.buildConstraintViolationWithTemplate(value + " is not a valid email address.").addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(value + BundleUtil.getStringFromBundle("email.invalid")).addConstraintViolation();
             }
             return false;
         }

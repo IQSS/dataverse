@@ -18,15 +18,11 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -259,11 +255,11 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         try {
             RoleAssignment ra = em.find(RoleAssignment.class, roleAssignmentId);
             commandEngine.submit(new RevokeRoleCommand(ra, dvRequestService.getDataverseRequest()));
-            JsfHelper.addSuccessMessage(ra.getRole().getName() + " role for " + roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle() + " was removed.");
+            JsfHelper.addSuccessMessage(ra.getRole().getName() + BundleUtil.getStringFromBundle("permission.roleWasRemoved" , Arrays.asList(roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle())));
         } catch (PermissionException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role assignment was not able to be removed.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"), BundleUtil.getStringFromBundle("permission.permissionsMissing" , Arrays.asList(ex.getRequiredPermissions().toString())));
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role assignment could not be removed.");
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"));
             logger.log(Level.SEVERE, "Error removing role assignment: " + ex.getMessage(), ex);
         }
     }    
@@ -372,7 +368,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             }
         }
         if (actionPerformed) {
-            JsfHelper.addSuccessMessage("File Access request by " + au.getDisplayInfo().getTitle() + " was granted.");                        
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("permission.fileAccessGranted", Arrays.asList(au.getDisplayInfo().getTitle())));
             userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, dataset.getId()); 
             initMaps();
         }
@@ -397,7 +393,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
         
         if (actionPerformed) {
-            JsfHelper.addSuccessMessage("File Access request by " + au.getDisplayInfo().getTitle() + " was rejected.");            
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("permission.fileAccessRejected", Arrays.asList(au.getDisplayInfo().getTitle())));
             userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REJECTFILEACCESS, dataset.getId());        
             initMaps();
         }
@@ -407,13 +403,18 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         try {
             String privateUrlToken = null;
             commandEngine.submit(new AssignRoleCommand(ra, r, file, dvRequestService.getDataverseRequest(), privateUrlToken));
-            JsfHelper.addSuccessMessage(r.getName() + " role assigned to " + ra.getDisplayInfo().getTitle() + " for " + file.getDisplayName() + ".");
+            List<String> args = Arrays.asList(
+                    r.getName(),
+                    ra.getDisplayInfo().getTitle(),
+                    file.getDisplayName()
+            );
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("permission.roleAssignedToFor", args));
         } catch (PermissionException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role was not able to be assigned.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeAssigned"), BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(ex.getRequiredPermissions().toString())));
             return false;
         } catch (CommandException ex) {
             //JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role was not able to be assigned.");
-            String message = r.getName() + " role could NOT be assigned to " + ra.getDisplayInfo().getTitle() + " for " + file.getDisplayName() + ".";
+            String message = r.getName() + BundleUtil.getStringFromBundle("permission.roleNotAbleToBeAssigned") + ra.getDisplayInfo().getTitle() + " - " + file.getDisplayName() + ".";
             JsfHelper.addErrorMessage(message);
             logger.log(Level.SEVERE, "Error assiging role: " + ex.getMessage(), ex);
             return false;

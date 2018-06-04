@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -185,13 +186,14 @@ public class Shib implements java.io.Serializable {
         if (!EMailValidator.isEmailValid(emailAddressInAssertion, null)) {
             String msg = "The SAML assertion contained an invalid email address: \"" + emailAddressInAssertion + "\".";
             logger.info(msg);
+            msg=BundleUtil.getStringFromBundle("shib.invalidEmailAddress",   Arrays.asList(emailAddressInAssertion));
             String singleEmailAddress = ShibUtil.findSingleValue(emailAddressInAssertion);
             if (EMailValidator.isEmailValid(singleEmailAddress, null)) {
                 msg = "Multiple email addresses were asserted by the Identity Provider (" + emailAddressInAssertion + " ). These were sorted and the first was chosen: " + singleEmailAddress;
                 logger.info(msg);
                 emailAddress = singleEmailAddress;
             } else {
-                msg += " A single valid address could not be found.";
+                msg += BundleUtil.getStringFromBundle("shib.emailAddress.error");
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, msg));
                 return;
             }
@@ -305,7 +307,7 @@ public class Shib implements java.io.Serializable {
                     UserNotification.Type.CREATEACC, null);
             return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
         } else {
-            JsfHelper.addErrorMessage("Couldn't create user.");
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("shib.createUser.fail"));
         }
         return getPrettyFacesHomePageString(true);
     }
@@ -323,7 +325,7 @@ public class Shib implements java.io.Serializable {
                 authSvc.updateAuthenticatedUser(au, displayInfo);
                 logInUserAndSetShibAttributes(au);
                 debugSummary = "Local account validated and successfully converted to a Shibboleth account. The old account username was " + builtinUsername;
-                JsfHelper.addSuccessMessage("Your Dataverse account is now associated with your institutional account.");
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.shib.success"));
                 return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
             } else {
                 debugSummary = "Local account validated but unable to convert to Shibboleth account.";
@@ -400,7 +402,7 @@ public class Shib implements java.io.Serializable {
                 showMessage = false;
             }
             if (showMessage) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, msg));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, BundleUtil.getStringFromBundle("shib.nullerror",Arrays.asList(key))));
             }
             throw new Exception(msg);
         }

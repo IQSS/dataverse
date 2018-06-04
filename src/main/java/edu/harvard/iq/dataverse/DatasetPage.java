@@ -1853,7 +1853,7 @@ public class DatasetPage implements java.io.Serializable {
 
             }
         } else {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotReleased", "Only authenticated users can release a dataverse.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataverse.notreleased")  ,BundleUtil.getStringFromBundle( "dataverse.release.authenticatedUsersOnly"));
             FacesContext.getCurrentInstance().addMessage(null, message);
         }
         
@@ -1973,10 +1973,10 @@ public class DatasetPage implements java.io.Serializable {
             cmd.setValidateLenient(true); 
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Registration Failed", " - " + ex.toString()));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,BundleUtil.getStringFromBundle( "dataset.registration.failed"), " - " + ex.toString()));
             logger.severe(ex.getMessage());
         }
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetRegistered", "Your dataset is now registered.");
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.registered"), BundleUtil.getStringFromBundle("dataset.registered.msg"));
         FacesContext.getCurrentInstance().addMessage(null, message);
         return returnToDatasetOnly();
     }
@@ -2293,10 +2293,11 @@ public class DatasetPage implements java.io.Serializable {
         } catch (CommandException ex) {
             String msg = "There was a problem linking this dataset to yours: " + ex;
             logger.severe(msg);
+            msg = BundleUtil.getStringFromBundle("dataset.notlinked.msg") + ex;
             /**
              * @todo how do we get this message to show up in the GUI?
              */
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetNotLinked", msg);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), msg);
             FacesContext.getCurrentInstance().addMessage(null, message);
         }
         return returnToLatestVersion();
@@ -3668,7 +3669,9 @@ public class DatasetPage implements java.io.Serializable {
                 uploadStream = file.getInputstream();
             } catch (IOException ioex) {
                 logger.warning("the file " + file.getFileName() + " failed to upload!");
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "upload failure", "the file " + file.getFileName() + " failed to upload!");
+                List<String> args = Arrays.asList(file.getFileName());
+                String msg = BundleUtil.getStringFromBundle("dataset.file.uploadFailure.detailmsg", args);
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadFailure"), msg);
                 FacesContext.getCurrentInstance().addMessage(null, message);
                 return;
             }
@@ -3676,8 +3679,9 @@ public class DatasetPage implements java.io.Serializable {
             savedLabelsTempFile = saveTempFile(uploadStream);
 
             logger.fine(file.getFileName() + " is successfully uploaded.");
-            FacesMessage message = new FacesMessage("Succesful", file.getFileName() + " is uploaded.");
-            FacesContext.getCurrentInstance().addMessage(null, message);
+            List<String> args = Arrays.asList(file.getFileName());
+            String msg = BundleUtil.getStringFromBundle("dataset.file.upload", args);
+            FacesContext.getCurrentInstance().addMessage(null, msg);
         }
 
         // process file (i.e., just save it in a temp location; for now):
