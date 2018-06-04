@@ -1047,7 +1047,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // Uh oh.
             String errMsg = fileReplacePageHelper.getErrorMessages();
             
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", errMsg));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, getBundleString("dataset.save.fail"), errMsg));
             logger.severe("Dataset save failed for replace operation: " + errMsg);
             return null;
         }
@@ -1084,7 +1084,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 return saveReplacementFile();
             } catch (FileReplaceException ex) {
                 String errMsg = ex.getMessage();
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", errMsg));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, getBundleString("dataset.save.fail"), errMsg));
                 logger.log(Level.SEVERE, "Dataset save failed for replace operation: {0}", errMsg);
                 return null;
             }            
@@ -1712,12 +1712,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (uploadComponentId != null) {
             if (uploadWarningMessage != null) {
                 if (uploadWarningMessageIsNotAnError) {
-                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, "upload warning", uploadWarningMessage));
+                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
                 } else {
-                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", uploadWarningMessage));
+                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
                 }
             } else if (uploadSuccessMessage != null) {
-                FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, "upload worked", uploadSuccessMessage));
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.file.uploadWorked"), uploadSuccessMessage));
             }
         }
         
@@ -1885,7 +1885,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         if (warningMessage != null){
             uploadWarningMessage = warningMessage;
-            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", warningMessage));
+            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), warningMessage));
             // save the component id of the p:upload widget, so that we could 
             // send an info message there, from elsewhere in the code:
             uploadComponentId = event.getComponent().getClientId();
@@ -2015,9 +2015,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (dupeFileNamesExisting != null) {
             String duplicateFilesErrorMessage = null;
             if (multipleDupesExisting) {
-                duplicateFilesErrorMessage = "The following files already exist in the dataset: " + dupeFileNamesExisting + " (skipping)";
+                duplicateFilesErrorMessage =  getBundleString("dataset.files.exist") + dupeFileNamesExisting + getBundleString("dataset.file.skip");
             } else {
-                duplicateFilesErrorMessage = "The following file already exists in the dataset: " + dupeFileNamesExisting;
+            	duplicateFilesErrorMessage = getBundleString("dataset.file.exist") + dupeFileNamesExisting;
             }
             if (warningMessage == null) {
                 warningMessage = duplicateFilesErrorMessage;
@@ -2029,9 +2029,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (dupeFileNamesNew != null) {
             String duplicateFilesErrorMessage = null;
             if (multipleDupesNew) {
-                duplicateFilesErrorMessage = "The following files are duplicates of (an) already uploaded file(s): " + dupeFileNamesNew + " (skipping)";
+            	duplicateFilesErrorMessage = getBundleString("dataset.files.duplicate") + dupeFileNamesNew + getBundleString("dataset.file.skip");
             } else {
-                duplicateFilesErrorMessage = "The following file is a duplicate of an already uploaded file: " + dupeFileNamesNew + " (skipping)";
+            	duplicateFilesErrorMessage = getBundleString("dataset.file.duplicate") + dupeFileNamesNew + getBundleString("dataset.file.skip");
             }
 
             if (warningMessage == null) {
@@ -2602,7 +2602,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                 uploadStream = file.getInputstream();
             } catch (IOException ioex) {
                 logger.info("the file " + file.getFileName() + " failed to upload!");
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "upload failure", "the file " + file.getFileName() + " failed to upload!");
+                List<String> args = Arrays.asList(file.getFileName());
+                String msg = BundleUtil.getStringFromBundle("dataset.file.uploadFailure.detailmsg", args);
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadFailure"), msg);
                 FacesContext.getCurrentInstance().addMessage(null, message);
                 return;
             }
@@ -2610,8 +2612,9 @@ public class EditDatafilesPage implements java.io.Serializable {
             savedLabelsTempFile = saveTempFile(uploadStream);
 
             logger.fine(file.getFileName() + " is successfully uploaded.");
-            FacesMessage message = new FacesMessage("Succesful", file.getFileName() + " is uploaded.");
-            FacesContext.getCurrentInstance().addMessage(null, message);
+            List<String> args = Arrays.asList(file.getFileName());
+            String msg = BundleUtil.getStringFromBundle("dataset.file.upload", args);
+            FacesContext.getCurrentInstance().addMessage(null, msg);
         }
 
         // process file (i.e., just save it in a temp location; for now):
