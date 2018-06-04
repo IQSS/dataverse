@@ -721,8 +721,8 @@
                     <p:selectCheckboxMenu id="fileTagsMenu" styleClass="form-control"
                                           value="#{EditDatafilesPage.selectedTags}" label="#{bundle.select}">
                         <f:selectItems value="#{EditDatafilesPage.categoriesByName}"/>
-                        <p:ajax event="toggleSelect" listener="#{EditDatafilesPage.handleSelection}" update="selectedTagsListEFF" />
-                        <p:ajax event="change" listener="#{EditDatafilesPage.handleSelection}" update="selectedTagsListEFF" />
+                        <p:ajax event="toggleSelect" listener="#{EditDatafilesPage.handleFileCategoriesSelection}" update="selectedTagsListEFF" />
+                        <p:ajax event="change" listener="#{EditDatafilesPage.handleFileCategoriesSelection}" update="selectedTagsListEFF" />
                     </p:selectCheckboxMenu>
                     <p:message for="fileTagsMenu" display="text" />
                 </div>
@@ -757,8 +757,8 @@
                                           value="#{EditDatafilesPage.selectedTabFileTags}" label="#{bundle.select}"
                                           filter="false">
                         <f:selectItems value="#{EditDatafilesPage.tabFileTags}" />
-                        <p:ajax event="toggleSelect" listener="#{EditDatafilesPage.handleSelection}" update="selectedTagsListEFF" />
-                        <p:ajax event="change" listener="#{EditDatafilesPage.handleSelection}" update="selectedTagsListEFF" />
+                        <p:ajax event="toggleSelect" listener="#{EditDatafilesPage.handleTabularTagsSelection}" update="tabularDataTags" />
+                        <p:ajax event="change" listener="#{EditDatafilesPage.TabularTagsSelection}" update="tabularDataTags" />
                     </p:selectCheckboxMenu>
                     <p:message for="tabularDataTags" display="text" />
                 </div>

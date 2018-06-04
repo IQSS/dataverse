@@ -37,7 +37,6 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         String nonNullDefaultIfKeyNotFound = "";
         String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        String doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
         IdServiceBean idServiceBean = IdServiceBean.getBean(target.getProtocol(), ctxt);
         try {
             //Test to see if identifier already present
@@ -55,10 +54,6 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                 if (target.getAuthority() == null) {
                     target.setAuthority(authority);
                 }
-                if (target.getDoiSeparator() == null) {
-                    target.setDoiSeparator(doiSeparator);
-                }
-
             }
 
             if (idServiceBean.alreadyExists(target)) {
@@ -87,9 +82,6 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                             }
                             if (df.getAuthority() == null) {
                                 df.setAuthority(authority);
-                            }
-                            if (df.getDoiSeparator() == null) {
-                                df.setDoiSeparator(doiSeparator);
                             }
                         }
                         doiRetString = idServiceBean.createIdentifier(df);

@@ -155,7 +155,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
                 if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
                     Files.createDirectories(dataset.getFileSystemDirectory());
                 }
-                dataset.setStorageIdentifier("file://"+dataset.getAuthority()+dataset.getDoiSeparator()+dataset.getIdentifier());
+                dataset.setStorageIdentifier("file://"+dataset.getAuthority()+"/"+dataset.getIdentifier());
             }
 
         } else if (dvObject instanceof Dataverse) {
@@ -171,9 +171,10 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     
     @Override
     public void savePath(Path fileSystemPath) throws IOException {
+        
         // Since this is a local fileystem file, we can use the
         // quick NIO Files.copy method: 
-
+        
         Path outputPath = getFileSystemPath();
 
         if (outputPath == null) {

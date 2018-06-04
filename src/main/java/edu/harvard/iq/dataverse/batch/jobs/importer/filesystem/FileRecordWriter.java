@@ -243,7 +243,7 @@ public class FileRecordWriter extends AbstractItemWriter {
             totalSize = 0L;
         }
         
-        String gid = dataset.getAuthority() + dataset.getDoiSeparator() + dataset.getIdentifier();
+        String gid = dataset.getAuthority() + "/" + dataset.getIdentifier();
         
         packageFile.setChecksumType(DataFile.ChecksumType.SHA1); // initial default
 
@@ -373,15 +373,11 @@ public class FileRecordWriter extends AbstractItemWriter {
         String nonNullDefaultIfKeyNotFound = "";
         String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        String doiSeparator = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
         if (packageFile.getProtocol() == null) {
             packageFile.setProtocol(protocol);
         }
         if (packageFile.getAuthority() == null) {
             packageFile.setAuthority(authority);
-        }
-        if (packageFile.getDoiSeparator() == null) {
-            packageFile.setDoiSeparator(doiSeparator);
         }
 
         if (!packageFile.isIdentifierRegistered()) {
@@ -415,7 +411,7 @@ public class FileRecordWriter extends AbstractItemWriter {
         
         DatasetVersion version = dataset.getLatestVersion();
         String path = file.getAbsolutePath();
-        String gid = dataset.getAuthority() + dataset.getDoiSeparator() + dataset.getIdentifier();
+        String gid = dataset.getAuthority() + "/" + dataset.getIdentifier();
         String relativePath = path.substring(path.indexOf(gid) + gid.length() + 1);
         
         DataFile datafile = new DataFile("application/octet-stream"); // we don't determine mime type

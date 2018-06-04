@@ -95,15 +95,14 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
      * Looks up the metadata for a Global Identifier
      * @param protocol the identifier system, e.g. "doi"
      * @param authority the namespace that the authority manages in the identifier system
-     * @param separator the string that separates authority from local identifier part
      * @param identifier the local identifier part
      * @return a Map of metadata. It is empty when the lookup failed, e.g. when
      * the identifier does not exist.
      */
     @Override
-    public HashMap<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier) {
+    public HashMap<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String identifier) {
         logger.log(Level.FINE,"lookupMetadataFromIdentifier");
-        String identifierOut = getIdentifierForLookup(protocol, authority, separator, identifier);
+        String identifierOut = getIdentifierForLookup(protocol, authority, identifier);
         HashMap<String, String> metadata = new HashMap<>();
         try {
             metadata = doiDataCiteRegisterService.getMetadata(identifierOut);
