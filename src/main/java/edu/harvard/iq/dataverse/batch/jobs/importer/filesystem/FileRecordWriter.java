@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
@@ -125,7 +126,7 @@ public class FileRecordWriter extends AbstractItemWriter {
                 suppliedSize = new Long(jobParams.getProperty("totalSize"));
                 getJobLogger().log(Level.INFO, "Size parameter supplied: "+suppliedSize);
             } catch (NumberFormatException ex) {
-                getJobLogger().log(Level.WARNING, "Invalid file size supplied: "+jobParams.getProperty("totalSize"));
+                getJobLogger().log(Level.WARNING, "Invalid file size supplied (in FileRecordWriter.init()): "+jobParams.getProperty("totalSize"));
                 suppliedSize = null; 
             }
         }
@@ -133,7 +134,7 @@ public class FileRecordWriter extends AbstractItemWriter {
     
     @Override
     public void open(Serializable checkpoint) throws Exception {
-        // no-op    
+        // no-op   
     }
 
     @Override
@@ -165,6 +166,13 @@ public class FileRecordWriter extends AbstractItemWriter {
                     getJobLogger().log(Level.SEVERE, "File package import failed.");
                     jobContext.setExitStatus("FAILED");
                     return;
+                }
+                DatasetLock dcmLock = dataset.getLockFor(DatasetLock.Reason.DcmUpload);
+                if (dcmLock == null) {
+                    getJobLogger().log(Level.WARNING, "Dataset not locked for DCM upload");
+                } else {
+                    datasetServiceBean.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.DcmUpload);
+                    dataset.removeLock(dcmLock);
                 }
                 updateDatasetVersion(dataset.getLatestVersion());
             } else {
@@ -235,7 +243,7 @@ public class FileRecordWriter extends AbstractItemWriter {
             totalSize = 0L;
         }
         
-        String gid = dataset.getAuthority() + dataset.getDoiSeparator() + dataset.getIdentifier();
+        String gid = dataset.getAuthority() + "/" + dataset.getIdentifier();
         
         packageFile.setChecksumType(DataFile.ChecksumType.SHA1); // initial default
 
@@ -365,15 +373,11 @@ public class FileRecordWriter extends AbstractItemWriter {
         String nonNullDefaultIfKeyNotFound = "";
         String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        String doiSeparator = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
         if (packageFile.getProtocol() == null) {
             packageFile.setProtocol(protocol);
         }
         if (packageFile.getAuthority() == null) {
             packageFile.setAuthority(authority);
-        }
-        if (packageFile.getDoiSeparator() == null) {
-            packageFile.setDoiSeparator(doiSeparator);
         }
 
         if (!packageFile.isIdentifierRegistered()) {
@@ -407,7 +411,7 @@ public class FileRecordWriter extends AbstractItemWriter {
         
         DatasetVersion version = dataset.getLatestVersion();
         String path = file.getAbsolutePath();
-        String gid = dataset.getAuthority() + dataset.getDoiSeparator() + dataset.getIdentifier();
+        String gid = dataset.getAuthority() + "/" + dataset.getIdentifier();
         String relativePath = path.substring(path.indexOf(gid) + gid.length() + 1);
         
         DataFile datafile = new DataFile("application/octet-stream"); // we don't determine mime type

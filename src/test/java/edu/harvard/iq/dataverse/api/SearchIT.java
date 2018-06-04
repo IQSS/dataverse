@@ -329,9 +329,33 @@ public class SearchIT {
                 .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
                 .statusCode(200);
 
+        //Unpublished datafiles no longer populate the dataset thumbnail
         Response getThumbnail2 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
+        System.out.println("getThumbnail2: ");
         getThumbnail2.prettyPrint();
         getThumbnail2.then().assertThat()
+                //                .body("data.datasetThumbnail", CoreMatchers.equalTo("randomFromDataFile" + dataFileId1))
+                .body("data.datasetThumbnailBase64image", CoreMatchers.equalTo(null))
+                .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
+                .body("data.dataFileId", CoreMatchers.equalTo(null))
+                .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
+                .statusCode(200);
+        
+        //We now need to publish for the dataset to get the thumbnail
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataverse.prettyPrint();
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDataset.prettyPrint();
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response getThumbnail3 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
+        System.out.println("getThumbnail3: ");
+        getThumbnail3.prettyPrint();
+        getThumbnail3.then().assertThat()
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo("randomFromDataFile" + dataFileId1))
                 .body("data.datasetThumbnailBase64image", CoreMatchers.equalTo(treesAsBase64))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
@@ -399,9 +423,9 @@ public class SearchIT {
                 .statusCode(200);
 
         logger.info("Second DataFile has been uploaded and switched to as the thumbnail:");
-        Response getThumbnail3 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
-        getThumbnail3.prettyPrint();
-        getThumbnail3.then().assertThat()
+        Response getThumbnail4 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
+        getThumbnail4.prettyPrint();
+        getThumbnail4.then().assertThat()
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo("dataverseproject.png"))
                 .body("data.datasetThumbnailBase64image", CoreMatchers.equalTo(dataverseProjectLogoAsBase64))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
@@ -460,9 +484,9 @@ public class SearchIT {
                 .statusCode(200);
 
         logger.info("Dataset logo has been uploaded and becomes the thumbnail:");
-        Response getThumbnail4 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
-        getThumbnail4.prettyPrint();
-        getThumbnail4.then().assertThat()
+        Response getThumbnail5 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
+        getThumbnail5.prettyPrint();
+        getThumbnail5.then().assertThat()
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo(null))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(false))
                 .body("data.datasetThumbnailBase64image", CoreMatchers.equalTo(datasetLogoAsBase64))
@@ -502,9 +526,9 @@ public class SearchIT {
                 .statusCode(200);
 
         logger.info("Deleting the dataset logo means that the thumbnail is not set. It should be the generic icon:");
-        Response getThumbnail5 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
-        getThumbnail5.prettyPrint();
-        getThumbnail5.then().assertThat()
+        Response getThumbnail6 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
+        getThumbnail6.prettyPrint();
+        getThumbnail6.then().assertThat()
                 //                .body("data.datasetThumbnail", CoreMatchers.equalTo(null))
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(true))
                 .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
@@ -538,16 +562,6 @@ public class SearchIT {
         switchtoFirstDataFileThumbnail.then().assertThat()
                 .body("data.message", CoreMatchers.equalTo("Thumbnail set to " + treesAsBase64))
                 .statusCode(200);
-
-        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
-        publishDataverse.prettyPrint();
-        publishDataverse.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
-        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
-        publishDataset.prettyPrint();
-        publishDataset.then().assertThat()
-                .statusCode(OK.getStatusCode());
 
         Response getThumbnailImageNoSpecialAccess99 = UtilIT.getDatasetThumbnail(datasetPersistentId, noSpecialAcessApiToken);
 //        getThumbnailImageNoSpecialAccess99.prettyPrint();
@@ -602,7 +616,8 @@ public class SearchIT {
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         System.out.println("identifier: " + identifier);
 
-        Response searchUnpublished = UtilIT.search(identifier, apiToken);
+        String searchPart = identifier.replace("FK2/", "");
+        Response searchUnpublished = UtilIT.search(searchPart, apiToken);
         searchUnpublished.prettyPrint();
         searchUnpublished.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -617,13 +632,14 @@ public class SearchIT {
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response searchTargeted = UtilIT.search("dsPersistentId:" + identifier, apiToken);
+        searchPart = identifier.replace("FK2/", "");
+        Response searchTargeted = UtilIT.search("dsPersistentId:" + searchPart, apiToken);
         searchTargeted.prettyPrint();
         searchTargeted.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
 
-        Response searchUntargeted = UtilIT.search(identifier, apiToken);
+        Response searchUntargeted = UtilIT.search(searchPart, apiToken);
         searchUntargeted.prettyPrint();
         searchUntargeted.then().assertThat()
                 .statusCode(OK.getStatusCode())

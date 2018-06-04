@@ -75,7 +75,7 @@ public class ExportService {
 
     public List< String[]> getExportersLabels() {
         List<String[]> retList = new ArrayList<>();
-        Iterator<Exporter> exporters = ExportService.getInstance().loader.iterator();
+        Iterator<Exporter> exporters = ExportService.getInstance(null).loader.iterator();
         while (exporters.hasNext()) {
             Exporter e = exporters.next();
             String[] temp = new String[2];
