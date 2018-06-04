@@ -100,7 +100,7 @@ In the "METHOD" column, change all instances of "md5" to "trust".
 
 In the Finder, click "Applications" then "PostgreSQL 9.6" and launch the "Reload Configuration" app. Click "OK" after you see "server signaled".
 
-Next, launch the "pgAdmin III" application from the same folder. Under "Servers" double click "PostgreSQL 9.6 (localhost)". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
+Next, launch the "pgAdmin" application from the same folder. Under "Browser", expand "Servers" and double click "PostgreSQL 9.6". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
 
 On Linux, you should just install PostgreSQL from your package manager without worrying about the version as long as it's 9.x. Find ``pg_hba.conf`` and set the authentication method to "trust" and restart PostgreSQL.
 
