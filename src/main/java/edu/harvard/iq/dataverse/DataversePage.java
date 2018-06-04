@@ -512,16 +512,19 @@ public class DataversePage implements java.io.Serializable {
         List<SelectItem> retList = new ArrayList<>();
         if ((typeIn.isHasParent() && typeIn.getParentDatasetFieldType().isInclude()) || (!typeIn.isHasParent() && typeIn.isInclude())) {
             SelectItem requiredItem = new SelectItem();
-            requiredItem.setLabel(BundleUtil.getStringFromBundle("dataverse.item.required"));
+            //requiredItem.setLabel(BundleUtil.getStringFromBundle("dataverse.item.required"));
+            requiredItem.setLabel("Required");
             requiredItem.setValue(true);
             retList.add(requiredItem);
             SelectItem optional = new SelectItem();
-            optional.setLabel(BundleUtil.getStringFromBundle("dataverse.item.optional"));
+            //optional.setLabel(BundleUtil.getStringFromBundle("dataverse.item.optional"));
+            requiredItem.setLabel("Optional");
             optional.setValue(false);
             retList.add(optional);
         } else {
             SelectItem hidden = new SelectItem();
-            hidden.setLabel(BundleUtil.getStringFromBundle("dataverse.item.hidden"));
+            //hidden.setLabel(BundleUtil.getStringFromBundle("dataverse.item.hidden"));
+            requiredItem.setLabel("Hidden");
             hidden.setValue(false);
             hidden.setDisabled(true);
             retList.add(hidden);
