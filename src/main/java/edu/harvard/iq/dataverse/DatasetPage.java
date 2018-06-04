@@ -221,7 +221,6 @@ public class DatasetPage implements java.io.Serializable {
     private String version;
     private String protocol = "";
     private String authority = "";
-    private String separator = "";
     private String customFields="";
 
     private boolean noDVsAtAll = false;
@@ -305,22 +304,23 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         if (!readOnly) {
-        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
-        if (datasetThumbnail == null) {
-            thumbnailString = "";
-            return null; 
-        } 
-        
-        if (datasetThumbnail.isFromDataFile()) {
-            if (!datasetThumbnail.getDataFile().equals(dataset.getThumbnailFile())) {
-                datasetService.assignDatasetThumbnailByNativeQuery(dataset, datasetThumbnail.getDataFile());
-                dataset = datasetService.find(dataset.getId());
+            DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+            if (datasetThumbnail == null) {
+                thumbnailString = "";
+                return null;
             }
-        }
-           
-        thumbnailString = datasetThumbnail.getBase64image();
+
+            if (datasetThumbnail.isFromDataFile()) {
+                if (!datasetThumbnail.getDataFile().equals(dataset.getThumbnailFile())) {
+                    datasetService.assignDatasetThumbnailByNativeQuery(dataset, datasetThumbnail.getDataFile());
+                    // refresh the dataset:
+                    dataset = datasetService.find(dataset.getId());
+                }
+            }
+
+            thumbnailString = datasetThumbnail.getBase64image();
         } else {
-            thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, workingVersion.getId());
+            thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, workingVersion.getId(),!workingVersion.isDraft());
             if (thumbnailString == null) {
                 thumbnailString = "";
                 return null;
@@ -1367,8 +1367,6 @@ public class DatasetPage implements java.io.Serializable {
         String nonNullDefaultIfKeyNotFound = "";
         protocol = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        separator = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
-        
         if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset     
 
             DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
@@ -1486,7 +1484,7 @@ public class DatasetPage implements java.io.Serializable {
                 // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
                 // populate MapLayerMetadata
                 this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
-                this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(dataset, null, session);
+                this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(workingVersion, null, session);
                 this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
                 logger.fine("Checking if rsync support is enabled.");
                 if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
@@ -1516,9 +1514,7 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setOwner(dataverseService.find(ownerId));
             dataset.setProtocol(protocol);
             dataset.setAuthority(authority);
-            dataset.setDoiSeparator(separator);
             //Wait until the create command before actually getting an identifier  
-            //dataset.setIdentifier(datasetService.generateDatasetIdentifier(protocol, authority, separator));
 
             if (dataset.getOwner() == null) {
                 return permissionsWrapper.notFound();
@@ -2549,10 +2545,10 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
 
-        // Use the API to save the dataset: 
+        // Use the Create or Update command to save the dataset: 
         Command<Dataset> cmd;
         try {
-            if (editMode == EditMode.CREATE) {
+            if (editMode == EditMode.CREATE) {                
                 if ( selectedTemplate != null ) {
                     if ( isSessionUserAuthenticated() ) {
                         cmd = new CreateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, null, selectedTemplate); 
@@ -2595,10 +2591,42 @@ public class DatasetPage implements java.io.Serializable {
             return returnToDraftVersion();
         }
         
-        newFiles.clear();
         if (editMode != null) {
             if (editMode.equals(EditMode.CREATE)) {
-                JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
+                // We allow users to upload files on Create: 
+                int nNewFiles = newFiles.size();
+                logger.fine("NEW FILES: "+nNewFiles);
+                
+                if (nNewFiles > 0) {
+                    // Save the NEW files permanently and add the to the dataset: 
+                    
+                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles);
+                    newFiles.clear();
+                    
+                    // and another update command: 
+                    boolean addFilesSuccess = false;
+                    cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), new ArrayList<FileMetadata>());
+                    try {
+                        dataset = commandEngine.submit(cmd);
+                        addFilesSuccess = true; 
+                    } catch (Exception ex) {
+                        addFilesSuccess = false;
+                    }
+                    if (addFilesSuccess && dataset.getFiles().size() > 0) {
+                        if (nNewFiles == dataset.getFiles().size()) {
+                            JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
+                        } else {
+                            String partialSuccessMessage = JH.localize("dataset.message.createSuccess.partialSuccessSavingFiles");
+                            partialSuccessMessage = partialSuccessMessage.replace("{0}", "" + dataset.getFiles().size() + "");
+                            partialSuccessMessage = partialSuccessMessage.replace("{1}", "" + nNewFiles + "");
+                            JsfHelper.addWarningMessage(partialSuccessMessage);
+                        }
+                    } else {
+                        JsfHelper.addWarningMessage(JH.localize("dataset.message.createSuccess.failedToSaveFiles"));
+                    }
+                } else {
+                    JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
+                }
             }
             if (editMode.equals(EditMode.METADATA)) {
                 JsfHelper.addSuccessMessage(JH.localize("dataset.message.metadataSuccess"));
@@ -2631,7 +2659,7 @@ public class DatasetPage implements java.io.Serializable {
         //After dataset saved, then persist prov json data
         if(systemConfig.isProvCollectionEnabled()) {
             try {
-                provPopupFragmentBean.saveStagedProvJson(false);
+                provPopupFragmentBean.saveStagedProvJson(false, dataset.getLatestVersion().getFileMetadatas());
             } catch (AbstractApiBean.WrappedResponse ex) {
                 JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
@@ -4114,17 +4142,6 @@ public class DatasetPage implements java.io.Serializable {
         assert (null != workingVersion);
         return workingVersion.getRootDataverseNameforCitation();
     }
-    
-    /*
-    public String getThumbnail() {
-        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
-        if (datasetThumbnail != null) {
-            return datasetThumbnail.getBase64image();
-        } else {
-            return null;
-        }
-    }*/
-    
     
     public void downloadRsyncScript() {
 

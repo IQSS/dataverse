@@ -71,7 +71,7 @@
                                oncomplete="PF('roleForm').hide()"
                                update="roleDisplay availableRoles @([id$=Messages])"
                                actionListener="#{managePermissionsPage.updateRole}"/>
-                <button type="button" class="btn btn-default" onclick="PF('roleForm').hide()" value="Cancel">#{bundle.cancel}</button>
+                <button type="button" class="btn btn-default" onclick="PF('roleForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
             </div>
         </p:panel>
     </p:dialog>

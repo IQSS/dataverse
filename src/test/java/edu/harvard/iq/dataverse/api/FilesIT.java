@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import com.jayway.restassured.path.json.JsonPath;
+import com.jayway.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -486,6 +487,27 @@ public class FilesIT {
 
         // give file time to ingest
         sleep(10000);
+
+        Response ddi = UtilIT.getFileMetadata(origFileId.toString(), "ddi", apiToken);
+//        ddi.prettyPrint();
+        ddi.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.fileDscr.fileTxt.fileName", equalTo("50by1000.tab"))
+                .body("codeBook.dataDscr.var[0].@name", equalTo("var1"))
+                // Yes, it's odd that we go from "var1" to "var3" to "var2" to "var5"
+                .body("codeBook.dataDscr.var[1].@name", equalTo("var3"))
+                .body("codeBook.dataDscr.var[2].@name", equalTo("var2"))
+                .body("codeBook.dataDscr.var[3].@name", equalTo("var5"));
+        String varWithVfirst = XmlPath.from(ddi.asString()).getString("codeBook.dataDscr.var[0].@ID");
+        String varWithVsecond = XmlPath.from(ddi.asString()).getString("codeBook.dataDscr.var[1].@ID");
+        String variables = String.join(",", varWithVfirst, varWithVsecond).replaceAll("v", "");
+        Response subset = UtilIT.subset(origFileId.toString(), variables, apiToken);
+//        subset.prettyPrint();
+        subset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String firstLine = subset.asString().split("\n")[0];
+        // We only get two variables rather than all of them. Yes it's weird that it's var3 instead of var2.
+        assertEquals("var1\tvar3", firstLine);
 
         Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishDatasetResp.prettyPrint();

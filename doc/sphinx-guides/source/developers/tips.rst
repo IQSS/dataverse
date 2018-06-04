@@ -102,7 +102,7 @@ Deploying With ``asadmin``
 
 Sometimes you want to deploy code without using Netbeans or from the command line on a server you have ssh'ed into.
 
-For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/glassfish4`` or wherever you have installed Glassfish.
+For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/glassfish4/glassfish/bin`` or wherever you have installed Glassfish.
 
 There are four steps to this process:
 

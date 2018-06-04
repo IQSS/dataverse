@@ -69,6 +69,7 @@ import edu.harvard.iq.dataverse.userdata.UserListResult;
 import java.util.Date;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
+import javax.persistence.Query;
 import javax.ws.rs.QueryParam;
 /**
  * Where the secure, setup API calls live.
@@ -94,7 +95,6 @@ public class Admin extends AbstractApiBean {
     DataFileServiceBean fileService;
     @EJB
     DatasetServiceBean datasetService;
-    
 
     // Make the session available
     @Inject
@@ -1006,13 +1006,13 @@ public class Admin extends AbstractApiBean {
                 .add("errors", errorArray)
         );
     }
-    
+
     @GET
     @Path("/isOrcid")
     public Response isOrcidEnabled() {
         return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
     }
-    
+
     @GET
     @Path("{id}/registerDataFile")
     public Response registerDataFile(@PathParam("id") String id ) {
@@ -1068,4 +1068,21 @@ public class Admin extends AbstractApiBean {
         
         return ok("Datafile registration complete." + successes + " of  " +  count + " files registered successfully.");
     }    
+
+    @DELETE
+    @Path("/clearMetricsCache")
+    public Response clearMetricsCache() {
+        em.createNativeQuery("DELETE FROM metric").executeUpdate();
+        return ok("all metric caches cleared.");
+    }
+
+    @DELETE
+    @Path("/clearMetricsCache/{name}")
+    public Response clearMetricsCacheByName(@PathParam("name") String name) {
+        Query deleteQuery = em.createNativeQuery("DELETE FROM metric where metricname = ?");
+        deleteQuery.setParameter(1, name);
+        deleteQuery.executeUpdate();
+        return ok("metric cache " + name + " cleared.");
+    }
+
 }
