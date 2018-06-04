@@ -130,7 +130,7 @@ public class DatasetsIT {
     }
     
     @Test
-    public void testAddDataToDatasetViaNativeAPI() {
+    public void testAddUpdateDatasetViaNativeAPI() {
 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -150,7 +150,6 @@ public class DatasetsIT {
                 .statusCode(OK.getStatusCode());
        
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
-        assertEquals(6, identifier.length());
         
         //Test Add Data
         
@@ -176,11 +175,19 @@ public class DatasetsIT {
        // String subject = JsonPath.from(exportDatasetAsJson.getBody().asString()).getString("data.metadataBlocks.citation.fields.");
         
 
-        String pathToJsonFileSingle = "doc/sphinx-guides/source/_static/api/dataset-add-single-field-metadata.json";
-        Response addSubjectSingleViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingle, apiToken);
+        String pathToJsonFileSingle = "doc/sphinx-guides/source/_static/api/dataset-simple-update-metadata.json";
+        Response addSubjectSingleViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingle, apiToken);
         addSubjectSingleViaNative.prettyPrint();
         addSubjectSingleViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
+        
+        
+        //Trying to blank out required field should fail...
+        String pathToJsonFileBadData = "doc/sphinx-guides/source/_static/api/dataset-update-with-blank-metadata.json";
+        Response deleteTitleViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileBadData, apiToken);
+        deleteTitleViaNative.prettyPrint();
+        deleteTitleViaNative.then().assertThat().body("message", equalTo("Validation failed: Title is required."));
+
 
         /*
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);

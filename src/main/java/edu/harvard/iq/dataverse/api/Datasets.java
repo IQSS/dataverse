@@ -84,6 +84,7 @@ import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -455,7 +456,17 @@ public class Datasets extends AbstractApiBean {
             for (DatasetField dsf : dsv.getDatasetFields()) {
                 for (DatasetField addField : fields) {
                     if (dsf.getDatasetFieldType().equals(addField.getDatasetFieldType())) {
-                        if (dsf.isEmpty() || dsf.getDatasetFieldType().isAllowMultiples()) {
+                        if (dsf.isEmpty() || dsf.getDatasetFieldType().isAllowMultiples() || replaceData ) {
+                            if(replaceData){
+                                System.out.print("replacing data");
+                                if(dsf.getDatasetFieldType().isAllowMultiples()){
+                                    dsf.setDatasetFieldCompoundValues(new ArrayList());
+                                    dsf.setDatasetFieldValues(new ArrayList());
+                                    dsf.getControlledVocabularyValues().clear();
+                                } else {
+                                    dsf.setSingleValue("");
+                                }
+                            }
                             if (addField.getDatasetFieldType().isControlledVocabulary()) {
                                 for (ControlledVocabularyValue cvv : addField.getControlledVocabularyValues()) {
                                     if (!dsf.getDisplayValue().contains(cvv.getStrValue())) {

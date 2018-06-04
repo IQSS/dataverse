@@ -363,6 +363,16 @@ public class UtilIT {
                 .put("/api/datasets/:persistentId/addData/?persistentId=" + persistentId);
         return response;
     }
+    
+    static Response updateFieldLevelDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
+        String jsonIn = getDatasetJson(pathToJsonFile);
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonIn)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/updateData/?persistentId=" + persistentId);
+        return response;
+    }
 
     static private String getDatasetXml(String title, String author, String description) {
         String xmlIn = "<?xml version=\"1.0\"?>\n"
