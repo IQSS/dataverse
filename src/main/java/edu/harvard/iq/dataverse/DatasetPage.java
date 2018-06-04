@@ -3708,8 +3708,8 @@ public class DatasetPage implements java.io.Serializable {
 
             logger.fine(file.getFileName() + " is successfully uploaded.");
             List<String> args = Arrays.asList(file.getFileName());
-            String msg = BundleUtil.getStringFromBundle("dataset.file.upload", args);
-            FacesContext.getCurrentInstance().addMessage(null, msg);
+            FacesMessage message = new FacesMessage(BundleUtil.getStringFromBundle("dataset.file.upload", args));
+            FacesContext.getCurrentInstance().addMessage(null, message);
         }
 
         // process file (i.e., just save it in a temp location; for now):
