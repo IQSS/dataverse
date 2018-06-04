@@ -189,7 +189,7 @@ public class DatasetsIT {
         deleteTitleViaNative.then().assertThat().body("message", equalTo("Validation failed: Title is required."));
 
 
-        /*
+//Delete the test data so as not to clutter the DB
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
@@ -201,7 +201,7 @@ public class DatasetsIT {
         Response deleteUserResponse = UtilIT.deleteUser(username);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
-*/
+
     }
 
     /**
