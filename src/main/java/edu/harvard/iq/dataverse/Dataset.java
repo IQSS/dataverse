@@ -423,13 +423,16 @@ public class Dataset extends DvObjectContainer {
         // present by default:
         // (TODO: ? - provide these as constants somewhere? -- L.A. beta15)
         if (!ret.contains("Documentation")) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.documentation"));
+            ret.add("Documentation");
+            //ret.add(BundleUtil.getStringFromBundle("dataset.category.documentation"));
         }
         if (!ret.contains("Data")) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.data"));
+            ret.add("Data");
+            //ret.add(BundleUtil.getStringFromBundle("dataset.category.data"));
         }
         if (!ret.contains("Code")) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.code"));
+            ret.add("Code");
+            //ret.add(BundleUtil.getStringFromBundle("dataset.category.code"));
         }
 
         return ret;

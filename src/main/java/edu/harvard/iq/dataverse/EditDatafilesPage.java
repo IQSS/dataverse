@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -2613,8 +2614,8 @@ public class EditDatafilesPage implements java.io.Serializable {
 
             logger.fine(file.getFileName() + " is successfully uploaded.");
             List<String> args = Arrays.asList(file.getFileName());
-            String msg = BundleUtil.getStringFromBundle("dataset.file.upload", args);
-            FacesContext.getCurrentInstance().addMessage(null, msg);
+            FacesMessage message = new FacesMessage(BundleUtil.getStringFromBundle("dataset.file.upload", args));
+            FacesContext.getCurrentInstance().addMessage(null, message);
         }
 
         // process file (i.e., just save it in a temp location; for now):
