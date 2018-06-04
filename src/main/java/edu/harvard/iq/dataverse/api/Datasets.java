@@ -458,7 +458,6 @@ public class Datasets extends AbstractApiBean {
                     if (dsf.getDatasetFieldType().equals(addField.getDatasetFieldType())) {
                         if (dsf.isEmpty() || dsf.getDatasetFieldType().isAllowMultiples() || replaceData ) {
                             if(replaceData){
-                                System.out.print("replacing data");
                                 if(dsf.getDatasetFieldType().isAllowMultiples()){
                                     dsf.setDatasetFieldCompoundValues(new ArrayList());
                                     dsf.setDatasetFieldValues(new ArrayList());
