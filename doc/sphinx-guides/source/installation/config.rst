@@ -440,6 +440,11 @@ Administration of Your Dataverse Installation
 
 Now that you're live you'll want to review the :doc:`/admin/index` for more information about the ongoing administration of a Dataverse installation.
 
+Setting Up Integrations
++++++++++++++++++++++++
+
+Before going live, you might want to consider setting up integrations to make it easier for your users to deposit or explore data. See the :doc:`/admin/integrations` section of the Admin Guide for details.
+
 JVM Options
 -----------
 
