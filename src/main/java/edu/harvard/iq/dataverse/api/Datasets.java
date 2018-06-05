@@ -419,7 +419,7 @@ public class Datasets extends AbstractApiBean {
 
         DataverseRequest req = createDataverseRequest(findUserOrDie());
 
-        return processDatasetUpdate(jsonBody, id, req, true);
+        return processDatasetUpdate(jsonBody, id, req, false);
     }
     
     @PUT
@@ -452,10 +452,11 @@ public class Datasets extends AbstractApiBean {
 
             dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
                 
-
+            //loop through the existing dataset fields in the draft version
+            // and compare to the update fields
             for (DatasetField dsf : dsv.getDatasetFields()) {
-                for (DatasetField addField : fields) {
-                    if (dsf.getDatasetFieldType().equals(addField.getDatasetFieldType())) {
+                for (DatasetField updateField : fields) {
+                    if (dsf.getDatasetFieldType().equals(updateField.getDatasetFieldType())) {
                         if (dsf.isEmpty() || dsf.getDatasetFieldType().isAllowMultiples() || replaceData ) {
                             if(replaceData){
                                 if(dsf.getDatasetFieldType().isAllowMultiples()){
@@ -466,23 +467,23 @@ public class Datasets extends AbstractApiBean {
                                     dsf.setSingleValue("");
                                 }
                             }
-                            if (addField.getDatasetFieldType().isControlledVocabulary()) {
-                                for (ControlledVocabularyValue cvv : addField.getControlledVocabularyValues()) {
+                            if (updateField.getDatasetFieldType().isControlledVocabulary()) {
+                                for (ControlledVocabularyValue cvv : updateField.getControlledVocabularyValues()) {
                                     if (!dsf.getDisplayValue().contains(cvv.getStrValue())) {
                                         dsf.getControlledVocabularyValues().add(cvv);
                                     }
                                 }
 
                             } else {
-                                if (!addField.getDatasetFieldType().isCompound()) {
-                                    for (DatasetFieldValue dfv : addField.getDatasetFieldValues()) {
+                                if (!updateField.getDatasetFieldType().isCompound()) {
+                                    for (DatasetFieldValue dfv : updateField.getDatasetFieldValues()) {
                                         if (!dsf.getDisplayValue().contains(dfv.getDisplayValue())) {
                                             dsf.getDatasetFieldValues().add(dfv);
                                         }
                                     }
                                 } else {
-                                    for (DatasetFieldCompoundValue dfcv : addField.getDatasetFieldCompoundValues()) {
-                                        if (!dsf.getCompoundDisplayValue().contains(addField.getCompoundDisplayValue())) {
+                                    for (DatasetFieldCompoundValue dfcv : updateField.getDatasetFieldCompoundValues()) {
+                                        if (!dsf.getCompoundDisplayValue().contains(updateField.getCompoundDisplayValue())) {
                                             dfcv.setParentDatasetField(dsf);
                                             dsf.setDatasetVersion(dsv);
                                             dsf.getDatasetFieldCompoundValues().add(dfcv);
