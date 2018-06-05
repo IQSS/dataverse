@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -21,10 +22,11 @@ import javax.persistence.TypedQuery;
 @Stateless
 @Named
 public class DatasetLinkingServiceBean implements java.io.Serializable {
+    private static final Logger logger = Logger.getLogger(DatasetLinkingServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-
+    
     /**
      * @param linkingDataverseId
      * @return 
@@ -63,6 +65,19 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
         }
         return retList;
     }
+    
+    public DatasetLinkingDataverse findDatasetLinkingDataverse(Long datasetId, Long linkingDataverseId) {
+        DatasetLinkingDataverse foundDatasetLinkingDataverse = null;
+        try {
+            foundDatasetLinkingDataverse = em.createQuery("SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId AND o.dataset.id = :datasetId", DatasetLinkingDataverse.class)
+                    .setParameter("datasetId", datasetId)
+                    .setParameter("dataverseId", linkingDataverseId)
+                    .getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            logger.fine("no datasetLinkingDataverse found for datasetId " + datasetId + " and linkingDataverseId " + linkingDataverseId);        
+        }
+        return foundDatasetLinkingDataverse;
+    }
 
     public List<DatasetLinkingDataverse> findDatasetLinkingDataverses(Long datasetId) {
         return em.createQuery("select object(o) from DatasetLinkingDataverse as o where o.dataset.id =:datasetId order by o.id", DatasetLinkingDataverse.class)
@@ -77,7 +92,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
             em.merge(datasetLinkingDataverse);
         }
     }
-
+    
     public boolean alreadyLinked(Dataverse dataverse, Dataset dataset) {
         TypedQuery<DatasetLinkingDataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId AND o.dataset.id = :datasetId", DatasetLinkingDataverse.class);
         typedQuery.setParameter("dataverseId", dataverse.getId());

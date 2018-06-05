@@ -42,6 +42,7 @@
         "selector": {
           "name": "iqss-dataverse-postgresql"
         },
+        "clusterIP": "None",
         "ports": [
           {
             "name": "database",
@@ -123,15 +124,18 @@
       }
     },
     {
-      "kind": "DeploymentConfig",
-      "apiVersion": "v1",
+      "kind": "StatefulSet",
+      "apiVersion": "apps/v1beta1",
       "metadata": {
         "name": "dataverse-glassfish",
         "annotations": {
-          "template.alpha.openshift.io/wait-for-ready": "true"
+          "template.alpha.openshift.io/wait-for-ready": "true",
+          "alpha.image.policy.openshift.io/resolve-names": "*"
         }
       },
       "spec": {
+        "serviceName" : "dataverse-glassfish",
+        "replicas": 1, 
         "template": {
           "metadata": {
             "labels": {
@@ -142,14 +146,30 @@
             "containers": [
               {
                 "name": "dataverse-plus-glassfish",
-                "image": "dataverse-plus-glassfish",
+                "image": "iqss/dataverse-glassfish:latest",
                 "ports": [
                   {
                     "containerPort": 8080,
                     "protocol": "TCP"
                   }
                 ],
+                "resources": {"limits": {"memory": "1024Mi"
+                  }
+                  
+                  },
                 "env": [
+                
+                       { "name": "MY_POD_NAME",
+                          "valueFrom": {
+                          "fieldRef": {
+                           "fieldPath": "metadata.name"
+                         }
+                        }
+                       },
+                  {
+                    "name": "POSTGRES_SERVER",
+                    "value": "dataverse-postgresql-0"
+                  },
                   {
                     "name": "POSTGRES_SERVICE_HOST",
                     "value": "dataverse-postgresql-service"
@@ -179,7 +199,7 @@
                     "value": "dvndb"
                   }
                 ],
-                "imagePullPolicy": "IfNotPresent",
+                "imagePullPolicy": "Always",
                 "securityContext": {
                   "capabilities": {},
                   "privileged": false
@@ -195,7 +215,9 @@
             "intervalSeconds": 1,
             "timeoutSeconds": 300
           },
-          "resources": {}
+          "resources": {"limits": {
+                    "memory": "512Mi"
+                  }}
         },
         "triggers": [
           {
@@ -215,15 +237,17 @@
             "type": "ConfigChange"
           }
         ],
-        "replicas": 1,
         "selector": {
-          "name": "iqss-dataverse-glassfish"
+          "name": "iqss-dataverse-glassfish",
+         "matchLabels" : {
+           "name": "iqss-dataverse-glassfish"
+        }
         }
       }
     },
     {
-      "kind": "DeploymentConfig",
-      "apiVersion": "v1",
+      "kind": "StatefulSet",
+      "apiVersion": "apps/v1beta1",
       "metadata": {
         "name": "dataverse-postgresql",
         "annotations": {
@@ -231,6 +255,8 @@
         }
       },
       "spec": {
+        "serviceName" : "dataverse-postgresql-service",
+        "replicas" : 1,
         "template": {
           "metadata": {
             "labels": {
@@ -241,7 +267,11 @@
             "containers": [
               {
                 "name": "centos-postgresql-94-centos7",
-                "image": "centos-postgresql-94-centos7",
+                "image": "centos/postgresql-94-centos7",
+                "command": [
+                "sh", "-c", "echo 'Setting up Postgres Master/Slave replication...'; [[ `hostname` =~ -([0-9]+)$ ]] || exit 1; ordinal=${BASH_REMATCH[1]}; if [[ $ordinal -eq 0 ]]; then run-postgresql-master; else run-postgresql-slave; fi;"
+                ],
+
                 "ports": [
                   {
                     "containerPort": 5432,
@@ -254,8 +284,32 @@
                     "value": "dvnapp"
                   },
                   {
+                    "name": "POSTGRESQL_MASTER_USER",
+                    "value": "master"
+                  },
+                  {
                     "name": "POSTGRESQL_PASSWORD",
                     "value": "secret"
+                  },
+                  {
+                    "name": "POSTGRESQL_MASTER_PASSWORD",
+                    "value": "master"
+                  },
+                  {
+                    "name": "POSTGRESQL_MASTER_SERVICE_NAME",
+                    "value": "dataverse-postgresql-service"
+                  },
+                  {
+                    "name": "POSTGRESQL_MASTER_IP",
+                    "value": "dataverse-postgresql-0.dataverse-postgresql-service"
+                  },
+                  {
+                    "name": "postgresql_master_addr",
+                    "value": "dataverse-postgresql-0.dataverse-postgresql-service"
+                  },
+                  {
+                    "name": "master_fqdn",
+                    "value": "dataverse-postgresql-0.dataverse-postgresql-service"
                   },
                   {
                     "name": "POSTGRESQL_DATABASE",
@@ -272,7 +326,7 @@
                     "memory": "256Mi"
                   }
                 },
-                "imagePullPolicy": "IfNotPresent",
+                "imagePullPolicy": "Always",
                 "securityContext": {
                   "capabilities": {},
                   "privileged": false
@@ -281,6 +335,7 @@
             ]
           }
         },
+
         "strategy": {
           "type": "Rolling",
           "rollingParams": {
@@ -300,7 +355,7 @@
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "centos-postgresql-94-centos7:latest"
+                "name": "centos/postgresql-94-centos7:latest"
               }
             }
           },
@@ -308,9 +363,11 @@
             "type": "ConfigChange"
           }
         ],
-        "replicas": 1,
         "selector": {
-          "name": "iqss-dataverse-postgresql"
+          "name": "iqss-dataverse-postgresql",
+          "matchLabels" : {
+            "name" : "iqss-dataverse-postgresql"
+          }
         }
       }
     },
@@ -334,7 +391,7 @@
             "containers": [
               {
                 "name": "iqss-dataverse-solr",
-                "image": "iqss-dataverse-solr",
+                "image": "iqss-dataverse-solr:latest",
                 "ports": [
                   {
                     "containerPort": 8983,
@@ -343,10 +400,10 @@
                 ],
                 "resources": {
                   "limits": {
-                    "memory": "256Mi"
+                    "memory": "1024Mi"
                   }
                 },
-                "imagePullPolicy": "IfNotPresent",
+                "imagePullPolicy": "Always",
                 "securityContext": {
                   "capabilities": {},
                   "privileged": false

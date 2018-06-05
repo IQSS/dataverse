@@ -194,15 +194,11 @@
                                         </h:outputLink>
                                         <ui:fragment rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}">
                                             <p class="help-block small" style="margin-top:1em;">
-                                                ORCID is an open, non-profit, community-based effort to provide a registry of unique researcher identifiers
-                                                and a transparent method of linking research activities and outputs to these identifiers. ORCID is unique in
-                                                its ability to reach across disciplines, research sectors, and national boundaries and its cooperation with
-                                                other identifier systems. Find out more at <a href="https://orcid.org/about" target="_blank">orcid.org/about</a>.
-						</p>
-						<p class="help-block small" style="margin-top:1em;">
-						This repository uses your ORCID for authentication (so you don't need another username/password combination).
-						Having your ORCID associated with your datasets also makes it easier for people to find the datasets you have published.
-						</p>
+                                                <h:outputText value="#{bundle['auth.providers.orcid.helpmessage1']}"  escape="false"/>
+                                            </p>
+                                            <p class="help-block small" style="margin-top:1em;">
+                                                <h:outputText value="#{bundle['auth.providers.orcid.helpmessage2']}"  escape="false"/>
+                                            </p>
                                         </ui:fragment>
                                     </div>
                                 </div>

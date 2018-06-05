@@ -9,9 +9,12 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +35,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
+import org.apache.commons.lang.RandomStringUtils;
 
 /**
  *
@@ -48,12 +53,17 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger(DataFileServiceBean.class.getCanonicalName());
     @EJB
-    DatasetServiceBean datasetService;
+    DvObjectServiceBean dvObjectService;
     @EJB
     PermissionServiceBean permissionService;
     @EJB
     UserServiceBean userService; 
-
+    @EJB
+    SettingsServiceBean settingsService;
+    
+    @EJB 
+    IngestServiceBean ingestService;
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -154,6 +164,10 @@ public class DataFileServiceBean implements java.io.Serializable {
         
     }*/
     
+    public DataFile findByGlobalId(String globalId) {
+            return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.DATAFILE_DTYPE_STRING);
+    }
+    
     public DataFile findReplacementFile(Long previousFileId){
         Query query = em.createQuery("select object(o) from DataFile as o where o.previousDataFileId = :previousFileId");
         query.setParameter("previousFileId", previousFileId);
@@ -207,6 +221,10 @@ public class DataFileServiceBean implements java.io.Serializable {
                 return null;
             } else {
                 return findCheapAndEasy((Long) query.getSingleResult());
+                //Pretty sure the above return will always error due to a conversion error
+                //I "reverted" my change because I ended up not using this, but here is the fix below --MAD
+//                Integer qr = (Integer) query.getSingleResult();
+//                return findCheapAndEasy(qr.longValue());
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error finding datafile by storageID and DataSetVersion: " + e.getMessage());
@@ -313,7 +331,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         Object[] result;
 
         try {
-            result = (Object[]) em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t0.PREVIEWIMAGEAVAILABLE, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t3.ID, t3.AUTHORITY, t3.IDENTIFIER, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID FROM DVOBJECT t0, DATAFILE t1, DVOBJECT t2, DATASET t3 WHERE ((t0.ID = " + id + ") AND (t0.OWNER_ID = t2.ID) AND (t2.ID = t3.ID) AND (t1.ID = t0.ID))").getSingleResult();
+            result = (Object[]) em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t0.PREVIEWIMAGEAVAILABLE, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t3.ID, t2.AUTHORITY, t2.IDENTIFIER, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID, t0.AUTHORITY, T0.PROTOCOL, T0.IDENTIFIER FROM DVOBJECT t0, DATAFILE t1, DVOBJECT t2, DATASET t3 WHERE ((t0.ID = " + id + ") AND (t0.OWNER_ID = t2.ID) AND (t2.ID = t3.ID) AND (t1.ID = t0.ID))").getSingleResult();
         } catch (Exception ex) {
             return null;
         }
@@ -442,6 +460,21 @@ public class DataFileServiceBean implements java.io.Serializable {
         if (rootDataFileId != null){
             dataFile.setRootDataFileId(rootDataFileId);
         } 
+        
+        String authority = (String) result[22];
+        if (authority != null) {
+            dataFile.setAuthority(authority);
+        }
+
+        String protocol = (String) result[23];
+        if (protocol != null) {
+            dataFile.setProtocol(protocol);
+        }
+
+        String identifier = (String) result[24];
+        if (identifier != null) {
+            dataFile.setIdentifier(identifier);
+        }
                 
         dataFile.setOwner(owner);
 
@@ -567,7 +600,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         i = 0; 
         
-        List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile'))) ORDER BY t0.ID").getResultList(); 
+        List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID, t0.PROTOCOL, t0.AUTHORITY, t0.IDENTIFIER FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile'))) ORDER BY t0.ID").getResultList(); 
     
         for (Object[] result : fileResults) {
             Integer file_id = (Integer) result[0];
@@ -676,6 +709,21 @@ public class DataFileServiceBean implements java.io.Serializable {
                 dataFile.setRootDataFileId(rootDataFileId);
             }
             
+            String protocol = (String) result[18];
+            if (protocol != null) {
+                dataFile.setProtocol(protocol);
+            }
+            
+            String authority = (String) result[19];
+            if (authority != null) {
+                dataFile.setAuthority(authority);
+            }
+            
+            String identifier = (String) result[20];
+            if (identifier != null) {
+                dataFile.setIdentifier(identifier);
+            }
+            
             // TODO: 
             // - if ingest status is "bad", look up the ingest report; 
             // - is it a dedicated thumbnail for the dataset? (do we ever need that info?? - not on the dataset page, I don't think...)
@@ -756,7 +804,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         logger.fine("Retrieved and mapped "+i+" file categories attached to files in the version "+version.getId());
         
-        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED, DIRECTORYLABEL from FileMetadata where datasetversion_id = "+version.getId() + " ORDER BY LABEL").getResultList();
+        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED, DIRECTORYLABEL, prov_freeform from FileMetadata where datasetversion_id = "+version.getId() + " ORDER BY LABEL").getResultList();
         
         for (Object[] result : metadataResults) {
             Integer filemeta_id = (Integer) result[0];
@@ -813,6 +861,11 @@ public class DataFileServiceBean implements java.io.Serializable {
                 fileMetadata.setDirectoryLabel(dirLabel);
             }
             
+            String provFreeForm = (String) result[6];
+            if (provFreeForm != null){
+                fileMetadata.setProvFreeForm(provFreeForm);
+            }
+                        
             retList.add(fileMetadata);
         }
         
@@ -1458,6 +1511,119 @@ public class DataFileServiceBean implements java.io.Serializable {
         } catch (Exception ex) {
             return new ArrayList<>();
         }
+    }
+    
+    
+    
+    public String generateDataFileIdentifier(DataFile datafile, IdServiceBean idServiceBean) {
+        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+
+        String prepend = "";
+        if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){
+            //If format is dependent then pre-pend the dataset identifier 
+            prepend = datafile.getOwner().getIdentifier() + "/";
+        } else {
+            //If there's a shoulder prepend independent identifiers with it
+        	prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
+        }
+ 
+        switch (doiIdentifierType) {
+            case "randomString":               
+                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
+            case "sequentialNumber":
+                if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
+                    return generateIdentifierAsIndependentSequentialNumber(datafile, idServiceBean, prepend);
+                } else {
+                    return generateIdentifierAsDependentSequentialNumber(datafile, idServiceBean, prepend);
+                }
+            default:
+                /* Should we throw an exception instead?? -- L.A. 4.6.2 */
+                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
+        }
+    }
+    
+    private String generateIdentifierAsRandomString(DataFile datafile, IdServiceBean idServiceBean, String prepend) {
+
+        String identifier = null;
+        do {
+            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+        } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
+
+        return identifier;
+    }
+
+    private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, IdServiceBean idServiceBean, String prepend) {
+        
+        String identifier; 
+        do {
+            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
+            query.execute();
+            Integer identifierNumeric = (Integer) query.getOutputParameterValue(1); 
+            // some diagnostics here maybe - is it possible to determine that it's failing 
+            // because the stored procedure hasn't been created in the database?
+            if (identifierNumeric == null) {
+                return null; 
+            }
+            identifier = prepend + identifierNumeric.toString();
+        } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
+        
+        return identifier;
+    }
+    
+    private String generateIdentifierAsDependentSequentialNumber(DataFile datafile, IdServiceBean idServiceBean, String prepend) {
+        
+        String identifier;
+        Long retVal;
+
+        retVal = new Long(0);
+
+
+        do {
+            retVal++;
+            identifier = prepend + retVal.toString();
+
+        } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
+
+        return identifier;
+    }
+
+    /**
+     * Check that a identifier entered by the user is unique (not currently used
+     * for any other study in this Dataverse Network) alos check for duplicate
+     * in EZID if needed
+     * @param userIdentifier
+     * @param datafile
+     * @param idServiceBean
+     * @return   */
+    public boolean isIdentifierUniqueInDatabase(String userIdentifier, DataFile datafile, IdServiceBean idServiceBean) {
+        String testProtocol = "";
+        String testAuthority = "";
+        if (datafile.getAuthority() != null){
+            testAuthority = datafile.getAuthority();
+        } else {
+            testAuthority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority);
+        }
+        if (datafile.getProtocol() != null){
+            testProtocol = datafile.getProtocol();
+        } else {
+            testProtocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol);
+        }
+        String query = "SELECT d FROM DvObject d WHERE d.identifier = '" + userIdentifier + "'";
+        query += " and d.protocol ='" + testProtocol + "'";
+        query += " and d.authority = '" + testAuthority + "'";
+        boolean u = em.createQuery(query).getResultList().isEmpty();
+            
+        try{
+            if (idServiceBean.alreadyExists(datafile)) {
+                u = false;
+            }
+        } catch (Exception e){
+            //we can live with failure - means identifier not found remotely
+        }
+
+       
+        return u;
     }
     
 }

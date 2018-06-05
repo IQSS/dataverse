@@ -338,3 +338,19 @@ function handleResizeDialog(dialog) {
             });
         });
 }
+
+/*
+ * fixes autoComplete dropdown in popups not moving with page scroll
+ */
+function handle_dropdown_popup_scroll(){
+    $( window ).scroll(function() {
+        var isActive = $(".DropdownPopupPanel").is(':visible');
+        if(isActive) {
+            $(".DropdownPopupPanel").position({
+                my: "left top",
+                at: "left bottom",
+                of: $(".DropdownPopup")
+            });
+        }
+    });
+}

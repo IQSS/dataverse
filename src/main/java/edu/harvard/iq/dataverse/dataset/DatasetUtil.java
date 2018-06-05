@@ -119,21 +119,20 @@ public class DatasetUtil {
                 
         try{
             dataAccess = DataAccess.getStorageIO(dataset);
-            
         }
         catch(IOException ioex){
-            logger.warning("Failed to initialize dataset for thumbnail " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
+            logger.warning("getThumbnail(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
         }
         
         InputStream in = null;
         try {
             if (dataAccess == null) {
-                logger.info("Cannot retrieve thumbnail file.");
+                logger.warning("getThumbnail(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier());
             } else if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
                 in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             }
         } catch (IOException ex) {
-            logger.info("Cannot retrieve dataset thumbnail file, will try to get thumbnail from file.");
+            logger.fine("Dataset-level thumbnail file does not exist, or failed to open; will try to find an image file that can be used as the thumbnail.");
         }
 
         
@@ -239,13 +238,21 @@ public class DatasetUtil {
         }
 
         if (datasetVersion == null) {
-            logger.fine("getting latest version of dataset");
-            datasetVersion = dataset.getLatestVersion();
+            logger.fine("getting a published version of the dataset");
+            // We want to use published files only when automatically selecting 
+            // dataset thumbnails.
+            datasetVersion = dataset.getReleasedVersion(); 
+        }
+        
+        // No published version? - No [auto-selected] thumbnail for you.
+        if (datasetVersion == null) {
+            return null; 
         }
 
         for (FileMetadata fmd : datasetVersion.getFileMetadatas()) {
             DataFile testFile = fmd.getDataFile();
-            if (FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
+            // We don't want to use a restricted image file as the dedicated thumbnail:
+            if (!testFile.isRestricted() && FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
                 return testFile;
             }
         }

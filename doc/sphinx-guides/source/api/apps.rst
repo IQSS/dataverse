@@ -1,7 +1,7 @@
 Apps
 ====
 
-The introduction of Dataverse APIs has fostered the development of apps that are listed at http://dataverse.org/integrations
+The introduction of Dataverse APIs has fostered the development of apps that are listed at http://dataverse.org/integrations and the :doc:`/admin/integrations` section of the Admin Guide.
 
 The apps below are open source, demonstrating how to use Dataverse APIs. Some of these apps (and others) are built on :doc:`/api/client-libraries` that are available for Dataverse APIs.
 
@@ -26,7 +26,7 @@ OJS
 
 The Open Journal Systems (OJS) Dataverse Plugin adds data sharing and preservation to the OJS publication process.
 
-https://github.com/pkp/ojs/tree/ojs-stable-2_4_6/plugins/generic/dataverse
+https://github.com/pkp/ojs/tree/ojs-stable-2_4_8/plugins/generic/dataverse
 
 Python
 ------
@@ -34,9 +34,7 @@ Python
 OSF
 ~~~
 
-Allows you to view, download, and upload files to and from a Dataverse dataset from an Open Science Framework (OSF) project: https://osf.io/getting-started/#dataverse
-
-https://github.com/CenterForOpenScience/osf.io/tree/master/website/addons/dataverse
+Allows you to view, download, and upload files to and from a Dataverse dataset from an Open Science Framework (OSF) project: https://github.com/CenterForOpenScience/osf.io/tree/develop/addons/dataverse
 
 GeoConnect
 ~~~~~~~~~~
