@@ -1310,8 +1310,9 @@ public class DTA118FileReader extends TabularDataFileReader {
         // TODO: 
         // check that we are at the right byte offset!
         reader.readOpeningTag(TAG_VALUE_LABELS);
-
+        int c = 0; 
         while (reader.checkTag("<" + TAG_VALUE_LABELS_LBL_DEF + ">")) {
+            c++;
             // TODO: checktag should probably *read* the tag, if it is indeed
             // encountered, rather then stop at the beginning of the tag. 
             reader.readOpeningTag(TAG_VALUE_LABELS_LBL_DEF);
@@ -1338,14 +1339,25 @@ public class DTA118FileReader extends TabularDataFileReader {
             value_category_offset = 8;
 
             long[] value_label_offsets = new long[number_of_categories];
+            long[] value_label_offsets_sorted = null; 
             long[] category_values = new long[number_of_categories];
             String[] category_value_labels = new String[number_of_categories];
 
-            logger.info("label_table_name: " + label_table_name);
+            boolean alreadySorted = true;
+            
             for (int i = 0; i < number_of_categories; i++) {
                 value_label_offsets[i] = reader.readInteger();
                 logger.info("offset " + i + ": " + value_label_offsets[i]);
                 value_category_offset += 4;
+                if (i > 0 && value_label_offsets[i] < value_label_offsets[i-1]) {
+                    alreadySorted = false;
+                }
+            }
+
+            if (!alreadySorted) {
+                //value_label_offsets_sorted = new long[number_of_categories];
+                value_label_offsets_sorted = Arrays.copyOf(value_label_offsets, number_of_categories);
+                Arrays.sort(value_label_offsets_sorted);
             }
 
             for (int i = 0; i < number_of_categories; i++) {
@@ -1361,40 +1373,26 @@ public class DTA118FileReader extends TabularDataFileReader {
             long label_end = 0;
             int label_length = 0;
 
-            logger.info("label_table_name: " + label_table_name);
-            logger.info("text_length: " + text_length);
-            logger.info("number_of_categories: " + number_of_categories);
-            boolean firstCategoryNonZeroOffsetMode = false;
-            long firstCategoryLabelEnd = 0;
+            // Read the remaining bytes in this <lbl> section. 
+            // This byte[] array will contain all the value labels for the
+            // variable. Each is terminated by the binary zero byte; so we 
+            // can read the bytes for each label at the defined offset until 
+            // we encounter \000. Or we can rely on the (sorted) list of offsets
+            // to determine where each label ends (implemented below). 
+            byte[] labelBytes = reader.readBytes((int)text_length);
+            
             for (int i = 0; i < number_of_categories; i++) {
                 label_offset = value_label_offsets[i];
-                label_end = i < number_of_categories - 1 ? value_label_offsets[i + 1] : text_length;
-                if (number_of_categories == 2) {
-                    // This hack is here for Stata 14 files such as https://dataverse.harvard.edu/file.xhtml?fileId=3140457
-                    if (i == 0 && label_offset != 0) {
-                        logger.warning("The first label offset should always be zero!");
-                        long nonZeroOffset = label_offset;
-                        label_offset = 0;
-                        label_end = nonZeroOffset;
-                        firstCategoryNonZeroOffsetMode = true;
-                        // We assume there are only two categories.
-                        // The weird non-zero offset becomes the label end for the first category.
-                        firstCategoryLabelEnd = label_end;
-                    }
-                    if (i == 1 && firstCategoryNonZeroOffsetMode) {
-                        // We assume there are only two categories.
-                        // Start reading the second category from value we saved as the end of the first category.
-                        label_offset = firstCategoryLabelEnd;
-                        // Stop reading the second (last!) category at the end of the entire string from all (both) categories.
-                        label_end = text_length;
-                    }
-                }
-                logger.info("label_offset: " + label_offset);
-                logger.info("label_end: " + label_end);
-                label_length = (int) (label_end - label_offset);
 
-                logger.info("label_length: " + label_length);
-                category_value_labels[i] = reader.readString(label_length);
+                if (value_label_offsets_sorted == null) {
+                    label_end = i < number_of_categories - 1 ? value_label_offsets[i + 1] : text_length;
+                } else {
+                    int sortedPos = Arrays.binarySearch(value_label_offsets_sorted, label_offset);
+                    label_end = sortedPos < number_of_categories - 1 ? value_label_offsets_sorted[sortedPos + 1] : text_length;
+                }
+                label_length = (int)(label_end - label_offset);
+
+                category_value_labels[i] = new String(Arrays.copyOfRange(labelBytes, (int)label_offset, (int)label_end-1), "US-ASCII");
                 total_label_bytes += label_length;
             }
 
