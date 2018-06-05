@@ -2274,7 +2274,7 @@ public class DatasetPage implements java.io.Serializable {
     
     public String saveLinkedDataset() {
         if (linkingDataverseId == null) {
-            JsfHelper.addFlashMessage("You must select a linking dataverse.");
+            JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataverse.link.select"));
             return "";
         }
         linkingDataverse = dataverseService.find(linkingDataverseId);
