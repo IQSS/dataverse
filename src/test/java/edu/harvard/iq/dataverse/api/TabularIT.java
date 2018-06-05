@@ -200,5 +200,25 @@ public class TabularIT {
             System.out.println(i + "\t" + filename + "\t" + Arrays.toString(justErrors) + "\t" + firstLine);
         }
     }
+    
+    @Ignore
+    @Test
+    public void testStata14Multiple() {
+        String fileType = "application/x-stata-14";
+        // From /usr/local/dvn-admin/stata on dvn-build 
+        String stata13directory = "/tmp/stata-14";
+        File folder = new File(stata13directory);
+        File[] listOfFiles = folder.listFiles();
+        for (int i = 0; i < listOfFiles.length; i++) {
+            File file = listOfFiles[i];
+            String filename = file.getName();
+            String filenameFullPath = file.getAbsolutePath();
+            Response response = UtilIT.testIngest(filenameFullPath, fileType);
+            String firstLine = response.body().asString().split("\n")[0];
+            String[] parts = firstLine.split(":");
+            String[] justErrors = Arrays.copyOfRange(parts, 1, parts.length);
+            System.out.println(i + "\t" + filename + "\t" + Arrays.toString(justErrors) + "\t" + firstLine);
+        }
+    }
 
 }

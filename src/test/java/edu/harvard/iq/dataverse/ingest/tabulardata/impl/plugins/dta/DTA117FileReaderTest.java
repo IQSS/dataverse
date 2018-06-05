@@ -39,9 +39,9 @@ public class DTA117FileReaderTest {
     //@Ignore
     @Test
     public void testFirstCategoryNonZeroOffset() throws IOException {
-        // https://dataverse.harvard.edu/file.xhtml?fileId=2865667
-        //TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/HouseImputingCivilRightsInfo.dta"))), nullDataFile);
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("downloads/stata-13-test-files/15dc96fa3db-582f2cddb17d.dta"))), nullDataFile);
+
+        // https://dataverse.harvard.edu/file.xhtml?fileId=2865667 Stata 13 HouseImputingCivilRightsInfo.dta md5=7dd144f27cdb9f8d1c3f4eb9c4744c42
+        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/HouseImputingCivilRightsInfo.dta"))), nullDataFile);
         assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
         assertEquals("STATA 13", result.getDataTable().getOriginalFormatVersion());
         assertEquals(5, result.getDataTable().getDataVariables().size());
@@ -50,8 +50,9 @@ public class DTA117FileReaderTest {
         assertEquals("Dummy Variable: 1 = More than 10% of votes cast were imputed; 0 = Less than 10%", imputing.getLabel());
         assertEquals(2, imputing.getCategories().size());
         List<VariableCategory> origins = (List) imputing.getCategories();
-        assertEquals("More than 10% Imputed", origins.get(0).getLabel());
-        assertEquals("Fewer than 10% Imputed", origins.get(1).getLabel());
+        // Given the MD5 above, we expect the categories to come out in the order below.
+        assertEquals("Fewer than 10% Imputed", origins.get(0).getLabel());
+        assertEquals("More than 10% Imputed", origins.get(1).getLabel());
     }
 
     //For now this test really just shows that we can parse a file with strls
