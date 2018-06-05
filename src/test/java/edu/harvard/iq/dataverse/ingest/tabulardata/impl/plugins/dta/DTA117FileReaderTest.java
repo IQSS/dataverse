@@ -21,25 +21,27 @@ public class DTA117FileReaderTest {
     public void testAuto() throws IOException {
         // From https://www.stata-press.com/data/r13/auto.dta
         // `strings` shows "<stata_dta><header><release>117</release>"
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("scripts/search/data/tabular/stata13-auto.dta"))), nullDataFile);
+        //TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("scripts/search/data/tabular/stata13-auto.dta"))), nullDataFile);
+        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("downloads/stata-13-test-files/15aa6802ee5-5d2ed1bf55a5.dta"))), nullDataFile);
         assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
         assertEquals("STATA 13", result.getDataTable().getOriginalFormatVersion());
-        assertEquals(12, result.getDataTable().getDataVariables().size());
+        assertEquals(25, result.getDataTable().getDataVariables().size());
         DataVariable foreign = result.getDataTable().getDataVariables().get(11);
-        assertEquals("foreign", foreign.getName());
-        assertEquals("Car type", foreign.getLabel());
-        assertEquals(2, foreign.getCategories().size());
+        assertEquals("sexage", foreign.getName());
+        assertEquals("Age at first sexual intercourse", foreign.getLabel());
+        assertEquals(0, foreign.getCategories().size());
         List<VariableCategory> origins = (List) foreign.getCategories();
-        assertEquals("Domestic", origins.get(0).getLabel());
-        assertEquals("Foreign", origins.get(1).getLabel());
+        //assertEquals("Domestic", origins.get(0).getLabel());
+        //assertEquals("Foreign", origins.get(1).getLabel());
     }
 
     // TODO: Can we create a small file to check into the code base that exercises the value-label names non-zero offset issue?
-    @Ignore
+    //@Ignore
     @Test
     public void testFirstCategoryNonZeroOffset() throws IOException {
         // https://dataverse.harvard.edu/file.xhtml?fileId=2865667
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/HouseImputingCivilRightsInfo.dta"))), nullDataFile);
+        //TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/HouseImputingCivilRightsInfo.dta"))), nullDataFile);
+        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("downloads/stata-13-test-files/15dc96fa3db-582f2cddb17d.dta"))), nullDataFile);
         assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
         assertEquals("STATA 13", result.getDataTable().getOriginalFormatVersion());
         assertEquals(5, result.getDataTable().getDataVariables().size());
