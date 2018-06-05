@@ -18,11 +18,11 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import javax.json.Json;
@@ -30,7 +30,6 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonString;
 import javax.json.JsonValue;
 
 @AutoService(Exporter.class)
@@ -40,7 +39,7 @@ public class OAI_OREExporter implements Exporter {
 
 	public static final String NAME = "OAI_ORE";
 
-	private Map<String, String> localContext = new HashMap<String, String>();
+	private Map<String, String> localContext = new TreeMap<String, String>();
 
 	@Override
 	public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
