@@ -83,12 +83,18 @@ public class OAI_OREExporter implements Exporter {
 													+ dfType.getMetadataBlock().getName() + "/" + dfType.getName() + "#"
 													+ dsft.getName());
 									addToContextMap(subFieldName);
-									JsonArrayBuilder childVals = Json.createArrayBuilder();
-									// TBD: single value not sent as array?
+
+									List<String> values = dsf.getValues();
+									if(values.size()>1) {
+										JsonArrayBuilder childVals = Json.createArrayBuilder();
+
 									for (String val : dsf.getValues()) {
 										childVals.add(val);
 									}
 									child.add(subFieldName.getLabel(), childVals);
+									} else {
+										child.add(subFieldName.getLabel(), values.get(0));
+									}
 								}
 							}
 							vals.add(child);
