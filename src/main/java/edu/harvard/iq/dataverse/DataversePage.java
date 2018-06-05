@@ -518,13 +518,13 @@ public class DataversePage implements java.io.Serializable {
             retList.add(requiredItem);
             SelectItem optional = new SelectItem();
             //optional.setLabel(BundleUtil.getStringFromBundle("dataverse.item.optional"));
-            requiredItem.setLabel("Optional");
+            optional.setLabel("Optional");
             optional.setValue(false);
             retList.add(optional);
         } else {
             SelectItem hidden = new SelectItem();
             //hidden.setLabel(BundleUtil.getStringFromBundle("dataverse.item.hidden"));
-            requiredItem.setLabel("Hidden");
+            hidden.setLabel("Hidden");
             hidden.setValue(false);
             hidden.setDisabled(true);
             retList.add(hidden);
