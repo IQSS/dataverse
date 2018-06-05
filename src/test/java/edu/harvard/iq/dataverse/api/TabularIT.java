@@ -195,10 +195,6 @@ public class TabularIT {
             String filenameFullPath = file.getAbsolutePath();
             Response response = UtilIT.testIngest(filenameFullPath, fileType);
             String firstLine = response.body().asString().split("\n")[0];
-            String secondLine = "";
-            if(response.body().asString().split("\n").length > 1) {
-                secondLine = response.body().asString().split("\n")[1];
-            }
             String[] parts = firstLine.split(":");
             String[] justErrors = Arrays.copyOfRange(parts, 1, parts.length);
             System.out.println(i + "\t" + filename + "\t" + Arrays.toString(justErrors) + "\t" + firstLine);
@@ -219,10 +215,6 @@ public class TabularIT {
             String filenameFullPath = file.getAbsolutePath();
             Response response = UtilIT.testIngest(filenameFullPath, fileType);
             String firstLine = response.body().asString().split("\n")[0];
-            String secondLine = "";
-            if(response.body().asString().split("\n").length > 1) {
-                secondLine = response.body().asString().split("\n")[1];
-            }
             String[] parts = firstLine.split(":");
             String[] justErrors = Arrays.copyOfRange(parts, 1, parts.length);
             System.out.println(i + "\t" + filename + "\t" + Arrays.toString(justErrors) + "\t" + firstLine);
