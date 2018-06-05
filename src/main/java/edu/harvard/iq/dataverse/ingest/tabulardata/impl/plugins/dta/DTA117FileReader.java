@@ -1441,7 +1441,10 @@ public class DTA117FileReader extends TabularDataFileReader{
             // can read the bytes for each label at the defined offset until 
             // we encounter \000. Or we can rely on the (sorted) list of offsets
             // to determine where each label ends (implemented below). 
-            byte[] labelBytes = reader.readBytes((int)text_length);
+            byte[] labelBytes = null;
+            if((int)text_length != 0) { //If length is 0 we don't need to read any bytes
+                labelBytes = reader.readBytes((int)text_length);
+            }
             
             for (int i = 0; i < number_of_categories; i++) {
                 label_offset = value_label_offsets[i];
