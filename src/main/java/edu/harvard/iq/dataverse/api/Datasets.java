@@ -452,11 +452,15 @@ public class Datasets extends AbstractApiBean {
 
             dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
                 
-            //loop through the existing dataset fields in the draft version
-            // and compare to the update fields
+            //loop through the update fields     
+            // and compare to the version fields  
+            //if exist add/replace values
+            //if not add entire dsf
+            for (DatasetField updateField : fields) {
+            boolean found = false;            
             for (DatasetField dsf : dsv.getDatasetFields()) {
-                for (DatasetField updateField : fields) {
                     if (dsf.getDatasetFieldType().equals(updateField.getDatasetFieldType())) {
+                        found = true;
                         if (dsf.isEmpty() || dsf.getDatasetFieldType().isAllowMultiples() || replaceData ) {
                             if(replaceData){
                                 if(dsf.getDatasetFieldType().isAllowMultiples()){
@@ -493,10 +497,13 @@ public class Datasets extends AbstractApiBean {
                                 }
                             }
                         }
+                        break;
                     }
                 }
+                if(!found){
+                    dsv.getDatasetFields().add(updateField);
+                }
             }
-
             boolean updateDraft = ds.getLatestVersion().isDraft();
             DatasetVersion managedVersion = execCommand(updateDraft
                     ? new UpdateDatasetVersionCommand(req, dsv)

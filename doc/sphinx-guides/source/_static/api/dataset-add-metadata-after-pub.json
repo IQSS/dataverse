@@ -1,11 +1,22 @@
 {
 "fields": [
-        
-        {
+                {
         "typeName": "subject",
                 "value": [
                     "Astronomy and Astrophysics"
                 ]
+        },
+        
+        {
+        "typeName": "subtitle",
+                "value": "More Birds and Trees"
+                
+        },
+                
+        {
+        "typeName": "title",
+                "value": "Post Publish Title Change"
+                
         },
         {
           "typeName": "author",
@@ -33,6 +44,34 @@
 		  }
 		}		
               ]
+        },
+                {
+          "typeName": "producer",
+          "value": [
+                {
+                  "producerName": {
+                    "typeName": "producerName",
+                    "value": "Allen, Irwin"
+                  }
+                ,
+		  "producerAffiliation": {
+		   "typeName": "producerAffiliation",
+		   "value": "MGM"
+		  }
+		},
+                {
+                  "producerName": {
+                    "typeName": "producerName",
+                    "value": "Spielberg, Stephen"
+                  }
+                ,
+		  "producerAffiliation": {
+		   "typeName": "producerAffiliation",
+		   "value": "ILM"
+		  }
+		}		
+              ]
         }
 ]
 }
+
