@@ -156,14 +156,14 @@ public class ManageTemplatesPage implements java.io.Serializable {
 
     private void saveDataverse(String successMessage) {
         if (successMessage.isEmpty()) {
-            successMessage = BundleUtil.getStringFromBundle("template.save");//"Template data updated";
+            successMessage = BundleUtil.getStringFromBundle("template.update");//"Template data updated";
         }
         try {
             engineService.submit(new UpdateDataverseCommand(getDataverse(), null, null, dvRequestService.getDataverseRequest(), null));
             //JH.addMessage(FacesMessage.SEVERITY_INFO, successMessage);
             JsfHelper.addFlashMessage(successMessage);
         } catch (CommandException ex) {
-            String failMessage = BundleUtil.getStringFromBundle("template.save.error");//"Template update failed";
+            String failMessage = BundleUtil.getStringFromBundle("template.update.error");//"Template update failed";
             if(successMessage.equals(BundleUtil.getStringFromBundle("template.delete"))){
                 failMessage = BundleUtil.getStringFromBundle("template.delete.error");//"The dataset template cannot be deleted.";
             }
