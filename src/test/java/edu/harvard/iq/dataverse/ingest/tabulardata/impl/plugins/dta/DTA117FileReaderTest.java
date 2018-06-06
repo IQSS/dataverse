@@ -17,14 +17,14 @@ public class DTA117FileReaderTest {
     DTA117FileReader instance = new DTA117FileReader(null);
     File nullDataFile = null;
 
+    // TODO: Can we create a small file to check into the code base that exercises the characteristics issue?
     @Ignore
     @Test
-    public void testBen() throws IOException {
+    public void testCharacteristics() throws IOException {
         TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/15aa6802ee5-5d2ed1bf55a5.dta"))), nullDataFile);
         assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
         assertEquals("STATA 13", result.getDataTable().getOriginalFormatVersion());
-        assertEquals(25, result.getDataTable().getDataVariables().size());
-        // TODO: add more assertions on the result.
+        assertEquals(441, result.getDataTable().getDataVariables().size());
     }
 
     @Test
