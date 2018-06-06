@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
@@ -45,6 +46,11 @@ public class OAI_OREExporter implements Exporter {
 	public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
 			throws ExportException {
 		try {
+			//Add namespaces we'll use to Context
+			localContext.putIfAbsent(JsonLDNamespace.ore.getPrefix(), JsonLDNamespace.ore.getUrl());
+			localContext.putIfAbsent(JsonLDNamespace.dcterms.getPrefix(), JsonLDNamespace.dcterms.getUrl());
+			localContext.putIfAbsent(JsonLDNamespace.dvcore.getPrefix(), JsonLDNamespace.dvcore.getUrl());
+			localContext.putIfAbsent(JsonLDNamespace.schema.getPrefix(), JsonLDNamespace.schema.getUrl());
 
 			Dataset dataset = version.getDataset();
 			String id = dataset.getGlobalId();
@@ -57,10 +63,12 @@ public class OAI_OREExporter implements Exporter {
 			for (DatasetField field : fields) {
 				if (!field.isEmpty()) {
 					DatasetFieldType dfType = field.getDatasetFieldType();
-					// Add context entry
-					JsonLDTerm fieldName = new JsonLDTerm(dfType.getTitle(), SystemConfig.getDataverseSiteUrlStatic()
-							+ "/schema/" + dfType.getMetadataBlock().getName() + "#" + dfType.getName());
-					addToContextMap(fieldName);
+					JsonLDNamespace blockNamespace = new JsonLDNamespace(dfType.getMetadataBlock().getName(), SystemConfig.getDataverseSiteUrlStatic()
+							+ "/schema/" + dfType.getMetadataBlock().getName() + "#");
+					// Add context entry for metadata block
+					localContext.putIfAbsent(blockNamespace.getPrefix(), blockNamespace.getUrl());
+					
+					JsonLDTerm fieldName = new JsonLDTerm(blockNamespace, dfType.getTitle());
 
 					JsonArrayBuilder vals = Json.createArrayBuilder();
 					if (!dfType.isCompound()) {
@@ -69,6 +77,12 @@ public class OAI_OREExporter implements Exporter {
 						}
 					} else {
 						// Needs to be recursive (as in JsonPrinter?)
+
+						JsonLDNamespace fieldNamespace = new JsonLDNamespace(dfType.getName(), SystemConfig.getDataverseSiteUrlStatic()
+								+ "/schema/" + dfType.getMetadataBlock().getName() + "/" + dfType.getName() + "#");
+						// Add context entry for metadata block
+						localContext.putIfAbsent(fieldNamespace.getPrefix(), fieldNamespace.getUrl());
+
 						for (DatasetFieldCompoundValue dscv : field.getDatasetFieldCompoundValues()) {
 							// compound values are of different types
 							JsonObjectBuilder child = Json.createObjectBuilder();
@@ -78,20 +92,16 @@ public class OAI_OREExporter implements Exporter {
 								// which may have multiple values
 								if (!dsf.isEmpty()) {
 									// Add context entry - also needs to recurse
-									JsonLDTerm subFieldName = new JsonLDTerm(dsft.getTitle(),
-											SystemConfig.getDataverseSiteUrlStatic() + "/schema/"
-													+ dfType.getMetadataBlock().getName() + "/" + dfType.getName() + "#"
-													+ dsft.getName());
-									addToContextMap(subFieldName);
+									JsonLDTerm subFieldName = new JsonLDTerm(fieldNamespace, dsft.getTitle());
 
 									List<String> values = dsf.getValues();
-									if(values.size()>1) {
+									if (values.size() > 1) {
 										JsonArrayBuilder childVals = Json.createArrayBuilder();
 
-									for (String val : dsf.getValues()) {
-										childVals.add(val);
-									}
-									child.add(subFieldName.getLabel(), childVals);
+										for (String val : dsf.getValues()) {
+											childVals.add(val);
+										}
+										child.add(subFieldName.getLabel(), childVals);
 									} else {
 										child.add(subFieldName.getLabel(), values.get(0));
 									}
@@ -121,29 +131,29 @@ public class OAI_OREExporter implements Exporter {
 				aggBuilder.add(JsonLDTerm.schemaOrg("license").getLabel(),
 						"https://creativecommons.org/publicdomain/zero/1.0/");
 			} else {
-				addIfNotNull(aggBuilder, JsonLDTerm.DVCore("termsOfUse"), terms.getTermsOfUse());
+				addIfNotNull(aggBuilder, JsonLDTerm.termsOfUse, terms.getTermsOfUse());
 			}
-			addIfNotNull(aggBuilder, JsonLDTerm.DVCore("confidentialityDeclaration"),
+			addIfNotNull(aggBuilder, JsonLDTerm.confidentialityDeclaration,
 					terms.getConfidentialityDeclaration());
-			addIfNotNull(aggBuilder, JsonLDTerm.DVCore("specialPermissions"), terms.getSpecialPermissions());
-			addIfNotNull(aggBuilder, JsonLDTerm.DVCore("restrictions"), terms.getRestrictions());
-			addIfNotNull(aggBuilder, JsonLDTerm.DVCore("citationRequirements"), terms.getCitationRequirements());
-			addIfNotNull(aggBuilder, JsonLDTerm.DVCore("depositorRequirements"), terms.getDepositorRequirements());
-			addIfNotNull(aggBuilder, JsonLDTerm.DVCore("conditions"), terms.getConditions());
-			addIfNotNull(aggBuilder, JsonLDTerm.DVCore("disclaimer"), terms.getDisclaimer());
+			addIfNotNull(aggBuilder, JsonLDTerm.specialPermissions, terms.getSpecialPermissions());
+			addIfNotNull(aggBuilder, JsonLDTerm.restrictions, terms.getRestrictions());
+			addIfNotNull(aggBuilder, JsonLDTerm.citationRequirements, terms.getCitationRequirements());
+			addIfNotNull(aggBuilder, JsonLDTerm.depositorRequirements, terms.getDepositorRequirements());
+			addIfNotNull(aggBuilder, JsonLDTerm.conditions, terms.getConditions());
+			addIfNotNull(aggBuilder, JsonLDTerm.disclaimer, terms.getDisclaimer());
 
 			JsonObjectBuilder fAccess = Json.createObjectBuilder();
-			addIfNotNull(fAccess, JsonLDTerm.DVCore("termsOfAccess"), terms.getTermsOfAccess());
-			addIfNotNull(fAccess, JsonLDTerm.DVCore("fileRequestAccess"), terms.isFileAccessRequest());
-			addIfNotNull(fAccess, JsonLDTerm.DVCore("dataAccessPlace"), terms.getDataAccessPlace());
-			addIfNotNull(fAccess, JsonLDTerm.DVCore("originalArchive"), terms.getOriginalArchive());
-			addIfNotNull(fAccess, JsonLDTerm.DVCore("availabilityStatus"), terms.getAvailabilityStatus());
-			addIfNotNull(fAccess, JsonLDTerm.DVCore("contactForAccess"), terms.getContactForAccess());
-			addIfNotNull(fAccess, JsonLDTerm.DVCore("sizeOfCollection"), terms.getSizeOfCollection());
-			addIfNotNull(fAccess, JsonLDTerm.DVCore("studyCompletion"), terms.getStudyCompletion());
+			addIfNotNull(fAccess, JsonLDTerm.termsOfAccess, terms.getTermsOfAccess());
+			addIfNotNull(fAccess, JsonLDTerm.fileRequestAccess, terms.isFileAccessRequest());
+			addIfNotNull(fAccess, JsonLDTerm.dataAccessPlace, terms.getDataAccessPlace());
+			addIfNotNull(fAccess, JsonLDTerm.originalArchive, terms.getOriginalArchive());
+			addIfNotNull(fAccess, JsonLDTerm.availabilityStatus, terms.getAvailabilityStatus());
+			addIfNotNull(fAccess, JsonLDTerm.contactForAccess, terms.getContactForAccess());
+			addIfNotNull(fAccess, JsonLDTerm.sizeOfCollection, terms.getSizeOfCollection());
+			addIfNotNull(fAccess, JsonLDTerm.studyCompletion, terms.getStudyCompletion());
 			JsonObject fAccessObject = fAccess.build();
 			if (!fAccessObject.isEmpty()) {
-				aggBuilder.add(JsonLDTerm.DVCore("fileTermsOfAccess").getLabel(), fAccessObject);
+				aggBuilder.add(JsonLDTerm.fileTermsOfAccess.getLabel(), fAccessObject);
 			}
 
 			aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
@@ -161,10 +171,10 @@ public class OAI_OREExporter implements Exporter {
 					addIfNotNull(aggRes, JsonLDTerm.schemaOrg("description"), df.getDescription());
 				}
 				addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fmd.getLabel()); // "label" is the filename
-				addIfNotNull(aggRes, JsonLDTerm.DVCore("restricted"), fmd.isRestricted());
-				addIfNotNull(aggRes, JsonLDTerm.DVCore("directoryLabel"), fmd.getDirectoryLabel());
+				addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.isRestricted());
+				addIfNotNull(aggRes, JsonLDTerm.directoryLabel, fmd.getDirectoryLabel());
 				addIfNotNull(aggRes, JsonLDTerm.schemaOrg("version"), fmd.getVersion());
-				addIfNotNull(aggRes, JsonLDTerm.DVCore("datasetVersionId"), fmd.getDatasetVersion().getId());
+				addIfNotNull(aggRes, JsonLDTerm.datasetVersionId, fmd.getDatasetVersion().getId());
 				JsonArray catArray = null;
 				if (fmd != null) {
 					List<String> categories = fmd.getCategoriesByName();
@@ -176,7 +186,7 @@ public class OAI_OREExporter implements Exporter {
 						catArray = jab.build();
 					}
 				}
-				addIfNotNull(aggRes, JsonLDTerm.DVCore("categories"), catArray);
+				addIfNotNull(aggRes, JsonLDTerm.categories, catArray);
 				// Will be file DOI eventually
 				String fileId = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId();
 				aggRes.add("@id", fileId);
@@ -184,36 +194,32 @@ public class OAI_OREExporter implements Exporter {
 
 				aggRes.add("@type", JsonLDTerm.ore("AggregatedResource").getLabel());
 				addIfNotNull(aggRes, JsonLDTerm.schemaOrg("fileFormat"), df.getContentType());
-				addIfNotNull(aggRes, JsonLDTerm.DVCore("filesize"), df.getFilesize());
-				addIfNotNull(aggRes, JsonLDTerm.DVCore("storageIdentifier"), df.getStorageIdentifier());
-				addIfNotNull(aggRes, JsonLDTerm.DVCore("originalFileFormat"), df.getOriginalFileFormat());
-				addIfNotNull(aggRes, JsonLDTerm.DVCore("originalFormatLabel"), df.getOriginalFormatLabel());
-				addIfNotNull(aggRes, JsonLDTerm.DVCore("UNF"), df.getUnf());
+				addIfNotNull(aggRes, JsonLDTerm.filesize, df.getFilesize());
+				addIfNotNull(aggRes, JsonLDTerm.storageIdentifier, df.getStorageIdentifier());
+				addIfNotNull(aggRes, JsonLDTerm.originalFileFormat, df.getOriginalFileFormat());
+				addIfNotNull(aggRes, JsonLDTerm.originalFormatLabel, df.getOriginalFormatLabel());
+				addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
 				// ---------------------------------------------
 				// For file replace: rootDataFileId, previousDataFileId
 				// ---------------------------------------------
-				addIfNotNull(aggRes, JsonLDTerm.DVCore("rootDataFileId"), df.getRootDataFileId());
-				addIfNotNull(aggRes, JsonLDTerm.DVCore("previousDataFileId"), df.getPreviousDataFileId());
+				addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
+				addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
 				JsonObject checksum = null;
 				if (df.getChecksumType() != null && df.getChecksumValue() != null) {
 					checksum = Json.createObjectBuilder()
 							.add("@type", JsonLDTerm.DVCore(df.getChecksumType().toString()).getLabel())
 							.add("@value", df.getChecksumValue()).build();
-					aggRes.add(JsonLDTerm.DVCore("checksum").getLabel(), checksum);
+					aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
 				}
 				JsonArray tabTags = null;
 				JsonArrayBuilder jab = JsonPrinter.getTabularFileTags(df);
 				if (jab != null) {
 					tabTags = jab.build();
 				}
-				addIfNotNull(aggRes, JsonLDTerm.DVCore("tabularTags"), tabTags);
+				addIfNotNull(aggRes, JsonLDTerm.tabularTags, tabTags);
 
 				aggResArrayBuilder.add(aggRes.build());
 			}
-			// For namespaces using a prefix (like these two) we need to have at least one
-			// term from that namespace added to the context
-			addToContextMap(JsonLDTerm.ore("describes"));
-			addToContextMap(JsonLDTerm.dcTerms("modified"));
 			JsonObjectBuilder contextBuilder = Json.createObjectBuilder();
 			for (Entry<String, String> e : localContext.entrySet()) {
 				contextBuilder.add(e.getKey(), e.getValue());
@@ -324,7 +330,9 @@ public class OAI_OREExporter implements Exporter {
 	}
 
 	private void addToContextMap(JsonLDTerm key) {
-		localContext.putIfAbsent(key.getContextLabel(), key.getUrl());
+		if(!key.inNamespace()) {
+			localContext.putIfAbsent(key.getLabel(), key.getUrl());
+		}
 	}
 
 }

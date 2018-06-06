@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.ResourceBundle;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -74,6 +75,7 @@ import com.google.gson.JsonParser;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 
 public class BagGenerator {
 
@@ -255,7 +257,7 @@ public class BagGenerator {
 		File tmp = File.createTempFile("qdr-scatter-dirs", "tmp");
 		dirs = ScatterZipOutputStream.fileBased(tmp);
 
-		aggregation = oremap.getAsJsonObject("describes");
+		aggregation = oremap.getAsJsonObject(JsonLDTerm.ore("describes").getLabel());
 
 		/*
 		 * ToDo if (((JSONObject)
@@ -289,7 +291,7 @@ public class BagGenerator {
 		String currentPath = bagName + "/data/";
 		createDir(currentPath);
 
-		aggregates = aggregation.getAsJsonArray("aggregates");
+		aggregates = aggregation.getAsJsonArray(JsonLDTerm.ore("aggregates").getLabel());
 
 		if (aggregates != null) {
 			// Add container and data entries
@@ -662,10 +664,10 @@ public class BagGenerator {
 		JsonArray children = getChildren(item);
 		HashSet<String> titles = new HashSet<String>();
 		String title = null;
-		if (item.has("Title")) {
+		if (item.has(JsonLDTerm.dcTerms("Title").getLabel())) {
 			title = item.get("Title").getAsString();
-		} else if (item.has("name")) {
-			title = item.get("name").getAsString();
+		} else if (item.has(JsonLDTerm.schemaOrg("name").getLabel())) {
+			title = item.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString();
 		}
 
 		currentPath = currentPath + title + "/";
@@ -705,7 +707,7 @@ public class BagGenerator {
 				// ToDo
 				String dataUrl = child.get("@id").getAsString();
 				log.info("File url: " + dataUrl);
-				String childTitle = child.get("name").getAsString(); // Labels were filenames and should make usable
+				String childTitle = child.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString(); // Labels were filenames and should make usable
 																		// paths,
 																		// whereas titles may have non-standard chars
 				if (titles.contains(childTitle)) {
@@ -717,14 +719,14 @@ public class BagGenerator {
 				String childPath = currentPath + childTitle;
 
 				String childHash = null;
-				if (child.has("checksum")) {
-					ChecksumType childHashType = ChecksumType.fromString(child.getAsJsonObject("checksum").get("@type").getAsString());
+				if (child.has(JsonLDTerm.checksum.getLabel())) {
+					ChecksumType childHashType = ChecksumType.fromString(child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@type").getAsString());
 					if (hashtype != null && !hashtype.equals(childHashType)) {
 						log.warn("Multiple hash values in use - not supported");
 					}
 					if (hashtype == null)
 						hashtype = childHashType;
-					childHash = child.getAsJsonObject("checksum").get("@value").getAsString();
+					childHash = child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@value").getAsString();
 					if (shaMap.containsValue(childHash)) {
 						// Something else has this hash
 						log.warn("Duplicate/Collision: " + child.get("@id").getAsString() + " has SHA1 Hash: "
@@ -766,7 +768,7 @@ public class BagGenerator {
 							JsonObject childHashObject = new JsonObject();
 							childHashObject.addProperty("@type", hashtype.toString());
 							childHashObject.addProperty("@value", childHash);
-							child.add("checksum", (JsonElement) childHashObject);
+							child.add(JsonLDTerm.checksum.getLabel(), (JsonElement) childHashObject);
 							
 							shaMap.put(childPath, childHash);
 						} else {
@@ -779,8 +781,8 @@ public class BagGenerator {
 					if (dataCount % 1000 == 0) {
 						log.info("Retrieval in progress: " + dataCount + " files retrieved");
 					}
-					if(child.has("filesize")) {
-						totalDataSize += child.get("filesize").getAsLong();
+					if(child.has(JsonLDTerm.filesize.getLabel())) {
+						totalDataSize += child.get(JsonLDTerm.filesize.getLabel()).getAsLong();
 					}
 				} catch (Exception e) {
 					resourceUsed[index] = false;
@@ -910,34 +912,26 @@ public class BagGenerator {
 		log.debug("Generating info file");
 		StringBuffer info = new StringBuffer();
 
-		// Rights Holder?
-		JsonObject describes = map.getAsJsonObject("describes");
-		if (describes.has("Primary Source")) {
-			info.append("Source-Organization: ");
-			info.append(describes.get("Primary Source").getAsString());
-			info.append(CRLF);
-		}
+		JsonObject describes = map.getAsJsonObject(JsonLDTerm.ore("describes").getLabel());
 		JsonArray contactsArray = new JsonArray();
-		if (describes.has("Contact")) {
+		if (describes.has(JsonLDTerm.contact.getLabel())) {
 
-			log.debug(describes.get("Contact").toString());
-			JsonElement contacts = describes.get("Contact");
+			JsonElement contacts = describes.get(JsonLDTerm.contact.getLabel());
 
 			if (contacts.isJsonArray()) {
 				for (int i = 0; i < contactsArray.size(); i++) {
 					info.append("Contact-Name: ");
-					Object person = contactsArray.get(i);
-					if (person instanceof String) {
-						info.append((String) person);
+					JsonElement person = contactsArray.get(i);
+					if (person.isJsonPrimitive()) {
+						info.append(person.getAsString());
 						info.append(CRLF);
 
 					} else {
-						info.append(((JsonObject) person).get("givenName").getAsString()
-								+ ((JsonObject) person).get("familyName").getAsString());
+						info.append(((JsonObject) person).get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString());
 						info.append(CRLF);
-						if (((JsonObject) person).has("email")) {
+						if (((JsonObject) person).has(JsonLDTerm.email.getLabel())) {
 							info.append("Contact-Email: ");
-							info.append(((JsonObject) person).get("email").getAsString());
+							info.append(((JsonObject) person).get(JsonLDTerm.email.getLabel()).getAsString());
 							info.append(CRLF);
 						}
 					}
@@ -952,11 +946,11 @@ public class BagGenerator {
 				} else {
 					JsonObject person = contacts.getAsJsonObject();
 
-					info.append(person.get("Name").getAsString());
+					info.append(person.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString());
 					info.append(CRLF);
-					if (person.has("email")) {
+					if (person.has(JsonLDTerm.email.getLabel())) {
 						info.append("Contact-Email: ");
-						info.append(person.get("email").getAsString());
+						info.append(person.get(JsonLDTerm.email.getLabel()).getAsString());
 						info.append(CRLF);
 					}
 				}
@@ -964,24 +958,20 @@ public class BagGenerator {
 			}
 		}
 
-		info.append("Source-Organization: ");
+		info.append("Source-Organization: " + ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganization"));
 		// ToDo - make configurable
-		info.append("QDR (https://qdr.syr.edu/)");
 		info.append(CRLF);
 
-		info.append("Organization-Address: ");
-		info.append(
-				"Center for Qualitative and Multi-Method Inquiry, 347 Eggers Hall, Maxwell School, Syracuse University, Syracuse, NY 13244");
+		info.append("Organization-Address: " + ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganizationAddress"));
 		info.append(CRLF);
 
-		info.append("Contact-Email: ");
-		info.append("qdr@syr.edu");
+		info.append("Contact-Email: " + ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganizationEmail"));
 		info.append(CRLF);
 
 		info.append("External-Description: ");
 
 		info.append(
-				WordUtils.wrap(getSingleValue(describes.getAsJsonObject("Description"), "Text"), 78, CRLF + " ", true));
+				WordUtils.wrap(getSingleValue(describes.getAsJsonObject(JsonLDTerm.schemaOrg("description").getLabel()), "Text"), 78, CRLF + " ", true));
 
 		info.append(CRLF);
 
@@ -1002,10 +992,10 @@ public class BagGenerator {
 		
 		info.append("Internal-Sender-Identifier: ");
 		String catalog="QDR Main Collection";
-		if(describes.has("includedInDataCatalog")) {
-			catalog =describes.get("includedInDataCatalog").getAsString(); 
+		if(describes.has(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel())) {
+			catalog =describes.get(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel()).getAsString(); 
 		}
-		info.append(catalog + ":" + describes.get("name").getAsString());
+		info.append(catalog + ":" + describes.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString());
 		info.append(CRLF);
 
 		return info.toString();
@@ -1057,7 +1047,7 @@ public class BagGenerator {
 	// more elements
 	private static JsonArray getChildren(JsonObject parent) {
 		JsonElement o = null;
-		o = parent.get("hasPart");
+		o = parent.get(JsonLDTerm.dcTerms("hasPart").getLabel());
 		if (o == null) {
 			return new JsonArray();
 		} else {
