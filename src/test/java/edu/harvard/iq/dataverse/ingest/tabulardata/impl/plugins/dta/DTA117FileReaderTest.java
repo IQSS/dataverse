@@ -17,26 +17,33 @@ public class DTA117FileReaderTest {
     DTA117FileReader instance = new DTA117FileReader(null);
     File nullDataFile = null;
 
+    // TODO: Can we create a small file to check into the code base that exercises the characteristics issue?
+    @Ignore
+    @Test
+    public void testCharacteristics() throws IOException {
+        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/15aa6802ee5-5d2ed1bf55a5.dta"))), nullDataFile);
+        assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
+        assertEquals("STATA 13", result.getDataTable().getOriginalFormatVersion());
+        assertEquals(441, result.getDataTable().getDataVariables().size());
+    }
+
     @Test
     public void testAuto() throws IOException {
         // From https://www.stata-press.com/data/r13/auto.dta
         // `strings` shows "<stata_dta><header><release>117</release>"
-        //TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("scripts/search/data/tabular/stata13-auto.dta"))), nullDataFile);
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("downloads/stata-13-test-files/15aa6802ee5-5d2ed1bf55a5.dta"))), nullDataFile);
+        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("scripts/search/data/tabular/stata13-auto.dta"))), nullDataFile);
         assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
         assertEquals("STATA 13", result.getDataTable().getOriginalFormatVersion());
-        assertEquals(25, result.getDataTable().getDataVariables().size());
+        assertEquals(12, result.getDataTable().getDataVariables().size());
         DataVariable foreign = result.getDataTable().getDataVariables().get(11);
-        assertEquals("sexage", foreign.getName());
-        assertEquals("Age at first sexual intercourse", foreign.getLabel());
-        assertEquals(0, foreign.getCategories().size());
+        assertEquals(2, foreign.getCategories().size());
         List<VariableCategory> origins = (List) foreign.getCategories();
-        //assertEquals("Domestic", origins.get(0).getLabel());
-        //assertEquals("Foreign", origins.get(1).getLabel());
+        assertEquals("Domestic", origins.get(0).getLabel());
+        assertEquals("Foreign", origins.get(1).getLabel());
     }
 
     // TODO: Can we create a small file to check into the code base that exercises the value-label names non-zero offset issue?
-    //@Ignore
+    @Ignore
     @Test
     public void testFirstCategoryNonZeroOffset() throws IOException {
 
