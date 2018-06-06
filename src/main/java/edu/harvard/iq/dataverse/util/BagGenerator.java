@@ -312,11 +312,14 @@ public class BagGenerator {
 		boolean first = true;
 		for (Entry<String, String> pidEntry : pidMap.entrySet()) {
 			if (!first) {
-				pidStringBuffer.append("\n");
+				pidStringBuffer.append("\r\n");
 			} else {
 				first = false;
 			}
-			pidStringBuffer.append(pidEntry.getKey() + " " + pidEntry.getValue());
+			String path = pidEntry.getValue();
+			//Make path relative to base dir
+			path = path.substring(path.indexOf('/'));
+			pidStringBuffer.append(pidEntry.getKey() + " " + path);
 		}
 		createFileFromString(bagName + "/pid-mapping.txt", pidStringBuffer.toString());
 		// Hash manifest - a hash manifest is required
@@ -325,11 +328,14 @@ public class BagGenerator {
 		first = true;
 		for (Entry<String, String> sha1Entry : shaMap.entrySet()) {
 			if (!first) {
-				sha1StringBuffer.append("\n");
+				sha1StringBuffer.append("\r\n");
 			} else {
 				first = false;
 			}
-			sha1StringBuffer.append(sha1Entry.getValue() + " " + sha1Entry.getKey());
+			String path = sha1Entry.getKey();
+			//Make path relative to base dir
+			path = path.substring(path.indexOf('/'));
+			sha1StringBuffer.append(sha1Entry.getValue() + " " + path);
 		}
 		if (!(hashtype == null)) {
 			String manifestName = bagName + "/manifest-";
@@ -349,7 +355,7 @@ public class BagGenerator {
 			log.warn("No Hash values sent - Bag File does not meet BagIT specification requirement");
 		}
 		// bagit.txt - Required by spec
-		createFileFromString(bagName + "/bagit.txt", "BagIt-Version: 0.97\nTag-File-Character-Encoding: UTF-8");
+		createFileFromString(bagName + "/bagit.txt", "BagIt-Version: 1.0\r\nTag-File-Character-Encoding: UTF-8");
 		/*
 		 * ToDo - what date to set for archiving
 		 * oremap.getJsonObject("describes").put("Publication Date", new
@@ -962,7 +968,7 @@ public class BagGenerator {
 		// ToDo - make configurable
 		info.append(CRLF);
 
-		info.append("Organization-Address: " + ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganizationAddress"));
+		info.append("Organization-Address: " + WordUtils.wrap(ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganizationAddress"), 78, CRLF + " ", true));
 		info.append(CRLF);
 
 		info.append("Contact-Email: " + ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganizationEmail"));
@@ -992,7 +998,7 @@ public class BagGenerator {
 	    info.append(Long.toString(dataCount)); info.append(CRLF);
 		
 		info.append("Internal-Sender-Identifier: ");
-		String catalog="QDR Main Collection";
+		String catalog=ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganization") + " Catalog";
 		if(describes.has(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel())) {
 			catalog =describes.get(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel()).getAsString(); 
 		}
