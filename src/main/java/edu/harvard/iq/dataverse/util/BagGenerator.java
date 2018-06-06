@@ -971,7 +971,8 @@ public class BagGenerator {
 		info.append("External-Description: ");
 
 		info.append(
-				WordUtils.wrap(getSingleValue(describes.getAsJsonObject(JsonLDTerm.schemaOrg("description").getLabel()), "Text"), 78, CRLF + " ", true));
+				//FixMe - handle description having subfields better
+				WordUtils.wrap(getSingleValue(describes.getAsJsonObject(JsonLDTerm.description).getLabel()), JsonLDTerm.text.getLabel()), 78, CRLF + " ", true));
 
 		info.append(CRLF);
 

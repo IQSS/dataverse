@@ -54,6 +54,8 @@ public class JsonLDTerm {
 	public static JsonLDTerm contact = JsonLDTerm.DVCore("contact");
 	public static JsonLDTerm affiliation = JsonLDTerm.DVCore("affiliation");
 	public static JsonLDTerm email = JsonLDTerm.DVCore("email");
+	public static JsonLDTerm description = JsonLDTerm.DVCore("description");
+	public static JsonLDTerm text = JsonLDTerm.DVCore("text");
     
     static{
     	/* Translations are intended to project-specific translations for the following use cases:
@@ -65,7 +67,8 @@ public class JsonLDTerm {
         translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/datasetContact#datasetContactName", JsonLDTerm.schemaOrg("name"));
         translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/datasetContact#datasetContactAffiliation", JsonLDTerm.email);
         translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/datasetContact#datasetContactAffiliation", JsonLDTerm.affiliation);
-        translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation#dsDescription", JsonLDTerm.schemaOrg("description"));
+        translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation#Description", JsonLDTerm.description);
+        translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/dsDescription#Text", JsonLDTerm.text);
 
     }
 
