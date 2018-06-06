@@ -185,7 +185,7 @@ public class DTA117FileReader extends TabularDataFileReader{
         release117constant.put("NAME",      LENGTH_NAME[1]);
         release117constant.put("FORMAT",    LENGTH_FORMAT_FIELD[1]);
         release117constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[2]);
-        release117constant.put("DBL_MV_PWR",DBL_MV_PWR[1]);
+        release117constant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
         
         CONSTANT_TABLE.put(117, release117constant);
         
@@ -1756,6 +1756,7 @@ public class DTA117FileReader extends TabularDataFileReader{
         private long byte_offset; 
         private int buffer_byte_offset;
         Boolean LSF = null; 
+        Boolean doneSkipping = false;
         
         public DataReader(BufferedInputStream stream) throws IOException {
             this(stream, 0);
@@ -1867,21 +1868,39 @@ public class DTA117FileReader extends TabularDataFileReader{
         */
         
         private int bufferMoreBytes() throws IOException {
-            int actual_bytes_read = stream.read(byte_buffer, 0, DEFAULT_BUFFER_SIZE);
+
+            System.out.println("global offset: "+byte_offset);
+            System.out.println("buffer size: "+buffer_size);
+            System.out.println("buffer offset: "+buffer_byte_offset);
+            int actual_bytes_read;
+            byte_offset += buffer_byte_offset;
             
-            // set the current buffer size to the actual number of 
-            // bytes read: 
-            this.buffer_size = actual_bytes_read;
-            
-            // reset the current buffer offset and increment the total
-            // byte offset by the size of the last buffer - that should be 
-            // equal to the buffer_byte_offset. 
-            // (TODO: check that this is the case!)
-            
-            byte_offset +=  buffer_byte_offset;  
-            buffer_byte_offset = 0; 
-            
-            return actual_bytes_read; 
+            if (byte_offset == 0 || buffer_byte_offset == buffer_size) {
+                actual_bytes_read = stream.read(byte_buffer, 0, DEFAULT_BUFFER_SIZE);
+                // set the current buffer size to the actual number of 
+                // bytes read: 
+                this.buffer_size = actual_bytes_read;
+
+                // reset the current buffer offset and increment the total
+                // byte offset by the size of the last buffer - that should be 
+                // equal to the buffer_byte_offset. 
+                // (TODO: check that this is the case!)
+                
+
+            } else if (buffer_byte_offset < buffer_size) {
+                System.arraycopy(byte_buffer, buffer_byte_offset, byte_buffer, 0, buffer_size - buffer_byte_offset);
+                this.buffer_size = buffer_size - buffer_byte_offset;
+                actual_bytes_read = stream.read(byte_buffer, buffer_size, DEFAULT_BUFFER_SIZE - buffer_size);
+                buffer_size += actual_bytes_read;
+                
+
+            } else {
+                throw new IOException("Offset already past the buffer boundary");
+            }
+            buffer_byte_offset = 0;
+            System.out.println("bytes read: "+actual_bytes_read);
+            return actual_bytes_read;
+
         }
         
         /* 
@@ -2175,7 +2194,7 @@ public class DTA117FileReader extends TabularDataFileReader{
         }
         
         // This helper method is used for skipping the <ch>llll...</ch> sections
-        // inside the "<charachteristics>" section; where llll is a 4-byte unsigned
+        // inside the "<characteristics>" section; where llll is a 4-byte unsigned
         // int followed by llll bytes.
         
         public void skipDefinedSections(String tag) throws IOException {
@@ -2192,11 +2211,14 @@ public class DTA117FileReader extends TabularDataFileReader{
                 }
                 // TODO: implement skipBytes() instead:
                 byte[] skipped_bytes = readBytes((int)number);
+               
                 readClosingTag(tag);
                 logger.fine("read closing tag </"+tag+">;");
 
-
+                
             }
+            
+            doneSkipping = true;
             logger.fine("exiting at offset "+buffer_byte_offset);
         }
         
@@ -2207,11 +2229,20 @@ public class DTA117FileReader extends TabularDataFileReader{
 
             int n = tag.length();
             
-            if (this.buffer_size - buffer_byte_offset >= n) {
+            System.out.println(tag);
+            System.out.println(this.buffer_size);
+            System.out.println(buffer_byte_offset);
+            
+            
+            if ((this.buffer_size - buffer_byte_offset) >= n) {
                 return (tag).equals(new String(Arrays.copyOfRange(byte_buffer, buffer_byte_offset, buffer_byte_offset+n),"US-ASCII"));
-            } else {
-                throw new IOException("Checking section tags across byte buffers not yet implemented.");
-            }   
+            } 
+            else{
+                 bufferMoreBytes();
+                return checkTag(tag);
+             }
+           
+            
         }
         
         
