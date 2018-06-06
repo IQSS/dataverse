@@ -1869,9 +1869,9 @@ public class DTA117FileReader extends TabularDataFileReader{
         
         private int bufferMoreBytes() throws IOException {
 
-            System.out.println("global offset: "+byte_offset);
-            System.out.println("buffer size: "+buffer_size);
-            System.out.println("buffer offset: "+buffer_byte_offset);
+            //System.out.println("global offset: "+byte_offset);
+            //System.out.println("buffer size: "+buffer_size);
+            //System.out.println("buffer offset: "+buffer_byte_offset);
             int actual_bytes_read;
             byte_offset += buffer_byte_offset;
             
@@ -1898,7 +1898,7 @@ public class DTA117FileReader extends TabularDataFileReader{
                 throw new IOException("Offset already past the buffer boundary");
             }
             buffer_byte_offset = 0;
-            System.out.println("bytes read: "+actual_bytes_read);
+            //System.out.println("bytes read: "+actual_bytes_read);
             return actual_bytes_read;
 
         }
@@ -2229,9 +2229,9 @@ public class DTA117FileReader extends TabularDataFileReader{
 
             int n = tag.length();
             
-            System.out.println(tag);
-            System.out.println(this.buffer_size);
-            System.out.println(buffer_byte_offset);
+            //ystem.out.println(tag);
+            //System.out.println(this.buffer_size);
+            //System.out.println(buffer_byte_offset);
             
             
             if ((this.buffer_size - buffer_byte_offset) >= n) {
