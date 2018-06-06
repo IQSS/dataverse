@@ -972,7 +972,7 @@ public class BagGenerator {
 
 		info.append(
 				//FixMe - handle description having subfields better
-				WordUtils.wrap(getSingleValue(describes.getAsJsonObject(JsonLDTerm.description).getLabel()), JsonLDTerm.text.getLabel()), 78, CRLF + " ", true));
+				WordUtils.wrap(getSingleValue(describes.getAsJsonObject(JsonLDTerm.description.getLabel()), JsonLDTerm.text.getLabel()), 78, CRLF + " ", true));
 
 		info.append(CRLF);
 
