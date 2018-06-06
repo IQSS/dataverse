@@ -1828,6 +1828,7 @@ public class DTA117FileReader extends TabularDataFileReader{
                     System.arraycopy(byte_buffer, buffer_byte_offset, bytes, 0, this.buffer_size - buffer_byte_offset);
                     //buffer_byte_offset = this.buffer_size;
                     bytes_read = this.buffer_size - buffer_byte_offset;
+                    buffer_byte_offset = this.buffer_size;
                 }
                     
                 int morebytes = bufferMoreBytes(); 
@@ -1843,6 +1844,7 @@ public class DTA117FileReader extends TabularDataFileReader{
                     System.arraycopy(byte_buffer, buffer_byte_offset, bytes, bytes_read, this.buffer_size);
                     //buffer_byte_offset = this.buffer_size;
                     bytes_read += this.buffer_size;
+                    buffer_byte_offset = this.buffer_size;
                     morebytes = bufferMoreBytes();
                     logger.fine("buffered "+morebytes+" bytes");
                 }
