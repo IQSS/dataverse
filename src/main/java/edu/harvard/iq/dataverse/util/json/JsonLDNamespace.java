@@ -15,8 +15,8 @@ public class JsonLDNamespace {
 	public static JsonLDNamespace ore = new JsonLDNamespace("ore","http://www.openarchives.org/ore/terms/");
 	public static JsonLDNamespace schema = new JsonLDNamespace("schema","http://schema.org/");
 
-	public JsonLDNamespace(String term, String url) {
-		this.prefix = null;
+	public JsonLDNamespace(String prefix, String url) {
+		this.prefix = prefix;
 		this.url = url;
 	}
 
