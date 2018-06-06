@@ -207,7 +207,7 @@ public class OAI_OREExporter implements Exporter {
 				JsonObject checksum = null;
 				if (df.getChecksumType() != null && df.getChecksumValue() != null) {
 					checksum = Json.createObjectBuilder()
-							.add("@type", JsonLDTerm.DVCore(df.getChecksumType().toString()).getLabel())
+							.add("@type", df.getChecksumType().toString())
 							.add("@value", df.getChecksumValue()).build();
 					aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
 				}
