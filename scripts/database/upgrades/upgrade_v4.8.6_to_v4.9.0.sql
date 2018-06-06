@@ -69,3 +69,5 @@ VALUES (':Shoulder', (SELECT substring(content, strpos(content,'/')+1) || '/' fr
  SET content=(SELECT substring(content from 0 for strpos(content,'/'))
  FROM setting
  WHERE name=':Authority' and strpos(content,'/')>0) where name=':Authority';
+
+update datasetfieldtype set displayformat = '<a href="#VALUE" target="_blank">#VALUE</a>' where name in ('alternativeURL', 'keywordVocabularyURI', 'topicClassVocabURI', 'publicationURL', 'producerURL', 'distributorURL');
