@@ -852,7 +852,8 @@ public class BagGenerator {
 				ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganizationAddress"), 78, CRLF + " ", true));
 		info.append(CRLF);
 
-		info.append("Contact-Email: " + ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganizationEmail"));
+		//Not a BagIt standard name
+		info.append("Organization-Email: " + ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganizationEmail"));
 		info.append(CRLF);
 
 		info.append("External-Description: ");

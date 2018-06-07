@@ -66,9 +66,9 @@ public class JsonLDTerm {
     	 * * Basic information, such as a contact is coming from a metadata block which may be custom to the project
     	 * In both cases, the translations map requires the url of the original term and a JSONLDTerm that should be used as a replacement.  
     	 */
-        translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation#datasetContact", JsonLDTerm.contact);
-        translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/datasetContact#datasetContactName", JsonLDTerm.schemaOrg("name"));
-        translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/datasetContact#datasetContactAffiliation", JsonLDTerm.email);
+        translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation#Contact", JsonLDTerm.contact);
+        translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/Contact#datasetContactName", JsonLDTerm.schemaOrg("name"));
+        translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/Contact#datasetContactEmail", JsonLDTerm.email);
         translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/datasetContact#datasetContactAffiliation", JsonLDTerm.affiliation);
         translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation#Description", JsonLDTerm.description);
         translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/dsDescription#Text", JsonLDTerm.text);
