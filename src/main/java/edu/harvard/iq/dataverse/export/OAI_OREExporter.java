@@ -73,7 +73,7 @@ public class OAI_OREExporter implements Exporter {
 
 					JsonArrayBuilder vals = Json.createArrayBuilder();
 					if (!dfType.isCompound()) {
-						for (String val : field.getValues()) {
+						for (String val : field.getValues_nondisplay()) {
 							vals.add(val);
 						}
 					} else {
@@ -95,11 +95,11 @@ public class OAI_OREExporter implements Exporter {
 									// Add context entry - also needs to recurse
 									JsonLDTerm subFieldName = new JsonLDTerm(fieldNamespace, dsft.getTitle());
 
-									List<String> values = dsf.getValues();
+									List<String> values = dsf.getValues_nondisplay();
 									if (values.size() > 1) {
 										JsonArrayBuilder childVals = Json.createArrayBuilder();
 
-										for (String val : dsf.getValues()) {
+										for (String val : dsf.getValues_nondisplay()) {
 											childVals.add(val);
 										}
 										child.add(subFieldName.getLabel(), childVals);
