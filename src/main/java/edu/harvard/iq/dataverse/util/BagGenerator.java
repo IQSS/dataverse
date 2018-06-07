@@ -111,8 +111,8 @@ public class BagGenerator {
 
 	private String bagID = null;
 	private String bagPath = "/tmp";
-	private String basePath = "";
-
+	String bagName = null;
+	
 	private String apiKey = null;
 
 	private JsonObject oremap;
@@ -234,17 +234,15 @@ public class BagGenerator {
 		aggregation = oremap.getAsJsonObject(JsonLDTerm.ore("describes").getLabel());
 
 		bagID = aggregation.get("@id").getAsString();
-		String bagName = bagID;
 		try {
 			// Create valid filename from identifier and extend path with
 			// two levels of hash-based subdirs to help distribute files
-			bagName = getValidName(bagName);
+			bagName = getValidName(bagID);
 		} catch (Exception e) {
 			log.error("Couldn't create valid filename: " + e.getLocalizedMessage());
 			return false;
 		}
 		// Create data dir in bag, also creates parent bagName dir
-		basePath = bagName + "/";
 		String currentPath = "data/";
 		createDir(currentPath);
 
@@ -276,7 +274,7 @@ public class BagGenerator {
 			String path = pidEntry.getValue();
 			pidStringBuffer.append(pidEntry.getKey() + " " + path);
 		}
-		createFileFromString(bagName + "/pid-mapping.txt", pidStringBuffer.toString());
+		createFileFromString("pid-mapping.txt", pidStringBuffer.toString());
 		// Hash manifest - a hash manifest is required
 		// by Bagit spec
 		StringBuffer sha1StringBuffer = new StringBuffer();
@@ -291,7 +289,7 @@ public class BagGenerator {
 			sha1StringBuffer.append(sha1Entry.getValue() + " " + path);
 		}
 		if (!(hashtype == null)) {
-			String manifestName = bagName + "/manifest-";
+			String manifestName = "manifest-";
 			if (hashtype.equals(DataFile.ChecksumType.SHA1)) {
 				manifestName = manifestName + "sha1.txt";
 			} else if (hashtype.equals(DataFile.ChecksumType.SHA256)) {
@@ -308,7 +306,7 @@ public class BagGenerator {
 			log.warn("No Hash values sent - Bag File does not meet BagIT specification requirement");
 		}
 		// bagit.txt - Required by spec
-		createFileFromString(bagName + "/bagit.txt", "BagIt-Version: 1.0\r\nTag-File-Character-Encoding: UTF-8");
+		createFileFromString("bagit.txt", "BagIt-Version: 1.0\r\nTag-File-Character-Encoding: UTF-8");
 
 		aggregation.addProperty(JsonLDTerm.totalSize.getLabel(), totalDataSize);
 		aggregation.addProperty(JsonLDTerm.fileCount.getLabel(),dataCount);
@@ -321,10 +319,10 @@ public class BagGenerator {
 		// Serialize oremap itself
 		// FixMe - add missing hash values if needed and update context
 		// (read and cache files or read twice?)
-		createFileFromString(bagName + "/oremap.jsonld.txt", oremap.toString());
+		createFileFromString("oremap.jsonld.txt", oremap.toString());
 
 		// Add a bag-info file
-		createFileFromString(bagName + "/bag-info.txt", generateInfoFile(oremap));
+		createFileFromString("bag-info.txt", generateInfoFile(oremap));
 
 		log.info("Creating bag: " + bagName);
 
@@ -507,7 +505,7 @@ public class BagGenerator {
 			parent.mkdirs();
 		}
 		// Create known-good filename
-		String bagName = getValidName(bagID);
+		bagName = getValidName(bagID);
 		File bagFile = new File(bagPath, bagName + ".zip");
 		log.info("BagPath: " + bagFile.getAbsolutePath());
 		// Create an output stream backed by the file
@@ -716,7 +714,7 @@ public class BagGenerator {
 
 	private void createDir(final String name) throws IOException, ExecutionException, InterruptedException {
 
-		ZipArchiveEntry archiveEntry = new ZipArchiveEntry(bagPath + name);
+		ZipArchiveEntry archiveEntry = new ZipArchiveEntry(bagName + "/" + name);
 		archiveEntry.setMethod(ZipEntry.DEFLATED);
 		InputStreamSupplier supp = new InputStreamSupplier() {
 			public InputStream get() {
@@ -727,10 +725,10 @@ public class BagGenerator {
 		addEntry(archiveEntry, supp);
 	}
 
-	private void createFileFromString(final String name, final String content)
+	private void createFileFromString(final String relPath, final String content)
 			throws IOException, ExecutionException, InterruptedException {
 
-		ZipArchiveEntry archiveEntry = new ZipArchiveEntry(name);
+		ZipArchiveEntry archiveEntry = new ZipArchiveEntry(bagName + "/" + relPath);
 		archiveEntry.setMethod(ZipEntry.DEFLATED);
 		InputStreamSupplier supp = new InputStreamSupplier() {
 			public InputStream get() {
@@ -747,10 +745,10 @@ public class BagGenerator {
 		addEntry(archiveEntry, supp);
 	}
 
-	private void createFileFromURL(final String name, final String uri)
+	private void createFileFromURL(final String relPath, final String uri)
 			throws IOException, ExecutionException, InterruptedException {
 
-		ZipArchiveEntry archiveEntry = new ZipArchiveEntry(name);
+		ZipArchiveEntry archiveEntry = new ZipArchiveEntry(bagName + "/" + relPath);
 		archiveEntry.setMethod(ZipEntry.DEFLATED);
 		InputStreamSupplier supp = getInputStreamSupplier(uri);
 		addEntry(archiveEntry, supp);
