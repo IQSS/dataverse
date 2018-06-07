@@ -67,9 +67,9 @@ public class JsonLDTerm {
     	 * In both cases, the translations map requires the url of the original term and a JSONLDTerm that should be used as a replacement.  
     	 */
         translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation#Contact", JsonLDTerm.contact);
-        translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/Contact#datasetContactName", JsonLDTerm.schemaOrg("name"));
-        translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/Contact#datasetContactEmail", JsonLDTerm.email);
-        translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/datasetContact#datasetContactAffiliation", JsonLDTerm.affiliation);
+        translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/datasetContact#Name", JsonLDTerm.schemaOrg("name"));
+        translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/datasetContact#E-mail", JsonLDTerm.email);
+        translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/datasetContact#Affiliation", JsonLDTerm.affiliation);
         translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation#Description", JsonLDTerm.description);
         translations.put(SystemConfig.getDataverseSiteUrlStatic() + "/schema/citation/dsDescription#Text", JsonLDTerm.text);
 
