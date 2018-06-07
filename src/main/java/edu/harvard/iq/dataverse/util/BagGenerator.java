@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -71,6 +73,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
@@ -91,9 +94,6 @@ public class BagGenerator {
 	private HashMap<String, String> pidMap = new LinkedHashMap<String, String>();
 	private HashMap<String, String> shaMap = new LinkedHashMap<String, String>();
 
-	private String license = "No license information provided";
-	private String purpose = "Production"; // Backward-compatibility - default
-											// is for production
 	private int timeout = 300;
 	private RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout * 1000)
 			.setConnectionRequestTimeout(timeout * 1000).setSocketTimeout(timeout * 1000).build();
@@ -106,9 +106,12 @@ public class BagGenerator {
 
 	private long dataCount = 0l;
 	private long totalDataSize = 0l;
+	private long maxFileSize = 0l;
+	private Set<String> mimetypes = new TreeSet<String>();
 
 	private String bagID = null;
 	private String bagPath = "/tmp";
+	private String basePath = "";
 
 	private String apiKey = null;
 
@@ -175,47 +178,20 @@ public class BagGenerator {
 			} catch (Exception e) {
 				println(e.getMessage());
 			}
-			/*
-			 * for (String arg : args) { println("Arg is : " + arg); if
-			 * (arg.equalsIgnoreCase("-d2a")) { d2a = true;
-			 * println("Description to Abstract translation on"); } else if
-			 * (arg.equalsIgnoreCase("-listonly")) { listonly = true;
-			 * println("List Only Mode"); } else if (arg.equals("-merge")) { merge = true;
-			 * println("Merge mode ON"); } else if (arg.equals("-verify")) { verify = true;
-			 * println("Verify Mode: Will verify hash values for file comparisons"); } else
-			 * if (arg.equals("-ro")) { importRO = true;
-			 * println("RO Mode: Intpreting last commandline arg as the URL for an OREMap");
-			 * } else if (arg.equalsIgnoreCase("-sead2")) { sead2space = true;
-			 * println("SEAD2 Space: Uploading to a SEAD2 Instance"); } else if
-			 * (arg.startsWith("-limit")) { max = Long.parseLong(arg.substring(6));
-			 * println("Max ingest file count: " + max); } else if (arg.startsWith("-ex")) {
-			 * 
-			 * excluded.add(arg.substring(3)); println("Exluding pattern: " +
-			 * arg.substring(3)); }
-			 * 
-			 * }
-			 */
 			String mapFileName = null;
 			String apiKey = null;
 			// go through arguments
 			for (String arg : args) {
-				if (!((arg.equalsIgnoreCase("-listonly")) || (arg.equalsIgnoreCase("-merge"))
-						|| (arg.equalsIgnoreCase("-verify")) || (arg.equalsIgnoreCase("-ro"))
-						|| (arg.equalsIgnoreCase("-sead2")) || (arg.equalsIgnoreCase("-d2a"))
-						|| (arg.startsWith("-limit")) || (arg.startsWith("-ex")))) {
-					// First non-flag arg is the server URL
-					if (mapFileName == null) {
-						println("MapFile: " + arg);
-						mapFileName = arg;
-					}
-					if (apiKey == null) {
-						println("APIKey: " + arg);
-						apiKey = arg;
-					}
+				// First non-flag arg is the server URL
+				if (mapFileName == null) {
+					println("MapFile: " + arg);
+					mapFileName = arg;
+				}
+				if (apiKey == null) {
+					println("APIKey: " + arg);
+					apiKey = arg;
 				}
 			}
-			File mapfile = new File(mapFileName);
-
 			// Read from File to String
 			JsonObject oremap = new JsonObject();
 
@@ -225,9 +201,7 @@ public class BagGenerator {
 				oremap = jsonElement.getAsJsonObject();
 			} catch (FileNotFoundException e) {
 				log.warn("Couldn't find " + mapFileName);
-			} catch (IOException ioe) {
-				log.warn(ioe.getMessage());
-			}
+			} 
 
 			BagGenerator bg = new BagGenerator(oremap);
 			bg.setBagPath(".");
@@ -259,24 +233,6 @@ public class BagGenerator {
 
 		aggregation = oremap.getAsJsonObject(JsonLDTerm.ore("describes").getLabel());
 
-		/*
-		 * ToDo if (((JSONObject)
-		 * pubRequest.get(PubRequestFacade.PREFERENCES)).has("License")) { license =
-		 * ((JSONObject)
-		 * pubRequest.get(PubRequestFacade.PREFERENCES)).getString("License");
-		 * 
-		 * } // Accept license preference and add it as the license on the //
-		 * aggregation aggregation.put("License", license);
-		 */
-
-		// check whether Access Rights set, if so, add it to aggregation
-		/*
-		 * ToDo if (((JSONObject)
-		 * pubRequest.get(PubRequestFacade.PREFERENCES)).has("Access Rights")) { String
-		 * accessRights = ((JSONObject) pubRequest.get(PubRequestFacade.PREFERENCES))
-		 * .getString("Access Rights"); aggregation.put("Access Rights", accessRights);
-		 * }
-		 */
 		bagID = aggregation.get("@id").getAsString();
 		String bagName = bagID;
 		try {
@@ -288,7 +244,8 @@ public class BagGenerator {
 			return false;
 		}
 		// Create data dir in bag, also creates parent bagName dir
-		String currentPath = bagName + "/data/";
+		basePath = bagName + "/";
+		String currentPath = "data/";
 		createDir(currentPath);
 
 		aggregates = aggregation.getAsJsonArray(JsonLDTerm.ore("aggregates").getLabel());
@@ -317,8 +274,6 @@ public class BagGenerator {
 				first = false;
 			}
 			String path = pidEntry.getValue();
-			//Make path relative to base dir
-			path = path.substring(path.indexOf('/'));
 			pidStringBuffer.append(pidEntry.getKey() + " " + path);
 		}
 		createFileFromString(bagName + "/pid-mapping.txt", pidStringBuffer.toString());
@@ -333,8 +288,6 @@ public class BagGenerator {
 				first = false;
 			}
 			String path = sha1Entry.getKey();
-			//Make path relative to base dir
-			path = path.substring(path.indexOf('/'));
 			sha1StringBuffer.append(sha1Entry.getValue() + " " + path);
 		}
 		if (!(hashtype == null)) {
@@ -356,38 +309,15 @@ public class BagGenerator {
 		}
 		// bagit.txt - Required by spec
 		createFileFromString(bagName + "/bagit.txt", "BagIt-Version: 1.0\r\nTag-File-Character-Encoding: UTF-8");
-		/*
-		 * ToDo - what date to set for archiving
-		 * oremap.getJsonObject("describes").put("Publication Date", new
-		 * SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime()));
-		 */
-		Object context = oremap.get("@context");
 
-		// ToDo - fix context as needed
-		// FixMe - should test that these labels don't have a different
-		// definition (currently we're just checking to see if they a
-		// already defined)
-		// addIfNeeded(context, "License", "http://purl.org/dc/terms/license");
-		// addIfNeeded(context, "Purpose",
-		// "http://sead-data.net/vocab/publishing#Purpose");
-		// addIfNeeded(context, "Access Rights",
-		// "http://purl.org/dc/terms/accessRights");
-		// addIfNeeded(context, PubRequestFacade.EXTERNAL_IDENTIFIER,
-		// "http://purl.org/dc/terms/identifier");
-		// addIfNeeded(context, "Publication Date", "http://purl.org/dc/terms/issued");
-
-		// Aggregation Statistics
-		// For keys in Agg Stats:
-		/*
-		 * for (String key : ((Set<String>) aggStats.keySet())) { addIfNeeded(context,
-		 * key, getURIForKey(pubRequest.get("@context"), key)); }
-		 */
-		/*
-		 * ToDo - any rewrites? oremap.put("@id",
-		 * linkRewriter.rewriteOREMapLink(oremap.getString("@id"), bagID));
-		 * aggregation.put("@id",
-		 * linkRewriter.rewriteAggregationLink(aggregation.getString("@id"), bagID));
-		 */
+		aggregation.addProperty(JsonLDTerm.totalSize.getLabel(), totalDataSize);
+		aggregation.addProperty(JsonLDTerm.fileCount.getLabel(),dataCount);
+		JsonArray mTypes= new JsonArray();
+		for(String mt: mimetypes) {
+			mTypes.add(new JsonPrimitive(mt));
+		}
+		aggregation.add(JsonLDTerm.dcTerms("format").getLabel(), mTypes);
+		aggregation.addProperty(JsonLDTerm.maxFileSize.getLabel(), maxFileSize);
 		// Serialize oremap itself
 		// FixMe - add missing hash values if needed and update context
 		// (read and cache files or read twice?)
@@ -608,59 +538,6 @@ public class BagGenerator {
 		zf.close();
 	}
 
-	private void addIfNeeded(Object context, String key, String uri) {
-		if (!isInContext(context, key)) {
-			addToContext(context, key, uri);
-		}
-	}
-
-	private boolean addToContext(Object context, String label, String predicate) {
-		if (context instanceof JSONArray) {
-			// Look for an object in the array to add to
-			for (int i = 0; i < ((JSONArray) context).length(); i++) {
-				if (addToContext(((JSONArray) context).get(i), label, predicate)) {
-					return true;
-				}
-			}
-		} else if (context instanceof JSONObject) {
-			((JSONObject) context).put(label, predicate);
-			return true;
-		}
-		return false;
-	}
-
-	private boolean isInContext(Object context, String label) {
-		if (context instanceof JSONArray) {
-			for (int i = 0; i < ((JSONArray) context).length(); i++) {
-				if (isInContext(((JSONArray) context).get(i), label)) {
-					return true;
-				}
-			}
-		} else if (context instanceof JSONObject) {
-			if (((JSONObject) context).has(label)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private String getURIForKey(Object context, String key) {
-		String uri = null;
-		if (context instanceof JSONArray) {
-			for (int i = 0; i < ((JSONArray) context).length(); i++) {
-				uri = getURIForKey(((JSONArray) context).get(i), key);
-				if (uri != null) {
-					return uri;
-				}
-			}
-		} else if (context instanceof JSONObject) {
-			if (((JSONObject) context).has(key)) {
-				uri = ((JSONObject) context).getString(key);
-			}
-		}
-		return uri;
-	}
-
 	public static String getValidName(String bagName) {
 		// Create known-good filename - no spaces, no file-system separators.
 		return bagName.replaceAll("\\W", "_");
@@ -713,9 +590,7 @@ public class BagGenerator {
 				// ToDo
 				String dataUrl = child.get("@id").getAsString();
 				log.info("File url: " + dataUrl);
-				String childTitle = child.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString(); // Labels were filenames and should make usable
-																		// paths,
-																		// whereas titles may have non-standard chars
+				String childTitle = child.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString(); 
 				if (titles.contains(childTitle)) {
 					log.warn("**** Multiple items with the same title in: " + currentPath);
 					log.warn("**** Will cause failure in hash and size validation.");
@@ -726,7 +601,8 @@ public class BagGenerator {
 
 				String childHash = null;
 				if (child.has(JsonLDTerm.checksum.getLabel())) {
-					ChecksumType childHashType = ChecksumType.fromString(child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@type").getAsString());
+					ChecksumType childHashType = ChecksumType.fromString(
+							child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@type").getAsString());
 					if (hashtype != null && !hashtype.equals(childHashType)) {
 						log.warn("Multiple hash values in use - not supported");
 					}
@@ -745,7 +621,6 @@ public class BagGenerator {
 					hashtype = DataFile.ChecksumType.SHA256;
 				}
 				try {
-					boolean success = false;
 					if ((childHash == null) | ignorehashes) {
 						// Generate missing hashInputStream inputStream = null;
 						InputStream inputStream = null;
@@ -775,7 +650,7 @@ public class BagGenerator {
 							childHashObject.addProperty("@type", hashtype.toString());
 							childHashObject.addProperty("@value", childHash);
 							child.add(JsonLDTerm.checksum.getLabel(), (JsonElement) childHashObject);
-							
+
 							shaMap.put(childPath, childHash);
 						} else {
 							log.warn("Unable to calculate a " + hashtype + " for " + dataUrl);
@@ -787,9 +662,17 @@ public class BagGenerator {
 					if (dataCount % 1000 == 0) {
 						log.info("Retrieval in progress: " + dataCount + " files retrieved");
 					}
-					if(child.has(JsonLDTerm.filesize.getLabel())) {
-						totalDataSize += child.get(JsonLDTerm.filesize.getLabel()).getAsLong();
+					if (child.has(JsonLDTerm.filesize.getLabel())) {
+						Long size = child.get(JsonLDTerm.filesize.getLabel()).getAsLong();
+						totalDataSize += size;
+						if(size>maxFileSize) {
+							maxFileSize=size;
+						}
 					}
+					if(child.has(JsonLDTerm.schemaOrg("fileFormat").getLabel())) {
+						mimetypes.add(child.get(JsonLDTerm.schemaOrg("fileFormat").getLabel()).getAsString());
+					}
+					
 				} catch (Exception e) {
 					resourceUsed[index] = false;
 					e.printStackTrace();
@@ -833,7 +716,7 @@ public class BagGenerator {
 
 	private void createDir(final String name) throws IOException, ExecutionException, InterruptedException {
 
-		ZipArchiveEntry archiveEntry = new ZipArchiveEntry(name);
+		ZipArchiveEntry archiveEntry = new ZipArchiveEntry(bagPath + name);
 		archiveEntry.setMethod(ZipEntry.DEFLATED);
 		InputStreamSupplier supp = new InputStreamSupplier() {
 			public InputStream get() {
@@ -918,11 +801,10 @@ public class BagGenerator {
 		log.debug("Generating info file");
 		StringBuffer info = new StringBuffer();
 
-		JsonObject describes = map.getAsJsonObject(JsonLDTerm.ore("describes").getLabel());
 		JsonArray contactsArray = new JsonArray();
-		if (describes.has(JsonLDTerm.contact.getLabel())) {
+		if (aggregation.has(JsonLDTerm.contact.getLabel())) {
 
-			JsonElement contacts = describes.get(JsonLDTerm.contact.getLabel());
+			JsonElement contacts = aggregation.get(JsonLDTerm.contact.getLabel());
 
 			if (contacts.isJsonArray()) {
 				for (int i = 0; i < contactsArray.size(); i++) {
@@ -968,7 +850,8 @@ public class BagGenerator {
 		// ToDo - make configurable
 		info.append(CRLF);
 
-		info.append("Organization-Address: " + WordUtils.wrap(ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganizationAddress"), 78, CRLF + " ", true));
+		info.append("Organization-Address: " + WordUtils.wrap(
+				ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganizationAddress"), 78, CRLF + " ", true));
 		info.append(CRLF);
 
 		info.append("Contact-Email: " + ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganizationEmail"));
@@ -977,8 +860,9 @@ public class BagGenerator {
 		info.append("External-Description: ");
 
 		info.append(
-				//FixMe - handle description having subfields better
-				WordUtils.wrap(getSingleValue(describes.getAsJsonObject(JsonLDTerm.description.getLabel()), JsonLDTerm.text.getLabel()), 78, CRLF + " ", true));
+				// FixMe - handle description having subfields better
+				WordUtils.wrap(getSingleValue(aggregation.getAsJsonObject(JsonLDTerm.description.getLabel()),
+						JsonLDTerm.text.getLabel()), 78, CRLF + " ", true));
 
 		info.append(CRLF);
 
@@ -987,22 +871,25 @@ public class BagGenerator {
 		info.append(CRLF);
 
 		info.append("External-Identifier: ");
-		info.append(describes.get("@id").getAsString());
+		info.append(aggregation.get("@id").getAsString());
 		info.append(CRLF);
 
 		info.append("Bag-Size: ");
-		info.append(byteCountToDisplaySize(totalDataSize)); info.append(CRLF);
-		 
+		info.append(byteCountToDisplaySize(totalDataSize));
+		info.append(CRLF);
+
 		info.append("Payload-Oxum: ");
-		info.append(Long.toString(totalDataSize)); info.append(".");
-	    info.append(Long.toString(dataCount)); info.append(CRLF);
-		
+		info.append(Long.toString(totalDataSize));
+		info.append(".");
+		info.append(Long.toString(dataCount));
+		info.append(CRLF);
+
 		info.append("Internal-Sender-Identifier: ");
-		String catalog=ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganization") + " Catalog";
-		if(describes.has(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel())) {
-			catalog =describes.get(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel()).getAsString(); 
+		String catalog = ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganization") + " Catalog";
+		if (aggregation.has(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel())) {
+			catalog = aggregation.get(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel()).getAsString();
 		}
-		info.append(catalog + ":" + describes.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString());
+		info.append(catalog + ":" + aggregation.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString());
 		info.append(CRLF);
 
 		return info.toString();
@@ -1171,9 +1058,10 @@ public class BagGenerator {
 			}
 		};
 	}
+
 	/**
-	 * Adapted from org/apache/commons/io/FileUtils.java change to SI - add 2
-	 * digits of precision
+	 * Adapted from org/apache/commons/io/FileUtils.java change to SI - add 2 digits
+	 * of precision
 	 */
 	/**
 	 * The number of bytes in a kilobyte.
@@ -1191,8 +1079,8 @@ public class BagGenerator {
 	public static final long ONE_GB = ONE_KB * ONE_MB;
 
 	/**
-	 * Returns a human-readable version of the file size, where the input
-	 * represents a specific number of bytes.
+	 * Returns a human-readable version of the file size, where the input represents
+	 * a specific number of bytes.
 	 *
 	 * @param size
 	 *            the number of bytes
@@ -1202,17 +1090,11 @@ public class BagGenerator {
 		String displaySize;
 
 		if (size / ONE_GB > 0) {
-			displaySize = String
-					.valueOf(Math.round(size / (ONE_GB / 100.0d)) / 100.0)
-					+ " GB";
+			displaySize = String.valueOf(Math.round(size / (ONE_GB / 100.0d)) / 100.0) + " GB";
 		} else if (size / ONE_MB > 0) {
-			displaySize = String
-					.valueOf(Math.round(size / (ONE_MB / 100.0d)) / 100.0)
-					+ " MB";
+			displaySize = String.valueOf(Math.round(size / (ONE_MB / 100.0d)) / 100.0) + " MB";
 		} else if (size / ONE_KB > 0) {
-			displaySize = String
-					.valueOf(Math.round(size / (ONE_KB / 100.0d)) / 100.0)
-					+ " KB";
+			displaySize = String.valueOf(Math.round(size / (ONE_KB / 100.0d)) / 100.0) + " KB";
 		} else {
 			displaySize = String.valueOf(size) + " bytes";
 		}
