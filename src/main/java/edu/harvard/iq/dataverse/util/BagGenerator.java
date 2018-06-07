@@ -939,7 +939,7 @@ public class BagGenerator {
 	// more elements
 	private static JsonArray getChildren(JsonObject parent) {
 		JsonElement o = null;
-		o = parent.get(JsonLDTerm.dcTerms("hasPart").getLabel());
+		o = parent.get(JsonLDTerm.schemaOrg("hasPart").getLabel());
 		if (o == null) {
 			return new JsonArray();
 		} else {

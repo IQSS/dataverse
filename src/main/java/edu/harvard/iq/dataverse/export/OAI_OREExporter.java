@@ -235,7 +235,7 @@ public class OAI_OREExporter implements Exporter {
 									+ getProviderName() + "&persistentId=" + id)
 
 					.add(JsonLDTerm.ore("describes").getLabel(),
-							aggBuilder.add(JsonLDTerm.ore("aggregates").getLabel(), aggResArrayBuilder.build()).add(JsonLDTerm.dcTerms("hasPart").getLabel(), fileArray.build())
+							aggBuilder.add(JsonLDTerm.ore("aggregates").getLabel(), aggResArrayBuilder.build()).add(JsonLDTerm.schemaOrg("hasPart").getLabel(), fileArray.build())
 									.build())
 
 					.add("@context", contextBuilder.build()).build();
