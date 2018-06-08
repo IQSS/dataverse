@@ -8,11 +8,13 @@ package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTA117FileReader;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
@@ -22,7 +24,8 @@ import org.junit.Ignore;
  * @author oscardssmith
  */
 public class NewDTAFileReaderTest {
-
+    
+    private static Logger logger = Logger.getLogger(DTAFileReader.class.getPackage().getName());
 
     NewDTAFileReader instance;
     File nullDataFile = null;
@@ -190,5 +193,74 @@ public class NewDTAFileReaderTest {
         assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
         assertEquals("STATA 15", result.getDataTable().getOriginalFormatVersion());
         assertEquals(33001, result.getDataTable().getDataVariables().size());
+    }
+    
+    @Test
+    public void thorough_test_117() throws IOException {
+        String path = "/home/oscardssmith/NetBeansProjects/dataverse/src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/dta/stata-";
+        
+        instance = new NewDTAFileReader(null, 117);
+        int s = 0;
+        DTA117FileReader instance117 = new DTA117FileReader(null);
+        for (final File file : new File(path+"13").listFiles()) {
+            try {
+                instance117.read(new BufferedInputStream(new FileInputStream(file)), nullDataFile);
+            } catch (Exception e){
+                continue;
+            }
+            try{
+                instance.read(new BufferedInputStream(new FileInputStream(file)), nullDataFile);
+                s+=1;
+                logger.warning(""+s);
+            } catch (Exception e){
+                throw(e);
+            }
+        }
+    }
+    
+    @Test
+    public void thorough_test_118() throws IOException {
+        String path = "/home/oscardssmith/NetBeansProjects/dataverse/src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/dta/stata-";
+        
+        instance = new NewDTAFileReader(null, 117);
+        int s = 0;
+        DTA117FileReader instance117 = new DTA117FileReader(null);
+        for (final File file : new File(path+"13").listFiles()) {
+            try {
+                instance117.read(new BufferedInputStream(new FileInputStream(file)), nullDataFile);
+            } catch (Exception e){
+                continue;
+            }
+            try{
+                instance.read(new BufferedInputStream(new FileInputStream(file)), nullDataFile);
+                s+=1;
+                logger.warning(""+s);
+            } catch (Exception e){
+                throw(e);
+            }
+        }
+    }
+    
+    @Test
+    public void thorough_test_119() throws IOException {
+        String path = "/home/oscardssmith/NetBeansProjects/dataverse/src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/dta/stata-";
+        
+        instance = new NewDTAFileReader(null, 119);
+        int s = 0;
+        DTA117FileReader instance117 = new DTA117FileReader(null);
+        for (final File file : new File(path+"15").listFiles()) {
+            try {
+                instance117.read(new BufferedInputStream(new FileInputStream(file)), nullDataFile);
+            } catch (Exception e){
+                continue;
+            }
+            try{
+                instance.read(new BufferedInputStream(new FileInputStream(file)), nullDataFile);
+                s+=1;
+                logger.warning(""+s);
+            } catch (Exception e){
+                throw(e);
+            }
+        }
     }
 }
