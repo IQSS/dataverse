@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
-import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTA117FileReader;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
