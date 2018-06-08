@@ -112,7 +112,7 @@ Installing PostgreSQL
 
 Version 9.x is required. Previous versions have not been tested.
 
-Version 9.6 is anticipated as an "LTS" release in RHEL and on other platforms:
+Version 9.6 is anticipated as an "LTS" release in RHEL and on other platforms::
 
 	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
 	# yum makecache fast
@@ -120,6 +120,11 @@ Version 9.6 is anticipated as an "LTS" release in RHEL and on other platforms:
 	# /usr/pgsql-9.6/bin/postgresql96-setup initdb
 	# /usr/bin/systemctl start postgresql-9.6
 	# /usr/bin/systemctl enable postgresql-9.6
+	
+Note these steps are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
+
+	# service postgresql-9.6 initdb
+	# service postgresql-9.6 start
 
 Configuring Database Access for the Dataverse Application (and the Dataverse Installer) 
 =======================================================================================
