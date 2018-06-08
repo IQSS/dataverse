@@ -10,12 +10,15 @@ SOLR_SCHEMA=${INSTALLER_ZIP_DIR}/schema.xml
 SOLR_CONFIG=${INSTALLER_ZIP_DIR}/solrconfig.xml
 INSTALL_SCRIPT=${INSTALLER_ZIP_DIR}/install
 
+DATAVERSE_VERSION=4.9
+BUILT_WAR_FILE=../../target/dataverse-${DATAVERSE_VERSION}.war
+
 installer:	dvinstall.zip
 
 clean: 
 	/bin/rm -rf ${INSTALLER_ZIP_DIR} dvinstall.zip
 
-dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
+dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT} ${BUILT_WAR_FILE}
 	@echo making installer...
 	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
 	@echo 
@@ -29,11 +32,9 @@ ${INSTALL_SCRIPT}: install
 ${DISTRIBUTION_WAR_FILE}: 
 	@echo copying war file...
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	@VERSION_NUMBER=`grep -m1 '<version>' ../../pom.xml | sed 's/ *<\/*version>//g'`; export VERSION_NUMBER; \
-	BUILT_WAR_FILE=../../target/dataverse-$$VERSION_NUMBER.war; export BUILT_WAR_FILE; \
-	if [ -f $$BUILT_WAR_FILE ]; \
+	@if [ -f ${BUILT_WAR_FILE} ]; \
 	then \
-		/bin/cp $$BUILT_WAR_FILE ${DISTRIBUTION_WAR_FILE}; \
+		/bin/cp ${BUILT_WAR_FILE} ${DISTRIBUTION_WAR_FILE}; \
 	else \
 		echo "ERROR: can't find application .war file ($${BUILT_WAR_FILE})!"; \
 		echo "Build the Dataverse application war file, then try again."; \
