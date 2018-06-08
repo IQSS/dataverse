@@ -360,7 +360,7 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
                 .contentType("application/json")
-                .put("/api/datasets/:persistentId/addData/?persistentId=" + persistentId);
+                .put("/api/datasets/:persistentId/editMetadata/?persistentId=" + persistentId);
         return response;
     }
     
@@ -370,7 +370,7 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
                 .contentType("application/json")
-                .put("/api/datasets/:persistentId/updateData/?persistentId=" + persistentId);
+                .put("/api/datasets/:persistentId/editMetadata/?persistentId=" + persistentId + "&replace=true");
         return response;
     }
 

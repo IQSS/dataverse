@@ -414,23 +414,16 @@ public class Datasets extends AbstractApiBean {
     }
     
     @PUT
-    @Path("{id}/addData")
-    public Response addDataToVersion(String jsonBody, @PathParam("id") String id) throws WrappedResponse{
+    @Path("{id}/editMetadata")
+    public Response editVersionMetadata(String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) throws WrappedResponse{
+        
+        Boolean replaceData = replace != null;
 
         DataverseRequest req = createDataverseRequest(findUserOrDie());
 
-        return processDatasetUpdate(jsonBody, id, req, false);
+        return processDatasetUpdate(jsonBody, id, req, replaceData);
     }
     
-    @PUT
-    @Path("{id}/updateData")
-    public Response updateDataInVersion(String jsonBody, @PathParam("id") String id)  throws WrappedResponse {
-        
-        DataverseRequest req = createDataverseRequest(findUserOrDie());
-
-        return processDatasetUpdate(jsonBody, id, req, true);
-        
-    } 
     
     private Response processDatasetUpdate(String jsonBody, String id, DataverseRequest req, Boolean replaceData){
         try (StringReader rdr = new StringReader(jsonBody)) {
