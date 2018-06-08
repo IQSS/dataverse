@@ -1079,7 +1079,7 @@ public class DTA118FileReader extends TabularDataFileReader {
 
                     v = reader.readInteger(2);
                     byte_offset += 2;   //Stata 14/15 switched from 4,4 to 2,6 for the pointer in the data section
-                                        //In the the strls section tho it'll be 4,8
+                    //In the the strls section tho it'll be 4,8
 
                     // then o:
                     o = reader.readInteger(6);
@@ -1310,7 +1310,7 @@ public class DTA118FileReader extends TabularDataFileReader {
         // TODO: 
         // check that we are at the right byte offset!
         reader.readOpeningTag(TAG_VALUE_LABELS);
-        int c = 0; 
+        int c = 0;
         while (reader.checkTag("<" + TAG_VALUE_LABELS_LBL_DEF + ">")) {
             c++;
             // TODO: checktag should probably *read* the tag, if it is indeed
@@ -1333,23 +1333,23 @@ public class DTA118FileReader extends TabularDataFileReader {
 
             // read the value_label_table that follows. 
             // should be label_table_length. 
-            int number_of_categories = (int)reader.readInteger();
+            int number_of_categories = (int) reader.readInteger();
             long text_length = reader.readInteger();
 
             value_category_offset = 8;
 
             long[] value_label_offsets = new long[number_of_categories];
-            long[] value_label_offsets_sorted = null; 
+            long[] value_label_offsets_sorted = null;
             long[] category_values = new long[number_of_categories];
             String[] category_value_labels = new String[number_of_categories];
 
             boolean alreadySorted = true;
-            
+
             for (int i = 0; i < number_of_categories; i++) {
                 value_label_offsets[i] = reader.readInteger();
                 logger.info("offset " + i + ": " + value_label_offsets[i]);
                 value_category_offset += 4;
-                if (i > 0 && value_label_offsets[i] < value_label_offsets[i-1]) {
+                if (i > 0 && value_label_offsets[i] < value_label_offsets[i - 1]) {
                     alreadySorted = false;
                 }
             }
@@ -1380,10 +1380,10 @@ public class DTA118FileReader extends TabularDataFileReader {
             // we encounter \000. Or we can rely on the (sorted) list of offsets
             // to determine where each label ends (implemented below). 
             byte[] labelBytes = null;
-            if((int)text_length != 0) { //If length is 0 we don't need to read any bytes
-                labelBytes = reader.readBytes((int)text_length);
+            if ((int) text_length != 0) { //If length is 0 we don't need to read any bytes
+                labelBytes = reader.readBytes((int) text_length);
             }
-           
+
             for (int i = 0; i < number_of_categories; i++) {
                 label_offset = value_label_offsets[i];
 
@@ -1393,9 +1393,9 @@ public class DTA118FileReader extends TabularDataFileReader {
                     int sortedPos = Arrays.binarySearch(value_label_offsets_sorted, label_offset);
                     label_end = sortedPos < number_of_categories - 1 ? value_label_offsets_sorted[sortedPos + 1] : text_length;
                 }
-                label_length = (int)(label_end - label_offset);
+                label_length = (int) (label_end - label_offset);
 
-                category_value_labels[i] = new String(Arrays.copyOfRange(labelBytes, (int)label_offset, (int)label_end-1), "US-ASCII");
+                category_value_labels[i] = new String(Arrays.copyOfRange(labelBytes, (int) label_offset, (int) label_end - 1), "US-ASCII");
                 total_label_bytes += label_length;
             }
 
@@ -1756,7 +1756,7 @@ public class DTA118FileReader extends TabularDataFileReader {
                     StackTraceElement stackTraceElement = stackTrace[i];
                     msg += stackTraceElement.toString() + "\n";
                 }
-                throw new IOException("DataReader.readBytes called to read zero or negative number of bytes. Number of bytes attempted: "+ n +" . Stacktrace:\n" + msg);
+                throw new IOException("DataReader.readBytes called to read zero or negative number of bytes. Number of bytes attempted: " + n + " . Stacktrace:\n" + msg);
             }
             byte[] bytes = new byte[n];
 
@@ -1944,8 +1944,6 @@ public class DTA118FileReader extends TabularDataFileReader {
         private int readInteger(int n) throws IOException {
             byte[] raw_bytes = readBytes(n);
 
-            
-            
             return (int) bytesToInt(raw_bytes);
         }
 
