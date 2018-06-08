@@ -142,23 +142,9 @@ my %CONFIG_COMMENTS = (
 
 my $API_URL = "http://localhost:8080/api";
 
-# keeping this in case pete wants them
-# Supported Postgres JDBC drivers:
-# (have to be configured explicitely, so that Perl "taint" (security) mode
-# doesn't get paranoid)
-#my %POSTGRES_DRIVERS = (
-#    "8_4", "postgresql-8.4-703.jdbc4.jar",
-#    "9_0", "postgresql-9.0-802.jdbc4.jar",
-#    "9_1", "postgresql-9.1-902.jdbc4.jar",
-#    "9_2", "postgresql-9.2-1004.jdbc4.jar",
-#    "9_3", "postgresql-9.3-1104.jdbc4.jar",
-#    "9_4", "postgresql-9.4.1212.jar",
-#    "9_5", "postgresql-42.2.2.jar",
-#    "9_6", "postgresql-42.2.2.jar"
-#);
-
-# for everybody else: jodbc.postgresql.org recommends 4.2 for Java 8.
-# updated drivers may be obtained from https://jdbc.postgresql.org/download.html
+# jodbc.postgresql.org recommends 4.2 for Java 8.
+# updated drivers may be obtained from
+#  https://jdbc.postgresql.org/download.html
 my $postgres_jdbc = "postgresql-42.2.2.jar";
 
 # A few preliminary checks:
@@ -764,43 +750,6 @@ if ( $psql_admin_exec eq "" || system( $psql_admin_exec . "/psql -h " . $CONFIG_
 	my $key = getc(STDIN);
 	system "stty -cbreak </dev/tty >/dev/tty 2>&1";
 	print "\n";
-
-	# commenting out in favor of $postgres_jdbc
-	# Find out what Postgres version is running remotely:
-	#
-	#$pg_major_version = 9;
-	#$pg_minor_version = 1;
-	#
-	#print "What version of PostgresQL is installed on the remote server?\n ["
-	#    . $pg_major_version . "."
-	#    . $pg_minor_version . "] ";
-	#
-	#my $postgresVersion = <>;
-	#chop $postgresVersion;
-	#
-	#while ( $postgresVersion ne "" && !( $postgresVersion =~ /^[0-9]+\.[0-9]+$/ ) ) {
-	#    print "Please enter valid Postgres version!\n";
-	#    print "(or ctrl-C to exit the installer)\n";
-	#    $postgresVersion = <>;
-	#    chop $postgresVersion;
-	#}
-	#
-	#unless ( $postgresVersion eq "" ) {
-	#    my (@postgres_version_tokens) = split( '\.', $postgresVersion );
-	#
-	#    unless ( ( $postgres_version_tokens[0] == 8 && $postgres_version_tokens[1] >= 4 )
-	#	     || ( $postgres_version_tokens[0] >= 9 ) )
-	#    {
-	#	print STDERR "\nERROR: PostgresQL version 8.4, or newer, is required!\n";
-	#	print STDERR "Please make sure the right version of PostgresQL is properly installed\n";
-	#	print STDERR "on the remote server, then try again.\n";
-	#	
-	#	exit 1;
-	#    }
-
-	#    $pg_major_version = $postgres_version_tokens[0];
-	#    $pg_minor_version = $postgres_version_tokens[1];
-	#}
     }
 }
 else 
@@ -1032,19 +981,6 @@ $CONFIG_DEFAULTS{"DEF_MEM_SIZE"} = $gf_heap_default;
 # add a check.
 
 print "\nInstalling the Glassfish PostgresQL driver... ";
-
-#my $install_driver_jar = "";
-#$install_driver_jar = $POSTGRES_DRIVERS{ $pg_major_version . "_" . $pg_minor_version };
-#
-#unless ( $install_driver_jar && -e "pgdriver/" . $install_driver_jar ) {
-#    die "Installer could not find POSTGRES JDBC driver for your version of PostgresQL!\n("
-#      . $pg_major_version . "."
-#      . $pg_minor_version . ")";
-#
-#}
-#system( "/bin/cp", "pgdriver/" . $install_driver_jar, $glassfish_dir . "/glassfish/lib" );
-
-# install $postgres_jdbc. remove versioning stuff ^^ once tested
 system( "/bin/cp", "pgdriver/" . $postgres_jdbc, $glassfish_dir . "/glassfish/lib" );
 
 # more diagnostics needed?

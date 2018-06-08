@@ -46,7 +46,7 @@ ${GLASSFISH_SETUP_SCRIPT}:	glassfish-setup.sh
 	/bin/cp glassfish-setup.sh ${INSTALLER_ZIP_DIR}
 
 
-${POSTGRES_DRIVERS}:	pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9.0-802.jdbc4.jar pgdriver/postgresql-9.1-902.jdbc4.jar pgdriver/postgresql-9.2-1004.jdbc4.jar pgdriver/postgresql-9.3-1104.jdbc4.jar pgdriver/postgresql-9.4.1212.jar pgdriver/postgresql-42.1.4.jar
+${POSTGRES_DRIVERS}:	pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9.0-802.jdbc4.jar pgdriver/postgresql-9.1-902.jdbc4.jar pgdriver/postgresql-9.2-1004.jdbc4.jar pgdriver/postgresql-9.3-1104.jdbc4.jar pgdriver/postgresql-9.4.1212.jar pgdriver/postgresql-42.2.2.jar
 	@echo copying postgres drviers
 	@mkdir -p ${POSTGRES_DRIVERS}
 	/bin/cp pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9.0-802.jdbc4.jar pgdriver/postgresql-9.1-902.jdbc4.jar pgdriver/postgresql-9.2-1004.jdbc4.jar pgdriver/postgresql-9.3-1104.jdbc4.jar pgdriver/postgresql-9.4.1212.jar pgdriver/postgresql-42.1.4.jar ${INSTALLER_ZIP_DIR}/pgdriver
