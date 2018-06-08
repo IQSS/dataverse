@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta;
 
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -19,17 +14,15 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 
-/**
- *
- * @author oscardssmith
- */
 public class NewDTAFileReaderTest {
     
     private static Logger logger = Logger.getLogger(DTAFileReader.class.getPackage().getName());
 
     NewDTAFileReader instance;
     File nullDataFile = null;
+
     // TODO: Can we create a small file to check into the code base that exercises the characteristics issue?
+    // FIXME: testCharacteristics is passing in DTA117FileReaderTest but not here.
     @Ignore
     @Test
     public void testCharacteristics() throws IOException {
@@ -89,7 +82,7 @@ public class NewDTAFileReaderTest {
         assertEquals("STATA 13", result.getDataTable().getOriginalFormatVersion());
         assertEquals(13, result.getDataTable().getDataVariables().size());
     }
-    
+
     @Ignore
     @Test
     public void testOs() throws IOException {
@@ -115,8 +108,9 @@ public class NewDTAFileReaderTest {
         assertEquals("Matching party leaders pics", q10.getLabel());
         assertEquals(2, q10.getCategories().size());
         List<VariableCategory> matching = (List) q10.getCategories();
-        assertEquals("All matched", matching.get(0).getLabel());
-        assertEquals("None matched", matching.get(1).getLabel());
+        // Given the MD5 above, we expect the categories to come out in the order below.
+        assertEquals("None matched", matching.get(0).getLabel());
+        assertEquals("All matched", matching.get(1).getLabel());
 
     }
 
@@ -180,8 +174,7 @@ public class NewDTAFileReaderTest {
         // TODO: Change size from 0 once we can parse the file.
         assertEquals(0, result.getDataTable().getDataVariables().size());
     }
-    
-    
+
     // TODO: Is there a way to exersise this code with a smaller file? 33k.dta is 21MB.
     @Ignore
     @Test
