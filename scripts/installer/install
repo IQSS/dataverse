@@ -142,7 +142,7 @@ my %CONFIG_COMMENTS = (
 
 my $API_URL = "http://localhost:8080/api";
 
-# keeping this for pete
+# keeping this in case pete wants them
 # Supported Postgres JDBC drivers:
 # (have to be configured explicitely, so that Perl "taint" (security) mode
 # doesn't get paranoid)
@@ -153,13 +153,12 @@ my $API_URL = "http://localhost:8080/api";
 #    "9_2", "postgresql-9.2-1004.jdbc4.jar",
 #    "9_3", "postgresql-9.3-1104.jdbc4.jar",
 #    "9_4", "postgresql-9.4.1212.jar",
-#    "9_5", "postgresql-42.1.4.jar",
-#    "9_6", "postgresql-42.1.4.jar"
+#    "9_5", "postgresql-42.2.2.jar",
+#    "9_6", "postgresql-42.2.2.jar"
 #);
 
-# jodbc.postgresql.org recommends 4.2 for Java 8
-# updated drivers may be obtained from
-# https://jdbc.postgresql.org/download.html
+# for everybody else: jodbc.postgresql.org recommends 4.2 for Java 8.
+# updated drivers may be obtained from https://jdbc.postgresql.org/download.html
 my $postgres_jdbc = "postgresql-42.2.2.jar";
 
 # A few preliminary checks:
@@ -801,7 +800,7 @@ if ( $psql_admin_exec eq "" || system( $psql_admin_exec . "/psql -h " . $CONFIG_
 
 	#    $pg_major_version = $postgres_version_tokens[0];
 	#    $pg_minor_version = $postgres_version_tokens[1];
-	}
+	#}
     }
 }
 else 
