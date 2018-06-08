@@ -55,14 +55,12 @@ import edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits.FITS
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReader;
-import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTA117FileReader;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.NewDTAFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv.CSVFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv.CSVFileReaderSpi;
-import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTA118FileReader;
-import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTA119FileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReader;
@@ -958,11 +956,11 @@ public class IngestServiceBean {
         if (mimeType.equals(FileUtil.MIME_TYPE_STATA)) {
             ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
         } else if (mimeType.equals(FileUtil.MIME_TYPE_STATA13)) {
-            ingestPlugin = new DTA117FileReader(new DTAFileReaderSpi());
+            ingestPlugin = new NewDTAFileReader(new DTAFileReaderSpi(), 117);
         } else if (mimeType.equals(FileUtil.MIME_TYPE_STATA14)) {
-            ingestPlugin = new DTA118FileReader(new DTAFileReaderSpi());
+            ingestPlugin = new NewDTAFileReader(new DTAFileReaderSpi(), 118);
         } else if (mimeType.equals(FileUtil.MIME_TYPE_STATA15)) {
-            ingestPlugin = new DTA119FileReader(new DTAFileReaderSpi());
+            ingestPlugin = new NewDTAFileReader(new DTAFileReaderSpi(), 119);
         } else if (mimeType.equals(FileUtil.MIME_TYPE_RDATA)) {
             ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
         } else if (mimeType.equals(FileUtil.MIME_TYPE_CSV) || mimeType.equals(FileUtil.MIME_TYPE_CSV_ALT)) {
