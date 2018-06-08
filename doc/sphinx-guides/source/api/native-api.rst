@@ -263,19 +263,16 @@ Now that the resulting JSON file only contains the ``metadataBlocks`` key, you c
 
 Now that you've made edits to the metadata in your JSON file, you can send it to Dataverse as described above.
 
-Add Metadata to Selected Dataset Fields
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Edit Dataset Metadata
+~~~~~~~~~~~~~~~~~~~~~
 
 Alternatively to replacing an entire dataset version with its JSON representation you may add data to dataset fields that are blank or accept multiple values with the following ::
 
-    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/addData/?persistentId=$PID --upload-file dataset-add-metadata.json
-    
-Update Metadata in Selected Dataset Fields
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/editMetadata/?persistentId=$PID --upload-file dataset-add-metadata.json    
 
-You may also replace existing metadata in dataset fields with the following ::
+You may also replace existing metadata in dataset fields with the following (adding the parameter replace=true) ::
 
-    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/updateData?persistentId=$PID --upload-file dataset-update-metadata.json
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/editMetadata?persistentId=$PID&replace=true --upload-file dataset-update-metadata.json
 
 
 
