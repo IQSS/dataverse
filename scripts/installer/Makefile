@@ -10,12 +10,15 @@ SOLR_SCHEMA=${INSTALLER_ZIP_DIR}/schema.xml
 SOLR_CONFIG=${INSTALLER_ZIP_DIR}/solrconfig.xml
 INSTALL_SCRIPT=${INSTALLER_ZIP_DIR}/install
 
+DATAVERSE_VERSION=4.9
+BUILT_WAR_FILE=../../target/dataverse-${DATAVERSE_VERSION}.war
+
 installer:	dvinstall.zip
 
 clean: 
 	/bin/rm -rf ${INSTALLER_ZIP_DIR} dvinstall.zip
 
-dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
+dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT} ${BUILT_WAR_FILE}
 	@echo making installer...
 	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
 	@echo 
@@ -29,11 +32,9 @@ ${INSTALL_SCRIPT}: install
 ${DISTRIBUTION_WAR_FILE}: 
 	@echo copying war file...
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	@VERSION_NUMBER=`grep -m1 '<version>' ../../pom.xml | sed 's/ *<\/*version>//g'`; export VERSION_NUMBER; \
-	BUILT_WAR_FILE=../../target/dataverse-$$VERSION_NUMBER.war; export BUILT_WAR_FILE; \
-	if [ -f $$BUILT_WAR_FILE ]; \
+	@if [ -f ${BUILT_WAR_FILE} ]; \
 	then \
-		/bin/cp $$BUILT_WAR_FILE ${DISTRIBUTION_WAR_FILE}; \
+		/bin/cp ${BUILT_WAR_FILE} ${DISTRIBUTION_WAR_FILE}; \
 	else \
 		echo "ERROR: can't find application .war file ($${BUILT_WAR_FILE})!"; \
 		echo "Build the Dataverse application war file, then try again."; \
@@ -46,10 +47,10 @@ ${GLASSFISH_SETUP_SCRIPT}:	glassfish-setup.sh
 	/bin/cp glassfish-setup.sh ${INSTALLER_ZIP_DIR}
 
 
-${POSTGRES_DRIVERS}:	pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9.0-802.jdbc4.jar pgdriver/postgresql-9.1-902.jdbc4.jar pgdriver/postgresql-9.2-1004.jdbc4.jar pgdriver/postgresql-9.3-1104.jdbc4.jar pgdriver/postgresql-9.4.1212.jar pgdriver/postgresql-42.1.4.jar
+${POSTGRES_DRIVERS}:	pgdriver/postgresql-42.2.2.jar
 	@echo copying postgres drviers
 	@mkdir -p ${POSTGRES_DRIVERS}
-	/bin/cp pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9.0-802.jdbc4.jar pgdriver/postgresql-9.1-902.jdbc4.jar pgdriver/postgresql-9.2-1004.jdbc4.jar pgdriver/postgresql-9.3-1104.jdbc4.jar pgdriver/postgresql-9.4.1212.jar pgdriver/postgresql-42.1.4.jar ${INSTALLER_ZIP_DIR}/pgdriver
+	/bin/cp pgdriver/postgresql-42.2.2.jar ${INSTALLER_ZIP_DIR}/pgdriver
 
 ${API_SCRIPTS}:	../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/post-install-api-block.sh ../api/setup-builtin-roles.sh ../api/data
 	@echo copying api scripts

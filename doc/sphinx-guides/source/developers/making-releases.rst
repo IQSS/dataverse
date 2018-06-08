@@ -13,6 +13,7 @@ Before tagging, ensure the version number has been incremented to the milestone 
 - pom.xml
 - doc/sphinx-guides/source/conf.py
 - doc/sphinx-guides/source/versions.rst 
+- scripts/installer/Makefile
 
 Here's an example commit where all three files were updated at once: https://github.com/IQSS/dataverse/commit/99e23f96ec362ac2f524cb5cd80ca375fa13f196
 
