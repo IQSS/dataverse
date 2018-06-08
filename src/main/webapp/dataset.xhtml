@@ -468,7 +468,7 @@
                                     <f:selectItems value="#{DatasetPage.dataverseTemplates}"
                                                    var="template" itemLabel="#{template.name}" itemValue="#{template}"/>
                                 </p:selectOneMenu>
-                                <p:commandButton value="Direct" id="updateTemplate"
+                                <p:commandButton value="#{bundle['file.dataFilesTab.button.direct']}" id="updateTemplate"
                                                  style="display:none"
                                                  update=":datasetForm,accessPopup"
                                                  action="#{DatasetPage.handleChangeButton}">
