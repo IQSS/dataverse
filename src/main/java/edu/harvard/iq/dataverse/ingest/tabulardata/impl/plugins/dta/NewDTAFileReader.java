@@ -1730,14 +1730,8 @@ public class NewDTAFileReader extends TabularDataFileReader {
          */
         public byte[] readBytes(int n) throws IOException {
             if (n <= 0) {
-                StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-                String msg = "";
-                for (int i = 0; i < 10; i++) {
-                    StackTraceElement stackTraceElement = stackTrace[i];
-                    msg += stackTraceElement.toString() + "\n";
+                throw new IOException("DataReader.readBytes called to read zero or negative number of bytes.");
                 }
-                throw new IOException("DataReader.readBytes called to read zero or negative number of bytes. Stacktrace:\n" + msg);
-            }
             byte[] bytes = new byte[n];
 
             if (this.buffer_size - buffer_byte_offset >= n) {
@@ -1754,6 +1748,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                     System.arraycopy(byte_buffer, buffer_byte_offset, bytes, 0, this.buffer_size - buffer_byte_offset);
                     //buffer_byte_offset = this.buffer_size;
                     bytes_read = this.buffer_size - buffer_byte_offset;
+                    buffer_byte_offset = this.buffer_size;
                 }
 
                 int morebytes = bufferMoreBytes();
@@ -1769,8 +1764,9 @@ public class NewDTAFileReader extends TabularDataFileReader {
                     System.arraycopy(byte_buffer, buffer_byte_offset, bytes, bytes_read, this.buffer_size);
                     //buffer_byte_offset = this.buffer_size;
                     bytes_read += this.buffer_size;
+                    buffer_byte_offset = this.buffer_size;
                     morebytes = bufferMoreBytes();
-                    logger.fine("buffered " + morebytes + " bytes");
+                    logger.fine("buffered "+morebytes+" bytes");
                 }
 
                 /* 
@@ -1790,8 +1786,11 @@ public class NewDTAFileReader extends TabularDataFileReader {
          * and sets the current buffer size accordingly.
          */
         private int bufferMoreBytes() throws IOException {
-            int actual_bytes_read = stream.read(byte_buffer, 0, DEFAULT_BUFFER_SIZE);
-
+            int actual_bytes_read;
+            byte_offset += buffer_byte_offset;
+            
+            if (byte_offset == 0 || buffer_byte_offset == buffer_size) {
+                actual_bytes_read = stream.read(byte_buffer, 0, DEFAULT_BUFFER_SIZE);
             // set the current buffer size to the actual number of 
             // bytes read: 
             this.buffer_size = actual_bytes_read;
@@ -1800,7 +1799,18 @@ public class NewDTAFileReader extends TabularDataFileReader {
             // byte offset by the size of the last buffer - that should be 
             // equal to the buffer_byte_offset. 
             // (TODO: check that this is the case!)
-            byte_offset += buffer_byte_offset;
+                
+
+            } else if (buffer_byte_offset < buffer_size) {
+                System.arraycopy(byte_buffer, buffer_byte_offset, byte_buffer, 0, buffer_size - buffer_byte_offset);
+                this.buffer_size = buffer_size - buffer_byte_offset;
+                actual_bytes_read = stream.read(byte_buffer, buffer_size, DEFAULT_BUFFER_SIZE - buffer_size);
+                buffer_size += actual_bytes_read;
+                
+
+            } else {
+                throw new IOException("Offset already past the buffer boundary");
+            }
             buffer_byte_offset = 0;
 
             return actual_bytes_read;
@@ -2138,14 +2148,16 @@ public class NewDTAFileReader extends TabularDataFileReader {
             }
 
             int n = tag.length();
-
-            if (this.buffer_size - buffer_byte_offset >= n) {
-                return (tag).equals(new String(Arrays.copyOfRange(byte_buffer, buffer_byte_offset, buffer_byte_offset + n), "US-ASCII"));
-            } else {
-                throw new IOException("Checking section tags across byte buffers not yet implemented.");
+            if ((this.buffer_size - buffer_byte_offset) >= n) {
+                return (tag).equals(new String(Arrays.copyOfRange(byte_buffer, buffer_byte_offset, buffer_byte_offset+n),"US-ASCII"));
             }
-        }
+            else{
+                bufferMoreBytes();
+                return checkTag(tag);
+            }
 
+        }
+        
         public void readOpeningTag(String tag) throws IOException {
             if (tag == null || tag.equals("")) {
                 throw new IOException("opening tag must be a non-empty string.");
