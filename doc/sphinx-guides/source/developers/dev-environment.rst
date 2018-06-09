@@ -84,7 +84,7 @@ To install Glassfish, run the following commands:
 Install PostgreSQL
 ~~~~~~~~~~~~~~~~~~
 
-PostgreSQL 9.6 is required because of the drivers we have checked into the code.
+PostgreSQL 9.6 is recommended to match the version in the Installation Guide.
 
 On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EnterpriseDB" option. We've tested version 9.6.9. When prompted to set a password for the "database superuser (postgres)" just enter "password".
 
