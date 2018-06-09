@@ -158,8 +158,12 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
 
   The file ``postgresql.conf`` will be located in the same directory as the ``pg_hba.conf`` above.
 
-- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL and similar (provided you installed Postgres as instructed above)::
-        
+- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL/CentOS 7 and similar (provided you installed Postgres as instructed above)::
+
+        # systemctl restart postgresql-9.6
+
+  or on RHEL/CentOS 6::
+
         # service postgresql restart
 
   On MacOS X a "Reload Configuration" icon is usually supplied in the PostgreSQL application folder. Or you could look up the process id of the PostgreSQL postmaster process, and send it the SIGHUP signal:: 
