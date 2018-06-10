@@ -150,31 +150,31 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      */
     protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt) throws CommandException {
         if (!theDataset.isIdentifierRegistered()) {
-            PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(theDataset.getProtocol(), ctxt);
-            if (idServiceBean != null) {
+            PersistentIdentifierServiceBean globalIdServiceBean = PersistentIdentifierServiceBean.getBean(theDataset.getProtocol(), ctxt);
+            if ( globalIdServiceBean != null ) {
                 try {
-                    if (idServiceBean.alreadyExists(theDataset)) {
+                    if (globalIdServiceBean.alreadyExists(theDataset)) {
                         int attempts = 0;
 
-                        while (idServiceBean.alreadyExists(theDataset) && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
-                            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
+                        while (globalIdServiceBean.alreadyExists(theDataset) && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
+                            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, globalIdServiceBean));
                             logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).",
                                 new Object[]{theDataset.getId(), theDataset.getIdentifier()});
                             attempts++;
                         }
 
-                        if (idServiceBean.alreadyExists(theDataset)) {
+                        if (globalIdServiceBean.alreadyExists(theDataset)) {
                             throw new CommandExecutionException("This dataset may not be published because its identifier is already in use by another dataset; "
                                 + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
                         }
                     }
                     // Invariant: Dataset identifier does not exist in the remote registry
-                    idServiceBean.createIdentifier(theDataset);
+                    globalIdServiceBean.createIdentifier(theDataset);
                     theDataset.setGlobalIdCreateTime(getTimestamp());
                     theDataset.setIdentifierRegistered(true);
 
                 } catch (Throwable e) {
-                    throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()), this);
+                    throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", globalIdServiceBean.getProviderInformation()), this);
                 }
             } else {
                 throw new IllegalCommandException("This dataset may not be published because its id registry service is not supported.", this);

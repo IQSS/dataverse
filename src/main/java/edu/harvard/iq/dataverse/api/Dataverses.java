@@ -259,7 +259,7 @@ public class Dataverses extends AbstractApiBean {
                     ds.setGlobalId(maybePid.get());
                 } else {
                     // unparsable PID passed. Terminate.
-                    return badRequest("Cannot parse the PID parameter. Make sure it is in valid form - see Dataverse Native API documentation.");
+                    return badRequest("Cannot parse the PID parameter '" + pidParam + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
                 }
             }
             

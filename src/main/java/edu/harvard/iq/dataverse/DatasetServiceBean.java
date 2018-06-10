@@ -194,24 +194,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     public Dataset findByGlobalId(String globalId) {
-        try {
-            DvObject obj = em.createNamedQuery("DvObject.findByGlobalId", DvObject.class)
-                                .setParameter("globalId", globalId)
-                                .getSingleResult();
-            if ( obj instanceof Dataset ) {
-                return (Dataset)obj;
-            } else {
-                logger.log(Level.INFO, "User requested Dataset with globalId {0}, but it is not a dataset: {1}", new Object[]{globalId, obj.toString()});
-                return null;
-            }
-            
-        } catch (javax.persistence.NoResultException e) {
-            // (set to .info, this can fill the log file with thousands of 
-            // these messages during a large harvest run)
-            logger.log(Level.FINE, "no dataset found for persistenId: {0}", globalId);
-            return null;
-        }
-        
+        return (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset");
     }
 
     public String generateDatasetIdentifier(Dataset dataset, PersistentIdentifierServiceBean idServiceBean) {

@@ -60,6 +60,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         return em.createNamedQuery("DvObject.findAll", DvObject.class).getResultList();
     }
 
+    // FIXME This type-by-string has to go, in favor of passing a class parameter.
     public DvObject findByGlobalId(String globalIdString, String typeString) {
 
         try {

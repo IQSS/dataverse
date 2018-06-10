@@ -46,7 +46,7 @@ public class GlobalId implements java.io.Serializable {
      */
     public GlobalId(String identifier) {
         // set the protocol, authority, and identifier via parsePersistentId        
-        if (parsePersistentId(identifier)){
+        if ( ! parsePersistentId(identifier) ){
             throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
         }
     }

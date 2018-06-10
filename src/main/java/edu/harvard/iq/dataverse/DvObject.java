@@ -19,12 +19,10 @@ import javax.persistence.*;
             query = "SELECT o FROM DvObject o ORDER BY o.id"),
     @NamedQuery(name = "DvObject.findById",
             query = "SELECT o FROM DvObject o WHERE o.id=:id"),
-    @NamedQuery( name = "DvObject.findByGlobalId",
-            query = "SELECT o from DvObject o where CONCAT(o.protocol, ':', o.authority, o.doiSeparator, o.identifier) = :globalId"),
 	@NamedQuery(name = "DvObject.ownedObjectsById",
 			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
     @NamedQuery(name = "DvObject.findByGlobalId",
-    query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype")
+            query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype")
 })
 @Entity
 // Inheritance strategy "JOINED" will create 4 db tables - 
