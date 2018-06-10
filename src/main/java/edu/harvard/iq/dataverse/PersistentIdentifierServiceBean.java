@@ -9,6 +9,7 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+// FIXME MBS: Change name to GlobalIdServiceBean, to make all the code refer to the concept using the same term.
 public interface PersistentIdentifierServiceBean {
 
     static final Logger logger = Logger.getLogger(PersistentIdentifierServiceBean.class.getCanonicalName());

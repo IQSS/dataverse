@@ -2599,7 +2599,7 @@ public class DatasetPage implements java.io.Serializable {
                     
                     // and another update command: 
                     boolean addFilesSuccess = false;
-                    cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), new ArrayList<FileMetadata>());
+                    cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), new ArrayList<FileMetadata>());
                     try {
                         dataset = commandEngine.submit(cmd);
                         addFilesSuccess = true; 

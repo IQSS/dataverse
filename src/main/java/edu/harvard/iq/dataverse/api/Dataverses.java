@@ -218,7 +218,6 @@ public class Dataverses extends AbstractApiBean {
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
                 
             ds.setAuthority(null);
-            ds.setDoiSeparator(null);
             ds.setIdentifier(null);
             ds.setProtocol(null);
             ds.setGlobalIdCreateTime(null);
@@ -255,7 +254,7 @@ public class Dataverses extends AbstractApiBean {
             }
             
             if ( nonEmpty(pidParam) ) {
-                Optional<GlobalId> maybePid = GlobalId.parse(pidParam, settingsSvc.getValueForKey(SettingsServiceBean.Key.DoiSeparator, ""));
+                Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
                 if ( maybePid.isPresent() ) {
                     ds.setGlobalId(maybePid.get());
                 } else {
