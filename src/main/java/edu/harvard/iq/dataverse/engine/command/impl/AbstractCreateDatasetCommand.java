@@ -66,7 +66,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         additionalParameterTests(ctxt);
         
         Dataset theDataset = getDataset();
-        PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(ctxt);
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
         if ( isEmpty(theDataset.getIdentifier()) ) {
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
         }

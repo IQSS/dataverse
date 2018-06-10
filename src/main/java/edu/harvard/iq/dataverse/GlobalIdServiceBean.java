@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse;
 
-import static edu.harvard.iq.dataverse.PersistentIdentifierServiceBean.logger;
+import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 
@@ -9,10 +9,9 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// FIXME MBS: Change name to GlobalIdServiceBean, to make all the code refer to the concept using the same term.
-public interface PersistentIdentifierServiceBean {
+public interface GlobalIdServiceBean {
 
-    static final Logger logger = Logger.getLogger(PersistentIdentifierServiceBean.class.getCanonicalName());
+    static final Logger logger = Logger.getLogger(GlobalIdServiceBean.class.getCanonicalName());
 
     boolean alreadyExists(DvObject dvo) throws Exception;
 
@@ -49,8 +48,8 @@ public interface PersistentIdentifierServiceBean {
     
     boolean publicizeIdentifier(DvObject studyIn);
     
-    static PersistentIdentifierServiceBean getBean(String protocol, CommandContext ctxt) {
-        final Function<CommandContext, PersistentIdentifierServiceBean> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
+    static GlobalIdServiceBean getBean(String protocol, CommandContext ctxt) {
+        final Function<CommandContext, GlobalIdServiceBean> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
         if ( protocolHandler != null ) {
             return protocolHandler.apply(ctxt);
         } else {
@@ -59,7 +58,7 @@ public interface PersistentIdentifierServiceBean {
         }
     }
 
-    static PersistentIdentifierServiceBean getBean(CommandContext ctxt) {
+    static GlobalIdServiceBean getBean(CommandContext ctxt) {
         return getBean(ctxt.settings().getValueForKey(Key.Protocol, ""), ctxt);
     }
     
@@ -70,7 +69,7 @@ public interface PersistentIdentifierServiceBean {
  * @author michael
  */
 class BeanDispatcher {
-    static final Map<String, Function<CommandContext, PersistentIdentifierServiceBean>> DISPATCHER = new HashMap<>();
+    static final Map<String, Function<CommandContext, GlobalIdServiceBean>> DISPATCHER = new HashMap<>();
 
     static {
         DISPATCHER.put("hdl", ctxt->ctxt.handleNet() );

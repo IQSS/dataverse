@@ -197,7 +197,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         return (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset");
     }
 
-    public String generateDatasetIdentifier(Dataset dataset, PersistentIdentifierServiceBean idServiceBean) {
+    public String generateDatasetIdentifier(Dataset dataset, GlobalIdServiceBean idServiceBean) {
         String identifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
        
@@ -212,7 +212,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
     
-    private String generateIdentifierAsRandomString(Dataset dataset, PersistentIdentifierServiceBean idServiceBean, String shoulder) {
+    private String generateIdentifierAsRandomString(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
         String identifier = null;
         do {
             identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
@@ -221,7 +221,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         return identifier;
     }
 
-    private String generateIdentifierAsSequentialNumber(Dataset dataset, PersistentIdentifierServiceBean idServiceBean, String shoulder) {
+    private String generateIdentifierAsSequentialNumber(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
         
         String identifier; 
         do {
@@ -248,7 +248,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * @param persistentIdSvc
      * @return {@code true} if the identifier is unique, {@code false} otherwise.
      */
-    public boolean isIdentifierUnique(String userIdentifier, Dataset dataset, PersistentIdentifierServiceBean persistentIdSvc) {
+    public boolean isIdentifierUnique(String userIdentifier, Dataset dataset, GlobalIdServiceBean persistentIdSvc) {
         if ( ! isIdentifierLocallyUnique(userIdentifier, dataset) ) return false; // duplication found in local database
         
         // not in local DB, look in the persistent identifier service
@@ -929,7 +929,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     */
     @Asynchronous
     public void obtainPersistentIdentifiersForDatafiles(Dataset dataset) {
-        PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(dataset.getProtocol(), commandEngine.getContext());
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(dataset.getProtocol(), commandEngine.getContext());
 
         //If the Id type is sequential and Dependent then write file idenitifiers outside the command
         String datasetIdentifier = dataset.getIdentifier();

@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.harvard.iq.dataverse.PersistentIdentifierServiceBean;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  * Same as {@link DeleteDatasetCommand}, but does not stop if the dataset is
@@ -88,7 +88,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             ctxt.em().remove(ra);
         }   
         
-        PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(ctxt);
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
         try{
             if(idServiceBean.alreadyExists(doomed)){
                 idServiceBean.deleteIdentifier(doomed);

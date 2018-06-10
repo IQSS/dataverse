@@ -58,23 +58,23 @@ public class PersistentIdentifierServiceBeanTest {
     public void testGetBean_String_CommandContext_OK() {
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.DoiProvider, "EZID");
         assertEquals(ezidServiceBean, 
-                     PersistentIdentifierServiceBean.getBean("doi", ctxt));
+                     GlobalIdServiceBean.getBean("doi", ctxt));
         
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.DoiProvider, "DataCite");
         assertEquals(dataCiteServiceBean, 
-                     PersistentIdentifierServiceBean.getBean("doi", ctxt));
+                     GlobalIdServiceBean.getBean("doi", ctxt));
         
         assertEquals(hdlServiceBean, 
-                     PersistentIdentifierServiceBean.getBean("hdl", ctxt));
+                     GlobalIdServiceBean.getBean("hdl", ctxt));
     }
     
      @Test
     public void testGetBean_String_CommandContext_BAD() {
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.DoiProvider, "non-existent-provider");
-        assertNull(PersistentIdentifierServiceBean.getBean("doi", ctxt));
+        assertNull(GlobalIdServiceBean.getBean("doi", ctxt));
         
         
-        assertNull(PersistentIdentifierServiceBean.getBean("non-existent-protocol", ctxt));
+        assertNull(GlobalIdServiceBean.getBean("non-existent-protocol", ctxt));
     }
 
     /**
@@ -86,11 +86,11 @@ public class PersistentIdentifierServiceBeanTest {
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.DoiProvider, "EZID");
         
         assertEquals(ezidServiceBean, 
-                     PersistentIdentifierServiceBean.getBean("doi", ctxt));
+                     GlobalIdServiceBean.getBean("doi", ctxt));
         
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.Protocol, "hdl");
         assertEquals(hdlServiceBean, 
-                     PersistentIdentifierServiceBean.getBean("hdl", ctxt));
+                     GlobalIdServiceBean.getBean("hdl", ctxt));
     }
 
    

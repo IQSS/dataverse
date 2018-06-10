@@ -1509,7 +1509,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     
     
-    public String generateDataFileIdentifier(DataFile datafile, PersistentIdentifierServiceBean idServiceBean) {
+    public String generateDataFileIdentifier(DataFile datafile, GlobalIdServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
 
@@ -1537,7 +1537,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
     
-    private String generateIdentifierAsRandomString(DataFile datafile, PersistentIdentifierServiceBean idServiceBean, String prepend) {
+    private String generateIdentifierAsRandomString(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier = null;
         do {
             identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
@@ -1547,7 +1547,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
 
-    private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, PersistentIdentifierServiceBean idServiceBean, String prepend) {
+    private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier; 
         do {
             StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
@@ -1564,7 +1564,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         return identifier;
     }
     
-    private String generateIdentifierAsDependentSequentialNumber(DataFile datafile, PersistentIdentifierServiceBean idServiceBean, String prepend) {
+    private String generateIdentifierAsDependentSequentialNumber(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier;
         Long retVal;
 
@@ -1589,7 +1589,7 @@ public class DataFileServiceBean implements java.io.Serializable {
      * @return  {@code true} iff the identifier is unique in the local database.
      */
     // FIXME MBS: change to "isLocallyUnique". Use @NamedQuery.
-    public boolean isIdentifierUniqueInDatabase(String userIdentifier, DataFile datafile, PersistentIdentifierServiceBean idServiceBean) {
+    public boolean isIdentifierUniqueInDatabase(String userIdentifier, DataFile datafile, GlobalIdServiceBean idServiceBean) {
         String testProtocol = "";
         String testAuthority = "";
         if (datafile.getAuthority() != null){

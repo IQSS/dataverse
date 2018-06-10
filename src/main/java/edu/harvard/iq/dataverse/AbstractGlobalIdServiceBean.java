@@ -8,9 +8,9 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public abstract class AbstractPersistentIdentifierServiceBean implements PersistentIdentifierServiceBean {
+public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean {
 
-    private static final Logger logger = Logger.getLogger(AbstractPersistentIdentifierServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(AbstractGlobalIdServiceBean.class.getCanonicalName());
 
     @EJB
     DataverseServiceBean dataverseService;
@@ -99,7 +99,7 @@ public abstract class AbstractPersistentIdentifierServiceBean implements Persist
 
         String protocol = dvObject.getProtocol() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : dvObject.getProtocol();
         String authority = dvObject.getAuthority() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : dvObject.getAuthority();
-        PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(protocol, commandEngine.getContext());
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, commandEngine.getContext());
         if (dvObject.isInstanceofDataset()) {
             dvObject.setIdentifier(datasetService.generateDatasetIdentifier((Dataset) dvObject, idServiceBean));
         } else {

@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.PersistentIdentifierServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -22,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 import javax.validation.ConstraintViolation;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  *
@@ -150,7 +150,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      */
     protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt) throws CommandException {
         if (!theDataset.isIdentifierRegistered()) {
-            PersistentIdentifierServiceBean globalIdServiceBean = PersistentIdentifierServiceBean.getBean(theDataset.getProtocol(), ctxt);
+            GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(theDataset.getProtocol(), ctxt);
             if ( globalIdServiceBean != null ) {
                 try {
                     if (globalIdServiceBean.alreadyExists(theDataset)) {

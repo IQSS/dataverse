@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.PersistentIdentifierServiceBean;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -12,6 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  *
@@ -32,7 +32,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         String nonNullDefaultIfKeyNotFound = "";
         String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(target.getProtocol(), ctxt);
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(target.getProtocol(), ctxt);
         try {
             //Test to see if identifier already present
             //if so, leave.

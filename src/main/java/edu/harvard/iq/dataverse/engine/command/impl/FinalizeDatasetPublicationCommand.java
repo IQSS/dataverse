@@ -27,7 +27,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.harvard.iq.dataverse.PersistentIdentifierServiceBean;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  *
@@ -179,7 +179,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
         String protocol = getDataset().getProtocol();
-        PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(protocol, ctxt);
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
         if ( idServiceBean != null ){
             try {
                 idServiceBean.publicizeIdentifier(dataset);

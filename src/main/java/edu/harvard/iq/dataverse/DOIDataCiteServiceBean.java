@@ -14,7 +14,7 @@ import javax.ejb.Stateless;
  * @author luopc
  */
 @Stateless
-public class DOIDataCiteServiceBean extends AbstractPersistentIdentifierServiceBean {
+public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
 
     private static final Logger logger = Logger.getLogger(DOIDataCiteServiceBean.class.getCanonicalName());
 

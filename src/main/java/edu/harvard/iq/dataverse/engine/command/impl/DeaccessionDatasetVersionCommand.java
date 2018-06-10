@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import edu.harvard.iq.dataverse.PersistentIdentifierServiceBean;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  *

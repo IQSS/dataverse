@@ -14,7 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.PersistentIdentifierServiceBean;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  *
