@@ -280,7 +280,9 @@ public class FileMetadata implements Serializable {
                     // just in case: 
                     fileCategory = this.getDatasetVersion().getDataset().getCategoryByName(newCategoryName);
                 } catch (Exception ex) {
-                    fileCategory = null;
+                    // If we failed to obtain an existing category, we'll create a new one:
+                    fileCategory = new DataFileCategory();
+                    fileCategory.setName(newCategoryName);
                 }
 
                 

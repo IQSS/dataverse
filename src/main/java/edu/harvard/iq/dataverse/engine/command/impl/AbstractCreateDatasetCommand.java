@@ -89,7 +89,6 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         String nonNullDefaultIfKeyNotFound = "";
         if (theDataset.getProtocol()==null) theDataset.setProtocol(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound));
         if (theDataset.getAuthority()==null) theDataset.setAuthority(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound));
-        if (theDataset.getDoiSeparator()==null) theDataset.setDoiSeparator(ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound));
         if (theDataset.getStorageIdentifier() == null) {
             try {
                 DataAccess.createNewStorageIO(theDataset, "placeholder");
@@ -97,7 +96,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
                 // if setting the storage identifier through createNewStorageIO fails, dataset creation
                 // does not have to fail. we just set the storage id to a default -SF
                 String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file";
-                theDataset.setStorageIdentifier(storageDriver  + "://" + theDataset.getAuthority()+theDataset.getDoiSeparator()+theDataset.getIdentifier());
+                theDataset.setStorageIdentifier(storageDriver  + "://" + theDataset.getGlobalId().asString());
                 logger.log(Level.INFO, "Failed to create StorageIO. StorageIdentifier set to default. Not fatal.({0})", ioex.getMessage());
             }
         }
@@ -105,8 +104,6 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
         }
         
-        logger.fine("Saving the files permanently.");
-        ctxt.ingest().finalizeFiles(dsv, theDataset.getFiles());        
         
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)
         handlePid(theDataset, ctxt);

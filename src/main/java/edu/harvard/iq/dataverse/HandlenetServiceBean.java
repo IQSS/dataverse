@@ -329,7 +329,7 @@ public class HandlenetServiceBean extends AbstractPersistentIdentifierServiceBea
     }
 
     @Override
-    public Map<String,String> lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier)  {
+    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String identifier)  {
         throw new NotImplementedException();
     }
 

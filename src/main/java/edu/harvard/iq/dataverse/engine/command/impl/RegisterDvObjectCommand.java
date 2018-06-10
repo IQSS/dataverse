@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
@@ -37,7 +32,6 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         String nonNullDefaultIfKeyNotFound = "";
         String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        String doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
         PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(target.getProtocol(), ctxt);
         try {
             //Test to see if identifier already present
@@ -55,10 +49,6 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                 if (target.getAuthority() == null) {
                     target.setAuthority(authority);
                 }
-                if (target.getDoiSeparator() == null) {
-                    target.setDoiSeparator(doiSeparator);
-                }
-
             }
 
             if (idServiceBean.alreadyExists(target)) {
@@ -87,9 +77,6 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                             }
                             if (df.getAuthority() == null) {
                                 df.setAuthority(authority);
-                            }
-                            if (df.getDoiSeparator() == null) {
-                                df.setDoiSeparator(doiSeparator);
                             }
                         }
                         doiRetString = idServiceBean.createIdentifier(df);

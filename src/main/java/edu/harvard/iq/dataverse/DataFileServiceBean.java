@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -53,7 +47,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger(DataFileServiceBean.class.getCanonicalName());
     @EJB
-    DatasetServiceBean datasetService;
+    DvObjectServiceBean dvObjectService;
     @EJB
     PermissionServiceBean permissionService;
     @EJB
@@ -165,26 +159,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }*/
     
     public DataFile findByGlobalId(String globalId) {
-
-/*
-        Concatenate pieces of global Id for selection until more permanent fix implemented
-        */
-        String queryStr = "select s.id from dvobject s where s.protocol || ':' || s.authority || s.doiseparator || s.identifier = '" + globalId +"'";
-
-        DataFile file = null;
-        try {
-            Query query = em.createNativeQuery(queryStr);
-            Long fileId = new Long((Integer) query.getSingleResult());
-            file = em.find(DataFile.class, fileId);
-
-        } catch (javax.persistence.NoResultException e) {
-            // (set to .info, this can fill the log file with thousands of 
-            // these messages during a large harvest run)
-            logger.fine("no file found: " + globalId);
-            // DO nothing, just return null.
-        }
-        return file;
-
+            return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.DATAFILE_DTYPE_STRING);
     }
     
     public DataFile findReplacementFile(Long previousFileId){
@@ -1537,40 +1512,42 @@ public class DataFileServiceBean implements java.io.Serializable {
     public String generateDataFileIdentifier(DataFile datafile, PersistentIdentifierServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-        
-        String datasetIdentifer = "";
-        //If format is dependent then pre-pend the dataset identifier
-        if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){            
-            datasetIdentifer = datafile.getOwner().getIdentifier() + "/";
+
+        String prepend = "";
+        if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){
+            //If format is dependent then pre-pend the dataset identifier 
+            prepend = datafile.getOwner().getIdentifier() + "/";
+        } else {
+            //If there's a shoulder prepend independent identifiers with it
+        	prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
         }
  
         switch (doiIdentifierType) {
             case "randomString":               
-                return datasetIdentifer + generateIdentifierAsRandomString(datafile, idServiceBean);
+                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
             case "sequentialNumber":
                 if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
-                    return generateIdentifierAsIndependentSequentialNumber(datafile, idServiceBean);
+                    return generateIdentifierAsIndependentSequentialNumber(datafile, idServiceBean, prepend);
                 } else {
-                    return generateIdentifierAsDependentSequentialNumber(datafile, idServiceBean);
+                    return generateIdentifierAsDependentSequentialNumber(datafile, idServiceBean, prepend);
                 }
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return datasetIdentifer + generateIdentifierAsRandomString(datafile, idServiceBean);
+                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
         }
     }
     
-    private String generateIdentifierAsRandomString(DataFile datafile, PersistentIdentifierServiceBean idServiceBean) {
-
+    private String generateIdentifierAsRandomString(DataFile datafile, PersistentIdentifierServiceBean idServiceBean, String prepend) {
         String identifier = null;
         do {
-            identifier = RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
         } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
 
         return identifier;
     }
 
-    private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, PersistentIdentifierServiceBean idServiceBean) {
-        
+
+    private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, PersistentIdentifierServiceBean idServiceBean, String prepend) {
         String identifier; 
         do {
             StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
@@ -1581,23 +1558,21 @@ public class DataFileServiceBean implements java.io.Serializable {
             if (identifierNumeric == null) {
                 return null; 
             }
-            identifier = identifierNumeric.toString();
+            identifier = prepend + identifierNumeric.toString();
         } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
         
         return identifier;
     }
     
-    private String generateIdentifierAsDependentSequentialNumber(DataFile datafile, PersistentIdentifierServiceBean idServiceBean) {
-        
+    private String generateIdentifierAsDependentSequentialNumber(DataFile datafile, PersistentIdentifierServiceBean idServiceBean, String prepend) {
         String identifier;
         Long retVal;
 
         retVal = new Long(0);
 
-
         do {
             retVal++;
-            identifier = datafile.getOwner().getIdentifier() + "/" + retVal.toString();
+            identifier = prepend + retVal.toString();
 
         } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
 
@@ -1611,7 +1586,9 @@ public class DataFileServiceBean implements java.io.Serializable {
      * @param userIdentifier
      * @param datafile
      * @param idServiceBean
-     * @return   */
+     * @return  {@code true} iff the identifier is unique in the local database.
+     */
+    // FIXME MBS: change to "isLocallyUnique". Use @NamedQuery.
     public boolean isIdentifierUniqueInDatabase(String userIdentifier, DataFile datafile, PersistentIdentifierServiceBean idServiceBean) {
         String testProtocol = "";
         String testAuthority = "";

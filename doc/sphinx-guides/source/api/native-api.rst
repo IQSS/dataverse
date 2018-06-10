@@ -1135,6 +1135,16 @@ Restore the whitelist of IP addresses allowed to resume workflows to default (lo
 
   DELETE http://$SERVER/api/admin/workflows/ip-whitelist
 
+Metrics
+~~~~~~~
+
+Clear all cached metric results::
+
+    DELETE http://$SERVER/api/admin/clearMetricsCache
+
+Clear a specific metric cache. Currently this must match the name of the row in the table, which is named *metricName*_*metricYYYYMM* (or just *metricName* if there is no date range for the metric). For example dataversesToMonth_2018-05::
+
+    DELETE http://$SERVER/api/admin/clearMetricsCache/$metricDbName
 
 .. |CORS| raw:: html
 

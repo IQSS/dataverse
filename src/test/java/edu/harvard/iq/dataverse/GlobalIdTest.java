@@ -1,10 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import java.net.URL;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -15,29 +10,9 @@ import org.junit.rules.ExpectedException;
  * @author rmp553
  */
 public class GlobalIdTest {
-    
-    public GlobalIdTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
-
 
     @Test
     public void testValidDOI() {
@@ -45,8 +20,9 @@ public class GlobalIdTest {
         GlobalId instance = new GlobalId("doi:10.5072/FK2/BYM3IW");
             
         assertEquals("doi", instance.getProtocol());
-        assertEquals("10.5072/FK2", instance.getAuthority());
-        assertEquals("BYM3IW", instance.getIdentifier());
+        assertEquals("10.5072", instance.getAuthority());
+        assertEquals("FK2/BYM3IW", instance.getIdentifier());
+        // TODO review the generated test code and remove the default call to fail.
     }
     
     
@@ -60,20 +36,20 @@ public class GlobalIdTest {
         assertEquals("111012", instance.getIdentifier());
     }
     
+
     @Test
     public void testContructFromDataset(){
         Dataset testDS = new Dataset();
         
         testDS.setProtocol("doi");
-        testDS.setAuthority("10.5072/FK2");
-        testDS.setIdentifier("BYM3IW");
+        testDS.setAuthority("10.5072");
+        testDS.setIdentifier("FK2/BYM3IW");
         
         GlobalId instance = new GlobalId(testDS);
             
         assertEquals("doi", instance.getProtocol());
-        assertEquals("10.5072/FK2", instance.getAuthority());
-        assertEquals("BYM3IW", instance.getIdentifier());
-        
+        assertEquals("10.5072", instance.getAuthority());
+        assertEquals("FK2/BYM3IW", instance.getIdentifier());
     }
     
 
@@ -132,20 +108,5 @@ public class GlobalIdTest {
         assertFalse( new GlobalId( null, "10.123", "123").isComplete() );
         assertTrue( new GlobalId( "doi", "10.123", "123").isComplete() );
     }
-    
-    /**
-     * Test of toURL method, of class GlobalId.
-     */
-    /*
-    @Test
-    public void testToURL() {
-        System.out.println("toURL");
-        GlobalId instance = null;
-        URL expResult = null;
-        URL result = instance.toURL();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        //fail("The test case is a prototype.");
-    }
-    */
+   
 }

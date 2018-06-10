@@ -26,9 +26,9 @@ public abstract class AbstractPersistentIdentifierServiceBean implements Persist
     SystemConfig systemConfig;
 
     @Override
-    public String getIdentifierForLookup(String protocol, String authority, String separator, String identifier) {
+    public String getIdentifierForLookup(String protocol, String authority, String identifier) {
         logger.log(Level.FINE,"getIdentifierForLookup");
-        return protocol + ":" + authority + separator + identifier;
+        return protocol + ":" + authority + "/" + identifier;
     }
 
     @Override
@@ -99,7 +99,6 @@ public abstract class AbstractPersistentIdentifierServiceBean implements Persist
 
         String protocol = dvObject.getProtocol() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : dvObject.getProtocol();
         String authority = dvObject.getAuthority() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : dvObject.getAuthority();
-        String doiSeparator = dvObject.getDoiSeparator() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator) : dvObject.getDoiSeparator();
         PersistentIdentifierServiceBean idServiceBean = PersistentIdentifierServiceBean.getBean(protocol, commandEngine.getContext());
         if (dvObject.isInstanceofDataset()) {
             dvObject.setIdentifier(datasetService.generateDatasetIdentifier((Dataset) dvObject, idServiceBean));
@@ -111,9 +110,6 @@ public abstract class AbstractPersistentIdentifierServiceBean implements Persist
         }
         if (dvObject.getAuthority() == null) {
             dvObject.setAuthority(authority);
-        }
-        if (dvObject.getDoiSeparator() == null) {
-            dvObject.setDoiSeparator(doiSeparator);
         }
         return dvObject;
     }
