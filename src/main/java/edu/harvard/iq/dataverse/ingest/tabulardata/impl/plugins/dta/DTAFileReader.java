@@ -2021,7 +2021,6 @@ public class DTAFileReader extends TabularDataFileReader{
                 Those names still work but are considered anachronisms.
 
         */
-        
         long milliSeconds;
         String decodedDateTime=null;
         String format = null;
@@ -2030,7 +2029,7 @@ public class DTAFileReader extends TabularDataFileReader{
             // tc is a relatively new format
             // datum is millisecond-wise
 
-            milliSeconds = Long.parseLong(rawDatum)+ STATA_BIAS_TO_EPOCH;
+            milliSeconds = Math.round(new Double(rawDatum)) + STATA_BIAS_TO_EPOCH;
             decodedDateTime = sdf_ymdhmsS.format(new Date(milliSeconds));
             format = sdf_ymdhmsS.toPattern();
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tc: result="+decodedDateTime+", format = "+format);
