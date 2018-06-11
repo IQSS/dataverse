@@ -58,7 +58,7 @@
                 {
                     "producerName": {
                         "typeName": "producerName",
-                        "value": "Spielberg, Stephen"
+                        "value": "Lucas, George"
                     }
                     ,
                     "producerAffiliation": {
@@ -70,4 +70,5 @@
         }
     ]
 }
+
 
