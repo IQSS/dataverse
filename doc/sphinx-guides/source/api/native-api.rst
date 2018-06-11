@@ -273,7 +273,8 @@ Alternatively to replacing an entire dataset version with its JSON representatio
 You may also replace existing metadata in dataset fields with the following (adding the parameter replace=true) ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/editMetadata?persistentId=$PID&replace=true --upload-file dataset-update-metadata.json
-
+    
+For these edits your JSON file need only include those dataset fields which you would like to edit. A sample JSON file may be downloaded here: :download:`dataset-edit-metadata-sample.json <../_static/api/dataset-edit-metadata-sample.json>` 
 
 
 Publish a Dataset
