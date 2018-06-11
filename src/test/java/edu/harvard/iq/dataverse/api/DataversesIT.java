@@ -231,4 +231,73 @@ public class DataversesIT {
         assertTrue(htmlStr4.contains(expectedErrMsg));
 
     }
+    
+    @Test
+    public void testMoveDataverse() {
+        Response createUser = UtilIT.createRandomUser();
+        
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        Response superuserResponse = UtilIT.makeSuperUser(username);
+        
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+        
+        Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse2.prettyPrint();
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
+        Response publishDataverse2 = UtilIT.publishDataverseViaSword(dataverseAlias2, apiToken);
+        assertEquals(200, publishDataverse2.getStatusCode());
+        
+        Response moveResponse = UtilIT.moveDataverse(dataverseAlias, dataverseAlias2, true, apiToken);
+
+        moveResponse.prettyPrint();
+        moveResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        Response search = UtilIT.search("id:dataverse_" + dataverseId + "&subtree=" + dataverseAlias2, apiToken);
+        search.prettyPrint();
+        search.then().assertThat()
+                .body("data.total_count", equalTo(1))
+                .statusCode(200);
+    }
+    
+    @Test
+    public void testCreateDeleteDataverseLink() {
+        Response createUser = UtilIT.createRandomUser();
+        
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        Response superuserResponse = UtilIT.makeSuperUser(username);
+        
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
+        
+        Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse2.prettyPrint();
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
+        
+        Response createLinkingDataverseResponse = UtilIT.createDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
+        createLinkingDataverseResponse.prettyPrint();
+        
+        createLinkingDataverseResponse.then().assertThat()
+                .body("data.message", equalTo("Dataverse " + dataverseAlias + " linked successfully to " + dataverseAlias2))
+                .statusCode(200);
+        
+        Response deleteLinkingDataverseResponse = UtilIT.deleteDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
+        deleteLinkingDataverseResponse.prettyPrint();
+        deleteLinkingDataverseResponse.then().assertThat()
+                .body("data.message", equalTo("Link from Dataverse " + dataverseAlias + " to linked Dataverse " + dataverseAlias2 + " deleted"))
+                .statusCode(200);
+    }
+    
 }

@@ -236,7 +236,7 @@ a. download and unzip the application
 (though you may have already done so, in step ``2.`` above - see the instructions there). 
 
 
-b. Rename the resulting directory ``dataexplore``...
+b. Rename the resulting directory "dataexplore" ...
 --------------------------------------------------------
 
 ...and place it in the web root directory of your apache server. We'll assume ``/var/www/html/dataexplore`` in the examples below::
@@ -400,7 +400,7 @@ Correct this, if necessary, then try again.
 
 If you ARE getting JSON output, but the TwoRavens view is still broken: 
 
-- Look closely at the very beginning of the JSON fragment. Does it have the ``{"prvate":false}`` entry, as shown in the example above? If not, this likely an R code version mismatch, described in section ``3.d.``, above. Correct the problem as described there, then try again. 
+- Look closely at the very beginning of the JSON fragment. Does it have the ``{"private":false}`` entry, as shown in the example above? If not, this likely an R code version mismatch, described in section ``3.d.``, above. Correct the problem as described there, then try again. 
 
 - If the JSON looks *exactly* as the fragment above, yet still no data pebbles - enable the JavaScript error console in the TwoRavens window, and try again. Look for any error messages; and, specifically, for any URLs that TwoRavens is failing to access. Look for the debugging entry that shows TwoRavens attempting to download the ``format=prep`` fragment. Does the URL have the correct host name, port and/or the protocol (http vs. https)? If not, re-run the installer, specifying the correct Dataverse URL, and try again. 
 

@@ -30,7 +30,7 @@ At this point, you might want to consider going through the Minishift quickstart
 Start Minishift
 ~~~~~~~~~~~~~~~
 
-``minishift start --vm-driver=virtualbox --memory=4GB``
+``minishift start --vm-driver=virtualbox --memory=8GB``
 
 Make the OpenShift Client Binary (oc) Executable
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -150,6 +150,21 @@ If you are interested in changing the OpenShift config file for Dataverse at ``c
 
 The slower way to iterate on the ``openshift.json`` file is to delete the project and re-create it.
 
+Scaling Dataverse by Increasing Replicas in a StatefulSet
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Glassfish and PostgreSQL Pods are in a "StatefulSet" which is a concept from OpenShift and Kubernetes that you can read about at https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+
+As of this writing, the ``openshift.json`` file has a single "replica" for each of these two stateful sets. It's possible to increase the number of replicas from 1 to 3, for example, with this command:
+
+``oc scale statefulset/dataverse-glassfish --replicas=3``
+
+The command above should result in two additional Glassfish pods being spun up. The name of the pods is significant and there is special logic in the "zeroth" pod ("dataverse-glassfish-0" and "dataverse-postgresql-0"). For example, only "dataverse-glassfish-0" makes itself the dedicated timer server as explained in :doc:`/admin/timers` section of the Admin Guide. "dataverse-glassfish-1" and other higher number pods will not be configured as a timer server.
+
+Once you have multiple Glassfish servers you may notice bugs that will require additional configuration to fix. One such bug has to do with Dataverse logos which are stored at ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos`` on each of the Glassfish servers. This means that the logo will look fine when you just uploaded it because you're on the server with the logo on the local file system but when you visit that dataverse in the future and you're on a differernt Glassfish server, you will see a broken image. (You can find some discussion of this logo bug at https://github.com/IQSS/dataverse-aws/issues/10 and http://irclog.iq.harvard.edu/dataverse/2016-10-21 .) This is all "advanced" installation territory (see the :doc:`/installation/advanced` section of the Installation Guide) and OpenShift might be a good environment in which to work on some of these bugs.
+
+Multiple PostgreSQL servers are possible within the OpenShift environment as well and have been set up with some amount of replication. "dataverse-postgresql-0" is the master and non-zero pods are the slaves. We have just scratched the surface of this configuration but replication from master to slave seems to we working. Future work could include failover and making Dataverse smarter about utilizing multiple PostgreSQL servers for reads. Right now we assume Dataverse is only being used with a single PostgreSQL server and that it's the master.
+
 Running Containers to Run as Root in Minishift
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -190,7 +205,7 @@ On Linux, you can probably get Docker from your package manager.
 
 On Mac, download the ``.dmg`` from https://www.docker.com and install it. As of this writing is it known as Docker Community Edition for Mac.
 
-On Windows, FIXME ("Docker Community Edition for Windows" maybe???).
+On Windows, we have heard reports of success using Docker on a Linux VM running in VirtualBox or similar. There's something called "Docker Community Edition for Windows" but we haven't tried it. See also the :doc:`windows` section.
 
 As explained above, we use Docker images in two different contexts:
 

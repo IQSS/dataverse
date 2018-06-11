@@ -78,7 +78,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
             writeGuestbookResponseRecord(guestbookResponse);
-          //Always suppress having a guestbookResponse written by the API by setting the last param to true
+            // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
             callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), true);
         }
         
@@ -123,8 +123,18 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         //return fileDownloadUrl;
     }
 
-    public void callDownloadServlet(String downloadType, Long fileId, boolean gbRecordsWritten) {
-        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, gbRecordsWritten);
+    // The "doNotWriteGuestBookRecord" parameter is passed to the API. 
+    // As of now (May 2018) we always set this flag to true when redirecting the 
+    // user to the Access API. That's because we have either just created the 
+    // record ourselves, on the application side; or we have skipped creating one, 
+    // because this was a draft file and we don't want to count the download. 
+    // But either way, it is NEVER the API side's job to count the download that 
+    // was initiated in the GUI. 
+    // But note that this may change - there may be some future situations where it will 
+    // become necessary again, to pass the job of creating the access record 
+    // to the API!
+    public void callDownloadServlet(String downloadType, Long fileId, boolean doNotWriteGuestBookRecord) {
+        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, doNotWriteGuestBookRecord);
         logger.fine("Redirecting to file download url: " + fileDownloadUrl);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
@@ -135,12 +145,11 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     
     public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
-        //Write a guestbookResponse only for downloads from published versions of datasets
         if(!fileMetadata.getDatasetVersion().isDraft()){
            guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
            writeGuestbookResponseRecord(guestbookResponse);
         }
-        //Always suppress having a guestbookResponse written by the API by setting the last param to true
+        // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
         callDownloadServlet(format, fileMetadata.getDataFile().getId(), true);
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }

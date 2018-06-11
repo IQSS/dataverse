@@ -71,8 +71,6 @@ public class MailServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(MailServiceBean.class.getCanonicalName());
 
     private static final String charset = "UTF-8";
-    private static final String EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
-    + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
     
     /**
      * Creates a new instance of MailServiceBean
@@ -183,8 +181,7 @@ public class MailServiceBean implements java.io.Serializable {
                 logger.severe(ex.getMessage());
             }
             msg.setFrom(fromAddress);
-             
-            if (reply.matches(EMAIL_PATTERN)) {
+            if (EMailValidator.isEmailValid(reply, null)) {
             	//But set the reply-to address to direct replies to the requested 'from' party if it is a valid email address	
                 msg.setReplyTo(new Address[] {new InternetAddress(reply)});
             } else {
