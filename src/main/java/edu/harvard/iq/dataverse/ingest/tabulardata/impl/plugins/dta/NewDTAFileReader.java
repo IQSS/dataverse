@@ -11,9 +11,7 @@ import org.apache.commons.lang.*;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
-import edu.harvard.iq.dataverse.datavariable.VariableRange;
 
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
@@ -200,7 +198,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
     };
     private static Map<String, String> DATE_TIME_FORMAT_TABLE = new LinkedHashMap<String, String>();
 
-    private static long SECONDS_PER_YEAR = 24 * 60 * 60 * 1000L; // TODO: huh?
+    private static long MILLISECCONDS_PER_DAY = 24 * 60 * 60 * 1000L;
 
     private static long STATA_BIAS_TO_EPOCH;
 
@@ -342,8 +340,9 @@ public class NewDTAFileReader extends TabularDataFileReader {
          */
     }
 
+    @Override
     public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
-        logger.info("NewDTAFileReader: read() start");
+        logger.fine("NewDTAFileReader: read() start");
 
         // shit ton of diagnostics (still) needed here!!  -- L.A.
         if (dataFile != null) {
@@ -407,10 +406,11 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
             ingesteddata.setDataTable(dataTable);
         } catch (IllegalArgumentException iaex) {
-            throw new IOException(iaex.getMessage());
+            throw iaex;
+            //throw new IOException(iaex.getMessage());
         }
 
-        logger.info("NewDTAFileReader: read() end.");
+        logger.fine("NewDTAFileReader: read() end.");
         return ingesteddata;
     }
 
@@ -646,14 +646,14 @@ public class NewDTAFileReader extends TabularDataFileReader {
      * (zero-padded and zero-terminated) character vectors. 
      */
     private void readVariableNames(DataReader reader) throws IOException {
-        logger.info("Variable names section; at offset " + reader.getByteOffset() + "; dta map offset: " + dtaMap.getOffset_varnames());
+        logger.fine("Variable names section; at offset " + reader.getByteOffset() + "; dta map offset: " + dtaMap.getOffset_varnames());
         // TODO: 
         // check that we are at the right byte offset!
         reader.readOpeningTag(TAG_VARIABLE_NAMES);
 
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
             String variableName = reader.readString(DTAVersion == 117? 33: 129);
-            logger.info("variable " + i + ": name=" + variableName);
+            logger.fine("variable " + i + ": name=" + variableName);
             if ((variableName != null) && (!variableName.equals(""))) {
                 dataTable.getDataVariables().get(i).setName(variableName);
             } else {
@@ -668,7 +668,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
      * TODO: add a comment
      */
     private void readSortOrder(DataReader reader) throws IOException {
-        logger.info("Sort Order section; at offset " + reader.getByteOffset() + "; dta map offset: " + dtaMap.getOffset_srtlist());
+        logger.fine("Sort Order section; at offset " + reader.getByteOffset() + "; dta map offset: " + dtaMap.getOffset_srtlist());
         // TODO: 
         // check that we are at the right byte offset!
         reader.readOpeningTag(TAG_SORT_ORDER);
@@ -706,7 +706,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
             String variableFormat = reader.readString(DTAVersion == 117? 49: 57);
-            logger.info("variable " + i + ": displayFormat=" + variableFormat);
+            logger.fine("variable " + i + ": displayFormat=" + variableFormat);
             // TODO: 
             // Decide what we are doing with these. 
             // (saving them, for archival purposes?)
@@ -775,7 +775,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
      * Another fixed-field section
      */
     private void readVariableLabels(DataReader reader) throws IOException {
-        logger.info("Variable labels section; at offset " + reader.getByteOffset() + "; dta map offset: " + dtaMap.getOffset_varlabs());
+        logger.fine("Variable labels section; at offset " + reader.getByteOffset() + "; dta map offset: " + dtaMap.getOffset_varlabs());
         // TODO: 
         // check that we are at the right byte offset!
         reader.readOpeningTag(TAG_VARIABLE_LABELS);
@@ -978,7 +978,6 @@ public class NewDTAFileReader extends TabularDataFileReader {
                     // same as Java double - 8-byte
 
                     double double_datum = reader.readDouble();
-
                     if (DOUBLE_MISSING_VALUE_SET.contains(double_datum)) {
                         logger.finer(i + "-th row " + columnCounter
                                 + "=th column double missing value=" + double_datum);
@@ -1327,7 +1326,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
             
             for (int i = 0; i < number_of_categories; i++) {
                 value_label_offsets[i] = reader.readInteger();
-                logger.info("offset " + i + ": " + value_label_offsets[i]);
+                logger.fine("offset " + i + ": " + value_label_offsets[i]);
                 value_category_offset += 4;
                 if (i > 0 && value_label_offsets[i] < value_label_offsets[i-1]) {
                     alreadySorted = false;
@@ -1381,8 +1380,8 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
             value_category_offset += total_label_bytes;
 
-            logger.info("text_length: " + text_length);
-            logger.info("total_label_bytes: " + total_label_bytes);
+            logger.fine("text_length: " + text_length);
+            logger.fine("total_label_bytes: " + total_label_bytes);
             if (total_label_bytes != text_length) {
                 throw new IOException("<read mismatch in readLabels()>");
             }
@@ -1509,14 +1508,13 @@ public class NewDTAFileReader extends TabularDataFileReader {
         if (FormatType.matches("^%tc.*")) {
             // tc is a relatively new format
             // datum is millisecond-wise
-
-            milliSeconds = Long.parseLong(rawDatum) + STATA_BIAS_TO_EPOCH;
+            milliSeconds = Math.round(new Double(rawDatum)) + STATA_BIAS_TO_EPOCH;
             decodedDateTime = sdf_ymdhmsS.format(new Date(milliSeconds));
             format = sdf_ymdhmsS.toPattern();
             logger.fine("tc: result=" + decodedDateTime + ", format = " + format);
 
         } else if (FormatType.matches("^%t?d.*")) {
-            milliSeconds = Long.parseLong(rawDatum) * SECONDS_PER_YEAR + STATA_BIAS_TO_EPOCH;
+            milliSeconds = Long.parseLong(rawDatum) * MILLISECCONDS_PER_DAY + STATA_BIAS_TO_EPOCH;
             logger.fine("milliSeconds=" + milliSeconds);
 
             decodedDateTime = sdf_ymd.format(new Date(milliSeconds));
@@ -2098,7 +2096,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
 //            logger.info("str: " + str);
 //            int number = bytes.length;
 //            short number2 = readByte();
-            logger.info("number: " + number);
+            logger.fine("number: " + number);
             if (number < 0 || number > limit) {
                 throw new IOException("<more than limit characters in the section \"tag\">");
             }
@@ -2106,7 +2104,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
             if (number > 0) {
                 ret = new String(readBytes(number), "US-ASCII");
             }
-            logger.info("ret: " + ret);
+            logger.fine("ret: " + ret);
             readClosingTag(tag);
             return ret;
         }
@@ -2179,7 +2177,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
             byte[] closeTag = readBytes(tag.length() + 3);
 
             String closeTagString = new String(closeTag, "US-ASCII");
-            logger.info("closeTagString: " + closeTagString);
+            logger.fine("closeTagString: " + closeTagString);
 
             if (closeTagString == null || !closeTagString.equals("</" + tag + ">")) {
                 StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
