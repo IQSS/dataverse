@@ -1,6 +1,8 @@
 FROM centos:7
 # OS dependencies
-RUN yum install -y java-1.8.0-openjdk-headless postgresql-server sudo epel-release unzip perl curl httpd
+RUN yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+#RUN yum install -y java-1.8.0-openjdk-headless postgresql-server sudo epel-release unzip perl curl httpd
+RUN yum install -y java-1.8.0-openjdk-headless postgresql96-server sudo epel-release unzip perl curl httpd
 RUN yum install -y jq
 
 # copy and unpack dependencies (solr, glassfish)
@@ -17,7 +19,8 @@ RUN cd /opt ; tar zxf /tmp/dv/deps/glassfish4dv.tgz
 # this copy of domain.xml is the result of running `asadmin set server.monitoring-service.module-monitoring-levels.jvm=LOW` on a default glassfish installation (aka - enable the glassfish REST monitir endpoint for the jvm`
 COPY domain-restmonitor.xml /opt/glassfish4/glassfish/domains/domain1/config/domain.xml
 
-RUN sudo -u postgres /usr/bin/initdb -D /var/lib/pgsql/data
+#RUN sudo -u postgres /usr/bin/initdb -D /var/lib/pgsql/data
+RUN sudo -u postgres /usr/pgsql-9.6/bin/initdb -D /var/lib/pgsql/data
 
 # copy configuration related files
 RUN cp /tmp/dv/pg_hba.conf /var/lib/pgsql/data/

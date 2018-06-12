@@ -81,10 +81,10 @@ Database Schema Exploration
 
 With over 100 tables, the Dataverse PostgreSQL database ("dvndb") can be somewhat daunting for newcomers. Here are some tips for coming up to speed.
 
-pgAdmin3
+pgAdmin
 ~~~~~~~~
 
-Back in the :doc:`dev-environment` section, we had you install pgAdmin3, which can help you explore the tables and execute SQL commands. It's also listed in the :doc:`tools` section.
+Back in the :doc:`dev-environment` section, we had you install pgAdmin, which can help you explore the tables and execute SQL commands. It's also listed in the :doc:`tools` section.
 
 SchemaSpy
 ~~~~~~~~~
