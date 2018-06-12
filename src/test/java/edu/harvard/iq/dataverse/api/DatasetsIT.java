@@ -172,6 +172,9 @@ public class DatasetsIT {
         Response exportDatasetAsJson = UtilIT.exportDataset(datasetPersistentId, "dataverse_json", apiToken);
         exportDatasetAsJson.prettyPrint();
         
+
+
+        
        // String subject = JsonPath.from(exportDatasetAsJson.getBody().asString()).getString("data.metadataBlocks.citation.fields.");
         
 
@@ -188,17 +191,25 @@ public class DatasetsIT {
         deleteTitleViaNative.prettyPrint();
         deleteTitleViaNative.then().assertThat().body("message", equalTo("Validation failed: Title is required."));
 
-        
+
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
         //post publish update
         String pathToJsonFilePostPub= "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
-        Response addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPub, apiToken);
+       Response addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPub, apiToken);
         addDataToPublishedVersion.prettyPrint();
         addDataToPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
-        
+
+        publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+
+        //post publish update
+                String pathToJsonFilePostPubRedux= "doc/sphinx-guides/source/_static/api/dataset-edit-metadata-subtitle.json";
+        Response addDataToPublishedVersionRedux = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPubRedux, apiToken);
+        addDataToPublishedVersionRedux.prettyPrint();
+        addDataToPublishedVersionRedux.then().assertThat().statusCode(OK.getStatusCode());
+
     }
 
     /**

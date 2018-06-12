@@ -462,23 +462,34 @@ public class Datasets extends AbstractApiBean {
                                     dsf.getControlledVocabularyValues().clear();
                                 } else {
                                     dsf.setSingleValue("");
+                                    dsf.setSingleControlledVocabularyValue(null);
                                 }
                             }
                             if (updateField.getDatasetFieldType().isControlledVocabulary()) {
+                                if (dsf.getDatasetFieldType().isAllowMultiples()){
                                 for (ControlledVocabularyValue cvv : updateField.getControlledVocabularyValues()) {
                                     if (!dsf.getDisplayValue().contains(cvv.getStrValue())) {
                                         dsf.getControlledVocabularyValues().add(cvv);
                                     }
                                 }
-
+                                } else {
+                                   dsf.setSingleControlledVocabularyValue(updateField.getSingleControlledVocabularyValue()); 
+                                }
                             } else {
                                 if (!updateField.getDatasetFieldType().isCompound()) {
-                                    for (DatasetFieldValue dfv : updateField.getDatasetFieldValues()) {
+                                   if (dsf.getDatasetFieldType().isAllowMultiples()){
+                                     for (DatasetFieldValue dfv : updateField.getDatasetFieldValues()) {
                                         if (!dsf.getDisplayValue().contains(dfv.getDisplayValue())) {
+                                                
+                                            }
                                             dfv.setDatasetField(dsf);
                                             dsf.getDatasetFieldValues().add(dfv);
+                                            
                                         }
-                                    }
+
+                                    } else {
+                                       dsf.setSingleValue(updateField.getValue());
+                                   }
                                 } else {
                                     for (DatasetFieldCompoundValue dfcv : updateField.getDatasetFieldCompoundValues()) {
                                         if (!dsf.getCompoundDisplayValue().contains(updateField.getCompoundDisplayValue())) {
