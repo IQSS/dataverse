@@ -475,6 +475,7 @@ public class Datasets extends AbstractApiBean {
                                 if (!updateField.getDatasetFieldType().isCompound()) {
                                     for (DatasetFieldValue dfv : updateField.getDatasetFieldValues()) {
                                         if (!dsf.getDisplayValue().contains(dfv.getDisplayValue())) {
+                                            dfv.setDatasetField(dsf);
                                             dsf.getDatasetFieldValues().add(dfv);
                                         }
                                     }
@@ -494,6 +495,7 @@ public class Datasets extends AbstractApiBean {
                     }
                 }
                 if(!found){
+                    updateField.setDatasetVersion(dsv);
                     dsv.getDatasetFields().add(updateField);
                 }
             }
