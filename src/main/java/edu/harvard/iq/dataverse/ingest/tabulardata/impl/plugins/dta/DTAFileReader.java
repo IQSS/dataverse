@@ -2044,7 +2044,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
         } else if (FormatType.matches("^%t?w.*")){
 
-            long weekYears = Long.parseLong(rawDatum);
+            long weekYears = Math.round(new Double(rawDatum));
             long left = Math.abs(weekYears)%52L;
             long years;
             if (weekYears < 0L){
@@ -2075,7 +2075,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
         } else if (FormatType.matches("^%t?m.*")){
             // month 
-            long monthYears = Long.parseLong(rawDatum);
+            long monthYears = Math.round(new Double(rawDatum));
             long left = Math.abs(monthYears)%12L;
             long years;
             if (monthYears < 0L){
@@ -2103,7 +2103,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
         } else if (FormatType.matches("^%t?q.*")){
             // quater
-            long quaterYears = Long.parseLong(rawDatum);
+            long quaterYears = Math.round(new Double(rawDatum));
             long left = Math.abs(quaterYears)%4L;
             long years;
             if (quaterYears < 0L){

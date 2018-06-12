@@ -147,8 +147,6 @@ public class NewDTAFileReader extends TabularDataFileReader {
         variableTypeTable.put(65528,"Long");
         variableTypeTable.put(65527,"Float");
         variableTypeTable.put(65526,"Double");
-        
-        //variableTypeTable117.put(32768,"STRL");
     }
     
     private static String unfVersionNumber = "6";
@@ -714,7 +712,6 @@ public class NewDTAFileReader extends TabularDataFileReader {
             // this is from the old plugin: 
             // TODO: review!
             String variableFormatKey = null;
-            logger.info(variableFormat);
             if (variableFormat.startsWith("%t")) {
                 variableFormatKey = variableFormat.substring(0, 3);
             } else {
@@ -2162,9 +2159,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                 throw new IOException("opening tag must be a non-empty string.");
             }
 
-            byte[] openTag = readBytes(tag.length() + 2);
-
-            String openTagString = new String (openTag, "US-ASCII");
+            String openTagString = new String(readBytes(tag.length() + 2), "US-ASCII");
             if (openTagString == null || !openTagString.equals("<"+tag+">")) {
                 throw new IOException("Could not read opening tag <"+tag+">");
             }
@@ -2174,10 +2169,8 @@ public class NewDTAFileReader extends TabularDataFileReader {
             if (tag == null || tag.equals("")) {
                 throw new IOException("closing tag must be a non-empty string.");
             }
-
-            byte[] closeTag = readBytes(tag.length() + 3);
-
-            String closeTagString = new String(closeTag, "US-ASCII");
+            
+            String closeTagString = new String(readBytes(tag.length() + 3), "US-ASCII");
             logger.fine("closeTagString: " + closeTagString);
 
             if (closeTagString == null || !closeTagString.equals("</" + tag + ">")) {
