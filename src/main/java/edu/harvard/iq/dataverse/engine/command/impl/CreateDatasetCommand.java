@@ -130,17 +130,21 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         dsv.setLastUpdateTime(createDate);
         theDataset.setModificationTime(createDate);
         for (DataFile dataFile: theDataset.getFiles() ){
+            dataFile.setOwner(theDataset);
             dataFile.setCreator((AuthenticatedUser)  getRequest().getUser());
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
         String nonNullDefaultIfKeyNotFound = "";
-        String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        String    authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        String  doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
-        String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        if (theDataset.getProtocol()==null) theDataset.setProtocol(protocol);
-        if (theDataset.getAuthority()==null) theDataset.setAuthority(authority);
-        if (theDataset.getDoiSeparator()==null) theDataset.setDoiSeparator(doiSeparator);
+        
+        String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+        String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+        if (theDataset.getProtocol() == null) {
+            theDataset.setProtocol(protocol);
+        }
+        if (theDataset.getAuthority() == null) {
+            theDataset.setAuthority(authority);
+        }
         if (theDataset.getStorageIdentifier() == null) {
             try {
                 DataAccess.createNewStorageIO(theDataset, "placeholder");
@@ -148,7 +152,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                 // if setting the storage identifier through createNewStorageIO fails, dataset creation
                 // does not have to fail. we just set the storage id to a default -SF
                 String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file";
-                theDataset.setStorageIdentifier(storageDriver  + "://" + theDataset.getAuthority()+theDataset.getDoiSeparator()+theDataset.getIdentifier());
+                theDataset.setStorageIdentifier(storageDriver  + "://" + theDataset.getAuthority() + "/" + theDataset.getIdentifier());
                 logger.info("Failed to create StorageIO. StorageIdentifier set to default. Not fatal." + "(" + ioex.getMessage() + ")");
             }
         }
@@ -170,17 +174,6 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
             
         }
-        logger.fine("Saving the files permanently.");
-        if ((importType!=null) && importType.equals(ImportType.IMPORT_METADATA_ONLY)) {
-            logger.log(Level.INFO, "IMPORT_METADATA_ONLY special case");
-            IngestUtil.checkForDuplicateFileNamesFinal(dsv, theDataset.getFiles());
-        } else {
-            logger.log(Level.INFO, "cases other than IMPORT_METADATA_ONLY");
-            ctxt.ingest().addFiles(dsv, theDataset.getFiles());
-        }
-        
-        
-        logger.log(Level.FINE,"doiProvider={0} protocol={1}  importType={2}  GlobalIdCreateTime=={3}", new Object[]{doiProvider, protocol,  importType, theDataset.getGlobalIdCreateTime()});
         // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
         if ((importType == null || importType.equals(ImportType.NEW) || importType.equals(ImportType.IMPORT_METADATA_ONLY))
                 && theDataset.getGlobalIdCreateTime() == null) {
@@ -196,13 +189,15 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                 // Check return value to make sure registration succeeded
                 if (!idServiceBean.registerWhenPublished() && doiRetString.contains(theDataset.getIdentifier())) {
                     theDataset.setGlobalIdCreateTime(createDate);
+                    //theDataset.setIdentifierRegistered(true);
                 }
         } else // If harvest or migrate, and this is a released dataset, we don't need to register,
         // so set the globalIdCreateTime to now
         if (theDataset.getLatestVersion().getVersionState().equals(VersionState.RELEASED)) {
             theDataset.setGlobalIdCreateTime(new Date());
+            //theDataset.setIdentifierRegistered(true);
         }
-        
+        // if (registrationRequired && !theDataset.isIdentifierRegistered()) {
         if (registrationRequired && theDataset.getGlobalIdCreateTime() == null) {
             throw new IllegalCommandException("Dataset could not be created.  Registration failed", this);
                }
