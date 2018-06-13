@@ -127,6 +127,7 @@ public class SearchFields {
     public static final String AFFILIATION = "affiliation_ss";
     public static final String FILE_NAME = "fileName";
     public static final String FILE_DESCRIPTION = "fileDescription";
+    public static final String FILE_PERSISTENT_ID = "filePersistentId";
     /**
      * Can be multivalued and includes both "friendly" and "group" versions:
      * "PNG Image", "image"
@@ -183,7 +184,7 @@ public class SearchFields {
     public static final String TYPE = "dvObjectType";
     public static final String NAME_SORT = "nameSort";
     public static final String PUBLICATION_DATE = "publicationDate";
-    public static final String RELEASE_OR_CREATE_DATE = "dateSort";
+    public static final String RELEASE_OR_CREATE_DATE = "dateSort"; 
     /**
      * i.e. "Mar 17, 2015"
      */

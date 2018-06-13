@@ -35,6 +35,7 @@ import javax.persistence.Transient;
 import javax.persistence.Version;
 import org.hibernate.validator.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import org.apache.commons.lang.StringEscapeUtils;
 
 
 /**
@@ -82,6 +83,14 @@ public class FileMetadata implements Serializable {
     @JoinColumn(nullable=false)
     private DataFile dataFile;
 
+    /**
+     * There are two types of provenance types and this "free-form" type is
+     * represented in the GUI as text box the user can type into. The other type
+     * is based on PROV-JSON from the W3C.
+     */
+    @Column(columnDefinition = "TEXT", nullable = true, name="prov_freeform")
+    private String provFreeForm;
+        
     /**
      * Creates a copy of {@code this}, with identical business logic fields.
      * E.g., {@link #label} would be duplicated; {@link #version} will not.
@@ -131,7 +140,8 @@ public class FileMetadata implements Serializable {
     public void setRestricted(boolean restricted) {
         this.restricted = restricted;
     }
-    
+
+
 
     /* 
      * File Categories to which this version of the DataFile belongs: 
@@ -271,7 +281,9 @@ public class FileMetadata implements Serializable {
                     // just in case: 
                     fileCategory = this.getDatasetVersion().getDataset().getCategoryByName(newCategoryName);
                 } catch (Exception ex) {
-                    fileCategory = null;
+                    // If we failed to obtain an existing category, we'll create a new one:
+                    fileCategory = new DataFileCategory();
+                    fileCategory.setName(newCategoryName);
                 }
 
                 
@@ -317,8 +329,8 @@ public class FileMetadata implements Serializable {
          return getFileCitation(false);
      }
      
-     
-     
+
+    
      
     public String getFileCitation(boolean html){
          String citation = this.getDatasetVersion().getCitation(html);
@@ -332,6 +344,7 @@ public class FileMetadata implements Serializable {
          }
          return citation;
      }
+    
         
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;
@@ -529,7 +542,7 @@ public class FileMetadata implements Serializable {
         return jsonObj.toString();
        
     }
-    
+
     
     public JsonObject asGsonObject(boolean prettyPrint){
 
@@ -549,6 +562,14 @@ public class FileMetadata implements Serializable {
         jsonObj.getAsJsonObject().addProperty("id", this.getId());
         
         return jsonObj.getAsJsonObject();
+    }
+    
+    public String getProvFreeForm() {
+        return provFreeForm;
+    }
+
+    public void setProvFreeForm(String provFreeForm) {
+        this.provFreeForm = provFreeForm;
     }
     
 }

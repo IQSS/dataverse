@@ -12,9 +12,9 @@ Before tagging, ensure the version number has been incremented to the milestone 
 
 - pom.xml
 - doc/sphinx-guides/source/conf.py
-- doc/sphinx-guides/source/index.rst 
+- doc/sphinx-guides/source/versions.rst 
 
-Here's an example commit where all three files were updated at once: https://github.com/IQSS/dataverse/commit/813b66a6077e8f94026a8db5320cceffefc10e11
+Here's an example commit where all three files were updated at once: https://github.com/IQSS/dataverse/commit/99e23f96ec362ac2f524cb5cd80ca375fa13f196
 
 Merge "develop" into "master"
 -----------------------------
@@ -34,8 +34,8 @@ Make Artifacts Available for Download
 
 Upload the following artifacts to the draft release you created:
 
-- installer
-- war file
+- war file (``mvn package`` from Jenkins)
+- installer (``cd scripts/installer && make``)
 - database migration script
 - other files as needed, such as an updated Solr schema
 
@@ -46,4 +46,4 @@ Click the "Publish release" button.
 
 ----
 
-Previous: :doc:`coding-style` | Next: :doc:`tools`
+Previous: :doc:`containers` | Next: :doc:`tools`

@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.BibtexCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -23,7 +22,6 @@ import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -63,6 +61,8 @@ import javax.ws.rs.core.UriInfo;
 
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.ServiceUnavailableException;
@@ -121,7 +121,7 @@ public class Access extends AbstractApiBean {
     
     
     private static final String API_KEY_HEADER = "X-Dataverse-key";    
-
+    
     //@EJB
     
     // TODO: 
@@ -129,22 +129,18 @@ public class Access extends AbstractApiBean {
     @Path("datafile/bundle/{fileId}")
     @GET
     @Produces({"application/zip"})
-    public BundleDownloadInstance datafileBundle(@PathParam("fileId") Long fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public BundleDownloadInstance datafileBundle(@PathParam("fileId") String fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
  
-        DataFile df = dataFileService.find(fileId);
+
         GuestbookResponse gbr = null;
         
-        if (df == null) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
+        DataFile df = findDataFileOrDieWrapper(fileId);
         
         if (apiToken == null || apiToken.equals("")) {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
-        // This will throw a WebApplicationException, with the correct 
-        // exit code, if access isn't authorized: 
+        // This will throw a ForbiddenException if access isn't authorized: 
         checkAuthorization(df, apiToken);
         
         if (gbrecs == null && df.isReleased()){
@@ -166,10 +162,10 @@ public class Access extends AbstractApiBean {
 
         ByteArrayOutputStream outStream = null;
         outStream = new ByteArrayOutputStream();
-
+        Long dfId = df.getId();
         try {
             ddiExportService.exportDataFile(
-                    fileId,
+                    dfId,
                     outStream,
                     null,
                     null);
@@ -181,24 +177,38 @@ public class Access extends AbstractApiBean {
             // we'll just generate the bundle without it. 
         }
         
-        return downloadInstance; 
+        return downloadInstance;       
+    
     }
     
+    //Added a wrapper method since the original method throws a wrapped response 
+    //the access methods return files instead of responses so we convert to a WebApplicationException
+    
+    private DataFile findDataFileOrDieWrapper(String fileId){
+        
+        DataFile df = null;
+        
+        try {
+            df = findDataFileOrDie(fileId);
+        } catch (WrappedResponse ex) {
+            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
+            throw new NotFoundException();
+        }
+         return df;
+    }
+        
+            
     @Path("datafile/{fileId}")
     @GET
-    @Produces({ "application/xml" })
-    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {                
-        DataFile df = dataFileService.find(fileId);
-        GuestbookResponse gbr = null;    
-        
-        
-        if (df == null) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
+    @Produces({"application/xml"})
+    public DownloadInstance datafile(@PathParam("fileId") String fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+
+        DataFile df = findDataFileOrDieWrapper(fileId);
+        GuestbookResponse gbr = null;
         
         if (df.isHarvested()) {
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
+            String errorMessage = "Datafile " + fileId + " is a harvested file that cannot be accessed in this Dataverse";
+            throw new NotFoundException(errorMessage);
             // (nobody should ever be using this API on a harvested DataFile)!
         }
         
@@ -213,8 +223,7 @@ public class Access extends AbstractApiBean {
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
         }
                
-        // This will throw a WebApplicationException, with the correct 
-        // exit code, if access isn't authorized: 
+        // This will throw a ForbiddenException if access isn't authorized: 
         checkAuthorization(df, apiToken);
         
         DownloadInfo dInfo = new DownloadInfo(df);
@@ -317,7 +326,7 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId}/metadata")
     @GET
     @Produces({"text/xml"})
-    public String tabularDatafileMetadata(@PathParam("fileId") Long fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ { 
+    public String tabularDatafileMetadata(@PathParam("fileId") String fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ { 
         return tabularDatafileMetadataDDI(fileId, exclude, include, header, response);
     }
     
@@ -328,19 +337,17 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId}/metadata/ddi")
     @GET
     @Produces({"text/xml"})
-    public String tabularDatafileMetadataDDI(@PathParam("fileId") Long fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String tabularDatafileMetadataDDI(@PathParam("fileId") String fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
 
         DataFile dataFile = null; 
+
         
         //httpHeaders.add("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
         //httpHeaders.add("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
         response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
         
-        dataFile = dataFileService.find(fileId);
-        if (dataFile == null) {
-            throw new NotFoundException();
-        }
+        dataFile = findDataFileOrDieWrapper(fileId);
         
         String fileName = dataFile.getFileMetadata().getLabel().replaceAll("\\.tab$", "-ddi.xml");
         response.setHeader("Content-disposition", "attachment; filename=\""+fileName+"\"");
@@ -348,10 +355,10 @@ public class Access extends AbstractApiBean {
         
         ByteArrayOutputStream outStream = null;
         outStream = new ByteArrayOutputStream();
-
+        Long dataFileId = dataFile.getId();
         try {
             ddiExportService.exportDataFile(
-                    fileId,
+                    dataFileId,
                     outStream,
                     exclude,
                     include);
@@ -409,21 +416,15 @@ public class Access extends AbstractApiBean {
     @GET
     @Produces({"text/xml"})
     
-    public DownloadInstance tabularDatafileMetadataPreprocessed(@PathParam("fileId") Long fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws ServiceUnavailableException {
+    public DownloadInstance tabularDatafileMetadataPreprocessed(@PathParam("fileId") String fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws ServiceUnavailableException {
     
-        DataFile df = dataFileService.find(fileId);
-        
-        if (df == null) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
+        DataFile df = findDataFileOrDieWrapper(fileId);
         
         if (apiToken == null || apiToken.equals("")) {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
-        // This will throw a WebApplicationException, with the correct 
-        // exit code, if access isn't authorized: 
+        // This will throw a ForbiddenException if access isn't authorized: 
         checkAuthorization(df, apiToken);
         DownloadInfo dInfo = new DownloadInfo(df);
 
@@ -447,6 +448,7 @@ public class Access extends AbstractApiBean {
     */
     
     
+    // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
@@ -462,7 +464,7 @@ public class Access extends AbstractApiBean {
         logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
         
         if (fileIds == null || fileIds.equals("")) {
-            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+            throw new BadRequestException();
         }
 
         String apiToken = (apiTokenParam == null || apiTokenParam.equals("")) 
@@ -534,13 +536,14 @@ public class Access extends AbstractApiBean {
                                 } 
 
                             } else {
-                                // Or should we just drop it and make a note in the Manifest?    
-                                throw new WebApplicationException(Response.Status.NOT_FOUND);
+                                // Or should we just drop it and make a note in the Manifest?
+                                String errorMessage = "Datafile " + fileId + ": no such object in the database";
+                                throw new NotFoundException(errorMessage);
                             }
                         }
                     }
                 } else {
-                    throw new WebApplicationException(Response.Status.BAD_REQUEST);
+                    throw new BadRequestException();
                 }
 
                 if (zipper == null) {
@@ -549,7 +552,7 @@ public class Access extends AbstractApiBean {
                     // files were accessible for this user. 
                     // In which casew we don't bother generating any output, and 
                     // just give them a 403:
-                    throw new WebApplicationException(Response.Status.FORBIDDEN);
+                    throw new ForbiddenException();
                 }
 
                 // This will add the generated File Manifest to the zipped output, 
@@ -563,6 +566,21 @@ public class Access extends AbstractApiBean {
         return Response.ok(stream).build();
     }
     
+    
+    /* 
+     * Geting rid of the tempPreview API - it's always been a big, fat hack. 
+     * the edit files page is now using the Base64 image strings in the preview 
+     * URLs, just like the search and dataset pages.
+    @Path("tempPreview/{fileSystemId}")
+    @GET
+    @Produces({"image/png"})
+    public InputStream tempPreview(@PathParam("fileSystemId") String fileSystemId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
+
+    }*/
+    
+    
+    
+    // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
     @Path("fileCardImage/{fileId}")
     @GET
     @Produces({ "image/png" })
@@ -825,7 +843,7 @@ public class Access extends AbstractApiBean {
     private void checkAuthorization(DataFile df, String apiToken) throws WebApplicationException {
 
         if (!isAccessAuthorized(df, apiToken)) {
-            throw new WebApplicationException(Response.Status.FORBIDDEN);
+            throw new ForbiddenException();
         }        
     }
     

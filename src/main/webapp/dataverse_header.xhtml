@@ -17,7 +17,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-pressed="false">
-                        <span class="sr-only">Toggle navigation</span>
+                        <span class="sr-only">#{bundle.toggleNavigation}</span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
@@ -67,14 +67,24 @@
                             </h:outputLink>
                         </li>
 
-                        <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
-                            <p:commandLink value="#{bundle['header.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                            </p:commandLink>
-                        </o:form>
+                        <ui:fragment rendered="#{!empty settingsWrapper.get(':NavbarSupportUrl')}">
+                            <li>
+                                <h:outputLink value="#{settingsWrapper.get(':NavbarSupportUrl')}" target="_blank">
+                                    #{bundle['header.support']}
+                                </h:outputLink>
+                            </li>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{empty settingsWrapper.get(':NavbarSupportUrl')}">
+                            <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
+                                <p:commandLink value="#{bundle['header.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                </p:commandLink>
+                            </o:form>
+                        </ui:fragment>
+
                         <li jsf:rendered="#{dataverseSession.user.superuser}">
                             <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}">
                                 <h:outputText value="#{bundle['header.dashboard']}" />

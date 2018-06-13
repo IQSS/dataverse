@@ -20,7 +20,7 @@ files. Some companies publish the specifications of their formats
 (Thank you Stata - much appreciated!), some don't (SPSS - yes, we are
 still frowning at you here at the Dataverse Project). Either way,
 reading these specially-formatted files requires some extra knowledge
-or special software. For these reasons they are not considered idea
+or special software. For these reasons they are not considered ideal
 for the purposes of archival preservation. Dataverse stores the raw
 data content extracted from such files in plain text, TAB-delimited
 files. The metadata information that describes this content is stored
@@ -56,7 +56,4 @@ The structure of the metadata defining tabular data variables used in
 Dataverse was originally based on the `DDI Codebook
 <http://www.ddialliance.org/Specification/DDI-Codebook/2.5/>`_ format.
 
-[TODO: a brief explanation of the DataVariable and related objects? A
-link to a more technical documentation writeup in the developers
-guide?]
-
+You can see an example of DDI output under the "Data Variable Metadata Access" section of the :doc:`/api/dataaccess` section of the API Guide.

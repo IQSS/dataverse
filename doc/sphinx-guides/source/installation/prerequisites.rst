@@ -100,6 +100,10 @@ It is not necessary for Glassfish to be running before you execute the Dataverse
 
 Please note that you must run Glassfish in an English locale. If you are using something like ``LANG=de_DE.UTF-8``, ingest of tabular data will fail with the message "RoundRoutines:decimal separator no in right place".
 
+Also note that Glassfish may utilize more than the default number of file descriptors, especially when running batch jobs such as harvesting. We have increased ours by adding ulimit -n 32768 to our glassfish init script. On operating systems which use systemd such as RHEL or CentOS 7, file descriptor limits may be increased by adding a line like LimitNOFILE=32768 to the systemd unit file. You may adjust the file descriptor limits on running processes by using the prlimit utility:
+
+	# sudo prlimit -p pid -n 32768:32768
+
 PostgreSQL
 ----------
 
@@ -108,15 +112,19 @@ Installing PostgreSQL
 
 Version 9.x is required. Previous versions have not been tested.
 
-The version that ships with el7 and above is fine::
+Version 9.6 is anticipated as an "LTS" release in RHEL and on other platforms::
 
-	# yum install postgresql-server
-        # service postgresql initdb
-	# service postgresql start
+	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+	# yum makecache fast
+	# yum install -y postgresql96-server
+	# /usr/pgsql-9.6/bin/postgresql96-setup initdb
+	# /usr/bin/systemctl start postgresql-9.6
+	# /usr/bin/systemctl enable postgresql-9.6
+	
+Note these steps are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
 
-The standard init script that ships with el7 should work fine. Enable it with this command::
-
-        # chkconfig postgresql on
+	# service postgresql-9.6 initdb
+	# service postgresql-9.6 start
 
 Configuring Database Access for the Dataverse Application (and the Dataverse Installer) 
 =======================================================================================
@@ -150,8 +158,12 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
 
   The file ``postgresql.conf`` will be located in the same directory as the ``pg_hba.conf`` above.
 
-- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL and similar (provided you installed Postgres as instructed above)::
-        
+- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL/CentOS 7 and similar (provided you installed Postgres as instructed above)::
+
+        # systemctl restart postgresql-9.6
+
+  or on RHEL/CentOS 6::
+
         # service postgresql restart
 
   On MacOS X a "Reload Configuration" icon is usually supplied in the PostgreSQL application folder. Or you could look up the process id of the PostgreSQL postmaster process, and send it the SIGHUP signal:: 
@@ -166,39 +178,60 @@ The Dataverse search index is powered by Solr.
 Installing Solr
 ===============
 
-Download and install Solr with these commands::
+You should not run Solr as root. Create a user called ``solr`` and a directory to install Solr into::
 
-	# wget https://archive.apache.org/dist/lucene/solr/4.6.0/solr-4.6.0.tgz
-	# tar xvzf solr-4.6.0.tgz 
-	# rsync -auv solr-4.6.0 /usr/local/
-	# cd /usr/local/solr-4.6.0/example/solr/collection1/conf/
-	# cp -a schema.xml schema.xml.orig
+        useradd solr
+        mkdir /usr/local/solr
+        chown solr:solr /usr/local/solr
 
-The reason for backing up the ``schema.xml`` file is that Dataverse requires a custom Solr schema to operate. This ``schema.xml`` file is contained in the "dvinstall" zip supplied in each Dataverse release at https://github.com/IQSS/dataverse/releases . Download this zip file, extract ``schema.xml`` from it, and put it into place (in the same directory as above)::
+Become the ``solr`` user and then download and configure Solr::
 
-	# cp /tmp/schema.xml schema.xml
+        su - solr
+        cd /usr/local/solr
+        wget https://archive.apache.org/dist/lucene/solr/7.3.0/solr-7.3.0.tgz
+        tar xvzf solr-7.3.0.tgz
+        cd solr-7.3.0
+        cp -r server/solr/configsets/_default server/solr/collection1
 
-With the Dataverse-specific schema in place, you can now start Solr::
+You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
 
-	# cd /usr/local/solr-4.6.0/example
-	# java -jar start.jar
+        cp /tmp/dvinstall/schema.xml /usr/local/solr/solr-7.3.0/server/solr/collection1/conf
+        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.3.0/server/solr/collection1/conf
+
+Note: Dataverse has customized Solr to boost results that come from certain indexed elements inside Dataverse, for example results matching on the name of a dataset. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents.
+
+Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.3.0/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
+
+With the Dataverse-specific config in place, you can now start Solr and create the core that will be used to manage search information::
+
+        cd /usr/local/solr/solr-7.3.0
+        bin/solr start
+        bin/solr create_core -c collection1 -d server/solr/collection1/conf/
+	
+Please note: Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script and adding solr soft nproc 65000 to /etc/security/limits.conf. On operating systems which use systemd such as RHEL or CentOS 7, you may add a line like LimitNOFILE=65000 to the systemd unit file, or adjust the limits on a running process using the prlimit tool:
+
+	# sudo prlimit -p pid -n 65000:65000
+	
 
 Solr Init Script
 ================
 
-The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but letting the system start Solr automatically is recommended.
- 
-- This :download:`Solr Systemd file<../_static/installation/files/etc/systemd/solr.service>` will launch Solr on boot as the solr user for RHEL/CentOS 7 or Ubuntu 16+ systems, or
-- For systems using init.d, you may attempt to adjust this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` for your needs or write your own.
+For systems running systemd, as root, download :download:`solr.service<../_static/installation/files/etc/systemd/solr.service>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
 
-Solr should be running before the Dataverse installation script is executed.
+        cp /tmp/solr.service /usr/lib/systemd/system
+        systemctl start solr.service
+        systemctl enable solr.service
+
+For systems using init.d, download this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
+
+        cp /tmp/solr /etc/init.d
+        service solr start
+        chkconfig solr on
 
 Securing Solr
 =============
 
-Solr must be firewalled off from all hosts except the server(s) running Dataverse. Otherwise, any host  that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://wiki.apache.org/solr/SolrSecurity
-
-You may want to poke a temporary hole in your firewall to play with the Solr GUI. More information on this can be found in the :doc:`/developers/dev-environment` section of the Developer Guide.
+Solr must be firewalled off from all hosts except the server(s) running Dataverse. Otherwise, any host  that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://lucene.apache.org/solr/guide/7_2/securing-solr.html
 
 jq
 --

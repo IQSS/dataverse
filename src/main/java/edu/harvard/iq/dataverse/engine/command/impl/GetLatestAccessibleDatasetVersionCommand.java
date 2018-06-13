@@ -8,12 +8,12 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 
 /**
  * Get the latest version of a dataset a user can view.
@@ -31,17 +31,13 @@ public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<Da
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        DatasetVersion d = null;
-        
-        try {
-            d = ctxt.engine().submit(new GetDraftDatasetVersionCommand(getRequest(), ds));
-        } catch(PermissionException ex) {}
-        
-        if (d == null || d.getId() == null) {
-            d = ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(getRequest(),ds));
+
+        if (ds.getLatestVersion().isDraft() && ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)) {
+            return ctxt.engine().submit(new GetDraftDatasetVersionCommand(getRequest(), ds));
         }
-        
-        return d;
+
+        return ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(getRequest(), ds));
+
     }
     
     

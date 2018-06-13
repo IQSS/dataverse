@@ -94,7 +94,7 @@ Unit tests are run automatically on every build, but dev environments and server
 
 The :doc:`dev-environment` section currently refers developers here for advice on getting set up to run REST Assured tests, but we'd like to add some sort of "dev" flag to the installer to put Dataverse in "insecure" mode, with lots of scary warnings that this dev mode should not be used in production.
 
-The instructions below assume a relatively static dev environment on a Mac. There is a newer "all in one" Docker-based approach documented in the :doc:`dev-environment` section under "Docker" that you may like to play with as well.
+The instructions below assume a relatively static dev environment on a Mac. There is a newer "all in one" Docker-based approach documented in the :doc:`/developers/containers` section under "Docker" that you may like to play with as well.
 
 The Burrito Key
 ^^^^^^^^^^^^^^^
@@ -170,6 +170,23 @@ Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)
 
 To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.txt``.
 
+Load/Performance Testing
+------------------------
+
+Locust
+~~~~~~
+
+Load and performance testing is conducted on an as-needed basis but we're open to automating it. As of this writing Locust ( https://locust.io ) scripts at https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests have been used.
+
+download-files.sh script
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+One way of generating load is by downloading many files. You can download :download:`download-files.sh <../../../../tests/performance/download-files/download-files.sh>`, make it executable (``chmod 755``), and run it with ``--help``. You can use ``-b`` to specify the base URL of the Dataverse installation and ``-s`` to specify the number of seconds to wait between requests like this:
+
+``./download-files.sh -b https://dev1.dataverse.org -s 2``
+
+The script requires a file called ``files.txt`` to operate and database IDs for the files you want to download should each be on their own line.
+
 The Phoenix Server
 ------------------
 
@@ -231,13 +248,12 @@ Installation Testing
 - Work with @lwo to automate testing of https://github.com/IQSS/dataverse-puppet . Consider using Travis: https://github.com/IQSS/dataverse-puppet/issues/10
 - Work with @donsizemore to automate testing of https://github.com/IQSS/dataverse-ansible with Travis or similar.
 
-Load/Performance Testing
-~~~~~~~~~~~~~~~~~~~~~~~~
+Future Work on Load/Performance Testing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Run stress tests on a period basis: https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests 
+- Clean up and copy stress tests code, config, and docs into main repo from https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests
 - Marcel Duran created a command-line wrapper for the WebPagetest API that can be used to test performance in your continuous integration pipeline (TAP, Jenkins, Travis-CI, etc): https://github.com/marcelduran/webpagetest-api/wiki/Test-Specs#jenkins-integration
-- Documentation
-- Create top-down checklist, building off the spreadsheet at https://github.com/IQSS/dataverse/issues/3358#issuecomment-256400776
+- Create top-down checklist, building off the "API Test Coverage" spreadsheet at https://github.com/IQSS/dataverse/issues/3358#issuecomment-256400776
 
 ----
 

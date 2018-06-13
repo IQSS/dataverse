@@ -7,6 +7,7 @@ DB_SCRIPT=${INSTALLER_ZIP_DIR}/reference_data.sql
 JHOVE_CONFIG=${INSTALLER_ZIP_DIR}/jhove.conf
 JHOVE_SCHEMA=${INSTALLER_ZIP_DIR}/jhoveConfig.xsd
 SOLR_SCHEMA=${INSTALLER_ZIP_DIR}/schema.xml
+SOLR_CONFIG=${INSTALLER_ZIP_DIR}/solrconfig.xml
 INSTALL_SCRIPT=${INSTALLER_ZIP_DIR}/install
 
 installer:	dvinstall.zip
@@ -14,9 +15,9 @@ installer:	dvinstall.zip
 clean: 
 	/bin/rm -rf ${INSTALLER_ZIP_DIR} dvinstall.zip
 
-dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${INSTALL_SCRIPT}
+dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
 	@echo making installer...
-	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${INSTALL_SCRIPT}
+	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
 	@echo 
 	@echo "Done!"
 
@@ -45,10 +46,10 @@ ${GLASSFISH_SETUP_SCRIPT}:	glassfish-setup.sh
 	/bin/cp glassfish-setup.sh ${INSTALLER_ZIP_DIR}
 
 
-${POSTGRES_DRIVERS}:	pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9.0-802.jdbc4.jar pgdriver/postgresql-9.1-902.jdbc4.jar pgdriver/postgresql-9.2-1004.jdbc4.jar pgdriver/postgresql-9.3-1104.jdbc4.jar pgdriver/postgresql-9.4.1212.jar pgdriver/postgresql-42.1.4.jar
+${POSTGRES_DRIVERS}:	pgdriver/postgresql-42.2.2.jar
 	@echo copying postgres drviers
 	@mkdir -p ${POSTGRES_DRIVERS}
-	/bin/cp pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9.0-802.jdbc4.jar pgdriver/postgresql-9.1-902.jdbc4.jar pgdriver/postgresql-9.2-1004.jdbc4.jar pgdriver/postgresql-9.3-1104.jdbc4.jar pgdriver/postgresql-9.4.1212.jar pgdriver/postgresql-42.1.4.jar ${INSTALLER_ZIP_DIR}/pgdriver
+	/bin/cp pgdriver/postgresql-42.2.2.jar ${INSTALLER_ZIP_DIR}/pgdriver
 
 ${API_SCRIPTS}:	../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/post-install-api-block.sh ../api/setup-builtin-roles.sh ../api/data
 	@echo copying api scripts
@@ -70,7 +71,12 @@ ${JHOVE_SCHEMA}:	../../conf/jhove/jhoveConfig.xsd
 	@mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp ../../conf/jhove/jhoveConfig.xsd ${INSTALLER_ZIP_DIR}
 
-${SOLR_SCHEMA}:		../../conf/solr/4.6.0/schema.xml
+${SOLR_SCHEMA}:		../../conf/solr/7.3.0/schema.xml
 	@echo copying Solr schema file
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp ../../conf/solr/4.6.0/schema.xml ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/7.3.0/schema.xml ${INSTALLER_ZIP_DIR}
+
+${SOLR_CONFIG}:		../../conf/solr/7.3.0/solrconfig.xml
+	@echo copying Solr config file
+	@mkdir -p ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/7.3.0/solrconfig.xml ${INSTALLER_ZIP_DIR}

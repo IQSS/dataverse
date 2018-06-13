@@ -43,8 +43,6 @@ Unless you already have it, install pip (https://pip.pypa.io/en/latest/installin
 
 run ``pip install sphinx`` in a terminal
 
-
-
 This is all you need. You should now be able to build HTML/pdf documentation from git sources locally.
 
 Using Sphinx
@@ -58,7 +56,7 @@ Once you are done, open a terminal and change directories to ~/dataverse/doc/sph
 
 - ``make clean``
 
-- ``make html Makefile``
+- ``make html``
 
 After sphinx is done processing the files you should notice that the html folder in ~/dataverse/doc/sphinx-guides/build directory has been updated.
 You can click on the files in the html folder to preview the changes.
@@ -74,6 +72,17 @@ Every non-index page should use the following code to display a table of content
 		:local:
 
 This code should be placed below any introductory text/images and directly above the first subheading, much like a Wikipedia page.
+
+Versions
+--------
+
+For installations hosting their own copies of the guides, note that as each version of Dataverse is released, there is an updated version of the guides released with it. Google and other search engines index all versions, which may confuse users who discover your guides in the search results as to which version they should be looking at. When learning about your installation from the search results, it is best to be viewing the *latest* version.
+
+In order to make it clear to the crawlers that we only want the latest version discoverable in their search results, we suggest adding this to your ``robots.txt`` file::
+
+        User-agent: *
+        Allow: /en/latest/
+        Disallow: /en/
 
 ----
 

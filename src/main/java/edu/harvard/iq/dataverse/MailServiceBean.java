@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -70,16 +71,14 @@ public class MailServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(MailServiceBean.class.getCanonicalName());
 
     private static final String charset = "UTF-8";
-    private static final String EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
-    + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
-    
+
     /**
      * Creates a new instance of MailServiceBean
      */
     public MailServiceBean() {
     }
 
-    public void sendMail(String host, String from, String to, String subject, String messageText) {
+    public void sendMail(String host, String reply, String to, String subject, String messageText) {
         Properties props = System.getProperties();
         props.put("mail.smtp.host", host);
         Session session = Session.getDefaultInstance(props, null);
@@ -89,7 +88,11 @@ public class MailServiceBean implements java.io.Serializable {
             String[] recipientStrings = to.split(",");
             InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
             try {
-                msg.setFrom(new InternetAddress(from, charset));
+            	InternetAddress fromAddress=getSystemAddress();
+            	fromAddress.setPersonal(BundleUtil.getStringFromBundle("contact.delegation", Arrays.asList(
+                        fromAddress.getPersonal(), reply)), charset);
+            	msg.setFrom(fromAddress);
+                msg.setReplyTo(new Address[] {new InternetAddress(reply, charset)});
                 for (int i = 0; i < recipients.length; i++) {
                     recipients[i] = new InternetAddress(recipientStrings[i], "", charset);
                 }
@@ -106,7 +109,7 @@ public class MailServiceBean implements java.io.Serializable {
             me.printStackTrace(System.out);
         }
     }
-
+    
     @Resource(name = "mail/notifyMailSession")
     private Session session;
 
@@ -114,11 +117,11 @@ public class MailServiceBean implements java.io.Serializable {
 
         boolean sent = false;
         String rootDataverseName = dataverseService.findRootDataverse().getName();
-        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getInstallationBrandName(rootDataverseName)));
+        InternetAddress systemAddress = getSystemAddress();
+        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName)));
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
             MimeMessage msg = new MimeMessage(session);
-            InternetAddress systemAddress = getSystemAddress();
             if (systemAddress != null) {
                 msg.setFrom(systemAddress);
                 msg.setSentDate(new Date());
@@ -138,7 +141,8 @@ public class MailServiceBean implements java.io.Serializable {
                     Transport.send(msg, recipients);
                     sent = true;
                 } catch (SMTPSendFailedException ssfe) {
-                    logger.warning("Failed to send mail to " + to + " (SMTPSendFailedException)");
+                    logger.warning("Failed to send mail to: " + to);
+                    logger.warning("SMTPSendFailedException Message: " + ssfe);
                 }
             } else {
                 logger.fine("Skipping sending mail to " + to + ", because the \"no-reply\" address not set (" + Key.SystemEmail + " setting).");
@@ -163,16 +167,24 @@ public class MailServiceBean implements java.io.Serializable {
         sendMail(from, to, subject, messageText, new HashMap<>());
     }
 
-    public void sendMail(String from, String to, String subject, String messageText, Map<Object, Object> extraHeaders) {
+    public void sendMail(String reply, String to, String subject, String messageText, Map<Object, Object> extraHeaders) {
         try {
             MimeMessage msg = new MimeMessage(session);
-            if (from.matches(EMAIL_PATTERN)) {
-                msg.setFrom(new InternetAddress(from));
+            //Always send from system address to avoid email being blocked
+            InternetAddress fromAddress=getSystemAddress();
+            try {
+              fromAddress.setPersonal(BundleUtil.getStringFromBundle("contact.delegation", Arrays.asList(
+                      fromAddress.getPersonal(), reply)), charset);
+            } catch (UnsupportedEncodingException ex) {
+                logger.severe(ex.getMessage());
+            }
+            msg.setFrom(fromAddress);
+            if (EMailValidator.isEmailValid(reply, null)) {
+            	//But set the reply-to address to direct replies to the requested 'from' party if it is a valid email address	
+                msg.setReplyTo(new Address[] {new InternetAddress(reply)});
             } else {
-                // set fake from address; instead, add it as part of the message
-                //msg.setFrom(new InternetAddress("invalid.email.address@mailinator.com"));
-                msg.setFrom(getSystemAddress());
-                messageText = "From: " + from + "\n\n" + messageText;
+                //Otherwise include the invalid 'from' address in the message
+                messageText = "From: " + reply + "\n\n" + messageText;
             }
             msg.setSentDate(new Date());
             msg.setRecipients(Message.RecipientType.TO,

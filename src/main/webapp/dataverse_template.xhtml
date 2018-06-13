@@ -53,7 +53,7 @@
             <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/>
         </ui:include>
         <div class="container" id="content">
-            <ui:insert name="body">Default Body</ui:insert>
+            <ui:insert name="body">#{bundle.defaultBody}</ui:insert>
         </div>
         <!-- FOOTER BLOCK -->
         <ui:include src="dataverse_footer.xhtml">

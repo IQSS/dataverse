@@ -112,6 +112,7 @@ public class StatementManagerImpl implements StatementManager {
                 //
                 // Replace spaces to avoid IRISyntaxException
                 String fileNameFinal = fileMetadata.getLabel().replace(' ', '_');
+                // TODO: Consider where we would show the persistent identifiers for files via SWORD.
                 String fileUrlString = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit-media/file/" + dataFile.getId() + "/" + fileNameFinal;
                 IRI fileUrl;
                 try {

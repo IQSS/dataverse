@@ -12,14 +12,19 @@ Developer Guide
 
    intro
    dev-environment
+   windows
+   tips
+   troubleshooting
    version-control
    testing
    documentation
    debugging
    coding-style
+   containers
    making-releases
    tools
    unf/index
+   remote-users
    geospatial
    selinux
    big-data-support

@@ -20,6 +20,7 @@ These "superuser" tasks are managed via the new page called the Dashboard. A use
    timers
    geoconnect-worldmap
    user-administration
+   dataverses-datasets
    solr-search-index
    ip-groups
    monitoring

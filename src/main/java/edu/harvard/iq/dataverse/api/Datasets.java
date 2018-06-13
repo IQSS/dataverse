@@ -43,6 +43,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
@@ -52,6 +53,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVe
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ImportFromFileSystemCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.MoveDatasetCommand;
@@ -203,7 +205,7 @@ public class Datasets extends AbstractApiBean {
             // -- L.A., 4.5
             
             logger.fine("xml to return: " + xml);
-            String mediaType = MediaType.TEXT_PLAIN;
+            String mediaType = MediaType.TEXT_PLAIN;//PM - output formats appear to be either JSON or XML, unclear why text/plain is being used as default content-type.
             if (instance.isXMLFormat(exporter)){
                 mediaType = MediaType.APPLICATION_XML;
             }
@@ -231,6 +233,16 @@ public class Datasets extends AbstractApiBean {
 		return response( req -> {
 			execCommand( new DestroyDatasetCommand(findDatasetOrDie(id), req) );
 			return ok("Dataset " + id + " destroyed");
+        });
+	}
+        
+        @DELETE
+	@Path("{datasetId}/deleteLink/{linkedDataverseId}")
+	public Response deleteDatasetLinkingDataverse( @PathParam("datasetId") String datasetId, @PathParam("linkedDataverseId") String linkedDataverseId) {
+                boolean index = true;
+		return response(req -> {
+			execCommand(new DeleteDatasetLinkingDataverseCommand(req, findDatasetOrDie(datasetId), findDatasetLinkingDataverseOrDie(datasetId, linkedDataverseId), index));
+			return ok("Link from Dataset " + datasetId + " to linked Dataverse " + linkedDataverseId + " deleted");
         });
 	}
         
@@ -442,7 +454,6 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/move/{targetDataverseAlias}")
     public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {        
         try{
-            System.out.print("force: " + force);
             User u = findUserOrDie();            
             Dataset ds = findDatasetOrDie(id);
             Dataverse target = dataverseService.findByAlias(targetDataverseAlias);
@@ -458,6 +469,29 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
     }
+    
+    @PUT
+    @Path("{linkedDatasetId}/link/{linkingDataverseAlias}") 
+    public Response linkDataset(@PathParam("linkedDatasetId") String linkedDatasetId, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {        
+        try{
+            User u = findUserOrDie();            
+            Dataset linked = findDatasetOrDie(linkedDatasetId);
+            Dataverse linking = findDataverseOrDie(linkingDataverseAlias);
+            if (linked == null){
+                return error(Response.Status.BAD_REQUEST, "Linked Dataset not found.");
+            } 
+            if (linking == null){
+                return error(Response.Status.BAD_REQUEST, "Linking Dataverse not found.");
+            }   
+            execCommand(new LinkDatasetCommand(
+                    createDataverseRequest(u), linking, linked
+                    ));
+            return ok("Dataset " + linked.getId() + " linked successfully to " + linking.getAlias());
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
     @GET
     @Path("{id}/links")
     public Response getLinks(@PathParam("id") String idSupplied ) {
@@ -599,6 +633,7 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+    // TODO: Rather than only supporting looking up files by their database IDs (dataFileIdSupplied), consider supporting persistent identifiers.
     @POST
     @Path("{id}/thumbnail/{dataFileId}")
     public Response setDataFileAsThumbnail(@PathParam("id") String idSupplied, @PathParam("dataFileId") long dataFileIdSupplied) {
@@ -644,7 +679,14 @@ public class Datasets extends AbstractApiBean {
         Dataset dataset = null;
         try {
             dataset = findDatasetOrDie(id);
-            ScriptRequestResponse scriptRequestResponse = execCommand(new RequestRsyncScriptCommand(createDataverseRequest(findUserOrDie()), dataset));
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            ScriptRequestResponse scriptRequestResponse = execCommand(new RequestRsyncScriptCommand(createDataverseRequest(user), dataset));
+            
+            DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, user.getId(), "script downloaded");
+            if (lock == null) {
+                logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
+                return error(Response.Status.FORBIDDEN, "Failed to lock the dataset (dataset id="+dataset.getId()+")");
+            }
             return ok(scriptRequestResponse.getScript(), MediaType.valueOf(MediaType.TEXT_PLAIN));
         } catch (WrappedResponse wr) {
             return wr.getResponse();

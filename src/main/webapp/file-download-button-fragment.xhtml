@@ -51,8 +51,11 @@
     <!--exploreTools is set as a ui:param by the file and dataset pages-->
     <!--Note that "WorldMap Explore" is not an explore tool (external tool)-->
     <div class="btn-group" jsf:rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and not empty exploreTools or (worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-            <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span class="caret"/>
+        <button jsf:rendered="#{exploreTools.size()==1}" type="button" class="btn btn-default"  onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
+            <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
+        </button>
+        <button jsf:rendered="#{exploreTools.size()>1}" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+            <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span  class="caret"/>
         </button>
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
             <!--external tools-->
@@ -225,7 +228,7 @@
                                actionListener="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse,fileMetadata, 'subset')}"
                                update="@widgetVar(downloadDataSubsetPopup)"
                                oncomplete="PF('downloadDataSubsetPopup').show()"
-                               value="Data Subset"
+                               value="#{bundle['file.downloadBtn.format.datasubset']}"
                                />
                 <p:commandLink id="fileDowloadDataSubsetButtonPopupReq" rendered="#{downloadPopupRequired}"
                                process="@this"
@@ -233,7 +236,7 @@
                                actionListener="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse,fileMetadata, 'subset')}"
                                update="@widgetVar(downloadPopup)"
                                oncomplete="PF('downloadPopup').show()"
-                               value="Data Subset"
+                               value="#{bundle['file.downloadBtn.format.datasubset']}"
                                />
             </li>
             <li class="dropdown-submenu pull-left">

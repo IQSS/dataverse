@@ -59,7 +59,7 @@ public class IpGroupsIT {
         Long fileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
         boolean restrict = true;
-        Response restrictResponse = UtilIT.restrictFile(fileId, restrict, apiToken);
+        Response restrictResponse = UtilIT.restrictFile(fileId.toString(), restrict, apiToken);
         restrictResponse.prettyPrint();
         restrictResponse.then().assertThat()
                 .body("data.message", equalTo("File favicondataverse.png restricted."))

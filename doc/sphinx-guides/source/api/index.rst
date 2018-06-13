@@ -15,5 +15,6 @@ API Guide
    search
    dataaccess
    native-api
+   metrics
    client-libraries
    apps

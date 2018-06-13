@@ -38,7 +38,7 @@
                            rendered="#{FilePage.compareVersionsCount > 2}">
                 <span class="glyphicon glyphicon-transfer"/> #{bundle['file.dataFilesTab.versions.viewDiffBtn']}
             </p:commandLink>
-            <p:commandButton value="Direct" id="compareVersions"
+            <p:commandButton  value="#{bundle['file.dataFilesTab.button.direct']}" id="compareVersions"
                              style="display:none"
                              update=":datasetForm"
                              oncomplete="PF('detailsBlocks').show();post_differences();"

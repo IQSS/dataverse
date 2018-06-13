@@ -75,7 +75,7 @@ public class ExportService {
 
     public List< String[]> getExportersLabels() {
         List<String[]> retList = new ArrayList<>();
-        Iterator<Exporter> exporters = ExportService.getInstance().loader.iterator();
+        Iterator<Exporter> exporters = ExportService.getInstance(null).loader.iterator();
         while (exporters.hasNext()) {
             Exporter e = exporters.next();
             String[] temp = new String[2];
@@ -262,7 +262,7 @@ public class ExportService {
                     exporter.exportDataset(version, datasetAsJson, cachedExportOutputStream);
                     cachedExportOutputStream.flush();
                     cachedExportOutputStream.close();
-
+                    outputStream.close();
                 } else {
                     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
                     exporter.exportDataset(version, datasetAsJson, outputStream);
