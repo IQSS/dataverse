@@ -75,7 +75,7 @@
                                     <ui:remove>
                                     <!-- Filter feature removed -->
                                     <div id="datatable_filter" class="dataTables_filter">
-                                        <label>Filter
+                                        <label>#{bundle.filter}
                                             <input type="search" style="display:inline !important; width:auto !important;" class="form-control input-sm" placeholder="" aria-controls="datatable"/>
                                         </label>
                                     </div>
@@ -251,7 +251,7 @@
                                                         emptyMessage="#{bundle['harvestclients.newClientDialog.dataverse.menu.invalidMsg']}"
                                                         value="#{harvestingClientsPage.selectedDestinationDataverse}"
                                                         completeMethod="#{harvestingClientsPage.completeSelectedDataverse}"
-                                                        var="destDV"
+                                                        var="destDV" styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
                                                         itemLabel="#{destDV.alias}" itemValue="#{destDV}" converter="dataverseConverter">
                                             <p:column>
                                                 <h:outputText value="#{destDV.name}"/>
@@ -263,6 +263,9 @@
                                             <p:ajax process="@this" event="itemSelect" />
                                             <p:ajax process="@this" event="itemUnselect" />
                                         </p:autoComplete>
+                                        <script type="text/javascript">
+                                            handle_dropdown_popup_scroll();
+                                        </script>
                                         <p:message for="destinationDataverseMenu"/>
                                     </div>
                                 </div>

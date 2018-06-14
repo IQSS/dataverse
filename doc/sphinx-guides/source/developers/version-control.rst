@@ -67,7 +67,7 @@ If you tell us your GitHub username we are happy to add you to the "read only" t
 Create a New Branch off the develop Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Always create your feature branch from the latest code in develop, pulling the latest code if necessary. As mentioned above, your branch should have a name like "3728-doc-apipolicy-fix" that starts with the issue number you are addressing, and ends with a short, descriptive name.
+Always create your feature branch from the latest code in develop, pulling the latest code if necessary. As mentioned above, your branch should have a name like "3728-doc-apipolicy-fix" that starts with the issue number you are addressing, and ends with a short, descriptive name. Dashes ("-") and underscores ("_") in your branch name are ok, but please try to avoid other special characters such as ampersands ("&") than have special meaning in Unix shells.
 
 Commit Your Change to Your New Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -124,6 +124,24 @@ If you'd like to resolve the merge conflicts yourself, here are some steps to do
 **In GitHub Issues:**
 
 11. Leave a comment for the Dataverse team that you have resolved the merge conflicts.
+
+Adding Commits to a Pull Request from a Fork 
+--------------------------------------------
+
+By default, when a pull request is made from a fork, "Allow edits from maintainers" is checked as explained at https://help.github.com/articles/allowing-changes-to-a-pull-request-branch-created-from-a-fork/
+
+This is a nice feature of GitHub because it means that the core dev team for Dataverse can make small (or even large) changes to a pull request from a contributor to help the pull request along on its way to QA and being merged.
+
+GitHub documents how to make changes to a fork at https://help.github.com/articles/committing-changes-to-a-pull-request-branch-created-from-a-fork/ but as of this writing the steps involve making a new clone of the repo. This works but you might find it more convenient to add a "remote" to your existing clone. The example below uses the fork at https://github.com/OdumInstitute/dataverse and the branch ``4709-postgresql_96`` but the technique can be applied to any fork and branch:
+
+.. code-block:: bash
+
+        git remote add OdumInstitute git@github.com:OdumInstitute/dataverse.git
+        git fetch OdumInstitute
+        git checkout 4709-postgresql_96
+        vim path/to/file.txt
+        git commit
+        git push OdumInstitute 4709-postgresql_96
 
 ----
 

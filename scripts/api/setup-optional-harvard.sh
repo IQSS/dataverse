@@ -2,13 +2,16 @@
 SERVER=http://localhost:8080/api
 
 echo "Setting up Harvard-specific settings"
+# :Authority and :Shoulder are commented out so this script can be used on test servers
+#curl -X PUT -d 10.7910 "$SERVER/admin/settings/:Authority"
+#curl -X PUT -d "DVN/" "$SERVER/admin/settings/:Shoulder"
 echo "- Application Status header"
 curl -s -X PUT -d 'Upgrade in progress...' $SERVER/admin/settings/:StatusMessageHeader
 echo "- Application Status message"
 curl -s -X PUT -d 'Dataverse is currently being upgraded. You can see the features, bug fixes, and other upgrades for this release in the <a href="http://roadmap.datascience.iq.harvard.edu/milestones/milestone-roadmap/dataverse/" title="Dataverse Roadmap" target="_blank">Dataverse Roadmap</a>.' $SERVER/admin/settings/:StatusMessageText 
 echo  "- Harvard Privacy Policy"
-curl -s -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html $SERVER/admin/settings/:ApplicationPrivacyPolicyUrl
-curl -s -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-api-tou.html $SERVER/admin/settings/:ApiTermsOfUse
+curl -s -X PUT -d https://dataverse.org/best-practices/harvard-dataverse-privacy-policy $SERVER/admin/settings/:ApplicationPrivacyPolicyUrl
+curl -s -X PUT -d https://dataverse.org/best-practices/harvard-api-tou $SERVER/admin/settings/:ApiTermsOfUse
 echo "- Configuring Harvard's password policy in Dataverse"
 # Min length is 10 because that is the minimum Harvard requires without periodic expiration
 curl -s -X PUT -d 10 $SERVER/admin/settings/:PVMinLength

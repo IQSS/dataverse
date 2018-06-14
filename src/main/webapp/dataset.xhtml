@@ -59,6 +59,59 @@
                     <p:fragment id="topDatasetBlockFragment">
                     <div id="topDatasetBlock" jsf:rendered="#{empty DatasetPage.editMode}">
                         <div id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
+                            <div class="btn-group pull-right" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
+                                                                              and !DatasetPage.dataset.deaccessioned
+                                                                              and DatasetPage.showComputeButton()}">
+                                <!-- Compute Button Group -->
+                                <button type="button" id="computeBatch" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                    <span class="glyphicon glyphicon-flash"/> #{bundle['dataset.compute.computeBtn']} <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu pull-left text-left" role="menu">
+                                    <li>
+                                        <!-- Compute dataset link -->
+                                        <h:commandLink action="#{DatasetPage.canComputeAllFiles(false)}">
+                                            <h:outputText value="#{bundle['dataset.compute.computeBatchSingle']}"/>
+                                        </h:commandLink>
+                                    </li>
+                                    <li jsf:rendered="#{!DatasetPage.isCartEmpty()}" class="divider"></li>
+                                    <li jsf:rendered="#{!DatasetPage.checkCartForItem(DatasetPage.dataset.getDisplayName(), DatasetPage.getPersistentId())}">
+                                        <!-- Add link -->
+                                        <p:commandLink action="#{DatasetPage.addItemtoCart(DatasetPage.dataset.getDisplayName(), DatasetPage.getPersistentId())}"
+                                            disabled="#{DatasetPage.locked}" value="#{bundle['dataset.compute.computeBatchAdd']}" update=":datasetForm,:messagePanel">
+                                            <h:outputText value="#{bundle['dataset.compute.computeBatchAdd']}"/>
+                                        </p:commandLink>
+                                    </li>
+                                    <ui:fragment rendered="#{!DatasetPage.isCartEmpty()}">
+                                        <li jsf:rendered="#{DatasetPage.checkCartForItem(DatasetPage.dataset.getDisplayName(), DatasetPage.getPersistentId())}">
+                                            <!-- Remove link -->
+                                            <p:commandLink value="#{bundle['dataset.compute.computeBatchRemove']}" action="#{DatasetPage.removeCartItem(DatasetPage.dataset.getDisplayName(), DatasetPage.getPersistentId())}" update=":datasetForm,:messagePanel">  
+                                                <h:outputText value="#{bundle['dataset.compute.computeBatchRemove']}"/>
+                                            </p:commandLink>
+                                        </li>
+                                        <li>
+                                            <!-- List link -->
+                                            <p:commandLink title="#{bundle['dataset.compute.computeBatchList']}"
+                                                           value="#{bundle['dataset.compute.computeBatchList']}"
+                                                           oncomplete="PF('computeBatchListPopup').show();bind_bsui_components();"
+                                                           update="computeBatchListPopup">
+                                                <h:outputText value="#{bundle['dataset.compute.computeBatchList']}"/>
+                                            </p:commandLink>
+                                        </li>
+                                        <li>
+                                            <!-- Clear link -->
+                                            <p:commandLink value="#{bundle['dataset.compute.computeBatchClear']}" action="#{DatasetPage.clearCart()}" update=":datasetForm,:messagePanel">  
+                                                <h:outputText value="#{bundle['dataset.compute.computeBatchClear']}"/>
+                                            </p:commandLink>
+                                        </li>
+                                        <li>
+                                            <!-- Compute batch link -->
+                                            <h:outputLink value="#{DatasetPage.cartComputeUrl}" target="_blank">
+                                                <h:outputText id="compute-batch-button" value="#{bundle['dataset.compute.computeBatchCompute']}" />
+                                            </h:outputLink>
+                                        </li>
+                                    </ui:fragment>
+                                </ul>
+                            </div>
                             <div class="btn-group pull-right" role="group">
                                 <!-- Edit/Publish Button Group -->
                                 <!-- Publish/Submit for Review/Return to Author Button Group -->
@@ -415,7 +468,7 @@
                                     <f:selectItems value="#{DatasetPage.dataverseTemplates}"
                                                    var="template" itemLabel="#{template.name}" itemValue="#{template}"/>
                                 </p:selectOneMenu>
-                                <p:commandButton value="Direct" id="updateTemplate"
+                                <p:commandButton value="#{bundle['file.dataFilesTab.button.direct']}" id="updateTemplate"
                                                  style="display:none"
                                                  update=":datasetForm,accessPopup"
                                                  action="#{DatasetPage.handleChangeButton}">
@@ -452,10 +505,10 @@
                     <div id="contentTabs" jsf:rendered="#{DatasetPage.editMode != 'INFO'}">
 
                         <p:fragment id="pageRefreshFragment"> <!-- rendered="_{empty DatasetPage.editMode}" -->
-                            <h:inputHidden value="#{DatasetPage.lockedForIngest}" id="datasetLockedForIngestVariable" />
+                            <h:inputHidden value="#{DatasetPage.lockedForAnyReason}" id="datasetLockedForAnyReasonVariable" />
                             <h:inputHidden value="#{DatasetPage.stateChanged}" id="datasetStateChangedVariable" />
 
-                            <p:remoteCommand name="refreshIngestLockCommand" process="@this" update=":#{p:component('pageRefreshFragment')}" actionListener="#{DatasetPage.refreshIngestLock}"/>
+                            <p:remoteCommand name="refreshAllLocksCommand" process="@this" update=":#{p:component('pageRefreshFragment')}" actionListener="#{DatasetPage.refreshAllLocks()}"/>
                             <p:remoteCommand name="refreshAllCommand" process="@this" update=":datasetForm:topDatasetBlockFragment,:datasetForm:tabView:filesTable,:messagePanel" actionListener="#{DatasetPage.refresh}"/>
 
                             <!-- see the comment in the javascript below that explains what this button is for -->
@@ -467,7 +520,7 @@
                                 });
 
                                 function refreshIfStillLocked() {
-                                    if ($('input[id$="datasetLockedForIngestVariable"]').val() === 'true') {
+                                    if ($('input[id$="datasetLockedForAnyReasonVariable"]').val() === 'true') {
                                         // if dataset is locked, instruct the page to
                                         // wait and check again:
                                         waitAndCheckLockAgain();
@@ -501,7 +554,7 @@
                                         // already completed in the background:
                                         //$('button[id$="refreshButton"]').trigger('click');
                                         //refreshLockCommand();
-                                        refreshIngestLockCommand();
+                                        refreshAllLocksCommand();
                                     }, 10000);
                                 }
                             </script>
@@ -623,11 +676,11 @@
                     <!-- Popups -->
                     <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noValidSelectedFilesForDownload']}</p>
-                        <ui:fragment   rendered="#{DatasetPage.dataset.fileAccessRequest}"  >
+                        <ui:fragment rendered="#{DatasetPage.dataset.fileAccessRequest}">
                             <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.requestAccessToRestrictedFiles']}</p>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadInvalid').hide();" type="button" />
+                            <p:commandButton value="#{bundle.close}" onclick="PF('downloadInvalid').hide();" type="button" />
                         </div>
                     </p:dialog>
                     <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
@@ -721,10 +774,10 @@
                                     PF('blockDatasetForm').hide();" type="button" />
                         </div>
                     </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.compute.datasetCompute']}" widgetVar="datasetComputeAccessDeniedPopup" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.compute.datasetComputeDisabled']}</p>
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.compute.computeBtn']}" widgetVar="computeInvalid" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.compute.computeBatchRestricted']}</p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('datasetComputeAccessDeniedPopup').hide();" type="button" />
+                            <p:commandButton value="#{bundle.close}" onclick="PF('computeInvalid').hide();" type="button" />
                         </div>
                     </p:dialog>
                     <p:dialog id="deaccessionBlock" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true">
@@ -861,6 +914,7 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileDiff.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileDiff.fileProvFree1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileProvFree1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileDiff.fileRest1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileRest1 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileDiff.file1Empty}">
@@ -872,6 +926,7 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileDiff.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileDiff.fileProvFree2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileProvFree2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileDiff.fileRest2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileRest2 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileDiff.file2Empty}">
@@ -899,6 +954,7 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileReplace.fdi.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileSize1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileReplace.fdi.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileCat1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileReplace.fdi.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileDesc1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileReplace.fdi.fileProvFree1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileProvFree1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileReplace.fdi.fileRest1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileRest1 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileReplace.fdi.file1Empty}">
@@ -912,6 +968,7 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileReplace.fdi.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileSize2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileReplace.fdi.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileCat2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileReplace.fdi.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileDesc2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileReplace.fdi.fileProvFree2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileProvFree2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileReplace.fdi.fileRest2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileRest2 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileReplace.fdi.file2Empty}">
@@ -1148,7 +1205,7 @@
                         <p class="help-block">
                             <span class="glyphicon glyphicon-warning-sign text-danger"/>&#160;
                             <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
-                                <f:param value="#{navigationWrapper.redirectPage}"/>
+                                <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}"/>
                                 <f:param value="#{widgetWrapper.widgetView ? '_blank' : '_self'}"/>
                             </h:outputFormat>
                         </p>
@@ -1248,8 +1305,36 @@
                             </button>
                         </div>
                     </p:dialog>
+                    
+                    <p:dialog id="computeBatchListPopup" header="#{bundle['dataset.compute.computeBatchListHeader']}" widgetVar="computeBatchListPopup" modal="true">
+                        <div class="text-right">
+                            <!-- Clear link -->
+                            <p:commandLink type="button" styleClass="btn btn-default" action="#{DatasetPage.clearCart()}" update=":datasetForm,:messagePanel">
+                                <span class="glyphicon glyphicon-remove"/> <h:outputText value="#{bundle['dataset.compute.computeBatchClear']}"/>
+                            </p:commandLink>
+                        </div>
+                        <h:dataTable id="computeBatch" class="table table-striped" value="#{DatasetPage.cartList}" var='computeCartDatasetList'>
+                            <h:column>
+                                <f:facet name="header">#{bundle.dataset}</f:facet>
+                                <h:outputText value="#{computeCartDatasetList.key}"/>
+                            </h:column>
+                            <h:column>
+                                <f:facet name="header">#{bundle['dataset.metadata.persistentId']}</f:facet>
+                                <h:outputText value="#{computeCartDatasetList.value}"/>
+                            </h:column>
+                            <h:column>
+                                <p:commandButton value="#{bundle['dataset.compute.computeBatchRemove']}" action="#{DatasetPage.removeCartItem(computeCartDatasetList.key, computeCartDatasetList.value)}" update=":datasetForm,:messagePanel"/>
+                            </h:column>
+                        </h:dataTable>
+                        <div class="button-block">
+                            <h:outputLink styleClass="btn btn-default" value="#{DatasetPage.cartComputeUrl}" onclick="PF('computeBatchListPopup').hide()" target="_blank">
+                                <h:outputText value="#{bundle['dataset.compute.computeBatchCompute']}"/>
+                            </h:outputLink>
+                            <h:commandButton styleClass="btn btn-default" value="#{bundle.cancel}" onclick="PF('computeBatchListPopup').hide();" type="button" />
+                        </div>
+                    </p:dialog>
 
-                    <p:dialog id="accessPopup" header="File Restrictions" widgetVar="accessPopup" modal="true">
+                    <p:dialog id="accessPopup" header="#{bundle['dataset.access.accessHeader']}"  widgetVar="accessPopup" modal="true">
                         <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE' or empty DatasetPage.editMode }">
                             <div class="form-horizontal">
                                 <div class="form-group">
@@ -1292,8 +1377,8 @@
                         </p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.submit}" onclick="PF('inreview').hide();
-                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.submitDataset}" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('inreview').hide();PF('blockDatasetForm').hide();" type="button" />
+                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.submitDataset}" immediate="true"  />
+                            <p:commandButton value="#{bundle.cancel}" onclick="PF('inreview').hide();PF('blockDatasetForm').hide();" type="button" immediate="true"  />
                         </div>
                     </p:dialog>
 
@@ -1307,7 +1392,7 @@
                         </div>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" onclick="PF('publishConfirm').hide();
-                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" />
+                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" immediate="true"  />
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('publishConfirm').hide();PF('blockDatasetForm').hide();" type="button" />
                         </div>
                     </p:dialog>
@@ -1331,8 +1416,8 @@
                         </p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle['dataset.mayNotBePublished.both.button']}" onclick="PF('publishParent').hide();
-                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseParentDVAndDataset}" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('publishParent').hide();PF('blockDatasetForm').hide();" type="button" />
+                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseParentDVAndDataset}" immediate="true"  />
+                            <p:commandButton value="#{bundle.cancel}" onclick="PF('publishParent').hide();PF('blockDatasetForm').hide();" type="button" immediate="true"  />
                         </div>
                     </p:dialog>
 
@@ -1360,7 +1445,7 @@
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseDraft}" />
                             <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();
-                                    PF('blockDatasetForm').hide();" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseMajor}" />
+                                    PF('blockDatasetForm').hide();" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseMajor}" immediate="true" />
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" type="button" />
                         </div>
                     </p:dialog>

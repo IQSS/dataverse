@@ -20,7 +20,7 @@ Supported Operating Systems
 
 Mac OS X or Linux is required because the setup scripts assume the presence of standard Unix utilities.
 
-Windows is not supported, unfortunately. For the current status of Windows support, see https://github.com/IQSS/dataverse/issues/3927 or our community list thread `"Do you want to develop on Windows?" <https://groups.google.com/d/msg/dataverse-community/Hs9j5rIxqPI/-q54751aAgAJ>`_
+Windows is not well supported, unfortunately, but Vagrant and Minishift environments are described in the :doc:`windows` section.
 
 Install Java
 ~~~~~~~~~~~~
@@ -84,30 +84,30 @@ To install Glassfish, run the following commands:
 Install PostgreSQL
 ~~~~~~~~~~~~~~~~~~
 
-PostgreSQL 9.4 or older is required because of the drivers we have checked into the code.
+PostgreSQL 9.6 is recommended to match the version in the Installation Guide.
 
-On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EnterpriseDB" option. We've tested version 9.4.17. When prompted to set a password for the "database superuser (postgres)" just enter "password".
+On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EnterpriseDB" option. We've tested version 9.6.9. When prompted to set a password for the "database superuser (postgres)" just enter "password".
 
 After installation is complete, make a backup of the ``pg_hba.conf`` file like this:
 
-``sudo cp /Library/PostgreSQL/9.4/data/pg_hba.conf /Library/PostgreSQL/9.4/data/pg_hba.conf.orig``
+``sudo cp /Library/PostgreSQL/9.6/data/pg_hba.conf /Library/PostgreSQL/9.6/data/pg_hba.conf.orig``
 
 Then edit ``pg_hba.conf`` with an editor such as vi:
 
-``sudo vi /Library/PostgreSQL/9.4/data/pg_hba.conf``
+``sudo vi /Library/PostgreSQL/9.6/data/pg_hba.conf``
 
 In the "METHOD" column, change all instances of "md5" to "trust".
 
-In the Finder, click "Applications" then "PostgreSQL 9.4" and launch the "Reload Configuration" app. Click "OK" after you see "server signaled".
+In the Finder, click "Applications" then "PostgreSQL 9.6" and launch the "Reload Configuration" app. Click "OK" after you see "server signaled".
 
-Next, launch the "pgAdmin III" application from the same folder. Under "Servers" double click "PostgreSQL 9.4 (localhost)". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
+Next, launch the "pgAdmin" application from the same folder. Under "Browser", expand "Servers" and double click "PostgreSQL 9.6". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
 
 On Linux, you should just install PostgreSQL from your package manager without worrying about the version as long as it's 9.x. Find ``pg_hba.conf`` and set the authentication method to "trust" and restart PostgreSQL.
 
 Install Solr
 ~~~~~~~~~~~~
 
-`Solr <http://lucene.apache.org/solr/>`_ Solr 4.6.0 is required.
+`Solr <http://lucene.apache.org/solr/>`_ 7.3.0 is required.
 
 To install Solr, execute the following commands:
 
@@ -117,21 +117,27 @@ To install Solr, execute the following commands:
 
 ``cd /usr/local/solr``
 
-``curl -O http://archive.apache.org/dist/lucene/solr/4.6.0/solr-4.6.0.tgz``
+``curl -O http://archive.apache.org/dist/lucene/solr/7.3.0/solr-7.3.0.tgz``
 
-``tar xvfz solr-4.6.0.tgz``
+``tar xvfz solr-7.3.0.tgz``
 
-A Dataverse-specific ``schema.xml`` configuration file is required, which we download from the "develop" branch on GitHub and use to overwrite the default ``schema.xml`` file:
+``cd solr-7.3.0/server/solr``
 
-``cd solr-4.6.0/example``
+``cp -r configsets/_default collection1``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/4.6.0/schema.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.0/schema.xml``
 
-``mv schema.xml solr/collection1/conf/schema.xml``
+``mv schema.xml collection1/conf``
 
-Assuming you are still in the ``solr-4.6.0/example`` directory, you can start Solr like this:
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.0/solrconfig.xml``
 
-``java -jar start.jar``
+``mv solrconfig.xml collection1/conf/solrconfig.xml``
+
+``cd /usr/local/solr/solr-7.3.0``
+
+``bin/solr start``
+
+``bin/solr create_core -c collection1 -d server/solr/collection1/conf``
 
 Run the Dataverse Installer Script
 ----------------------------------
