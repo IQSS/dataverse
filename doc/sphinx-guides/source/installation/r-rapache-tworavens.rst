@@ -179,6 +179,15 @@ If you are using RHEL/CentOS 7, you can download our experimental :download:`rap
 
 	yum install apache-1.2.7-rpm0.x86_64.rpm
 
+If you are using RHEL/CentOS 7 and are now running R-3.5, you may install :download:`rapache-1.2.9_R-3.5.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.9_R-3.5.x86_64.rpm>` which was built against R-3.5.
+
+**Note:** If you have an existing TwoRavens installation and your package manager updates your R installation, Rapache may get mad that existing packages were installed under a previous version. You may update them in-place by issuing::
+
+	$ sudo R
+	> update.packages()
+
+Depending on package dependencies you may need to *remove.packages("pkgname")* and *install.packages("pkgname")* then re-issue the *update.packages()* command. If your web proxy serves double-duty as your TwoRavens host, you may wish to temporarily disable the 00-rapache.conf and tworavens-rapache.conf Apache configuration snippets while you iterate through the package upgrades.
+
 d. Install the build environment for R:
 ---------------------------------------
 
