@@ -69,7 +69,6 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     public RoleAssignment save(RoleAssignment assignment, boolean createIndex) {
         if (assignment.getId() == null) {
             em.persist(assignment);
-//			em.flush();
         } else {
             assignment = em.merge(assignment);
         }

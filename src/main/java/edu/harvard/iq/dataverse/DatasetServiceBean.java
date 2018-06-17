@@ -266,13 +266,11 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     public boolean isIdentifierLocallyUnique(String identifier, Dataset dataset) {
-        boolean u = em.createNamedQuery("Dataset.findByIdentifierAuthorityProtocol")
+        return em.createNamedQuery("Dataset.findByIdentifierAuthorityProtocol")
             .setParameter("identifier", identifier)
             .setParameter("authority", dataset.getAuthority())
             .setParameter("protocol", dataset.getProtocol())
             .getResultList().isEmpty();
-        
-        return u; 
     }
     
     public Long getMaximumExistingDatafileIdentifier(Dataset dataset) {

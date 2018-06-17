@@ -189,13 +189,6 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         }
     }
 
-    protected HashMap<String, String> getUpdateMetadataFromDataset(Dataset datasetIn) {
-        logger.log(Level.FINE,"getUpdateMetadataFromDataset");
-        HashMap<String, String> metadata = asHashMap(super.getMetadataForCreateIndicator(datasetIn));
-        metadata.put("datacite.publicationyear", generateYear(datasetIn));
-        return metadata;
-    }
-
     private boolean updateIdentifierStatus(DvObject dvObject, String statusIn) {
         logger.log(Level.FINE,"updateIdentifierStatus");
         String identifier = getIdentifier(dvObject);
@@ -211,6 +204,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         }
     }
 
+    @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
         logger.log(Level.FINE,"updateIdentifierStatus");
         if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){

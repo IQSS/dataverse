@@ -132,8 +132,7 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put("_target", getTargetUrl(dvObject));
         try {
-            ezidService.setMetadata(identifier,
-                (metadata instanceof HashMap) ? (HashMap)metadata : new HashMap<>(metadata));
+            ezidService.setMetadata(identifier,metadata);
             return identifier;
         } catch (EZIDException e) {
             logger.log(Level.WARNING, "modifyMetadata failed");
@@ -207,7 +206,7 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
             try {
                 createIdentifier(dvObject);
             } catch (Throwable e){
-                return false;
+                return false; 
             }
         }
         return updateIdentifierStatus(dvObject, "public");
@@ -257,7 +256,7 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
         metadata.put("_status", "reserved");
         try {
             String retString = ezidService.createIdentifier(identifier, asHashMap(metadata));
-            logger.log(Level.FINE, "create DOI identifier retString : " + retString);
+            logger.log(Level.FINE, "create DOI identifier retString : {0}", retString);
             return retString;
         } catch (EZIDException e) {
             logger.log(Level.WARNING, "Identifier not created: create failed");
@@ -268,6 +267,20 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
             logger.log(Level.WARNING, "identifier: ", identifier);
             throw e;
         }
+    }
+    
+     /**
+     * Returns a HashMap with the same values as {@code map}. This can be either
+     * {@code map} itself, or a new instance with the same values.
+     * 
+     * This is needed as some of the internal APIs here require HashMap, but we
+     * don't want the external APIs to use an implementation class.
+     * @param <T>
+     * @param map
+     * @return A HashMap with the same values as {@code map}
+     */
+    private <T> HashMap<T,T> asHashMap(Map<T,T> map) {
+        return (map instanceof HashMap) ? (HashMap)map : new HashMap<>(map);
     }
 
 }

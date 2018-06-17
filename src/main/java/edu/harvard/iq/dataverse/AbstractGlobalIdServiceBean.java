@@ -75,7 +75,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     
     @Override
     public String getIdentifier(DvObject dvObject) {
-        return dvObject.getGlobalIdString();
+        return dvObject.getGlobalId().asString();
     }
 
     protected String getTargetUrl(Dataset datasetIn) {
@@ -114,17 +114,4 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         return dvObject;
     }
     
-    /**
-     * Returns a HashMap with the same values as {@code map}. This can be either
-     * {@code map} itself, or a new instance with the same values.
-     * 
-     * This is needed as some of the internal APIs here require HashMap, but we
-     * don't want the external APIs to use an implementation class.
-     * @param <T>
-     * @param map
-     * @return A HashMap with the same values as {@code map}
-     */
-    protected <T> HashMap<T,T> asHashMap(Map<T,T> map) {
-        return (map instanceof HashMap) ? (HashMap)map : new HashMap<>(map);
-    }
 }
