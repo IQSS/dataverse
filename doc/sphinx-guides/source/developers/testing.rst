@@ -122,11 +122,11 @@ dataverse.siteUrl
 
 When run locally (as opposed to a remote server), some of the REST Assured tests require the ``dataverse.siteUrl`` JVM option to be set to ``http://localhost:8080``. See "JVM Options" under the :doc:`/installation/config` section of the Installation Guide for advice changing JVM options. First you should check to check your JVM options with:
 
-``asadmin list-jvm-options | egrep 'dataverse|doi'``
+``./asadmin list-jvm-options | egrep 'dataverse|doi'``
 
 If ``dataverse.siteUrl`` is absent, you can add it with:
 
-``asadmin create-jvm-options "-Ddataverse.siteUrl=http\://localhost\:8080"`` 
+``./asadmin create-jvm-options "-Ddataverse.siteUrl=http\://localhost\:8080"`` 
 
 Identifier Generation 
 ^^^^^^^^^^^^^^^^^^^^^

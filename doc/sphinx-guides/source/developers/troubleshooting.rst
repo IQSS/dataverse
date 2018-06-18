@@ -33,7 +33,7 @@ Unfortunately for developers not at Harvard, the installer script gives you by d
 
 You can check the current SMTP server with the ``asadmin`` command:
 
-``asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
+``./asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
 
 This command helps verify what host your domain is using to send mail. Even if it's the correct hostname, you may still need to adjust settings. If all else fails, there are some free SMTP service options available such as Gmail and MailGun. This can be configured from the GlassFish console or the command line.
 
@@ -71,8 +71,8 @@ Save these changes at the top of the page and restart your Glassfish server to t
 
 The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. See the below example:
 
-- Delete: ``asadmin delete-javamail-resource mail/MyMailSession``
-- Create (remove brackets and replace the variables inside): ``asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
+- Delete: ``./asadmin delete-javamail-resource mail/MyMailSession``
+- Create (remove brackets and replace the variables inside): ``./asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
 
 These properties can be tailored to your own preferred mail service, but if all else fails these settings work fine with Dataverse development environments for your localhost.
 
@@ -98,9 +98,9 @@ DataCite
 
 If you've reconfigured from EZID to DataCite and are seeing ``Response code: 400, [url] domain of URL is not allowed`` it's probably because your ``dataverse.siteUrl`` JVM option is unset or set to localhost (``-Ddataverse.siteUrl=http://localhost:8080``). You can try something like this:
 
-``asadmin delete-jvm-options '-Ddataverse.siteUrl=http\://localhost\:8080'``
+``./asadmin delete-jvm-options '-Ddataverse.siteUrl=http\://localhost\:8080'``
 
-``asadmin create-jvm-options '-Ddataverse.siteUrl=http\://demo.dataverse.org'``
+``./asadmin create-jvm-options '-Ddataverse.siteUrl=http\://demo.dataverse.org'``
 
 ----
 
