@@ -711,7 +711,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
             // this is from the old plugin: 
             // TODO: review!
-            String variableFormatKey = null;
+            String variableFormatKey;
             if (variableFormat.startsWith("%t")) {
                 variableFormatKey = variableFormat.substring(0, 3);
             } else {
@@ -825,15 +825,13 @@ public class NewDTAFileReader extends TabularDataFileReader {
         logger.fine("variableTypes=" + Arrays.deepToString(variableTypes));
 
         // create a File object to save the tab-delimited data file
-        FileOutputStream fileOutTab = null;
-        PrintWriter pwout = null;
         File tabDelimitedDataFile = File.createTempFile("tempTabfile.", ".tab");
 
         // save the temp tab-delimited file in the return ingest object:        
         ingesteddata.setTabDelimitedFile(tabDelimitedDataFile);
 
-        fileOutTab = new FileOutputStream(tabDelimitedDataFile);
-        pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
+        FileOutputStream fileOutTab = new FileOutputStream(tabDelimitedDataFile);
+        PrintWriter pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
 
         logger.fine("Beginning to read data stream.");
 
@@ -1306,14 +1304,12 @@ public class NewDTAFileReader extends TabularDataFileReader {
             // defined under this name?
             reader.readBytes(3); // TODO: skipBytes() instead
 
-            long value_category_offset = 0;
-
             // read the value_label_table that follows. 
             // should be label_table_length. 
             int number_of_categories = (int) reader.readInteger();
             long text_length = reader.readInteger();
 
-            value_category_offset = 8;
+            long value_category_offset = 8;
 
             long[] value_label_offsets = new long[number_of_categories];
             long[] value_label_offsets_sorted = null; 
@@ -1346,9 +1342,9 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
             int total_label_bytes = 0;
 
-            long label_offset = 0;
-            long label_end = 0;
-            int label_length = 0;
+            long label_offset;
+            long label_end;
+            int label_length;
 
             // Read the remaining bytes in this <lbl> section. 
             // This byte[] array will contain all the value labels for the
@@ -1466,7 +1462,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
         if (variableType.matches("^STR[1-9][0-9]*")) {
             String stringLengthToken = variableType.substring(3);
-            Integer stringLength = null;
+            Integer stringLength;
             try {
                 stringLength = new Integer(stringLengthToken);
             } catch (NumberFormatException nfe) {
@@ -1500,8 +1496,8 @@ public class NewDTAFileReader extends TabularDataFileReader {
          */
 
         long milliSeconds;
-        String decodedDateTime = null;
-        String format = null;
+        String decodedDateTime;
+        String format;
 
         if (FormatType.matches("^%tc.*")) {
             // tc is a relatively new format
@@ -1564,12 +1560,11 @@ public class NewDTAFileReader extends TabularDataFileReader {
                 years = monthYears / 12L;
             }
 
-            String month = null;
             if (left == 12L) {
                 left = 0L;
             }
             Long monthdata = (left + 1);
-            month = "-" + twoDigitFormatter.format(monthdata) + "-01";
+            String month = "-" + twoDigitFormatter.format(monthdata) + "-01";
             long year = 1960L + years;
             String monthYear = year + month;
             logger.fine("rawDatum=" + rawDatum + ": monthYear=" + monthYear);
@@ -1631,7 +1626,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                 years = halvesYears / 2L;
             }
 
-            String half = null;
+            String half;
             if (left != 0L) {
                 // odd number => 2nd half: "h2"
                 //half ="h2"; //
@@ -1993,8 +1988,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
             long ret = 0;
 
-            ByteBuffer byte_buffer
-                    = ByteBuffer.wrap(raw_bytes);
+            ByteBuffer byte_buffer = ByteBuffer.wrap(raw_bytes);
             if (LSF) {
                 byte_buffer.order(ByteOrder.LITTLE_ENDIAN);
 
