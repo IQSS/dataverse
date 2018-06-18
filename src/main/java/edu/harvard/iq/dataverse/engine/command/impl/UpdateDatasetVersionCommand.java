@@ -66,7 +66,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         getDataset().getEditVersion().setDatasetFields(getDataset().getEditVersion().initDatasetFields());
         validateOrDie( getDataset().getEditVersion(), isValidateLenient() );
         
-        DatasetVersion editVersion = getDataset().getEditVersion();
+        final DatasetVersion editVersion = getDataset().getEditVersion();
         tidyUpFields(editVersion);
         
         // Merge the new version into out JPA context, if needed.

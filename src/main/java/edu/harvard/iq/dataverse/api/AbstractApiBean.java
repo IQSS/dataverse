@@ -306,13 +306,6 @@ public abstract class AbstractApiBean {
     protected String getRequestApiKey() {
         String headerParamApiKey = httpRequest.getHeader(DATAVERSE_KEY_HEADER_NAME);
         String queryParamApiKey = httpRequest.getParameter("key");
-        logger.info( "header PAK: '" + headerParamApiKey + "'"); // TODO: MBS remove
-        logger.info( "query PAK: '" + queryParamApiKey + "'");// TODO: MBS remove
-        final Enumeration headerNames = httpRequest.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String header = headerNames.nextElement().toString();
-            logger.info( "header: " + header + " -> " + httpRequest.getHeader(header) );
-        }
                 
         return headerParamApiKey!=null ? headerParamApiKey : queryParamApiKey;
     }
