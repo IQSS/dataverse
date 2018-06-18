@@ -157,7 +157,8 @@ public class Files extends AbstractApiBean {
         // -------------------------------------
         User authUser;
         try {
-            authUser = this.findUserOrDie();
+            authUser = findUserOrDie();
+            logger.info("Replace file detected user: " + authUser.getIdentifier()); // TODO: MBS remove
         } catch (AbstractApiBean.WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN, 
                     ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")

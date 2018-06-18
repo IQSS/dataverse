@@ -104,7 +104,6 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
         }
         
-        
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)
         handlePid(theDataset, ctxt);
                 
@@ -116,7 +115,6 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         
         postPersist(theDataset, ctxt);
         
-        // if we are not migrating, assign the user to this version
         createDatasetUser(ctxt);
         
         theDataset = ctxt.em().merge(theDataset); // store last updates
