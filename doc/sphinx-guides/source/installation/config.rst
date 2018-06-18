@@ -513,10 +513,14 @@ dataverse.rserve.password
 
 Configuration for :doc:`r-rapache-tworavens`.
 
+.. _dataverse.dropbox.key:
+
 dataverse.dropbox.key
 +++++++++++++++++++++
 
-Dropbox integration is optional. Enter your key here.
+Dropbox provides a Chooser app, which is a Javascript component that allows you to upload files to Dataverse from Dropbox. It is an optional configuration setting, which requires you to pass it an app key. For more information on setting up your Chooser app, visit https://www.dropbox.com/developers/chooser.
+
+``asadmin create-jvm-options "-Ddataverse.dropbox.key={{YOUR_APP_KEY}}"``
 
 dataverse.path.imagemagick.convert
 ++++++++++++++++++++++++++++++++++
