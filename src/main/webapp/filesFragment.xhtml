@@ -13,8 +13,14 @@
     
     <!-- Files Table -->
     <p:dataTable id="filesTable" 
-                 scrollRows="25" scrollable="true" liveScroll="true"
-                 scrollHeight="90%" scrollWidth="100%" style="margin-right:1px;"
+                 
+                 rows="10" paginator="true" 
+                 
+                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                 rowsPerPageTemplate="10,25,50"
+                 currentPageReportTemplate="{startRecord} to {endRecord} of {totalRecords} Files"
+                         
+                 style="margin-right:1px;"
                  value="#{DatasetPage.fileMetadatasSearch}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
@@ -26,6 +32,8 @@
         <p:ajax event="rowSelectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
         <p:ajax event="rowUnselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
         <p:ajax event="rowDblselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this"/>
+        
+        
         <f:facet name="header">
             <div class="row form-inline" jsf:id="cloudStorageBlock" jsf:rendered="#{DatasetPage.showComputeButton()}">
                 <!-- Cloud Storage Access -->
@@ -179,6 +187,15 @@
                     </div>
                 </div>
             </div>
+            
+            
+            <div class="row">
+                <div class="col-xs-12 bg-warning text-left" style="font-weight:normal;padding-top:.5em;">
+                    <p>0 files are currently selected. Select all 0 files in this dataset. Clear selection.</p>
+                </div>
+            </div>
+            
+            
         </f:facet>
         
         <p:column selectionMode="multiple" class="text-center" style="width:20px !important;"  />
