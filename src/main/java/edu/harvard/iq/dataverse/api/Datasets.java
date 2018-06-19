@@ -442,6 +442,10 @@ public class Datasets extends AbstractApiBean {
             } else{
                 fields = jsonParser().parseMultipleFields(json);
             }
+            
+            if (!replaceData){
+                validateDatasetFieldValues(fields);
+            }
 
             dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
                 
@@ -501,6 +505,10 @@ public class Datasets extends AbstractApiBean {
                                     }
                                 }
                             }
+                        } else {
+                            if (!dsf.isEmpty() && !dsf.getDatasetFieldType().isAllowMultiples() || !replaceData) {
+                                return error(Response.Status.BAD_REQUEST, "You may not add data to a field that already has data and does not allow multiples. Use replace=true to replace existing data (" + dsf.getDatasetFieldType().getDisplayName() + ")" );
+                            }
                         }
                         break;
                     }
@@ -523,6 +531,23 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
 
+        }
+    }
+    
+    private void validateDatasetFieldValues(List<DatasetField> fields) throws JsonParseException {
+        String errors = "";
+
+        for (DatasetField dsf : fields) {
+            if (dsf.getDatasetFieldType().isAllowMultiples() && dsf.getControlledVocabularyValues().isEmpty()
+                    && dsf.getDatasetFieldCompoundValues().isEmpty() && dsf.getDatasetFieldValues().isEmpty()) {
+                errors += "Empty multiple value for field " + dsf.getDatasetFieldType().getDisplayName() + " ";
+            } else if (!dsf.getDatasetFieldType().isAllowMultiples() && dsf.getSingleValue().getValue().isEmpty()) {
+                errors += "Empty  value for field " + dsf.getDatasetFieldType().getDisplayName() + " ";
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            throw new JsonParseException(errors + " If you would like to delete values please add the parameter replace=true.");
         }
     }
     

@@ -158,7 +158,7 @@ public class DatasetsIT {
         getDatasetJsonBeforePublishing.prettyPrint();
         String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
         String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
-
+        
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
         String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-add-metadata.json";
         Response addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
@@ -183,8 +183,8 @@ public class DatasetsIT {
         addSubjectSingleViaNative.prettyPrint();
         addSubjectSingleViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
-        
+
+
         //Trying to blank out required field should fail...
         String pathToJsonFileBadData = "doc/sphinx-guides/source/_static/api/dataset-update-with-blank-metadata.json";
         Response deleteTitleViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileBadData, apiToken);
@@ -205,11 +205,13 @@ public class DatasetsIT {
         publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
 
         //post publish update
-                String pathToJsonFilePostPubRedux= "doc/sphinx-guides/source/_static/api/dataset-edit-metadata-subtitle.json";
-        Response addDataToPublishedVersionRedux = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPubRedux, apiToken);
-        addDataToPublishedVersionRedux.prettyPrint();
-        addDataToPublishedVersionRedux.then().assertThat().statusCode(OK.getStatusCode());
+        String pathToJsonFileBadDataSubtitle = "doc/sphinx-guides/source/_static/api/dataset-edit-metadata-subtitle.json";
+        Response addDataToBadData = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileBadDataSubtitle, apiToken);
+        addDataToBadData.prettyPrint();
 
+        addDataToBadData.then().assertThat()
+                .body("message", equalTo("Error parsing dataset update: Invalid value submitted for subtitle. It should be a single value."))
+                .statusCode(400);
     }
 
     /**
