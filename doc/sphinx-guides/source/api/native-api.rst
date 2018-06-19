@@ -270,7 +270,7 @@ Alternatively to replacing an entire dataset version with its JSON representatio
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/editMetadata/?persistentId=$PID --upload-file dataset-add-metadata.json    
 
-You may also replace existing metadata in dataset fields with the following (adding the parameter replace=true) ::
+You may also replace existing metadata in dataset fields with the following (adding the parameter replace=true) Note: You may delete data by passing a blank value field in conjunction with replace.  ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/editMetadata?persistentId=$PID&replace=true --upload-file dataset-update-metadata.json
     
