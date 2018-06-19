@@ -120,7 +120,7 @@ Rather than running the installer in "interactive" mode, it's possible to put th
 Preventing Glassfish from Phoning Home
 --------------------------------------
 
-By default, Glassfish reports analytics information. The administration guide suggests this can be disabled with ``asadmin create-jvm-options -Dcom.sun.enterprise.tools.admingui.NO_NETWORK=true``, should this be found to be undesirable for development purposes.
+By default, Glassfish reports analytics information. The administration guide suggests this can be disabled with ``./asadmin create-jvm-options -Dcom.sun.enterprise.tools.admingui.NO_NETWORK=true``, should this be found to be undesirable for development purposes.
 
 Solr
 ----
