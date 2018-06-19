@@ -73,5 +73,18 @@ fi
 # We'll assume at this point that the download script has been run.
 cp ../../downloads/weld-osgi-bundle-2.2.10.Final-glassfish4.jar dataverse-glassfish
 docker build -t $HUBORG/dataverse-glassfish:$TAG dataverse-glassfish
-# FIXME: Check the output of `docker build` and only push on success.
-docker push $HUBORG/dataverse-glassfish:$TAG
+if [ "$1" == 'internal' ]; then
+  echo "Skipping docker push because we're using the internal Minishift registry."
+else
+  # FIXME: Check the output of "docker build" and only push on success.
+  docker push $HUBORG/dataverse-glassfish:$TAG
+fi
+# TODO: run "docker build" on conf/docker/dataverse-glassfish/init-container/Dockerfile
+cp ../../scripts/installer/postgres-setup dataverse-glassfish/init-container
+docker build -t $HUBORG/init-container:$TAG dataverse-glassfish/init-container
+if [ "$1" == 'internal' ]; then
+  echo "Skipping docker push because we're using the internal Minishift registry."
+else
+  # FIXME: Check the output of "docker build" and only push on success.
+  docker push $HUBORG/init-container:$TAG
+fi

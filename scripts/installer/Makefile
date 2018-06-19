@@ -9,15 +9,17 @@ JHOVE_SCHEMA=${INSTALLER_ZIP_DIR}/jhoveConfig.xsd
 SOLR_SCHEMA=${INSTALLER_ZIP_DIR}/schema.xml
 SOLR_CONFIG=${INSTALLER_ZIP_DIR}/solrconfig.xml
 INSTALL_SCRIPT=${INSTALLER_ZIP_DIR}/install
+GLASSFISH_STARTUP_SCRIPT=${INSTALLER_ZIP_DIR}/glassfish-startup
+POSTGRES_SCRIPT=${INSTALLER_ZIP_DIR}/postgres-setup
 
 installer:	dvinstall.zip
 
 clean: 
 	/bin/rm -rf ${INSTALLER_ZIP_DIR} dvinstall.zip
 
-dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
+dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT} ${GLASSFISH_STARTUP_SCRIPT} ${POSTGRES_SCRIPT}
 	@echo making installer...
-	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
+	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT} ${GLASSFISH_STARTUP_SCRIPT} ${POSTGRES_SCRIPT}
 	@echo 
 	@echo "Done!"
 
@@ -45,9 +47,18 @@ ${GLASSFISH_SETUP_SCRIPT}:	glassfish-setup.sh
 	mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp glassfish-setup.sh ${INSTALLER_ZIP_DIR}
 
+${GLASSFISH_STARTUP_SCRIPT}:	glassfish-startup
+	@echo copying glassfish startup
+	mkdir -p ${INSTALLER_ZIP_DIR}
+	/bin/cp glassfish-startup ${INSTALLER_ZIP_DIR}
 
-${POSTGRES_DRIVERS}:	pgdriver/postgresql-42.2.2.jar
-	@echo copying postgres drviers
+${POSTGRES_SCRIPT}:	postgres-setup
+	@echo copying postgres-setup
+	mkdir -p ${INSTALLER_ZIP_DIR}
+	/bin/cp postgres-setup ${INSTALLER_ZIP_DIR}
+
+${POSTGRES_DRIVERS}:	 pgdriver/postgresql-42.2.2.jar
+	@echo copying postgres driver
 	@mkdir -p ${POSTGRES_DRIVERS}
 	/bin/cp pgdriver/postgresql-42.2.2.jar ${INSTALLER_ZIP_DIR}/pgdriver
 

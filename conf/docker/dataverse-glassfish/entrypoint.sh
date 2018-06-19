@@ -77,6 +77,10 @@ if [ "$1" = 'dataverse' ]; then
         echo Postgres running; 
     else
         echo Required service Postgres not running. Have you started the required services?
+        for i in `seq 1 5`;
+        do
+            sleep 5
+        done
         exit 1 
     fi
     
@@ -109,10 +113,7 @@ if [ "$1" = 'dataverse' ]; then
     fi
     
     GLASSFISH_INSTALL_DIR="/usr/local/glassfish4"
-    cd $GLASSFISH_INSTALL_DIR
-    cp /tmp/dvinstall.zip $GLASSFISH_INSTALL_DIR
-    unzip dvinstall.zip
-    cd dvinstall
+    cd /tmp/dvinstall
     echo Copying the non-interactive file into place
     cp /tmp/default.config .
     echo Looking at first few lines of default.config
@@ -120,7 +121,7 @@ if [ "$1" = 'dataverse' ]; then
     # non-interactive install
     echo Running non-interactive install
     #./install -y -f > install.out 2> install.err
-    ./install -y -f
+    ./install -y -f 
 
 #    if [ -n "$DVICAT_PORT_1247_TCP_PORT" ]; then
 #        ./setup-irods.sh
@@ -128,10 +129,10 @@ if [ "$1" = 'dataverse' ]; then
 
     # We do change the Solr server in Minishift/OpenShift, which is
     # the primary target for all of the work under conf/docker.
-    echo -e "\n\nRestarting Dataverse in case Solr host was changed..."
-    /usr/local/glassfish4/glassfish/bin/asadmin stop-domain
-    sleep 3
-    /usr/local/glassfish4/glassfish/bin/asadmin start-domain
+    # echo -e "\n\nRestarting Dataverse in case Solr host was changed..."
+    # /usr/local/glassfish4/glassfish/bin/asadmin stop-domain
+    # sleep 3
+    # /usr/local/glassfish4/glassfish/bin/asadmin start-domain
 
     echo -e "\n\nDataverse started"
 
