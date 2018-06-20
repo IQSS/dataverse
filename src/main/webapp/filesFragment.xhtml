@@ -16,7 +16,7 @@
                  
                  rows="10" paginator="true" 
                  
-                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} Files Per Page {RowsPerPageDropdown} {UploadButtonBlock}"
                  rowsPerPageTemplate="10,25,50"
                  currentPageReportTemplate="{startRecord} to {endRecord} of {totalRecords} Files"
                          
@@ -33,6 +33,34 @@
         <p:ajax event="rowUnselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
         <p:ajax event="rowDblselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this"/>
         
+        <f:facet name="paginatorTopLeft">
+            <h:outputText value="TEST"/>
+        </f:facet>
+        
+        <f:facet name="{UploadButtonBlock}">
+            <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->
+            <!-- tab-header pull-right -->
+            <span jsf:id="uploadComputeBlock" class=""
+                 jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
+                                 and (DatasetPage.canUpdateDataset()
+                                 or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
+                <p:commandLink type="button" styleClass="btn btn-default btn-access  #{DatasetPage.workingVersion.fileMetadatas.size() > 0 or DatasetPage.lockedFromEdits ? 'disabled' : ''}" title="#{bundle['file.uploadFiles']}" onclick="PF('rsyncUpload_popup').show()"
+                                rendered="#{DatasetPage.sessionUserAuthenticated 
+                                            and DatasetPage.canUpdateDataset()
+                                            and !widgetWrapper.widgetView and settingsWrapper.rsyncUpload}">
+                    <!-- RSYNC UPLOAD FILES BUTTON -->
+                    <span class="glyphicon glyphicon-plus"/> <h:outputText value="#{bundle['file.uploadFiles']}"/>
+                </p:commandLink>
+                <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
+                              type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits ? 'ui-state-disabled' : ''}"
+                              disabled="#{DatasetPage.lockedFromEdits}" rendered="#{DatasetPage.sessionUserAuthenticated 
+                                                                            and DatasetPage.canUpdateDataset()
+                                                                            and !widgetWrapper.widgetView and !settingsWrapper.rsyncUpload}">
+                    <!-- UPLOAD FILES BUTTON -->
+                    <span class="glyphicon #{DatasetPage.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
+                </h:outputLink>
+            </span>
+        </f:facet>
         
         <f:facet name="header">
             <div class="row form-inline" jsf:id="cloudStorageBlock" jsf:rendered="#{DatasetPage.showComputeButton()}">
@@ -95,34 +123,23 @@
             </div>
             <div class="row" style="margin-bottom:6px;">
                 <div id="filesHeaderCount" class="col-xs-2 text-left">
+                    
+                    
+                    <ui:remove>
+                    
                     <!-- Files Count -->
                     <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold">
                         <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
                     </h:outputFormat>
+                    
+                    
+                    </ui:remove>
+                    
                 </div>
 
                 <div id="filesButtons" class="col-xs-10">
-                    <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->
-                    <div jsf:id="uploadComputeBlock" class="button-block tab-header pull-right text-right"
-                         jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
-                                         and (DatasetPage.canUpdateDataset()
-                                         or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
-                        <p:commandLink type="button" styleClass="btn btn-default btn-access  #{DatasetPage.workingVersion.fileMetadatas.size() > 0 or DatasetPage.lockedFromEdits ? 'disabled' : ''}" title="#{bundle['file.uploadFiles']}" onclick="PF('rsyncUpload_popup').show()"
-                                        rendered="#{DatasetPage.sessionUserAuthenticated 
-                                                    and DatasetPage.canUpdateDataset()
-                                                    and !widgetWrapper.widgetView and settingsWrapper.rsyncUpload}">
-                            <!-- RSYNC UPLOAD FILES BUTTON -->
-                            <span class="glyphicon glyphicon-plus"/> <h:outputText value="#{bundle['file.uploadFiles']}"/>
-                        </p:commandLink>
-                        <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
-                                      type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits ? 'ui-state-disabled' : ''}"
-                                      disabled="#{DatasetPage.lockedFromEdits}" rendered="#{DatasetPage.sessionUserAuthenticated 
-                                                                                    and DatasetPage.canUpdateDataset()
-                                                                                    and !widgetWrapper.widgetView and !settingsWrapper.rsyncUpload}">
-                            <!-- UPLOAD FILES BUTTON -->
-                            <span class="glyphicon #{DatasetPage.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
-                        </h:outputLink>
-                    </div>
+                    
+                    <!-- UPLOAD REMOVED -->
 
                     <div jsf:id="restrictDeleteBlock" class="button-block pull-right text-right"
                          jsf:rendered="#{DatasetPage.editMode == 'CREATE' and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
@@ -191,7 +208,7 @@
             
             <div class="row">
                 <div class="col-xs-12 bg-warning text-left" style="font-weight:normal;padding-top:.5em;">
-                    <p>0 files are currently selected. Select all 0 files in this dataset. Clear selection.</p>
+                    <p>#{DatasetPage.selectedFiles.size()} files are currently selected. Select all #{DatasetPage.fileMetadatasSearch.size()} files in this dataset. Clear selection.</p>
                 </div>
             </div>
             
@@ -200,6 +217,7 @@
         
         <p:column selectionMode="multiple" class="text-center" style="width:20px !important;"  />
         <p:column class="col-file-thumb" style="width:64px !important;">
+            
             <div class="thumbnail-block text-center">
                 <!-- Thumbnail Preview -->
                 <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and DatasetPage.isThumbnailAvailable(fileMetadata)}"
@@ -228,6 +246,10 @@
             
         </p:column>
         <p:column class="col-file-metadata">
+            
+            <f:facet name="header" class="text-left">
+                <p style="font-weight:normal;">#{DatasetPage.selectedFiles.size()} files are currently selected. Select all #{DatasetPage.fileMetadatasSearch.size()} files in this dataset. Clear selection.</p>
+            </f:facet>
             
             <ui:fragment rendered="#{!empty fileMetadata.dataFile.globalId}">
                 <!-- rendered="# {!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" -->
@@ -401,5 +423,75 @@
             </div>
         </p:column>
     </p:dataTable>
+    
+        <style>
+            div[id$="dataFilesTab"] div.ui-paginator.ui-widget-header{
+                font-weight: normal;
+                background: none;
+                border: 0;
+            }
+            div[id$="dataFilesTab"] div.ui-paginator span.ui-paginator-pages{
+                padding: 0;
+                margin-right: 0;
+            }
+            div[id$="dataFilesTab"] span.ui-corner-all[class^="ui-paginator"]{
+                padding-top: 6px;
+                padding-right: 12px;
+                padding-bottom: 6px;
+                padding-left: 12px;
+                margin-left: -1px;
+                margin-right: 0;
+                line-height: 1.42857143;
+                color: rgb(51, 122, 183);
+                text-decoration: none;
+                background: none;
+                background-color: rgb(255, 255, 255);
+                border-top-width: 1px;
+                border-right-width: 1px;
+                border-bottom-width: 1px;
+                border-left-width: 1px;
+                border-top-style: solid;
+                border-right-style: solid;
+                border-bottom-style: solid;
+                border-left-style: solid;
+                border-top-color: rgb(221, 221, 221);
+                border-right-color: rgb(221, 221, 221);
+                border-bottom-color: rgb(221, 221, 221);
+                border-left-color: rgb(221, 221, 221);
+                border-image-source: initial;
+                border-image-slice: initial;
+                border-image-width: initial;
+                border-image-outset: initial;
+                border-image-repeat: initial;
+                border-radius: 0;
+            }
+            div[id$="dataFilesTab"] span.ui-corner-all[class^="ui-paginator"]:not(.ui-state-active):hover{
+                color: rgb(35, 82, 124);
+                background-color: rgb(238, 238, 238);
+                border-top-color: rgb(221, 221, 221);
+                border-right-color: rgb(221, 221, 221);
+                border-bottom-color: rgb(221, 221, 221);
+                border-left-color: rgb(221, 221, 221);
+            }
+            div[id$="dataFilesTab"] span.ui-paginator-first.ui-corner-all[class^="ui-paginator"]{
+                border-top-left-radius: 4px;
+                border-bottom-left-radius: 4px;
+            }
+            div[id$="dataFilesTab"] span.ui-paginator-last.ui-corner-all[class^="ui-paginator"]{
+                border-top-right-radius: 4px;
+                border-bottom-right-radius: 4px;
+                margin-right: 20px;
+            }
+            div[id$="dataFilesTab"] span.ui-state-active[class^="ui-paginator"]{
+                box-shadow: none;
+                color: rgb(255, 255, 255);
+                cursor: default;
+                background-color: rgb(51, 122, 183);
+                border-top-color: rgb(51, 122, 183);
+                border-right-color: rgb(51, 122, 183);
+                border-bottom-color: rgb(51, 122, 183);
+                border-left-color: rgb(51, 122, 183);
+            }
+        </style>
     
 </ui:composition>
