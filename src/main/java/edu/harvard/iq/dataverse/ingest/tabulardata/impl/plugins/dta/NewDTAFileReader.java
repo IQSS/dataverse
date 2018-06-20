@@ -329,62 +329,30 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
         DataReader dataReader;
 
-        try {
-            init();
+        init();
+        dataReader = new DataReader(stream);
+        dataReader.readOpeningTag(TAG_DTA);
+        readHeader(dataReader);
+        readMap(dataReader);
+        readVariableTypes(dataReader);
+        readVariableNames(dataReader);
+        readSortOrder(dataReader);
+        readDisplayFormats(dataReader);
+        readValueLabelFormatNames(dataReader);
+        readVariableLabels(dataReader);
+        // "characteristics" - STATA-proprietary information
+        // (we are skipping it)
+        readCharacteristics(dataReader);
+        readData(dataReader);
 
-            // create a new instance of DataReader:
-            dataReader = new DataReader(stream);
-            // and read the opening tag:
-            dataReader.readOpeningTag(TAG_DTA);
+        // (potentially) large, (potentially) non-ASCII character strings
+        // saved outside the <data> section, and referenced 
+        // in the data with (v,o) notation - docs have more info
+        readSTRLs(dataReader);
+        readValueLabels(dataReader);
+        dataReader.readClosingTag(TAG_DTA);
 
-            // ...and if we've made this far, we can try 
-            // and read the header section: 
-            readHeader(dataReader);
-
-            // then the map: 
-            readMap(dataReader);
-
-            // variable types: 
-            readVariableTypes(dataReader);
-
-            // variable names:
-            readVariableNames(dataReader);
-
-            // sort order: 
-            readSortOrder(dataReader);
-
-            // display formats: 
-            readDisplayFormats(dataReader);
-
-            // value label formats:
-            readValueLabelFormatNames(dataReader);
-
-            // variable labels: 
-            readVariableLabels(dataReader);
-
-            // "characteristics" - STATA-proprietary information
-            // (we are skipping it)
-            readCharacteristics(dataReader);
-
-            // Data!
-            readData(dataReader);
-
-            // STRLs: 
-            // (potentially) large, (potentially) non-ASCII character strings
-            // saved outside the <data>...</data> section, and referenced 
-            // in the data rows using (v,o) notation - docs have more info
-            readSTRLs(dataReader);
-
-            // finally, Value Labels:
-            readValueLabels(dataReader);
-
-            // verify that we've reached the final closing tag:
-            dataReader.readClosingTag(TAG_DTA);
-
-            ingesteddata.setDataTable(dataTable);
-        } catch (IllegalArgumentException iaex) {
-            throw iaex;
-        }
+        ingesteddata.setDataTable(dataTable);
 
         logger.fine("NewDTAFileReader: read() end.");
         return ingesteddata;
@@ -410,11 +378,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
         logger.fine("byte order: "+byteOrderTag);
 
-        if ("LSF".equals(byteOrderTag)) {
-            dataReader.setLSF(true);
-        } else if ("MSF".equals(byteOrderTag)) {
-            dataReader.setLSF(false);
-        }
+        dataReader.setLSF("LSF".equals(byteOrderTag));
 
         long varNumber = dataReader.readIntegerSection(TAG_HEADER_VARNUMBER, DTAVersion == 119? 4: 2);
         logger.fine("number of variables: " + varNumber);
@@ -538,7 +502,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         variableTypes = new String[dataTable.getVarQuantity().intValue()];
 
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
-            int type = (int) reader.readULong(2);
+            int type = reader.readUShort();
             logger.fine("variable " + i + ": type=" + type);
             DataVariable dv = new DataVariable();
 
@@ -953,16 +917,8 @@ public class NewDTAFileReader extends TabularDataFileReader {
                     // ACTUALLY, in STATA13, it appears that STRF *MUST*
                     // be limited to ASCII. Binary strings can be stored as 
                     // STRLs. (Oct. 6 2014)
-
                     //String string_datum = getNullStrippedString(raw_datum);
                     String string_datum = reader.readString(strVarLength);
-                    if (string_datum.length() < 64) {
-                        logger.fine(i + "-th row " + columnCounter
-                                + "=th column string =" + string_datum);
-                    } else {
-                        logger.fine(i + "-th row " + columnCounter
-                                + "=th column string =" + string_datum.substring(0, 64) + "... (truncated)");
-                    }
                     if (string_datum.equals("")) {
 
                         logger.fine(i + "-th row " + columnCounter
@@ -1003,7 +959,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                         o = reader.readUInt();
                         byte_offset += 4;
                     } else {
-                        v = reader.readULong(2);
+                        v = reader.readUShort();
                         byte_offset += 2;
                         o = reader.readULong(6);
                         byte_offset += 6;
@@ -1518,40 +1474,40 @@ public class NewDTAFileReader extends TabularDataFileReader {
             logger.fine("tm:" + decodedDateTime + ", format:" + format);
 
         } else if (FormatType.matches("^%t?q.*")) {
-            // quater
-            long quaterYears = Math.round(new Double(rawDatum));
-            long left = Math.abs(quaterYears) % 4L;
+            // quarter
+            long quarterYears = Math.round(new Double(rawDatum));
+            long left = Math.abs(quarterYears) % 4L;
             long years;
-            if (quaterYears < 0L) {
+            if (quarterYears < 0L) {
                 left = 4L - left;
                 //out.println("left="+left);
-                years = (Math.abs(quaterYears) - 1) / 4L + 1L;
+                years = (Math.abs(quarterYears) - 1) / 4L + 1L;
                 years *= -1L;
             } else {
-                years = quaterYears / 4L;
+                years = quarterYears / 4L;
             }
 
-            String quater = null;
+            String quarter = null;
 
             if ((left == 0L) || (left == 4L)) {
-                //quater ="q1"; //
-                quater = "-01-01";
+                //quarter ="q1"; //
+                quarter = "-01-01";
             } else if (left == 1L) {
-                //quater = "q2"; //
-                quater = "-04-01";
+                //quarter = "q2"; //
+                quarter = "-04-01";
             } else if (left == 2L) {
-                //quater = "q3"; //
-                quater = "-07-01";
+                //quarter = "q3"; //
+                quarter = "-07-01";
             } else if (left == 3L) {
-                //quater = "q4"; //
-                quater = "-11-01";
+                //quarter = "q4"; //
+                quarter = "-11-01";
             }
 
             long year = 1960L + years;
-            String quaterYear = Long.toString(year) + quater;
-            logger.fine("rawDatum=" + rawDatum + ": quaterYear=" + quaterYear);
+            String quarterYear = Long.toString(year) + quarter;
+            logger.fine("rawDatum=" + rawDatum + ": quarterYear=" + quarterYear);
 
-            decodedDateTime = quaterYear;
+            decodedDateTime = quarterYear;
             format = "yyyy-MM-dd";
             logger.fine("tq:" + decodedDateTime + ", format:" + format);
 
@@ -1603,7 +1559,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         return retValue;
     }
 
-    private class DataReader {
+    public class DataReader {
 
         private BufferedInputStream stream;
         private int DEFAULT_BUFFER_SIZE = 8192;// * 2;
@@ -1939,7 +1895,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
              * recorded in a 2-byte unsigned integer encoded according to
              * byteorder.
              */
-            int lengthOfLabel = (int) readULong(2);
+            int lengthOfLabel = readUShort();
             logger.fine("length of label: " + lengthOfLabel);
             String label = null;
             if (lengthOfLabel > 0) {

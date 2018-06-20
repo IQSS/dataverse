@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta;
 
+import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
@@ -8,29 +9,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
+import org.junit.Assert;
 
 public class NewDTAFileReaderTest {
-    
-    private static Logger logger = Logger.getLogger(DTAFileReader.class.getPackage().getName());
-
     NewDTAFileReader instance;
     File nullDataFile = null;
-
-    // TODO: Can we create a small file to check into the code base that exercises the characteristics issue?
-    // FIXME: testCharacteristics is passing in DTA117FileReaderTest but not here.
-    @Ignore
-    @Test
-    public void testCharacteristics() throws IOException {
-        instance = new NewDTAFileReader(null, 117);
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/15aa6802ee5-5d2ed1bf55a5.dta"))), nullDataFile);
-        assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
-        assertEquals("STATA 13", result.getDataTable().getOriginalFormatVersion());
-        assertEquals(441, result.getDataTable().getDataVariables().size());
-    }
+    private final String base = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/dta/";
 
     @Test
     public void testAuto() throws IOException {
@@ -46,6 +34,50 @@ public class NewDTAFileReaderTest {
         List<VariableCategory> origins = (List) foreign.getCategories();
         assertEquals("Domestic", origins.get(0).getLabel());
         assertEquals("Foreign", origins.get(1).getLabel());
+    }
+    
+    @Test
+    public void testStrl() throws IOException {
+        instance = new NewDTAFileReader(null, 118);
+        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File(base + "strl.dta"))), nullDataFile);
+        DataTable table = result.getDataTable();
+        assertEquals("application/x-stata", table.getOriginalFileFormat());
+        assertEquals("STATA 14", table.getOriginalFormatVersion());
+        assertEquals(7, table.getDataVariables().size());
+        assertEquals(3, (long)table.getCaseQuantity());
+        
+        String[] vars = {"make","price","mpg","rep78","trunk","gear_ratio","strls"};
+        String[] actualVars = table.getDataVariables().stream().map((var) -> var.getName()).toArray(String[]::new);
+        Assert.assertArrayEquals(vars, actualVars);
+        String expected = "\"Buick LeSabre\"	5788	1.1111111111111111E21	100	32767	2.73	\"a\"\n" +
+                          "\"Buick Opel\"	4453	26.0		10	2.87	\"bb\"\n" +
+                          "\"Buick Regal\"	5189	20.0	3	16	2.93	\"ccc\"\n";
+        assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
+    }
+    
+    @Test
+    public void testDates() throws IOException {
+        instance = new NewDTAFileReader(null, 118);
+        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File(base + "dates.dta"))), nullDataFile);
+        DataTable table = result.getDataTable();
+        assertEquals("application/x-stata", table.getOriginalFileFormat());
+        assertEquals("STATA 14", table.getOriginalFormatVersion());
+        assertEquals(7, table.getDataVariables().size());
+        assertEquals(4, (long)table.getCaseQuantity());
+        String[] vars = {"Clock","Daily","Weekly","Monthly","Quarterly","BiAnnually","Annually"};
+        String[] actualVars = table.getDataVariables().stream().map((var) -> var.getName()).toArray(String[]::new);
+        Assert.assertArrayEquals(vars, actualVars);
+        String expected = "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-01-01	2018-01-01	2018\n" +
+                          "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-04-01	2018-01-01	2018\n" +
+                          "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-07-01	2018-07-01	2018\n" +
+                          "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-11-01	2018-07-01	2018\n";
+        assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
+    }
+    
+    @Test(expected = IOException.class)
+    public void testNull() throws IOException {
+        instance = new NewDTAFileReader(null, 117);
+        TabularDataIngest result = instance.read(null, new File(""));
     }
 
     // TODO: Can we create a small file to check into the code base that exercises the value-label names non-zero offset issue?
@@ -69,29 +101,6 @@ public class NewDTAFileReaderTest {
         assertEquals("More than 10% Imputed", origins.get(1).getLabel());
     }
 
-    //For now this test really just shows that we can parse a file with strls
-    //There is no obvious output of parsing the strls as the are just added to our tab delimited file like other data
-    //The test file use was based off auto.dta, adding an extra strL variable (column).
-    //See https://github.com/IQSS/dataverse/issues/1016 for info on Stata 13 strl support
-    @Test
-    public void testStrls() throws Exception {
-        instance = new NewDTAFileReader(null, 117);
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("scripts/search/data/tabular/stata13-auto-withstrls.dta"))), nullDataFile);
-        assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
-        assertEquals("STATA 13", result.getDataTable().getOriginalFormatVersion());
-        assertEquals(13, result.getDataTable().getDataVariables().size());
-    }
-
-    @Ignore
-    @Test
-    public void testOs() throws IOException {
-        instance = new NewDTAFileReader(null, 118);
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("scripts/search/data/tabular/open-source-at-harvard118.dta"))), nullDataFile);
-        assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
-        assertEquals("STATA 14", result.getDataTable().getOriginalFormatVersion());
-        assertEquals(10, result.getDataTable().getDataVariables().size());
-    }
-
     // TODO: Can we create a small file to check into the code base that exercises the value-label names non-zero offset issue?
     @Ignore
     @Test
@@ -110,70 +119,8 @@ public class NewDTAFileReaderTest {
         // Given the MD5 above, we expect the categories to come out in the order below.
         assertEquals("None matched", matching.get(0).getLabel());
         assertEquals("All matched", matching.get(1).getLabel());
-
     }
-
-    //For now this test really just shows that we can parse a file with strls
-    //There is no obvious output of parsing the strls as the are just added to our tab delimited file like other data
-    //The test file use was based off auto.dta, adding an extra strL variable (column).
-    //Also see here for a real Stata 14 file with strls: https://dataverse.harvard.edu/file.xhtml?fileId=2775556 mm_public_120615_v14.dta
-    @Test
-    public void testStrls1() throws Exception {
-        instance = new NewDTAFileReader(null, 118);
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("scripts/search/data/tabular/stata14-auto-withstrls.dta"))), nullDataFile);
-        assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
-        assertEquals("STATA 14", result.getDataTable().getOriginalFormatVersion());
-        assertEquals(13, result.getDataTable().getDataVariables().size());
-    }
-
-    @Ignore
-    @Test
-    public void testBrooke3079508() throws IOException {
-        instance = new NewDTAFileReader(null, 118);
-        // https://dataverse.harvard.edu/file.xhtml?fileId=3079508 Stata 14: Brooke_Ketchley_APSR_replicationII.dta
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/Brooke_Ketchley_APSR_replicationII.dta"))), nullDataFile);
-        assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
-        assertEquals("STATA 14", result.getDataTable().getOriginalFormatVersion());
-        assertEquals(2, result.getDataTable().getDataVariables().size());
-        DataVariable year = result.getDataTable().getDataVariables().get(0);
-        assertEquals("year", year.getName());
-        assertEquals("year", year.getLabel());
-        DataVariable missionaries = result.getDataTable().getDataVariables().get(1);
-        assertEquals("missionaries", missionaries.getName());
-        assertEquals("Number of Church Missionary Society missionaries", missionaries.getLabel());
-    }
-
-    @Ignore
-    @Test
-    public void testBrooke3079511() throws IOException {
-        instance = new NewDTAFileReader(null, 118);
-        // https://dataverse.harvard.edu/file.xhtml?fileId=3079511 Stata 14: Brooke_Ketchley_APSR_replicationI.dta
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/Brooke_Ketchley_APSR_replicationI.dta"))), nullDataFile);
-        assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
-        assertEquals("STATA 14", result.getDataTable().getOriginalFormatVersion());
-        assertEquals(40, result.getDataTable().getDataVariables().size());
-        DataVariable muhafatha = result.getDataTable().getDataVariables().get(0);
-        assertEquals("muhafatha", muhafatha.getName());
-        assertEquals("muhafatha", muhafatha.getLabel());
-        DataVariable qism = result.getDataTable().getDataVariables().get(1);
-        assertEquals("qism", qism.getName());
-        assertEquals("qism", qism.getLabel());
-    }
-
-    // TODO: Get this file to ingest.
-    @Ignore
-    @Test
-    public void testSectionTagsAcrossByteBuffers() throws IOException {
-        instance = new NewDTAFileReader(null, 118);
-        // https://data.aussda.at/file.xhtml?fileId=188 Stata 14: 10007_da_de_v1_2.dta
-        // Via https://groups.google.com/d/msg/dataverse-community/QAX3LaMsbjI/jHrf089QAgAJ
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/10007_da_de_v1_2.dta"))), nullDataFile);
-        assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
-        assertEquals("STATA 14", result.getDataTable().getOriginalFormatVersion());
-        // TODO: Change size from 0 once we can parse the file.
-        assertEquals(0, result.getDataTable().getDataVariables().size());
-    }
-
+    
     // TODO: Is there a way to exersise this code with a smaller file? 33k.dta is 21MB.
     @Ignore
     @Test
@@ -181,9 +128,17 @@ public class NewDTAFileReaderTest {
         instance = new NewDTAFileReader(null, 119);
         // for i in `echo {0..33000}`; do echo -n "var$i,"; done > 33k.csv
         // Then open Stata 15, run `set maxvar 40000` and import.
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/33k.dta"))), nullDataFile);
+    }
+    
+    // TODO: Can we create a small file to check into the code base that exercises the characteristics issue?
+    // FIXME: testCharacteristics is passing in DTA117FileReaderTest but not here.
+    @Ignore
+    @Test
+    public void testCharacteristics() throws IOException {
+        instance = new NewDTAFileReader(null, 117);
+        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/15aa6802ee5-5d2ed1bf55a5.dta"))), nullDataFile);
         assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
-        assertEquals("STATA 15", result.getDataTable().getOriginalFormatVersion());
-        assertEquals(33001, result.getDataTable().getDataVariables().size());
+        assertEquals("STATA 13", result.getDataTable().getOriginalFormatVersion());
+        assertEquals(441, result.getDataTable().getDataVariables().size());
     }
 }
