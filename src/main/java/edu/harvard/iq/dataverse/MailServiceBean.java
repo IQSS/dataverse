@@ -478,7 +478,7 @@ public class MailServiceBean implements java.io.Serializable {
                 		ResourceBundle.getBundle("Bundle").getString("institution.acronym"),
                 		ResourceBundle.getBundle("Bundle").getString("header.guides.user"),
                 		settingsService.getValueForKey(SettingsServiceBean.Key.QDRDrupalSiteURL, "") + "/deposit",
-                        BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName),
+                        BrandingUtil.getSupportTeamName(systemAddress, ResourceBundle.getBundle("Bundle").getString("institution.acronym")),
                         BrandingUtil.getSupportTeamEmailAddress(systemAddress)
                 ));
                 String optionalConfirmEmailAddon = confirmEmailService.optionalConfirmEmailAddonMsg(userNotification.getUser());

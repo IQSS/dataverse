@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.IdServiceBean;
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -30,6 +31,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
 import javax.persistence.Query;
 
 /**
@@ -38,9 +41,13 @@ import javax.persistence.Query;
  *
  * @author michael
  */
+
 @RequiredPermissions(Permission.PublishDataset)
 public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCommand<Dataset> {
 
+	@Inject
+	SettingsWrapper settingsWrapper;
+	
     private static final Logger logger = Logger.getLogger(FinalizeDatasetPublicationCommand.class.getName());
     private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
     
@@ -189,7 +196,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             ctxt.datasets().removeDatasetLocks(theDataset.getId(), DatasetLock.Reason.pidRegister);
             //maybe add notification?
             List<String> args = idServiceBean.getProviderInformation();
-            args.add(BundleUtil.getStringFromBundle("contact.support", null));
+            args.add(settingsWrapper.getSupportTeamName());
             throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
         }
     }
