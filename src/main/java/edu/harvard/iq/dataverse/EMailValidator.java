@@ -39,7 +39,7 @@ public class EMailValidator implements ConstraintValidator<ValidateEmail, String
         boolean isValid = EmailValidator.getInstance().isValid(value);
         if (!isValid) {
             if (context != null) {
-                context.buildConstraintViolationWithTemplate(value + BundleUtil.getStringFromBundle("email.invalid")).addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(value + "  " + BundleUtil.getStringFromBundle("email.invalid")).addConstraintViolation();
             }
             return false;
         }
