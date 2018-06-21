@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.Query;
@@ -170,12 +171,14 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         String protocol = theDataset.getProtocol();
         IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, ctxt);
         try {
-            idServiceBean.publicizeIdentifier(theDataset);
+        	//A false return value indicates a failure in calling the service
+            if(!idServiceBean.publicizeIdentifier(theDataset)) throw new Throwable();
             theDataset.setGlobalIdCreateTime(new Date());
             theDataset.setIdentifierRegistered(true);
             for (DataFile df : theDataset.getFiles()) {
                 logger.fine("registering global id for file "+df.getId());
-                idServiceBean.publicizeIdentifier(df);
+                //A false return value indicates a failure in calling the service
+                if(!idServiceBean.publicizeIdentifier(df)) throw new Throwable();
                 df.setGlobalIdCreateTime(new Date());
                 df.setIdentifierRegistered(true);
                 // this merge() on an individual file below is unnecessary:
@@ -184,9 +187,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         } catch (Throwable e) {
             //if publicize fails remove the lock for registration
             ctxt.datasets().removeDatasetLocks(theDataset.getId(), DatasetLock.Reason.pidRegister);
-            //This exception winds up nowhere that the end user can see
             //maybe add notification?
-            throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()), this);
+            List<String> args = idServiceBean.getProviderInformation();
+            args.add(BundleUtil.getStringFromBundle("contact.support", null));
+            throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
         }
     }
     
