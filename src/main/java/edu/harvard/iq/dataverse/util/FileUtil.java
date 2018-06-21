@@ -72,7 +72,7 @@ import javax.xml.stream.XMLStreamReader;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import javax.imageio.ImageIO;
+import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 
 
 /**
@@ -590,7 +590,7 @@ public class FileUtil implements java.io.Serializable  {
             Long fileSize = tempFile.toFile().length();
             if (fileSizeLimit != null && fileSize > fileSizeLimit) {
                 try {tempFile.toFile().delete();} catch (Exception ex) {}
-                throw new IOException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), fileSize.toString(), fileSizeLimit.toString()));  
+                throw new IOException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), byteCountToDisplaySize(fileSize), byteCountToDisplaySize(fileSizeLimit)));  
             }
             
         } else {
@@ -961,7 +961,7 @@ public class FileUtil implements java.io.Serializable  {
             Long fileSize = tempFile.toFile().length();
             if (fileSizeLimit != null && fileSize > fileSizeLimit) {
                 try {tempFile.toFile().delete();} catch (Exception ex) {}
-                throw new FileExceedsMaxSizeException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), fileSize.toString(), fileSizeLimit.toString()));  
+                throw new FileExceedsMaxSizeException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), byteCountToDisplaySize(fileSize), byteCountToDisplaySize(fileSizeLimit)));  
             }
             
             return tempFile.toFile();

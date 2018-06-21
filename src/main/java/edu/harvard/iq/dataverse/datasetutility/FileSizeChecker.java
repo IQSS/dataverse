@@ -9,10 +9,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.Collections;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.faces.bean.ManagedBean;
-import javax.inject.Named;
+import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 
 /**
  * Convenience methods for checking max. file size
@@ -61,7 +58,7 @@ public class FileSizeChecker {
         
         // Nope!  Sorry! File is too big
         //
-        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit", Collections.singletonList(maxFileSize.toString()));
+        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit", Collections.singletonList(byteCountToDisplaySize(maxFileSize)));
         
         return new FileSizeResponse(false, errMsg);
         

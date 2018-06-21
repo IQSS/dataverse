@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import org.apache.commons.io.FileUtils;
 import org.passay.CharacterRule;
 
 /**
@@ -547,8 +548,11 @@ public class SystemConfig {
     }
 
     public Long getMaxFileUploadSize(){
-
          return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
+     }
+    
+    public String getHumanMaxFileUploadSize(){
+         return FileUtils.byteCountToDisplaySize(getMaxFileUploadSize());
      }
 
     public Integer getSearchHighlightFragmentSize() {
