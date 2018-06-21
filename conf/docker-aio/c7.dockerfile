@@ -42,6 +42,10 @@ EXPOSE 8080
 # apache port, http
 EXPOSE 80
 
+# debugger ports (jmx,jdb)
+EXPOSE 8686
+EXPOSE 9009
+
 RUN mkdir /opt/dv
 
 # yeah - still not happy if glassfish isn't in /usr/local :<
