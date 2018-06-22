@@ -670,20 +670,20 @@ public class Datasets extends AbstractApiBean {
         }
     }
     
-    private void validateDatasetFieldValues(List<DatasetField> fields) throws JsonParseException {
-        String errors = "";
+    private void validateDatasetFieldValues(List<DatasetField> fields) throws JsonParseException {        
+        StringBuilder error = new StringBuilder();
 
         for (DatasetField dsf : fields) {
             if (dsf.getDatasetFieldType().isAllowMultiples() && dsf.getControlledVocabularyValues().isEmpty()
                     && dsf.getDatasetFieldCompoundValues().isEmpty() && dsf.getDatasetFieldValues().isEmpty()) {
-                errors += "Empty multiple value for field " + dsf.getDatasetFieldType().getDisplayName() + " ";
+                error.append("Empty multiple value for field ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
             } else if (!dsf.getDatasetFieldType().isAllowMultiples() && dsf.getSingleValue().getValue().isEmpty()) {
-                errors += "Empty  value for field " + dsf.getDatasetFieldType().getDisplayName() + " ";
+                error.append("Empty  value for field ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
             }
         }
 
-        if (!errors.isEmpty()) {
-            throw new JsonParseException(errors);
+        if (!error.toString().isEmpty()) {
+            throw new JsonParseException(error.toString());
         }
     }
     
