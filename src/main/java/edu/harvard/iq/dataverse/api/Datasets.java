@@ -450,7 +450,7 @@ public class Datasets extends AbstractApiBean {
                 boolean found = false;
                 for (DatasetField dsf : dsv.getDatasetFields()) {
                     if (dsf.getDatasetFieldType().equals(updateField.getDatasetFieldType())) {
-                        if (dsf.getDatasetFieldType().isAllowMultiples()) {
+                        if (dsf.getDatasetFieldType().isAllowMultiples()) { 
                             if (updateField.getDatasetFieldType().isControlledVocabulary()) {
                                 if (dsf.getDatasetFieldType().isAllowMultiples()) {
                                     for (ControlledVocabularyValue cvv : updateField.getControlledVocabularyValues()) {
@@ -511,6 +511,10 @@ public class Datasets extends AbstractApiBean {
                                     }
                                 }
                             }
+                        } else {
+                            found = true;
+                            dsf.setSingleValue(null);
+                            dsf.setSingleControlledVocabularyValue(null);
                         }
                         break;
                     }
