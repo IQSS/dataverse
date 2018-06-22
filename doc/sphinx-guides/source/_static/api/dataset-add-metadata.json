@@ -21,6 +21,12 @@
               }
             }
           ]
+        },
+                {
+        "typeName": "kindOfData",
+                "value": 
+                    ["Bar Chart"]
+
         }
 ]
 }

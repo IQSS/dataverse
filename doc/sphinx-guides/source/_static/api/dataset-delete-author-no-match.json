@@ -1,0 +1,12 @@
+
+        {
+          "typeName": "author",
+          "value": [
+            {
+              "authorName": {
+                "typeName": "authorName",
+                "value": "Spruce, Sabrina"
+              }
+            }
+          ]
+        }

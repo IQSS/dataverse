@@ -363,6 +363,14 @@ public class JsonParser {
         return fields;
     }
     
+    public List<DatasetField> parseMultipleFieldsForDelete(JsonObject json) throws JsonParseException {
+        List<DatasetField> fields = new LinkedList<>();
+        for (JsonObject fieldJson : json.getJsonArray("fields").getValuesAs(JsonObject.class)) {
+            fields.add(parseFieldForDelete(fieldJson));
+        }
+        return fields;
+    }
+    
     private List<DatasetField> parseFieldsFromArray(JsonArray fieldsArray, Boolean testType) throws JsonParseException {
             List<DatasetField> fields = new LinkedList<>();
             for (JsonObject fieldJson : fieldsArray.getValuesAs(JsonObject.class)) {
@@ -508,13 +516,23 @@ public class JsonParser {
         }
         return geoCoverageField;
     }
+    
+    
+    public DatasetField parseFieldForDelete(JsonObject json) throws JsonParseException{
+        DatasetField ret = new DatasetField();
+        DatasetFieldType type = datasetFieldSvc.findByNameOpt(json.getString("typeName", ""));   
+        if (type == null) {
+            throw new JsonParseException("Can't find type '" + json.getString("typeName", "") + "'");
+        }
+        return ret;
+    }
      
     
     public DatasetField parseField(JsonObject json) throws JsonParseException{
         return parseField(json, true);
     }
-  
-
+    
+    
     public DatasetField parseField(JsonObject json, Boolean testType) throws JsonParseException {
         if (json == null) {
             return null;

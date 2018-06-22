@@ -172,10 +172,11 @@ public class DatasetsIT {
         Response exportDatasetAsJson = UtilIT.exportDataset(datasetPersistentId, "dataverse_json", apiToken);
         exportDatasetAsJson.prettyPrint();
         
-
-
-        
-       // String subject = JsonPath.from(exportDatasetAsJson.getBody().asString()).getString("data.metadataBlocks.citation.fields.");
+        pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-add-subject-metadata.json";
+        addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
+        addSubjectViaNative.prettyPrint();
+        addSubjectViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
         
 
         String pathToJsonFileSingle = "doc/sphinx-guides/source/_static/api/dataset-simple-update-metadata.json";
@@ -189,7 +190,7 @@ public class DatasetsIT {
         String pathToJsonFileBadData = "doc/sphinx-guides/source/_static/api/dataset-update-with-blank-metadata.json";
         Response deleteTitleViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileBadData, apiToken);
         deleteTitleViaNative.prettyPrint();
-        deleteTitleViaNative.then().assertThat().body("message", equalTo("Validation failed: Title is required."));
+        deleteTitleViaNative.then().assertThat().body("message", equalTo("Error parsing dataset update: Empty  value for field Title "));
 
 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
@@ -212,6 +213,31 @@ public class DatasetsIT {
         addDataToBadData.then().assertThat()
                 .body("message", equalTo("Error parsing dataset update: Invalid value submitted for subtitle. It should be a single value."))
                 .statusCode(400);
+        
+                addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
+        addSubjectViaNative.prettyPrint();
+        addSubjectViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+               String pathToJsonDeleteFile = "doc/sphinx-guides/source/_static/api/dataset-delete-subject-metadata.json";
+        addSubjectViaNative = UtilIT.deleteDatasetMetadataViaNative(datasetPersistentId, pathToJsonDeleteFile, apiToken);
+        addSubjectViaNative.prettyPrint();
+        addSubjectViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        pathToJsonDeleteFile = "doc/sphinx-guides/source/_static/api/dataset-delete-author-metadata.json";
+        addSubjectViaNative = UtilIT.deleteDatasetMetadataViaNative(datasetPersistentId, pathToJsonDeleteFile, apiToken);
+        addSubjectViaNative.prettyPrint();
+        addSubjectViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        pathToJsonDeleteFile = "doc/sphinx-guides/source/_static/api/dataset-delete-author-no-match.json";
+        addSubjectViaNative = UtilIT.deleteDatasetMetadataViaNative(datasetPersistentId, pathToJsonDeleteFile, apiToken);
+        addSubjectViaNative.prettyPrint();
+        addSubjectViaNative.then().assertThat().body("message", equalTo("Delete metadata failed: Author: Spruce, Sabrina not found."))
+                .statusCode(400);
+        
+        //"Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found."
     }
 
     /**

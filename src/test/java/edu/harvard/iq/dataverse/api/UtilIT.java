@@ -364,6 +364,17 @@ public class UtilIT {
         return response;
     }
     
+    static Response deleteDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
+        String jsonIn = getDatasetJson(pathToJsonFile);
+
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonIn)
+                .contentType("application/json")
+                .put("/api/datasets/:persistentId/deleteMetadata/?persistentId=" + persistentId);
+        return response;
+    }
+    
     static Response updateFieldLevelDatasetMetadataViaNative(String persistentId, String pathToJsonFile, String apiToken) {
         String jsonIn = getDatasetJson(pathToJsonFile);
         Response response = given()
