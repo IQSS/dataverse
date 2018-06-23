@@ -1045,8 +1045,8 @@ public class Admin extends AbstractApiBean {
         logger.info("Starting to register  " +  count + " files. " + new Date());
         for (DataFile df : fileService.findAll()) {
             try {
-                if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
-                    User u =findUserOrDie();
+                if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())&& df.isReleased()) {
+                    User u =findAuthenticatedUserOrDie();
                     DataverseRequest r = createDataverseRequest(u);
                     execCommand(new RegisterDvObjectCommand(r, df));
                     successes++;
