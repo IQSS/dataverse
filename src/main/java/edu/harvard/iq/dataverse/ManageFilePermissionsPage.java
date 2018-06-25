@@ -255,7 +255,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         try {
             RoleAssignment ra = em.find(RoleAssignment.class, roleAssignmentId);
             commandEngine.submit(new RevokeRoleCommand(ra, dvRequestService.getDataverseRequest()));
-            JsfHelper.addSuccessMessage(ra.getRole().getName() + BundleUtil.getStringFromBundle("permission.roleWasRemoved" , Arrays.asList(roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle())));
+            JsfHelper.addSuccessMessage( BundleUtil.getStringFromBundle("permission.roleWasRemoved" , Arrays.asList(ra.getRole().getName(), roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle())));
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"), BundleUtil.getStringFromBundle("permission.permissionsMissing" , Arrays.asList(ex.getRequiredPermissions().toString())));
         } catch (CommandException ex) {
