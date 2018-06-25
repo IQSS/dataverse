@@ -7,6 +7,17 @@
                 "typeName": "authorName",
                 "value": "Spruce, Sabrina"
               }
-            }
+            },{
+                    "authorName": {
+                        "typeName": "authorName",
+                        "value": "Poe, Edgar Allen"
+                    }
+                    ,
+                    "authorAffiliation": {
+                        "typeName": "authorAffiliation",
+                        "value": "Baltimore Poets"
+                    }
+                }
           ]
-        }
+        }               
+        

@@ -460,6 +460,9 @@ public class Datasets extends AbstractApiBean {
                                                 controlledVocabularyItemsToRemove.add(existing);
                                             }
                                         }
+                                        if (!found) {
+                                            return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + cvv.getStrValue() + " not found.");
+                                        }
                                     }
                                     for (ControlledVocabularyValue remove : controlledVocabularyItemsToRemove) {
                                         dsf.getControlledVocabularyValues().remove(remove);
@@ -482,7 +485,9 @@ public class Datasets extends AbstractApiBean {
                                                     datasetFieldValueItemsToRemove.add(dfv);
                                                 }
                                             }
-
+                                            if (!found) {
+                                                return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + dfv.getDisplayValue() + " not found.");
+                                            }
                                         }
                                         datasetFieldValueItemsToRemove.forEach((remove) -> {
                                             dsf.getDatasetFieldValues().remove(remove);
@@ -508,6 +513,9 @@ public class Datasets extends AbstractApiBean {
                                         datasetFieldCompoundValueItemsToRemove.forEach((remove) -> {
                                             dsf.getDatasetFieldCompoundValues().remove(remove);
                                         });
+                                        if (!found) {                                            
+                                            return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + deleteVal + " not found.");
+                                        }
                                     }
                                 }
                             }
