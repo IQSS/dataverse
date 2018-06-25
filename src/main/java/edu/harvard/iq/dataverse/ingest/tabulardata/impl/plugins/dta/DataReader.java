@@ -15,7 +15,7 @@ public class DataReader {
     private int buffer_size;
     private long byte_offset;
     private int buffer_byte_offset;
-    Boolean LSF = null;
+    private Boolean LSF = null;
 
     public DataReader(BufferedInputStream stream) throws IOException {
         this(stream, 0);
@@ -33,29 +33,13 @@ public class DataReader {
         bufferMoreBytes();
     }
 
-    public BufferedInputStream getStream() {
-        return stream;
-    }
-
-    public void setStream(BufferedInputStream stream) {
-        this.stream = stream;
-    }
-
     public void setLSF(boolean lsf) {
         LSF = lsf;
-    }
-
-    public Boolean isLSF() {
-        return LSF;
     }
 
     // this returns the *absolute* byte offest in the stream. 
     public long getByteOffset() {
         return byte_offset + buffer_byte_offset;
-    }
-
-    public void setByteOffset(long byte_offset) {
-        this.byte_offset = byte_offset;
     }
 
     /* 
@@ -395,7 +379,7 @@ public class DataReader {
         logger.fine("exiting at offset " + buffer_byte_offset);
     }
 
-    boolean checkTag(String tag) throws IOException {
+    public boolean checkTag(String tag) throws IOException {
         if (tag == null || tag.equals("")) {
             throw new IOException("opening tag must be a non-empty string.");
         }
