@@ -144,18 +144,15 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
         String nonNullDefaultIfKeyNotFound = "";
+
         String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        String doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
         if (theDataset.getProtocol() == null) {
             theDataset.setProtocol(protocol);
         }
         if (theDataset.getAuthority() == null) {
             theDataset.setAuthority(authority);
-        }
-        if (theDataset.getDoiSeparator() == null) {
-            theDataset.setDoiSeparator(doiSeparator);
         }
         if (theDataset.getStorageIdentifier() == null) {
             try {
@@ -164,7 +161,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                 // if setting the storage identifier through createNewStorageIO fails, dataset creation
                 // does not have to fail. we just set the storage id to a default -SF
                 String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file";
-                theDataset.setStorageIdentifier(storageDriver + "://" + theDataset.getAuthority() + theDataset.getDoiSeparator() + theDataset.getIdentifier());
+                theDataset.setStorageIdentifier(storageDriver + "://" + theDataset.getAuthority() + "/" + theDataset.getIdentifier());
                 logger.info("Failed to create StorageIO. StorageIdentifier set to default. Not fatal." + "(" + ioex.getMessage() + ")");
             }
         }

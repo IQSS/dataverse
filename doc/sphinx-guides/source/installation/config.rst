@@ -84,7 +84,7 @@ If you are convinced you'd like to try fronting Glassfish with Apache, the :doc:
 
 If you really don't want to front Glassfish with any proxy (not recommended), you can configure Glassfish to run HTTPS on port 443 like this:
 
-``asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=443``
+``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=443``
 
 What about port 80? Even if you don't front Dataverse with Apache, you may want to let Apache run on port 80 just to rewrite HTTP to HTTPS as described above. You can use a similar command as above to change the HTTP port that Glassfish uses from 8080 to 80 (substitute ``http-listener-1.port=80``). Glassfish can be used to enforce HTTPS on its own without Apache, but configuring this is an exercise for the reader. Answers here may be helpful: http://stackoverflow.com/questions/25122025/glassfish-v4-java-7-port-unification-error-not-able-to-redirect-http-to
 
@@ -124,7 +124,7 @@ Out of the box, Dataverse is configured for DOIs. Here are the configuration opt
 - :ref:`:DoiProvider <:DoiProvider>`
 - :ref:`:Protocol <:Protocol>`
 - :ref:`:Authority <:Authority>`
-- :ref:`:DoiSeparator <:DoiSeparator>`
+- :ref:`:Shoulder <:Shoulder>`
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 
@@ -440,18 +440,23 @@ Administration of Your Dataverse Installation
 
 Now that you're live you'll want to review the :doc:`/admin/index` for more information about the ongoing administration of a Dataverse installation.
 
+Setting Up Integrations
++++++++++++++++++++++++
+
+Before going live, you might want to consider setting up integrations to make it easier for your users to deposit or explore data. See the :doc:`/admin/integrations` section of the Admin Guide for details.
+
 JVM Options
 -----------
 
 JVM stands Java Virtual Machine and as a Java application, Glassfish can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running:
 
-``asadmin list-jvm-options | egrep 'dataverse|doi'``
+``./asadmin list-jvm-options | egrep 'dataverse|doi'``
 
 When changing values these values with ``asadmin``, you'll need to delete the old value before adding a new one, like this:
 
-``asadmin delete-jvm-options "-Ddataverse.fqdn=old.example.com"``
+``./asadmin delete-jvm-options "-Ddataverse.fqdn=old.example.com"``
 
-``asadmin create-jvm-options "-Ddataverse.fqdn=dataverse.example.com"``
+``./asadmin create-jvm-options "-Ddataverse.fqdn=dataverse.example.com"``
 
 It's also possible to change these values by stopping Glassfish, editing ``glassfish4/glassfish/domains/domain1/config/domain.xml``, and restarting Glassfish.
 
@@ -508,10 +513,14 @@ dataverse.rserve.password
 
 Configuration for :doc:`r-rapache-tworavens`.
 
+.. _dataverse.dropbox.key:
+
 dataverse.dropbox.key
 +++++++++++++++++++++
 
-Dropbox integration is optional. Enter your key here.
+Dropbox provides a Chooser app, which is a Javascript component that allows you to upload files to Dataverse from Dropbox. It is an optional configuration setting, which requires you to pass it an app key. For more information on setting up your Chooser app, visit https://www.dropbox.com/developers/chooser.
+
+``./asadmin create-jvm-options "-Ddataverse.dropbox.key={{YOUR_APP_KEY}}"``
 
 dataverse.path.imagemagick.convert
 ++++++++++++++++++++++++++++++++++
@@ -541,18 +550,18 @@ For example, the Australian Data Archive (ADA) successfully uses the Australian 
 
 Out of the box, Dataverse is configured to use base URL string from EZID. You can delete it like this:
 
-``asadmin delete-jvm-options '-Ddoi.baseurlstring=https\://ezid.cdlib.org'``
+``./asadmin delete-jvm-options '-Ddoi.baseurlstring=https\://ezid.cdlib.org'``
 
 Then, to switch to DataCite, you can issue the following command:
 
-``asadmin create-jvm-options '-Ddoi.baseurlstring=https\://mds.datacite.org'``
+``./asadmin create-jvm-options '-Ddoi.baseurlstring=https\://mds.datacite.org'``
 
 See also these related database settings below:
 
 - :ref:`:DoiProvider`
 - :ref:`:Protocol`  
 - :ref:`:Authority`
-- :ref:`:DoiSeparator`
+- :ref:`:Shoulder`
 
 .. _doi.username:
 
@@ -563,11 +572,11 @@ Used in conjuction with ``doi.baseurlstring``.
 
 Out of the box, Dataverse is configured with a test username from EZID. You can delete it with the following command:
 
-``asadmin delete-jvm-options '-Ddoi.username=apitest'``
+``./asadmin delete-jvm-options '-Ddoi.username=apitest'``
 
 Once you have a username from your provider, you can enter it like this:
 
-``asadmin create-jvm-options '-Ddoi.username=YOUR_USERNAME_HERE'``
+``./asadmin create-jvm-options '-Ddoi.username=YOUR_USERNAME_HERE'``
 
 .. _doi.password:
 
@@ -578,11 +587,11 @@ Out of the box, Dataverse is configured with a test password from EZID. You can 
 
 Used in conjuction with ``doi.baseurlstring``.
 
-``asadmin delete-jvm-options '-Ddoi.password=apitest'``
+``./asadmin delete-jvm-options '-Ddoi.password=apitest'``
 
 Once you have a password from your provider, you can enter it like this:
 
-``asadmin create-jvm-options '-Ddoi.password=YOUR_PASSWORD_HERE'``
+``./asadmin create-jvm-options '-Ddoi.password=YOUR_PASSWORD_HERE'``
 
 .. _dataverse.handlenet.admcredfile:
 
@@ -717,7 +726,7 @@ As of this writing "EZID" and "DataCite" are the only valid options. DoiProvider
 
 ``curl -X PUT -d EZID http://localhost:8080/api/admin/settings/:DoiProvider``
 
-This setting relates to the ``:Protocol``, ``:Authority``, ``:DoiSeparator``, and ``:IdentifierGenerationStyle`` database settings below as well as the following JVM options:
+This setting relates to the ``:Protocol``, ``:Authority``, ``:Shoulder``, and ``:IdentifierGenerationStyle`` database settings below as well as the following JVM options:
 
 - :ref:`doi.baseurlstring`
 - :ref:`doi.username`
@@ -741,25 +750,23 @@ Use the authority assigned to you by your DoiProvider or HandleProvider.
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
-.. _:DoiSeparator:
+.. _:Shoulder:
 
-:DoiSeparator
-+++++++++++++
+:Shoulder
+++++++++++++
 
-It is recommended that you keep this as a slash ("/").
+Out of the box, the DOI shoulder is set to "FK2/" but this is for testing only! When you apply for your DOI namespace, you may have requested a shoulder. The following is only an example and a trailing slash is optional.
 
-``curl -X PUT -d "/" http://localhost:8080/api/admin/settings/:DoiSeparator``
-
-**Note:** The name DoiSeparator is a misnomer. This setting is used by some **handles**-specific code too. It *must* be set to '/' when using handles.
+``curl -X PUT -d "MyShoulder/" http://localhost:8080/api/admin/settings/:Shoulder``
 
 .. _:IdentifierGenerationStyle:
 
 :IdentifierGenerationStyle
 ++++++++++++++++++++++++++
 
-By default, Dataverse generates a random 6 character string to use as the identifier
+By default, Dataverse generates a random 6 character string, pre-pended by the Shoulder if set, to use as the identifier
 for a Dataset. Set this to ``sequentialNumber`` to use sequential numeric values 
-instead. (the assumed default setting is ``randomString``). 
+instead (again pre-pended by the Shoulder if set). (the assumed default setting is ``randomString``). 
 In addition to this setting, a database sequence must be created in the database. 
 We provide the script below (downloadable :download:`here </_static/util/createsequence.sql>`).
 You may need to make some changes to suit your system setup, see the comments for more information: 
@@ -785,7 +792,7 @@ This setting controls the way that the "identifier" component of a file's persis
 
 By default the identifier for a file is dependent on its parent dataset. For example, if the identifier of a dataset is "TJCLKP", the identifier for a file within that dataset will consist of the parent dataset's identifier followed by a slash ("/"), followed by a random 6 character string, yielding "TJCLKP/MLGWJO". Identifiers in this format are what you should expect if you leave ``:DataFilePIDFormat`` undefined or set it to ``DEPENDENT`` and have not changed the ``:IdentifierGenerationStyle`` setting from its default.
 
-Alternatively, the indentifier for File PIDs can be configured to be independent of Dataset PIDs using the setting "``INDEPENDENT``". In this case, file PIDs will not contain the PIDs of their parent datasets, and their PIDs will be generated the exact same way that datasets' PIDs are, based on the ``:IdentifierGenerationStyle`` setting described above (random 6 character strings or sequential numbers).
+Alternatively, the identifier for File PIDs can be configured to be independent of Dataset PIDs using the setting "``INDEPENDENT``". In this case, file PIDs will not contain the PIDs of their parent datasets, and their PIDs will be generated the exact same way that datasets' PIDs are, based on the ``:IdentifierGenerationStyle`` setting described above (random 6 character strings or sequential numbers, pre-pended by any shoulder).
 
 The chart below shows examples from each possible combination of parameters from the two settings. ``:IdentifierGenerationStyle`` can be either ``randomString`` (the default) or ``sequentialNumber`` and ``:DataFilePIDFormat`` can be either ``DEPENDENT`` (the default) or ``INDEPENDENT``. In the examples below the "identifier" for the dataset is "TJCLKP" for "randomString" and "100001" for "sequentialNumber".
 
