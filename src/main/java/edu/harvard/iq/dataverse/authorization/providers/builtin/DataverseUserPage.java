@@ -124,10 +124,10 @@ public class DataverseUserPage implements java.io.Serializable {
     private EditMode editMode;
     private String redirectPage = "dataverse.xhtml";
 
-    @NotBlank(message = "The new password is blank: re-type it again.")
+    @NotBlank(message = "{password.retype}")
     private String inputPassword;
 
-    @NotBlank(message = "Please enter your current password.")
+    @NotBlank(message = "{password.current}")
     private String currentPassword;
     private Long dataverseId;
     private List<UserNotification> notificationsList;
