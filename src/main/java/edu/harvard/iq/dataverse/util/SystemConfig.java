@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
 import java.io.FileInputStream;
@@ -23,7 +24,6 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-import org.apache.commons.io.FileUtils;
 import org.passay.CharacterRule;
 
 /**
@@ -552,7 +552,7 @@ public class SystemConfig {
      }
     
     public String getHumanMaxFileUploadSize(){
-         return FileUtils.byteCountToDisplaySize(getMaxFileUploadSize());
+         return bytesToHumanReadable(getMaxFileUploadSize());
      }
 
     public Integer getSearchHighlightFragmentSize() {

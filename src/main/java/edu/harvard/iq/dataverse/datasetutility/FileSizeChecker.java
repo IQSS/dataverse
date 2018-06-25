@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.Collections;
 import java.util.logging.Logger;
-import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 
 /**
  * Convenience methods for checking max. file size
@@ -58,10 +57,29 @@ public class FileSizeChecker {
         
         // Nope!  Sorry! File is too big
         //
-        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit", Collections.singletonList(byteCountToDisplaySize(maxFileSize)));
+        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit", Collections.singletonList(bytesToHumanReadable(maxFileSize)));
         
         return new FileSizeResponse(false, errMsg);
         
+    }
+    
+    /* This method turns a number of bytes into a human readable version
+     */
+    public static String bytesToHumanReadable(long v) {
+        return bytesToHumanReadable(v, 1);
+    }
+    
+    /* This method turns a number of bytes into a human readable version
+     * with figs decimal places
+     */
+    public static String bytesToHumanReadable(long v, int figs) {
+        if (v < 1024) {
+            return v + " B";
+        }
+        // 63 - because long has 63 binary digits
+        int trailingBin0s = (63 - Long.numberOfLeadingZeros(v))/10;
+        return String.format("%."+figs+"f %sB", (double)v / (1L << (trailingBin0s*10)),
+                             " kMGTPE".charAt(trailingBin0s));
     }
     
     /**
