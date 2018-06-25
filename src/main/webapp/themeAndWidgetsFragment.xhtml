@@ -250,5 +250,5 @@
                 </ui:fragment>
             </p:tab>
         </p:tabView>
-    <p:remoteCommand name="saveRedirectUrl" process="@this" update=":#{p:component('messagePanel')}, :themeWidgetsForm, @([id$=Messages])" actionListener="#{themeWidgetFragment.save()}"/>
+    <p:remoteCommand name="saveRedirectUrl" process="@this" update=":#{p:resolveClientId('messagePanel', view)}, :themeWidgetsForm, @([id$=Messages])" actionListener="#{themeWidgetFragment.save()}"/>
 </ui:composition>
