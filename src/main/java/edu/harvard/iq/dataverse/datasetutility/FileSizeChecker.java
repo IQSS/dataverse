@@ -78,7 +78,8 @@ public class FileSizeChecker {
         }
         // 63 - because long has 63 binary digits
         int trailingBin0s = (63 - Long.numberOfLeadingZeros(v))/10;
-        return String.format("%."+figs+"f %sB", (double)v / (1L << (trailingBin0s*10)),
+        String base = "%."+figs+"f %s"+ BundleUtil.getStringFromBundle("file.addreplace.error.byte_abrev");
+        return String.format(base, (double)v / (1L << (trailingBin0s*10)),
                              " kMGTPE".charAt(trailingBin0s));
     }
     
