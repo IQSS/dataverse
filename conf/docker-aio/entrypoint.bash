@@ -12,6 +12,6 @@ apachectl -DFOREGROUND &
 
 # TODO: Run Glassfish as non-root.
 cd /opt/glassfish4
-bin/asadmin start-domain
+bin/asadmin start-domain --debug
 sleep infinity
 
