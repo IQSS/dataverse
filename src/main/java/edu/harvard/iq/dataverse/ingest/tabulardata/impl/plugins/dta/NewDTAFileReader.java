@@ -586,7 +586,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                 dataTable.getDataVariables().get(i).setName(variableName);
             } else {
                 // TODO: Is this condition even possible? 
-                // Should throw an exception if it's encountered?
+                // Should we be throwing an exception if it's encountered?
             }
         }
 
@@ -877,10 +877,13 @@ public class NewDTAFileReader extends TabularDataFileReader {
                         logger.fine(i + "-th row " + columnCounter
                                 + "=th column string missing value=" + string_datum);
 
-                        // TODO: 
-                        /* Is this the right thing to do, to treat this as a missing value case? 
-                         * Or is it an honest empty string? 
-                         * Is there such a thing as a missing value for a String in Stata?
+                        /* Note: 
+                         * In Stata, an empty string ("") in a String vector is 
+                         * the notation for a missing value.
+                         * So in the resulting tab file it should be stored as such,
+                         * and not as an empty string (that would be "\"\""). 
+                         * (This of course means that it's simply not possible 
+                         * to store actual empty strings in Stata)
                          */
                         dataRow[columnCounter] = MissingValueForTabDelimitedFile;
                     } else {
@@ -923,7 +926,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                     // would it make sense to validate v and o here? 
                     // Making sure v <= varNum and o < numbObs; 
                     // or, if o == numObs, v <= columnCounter; 
-                    // -- per the Stata 13 spec...
+                    // -- per the Stata 13+ spec...
                     if (!(v == columnCounter + 1 && o == i + 1)) {
                         if (!cachedGSOs.containsKey(voPair)) {
                             cachedGSOs.put(voPair, "");
