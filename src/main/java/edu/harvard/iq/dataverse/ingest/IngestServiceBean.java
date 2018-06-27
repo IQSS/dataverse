@@ -668,7 +668,7 @@ public class IngestServiceBean {
     }
     
     
-    public boolean ingestAsTabular(Long datafile_id) { //DataFile dataFile) throws IOException {
+    public boolean ingestAsTabular(Long datafile_id) {
         DataFile dataFile = fileService.find(datafile_id);
         
         boolean ingestSuccessful = false;
@@ -687,26 +687,10 @@ public class IngestServiceBean {
             return false; 
         }
 
-        BufferedInputStream inputStream = null; 
-        File additionalData = null; 
-        StorageIO<DataFile> storageIO = null;
+        BufferedInputStream inputStream;
                 
         try {
-            storageIO = dataFile.getStorageIO();
-            storageIO.open();
-             
-            if (storageIO.isLocalFile()) {
-                inputStream = new BufferedInputStream(storageIO.getInputStream());
-            } else {
-                ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
-                File tempFile = File.createTempFile("tempIngestSourceFile", ".tmp");
-                FileChannel tempIngestSourceChannel = new FileOutputStream(tempFile).getChannel();
-
-                tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
-                
-                inputStream = new BufferedInputStream(new FileInputStream(tempFile));
-                logger.fine("Saved "+storageIO.getSize()+" bytes in a local temp file.");
-            }
+            inputStream = openFile(dataFile);
         } catch (IOException ioEx) {
             dataFile.SetIngestProblem();
             
@@ -717,6 +701,7 @@ public class IngestServiceBean {
             return false; 
         }
         
+        File additionalData = null; 
         IngestRequest ingestRequest = dataFile.getIngestRequest();
         if (ingestRequest != null) {
             if (ingestRequest.getTextEncoding() != null 
@@ -729,13 +714,9 @@ public class IngestServiceBean {
             }
         } 
         
-        TabularDataIngest tabDataIngest = null; 
+        TabularDataIngest tabDataIngest; 
         try {
-            if (additionalData != null) {
-                tabDataIngest = ingestPlugin.read(inputStream, additionalData);
-            } else {
-                tabDataIngest = ingestPlugin.read(inputStream, null);
-            }
+            tabDataIngest = ingestPlugin.read(inputStream, additionalData);
         } catch (IOException ingestEx) {
             dataFile.SetIngestProblem();
             FileUtil.createIngestFailureReport(dataFile, ingestEx.getMessage());
@@ -760,15 +741,12 @@ public class IngestServiceBean {
         String originalContentType = dataFile.getContentType();
         String originalFileName = dataFile.getFileMetadata().getLabel();
         long originalFileSize = dataFile.getFilesize();
-        boolean postIngestTasksSuccessful = false;
         boolean databaseSaveSuccessful = false;
 
         if (tabDataIngest != null) {
             File tabFile = tabDataIngest.getTabDelimitedFile();
 
-            if (tabDataIngest.getDataTable() != null
-                    && tabFile != null
-                    && tabFile.exists()) {
+            if (tabDataIngest.getDataTable() != null && tabFile != null && tabFile.exists()) {
                 logger.info("Tabular data successfully ingested; DataTable with "
                         + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
                 logger.info("Tab-delimited file produced: " + tabFile.getAbsolutePath());
@@ -791,7 +769,6 @@ public class IngestServiceBean {
 
                 try {
                     produceSummaryStatistics(dataFile, tabFile);
-                    postIngestTasksSuccessful = true;
                 } catch (IOException postIngestEx) {
 
                     dataFile.SetIngestProblem();
@@ -801,9 +778,6 @@ public class IngestServiceBean {
                     dataFile = fileService.save(dataFile);
 
                     logger.warning("Ingest failure: post-ingest tasks.");
-                }
-
-                if (!postIngestTasksSuccessful) {
                     return false;
                 }
 
@@ -836,7 +810,6 @@ public class IngestServiceBean {
                     // in the database. 
                     logger.warning("Ingest failure: Failed to save tabular metadata (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
 
-                    dataFile = null;
                     dataFile = fileService.find(datafile_id);
 
                     if (dataFile != null) {
@@ -881,7 +854,6 @@ public class IngestServiceBean {
                     // this probably means that an error occurred while saving the file to the file system
                     logger.warning("Failed to save the tabular file produced by the ingest (resetting the ingested DataFile back to its original state)");
 
-                    dataFile = null;
                     dataFile = fileService.find(datafile_id);
 
                     if (dataFile != null) {
@@ -901,6 +873,25 @@ public class IngestServiceBean {
         }
 
         return ingestSuccessful;
+    }
+
+    private BufferedInputStream openFile(DataFile dataFile) throws IOException {
+        BufferedInputStream inputStream;
+        StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+        storageIO.open();
+        if (storageIO.isLocalFile()) {
+            inputStream = new BufferedInputStream(storageIO.getInputStream());
+        } else {
+            ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
+            File tempFile = File.createTempFile("tempIngestSourceFile", ".tmp");
+            FileChannel tempIngestSourceChannel = new FileOutputStream(tempFile).getChannel();
+            
+            tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
+            
+            inputStream = new BufferedInputStream(new FileInputStream(tempFile));
+            logger.fine("Saved "+storageIO.getSize()+" bytes in a local temp file.");
+        }
+        return inputStream;
     }
 
     private void restoreIngestedDataFile(DataFile dataFile, TabularDataIngest tabDataIngest, long originalSize, String originalFileName, String originalContentType) {

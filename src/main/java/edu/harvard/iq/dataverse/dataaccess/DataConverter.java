@@ -226,9 +226,7 @@ public class DataConverter {
         
         if ("RData".equals(formatRequested)) {
             List<DataVariable> dataVariables = file.getDataTable().getDataVariables();
-            Map<String, Map<String, String>> vls = null;
-
-            vls = getValueTableForRequestedVariables(dataVariables);
+            Map<String, Map<String, String>> vls = getValueTableForRequestedVariables(dataVariables);
             logger.fine("format conversion: variables(getDataVariableForRequest())=" + dataVariables + "\n");
             logger.fine("format conversion: variables(dataVariables)=" + dataVariables + "\n");
             logger.fine("format conversion: value table(vls)=" + vls + "\n");
@@ -275,22 +273,21 @@ public class DataConverter {
         return formatConvertedFile;
     }
 
-    private static Map<String, Map<String, String>> getValueTableForRequestedVariables(List<DataVariable> dvs){
-        Map<String, Map<String, String>> vls = new LinkedHashMap<>();
-        for (DataVariable dv : dvs){
-            List<VariableCategory> varCat = new ArrayList<>();
-            varCat.addAll(dv.getCategories());
-            Map<String, String> vl = new HashMap<>();
-            for (VariableCategory vc : varCat){
-                if (vc.getLabel() != null){
-                    vl.put(vc.getValue(), vc.getLabel());
+    private static Map<String, Map<String, String>> getValueTableForRequestedVariables(List<DataVariable> dataVariables){
+        Map<String, Map<String, String>> allVarLabels = new LinkedHashMap<>();
+        for (DataVariable dataVar : dataVariables){
+            Map<String, String> varLabels = new HashMap<>();
+            for (VariableCategory varCatagory : dataVar.getCategories()){
+                if (varCatagory.getLabel() == null){
+                    varCatagory.setLabel("LOL");
                 }
+                varLabels.put(varCatagory.getValue(), varCatagory.getLabel());
             }
-            if (vl.size() > 0){
-                vls.put("v"+dv.getId(), vl);
+            if (!varLabels.isEmpty()){
+                allVarLabels.put("v"+dataVar.getId(), varLabels);
             }
         }
-        return vls;
+        return allVarLabels;
     }
         
     private static String generateAltFileName(String formatRequested, String xfileId) {
