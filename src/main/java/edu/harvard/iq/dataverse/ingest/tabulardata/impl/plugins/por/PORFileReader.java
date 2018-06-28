@@ -233,7 +233,7 @@ public class PORFileReader  extends TabularDataFileReader{
         
         for (int indx = 0; indx < variableTypelList.size(); indx++) {
             
-            DataVariable dv = new DataVariable();
+            DataVariable dv = new DataVariable(indx, dataTable);
             String varName = variableNameList.get(indx); 
             dv.setName(varName);
             String varLabel = variableLabelMap.get(varName);
@@ -249,13 +249,6 @@ public class PORFileReader  extends TabularDataFileReader{
             } else {
                 dv.setLabel(varLabel);
             }
-            
-            dv.setInvalidRanges(new ArrayList<>());
-            dv.setSummaryStatistics( new ArrayList<>() );
-            dv.setUnf("UNF:6:");
-            dv.setCategories(new ArrayList<>());
-            dv.setFileOrder(indx);
-            dv.setDataTable(dataTable);
             
             variableList.add(dv);            
             

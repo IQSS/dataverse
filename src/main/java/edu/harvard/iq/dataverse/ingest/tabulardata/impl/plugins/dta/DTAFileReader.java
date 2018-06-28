@@ -631,16 +631,8 @@ public class DTAFileReader extends TabularDataFileReader{
         List<DataVariable> variableList = new ArrayList<>();
 
         for (int i = 0; i < nvar; i++) {
-            DataVariable dv = new DataVariable();
-            dv.setInvalidRanges(new ArrayList<>());
-            dv.setSummaryStatistics( new ArrayList<>() );
-            dv.setUnf("UNF:6:XXX");
-            dv.setCategories(new ArrayList<>());
+            DataVariable dv = new DataVariable(i, dataTable);
             variableList.add(dv);
-
-            dv.setFileOrder(i);
-
-            dv.setDataTable(dataTable);
         }
 
         dataTable.setDataVariables(variableList);

@@ -632,22 +632,14 @@ public class RDATAFileReader extends TabularDataFileReader {
             List<DataVariable> variableList = new ArrayList<>();
 
             for (String varName : variableNames) {
-                DataVariable dv = new DataVariable();
+                DataVariable dv = new DataVariable(varQnty, dataTable);
                 dv.setName(varName);
                 dv.setLabel(varName);
                 // TODO:
                 // Check if variables have real descriptive labels defined, 
                 // via the mechanismm provided by that special optional package... 
-                // (?) -- L.A. 
-                dv.setInvalidRanges(new ArrayList<>());
-                dv.setSummaryStatistics(new ArrayList<>());
-                dv.setUnf("UNF:6:XYZXYZXYZ");
-                dv.setCategories(new ArrayList<>());
+                // (?) -- L.A.
                 variableList.add(dv);
-
-                dv.setFileOrder(varQnty);
-
-                dv.setDataTable(dataTable);
 
                 // variableLabels.put(varName, varName);
                 // variableNameList.add(varName);

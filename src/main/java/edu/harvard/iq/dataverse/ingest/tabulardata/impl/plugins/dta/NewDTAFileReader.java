@@ -504,15 +504,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
             int type = reader.readUShort();
             logger.fine("variable " + i + ": type=" + type);
-            DataVariable dv = new DataVariable();
-
-            dv.setInvalidRanges(new ArrayList<>());
-            dv.setSummaryStatistics(new ArrayList<>());
-            dv.setCategories(new ArrayList<>());
-
-            dv.setUnf("UNF:pending");
-            dv.setFileOrder(i);
-            dv.setDataTable(dataTable);
+            DataVariable dv = new DataVariable(i, dataTable);
 
             variableTypes[i] = configureVariableType(dv, type);
             // TODO: 

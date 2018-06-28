@@ -18,6 +18,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import org.hibernate.validator.constraints.NotBlank;
 import edu.harvard.iq.dataverse.DataTable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Index;
 import javax.persistence.OrderBy;
@@ -35,9 +37,18 @@ import javax.persistence.Table;
 @Entity
 @Table(indexes = {@Index(columnList="datatable_id")})
 public class DataVariable implements Serializable {
+
+    private List<VariableCategory> lables;
     
-    /** Creates a new instance of DataVariable */
-    public DataVariable() {
+    /** Creates a new instance of DataVariable
+     * @param order */
+    public DataVariable(int order, DataTable table) {
+        this.fileOrder = order;
+        dataTable =table;
+        invalidRanges = new ArrayList<>();
+        summaryStatistics=new ArrayList<>();
+        categories = new ArrayList<>();
+        unf = "UNF:pending";
     }
     
     /*
@@ -415,7 +426,19 @@ public class DataVariable implements Serializable {
         return this.categories;
     }
     
-    public void setCategories(Collection<VariableCategory> categories) {
+    public List<VariableCategory> getLables() {
+        return this.lables;
+    }
+    
+    public void setLables(List<VariableCategory> lables) {
+        this.lables = lables;
+    }
+
+    public boolean isLabled () {
+        return (lables != null && lables.size() > 0);
+    }
+    
+    public void setCategories(List<VariableCategory> categories) {
         this.categories = categories;
     }
 
