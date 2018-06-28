@@ -827,24 +827,20 @@ public class DatasetVersion implements Serializable {
         return keywords;
     }
     
-    public String getDatasetProducersString(){
-        String retVal = "";
+    public List<String> getDatasetProducerNames(){
+        List<String> producerNames = new ArrayList<String>();
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.producer)) {
                 for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
                     for (DatasetField subField : authorValue.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerName)) {
-                            if (retVal.isEmpty()){
-                                retVal = subField.getDisplayValue();
-                            } else {
-                                retVal += ", " +  subField.getDisplayValue();
-                            }                           
+                        	producerNames.add(subField.getDisplayValue().trim());
                         }
                     }
                 }
             }
         }
-        return retVal;
+        return producerNames;
     }
 
     public void setDatasetAuthors(List<DatasetAuthor> authors) {
