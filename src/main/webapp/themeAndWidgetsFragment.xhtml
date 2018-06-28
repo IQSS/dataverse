@@ -7,8 +7,7 @@
     <!-- Theme and Widgets Edit Tabs -->
         <p:tabView  rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
             <p:tab id="themeTab" title="#{bundle['dataverse.theme.title']}" rendered="#{not settingsWrapper.rootDataverseThemeDisabled or themeWidgetFragment.editDv.owner != null}">
-                <p:fragment>
-                    <p:autoUpdate/>
+                <p:fragment autoUpdate="true">
                     <!-- Dataverse Theme Panel -->
                     <div class="row form-horizontal">
                         <div class="form-group" jsf:rendered="#{themeWidgetFragment.editDv.owner!=null}">
