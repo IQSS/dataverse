@@ -2603,6 +2603,14 @@ public class DatasetPage implements java.io.Serializable {
                 	//QDR-981, IQSS-4783 - add next line to assure contributor role added when files are also uploaded
                 	dataset = datasetService.find(dataset.getId());
                 	
+                    // But first, fully refresh the newly created dataset (with a 
+                    // datasetService.find().
+                    // We have reasons to believe that the CreateDatasetCommand 
+                    // returns the dataset that doesn't have all the  
+                    // RoleAssignments properly linked to it - even though they
+                    // have been created in the dataset. 
+                    dataset = datasetService.find(dataset.getId());
+                    
                     List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles);
                     newFiles.clear();
                     

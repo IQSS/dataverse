@@ -14,7 +14,7 @@ A variety of integrations are oriented toward making it easier for your research
 Dropbox
 +++++++
 
-If your researchers have data on Dropbox, you can make it easier for them to get it into Dataverse by setting the ``dataverse.dropbox.key`` JVM option described in the :doc:`/installation/config` section of the Installation Guide.
+If your researchers have data on Dropbox, you can make it easier for them to get it into Dataverse by setting the :ref:`dataverse.dropbox.key` JVM option described in the :doc:`/installation/config` section of the Installation Guide.
 
 Open Science Framework (OSF)
 ++++++++++++++++++++++++++++
