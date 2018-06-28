@@ -247,7 +247,7 @@ Update Metadata For a Dataset
 
 Updates the metadata for a dataset. If a draft of the dataset already exists, the metadata of that draft is overwritten; otherwise, a new draft is created with this metadata.
 
-You cannot currently target a specific field such as the title of a dataset and only update that one field. Instead, you must download a JSON representation of the dataset, edit the JSON you download, and then send the updated JSON to the Dataverse server.
+You must download a JSON representation of the dataset, edit the JSON you download, and then send the updated JSON to the Dataverse server.
 
 For example, after making your edits, your JSON file might look like :download:`dataset-update-metadata.json <../_static/api/dataset-update-metadata.json>` which you would send to Dataverse like this::
 
