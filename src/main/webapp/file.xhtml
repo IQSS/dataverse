@@ -227,19 +227,19 @@
                                 </div>
                             </div>
                             
-                            <div id="citation-block" class="col-xs-12">
+                            <div id="citation-block-1" class="col-xs-12">
                                  <div class="col-xs-12 #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
                                     <div class="row">
-                                        <div id="citation" class="#{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'col-xs-12' : 'col-xs-7 col-md-8'}">
-                                            <span id="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
+                                        <div id="citation-1" class="#{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'col-xs-12' : 'col-xs-7 col-md-8'}">
+                                            <span id="citation-select-1" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
                                                 <h:outputText value="#{FilePage.fileMetadata.getFileCitation(true)}" escape="false"/>
                                             </span>
                                             <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
                                             <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
                                         </div>
-                                        <div id="citation-download" class="col-sm-5 col-md-4 text-right" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
+                                        <div id="citation-download-1" class="col-sm-5 col-md-4 text-right" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                             <div class="dropdown">
-                                                <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                <button type="button" id="downloadCitation-1" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                     <span class="glyphicon glyphicon-list"/> #{bundle['file.cite.downloadBtn']} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left" role="menu">
@@ -260,7 +260,7 @@
                                                     </li>
                                                 </ul>
                                             </div>
-                                            <div id="citation-standards" class="small text-muted text-right"><span class="glyphicon glyphicon-info-sign"></span> <h:outputText value=" #{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
+                                            <div id="citation-standards-1" class="small text-muted text-right"><span class="glyphicon glyphicon-info-sign"></span> <h:outputText value=" #{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
                                         </div>
                                         <!-- END: Cite Data Button -->
                                     </div>
@@ -271,19 +271,19 @@
                                   <h:outputFormat value="#{bundle['file.citation.datafile']}" escape="false" />
                                 </div>
                             </div>
-                            <div id="citation-block" class="col-xs-12">
+                            <div id="citation-block-2" class="col-xs-12">
                                  <div class="col-xs-12 #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
                                     <div class="row">
-                                        <div id="citation" class="#{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'col-xs-12' : 'col-xs-7 col-md-8'}">
-                                            <span id="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
+                                        <div id="citation-2" class="#{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'col-xs-12' : 'col-xs-7 col-md-8'}">
+                                            <span id="citation-select-2" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
                                                 <h:outputText value="#{FilePage.fileMetadata.getDirectFileCitation(true)}" escape="false"/>
                                             </span>
                                             <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
                                             <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
                                         </div>
-                                        <div id="citation-download" class="col-sm-5 col-md-4 text-right" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
+                                        <div id="citation-download-2" class="col-sm-5 col-md-4 text-right" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                             <div class="dropdown">
-                                                <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                <button type="button" id="downloadCitation-2" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                     <span class="glyphicon glyphicon-list"/> #{bundle['file.cite.file.downloadBtn']} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left" role="menu">
@@ -304,7 +304,7 @@
                                                     </li>
                                                 </ul>
                                             </div>
-                                            <div id="citation-standards" class="small text-muted text-right"><span class="glyphicon glyphicon-info-sign"></span> <h:outputText value=" #{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
+                                            <div id="citation-standards-2" class="small text-muted text-right"><span class="glyphicon glyphicon-info-sign"></span> <h:outputText value=" #{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
                                         </div>
                                         <!-- END: Cite Data Button -->
                                     </div>
