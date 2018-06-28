@@ -164,13 +164,13 @@ public class DataCitation {
                 || HarvestingClient.HARVEST_STYLE_VDC.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
                 || HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
                 || HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
-            if (!StringUtils.isEmpty(dsv.getDataset().getIdentifier())) {
+            if (!StringUtils.isEmpty(df.getIdentifier())) {
                 // creating a global id like this:
-                // persistentId = new GlobalId(dsv.getDataset().getGlobalId());
-                // you end up doing new GlobalId((New GlobalId(dsv.getDataset())).toString())
+                // persistentId = new GlobalId(df.getGlobalId());
+                // you end up doing new GlobalId((new GlobalId(df).toString())
                 // - doing an extra formatting-and-parsing-again
                 // This achieves the same thing:
-                persistentId = new GlobalId(dsv.getDataset());
+                persistentId =new GlobalId(df);
             }
         }
 
