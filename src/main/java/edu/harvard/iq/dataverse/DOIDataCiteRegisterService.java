@@ -143,6 +143,13 @@ public class DOIDataCiteRegisterService {
         }
         metadataTemplate.setPublisher(producerString);
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
+        if (dvObject.isInstanceofDataFile()) {
+            DataFile df = (DataFile) dvObject;
+            String datasetPid = df.getOwner().getGlobalId();
+            metadataTemplate.setDatasetIdentifier(datasetPid);
+        } else {
+            metadataTemplate.setDatasetIdentifier("");
+        }
         String xmlMetadata = metadataTemplate.generateXML();
         logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
@@ -280,6 +287,7 @@ class DataCiteMetadataTemplate {
 
     private String xmlMetadata;
     private String identifier;
+    private String datasetIdentifier;
     private List<String> creators;
     private String title;
     private String publisher;
@@ -355,6 +363,7 @@ class DataCiteMetadataTemplate {
                 .replace("${title}", this.title)
                 .replace("${publisher}", this.publisher)
                 .replace("${publisherYear}", this.publisherYear)
+                .replace("${datasetIdentifier}", this.datasetIdentifier)
                 .replace("${description}", this.description);
         StringBuilder creatorsElement = new StringBuilder();
         for (DatasetAuthor author : authors) {
@@ -416,6 +425,10 @@ class DataCiteMetadataTemplate {
 
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
+    }
+
+    public void setDatasetIdentifier(String datasetIdentifier) {
+        this.datasetIdentifier = datasetIdentifier;
     }
 
     public List<String> getCreators() {
