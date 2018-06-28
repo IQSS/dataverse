@@ -345,6 +345,10 @@ public class FileMetadata implements Serializable {
          return citation;
      }
     
+    public String getDirectFileCitation(boolean html){
+    	return new DataCitation(this).toString(html);
+    }
+    
         
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;

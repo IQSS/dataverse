@@ -23,10 +23,11 @@ public class DataCitation {
 
     private String authors;
     private String title;
+    private String fileTitle=null;
     private String year;
     private GlobalId persistentId;
     private String version;
-    private String UNF;
+    private String UNF=null;
     private String distributors;
 
     private List<DatasetField> optionalValues = new ArrayList<>();
@@ -119,6 +120,87 @@ public class DataCitation {
         }        
     }
     
+    public DataCitation(FileMetadata fm) {
+    	DatasetVersion dsv = fm.getDatasetVersion();
+        authors = dsv.getAuthorsStr(false);
+        if (StringUtils.isEmpty(authors)) {
+            authors = dsv.getDatasetProducersString();
+        }
+
+        // year
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+        if (!dsv.getDataset().isHarvested()) {
+            Date citationDate = dsv.getCitationDate();
+            if (citationDate == null) {
+                if (dsv.getDataset().getPublicationDate() != null) {
+                    citationDate = dsv.getDataset().getPublicationDate();
+                } else { // for drafts
+                    citationDate = new Date();
+                }
+            }
+
+            year = new SimpleDateFormat("yyyy").format(citationDate);
+
+        } else {
+            try {
+                year = sdf.format(sdf.parse(dsv.getDistributionDate()));
+            } catch (ParseException ex) {
+                // ignore
+            } catch (Exception ex) {
+                // ignore
+            }
+        }
+
+        // title
+        
+        fileTitle = fm.getLabel();
+        DataFile df = fm.getDataFile();
+        title = dsv.getTitle(); 
+
+        // The Global Identifier: 
+        // It is always part of the citation for the local datasets; 
+        // And for *some* harvested datasets. 
+        if (!dsv.getDataset().isHarvested()
+                || HarvestingClient.HARVEST_STYLE_VDC.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
+                || HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
+                || HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
+            if (!StringUtils.isEmpty(dsv.getDataset().getIdentifier())) {
+                // creating a global id like this:
+                // persistentId = new GlobalId(dsv.getDataset().getGlobalId());
+                // you end up doing new GlobalId((New GlobalId(dsv.getDataset())).toString())
+                // - doing an extra formatting-and-parsing-again
+                // This achieves the same thing:
+                persistentId = new GlobalId(dsv.getDataset());
+            }
+        }
+
+        // distributors
+        if (!dsv.getDataset().isHarvested()) {
+            distributors = dsv.getRootDataverseNameforCitation();
+        } else {
+            distributors = dsv.getDistributorName();
+            //remove += [distributor] SEK 8-18-2016
+        }
+
+        // version
+        if (!dsv.getDataset().isHarvested()) {
+            if (dsv.isDraft()) {
+                version = "DRAFT VERSION";
+            } else if (dsv.getVersionNumber() != null) {
+                version = "V" + dsv.getVersionNumber();
+                if (dsv.isDeaccessioned()) {
+                    version += ", DEACCESSIONED VERSION";
+                }
+            }
+        }
+
+        // UNF
+        if (df.isTabularData() && df.getUnf() != null && !df.getUnf().isEmpty()){
+            UNF = df.getUnf();                    
+        }
+       
+    }
+
 
     public String getAuthors() {
         return authors;
@@ -157,8 +239,13 @@ public class DataCitation {
         // first add comma separated parts        
         List<String> citationList = new ArrayList<>();
         citationList.add(formatString(authors, html));
-        citationList.add(year);        
-        citationList.add(formatString(title, html, "\""));         
+        citationList.add(year);  
+        if(fileTitle!=null) {
+        	citationList.add(formatString(fileTitle, html, "\""));
+            citationList.add(formatString(title, html, "<i>", "</i>"));
+        } else {
+          citationList.add(formatString(title, html, "\""));
+        }
         // QDRCustom: Use "Qualitative Data Repository" as distributor name
         citationList.add(formatString("Qualitative Data Repository", html));
         // QDRCustom: Show persistentID after distributor name
@@ -207,11 +294,15 @@ public class DataCitation {
         return formatString(value, escapeHtml, "");
     }
 
-    private String formatString(String value, boolean escapeHtml, String wrapper) {
+    private String formatString(String value, boolean escapeHtml, String wrapperFront) {
+    	return formatString(value, escapeHtml, wrapperFront, wrapperFront);
+    }
+    
+    private String formatString(String value, boolean escapeHtml, String wrapperStart, String wrapperEnd) {
         if (!StringUtils.isEmpty(value)) {
-            return new StringBuilder(wrapper)
+            return new StringBuilder(wrapperStart)
                     .append(escapeHtml ? StringEscapeUtils.escapeHtml(value) : value)
-                    .append(wrapper).toString();
+                    .append(wrapperEnd).toString();
         }
         return null;
     }
