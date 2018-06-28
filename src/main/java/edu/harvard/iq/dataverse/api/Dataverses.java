@@ -34,6 +34,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseLinkingDatave
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetExplicitGroupCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListExplicitGroupsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListFacetsCommand;
@@ -271,12 +272,12 @@ public class Dataverses extends AbstractApiBean {
 	}
         
         @DELETE
-	@Path("{dataverseId}/deleteLink/{linkedDataverseId}")
-	public Response deleteDataverseLinkingDataverse( @PathParam("dataverseId") String dataverseId, @PathParam("linkedDataverseId") Long linkedDataverseId) {
+	@Path("{linkingDataverseId}/deleteLink/{linkedDataverseId}")
+	public Response deleteDataverseLinkingDataverse( @PathParam("linkingDataverseId") String linkingDataverseId, @PathParam("linkedDataverseId") String linkedDataverseId) {
                 boolean index = true;
 		return response(req -> {
-			execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(dataverseId), findDataverseLinkingDataverseOrDie(dataverseId, linkedDataverseId), index));
-			return ok("Link from Dataverse " + dataverseId + " to linked Dataverse " + linkedDataverseId + " deleted");
+			execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(linkingDataverseId), findDataverseLinkingDataverseOrDie(linkingDataverseId, linkedDataverseId), index));
+			return ok("Link from Dataverse " + linkingDataverseId + " to linked Dataverse " + linkedDataverseId + " deleted");
         });
 	}
 	
@@ -423,7 +424,13 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }    
-    
+
+    // FIXME: This listContent method is way too optimistic, always returning "ok" and never "error".
+    // FIXME: This listContent method should be reformatted. The indentation and whitespace is odd.
+    // FIXME: This method is too slow with lots of data: https://github.com/IQSS/dataverse/issues/2122
+    // TODO: Investigate why there was a change in the timeframe of when pull request #4350 was merged
+    // (2438-4295-dois-for-files branch) such that a contributor API token no longer allows this method
+    // to be called without a PermissionException being thrown.
 	@GET
 	@Path("{identifier}/contents")
 	public Response listContent( @PathParam("identifier") String dvIdtf ) {
@@ -788,6 +795,28 @@ public class Dataverses extends AbstractApiBean {
                     createDataverseRequest(u), dv, target, force
                     ));
             return ok("Dataverse moved successfully");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    @PUT
+    @Path("{linkedDataverseAlias}/link/{linkingDataverseAlias}") 
+    public Response linkDataverse(@PathParam("linkedDataverseAlias") String linkedDataverseAlias, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {        
+        try{
+            User u = findUserOrDie();            
+            Dataverse linked = findDataverseOrDie(linkedDataverseAlias);
+            Dataverse linking = findDataverseOrDie(linkingDataverseAlias);
+            if (linked == null){
+                return error(Response.Status.BAD_REQUEST, "Linked Dataverse not found.");
+            } 
+            if (linking == null){
+                return error(Response.Status.BAD_REQUEST, "Linking Dataverse not found.");
+            }   
+            execCommand(new LinkDataverseCommand(
+                    createDataverseRequest(u), linking, linked
+                    ));
+            return ok("Dataverse " + linked.getAlias() + " linked successfully to " + linking.getAlias());
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }

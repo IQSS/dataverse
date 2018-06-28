@@ -69,7 +69,7 @@ public class FileRecordProcessor implements ItemProcessor {
 
         DatasetVersion version = dataset.getLatestVersion();
         String path = object.toString();
-        String gid = dataset.getAuthority() + dataset.getDoiSeparator() + dataset.getIdentifier();
+        String gid = dataset.getAuthority() + "/" + dataset.getIdentifier();
         String relativePath = path.substring(path.indexOf(gid) + gid.length() + 1);
         
         // skip if it already exists

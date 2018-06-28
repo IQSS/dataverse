@@ -1580,14 +1580,13 @@ public class ImportDDIServiceBean {
         } else {
             datasetDTO.setAuthority(_id.substring(index1+1, index2));
         }
-        datasetDTO.setDoiSeparator("/");
         datasetDTO.setProtocol("hdl");
         datasetDTO.setIdentifier(_id.substring(index2+1));
     }
 
     private void parseStudyIdDOI(String _id, DatasetDTO datasetDTO) throws ImportException{
         int index1 = _id.indexOf(':');
-        int index2 = _id.lastIndexOf('/');
+        int index2 = _id.indexOf('/');
         if (index1==-1) {
             throw new EJBException("Error parsing (DOI) IdNo: "+_id+". ':' not found in string");
         }  
@@ -1599,7 +1598,6 @@ public class ImportDDIServiceBean {
                datasetDTO.setAuthority(_id.substring(index1+1, index2));
         }
         datasetDTO.setProtocol("doi");
-        datasetDTO.setDoiSeparator("/");
        
         datasetDTO.setIdentifier(_id.substring(index2+1));
     }
@@ -1608,11 +1606,11 @@ public class ImportDDIServiceBean {
         /*
             dara/ICPSR DOIs are formatted without the hdl: prefix; for example - 
             10.3886/ICPSR06635.v1
-            so we assume that everything before the last "/" is the authority, 
+            so we assume that everything before the "/" is the authority, 
             and everything past it - the identifier:
         */
         
-        int index = _id.lastIndexOf('/');  
+        int index = _id.indexOf('/');  
        
         if (index == -1) {
             throw new ImportException("Error parsing ICPSR/dara DOI IdNo: "+_id+". '/' not found in string");
@@ -1624,7 +1622,6 @@ public class ImportDDIServiceBean {
         
         datasetDTO.setAuthority(_id.substring(0, index));
         datasetDTO.setProtocol("doi");
-        datasetDTO.setDoiSeparator("/");
        
         datasetDTO.setIdentifier(_id.substring(index+1));
     }
@@ -1663,6 +1660,7 @@ public class ImportDDIServiceBean {
         //datasetDTO.getDataFiles().add(dfDTO);
        
         dfDTO.setStorageIdentifier( xmlr.getAttributeValue(null, "URI"));
+        dfDTO.setPidURL(xmlr.getAttributeValue(null, "pidURL"));
         fmdDTO.setDataFile(dfDTO);
 
 

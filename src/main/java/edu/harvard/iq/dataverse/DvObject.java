@@ -2,7 +2,9 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.*;
@@ -18,7 +20,9 @@ import javax.persistence.*;
     @NamedQuery(name = "DvObject.findById",
             query = "SELECT o FROM DvObject o WHERE o.id=:id"),
 	@NamedQuery(name = "DvObject.ownedObjectsById",
-			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id")
+			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
+    @NamedQuery(name = "DvObject.findByGlobalId",
+    query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype")
 })
 @Entity
 // Inheritance strategy "JOINED" will create 4 db tables - 
@@ -30,7 +34,8 @@ import javax.persistence.*;
 @Table(indexes = {@Index(columnList="dtype")
 		, @Index(columnList="owner_id")
 		, @Index(columnList="creator_id")
-		, @Index(columnList="releaseuser_id")})
+		, @Index(columnList="releaseuser_id")},
+		uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier"}))
 public abstract class DvObject extends DataverseEntity implements java.io.Serializable {
     
     public static final String DATAVERSE_DTYPE_STRING = "Dataverse";
@@ -110,16 +115,21 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     @Column
     private String storageIdentifier;
     
-//    @OneToMany(mappedBy="dvObject", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-//    private List<DvObjectStorageLocation> dvObjectStorageLocations;
-//
-//    public List<DvObjectStorageLocation> getDvObjectStorageLocations() {
-//        return dvObjectStorageLocations;
-//    }
-//
-//    public void setDvObjectStorageLocations(List<DvObjectStorageLocation> dvObjectStorageLocations) {
-//        this.dvObjectStorageLocations = dvObjectStorageLocations;
-//    }
+    @Column(insertable = false, updatable = false) private String dtype;
+    
+    /*
+    * Add DOI related fields
+    */
+   
+    private String protocol;
+    private String authority;
+
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date globalIdCreateTime;
+
+    private String identifier;
+    
+    private boolean identifierRegistered;
     
     /**
      * previewImageAvailable could also be thought of as "thumbnail has been
@@ -235,6 +245,50 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         this.creator = creator;
     }
     
+     public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public String getAuthority() {
+        return authority;
+    }
+
+    public void setAuthority(String authority) {
+        this.authority = authority;
+    }
+
+    public Date getGlobalIdCreateTime() {
+        return globalIdCreateTime;
+    }
+
+    public void setGlobalIdCreateTime(Date globalIdCreateTime) {
+        this.globalIdCreateTime = globalIdCreateTime;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public boolean isIdentifierRegistered() {
+        return identifierRegistered;
+    } 
+
+    public void setIdentifierRegistered(boolean identifierRegistered) {
+        this.identifierRegistered = identifierRegistered;
+    }  
+    
+    public String getGlobalId() {       
+        return new GlobalId(this).toString();
+    }
+    
     public abstract <T> T accept(Visitor<T> v);
 
     @Override
@@ -300,7 +354,47 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         }
         
         return null;
-    }    
+    }
+    
+    public String getAuthorString(){
+        if (this instanceof Dataverse){
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        if (this instanceof Dataset){
+            Dataset dataset = (Dataset) this;
+            return dataset.getLatestVersion().getAuthorsStr();
+        }
+        if (this instanceof DataFile){
+            Dataset dataset = (Dataset) this.getOwner();
+            return dataset.getLatestVersion().getAuthorsStr();
+        }
+        throw new UnsupportedOperationException("Not supported yet. New DVObject Instance?");
+    }
+    
+    public String getTargetUrl(){
+        if (this instanceof Dataverse){
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        if (this instanceof Dataset){
+            return Dataset.TARGET_URL;
+        }
+        if (this instanceof DataFile){
+            return DataFile.TARGET_URL;
+        }
+        throw new UnsupportedOperationException("Not supported yet. New DVObject Instance?");
+        
+    }
+    
+    public String getYearPublishedCreated(){
+        //if published get the year if draft get when created
+        if (this.isReleased()){
+            return new SimpleDateFormat("yyyy").format(this.getPublicationDate());
+        } else if (this.getCreateDate() != null) {
+           return  new SimpleDateFormat("yyyy").format(this.getCreateDate());
+        } else {
+            return new SimpleDateFormat("yyyy").format(new Date());
+        }
+    }
     
     public String getStorageIdentifier() {
         return storageIdentifier;

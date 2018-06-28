@@ -54,7 +54,6 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, DataFile fileToDelete) {
         super(aRequest, theDataset);
         this.theDataset = theDataset;
-        
         // get the latest file metadata for the file; ensuring that it is a draft version
         this.filesToDelete = new ArrayList<>();
         for (FileMetadata fmd : theDataset.getEditVersion().getFileMetadatas()) {
@@ -160,6 +159,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                 recalculateUNF = true;
             }
         }
+
         //we have to merge to update the database but not flush because 
         //we don't want to create two draft versions!
         Dataset tempDataset = ctxt.em().merge(theDataset);
@@ -195,8 +195,8 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         
         IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
         boolean registerWhenPublished = idServiceBean.registerWhenPublished();
-        logger.log(Level.FINE,"doiProvider={0} protocol={1} GlobalIdCreateTime=={2}", new Object[]{doiProvider, tempDataset.getProtocol(), tempDataset.getGlobalIdCreateTime()});
-        if ( !registerWhenPublished && tempDataset.getGlobalIdCreateTime() == null) {
+        logger.log(Level.FINE,"doiProvider={0} protocol={1} IdentifierRegistered=={2}", new Object[]{doiProvider, tempDataset.getProtocol(), tempDataset.isIdentifierRegistered()});
+        if ( !registerWhenPublished && !tempDataset.isIdentifierRegistered()) {
             try {
                 logger.fine("creating identifier");
                

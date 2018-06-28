@@ -22,18 +22,18 @@ public class SchemaDotOrgExporter implements Exporter {
     @Override
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
         String jsonLdAsString = version.getJsonLd();
-        StringReader stringReader = new StringReader(jsonLdAsString);
-        JsonReader jsonReader = Json.createReader(stringReader);
-        JsonObject jsonLdJsonObject = jsonReader.readObject();
-        try {
-            outputStream.write(jsonLdJsonObject.toString().getBytes("UTF8"));
-        } catch (IOException ex) {
-            logger.info("IOException calling outputStream.write: " + ex);
-        }
-        try {
-            outputStream.flush();
-        } catch (IOException ex) {
-            logger.info("IOException calling outputStream.flush: " + ex);
+        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonLdAsString));) {
+            JsonObject jsonLdJsonObject = jsonReader.readObject();
+            try {
+                outputStream.write(jsonLdJsonObject.toString().getBytes("UTF8"));
+            } catch (IOException ex) {
+                logger.info("IOException calling outputStream.write: " + ex);
+            }
+            try {
+                outputStream.flush();
+            } catch (IOException ex) {
+                logger.info("IOException calling outputStream.flush: " + ex);
+            }
         }
     }
 

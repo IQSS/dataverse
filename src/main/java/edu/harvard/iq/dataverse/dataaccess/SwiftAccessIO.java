@@ -303,6 +303,34 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException(failureMsg);
         }
     }
+    
+    @Override
+    public void revertBackupAsAux(String auxItemTag) throws IOException {
+        // We are going to try and overwrite the current main file 
+        // with the contents of the stored original, currently saved as an 
+        // Aux file. So we need WRITE access on the main file: 
+        
+        if (swiftFileObject == null || swiftContainer == null || !this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+
+        try {
+            // We are writing FROM the saved AUX object, back to the main object;
+            // So we need READ access on the AUX object:
+            
+            StoredObject swiftAuxObject = openSwiftAuxFile(auxItemTag);
+            swiftAuxObject.copyObject(swiftContainer, swiftFileObject);
+
+        } catch (Exception ex) {
+            String failureMsg = ex.getMessage();
+            if (failureMsg == null) {
+                failureMsg = "Swift AccessIO: Unknown exception occured while renaming orig file";
+            }
+
+            throw new IOException(failureMsg);
+        }
+
+    }
 
     @Override
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
@@ -492,7 +520,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
                 //swiftFolderPath = dataFile.getOwner().getDisplayName();
                 String swiftFolderPathSeparator = "-";
-                String authorityNoSlashes = owner.getAuthority().replace(owner.getDoiSeparator(), swiftFolderPathSeparator);
+                String authorityNoSlashes = owner.getAuthority().replace("/", swiftFolderPathSeparator);
                 swiftFolderPath = owner.getProtocol() + swiftFolderPathSeparator
                                   + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
                                   + swiftFolderPathSeparator + owner.getIdentifier();
@@ -542,7 +570,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 Properties p = getSwiftProperties();
                 swiftEndPoint = p.getProperty("swift.default.endpoint");
                 String swiftFolderPathSeparator = "-";
-                String authorityNoSlashes = dataset.getAuthority().replace(dataset.getDoiSeparator(), swiftFolderPathSeparator);
+                String authorityNoSlashes = dataset.getAuthority().replace("/", swiftFolderPathSeparator);
                 swiftFolderPath = dataset.getProtocol() + swiftFolderPathSeparator +
                     authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
                     swiftFolderPathSeparator + dataset.getIdentifier();
@@ -802,7 +830,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             swiftFolderPathSeparator = "_";
         }
         if (dvObject instanceof DataFile) {
-            String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
+            String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace("/", swiftFolderPathSeparator);
             return this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator
                    +            authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
                 swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();

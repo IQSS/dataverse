@@ -680,6 +680,18 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         return null;          
     } // end: retrieveDatasetVersionByVersionId
 
+    // This is an optimized, native query-based method for picking an image 
+    // that can be used as the thumbnail for a given dataset/version. 
+    // It is primarily designed to be used when thumbnails are requested
+    // from the Dataverse page, which is Solr search object based; meaning we 
+    // may not have the Dataset, DatasetVersion, etc. entities initialized.
+    // And since we may need to look up/generate these thumbnails for a large 
+    // number of search results, actually instantiating full entities for each
+    // one may be prohibitively expensive. It is also used by the DatasetPage, 
+    // when in read-only, optimized mode, when we similarly try to serve the 
+    // page while minimizing full lookup of entities via EJB. 
+    // (in both cases above the method is called via ThumbnailServiceWrapper)
+    
     public Long getThumbnailByVersionId(Long versionId) {
         if (versionId == null) {
             return null;

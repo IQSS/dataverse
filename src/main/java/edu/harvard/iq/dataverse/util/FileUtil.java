@@ -1314,6 +1314,18 @@ public class FileUtil implements java.io.Serializable  {
         return true;
     }
 
+    /**
+     * This is what the UI displays for "Download URL" on the file landing page
+     * (DOIs rather than file IDs.
+     */
+    public static String getPublicDownloadUrl(String dataverseSiteUrl, String persistentId) {
+        String path = "/api/access/datafile/:persistentId?persistentId=" + persistentId;
+        return dataverseSiteUrl + path;
+    }
+
+    /**
+     * The FileDownloadServiceBean operates on file IDs, not DOIs.
+     */
     public static String getFileDownloadUrlPath(String downloadType, Long fileId, boolean gbRecordsWritten) {
         String fileDownloadUrl = "/api/access/datafile/" + fileId;
         if (downloadType != null && downloadType.equals("bundle")) {
@@ -1326,7 +1338,7 @@ public class FileUtil implements java.io.Serializable  {
             fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=RData";
         }
         if (downloadType != null && downloadType.equals("var")) {
-            fileDownloadUrl = "/api/meta/datafile/" + fileId;
+            fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata";
         }
         if (downloadType != null && downloadType.equals("tab")) {
             fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=tab";
@@ -1341,18 +1353,7 @@ public class FileUtil implements java.io.Serializable  {
         logger.fine("Returning file download url: " + fileDownloadUrl);
         return fileDownloadUrl;
     }
-    
-    public static String getPublicDownloadUrl(String dataverseSiteUrl, Long fileId) {
-        if (fileId == null) {
-            logger.info("In getPublicDownloadUrl but fileId is null!");
-            return null;
-        }
-        String downloadType = null;
-        boolean gbRecordsWritten = false;
-        String path = getFileDownloadUrlPath(downloadType, fileId, gbRecordsWritten);
-        return dataverseSiteUrl + path;
-    }
-    
+
     public static File inputStreamToFile(InputStream inputStream) throws IOException {
         if (inputStream == null) {
             logger.info("In inputStreamToFile but inputStream was null! Returning null rather than a File.");
