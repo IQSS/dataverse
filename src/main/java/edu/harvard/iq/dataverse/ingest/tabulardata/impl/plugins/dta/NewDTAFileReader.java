@@ -1253,7 +1253,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                 label_offset = value_label_offsets[i];
 
                 if (value_label_offsets_sorted == null) {
-                label_end = i < number_of_categories - 1 ? value_label_offsets[i + 1] : text_length;
+                    label_end = i < number_of_categories - 1 ? value_label_offsets[i + 1] : text_length;
                 } else {
                     int sortedPos = Arrays.binarySearch(value_label_offsets_sorted, label_offset);
                     label_end = sortedPos < number_of_categories - 1 ? value_label_offsets_sorted[sortedPos + 1] : text_length;

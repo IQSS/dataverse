@@ -37,17 +37,17 @@ import javax.persistence.Table;
 @Entity
 @Table(indexes = {@Index(columnList="datatable_id")})
 public class DataVariable implements Serializable {
-
-    private List<VariableCategory> lables;
     
     /** Creates a new instance of DataVariable
-     * @param order */
+     * @param order
+     * @param table */
     public DataVariable(int order, DataTable table) {
         this.fileOrder = order;
         dataTable =table;
         invalidRanges = new ArrayList<>();
         summaryStatistics=new ArrayList<>();
         categories = new ArrayList<>();
+        lables = new ArrayList<>();
         unf = "UNF:pending";
     }
     
@@ -181,6 +181,14 @@ public class DataVariable implements Serializable {
     @OneToMany (mappedBy="dataVariable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
     @OrderBy("catOrder")
     private Collection<VariableCategory> categories;
+    
+    /*
+     * Variable Lables, for labled data.
+     * Uses VariableCategory for storage.
+     */
+    @OneToMany (mappedBy="dataVariable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @OrderBy("catOrder")
+    private List<VariableCategory> lables;
     
     /*
      * The boolean "ordered": identifies ordered categorical variables ("ordinals"). 
