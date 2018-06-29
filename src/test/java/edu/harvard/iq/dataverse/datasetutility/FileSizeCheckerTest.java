@@ -37,8 +37,8 @@ public class FileSizeCheckerTest {
             longAns.add(bytesToHumanReadable(size, 2));
         }
         
-        List<String> expAns = Arrays.asList(new String[]{"1 B", "1023 B", "1.9 kB", "122.8 kB", "2.6 GB", "10.9 TB"});
-        List<String> expLongAns = Arrays.asList(new String[]{"1 B", "1023 B", "1.94 kB", "122.76 kB", "2.57 GB", "10.95 TB"});
+        List<String> expAns = Arrays.asList(new String[]{"1 B", "1023 B", "1.9 KB", "122.8 KB", "2.6 GB", "10.9 TB"});
+        List<String> expLongAns = Arrays.asList(new String[]{"1 B", "1023 B", "1.94 KB", "122.76 KB", "2.57 GB", "10.95 TB"});
         assertEquals(expAns, ans);
         assertEquals(expLongAns, longAns);
     }
