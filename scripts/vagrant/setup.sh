@@ -14,16 +14,24 @@ cp /dataverse/conf/vagrant/etc/yum.repos.d/epel-apache-maven.repo /etc/yum.repos
 # Uncomment this (and other shib stuff below) if you want
 # to use Vagrant (and maybe PageKite) to test Shibboleth.
 #yum install -y shibboleth shibboleth-embedded-ds
-yum install -y java-1.8.0-openjdk-devel postgresql-server apache-maven httpd mod_ssl unzip
+
+# java configuration et al
+yum install -y java-1.8.0-openjdk-devel apache-maven httpd mod_ssl unzip
 alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
 alternatives --set javac /usr/lib/jvm/java-1.8.0-openjdk.x86_64/bin/javac
 java -version
 javac -version
-service postgresql initdb
-service postgresql stop
-cp /dataverse/conf/vagrant/var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/data/pg_hba.conf
-service postgresql start
-chkconfig postgresql on
+
+# switching to postgresql-9.6 per #4709
+yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+yum makecache fast
+yum install -y postgresql96-server
+/usr/pgsql-9.6/bin/postgresql96-setup initdb
+/usr/bin/systemctl stop postgresql-9.6
+cp /dataverse/conf/vagrant/var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/9.6/data/pg_hba.conf
+/usr/bin/systemctl start postgresql-9.6
+/usr/bin/systemctl enable postgresql-9.6
+
 GLASSFISH_USER=glassfish
 echo "Ensuring Unix user '$GLASSFISH_USER' exists"
 useradd $GLASSFISH_USER || :

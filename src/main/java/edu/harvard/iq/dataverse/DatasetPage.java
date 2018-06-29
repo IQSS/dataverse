@@ -2599,6 +2599,14 @@ public class DatasetPage implements java.io.Serializable {
                 if (nNewFiles > 0) {
                     // Save the NEW files permanently and add the to the dataset: 
                     
+                    // But first, fully refresh the newly created dataset (with a 
+                    // datasetService.find().
+                    // We have reasons to believe that the CreateDatasetCommand 
+                    // returns the dataset that doesn't have all the  
+                    // RoleAssignments properly linked to it - even though they
+                    // have been created in the dataset. 
+                    dataset = datasetService.find(dataset.getId());
+                    
                     List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles);
                     newFiles.clear();
                     
