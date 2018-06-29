@@ -1642,9 +1642,9 @@ public class PORFileReader  extends TabularDataFileReader{
         // Let's go through all the categorical value label mappings and 
         // assign them to the correct variables: 
         
-        for (int i = 0; i < dataTable.getVarQuantity().intValue(); i++) {
+        for (DataVariable dataVariable : dataTable.getDataVariables()) {
             
-            String varName = dataTable.getDataVariables().get(i).getName();
+            String varName = dataVariable.getName();
             
             Map<String, String> valueLabelPairs = valueLabelTable.get(valueVariableMappingTable.get(varName));
             if (valueLabelPairs != null && !valueLabelPairs.isEmpty()) {
@@ -1655,8 +1655,9 @@ public class PORFileReader  extends TabularDataFileReader{
                     cat.setLabel(valueLabelPairs.get(value));
 
                     /* cross-link the variable and category to each other: */
-                    cat.setDataVariable(dataTable.getDataVariables().get(i));
-                    dataTable.getDataVariables().get(i).getCategories().add(cat);
+                    cat.setDataVariable(dataVariable);
+                    dataVariable.getCategories().add(cat);
+                    dataVariable.setLabled(true);
                 }
             }
         }

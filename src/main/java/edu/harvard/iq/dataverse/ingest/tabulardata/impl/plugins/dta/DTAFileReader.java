@@ -257,10 +257,6 @@ public class DTAFileReader extends TabularDataFileReader{
     private static final int VALUE_LABEL_HEADER_PADDING_LENGTH = 3;
 
 
- 
-   
-    private static String unfVersionNumber = "5";
-
     private static int MISSING_VALUE_BIAS = 26;
 
     private byte BYTE_MISSING_VALUE = Byte.MAX_VALUE;
@@ -417,8 +413,6 @@ public class DTAFileReader extends TabularDataFileReader{
     private String[] dateVariableFormats=null; 
   
     private int value_label_table_length;
-    
-    private String fileUnfValue = null;
     
     private static final String MissingValueForTabDelimitedFile = "";
   
@@ -792,7 +786,7 @@ public class DTAFileReader extends TabularDataFileReader{
         
         for (int i = 0; i < typeList.length; i++) {
             if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + "-th value=" + typeList[i]);
-            
+            DataVariable dataVariable = dataTable.getDataVariables().get(i);
             /*
              * How Stata types correspond to the DVN types: 
              * "Byte", "Integer" and "Long" become Numeric, Discrete (unless date value); 
@@ -809,14 +803,14 @@ public class DTAFileReader extends TabularDataFileReader{
                 String typeLabel = variableTypes[i];
                 
                 if (typeLabel != null) {
-                    dataTable.getDataVariables().get(i).setTypeNumeric();
+                    dataVariable.setTypeNumeric();
                     if (typeLabel.equals("Byte") || typeLabel.equals("Integer") || typeLabel.equals("Long")) {
                         // these are treated as discrete:
-                        dataTable.getDataVariables().get(i).setIntervalDiscrete();
+                        dataVariable.setIntervalDiscrete();
                         
                     } else if (typeLabel.equals("Float") || typeLabel.equals("Double")) {
                         // these are treated as contiuous:
-                        dataTable.getDataVariables().get(i).setIntervalContinuous();
+                        dataVariable.setIntervalContinuous();
                         
                     } else {
                         throw new IOException("Unrecognized type label: "+typeLabel+" for Stata type value byte "+typeList[i]+".");
@@ -834,8 +828,8 @@ public class DTAFileReader extends TabularDataFileReader{
                         bytes_per_row += string_var_length;
 
                         variableTypes[i] = "String";
-                        dataTable.getDataVariables().get(i).setTypeCharacter();
-                        dataTable.getDataVariables().get(i).setIntervalDiscrete();
+                        dataVariable.setTypeCharacter();
+                        dataVariable.setIntervalDiscrete();
                         StringLengthTable.put(i, string_var_length);
 
 
@@ -861,8 +855,8 @@ public class DTAFileReader extends TabularDataFileReader{
                         bytes_per_row += string_var_length;
 
                         variableTypes[i] = "String";
-                        dataTable.getDataVariables().get(i).setTypeCharacter();
-                        dataTable.getDataVariables().get(i).setIntervalDiscrete();
+                        dataVariable.setTypeCharacter();
+                        dataVariable.setIntervalDiscrete();
                         StringLengthTable.put(i, string_var_length);
 
 
@@ -903,13 +897,13 @@ public class DTAFileReader extends TabularDataFileReader{
         }
         int offset_start = 0;
         int offset_end = 0;
-        for (int i = 0; i < nvar; i++) {
+        for (DataVariable dataVariable: dataTable.getDataVariables()) {
             offset_end += length_var_name;
             String vari = new String(Arrays.copyOfRange(variableNameBytes, offset_start,
                     offset_end), "ISO-8859-1");
             String varName = getNullStrippedString(vari);
-            dataTable.getDataVariables().get(i).setName(varName);
-            dbgLog.fine(i + "-th name=[" + varName + "]");
+            dataVariable.setName(varName);
+            dbgLog.fine("next name=[" + varName + "]");
             offset_start = offset_end;
         }
     }
@@ -996,6 +990,7 @@ public class DTAFileReader extends TabularDataFileReader{
              * -- L.A. 4.0
              */
             if (DATE_TIME_FORMAT_TABLE.containsKey(variableFormatKey)) {
+                DataVariable dataVariable = dataTable.getDataVariables().get(i);
                 // TODO: revisit the whole "formatschemaname" thing; -- L.A. 
                 // Instead of populating this field with the Stata's internal 
                 // format token (??), we should put the actual format of the 
@@ -1004,11 +999,11 @@ public class DTAFileReader extends TabularDataFileReader{
                 dateVariableFormats[i] = variableFormat; 
                 //dataTable.getDataVariables().get(i).setFormatSchemaName(variableFormat);
                 // TODO: make sure we do save the real format (as .setFormat() somewhere else!)
-                dataTable.getDataVariables().get(i).setFormatCategory(DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
+                dataVariable.setFormatCategory(DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
                 if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + "th var: category=" +
                         DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
-                dataTable.getDataVariables().get(i).setTypeCharacter();
-                dataTable.getDataVariables().get(i).setIntervalDiscrete();
+                dataVariable.setTypeCharacter();
+                dataVariable.setIntervalDiscrete();
             } 
 
             
@@ -1387,6 +1382,7 @@ public class DTAFileReader extends TabularDataFileReader{
                         /* cross-link the variable and category to each other: */
                         cat.setDataVariable(dataTable.getDataVariables().get(i));
                         dataTable.getDataVariables().get(i).getCategories().add(cat);
+                        dataTable.getDataVariables().get(i).setLabled(true);
                     }
                 }
             }

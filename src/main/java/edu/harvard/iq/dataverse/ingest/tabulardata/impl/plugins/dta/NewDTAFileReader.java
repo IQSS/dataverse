@@ -1210,11 +1210,13 @@ public class NewDTAFileReader extends TabularDataFileReader {
                 throw new IOException("<read mismatch in readLabels() 2>");
             }
             reader.readClosingTag(TAG_VALUE_LABELS_LBL_DEF);
-
+            
+            List<DataVariable> dataVariables = dataTable.getDataVariables();
             // Find the variables that may be linking to this Category Values Table 
             // and create VariableCategory objects for the corresponding 
             // DataVariables: 
-            for (int i = 0; i < dataTable.getVarQuantity(); i++) {
+            for (int i = 0; i < dataVariables.size(); i++) {
+                DataVariable dataVariable = dataVariables.get(i);
                 if (label_table_name.equals(valueLabelsLookupTable[i])) {
                     logger.fine("cross-linking value label table for " + label_table_name);
                     
@@ -1228,8 +1230,9 @@ public class NewDTAFileReader extends TabularDataFileReader {
                         cat.setLabel(cat_label);
 
                         /* cross-link the variable and category to each other: */
-                        cat.setDataVariable(dataTable.getDataVariables().get(i));
-                        dataTable.getDataVariables().get(i).getCategories().add(cat);
+                        cat.setDataVariable(dataVariable);
+                        dataVariable.getCategories().add(cat);
+                        dataVariable.setLabled(true);
                     }
                 }
             }
