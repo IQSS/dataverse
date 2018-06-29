@@ -6,10 +6,10 @@
 package edu.harvard.iq.dataverse.datasetutility;
 
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -18,14 +18,6 @@ import static org.junit.Assert.*;
  * @author oscardssmith
  */
 public class FileSizeCheckerTest {
-    private static final Logger logger = Logger.getLogger(FileSizeChecker.class.getCanonicalName());
-    
-    public FileSizeCheckerTest() {
-    }
-
-    @Test
-    public void testIsAllowedFileSize() {
-    }
 
     @Test
     public void testBytesToHumanReadable() {
@@ -36,9 +28,9 @@ public class FileSizeCheckerTest {
             ans.add(bytesToHumanReadable(size));
             longAns.add(bytesToHumanReadable(size, 2));
         }
-        
-        List<String> expAns = Arrays.asList(new String[]{"1 B", "1023 B", "1.9 KB", "122.8 KB", "2.6 GB", "10.9 TB"});
-        List<String> expLongAns = Arrays.asList(new String[]{"1 B", "1023 B", "1.94 KB", "122.76 KB", "2.57 GB", "10.95 TB"});
+        String B = BundleUtil.getStringFromBundle("file.addreplace.error.byte_abrev");
+        List<String> expAns = Arrays.asList(new String[]{"1 "+B, "1023 "+B, "1.9 K"+B, "122.8 K"+B, "2.6 G"+B, "10.9 T"+B});
+        List<String> expLongAns = Arrays.asList(new String[]{"1 "+B, "1023 "+B, "1.94 K"+B, "122.76 K"+B, "2.57 G"+B, "10.95 T"+B});
         assertEquals(expAns, ans);
         assertEquals(expLongAns, longAns);
     }

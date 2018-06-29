@@ -74,12 +74,12 @@ public class FileSizeChecker {
      */
     public static String bytesToHumanReadable(long v, int figs) {
         if (v < 1024) {
-            return v + " B";
+            return v +  " "  + BundleUtil.getStringFromBundle("file.addreplace.error.byte_abrev");
         }
         // 63 - because long has 63 binary digits
         int trailingBin0s = (63 - Long.numberOfLeadingZeros(v))/10;
-        String base = "%."+figs+"f %s"+ BundleUtil.getStringFromBundle("file.addreplace.error.byte_abrev");
-        return String.format(base, (double)v / (1L << (trailingBin0s*10)),
+        //String base = "%."+figs+"f %s"+ BundleUtil.getStringFromBundle("file.addreplace.error.byte_abrev");
+        return String.format("%."+figs+"f %s"+ BundleUtil.getStringFromBundle("file.addreplace.error.byte_abrev"), (double)v / (1L << (trailingBin0s*10)),
                              " KMGTPE".charAt(trailingBin0s));
     }
     
