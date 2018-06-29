@@ -6,6 +6,12 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,302 +27,344 @@ import org.apache.commons.lang.StringUtils;
  */
 public class DataCitation {
 
-    private String authors;
-    private String title;
-    private String fileTitle=null;
-    private String year;
-    private GlobalId persistentId;
-    private String version;
-    private String UNF=null;
-    private String distributors;
+	private List<String> authors = new ArrayList<String>();
+	private String title;
+	private String fileTitle = null;
+	private String year;
+	private GlobalId persistentId;
+	private String version;
+	private String UNF = null;
+	private String publisher;
 
-    private List<DatasetField> optionalValues = new ArrayList<>();
-    private int optionalURLcount = 0; 
+	private List<DatasetField> optionalValues = new ArrayList<>();
+	private int optionalURLcount = 0;
 
-    public DataCitation(DatasetVersion dsv) {
-        // authors (or producer)
-        authors = dsv.getAuthorsStr(false);
-        if (StringUtils.isEmpty(authors)) {
-            authors = dsv.getDatasetProducersString();
-        }
+	public DataCitation(DatasetVersion dsv) {
+		// authors (or producer)
+		getAuthorsFrom(dsv);
 
-        // year
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
-        if (!dsv.getDataset().isHarvested()) {
-            Date citationDate = dsv.getCitationDate();
-            if (citationDate == null) {
-                if (dsv.getDataset().getPublicationDate() != null) {
-                    citationDate = dsv.getDataset().getPublicationDate();
-                } else { // for drafts
-                    citationDate = new Date();
-                }
-            }
+		// year
+		year = getYearFrom(dsv);
+		// title
+		title = dsv.getTitle();
 
-            year = new SimpleDateFormat("yyyy").format(citationDate);
+		// The Global Identifier:
+		// It is always part of the citation for the local datasets;
+		// And for *some* harvested datasets.
+		persistentId = getPIDFrom(dsv, dsv.getDataset());
 
-        } else {
-            try {
-                year = sdf.format(sdf.parse(dsv.getDistributionDate()));
-            } catch (ParseException ex) {
-                // ignore
-            } catch (Exception ex) {
-                // ignore
-            }
-        }
+		// publisher
+		publisher = getPublisherFrom(dsv);
 
-        // title
-        title = dsv.getTitle();
+		// version
+		version = getVersionFrom(dsv);
 
-        // The Global Identifier: 
-        // It is always part of the citation for the local datasets; 
-        // And for *some* harvested datasets. 
-        if (!dsv.getDataset().isHarvested()
-                || HarvestingClient.HARVEST_STYLE_VDC.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
-                || HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
-                || HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
-            if (!StringUtils.isEmpty(dsv.getDataset().getIdentifier())) {
-                // creating a global id like this:
-                // persistentId = new GlobalId(dsv.getDataset().getGlobalId());
-                // you end up doing new GlobalId((New GlobalId(dsv.getDataset())).toString())
-                // - doing an extra formatting-and-parsing-again
-                // This achieves the same thing:
-                persistentId = new GlobalId(dsv.getDataset());
-            }
-        }
+		// UNF
+		UNF = dsv.getUNF();
 
-        // distributors
-        if (!dsv.getDataset().isHarvested()) {
-            distributors = dsv.getRootDataverseNameforCitation();
-        } else {
-            distributors = dsv.getDistributorName();
-            //remove += [distributor] SEK 8-18-2016
-        }
+		// optional values
+		for (DatasetFieldType dsfType : dsv.getDataset().getOwner().getCitationDatasetFieldTypes()) {
+			DatasetField dsf = dsv.getDatasetField(dsfType);
+			if (dsf != null) {
+				optionalValues.add(dsf);
 
-        // version
-        if (!dsv.getDataset().isHarvested()) {
-            if (dsv.isDraft()) {
-                version = "DRAFT VERSION";
-            } else if (dsv.getVersionNumber() != null) {
-                version = "V" + dsv.getVersionNumber();
-                if (dsv.isDeaccessioned()) {
-                    version += ", DEACCESSIONED VERSION";
-                }
-            }
-        }
+				if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
+					optionalURLcount++;
+				}
+			}
+		}
+	}
 
-        // UNF
-        UNF = dsv.getUNF();
+	public DataCitation(FileMetadata fm) {
+		DatasetVersion dsv = fm.getDatasetVersion();
 
-        // optional values
-        for (DatasetFieldType dsfType : dsv.getDataset().getOwner().getCitationDatasetFieldTypes()) {
-            DatasetField dsf = dsv.getDatasetField(dsfType);
-            if (dsf != null) {
-                optionalValues.add(dsf);
-                
-                if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
-                    optionalURLcount++;
-                }                 
-            }
-        }        
-    }
-    
-    public DataCitation(FileMetadata fm) {
-    	DatasetVersion dsv = fm.getDatasetVersion();
-        authors = dsv.getAuthorsStr(false);
-        if (StringUtils.isEmpty(authors)) {
-            authors = dsv.getDatasetProducersString();
-        }
+		// authors (or producer)
+		getAuthorsFrom(dsv);
 
-        // year
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
-        if (!dsv.getDataset().isHarvested()) {
-            Date citationDate = dsv.getCitationDate();
-            if (citationDate == null) {
-                if (dsv.getDataset().getPublicationDate() != null) {
-                    citationDate = dsv.getDataset().getPublicationDate();
-                } else { // for drafts
-                    citationDate = new Date();
-                }
-            }
+		// year
+		year = getYearFrom(dsv);
 
-            year = new SimpleDateFormat("yyyy").format(citationDate);
+		// file Title for direct File citation
+		fileTitle = fm.getLabel();
+		DataFile df = fm.getDataFile();
+		// title
+		title = dsv.getTitle();
 
-        } else {
-            try {
-                year = sdf.format(sdf.parse(dsv.getDistributionDate()));
-            } catch (ParseException ex) {
-                // ignore
-            } catch (Exception ex) {
-                // ignore
-            }
-        }
+		// The Global Identifier:
+		// It is always part of the citation for the local datasets;
+		// And for *some* harvested datasets.
+		persistentId = getPIDFrom(dsv, df);
 
-        // title
-        
-        fileTitle = fm.getLabel();
-        DataFile df = fm.getDataFile();
-        title = dsv.getTitle(); 
+		// publisher
+		publisher = getPublisherFrom(dsv);
 
-        // The Global Identifier: 
-        // It is always part of the citation for the local datasets; 
-        // And for *some* harvested datasets. 
-        if (!dsv.getDataset().isHarvested()
-                || HarvestingClient.HARVEST_STYLE_VDC.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
-                || HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
-                || HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
-            if (!StringUtils.isEmpty(df.getIdentifier())) {
-                // creating a global id like this:
-                // persistentId = new GlobalId(df.getGlobalId());
-                // you end up doing new GlobalId((new GlobalId(df).toString())
-                // - doing an extra formatting-and-parsing-again
-                // This achieves the same thing:
-                persistentId =new GlobalId(df);
-            }
-        }
+		// version
+		version = getVersionFrom(dsv);
 
-        // distributors
-        if (!dsv.getDataset().isHarvested()) {
-            distributors = dsv.getRootDataverseNameforCitation();
-        } else {
-            distributors = dsv.getDistributorName();
-            //remove += [distributor] SEK 8-18-2016
-        }
+		// UNF
+		if (df.isTabularData() && df.getUnf() != null && !df.getUnf().isEmpty()) {
+			UNF = df.getUnf();
+		}
 
-        // version
-        if (!dsv.getDataset().isHarvested()) {
-            if (dsv.isDraft()) {
-                version = "DRAFT VERSION";
-            } else if (dsv.getVersionNumber() != null) {
-                version = "V" + dsv.getVersionNumber();
-                if (dsv.isDeaccessioned()) {
-                    version += ", DEACCESSIONED VERSION";
-                }
-            }
-        }
+	}
 
-        // UNF
-        if (df.isTabularData() && df.getUnf() != null && !df.getUnf().isEmpty()){
-            UNF = df.getUnf();                    
-        }
-       
-    }
+	public String getAuthorsString() {
+		return String.join(";", authors);
+	}
 
+	public String getTitle() {
+		return title;
+	}
 
-    public String getAuthors() {
-        return authors;
-    }
+	public String getYear() {
+		return year;
+	}
 
-    public String getTitle() {
-        return title;
-    }
+	public GlobalId getPersistentId() {
+		return persistentId;
+	}
 
-    public String getYear() {
-        return year;
-    }
+	public String getVersion() {
+		return version;
+	}
 
-    public GlobalId getPersistentId() {
-        return persistentId;
-    }
+	public String getUNF() {
+		return UNF;
+	}
 
-    public String getVersion() {
-        return version;
-    }
+	public String getPublisher() {
+		return publisher;
+	}
 
-    public String getUNF() {
-        return UNF;
-    }
+	@Override
+	public String toString() {
+		return toString(false);
+	}
 
-    public String getDistributors() {
-        return distributors;
-    }
+	public String toString(boolean html) {
+		// first add comma separated parts
+		List<String> citationList = new ArrayList<>();
+		citationList.add(formatString(getAuthorsString(), html));
+		citationList.add(year);
+		if (fileTitle != null) {
+			citationList.add(formatString(fileTitle, html, "\""));
+			citationList.add(formatString(title, html, "<i>", "</i>"));
+		} else {
+			citationList.add(formatString(title, html, "\""));
+		}
+		// QDRCustom: Use "Qualitative Data Repository" as distributor name
+		citationList.add(formatString("Qualitative Data Repository", html));
+		// QDRCustom: Show persistentID after distributor name
+		if (persistentId != null) {
+			citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html)); // always
+																													// show
+																													// url
+																													// format
+		}
+		citationList.add(formatString(publisher, html));
+		citationList.add(version);
 
-    @Override
-    public String toString() {
-        return toString(false);
-    }
+		StringBuilder citation = new StringBuilder(citationList.stream().filter(value -> !StringUtils.isEmpty(value))
+				// QDRCustom: Use period to join values, not comma
+				.collect(Collectors.joining(". ")));
 
-    public String toString(boolean html) {
-        // first add comma separated parts        
-        List<String> citationList = new ArrayList<>();
-        citationList.add(formatString(authors, html));
-        citationList.add(year);  
-        if(fileTitle!=null) {
-        	citationList.add(formatString(fileTitle, html, "\""));
-            citationList.add(formatString(title, html, "<i>", "</i>"));
-        } else {
-          citationList.add(formatString(title, html, "\""));
-        }
-        // QDRCustom: Use "Qualitative Data Repository" as distributor name
-        citationList.add(formatString("Qualitative Data Repository", html));
-        // QDRCustom: Show persistentID after distributor name
-        if (persistentId != null) {
-          citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html)); //always show url format
-        }
-        citationList.add(formatString(distributors, html));
-        citationList.add(version);       
+		// append UNF
+		if (!StringUtils.isEmpty(UNF)) {
+			// QDRCustom: Use period to join values, not comma
+			citation.append(". ").append(UNF);
+		}
 
-        StringBuilder citation = new StringBuilder(
-                citationList.stream()
-                .filter(value -> !StringUtils.isEmpty(value))
-                // QDRCustom: Use period to join values, not comma
-                .collect(Collectors.joining(". ")));
+		for (DatasetField dsf : optionalValues) {
+			String displayName = dsf.getDatasetFieldType().getDisplayName();
+			String displayValue;
 
-        // append UNF
-        if (!StringUtils.isEmpty(UNF)) {
-            // QDRCustom: Use period to join values, not comma
-            citation.append(". ").append(UNF);
-        }
+			if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
+				displayValue = formatURL(dsf.getDisplayValue(), dsf.getDisplayValue(), html);
+				if (optionalURLcount == 1) {
+					displayName = "URL";
+				}
+			} else {
+				displayValue = formatString(dsf.getDisplayValue(), html);
+			}
 
-        for (DatasetField dsf : optionalValues) {
-            String displayName = dsf.getDatasetFieldType().getDisplayName();
-            String displayValue;
-            
-            if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
-                displayValue = formatURL(dsf.getDisplayValue(), dsf.getDisplayValue(), html);
-                if (optionalURLcount == 1) {
-                    displayName = "URL";
-                }
-            } else {
-                displayValue = formatString(dsf.getDisplayValue(), html);
-            }
+			citation.append(" [").append(displayName).append(": ").append(displayValue).append("]");
+		}
 
-            citation.append(" [")
-                    .append(displayName).append(": ")
-                    .append(displayValue)
-                    .append("]");
-        }
+		return citation.toString();
+	}
 
-        return citation.toString();
-    }
+	public void writeBibtex(OutputStream os) throws IOException {
+		//Use UTF-8?
+		 Writer out
+		   = new BufferedWriter(new OutputStreamWriter(os));
+		 
+		out.write("@data{");
+		out.write(persistentId.getIdentifier() + "_" + year + "," + "\r\n");
+		out.write("author = {");
+		out.write(String.join(" and ", authors));
+		out.write("},\r\n");
+		out.write("publisher = {");
+		out.write(publisher);
+		out.write("},\r\n");
+		out.write("title = {");
+		out.write(title);
+		out.write("},\r\n");
+		out.write("year = {");
+		out.write(year);
+		out.write("},\r\n");
+		out.write("doi = {");
+		out.write(persistentId.getAuthority());
+		out.write("/");
+		out.write(persistentId.getIdentifier());
+		out.write("},\r\n");
+		out.write("url = {");
+		out.write(persistentId.toURL().toString());
+		out.write("}\r\n");
+		out.write("}");
+	}
 
-    // helper methods   
-    private String formatString(String value, boolean escapeHtml) {
-        return formatString(value, escapeHtml, "");
-    }
+	public void writeRIS(OutputStream os) throws IOException {
+		//Use UTF-8?
+		Writer out
+		   = new BufferedWriter(new OutputStreamWriter(os));
+		out.write("Provider: " + publisher + "\r\n");
+		out.write("Content: text/plain; charset=\"us-ascii\"" + "\r\n");
+		// Using type "DBASE" - "Online Database", for consistency with
+		// EndNote (see the longer comment in the EndNote section below)>
 
-    private String formatString(String value, boolean escapeHtml, String wrapperFront) {
-    	return formatString(value, escapeHtml, wrapperFront, wrapperFront);
-    }
-    
-    private String formatString(String value, boolean escapeHtml, String wrapperStart, String wrapperEnd) {
-        if (!StringUtils.isEmpty(value)) {
-            return new StringBuilder(wrapperStart)
-                    .append(escapeHtml ? StringEscapeUtils.escapeHtml(value) : value)
-                    .append(wrapperEnd).toString();
-        }
-        return null;
-    }
+		out.write("TY  - DBASE" + "\r\n");
+		out.write("T1  - " + getTitle() + "\r\n");
+		for (String author : authors) {
+			out.write("AU  - " + author + "\r\n");
+		}
+		out.write("DO  - " + persistentId.toString() + "\r\n");
+		out.write("PY  - " + year + "\r\n");
+		out.write("UR  - " + persistentId.toURL().toString() + "\r\n");
+		out.write("PB  - " + publisher + "\r\n");
 
-    private String formatURL(String text, String url, boolean html) {
-        if (text == null) {
-            return null;
-        }
+		// a DataFile citation also includes filename und UNF, if applicable:
+		if (fileTitle != null) {
+			out.write("C1  - " + fileTitle + "\r\n");
 
-        if (html && url != null) {
-            return "<a href=\"" + url + "\" target=\"_blank\">" + StringEscapeUtils.escapeHtml(text) + "</a>";
-        } else {
-            return text;
-        }
+			if (UNF != null) {
+				out.write("C2  - " + UNF + "\r\n");
+			}
+		}
 
-    }
+		// closing element:
+		out.write("ER  - \r\n");
+	}
+
+	// helper methods
+	private String formatString(String value, boolean escapeHtml) {
+		return formatString(value, escapeHtml, "");
+	}
+
+	private String formatString(String value, boolean escapeHtml, String wrapperFront) {
+		return formatString(value, escapeHtml, wrapperFront, wrapperFront);
+	}
+
+	private String formatString(String value, boolean escapeHtml, String wrapperStart, String wrapperEnd) {
+		if (!StringUtils.isEmpty(value)) {
+			return new StringBuilder(wrapperStart).append(escapeHtml ? StringEscapeUtils.escapeHtml(value) : value)
+					.append(wrapperEnd).toString();
+		}
+		return null;
+	}
+
+	private String formatURL(String text, String url, boolean html) {
+		if (text == null) {
+			return null;
+		}
+
+		if (html && url != null) {
+			return "<a href=\"" + url + "\" target=\"_blank\">" + StringEscapeUtils.escapeHtml(text) + "</a>";
+		} else {
+			return text;
+		}
+
+	}
+
+	private String getYearFrom(DatasetVersion dsv) {
+		String year = "";
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+		if (!dsv.getDataset().isHarvested()) {
+			Date citationDate = dsv.getCitationDate();
+			if (citationDate == null) {
+				if (dsv.getDataset().getPublicationDate() != null) {
+					citationDate = dsv.getDataset().getPublicationDate();
+				} else { // for drafts
+					citationDate = new Date();
+				}
+			}
+
+			year = new SimpleDateFormat("yyyy").format(citationDate);
+
+		} else {
+			try {
+				year = sdf.format(sdf.parse(dsv.getDistributionDate()));
+			} catch (ParseException ex) {
+				// ignore
+			} catch (Exception ex) {
+				// ignore
+			}
+		}
+		return year;
+	}
+
+	private void getAuthorsFrom(DatasetVersion dsv) {
+
+		dsv.getDatasetAuthors().stream().forEach((author) -> {
+			if (!author.isEmpty()) {
+				String an = author.getName().getDisplayValue().trim();
+				authors.add(an);
+			}
+		});
+		if (authors.size() == 0) {
+			authors = dsv.getDatasetProducerNames();
+		}
+	}
+
+	private String getPublisherFrom(DatasetVersion dsv) {
+		if (!dsv.getDataset().isHarvested()) {
+			return dsv.getRootDataverseNameforCitation();
+		} else {
+			return dsv.getDistributorName();
+			// remove += [distributor] SEK 8-18-2016
+		}
+
+	}
+
+	private String getVersionFrom(DatasetVersion dsv) {
+		String version = "";
+		if (!dsv.getDataset().isHarvested()) {
+			if (dsv.isDraft()) {
+				version = "DRAFT VERSION";
+			} else if (dsv.getVersionNumber() != null) {
+				version = "V" + dsv.getVersionNumber();
+				if (dsv.isDeaccessioned()) {
+					version += ", DEACCESSIONED VERSION";
+				}
+			}
+		}
+		return version;
+	}
+
+	private GlobalId getPIDFrom(DatasetVersion dsv, DvObject dv) {
+		if (!dsv.getDataset().isHarvested()
+				|| HarvestingClient.HARVEST_STYLE_VDC.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
+				|| HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
+				|| HarvestingClient.HARVEST_STYLE_DATAVERSE
+						.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
+			if (!StringUtils.isEmpty(dv.getIdentifier())) {
+				// creating a global id like this:
+				// persistentId = new GlobalId(dsv.getDataset().getGlobalId());
+				// you end up doing new GlobalId((New GlobalId(dsv.getDataset())).toString())
+				// - doing an extra formatting-and-parsing-again
+				// This achieves the same thing:
+				return new GlobalId(dsv.getDataset());
+			}
+		}
+		return null;
+	}
 }

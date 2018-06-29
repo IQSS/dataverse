@@ -290,7 +290,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } else {
             workingVersion = fileMetadata.getDatasetVersion();
         }
-        String risFormatDowload = datasetService.createCitationRIS(workingVersion, fileMetadata);
+
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
@@ -307,7 +307,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         try {
             ServletOutputStream out = response.getOutputStream();
-            out.write(risFormatDowload.getBytes());
+            new DataCitation(workingVersion).writeRIS(out);
             out.flush();
             ctx.responseComplete();
         } catch (IOException e) {
@@ -337,7 +337,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } else {
             workingVersion = fileMetadata.getDatasetVersion();
         }
-        String bibFormatDowload = new BibtexCitation(workingVersion).toString();
+        
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
@@ -354,7 +354,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         try {
             ServletOutputStream out = response.getOutputStream();
-            out.write(bibFormatDowload.getBytes());
+            new DataCitation(workingVersion).writeBibtex(out);
             out.flush();
             ctx.responseComplete();
         } catch (IOException e) {
