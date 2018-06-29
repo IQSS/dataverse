@@ -67,10 +67,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReaderSpi;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.util.SumStatCalculator;
-import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.*;
 //import edu.harvard.iq.dvn.unf.*;
 import org.dataverse.unf.*;
 import java.io.BufferedInputStream;
@@ -660,7 +657,7 @@ public class IngestServiceBean {
     }
 
     public void sendFailNotification(Long dataset_id) {
-        FacesMessage facesMessage = new FacesMessage("ingest failed");
+        FacesMessage facesMessage = new FacesMessage(BundleUtil.getStringFromBundle("ingest.failed"));
         /* commented out push channel message:
             PushContext pushContext = PushContextFactory.getDefault().getPushContext();
             pushContext.push("/ingest" + dataset_id, facesMessage);

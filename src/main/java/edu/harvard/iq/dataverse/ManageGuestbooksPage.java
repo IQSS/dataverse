@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookRootCommand;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.LinkedList;
@@ -226,9 +227,9 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             dataverse.getGuestbooks().remove(selectedGuestbook);
             try {
                 engineService.submit(new DeleteGuestbookCommand(dvRequestService.getDataverseRequest(), getDataverse(), selectedGuestbook));
-                JsfHelper.addFlashMessage("The guestbook has been deleted");
+                JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.deleteSuccess"));
             } catch (CommandException ex) {
-                String failMessage = "The dataset guestbook cannot be deleted.";
+                String failMessage = BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.deleteFailure");
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             }
         } else {
