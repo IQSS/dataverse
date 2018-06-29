@@ -207,7 +207,10 @@ public class DataVariable implements Serializable {
      * number of decimal points, where applicable.
      */
     private Long numberOfDecimalPoints;
-
+    
+    public DataVariable() {
+    }
+    
     /** Creates a new instance of DataVariable
      * @param order
      * @param table */
