@@ -461,6 +461,7 @@ public class Datasets extends AbstractApiBean {
                                             }
                                         }
                                         if (!found) {
+                                            logger.log(Level.SEVERE, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + cvv.getStrValue() + " not found.");
                                             return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + cvv.getStrValue() + " not found.");
                                         }
                                     }
@@ -486,6 +487,7 @@ public class Datasets extends AbstractApiBean {
                                                 }
                                             }
                                             if (!found) {
+                                                logger.log(Level.SEVERE, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + dfv.getDisplayValue() + " not found.");
                                                 return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + dfv.getDisplayValue() + " not found.");
                                             }
                                         }
@@ -513,7 +515,8 @@ public class Datasets extends AbstractApiBean {
                                         datasetFieldCompoundValueItemsToRemove.forEach((remove) -> {
                                             dsf.getDatasetFieldCompoundValues().remove(remove);
                                         });
-                                        if (!found) {                                            
+                                        if (!found) { 
+                                            logger.log(Level.SEVERE, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + deleteVal + " not found.");
                                             return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + deleteVal + " not found.");
                                         }
                                     }
@@ -529,6 +532,7 @@ public class Datasets extends AbstractApiBean {
                 }
                 if (!found){
                     String displayValue = !updateField.getDisplayValue().isEmpty() ? updateField.getDisplayValue() : updateField.getCompoundDisplayValue();
+                    logger.log(Level.SEVERE, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found." );
                     return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found." );
                 }
             }           
@@ -546,6 +550,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, "Error processing metadata delete: " + ex.getMessage());
 
         } catch (WrappedResponse ex) {
+            logger.log(Level.SEVERE, "Delete metadata error: " + ex.getMessage(), ex);
             return ex.getResponse();
 
         }
@@ -677,6 +682,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, "Error parsing dataset update: " + ex.getMessage());
 
         } catch (WrappedResponse ex) {
+            logger.log(Level.SEVERE, "Update metdata error: " + ex.getMessage(), ex);
             return ex.getResponse();
 
         }
