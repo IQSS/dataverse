@@ -1643,7 +1643,7 @@ public class PORFileReader  extends TabularDataFileReader{
         // assign them to the correct variables: 
         
         for (DataVariable dataVariable : dataTable.getDataVariables()) {
-            
+            dataVariable.setLabled(true);
             String varName = dataVariable.getName();
             
             Map<String, String> valueLabelPairs = valueLabelTable.get(valueVariableMappingTable.get(varName));
@@ -1657,7 +1657,6 @@ public class PORFileReader  extends TabularDataFileReader{
                     /* cross-link the variable and category to each other: */
                     cat.setDataVariable(dataVariable);
                     dataVariable.getCategories().add(cat);
-                    dataVariable.setLabled(true);
                 }
             }
         }

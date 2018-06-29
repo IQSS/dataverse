@@ -1217,6 +1217,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
             // DataVariables: 
             for (int i = 0; i < dataVariables.size(); i++) {
                 DataVariable dataVariable = dataVariables.get(i);
+                dataVariable.setLabled(true);
                 if (label_table_name.equals(valueLabelsLookupTable[i])) {
                     logger.fine("cross-linking value label table for " + label_table_name);
                     
@@ -1232,7 +1233,6 @@ public class NewDTAFileReader extends TabularDataFileReader {
                         /* cross-link the variable and category to each other: */
                         cat.setDataVariable(dataVariable);
                         dataVariable.getCategories().add(cat);
-                        dataVariable.setLabled(true);
                     }
                 }
             }
