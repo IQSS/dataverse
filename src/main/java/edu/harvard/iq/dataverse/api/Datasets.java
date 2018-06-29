@@ -600,8 +600,12 @@ public class Datasets extends AbstractApiBean {
             }
             
 
-                validateDatasetFieldValues(fields);
+            String valdationErrors = validateDatasetFieldValues(fields);
 
+            if (!valdationErrors.isEmpty()) {
+                logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + valdationErrors, valdationErrors);
+                return error(Response.Status.BAD_REQUEST, "Error parsing dataset update: " + valdationErrors);
+            }
 
             dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
                 
@@ -688,21 +692,22 @@ public class Datasets extends AbstractApiBean {
         }
     }
     
-    private void validateDatasetFieldValues(List<DatasetField> fields) throws JsonParseException {        
+    private String validateDatasetFieldValues(List<DatasetField> fields) {
         StringBuilder error = new StringBuilder();
 
         for (DatasetField dsf : fields) {
             if (dsf.getDatasetFieldType().isAllowMultiples() && dsf.getControlledVocabularyValues().isEmpty()
                     && dsf.getDatasetFieldCompoundValues().isEmpty() && dsf.getDatasetFieldValues().isEmpty()) {
-                error.append("Empty multiple value for field ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
+                error.append("Empty multiple value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
             } else if (!dsf.getDatasetFieldType().isAllowMultiples() && dsf.getSingleValue().getValue().isEmpty()) {
-                error.append("Empty  value for field ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
+                error.append("Empty value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
             }
         }
 
         if (!error.toString().isEmpty()) {
-            throw new JsonParseException(error.toString());
+            return (error.toString());
         }
+        return "";
     }
     
     /**

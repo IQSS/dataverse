@@ -211,7 +211,7 @@ public class DatasetsIT {
         addDataToBadData.prettyPrint();
 
         addDataToBadData.then().assertThat()
-                .body("message", equalTo("Error parsing dataset update: Invalid value submitted for subtitle. It should be a single value."))
+                .body("message", equalTo("Error parsing dataset update: Invalid value submitted for: Subtitle. It should be a single value."))
                 .statusCode(400);
         
                 addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);

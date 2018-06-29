@@ -576,13 +576,13 @@ public class JsonParser {
 
         } else {
             // primitive
-            List<DatasetFieldValue> values = parsePrimitiveValue(type, json);
-            for (DatasetFieldValue val : values) {
-                val.setDatasetField(ret);
+                List<DatasetFieldValue> values = parsePrimitiveValue(type, json);
+                for (DatasetFieldValue val : values) {
+                    val.setDatasetField(ret);
+                }
+                ret.setDatasetFieldValues(values);
             }
-            ret.setDatasetFieldValues(values);
-        }
-       
+
         return ret;
     }
     
@@ -733,7 +733,7 @@ public class JsonParser {
         List<DatasetFieldValue> vals = new LinkedList<>();
         if (dft.isAllowMultiples()) {
            try {
-                json.getJsonArray("value").getValuesAs(JsonObject.class);
+            json.getJsonArray("value").getValuesAs(JsonObject.class);
             } catch (ClassCastException cce) {
                 throw new JsonParseException("Invalid values submitted for " + dft.getName() + ". It should be an array of values.");
             }
