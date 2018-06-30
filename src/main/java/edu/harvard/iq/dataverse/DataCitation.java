@@ -221,6 +221,7 @@ public class DataCitation {
 		out.write(persistentId.toURL().toString());
 		out.write("}\r\n");
 		out.write("}");
+		out.flush();
 	}
 
 	public void writeRIS(OutputStream os) throws IOException {
@@ -253,6 +254,7 @@ public class DataCitation {
 
 		// closing element:
 		out.write("ER  - \r\n");
+		out.flush();
 	}
 
 	// helper methods
