@@ -8,16 +8,26 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import javax.ejb.EJBException;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -31,6 +41,7 @@ public class DataCitation {
 	private String title;
 	private String fileTitle = null;
 	private String year;
+	private Date date;
 	private GlobalId persistentId;
 	private String version;
 	private String UNF = null;
@@ -51,7 +62,9 @@ public class DataCitation {
 		getAuthorsFrom(dsv);
 
 		// year
-		year = getYearFrom(dsv);
+		date = getDateFrom(dsv);
+		year = new SimpleDateFormat("yyyy").format(date);
+		
 		// title
 		title = dsv.getTitle();
 
@@ -94,7 +107,8 @@ public class DataCitation {
 		getAuthorsFrom(dsv);
 
 		// year
-		year = getYearFrom(dsv);
+		date = getDateFrom(dsv);
+		year = new SimpleDateFormat("yyyy").format(date);
 
 		// file Title for direct File citation
 		fileTitle = fm.getLabel();
@@ -218,7 +232,18 @@ public class DataCitation {
 		return citation.toString();
 	}
 
-	public void writeBibtex(OutputStream os) throws IOException {
+	public String toBibtexString() {
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		try {
+			writeAsBibtexCitation(buffer);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		//Use UTF-8?
+		return buffer.toString();
+	}
+	
+	public void writeAsBibtexCitation(OutputStream os) throws IOException {
 		//Use UTF-8?
 		 Writer out
 		   = new BufferedWriter(new OutputStreamWriter(os));
@@ -282,7 +307,19 @@ public class DataCitation {
 		out.flush();
 	}
 
-	public void writeRIS(OutputStream os) throws IOException {
+	public String toRISString() {
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		try {
+			writeAsRISCitation(buffer);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		//Use UTF-8?
+		return buffer.toString();
+	}
+
+	
+	public void writeAsRISCitation(OutputStream os) throws IOException {
 		//Use UTF-8?
 		Writer out
 		   = new BufferedWriter(new OutputStreamWriter(os));
@@ -330,6 +367,133 @@ public class DataCitation {
 		out.flush();
 	}
 
+    private XMLOutputFactory xmlOutputFactory = null;
+
+    public String toEndNoteString() {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        writeAsEndNoteCitation(outStream);
+        String xml = outStream.toString();
+        return xml; 
+    } 
+    
+    public void writeAsEndNoteCitation(OutputStream os) {
+
+        xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
+        XMLStreamWriter xmlw = null;
+        try {
+            xmlw = xmlOutputFactory.createXMLStreamWriter(os);
+            xmlw.writeStartDocument();
+            createEndNoteXML(xmlw);
+            xmlw.writeEndDocument();
+        } catch (XMLStreamException ex) {
+            Logger.getLogger("global").log(Level.SEVERE, null, ex);
+            throw new EJBException("ERROR occurred during creating endnote xml.", ex);
+        } finally {
+            try {
+                if (xmlw != null) {
+                    xmlw.close();
+                }
+            } catch (XMLStreamException ex) {
+            }
+        }
+    }
+    
+    private void createEndNoteXML(XMLStreamWriter xmlw) throws XMLStreamException {
+
+    	xmlw.writeStartElement("xml");
+        xmlw.writeStartElement("records");
+
+        xmlw.writeStartElement("record");
+
+        // "Ref-type" indicates which of the (numerous!) available EndNote
+        // schemas this record will be interpreted as. 
+        // This is relatively important. Certain fields with generic 
+        // names like "custom1" and "custom2" become very specific things
+        // in specific schemas; for example, custom1 shows as "legal notice"
+        // in "Journal Article" (ref-type 84), or as "year published" in 
+        // "Government Document". 
+        // We don't want the UNF to show as a "legal notice"! 
+        // We have found a ref-type that works ok for our purposes - 
+        // "Online Database" (type 45). In this one, the fields Custom1 
+        // and Custom2 are not translated and just show as is. 
+        // And "Custom1" still beats "legal notice". 
+        // -- L.A. 12.12.2014 beta 10
+        
+        xmlw.writeStartElement("ref-type");
+        xmlw.writeAttribute("name", "Online Database");
+        xmlw.writeCharacters("45");
+        xmlw.writeEndElement(); // ref-type
+
+        xmlw.writeStartElement("contributors");
+        xmlw.writeStartElement("authors");
+        for (String author : authors) {
+            xmlw.writeStartElement("author");
+            xmlw.writeCharacters(author);
+            xmlw.writeEndElement(); // author                    
+        }
+        xmlw.writeEndElement(); // authors 
+        xmlw.writeEndElement(); // contributors 
+
+        xmlw.writeStartElement("titles");
+        xmlw.writeStartElement("title");
+        xmlw.writeCharacters(title);
+        xmlw.writeEndElement(); // title
+        
+        xmlw.writeEndElement(); // titles
+
+        xmlw.writeStartElement("section");
+        String sectionString;
+        sectionString = new SimpleDateFormat("yyyy-MM-dd").format(date);
+
+        xmlw.writeCharacters(sectionString);
+        xmlw.writeEndElement(); // publisher
+
+        xmlw.writeStartElement("dates");
+        xmlw.writeStartElement("year");
+        xmlw.writeCharacters(year);
+        xmlw.writeEndElement(); // year
+        xmlw.writeEndElement(); // dates
+
+        xmlw.writeStartElement("publisher");
+        xmlw.writeCharacters(publisher);
+        xmlw.writeEndElement(); // publisher
+
+        xmlw.writeStartElement("urls");
+        xmlw.writeStartElement("related-urls");
+        xmlw.writeStartElement("url");
+        xmlw.writeCharacters(getPersistentId().toURL().toString());
+        xmlw.writeEndElement(); // url
+        xmlw.writeEndElement(); // related-urls
+        xmlw.writeEndElement(); // urls
+        
+        // a DataFile citation also includes the filename and (for Tabular
+        // files) the UNF signature, that we put into the custom1 and custom2 
+        // fields respectively:
+        
+        
+        if (getFileTitle() != null) {
+            xmlw.writeStartElement("custom1");
+            xmlw.writeCharacters(fileTitle);
+            xmlw.writeEndElement(); // custom1
+            
+                if (getUNF() != null) {
+                    xmlw.writeStartElement("custom2");
+                    xmlw.writeCharacters(getUNF());
+                    xmlw.writeEndElement(); // custom2
+            }
+        }
+
+        xmlw.writeStartElement("electronic-resource-num");
+        String electResourceNum = persistentId.getProtocol() + "/" + persistentId.getAuthority() + "/" + persistentId.getIdentifier();
+        xmlw.writeCharacters(electResourceNum);
+        xmlw.writeEndElement();
+        //<electronic-resource-num>10.3886/ICPSR03259.v1</electronic-resource-num>                  
+        xmlw.writeEndElement(); // record
+
+        xmlw.writeEndElement(); // records
+        xmlw.writeEndElement(); // xml
+
+    }
 
 
 	// helper methods
@@ -362,8 +526,8 @@ public class DataCitation {
 
 	}
 
-	private String getYearFrom(DatasetVersion dsv) {
-		String year = "";
+	private Date getDateFrom(DatasetVersion dsv) {
+
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
 		if (!dsv.getDataset().isHarvested()) {
 			Date citationDate = dsv.getCitationDate();
@@ -371,22 +535,19 @@ public class DataCitation {
 				if (dsv.getDataset().getPublicationDate() != null) {
 					citationDate = dsv.getDataset().getPublicationDate();
 				} else { // for drafts
-					citationDate = new Date();
+					citationDate = dsv.getLastUpdateTime();
 				}
 			}
-
-			year = new SimpleDateFormat("yyyy").format(citationDate);
-
 		} else {
 			try {
-				year = sdf.format(sdf.parse(dsv.getDistributionDate()));
+				date= sdf.parse(dsv.getDistributionDate());
 			} catch (ParseException ex) {
 				// ignore
 			} catch (Exception ex) {
 				// ignore
 			}
 		}
-		return year;
+		return date;
 	}
 
 	private void getAuthorsFrom(DatasetVersion dsv) {
@@ -444,4 +605,9 @@ public class DataCitation {
 		}
 		return null;
 	}
+
+
+	
+	
+
 }

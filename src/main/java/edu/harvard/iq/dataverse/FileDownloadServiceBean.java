@@ -244,28 +244,27 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     public void downloadCitationXML(FileMetadata fileMetadata, Dataset dataset) {
-        DatasetVersion workingVersion;
+    	DataCitation citation=null;
         if (dataset != null){
-            workingVersion = dataset.getLatestVersion();
+        	citation = new DataCitation(dataset.getLatestVersion());
         } else {
-            workingVersion = fileMetadata.getDatasetVersion();
+            citation= new DataCitation(fileMetadata);
         }
-        String xml = datasetService.createCitationXML(workingVersion, fileMetadata);
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("text/xml");
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
-            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + ".xml";
+            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + ".xml";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + "-" + FileUtil.getCiteDataFileFilename(fileMetadata, FileUtil.FileCitationExtension.ENDNOTE);
+            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.ENDNOTE);
         }
         response.setHeader("Content-Disposition", fileNameString);
         try {
             ServletOutputStream out = response.getOutputStream();
-            out.write(xml.getBytes());
+            citation.writeAsEndNoteCitation(out);
             out.flush();
             ctx.responseComplete();
         } catch (IOException e) {
@@ -284,11 +283,11 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     public void downloadCitationRIS(FileMetadata fileMetadata, Dataset dataset) {
-        DatasetVersion workingVersion;
+    	DataCitation citation=null;
         if (dataset != null){
-            workingVersion = dataset.getLatestVersion();
+        	citation = new DataCitation(dataset.getLatestVersion());
         } else {
-            workingVersion = fileMetadata.getDatasetVersion();
+            citation= new DataCitation(fileMetadata);
         }
 
         FacesContext ctx = FacesContext.getCurrentInstance();
@@ -298,16 +297,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
-            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + ".ris";
+            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + ".ris";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + "-" + FileUtil.getCiteDataFileFilename(fileMetadata, FileUtil.FileCitationExtension.RIS);
+            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.RIS);
         }
         response.setHeader("Content-Disposition", fileNameString);
 
         try {
             ServletOutputStream out = response.getOutputStream();
-            new DataCitation(workingVersion).writeRIS(out);
+            citation.writeAsRISCitation(out);
             out.flush();
             ctx.responseComplete();
         } catch (IOException e) {
@@ -315,9 +314,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
     
-    private String getFileNameDOI(DatasetVersion workingVersion) {
-        Dataset ds = workingVersion.getDataset();
-        return "DOI:" + ds.getAuthority() + "_" + ds.getIdentifier();
+    private String getFileNameDOI(GlobalId id) {
+        return "DOI:" + id.getAuthority() + "_" + id.getIdentifier();
     }
 
     public void downloadDatasetCitationBibtex(Dataset dataset) {
@@ -331,11 +329,11 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     public void downloadCitationBibtex(FileMetadata fileMetadata, Dataset dataset) {
-        DatasetVersion workingVersion;
+    	DataCitation citation=null;
         if (dataset != null){
-            workingVersion = dataset.getLatestVersion();
+        	citation = new DataCitation(dataset.getLatestVersion());
         } else {
-            workingVersion = fileMetadata.getDatasetVersion();
+            citation= new DataCitation(fileMetadata);
         }
         
         FacesContext ctx = FacesContext.getCurrentInstance();
@@ -345,16 +343,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + ".bib";
+            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + ".bib";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + "-" + FileUtil.getCiteDataFileFilename(fileMetadata, FileUtil.FileCitationExtension.BIBTEX);
+            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.BIBTEX);
         }
         response.setHeader("Content-Disposition", fileNameString);
 
         try {
             ServletOutputStream out = response.getOutputStream();
-            new DataCitation(workingVersion).writeBibtex(out);
+            citation.writeAsBibtexCitation(out);
             out.flush();
             ctx.responseComplete();
         } catch (IOException e) {
