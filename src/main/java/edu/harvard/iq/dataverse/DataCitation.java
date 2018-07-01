@@ -35,11 +35,18 @@ public class DataCitation {
 	private String version;
 	private String UNF = null;
 	private String publisher;
+	private boolean direct;
 
 	private List<DatasetField> optionalValues = new ArrayList<>();
 	private int optionalURLcount = 0;
 
 	public DataCitation(DatasetVersion dsv) {
+		this(dsv, false);
+	}
+	
+	
+	public DataCitation(DatasetVersion dsv, boolean direct) {
+		this.direct = direct;
 		// authors (or producer)
 		getAuthorsFrom(dsv);
 
@@ -76,6 +83,11 @@ public class DataCitation {
 	}
 
 	public DataCitation(FileMetadata fm) {
+		this(fm, false);
+	}
+	
+	public DataCitation(FileMetadata fm, boolean direct) {
+		this.direct = direct;
 		DatasetVersion dsv = fm.getDatasetVersion();
 
 		// authors (or producer)
@@ -115,7 +127,16 @@ public class DataCitation {
 	public String getTitle() {
 		return title;
 	}
+	
+	public String getFileTitle() {
+		return fileTitle;
+	}
 
+	public boolean isDirect() {
+		return direct;
+	}
+
+	
 	public String getYear() {
 		return year;
 	}
@@ -140,13 +161,14 @@ public class DataCitation {
 	public String toString() {
 		return toString(false);
 	}
-
+	
 	public String toString(boolean html) {
 		// first add comma separated parts
+		String separator = ". ";
 		List<String> citationList = new ArrayList<>();
 		citationList.add(formatString(getAuthorsString(), html));
 		citationList.add(year);
-		if (fileTitle != null) {
+		if ((fileTitle != null) && isDirect()) {
 			citationList.add(formatString(fileTitle, html, "\""));
 			citationList.add(formatString(title, html, "<i>", "</i>"));
 		} else {
@@ -166,12 +188,15 @@ public class DataCitation {
 
 		StringBuilder citation = new StringBuilder(citationList.stream().filter(value -> !StringUtils.isEmpty(value))
 				// QDRCustom: Use period to join values, not comma
-				.collect(Collectors.joining(". ")));
+				.collect(Collectors.joining(separator)));
 
+		if ((fileTitle != null) && !isDirect()) {
+			citation.append("; " + formatString(fileTitle, html, "") + " [fileName]");
+		}
 		// append UNF
 		if (!StringUtils.isEmpty(UNF)) {
 			// QDRCustom: Use period to join values, not comma
-			citation.append(". ").append(UNF);
+			citation.append(". ").append(UNF).append(" [fileUNF]");
 		}
 
 		for (DatasetField dsf : optionalValues) {
@@ -233,8 +258,15 @@ public class DataCitation {
 		// Using type "DBASE" - "Online Database", for consistency with
 		// EndNote (see the longer comment in the EndNote section below)>
 
-		out.write("TY  - DBASE" + "\r\n");
-		out.write("T1  - " + getTitle() + "\r\n");
+		
+		if (getFileTitle()!=null) {
+			out.write("TY  - CHAP" + "\r\n");
+			out.write("T1  - " + getFileTitle() + "\r\n");
+			out.write("T2  - " + getTitle() + "\r\n");
+		} else {
+			out.write("TY  - DBASE" + "\r\n");
+			out.write("T1  - " + getTitle() + "\r\n");
+		}
 		for (String author : authors) {
 			out.write("AU  - " + author + "\r\n");
 		}
@@ -244,18 +276,24 @@ public class DataCitation {
 		out.write("PB  - " + publisher + "\r\n");
 
 		// a DataFile citation also includes filename und UNF, if applicable:
-		if (fileTitle != null) {
-			out.write("C1  - " + fileTitle + "\r\n");
-
-			if (UNF != null) {
-				out.write("C2  - " + UNF + "\r\n");
+		if (getFileTitle() != null) {
+			if(!isDirect()) {
+				out.write("C1  - " + getFileTitle() + "\r\n");
 			}
+			if (getUNF() != null) {
+				out.write("C2  - " + getUNF() + "\r\n");
+			}
+			out.write("N1  - This reference is to a file within a dataset.\r\n");
+		} else {
+			out.write("N1  - This reference is to a file within a dataset.\r\n");
 		}
 
 		// closing element:
 		out.write("ER  - \r\n");
 		out.flush();
 	}
+
+
 
 	// helper methods
 	private String formatString(String value, boolean escapeHtml) {
