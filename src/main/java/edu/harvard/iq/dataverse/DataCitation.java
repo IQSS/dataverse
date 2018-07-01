@@ -222,8 +222,11 @@ public class DataCitation {
 		//Use UTF-8?
 		 Writer out
 		   = new BufferedWriter(new OutputStreamWriter(os));
-		 
-		out.write("@data{");
+		if(getFileTitle() !=null && isDirect()) {
+			out.write("@incollection{");
+		} else {
+			out.write("@data{");
+		}
 		out.write(persistentId.getIdentifier() + "_" + year + "," + "\r\n");
 		out.write("author = {");
 		out.write(String.join(" and ", authors));
@@ -231,9 +234,19 @@ public class DataCitation {
 		out.write("publisher = {");
 		out.write(publisher);
 		out.write("},\r\n");
+		if(getFileTitle() !=null && isDirect()) {
 		out.write("title = {");
+		out.write(fileTitle);
+		out.write("},\r\n");
+		out.write("booktitle = {");
 		out.write(title);
 		out.write("},\r\n");
+		} else {
+			out.write("title = {");
+			out.write(title);
+			out.write("},\r\n");
+			
+		}
 		out.write("year = {");
 		out.write(year);
 		out.write("},\r\n");
@@ -245,7 +258,27 @@ public class DataCitation {
 		out.write("url = {");
 		out.write(persistentId.toURL().toString());
 		out.write("}\r\n");
-		out.write("}");
+		if(getFileTitle()!=null) {
+			if(isDirect()) {
+				out.write("note = {");
+				out.write("This reference is to a file ");
+						if(getUNF()!=null) {
+							out.write("(UNF=" + getUNF()+")");
+						}
+						out.write(", with the given doi, within a dataset");
+				out.write("}\r\n");
+			} else {
+				out.write("note = {");
+				out.write("This reference is to a file ");
+				if(getUNF()!=null) {
+					out.write("(UNF=" + getUNF()+")");
+				}
+				out.write(" within a dataset with the given doi");
+				out.write("}\r\n");
+			}
+			out.write("}");
+
+		}
 		out.flush();
 	}
 
@@ -283,9 +316,13 @@ public class DataCitation {
 			if (getUNF() != null) {
 				out.write("C2  - " + getUNF() + "\r\n");
 			}
-			out.write("N1  - This reference is to a file within a dataset.\r\n");
+			if(isDirect()) {
+			out.write("N1  - This reference is to a file, with the given identifier, within a dataset.\r\n");
+			} else {
+				out.write("N1  - This reference is to a file within the dataset with the given identifier.\r\n");
+			}
 		} else {
-			out.write("N1  - This reference is to a file within a dataset.\r\n");
+			out.write("N1  - This reference is to a dataset.\r\n");
 		}
 
 		// closing element:
