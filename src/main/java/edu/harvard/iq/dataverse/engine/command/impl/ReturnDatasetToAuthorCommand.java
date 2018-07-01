@@ -31,14 +31,6 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.reject.datasetNotInReview"), this);
         }
         
-        ctxt.engine().submit( new RemoveLockCommand(getRequest(), getDataset(), DatasetLock.Reason.InReview));
-        Dataset updatedDataset = save(ctxt);
-        return updatedDataset;
-        
-    }
-
-    public Dataset save(CommandContext ctxt) throws CommandException {
-
         final Dataset dataset = getDataset();
         dataset.getEditVersion().setLastUpdateTime(getTimestamp());
         dataset.setModificationTime(getTimestamp());
@@ -60,7 +52,7 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
             Finally send a notification to the remaining (non-reviewing) authors - Hey! your dataset was rejected.
         */
         List<AuthenticatedUser> reviewers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
-        List<AuthenticatedUser> authors = ctxt.permissions().getUsersWithPermissionOn(Permission.EditDataset, savedDataset);
+        List<AuthenticatedUser> authors   = ctxt.permissions().getUsersWithPermissionOn(Permission.EditDataset, savedDataset);
         authors.removeAll(reviewers);
         for (AuthenticatedUser au : authors) {
             ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.RETURNEDDS, savedDataset.getLatestVersion().getId(), comment);
@@ -68,6 +60,8 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
         
         ctxt.index().indexDataset(savedDataset, true);
         return savedDataset;
+        
     }
+
 
 }
