@@ -45,10 +45,15 @@ There isn't any strict requirement on the local port (8083, 8084 in this doc), t
 
 ### Troubleshooting Notes:
 
-* If Dataverse' build fails due to an error about `Module` being ambiguous, you might be using Java 9 compiler.
+* If Dataverse' build fails due to an error about `Module` being ambiguous, you might be using a Java 9 compiler.
 
-* If you see an error like this... `docker: Error response from daemon: Conflict. The container name "/dv" is already in use by container "5f72a45b68c86c7b0f4305b83ce7d663020329ea4e30fa2a3ce9ddb05223533d". You have to remove (or rename) that container to be able to reuse that name.` ... run something like `docker ps -a | grep dv` to see the container left over from the last run and something like `docker rm 5f72a45b68c8` to remove it. Then try the `docker run` command above again.
+* If you see an error like this: 
+ ```
+ docker: Error response from daemon: Conflict. The container name "/dv" is already in use by container "5f72a45b68c86c7b0f4305b83ce7d663020329ea4e30fa2a3ce9ddb05223533d"
+ You have to remove (or rename) that container to be able to reuse that name.
+ ``` 
+    run something like `docker ps -a | grep dv` to see the container left over from the last run and something like `docker rm 5f72a45b68c8` to remove it. Then try the `docker run` command above again.
 
 * `empty reply from server` or `Failed to connect to ::1: Cannot assign requested address` tend to indicate either that you haven't given glassfish enough time to start, or your docker setup is in an inconsistent state and should probably be restarted.
 
-
+* For manually fiddling around with the created dataverse, use user `dataverseAdmin` with password `admin`.

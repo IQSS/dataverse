@@ -55,7 +55,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
     }
 
     /**
-     * Updates the {@link DatasetVersionUser} for our {@link #dataset}. After
+     * Creates/updates the {@link DatasetVersionUser} for our {@link #dataset}. After
      * calling this method, there is a {@link DatasetUser} object connecting
      * {@link #dataset} and the {@link AuthenticatedUser} who issued this
      * command, with the {@code lastUpdate} field containing {@link #timestamp}.
@@ -66,14 +66,16 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
         DatasetVersionUser datasetDataverseUser = ctxt.datasets().getDatasetVersionUser(dataset.getLatestVersion(), getUser());
 
         if (datasetDataverseUser != null) {
+            // Update existing dataset-user
             datasetDataverseUser.setLastUpdateDate(getTimestamp());
             ctxt.em().merge(datasetDataverseUser);
 
         } else {
+            // create a new dataset-user
             createDatasetUser(ctxt);
         }
     }
-
+    
     protected void createDatasetUser(CommandContext ctxt) {
         DatasetVersionUser datasetDataverseUser = new DatasetVersionUser();
         datasetDataverseUser.setDatasetVersion(getDataset().getLatestVersion());
@@ -81,7 +83,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
         datasetDataverseUser.setAuthenticatedUser((AuthenticatedUser) getUser());
         ctxt.em().persist(datasetDataverseUser);
     }
-
+    
     /**
      * Validates the fields of the {@link DatasetVersion} passed. Throws an
      * informational error if validation fails.

@@ -192,7 +192,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     df.setIdentifierRegistered(true);
                 }
             } catch (Throwable e) {
-                ctxt.datasets().removeDatasetLocks(dataset.getId(), DatasetLock.Reason.pidRegister);
+                ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.pidRegister);
                 throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
             }
         }

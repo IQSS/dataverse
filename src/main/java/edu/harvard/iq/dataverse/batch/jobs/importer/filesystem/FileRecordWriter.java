@@ -163,7 +163,7 @@ public class FileRecordWriter extends AbstractItemWriter {
                 if (dcmLock == null) {
                     getJobLogger().log(Level.WARNING, "Dataset not locked for DCM upload");
                 } else {
-                    datasetServiceBean.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.DcmUpload);
+                    datasetServiceBean.removeDatasetLocks(dataset, DatasetLock.Reason.DcmUpload);
                     dataset.removeLock(dcmLock);
                 }
                 updateDatasetVersion(dataset.getLatestVersion());

@@ -775,7 +775,7 @@ public class Datasets extends AbstractApiBean {
     public Response returnToAuthor(@PathParam("id") String idSupplied, String jsonBody) {
         
         if (jsonBody == null || jsonBody.isEmpty()) {
-            return error(Response.Status.BAD_REQUEST, "You must supply JSON to this API endpoint and it must contain a reason for returning the dataset.");
+            return error(Response.Status.BAD_REQUEST, "You must supply JSON to this API endpoint and it must contain a reason for returning the dataset (field: reasonForReturn).");
         }
         StringReader rdr = new StringReader(jsonBody);
         JsonObject json = Json.createReader(rdr).readObject();
@@ -789,10 +789,9 @@ public class Datasets extends AbstractApiBean {
             }
             AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset, reasonForReturn ));
-            boolean inReview = updatedDataset.isLockedFor(DatasetLock.Reason.InReview);
 
             JsonObjectBuilder result = Json.createObjectBuilder();
-            result.add("inReview", inReview);
+            result.add("inReview", false);
             result.add("message", "Dataset id " + updatedDataset.getId() + " has been sent back to the author(s).");
             return ok(result);
         } catch (WrappedResponse wr) {
