@@ -128,6 +128,117 @@ public class DatasetsIT {
         assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
+    
+    @Test
+    public void testAddUpdateDatasetViaNativeAPI() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+       
+        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        
+        //Test Add Data
+        
+        
+        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforePublishing.prettyPrint();
+        String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
+        String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
+        
+        String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
+        String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-add-metadata.json";
+        Response addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
+        addSubjectViaNative.prettyPrint();
+        addSubjectViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+
+        
+        RestAssured.registerParser("text/plain", Parser.JSON);
+        Response exportDatasetAsJson = UtilIT.exportDataset(datasetPersistentId, "dataverse_json", apiToken);
+        exportDatasetAsJson.prettyPrint();
+        
+        pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-add-subject-metadata.json";
+        addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
+        addSubjectViaNative.prettyPrint();
+        addSubjectViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+
+        String pathToJsonFileSingle = "doc/sphinx-guides/source/_static/api/dataset-simple-update-metadata.json";
+        Response addSubjectSingleViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingle, apiToken);
+        addSubjectSingleViaNative.prettyPrint();
+        addSubjectSingleViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+
+        //Trying to blank out required field should fail...
+        String pathToJsonFileBadData = "doc/sphinx-guides/source/_static/api/dataset-update-with-blank-metadata.json";
+        Response deleteTitleViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileBadData, apiToken);
+        deleteTitleViaNative.prettyPrint();
+        deleteTitleViaNative.then().assertThat().body("message", equalTo("Error parsing dataset update: Empty  value for field Title "));
+
+
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+        //post publish update
+        String pathToJsonFilePostPub= "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
+       Response addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPub, apiToken);
+        addDataToPublishedVersion.prettyPrint();
+        addDataToPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
+
+        publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+
+        //post publish update
+        String pathToJsonFileBadDataSubtitle = "doc/sphinx-guides/source/_static/api/dataset-edit-metadata-subtitle.json";
+        Response addDataToBadData = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileBadDataSubtitle, apiToken);
+        addDataToBadData.prettyPrint();
+
+        addDataToBadData.then().assertThat()
+                .body("message", equalTo("Error parsing dataset update: Invalid value submitted for: Subtitle. It should be a single value."))
+                .statusCode(400);
+        
+                addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
+        addSubjectViaNative.prettyPrint();
+        addSubjectViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+               String pathToJsonDeleteFile = "doc/sphinx-guides/source/_static/api/dataset-delete-subject-metadata.json";
+        addSubjectViaNative = UtilIT.deleteDatasetMetadataViaNative(datasetPersistentId, pathToJsonDeleteFile, apiToken);
+        addSubjectViaNative.prettyPrint();
+        addSubjectViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        pathToJsonDeleteFile = "doc/sphinx-guides/source/_static/api/dataset-delete-author-metadata.json";
+        addSubjectViaNative = UtilIT.deleteDatasetMetadataViaNative(datasetPersistentId, pathToJsonDeleteFile, apiToken);
+        addSubjectViaNative.prettyPrint();
+        addSubjectViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        pathToJsonDeleteFile = "doc/sphinx-guides/source/_static/api/dataset-delete-author-no-match.json";
+        addSubjectViaNative = UtilIT.deleteDatasetMetadataViaNative(datasetPersistentId, pathToJsonDeleteFile, apiToken);
+        addSubjectViaNative.prettyPrint();
+        addSubjectViaNative.then().assertThat().body("message", equalTo("Delete metadata failed: Author: Spruce, Sabrina not found."))
+                .statusCode(400);
+        
+        //"Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found."
+    }
 
     /**
      * This test requires the root dataverse to be published to pass.

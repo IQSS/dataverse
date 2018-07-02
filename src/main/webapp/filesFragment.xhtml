@@ -90,10 +90,13 @@
                     <!-- Files Count -->
                     <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold">
                         <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
+                        count
                     </h:outputFormat>
                 </div>
 
-                <div id="filesButtons" class="col-xs-10">
+                <div  class="col-xs-10">
+                    <p:outputPanel id="filesButtons">
+                        files fragment
                     <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->
                     <div jsf:id="uploadComputeBlock" class="button-block tab-header pull-right text-right"
                          jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
@@ -177,6 +180,7 @@
                             </li>
                         </ul>
                     </div>
+                    </p:outputPanel>
                 </div>
             </div>
         </f:facet>

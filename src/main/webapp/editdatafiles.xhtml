@@ -100,7 +100,9 @@
                     </div>
 
                     <!-- Create/Save Dataset Button Panel -->
-                    <div jsf:id="filesButtons" class="button-block">
+                    <div  class="button-block">
+                        <p:outputPanel id="filesButtons">
+                            files buttons edit datafiles
                         <div jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
                             <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockFileForm').show();" />
                             <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
@@ -121,7 +123,7 @@
                             </p:commandButton>
                             
                         </div>
-                        
+                       </p:outputPanel> 
                     </div>
                     <!-- END: Create/Save Dataset Button Panel -->
 
