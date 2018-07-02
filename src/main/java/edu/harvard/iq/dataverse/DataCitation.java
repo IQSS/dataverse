@@ -528,10 +528,10 @@ public class DataCitation {
 	}
 
 	private Date getDateFrom(DatasetVersion dsv) {
-
+		Date citationDate = null;
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
 		if (!dsv.getDataset().isHarvested()) {
-			Date citationDate = dsv.getCitationDate();
+			citationDate = dsv.getCitationDate();
 			if (citationDate == null) {
 				if (dsv.getDataset().getPublicationDate() != null) {
 					citationDate = dsv.getDataset().getPublicationDate();
@@ -541,19 +541,19 @@ public class DataCitation {
 			}
 		} else {
 			try {
-				date= sdf.parse(dsv.getDistributionDate());
+				citationDate= sdf.parse(dsv.getDistributionDate());
 			} catch (ParseException ex) {
 				// ignore
 			} catch (Exception ex) {
 				// ignore
 			}
 		}
-		if (date == null) {
+		if (citationDate == null) {
 			//As a last resort, pick the current date
 			logger.warning("Unable to find citation date for datasetversion: " + dsv.getId());
-			date = new Date();
+			citationDate = new Date();
 		}
-		return date;
+		return citationDate;
 	}
 
 	private void getAuthorsFrom(DatasetVersion dsv) {
