@@ -52,7 +52,7 @@
                                     <span class="glyphicon glyphicon-info-sign"/>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false" 
                                                     rendered="#{systemConfig.maxFileUploadSize !=null and !empty systemConfig.maxFileUploadSize}">
-                                        <f:param value="#{systemConfig.maxFileUploadSize}"/>
+                                        <f:param value="#{systemConfig.humanMaxFileUploadSize}"/>
                                     </h:outputFormat>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipMoreInformation']}" escape="false">
                                         <f:param value="#{systemConfig.guidesBaseUrl}"/>
@@ -178,20 +178,6 @@
                         });
 //]]>
                     </script>
-                    <p class="help-block">
-                        <span class="glyphicon glyphicon-info-sign"/>
-                        <ui:fragment rendered="#{systemConfig.maxFileUploadSize !=null and !empty systemConfig.maxFileUploadSize}">
-                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false">
-                            <f:param value="#{systemConfig.humanMaxFileUploadSize}"/>
-                        </h:outputFormat>                      
-                        </ui:fragment>  
-                        <ui:fragment rendered="true">
-                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipMoreInformation']}" escape="false">
-                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                            <f:param value="#{systemConfig.guidesVersion}"/>
-                        </h:outputFormat>                      
-                        </ui:fragment> 
-                    </p>
                     <!-- ATTENTION: the update= attribute in the fileUpload component --> 
                     <!-- below appears to be super important -->
                     <!-- Note the "oncomplete=" attribute in the p:fileUpload --> 
@@ -305,8 +291,8 @@
                     <p:message for="fileUpload" id="uploadMessage" display="text" />
                     
                     <p:commandButton id="uploadStarted" action="#{EditDatafilesPage.uploadStarted()}" update="" style="display:none"/>
-                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable,datasetForm:filesButtons" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
-                    <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable,datasetForm:filesButtons" style="display:none"/>
+                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
+                    <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" style="display:none"/>
                     
                     <!-- ????? TODO: How scalable are all these hidden update buttons ????? -->
                     <!-- ????? 
