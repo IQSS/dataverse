@@ -602,11 +602,11 @@ public class DataCitation {
 						.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
 			if (!StringUtils.isEmpty(dv.getIdentifier())) {
 				// creating a global id like this:
-				// persistentId = new GlobalId(dsv.getDataset().getGlobalId());
-				// you end up doing new GlobalId((New GlobalId(dsv.getDataset())).toString())
+				// persistentId = new GlobalId(dv.getGlobalId());
+				// you end up doing new GlobalId((New GlobalId(dv)).toString())
 				// - doing an extra formatting-and-parsing-again
 				// This achieves the same thing:
-				return new GlobalId(dsv.getDataset());
+				return new GlobalId(dv);
 			}
 		}
 		return null;
