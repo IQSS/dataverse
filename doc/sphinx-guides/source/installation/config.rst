@@ -338,6 +338,8 @@ The name of your root dataverse is the brand of your installation of Dataverse a
 
 Downloadable sample HTML and CSS files are provided below which you can edit as you see fit. It's up to you to create a directory in which to store these files, such as ``/var/www/dataverse`` in the examples below.
 
+You may also want to look at samples at https://github.com/shlake/LibraDataHomepage from community member Sherry Lake as well as her poster from the Dataverse Community Meeting 2018 called "Branding Your Local Dataverse": https://github.com/IQSS/dataverse/files/2128735/UVaHomePage.pdf
+
 A simpler option to brand and customize your installation is to utilize the dataverse theme, which each dataverse has, that allows you to change colors, add a logo, tagline or website link to the dataverse header section of the page. Those options are outlined in the :doc:`/user/dataverse-management` section of the User Guide.
 
 Custom Homepage

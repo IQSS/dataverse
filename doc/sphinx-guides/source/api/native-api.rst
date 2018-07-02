@@ -261,7 +261,7 @@ Update Metadata For a Dataset
 
 Updates the metadata for a dataset. If a draft of the dataset already exists, the metadata of that draft is overwritten; otherwise, a new draft is created with this metadata.
 
-You cannot currently target a specific field such as the title of a dataset and only update that one field. Instead, you must download a JSON representation of the dataset, edit the JSON you download, and then send the updated JSON to the Dataverse server.
+You must download a JSON representation of the dataset, edit the JSON you download, and then send the updated JSON to the Dataverse server.
 
 For example, after making your edits, your JSON file might look like :download:`dataset-update-metadata.json <../_static/api/dataset-update-metadata.json>` which you would send to Dataverse like this::
 
@@ -276,6 +276,29 @@ Now that the resulting JSON file only contains the ``metadataBlocks`` key, you c
     vi dataset-update-metadata.json
 
 Now that you've made edits to the metadata in your JSON file, you can send it to Dataverse as described above.
+
+Edit Dataset Metadata
+~~~~~~~~~~~~~~~~~~~~~
+
+Alternatively to replacing an entire dataset version with its JSON representation you may add data to dataset fields that are blank or accept multiple values with the following ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/editMetadata/?persistentId=$PID --upload-file dataset-add-metadata.json    
+
+You may also replace existing metadata in dataset fields with the following (adding the parameter replace=true)   ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/editMetadata?persistentId=$PID&replace=true --upload-file dataset-update-metadata.json
+    
+For these edits your JSON file need only include those dataset fields which you would like to edit. A sample JSON file may be downloaded here: :download:`dataset-edit-metadata-sample.json <../_static/api/dataset-edit-metadata-sample.json>` 
+
+Delete Dataset Metadata
+~~~~~~~~~~~~~~~~~~~~~
+
+You may delete some of the metadata of a dataset version by supplying a file with a JSON representation of dataset fields that you would like to delete with the following ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/deleteMetadata/?persistentId=$PID --upload-file dataset-delete-author-metadata.json    
+    
+For these deletes your JSON file must include an exact match of those dataset fields which you would like to delete. A sample JSON file may be downloaded here: :download:`dataset-delete-author-metadata.json <../_static/api/dataset-delete-author-metadata.json>` 
+
 
 Publish a Dataset
 ~~~~~~~~~~~~~~~~~

@@ -18,6 +18,7 @@ These "superuser" tasks are managed via the new page called the Dashboard. A use
    harvestserver
    metadataexport
    timers
+   integrations
    geoconnect-worldmap
    user-administration
    dataverses-datasets

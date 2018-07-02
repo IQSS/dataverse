@@ -29,6 +29,7 @@ import javax.persistence.StoredProcedureParameter;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 /**
  *
@@ -417,15 +418,14 @@ public class Dataset extends DvObjectContainer {
 
         // "Documentation", "Data" and "Code" are the 3 default categories that we 
         // present by default:
-        // (TODO: ? - provide these as constants somewhere? -- L.A. beta15)
-        if (!ret.contains("Documentation")) {
-            ret.add("Documentation");
+        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.documentation"))) {
+            ret.add(BundleUtil.getStringFromBundle("dataset.category.documentation"));
         }
-        if (!ret.contains("Data")) {
-            ret.add("Data");
+        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.data"))) {
+            ret.add(BundleUtil.getStringFromBundle("dataset.category.data"));
         }
-        if (!ret.contains("Code")) {
-            ret.add("Code");
+        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.code"))) {
+            ret.add(BundleUtil.getStringFromBundle("dataset.category.code"));
         }
 
         return ret;

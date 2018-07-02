@@ -78,6 +78,17 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
         RoleAssignment roleAssignment = new RoleAssignment(theDataset.getOwner().getDefaultContributorRole(),
             getRequest().getUser(), theDataset, privateUrlToken);
         ctxt.roles().save(roleAssignment, false);
+        
+         // TODO: the above may be creating the role assignments and saving them 
+         // in the database, but without properly linking them to the dataset
+         // (saveDataset, that the command returns). This may have been the reason 
+         // for the github issue #4783 - where the users were losing their contributor
+         // permissions, when creating datasets AND uploading files in one step. 
+         // In that scenario, an additional UpdateDatasetCommand is exectued on the
+         // dataset returned by the Create command. That issue was fixed by adding 
+         // a full refresh of the datast with datasetService.find() between the 
+         // two commands. But it may be a good idea to make sure they are properly
+         // linked here (?)
         theDataset.setPermissionModificationTime(getTimestamp());
         
         if ( template != null ) {
