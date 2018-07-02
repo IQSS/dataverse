@@ -1182,6 +1182,9 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     public static String getCiteDataFileFilename(String fileTitle, FileCitationExtension fileCitationExtension) {
+    	if((fileTitle==null) || (fileCitationExtension == null)) {
+    		return null;
+    	}
         if (fileTitle.endsWith("tab")) {
             return fileTitle.replaceAll("\\.tab$", fileCitationExtension.text);
         } else {
