@@ -59,23 +59,23 @@ read.dataverseTabData<-function (file, header = FALSE, sep = "\t", quote = "", d
     for (i in 1:cols) {
         if (colClassesx[i] == 0) {
 
-	     # Make sure the character values are handled as such:
-	     data[[i]]<-as.character(data[[i]]);
-	     # And replace empty strings with NAs:
-	     data[[i]][ data[[i]] == '' ]<-NA
-	     # And remove the double quotes we had put around the non-missing
- 	     # string values as they were stored in the TAB files:
+         # Make sure the character values are handled as such:
+         data[[i]]<-as.character(data[[i]]);
+         # And replace empty strings with NAs:
+         data[[i]][ data[[i]] == '' ]<-NA
+         # And remove the double quotes we had put around the non-missing
+         # string values as they were stored in the TAB files:
 
-	     data[[i]]<-sub("^\"", "", data[[i]])
-	     data[[i]]<-sub("\"$", "", data[[i]])
+         data[[i]]<-sub("^\"", "", data[[i]])
+         data[[i]]<-sub("\"$", "", data[[i]])
 
-	     # Special processing for dates and times:
+         # Special processing for dates and times:
             
              if (is.null(unlist(varFormat[col.names[i]]))){
                 data[[i]] <- as(data[[i]], "character")
              } else if (!is.null(unlist(varFormat[col.names[i]]))){
                 if (varFormat[col.names[i]] == 'D'){
-		    data[[i]]<-as.Date(data[[i]]);
+            data[[i]]<-as.Date(data[[i]]);
                     colClassesx[i]<-1
                 } else if (varFormat[col.names[i]] == 'T'){
                     data[[i]]<-as.POSIXct(strptime(data[[i]], "%T"))
@@ -90,24 +90,24 @@ read.dataverseTabData<-function (file, header = FALSE, sep = "\t", quote = "", d
              }
         } else if (colClassesx[i] == 3) {
 
-	     # special case for Boolean/logical variables: 
-	     # (these will be passed from the application as vectors of 0s and 1s)
-	     # also, note that this type will be used only when the subset is 
-	     # created as part of the "save-as" functionality. When it's for 
-	     # analysis, the DVN "boolean" variable will be of type 1, because 
-	     # they will be handled as regular integer categoricals with the labels 
-	     # "TRUE" and "FALSE". -- L.A. 
+         # special case for Boolean/logical variables: 
+         # (these will be passed from the application as vectors of 0s and 1s)
+         # also, note that this type will be used only when the subset is 
+         # created as part of the "save-as" functionality. When it's for 
+         # analysis, the DVN "boolean" variable will be of type 1, because 
+         # they will be handled as regular integer categoricals with the labels 
+         # "TRUE" and "FALSE". -- L.A. 
 
-	     for (j in 1:length(data[[i]])) {
-	     	 if (!is.na(data[[i]][j]) && data[[i]][j] == "") { 
-	       	    data[[i]][j]<-NA 
-	    	 }
-	     }
+         for (j in 1:length(data[[i]])) {
+             if (!is.na(data[[i]][j]) && data[[i]][j] == "") { 
+                data[[i]][j]<-NA 
+             }
+         }
 
-	     data[[i]]<-as.logical(as.numeric(data[[i]]))
+         data[[i]]<-as.logical(as.numeric(data[[i]]))
 
         } else {
-	    # Numeric values: 
+        # Numeric values: 
             data[[i]]<-type.convert(data[[i]], dec = dec)
         }
     }
@@ -266,20 +266,20 @@ createDataverseDataFrame<-function(dtfrm, dwnldoptn, dsnprfx) {
 
     for (i in 1:length(x)) {
         # Recoding discrete, categorical variables as R factors;
-	# using the value labels maps supplied by the Dataverse.
+    # using the value labels maps supplied by the Dataverse.
 
-	if (DBG) {
+    if (DBG) {
             # cat("inside the for loop\n")
             # cat("class: ")
             # cat(class(x[[i]]))
             # cat("\n")
             cat("VAR TYPE: ",paste(VARTYPE[i],"\n",sep=""))
-	}		
+    }       
 
 
-	# -- L.A.
-	
-	if (!is.null(VARTYPE) && VARTYPE[i]<2) {
+    # -- L.A.
+    
+    if (!is.null(VARTYPE) && VARTYPE[i]<2) {
 
             if (!(is.null(VALINDEX[[as.character(i)]]))) {
 
@@ -341,8 +341,8 @@ createDataverseDataFrame<-function(dtfrm, dwnldoptn, dsnprfx) {
 
                     # cat("ordered value labels supplied")
                     x[[i]]  <-  factor(x[[i]],
-				levels=VALORDER[[as.character(i)]],
-				ordered=TRUE)
+                levels=VALORDER[[as.character(i)]],
+                ordered=TRUE)
                 } else {
                     if (DBG) {
                         cat("no ordered value labels supplied\n")
@@ -352,26 +352,34 @@ createDataverseDataFrame<-function(dtfrm, dwnldoptn, dsnprfx) {
                         cat(paste("MTI", mti,"\n",sep=" : "))
                         cat(paste("VLEVSI", vlevsi,"\n",sep=" : "))
                     }
-	  
+      
                     x[[i]]  <-  factor(x[[i]],
-	        		levels=vlevsi,
-			     	labels=names(vlevsi),
-			     	ordered=(VARTYPE[i]>0 && ((length(vlevsi)-length(mti)>2))))
+                    levels=vlevsi,
+                    labels=names(vlevsi),
+                    ordered=(VARTYPE[i]>0 && ((length(vlevsi)-length(mti)>2))))
                 }
 
                 if (DBG) {
                     attr(x,"vlevsi")<-vlevsi;
                     attr(x,"namesvlevsi")<-names(vlevsi); 
                 }
-	
-            }	
-	}
+    
+            }   
+    }
 
-	# try to add variable labels as R comments: 
-	comment(x[[i]]) <- VARLABELS[i]
+    # try to add variable labels as R comments: 
+    comment(x[[i]]) <- VARLABELS[i]
     }
 
     # SAVE AS R WORKSPACE: 
     save(x,file=dsnprfx)
 } # end of createDataverseDataFrame
 
+direct_export<-function(file, fmt, dsnprfx){
+    if (fmt = "application/x-stata"){
+        table <- read_stata(file)
+    } else if (fmt = "application/x-spss-sav"){
+        table <- read_spss(file)
+    }
+    save(x, file=dsnprfx)
+}

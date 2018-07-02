@@ -47,6 +47,8 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 
 
@@ -216,15 +218,20 @@ public class DataConverter {
         // create the service instance
         RemoteDataFrameService dfs = new RemoteDataFrameService();
         
+        List<String> directFormats = Arrays.asList(new String[]{"application/x-stata",
+                                                                "application/x-spss-sav",
+                                                                "application/x-spss-por"});
         if ("RData".equals(formatRequested)) {
-            if ("application/x-stata".equals(file.getOriginalFileFormat())){
+            Map<String, String> resultInfo;
+            if (directFormats.contains(file.getOriginalFileFormat())){
                 try {
-                    String identifier = file.getStorageIdentifier();
                     StorageIO<DataFile> storageIO = file.getStorageIO();
                     storageIO.open(DataAccessOption.READ_ACCESS);
                     File origFile = downloadFromStorageIO(storageIO);
+                    resultInfo = dfs.directConvert(origFile, file.getOriginalFileFormat());
                 } catch (IOException ex) {
                     logger.severe(ex.getMessage());
+                    resultInfo = null;
                 }
             //} else if("application/x-spss".equals(file.getOriginalFileFormat())){
                 
@@ -241,22 +248,22 @@ public class DataConverter {
                 sro.setFormatRequested(FILE_TYPE_RDATA);
 
                 // execute the service
-                Map<String, String> resultInfo = dfs.execute(sro);
-
-                //resultInfo.put("offlineCitation", citation);
-                logger.fine("resultInfo="+resultInfo+"\n");
-
-                // check whether a requested file is actually created
-
-                if ("true".equals(resultInfo.get("RexecError"))){
-                    logger.fine("R-runtime error trying to convert a file.");
-                    return  null;
-                }
-                String dataFrameFileName = resultInfo.get("dataFrameFileName");
-                logger.fine("data frame file name: "+dataFrameFileName);
-
-                formatConvertedFile = new File(dataFrameFileName);
+                resultInfo = dfs.execute(sro);
             }
+
+            //resultInfo.put("offlineCitation", citation);
+            logger.fine("resultInfo="+resultInfo+"\n");
+
+            // check whether a requested file is actually created
+
+            if ("true".equals(resultInfo.get("RexecError"))){
+                logger.fine("R-runtime error trying to convert a file.");
+                return  null;
+            }
+            String dataFrameFileName = resultInfo.get("dataFrameFileName");
+            logger.fine("data frame file name: "+dataFrameFileName);
+
+            formatConvertedFile = new File(dataFrameFileName);
         } else if ("prep".equals(formatRequested)) {
             formatConvertedFile = dfs.runDataPreprocessing(file);
         } else {

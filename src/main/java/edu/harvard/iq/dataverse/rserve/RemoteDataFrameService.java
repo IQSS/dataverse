@@ -158,13 +158,12 @@ public class RemoteDataFrameService {
             // data file to be copied back to the dvn
             String dsnprfx = RSERVE_TMP_DIR + "/" + dataFileName;
             
-            String dataverseDataFrameCommand = "createDataverseDataFrame(dtfrm=x,"+
-                "dwnldoptn='RData'"+
-                ", dsnprfx='"+dsnprfx+"')";
+            String command = "direct_export(file='"+tempFileNameIn+"'," + "fmt='" + fmt + "'" +
+                             ", dsnprfx='" + dsnprfx + "')";
                         
-            connection.voidEval(dataverseDataFrameCommand);
+            connection.voidEval(command);
             
-            int wbFileSize = getFileSize(connection,dsnprfx);
+            int wbFileSize = getFileSize(connection, dsnprfx);
             File localDataFrameFile = transferRemoteFile(connection, dsnprfx, RWRKSP_FILE_PREFIX,"RData", wbFileSize);
             
             if (localDataFrameFile != null){
