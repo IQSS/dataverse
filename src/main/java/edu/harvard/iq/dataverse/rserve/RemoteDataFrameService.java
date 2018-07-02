@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
+import org.apache.commons.io.IOUtils;
 
 import org.rosuda.REngine.*;
 import org.rosuda.REngine.Rserve.*;
@@ -140,6 +141,56 @@ public class RemoteDataFrameService {
     }
     
     
+    public Map<String, String> directConvert(File originalFile, String fmt){
+        
+        Map<String, String> result = new HashMap<>();
+        try {
+            RConnection connection = setupConnection();
+            // send the data file to the Rserve side:
+            InputStream inFile = new BufferedInputStream(new FileInputStream(originalFile));
+
+            RFileOutputStream rOutFile = connection.createFile(tempFileNameIn);
+            copyWithBuffer(inFile, rOutFile, 1024);
+            
+            
+            String dataFileName = "Data." + PID + ".RData";
+            
+            // data file to be copied back to the dvn
+            String dsnprfx = RSERVE_TMP_DIR + "/" + dataFileName;
+            
+            String dataverseDataFrameCommand = "createDataverseDataFrame(dtfrm=x,"+
+                "dwnldoptn='RData'"+
+                ", dsnprfx='"+dsnprfx+"')";
+                        
+            connection.voidEval(dataverseDataFrameCommand);
+            
+            int wbFileSize = getFileSize(connection,dsnprfx);
+            File localDataFrameFile = transferRemoteFile(connection, dsnprfx, RWRKSP_FILE_PREFIX,"RData", wbFileSize);
+            
+            if (localDataFrameFile != null){
+                logger.fine("data frame file name: "+localDataFrameFile.getAbsolutePath());
+                result.put("dataFrameFileName",localDataFrameFile.getAbsolutePath());
+            } else {
+                logger.fine("data frame file is null!");
+                // throw an exception??
+            }
+            
+            result.put("Rversion", connection.eval("R.Version()$version.string").asString());
+            
+            logger.fine("result object (before closing the Rserve):\n"+result);
+            
+            String deleteLine = "file.remove('"+tempFileNameIn+"')";
+            connection.eval(deleteLine);
+ 
+            connection.close();
+        
+        } catch (Exception e) {
+            logger.warning(e.getMessage());
+            result.put("RexecError", "true");
+        }
+        
+        return result;
+    }
     
     /*
      * Execute a data frame creation process:
@@ -155,60 +206,19 @@ public class RemoteDataFrameService {
     public Map<String, String> execute(RJobRequest jobRequest) {
         logger.fine("RemoteDataFrameService: execute() starts here.");
     
-        // set the return object
         Map<String, String> result = new HashMap<>();
         
         try {
-            // TODO: 
-            // Split the code below into neat individual methods - for 
-            // initializing the connection, loading the remote libraries, 
-            // creating remote R vectors for the parameters that will be used 
-            // to create the data frame - variable names, labels, etc., and 
-            // executing the main request and any necessary post-processing
-            // -- L.A. 4.0 alpha 1
-            
-            // Set up an Rserve connection
-            logger.fine("sro dump:\n"+ToStringBuilder.reflectionToString(jobRequest, ToStringStyle.MULTI_LINE_STYLE));
-            
-            logger.fine("RSERVE_USER="+RSERVE_USER+"[default=rserve]");
-            logger.fine("RSERVE_PASSWORD="+RSERVE_PWD+"[default=rserve]");
-            logger.fine("RSERVE_PORT="+RSERVE_PORT+"[default=6311]");
-            logger.fine("RSERVE_HOST="+RSERVE_HOST);
-
-
-            RConnection connection = new RConnection(RSERVE_HOST, RSERVE_PORT);
-
-            connection.login(RSERVE_USER, RSERVE_PWD);
-            logger.info(">" + connection.eval("R.version$version.string").asString() + "<");
-            
-            // check working directories
-            // This needs to be done *before* we try to create any files 
-            // there!
-            setupWorkingDirectory(connection);
-            
-
-
+            RConnection connection = setupConnection();
             // send the data file to the Rserve side:
-            
-            String inFileName = jobRequest.getTabularDataFileName();
-            InputStream inFile = new BufferedInputStream(new FileInputStream(inFileName));
-
-            byte[] buffer = new byte[1024];
-            int bufsize = inFile.read(buffer);
+            InputStream inFile = new BufferedInputStream(new FileInputStream(
+                                     jobRequest.getTabularDataFileName()));
 
             RFileOutputStream rOutFile = connection.createFile(tempFileNameIn);
-            while (bufsize != -1) {
-                    rOutFile.write(buffer, 0, bufsize);
-                    bufsize = inFile.read(buffer);
-            }
-            rOutFile.close();
-            inFile.close();
+            copyWithBuffer(inFile, rOutFile, 1024);
             
             // Rserve code starts here
             logger.fine("wrkdir="+RSERVE_TMP_DIR);
-            
-            String RversionLine = "R.Version()$version.string";
-            String Rversion = connection.eval(RversionLine).asString();
                         
             // We need to initialize our R session:
             // send custom R code library over to the Rserve and load the code:
@@ -217,9 +227,6 @@ public class RemoteDataFrameService {
             
             logger.fine("raw variable type="+Arrays.toString(jobRequest.getVariableTypes()));
             connection.assign("vartyp", new REXPInteger(jobRequest.getVariableTypes()));
-            String [] tmpt = connection.eval("vartyp").asStrings();
-            logger.fine("vartyp length="+ tmpt.length + "\t " +
-                StringUtils.join(tmpt,","));
         
             // variable *formats* - not to be confused with variable *types*!
             // these specify extra, optional format specifications - for example, 
@@ -478,39 +485,54 @@ public class RemoteDataFrameService {
             
             logger.fine("wbFileSize="+wbFileSize);
             
-            // If the above succeeded, the dataframe has been saved on the 
-            // Rserve side as an .Rdata file. Now we can transfer it back to the
-            // dataverse side:
-            
-            File localDataFrameFile = transferRemoteFile(connection, dsnprfx, RWRKSP_FILE_PREFIX,"RData", wbFileSize);
-            
-            
-            if (localDataFrameFile != null){
-                logger.fine("data frame file name: "+localDataFrameFile.getAbsolutePath());
-                result.put("dataFrameFileName",localDataFrameFile.getAbsolutePath());
-            } else {
-                logger.fine("data frame file is null!");
-                // throw an exception??
-            }
-            
-            result.put("Rversion", Rversion);
-            
-            logger.fine("result object (before closing the Rserve):\n"+result);
-            
-            String deleteLine = "file.remove('"+tempFileNameIn+"')";
-            connection.eval(deleteLine);
- 
-            connection.close();
-        
+            result.putAll(buildResult(connection, dsnprfx, wbFileSize, result));
         } catch (Exception e) {
             e.printStackTrace();
             result.put("RexecError", "true");
-            return result;
-
         }
         
         return result;
         
+    }
+
+    private Map<String, String> buildResult(RConnection connection, String dsnprfx, int wbFileSize, Map<String, String> result) throws RserveException, REXPMismatchException {
+        // If the above succeeded, the dataframe has been saved on the
+        // Rserve side as an .Rdata file. Now we can transfer it back to the
+        // dataverse side:
+        File localDataFrameFile = transferRemoteFile(connection, dsnprfx, RWRKSP_FILE_PREFIX,"RData", wbFileSize);
+        
+        if (localDataFrameFile != null){
+            logger.fine("data frame file name: "+localDataFrameFile.getAbsolutePath());
+            result.put("dataFrameFileName",localDataFrameFile.getAbsolutePath());
+        } else {
+            logger.warning("data frame file is null!");
+            // throw an exception??
+        }
+        
+        result.put("Rversion", connection.eval("R.Version()$version.string").asString());
+        
+        logger.fine("result object (before closing the Rserve):\n"+result);
+        
+        String deleteLine = "file.remove('"+tempFileNameIn+"')";
+        connection.eval(deleteLine);
+        connection.close();
+        return result;
+    }
+
+    private RConnection setupConnection() throws REXPMismatchException, RserveException {
+        // Set up an Rserve connection
+        logger.fine("RSERVE_USER="+RSERVE_USER+"[default=rserve]");
+        logger.fine("RSERVE_PASSWORD="+RSERVE_PWD+"[default=rserve]");
+        logger.fine("RSERVE_PORT="+RSERVE_PORT+"[default=6311]");
+        logger.fine("RSERVE_HOST="+RSERVE_HOST);
+        RConnection connection = new RConnection(RSERVE_HOST, RSERVE_PORT);
+        connection.login(RSERVE_USER, RSERVE_PWD);
+        logger.info(">" + connection.eval("R.version$version.string").asString() + "<");
+        // check working directories
+        // This needs to be done *before* we try to create any files
+        // there!
+        setupWorkingDirectory(connection);
+        return connection;
     }
     
 
@@ -552,8 +574,6 @@ public class RemoteDataFrameService {
             
             RFileOutputStream rOutStream = connection.createFile(tempFileNameIn);   
             
-            byte[] buffer = new byte[4 * 8192];
-            int bufsize = is.read(buffer);
 
             // before writing out any bytes from the input stream, flush
             // any extra content, such as the variable header for the 
@@ -562,13 +582,7 @@ public class RemoteDataFrameService {
                 rOutStream.write(accessObject.getVarHeader().getBytes());
             }
 
-            while (bufsize != -1) {
-                rOutStream.write(buffer, 0, bufsize);
-                bufsize = is.read(buffer);
-            }
-
-            is.close();
-            rOutStream.close(); 
+            copyWithBuffer(is, rOutStream, 4*8192); 
             
             // Rserve code starts here
             logger.fine("wrkdir="+RSERVE_TMP_DIR);
@@ -607,6 +621,18 @@ public class RemoteDataFrameService {
 
             
         return preprocessedDataFile;
+    }
+
+    private void copyWithBuffer(InputStream is, RFileOutputStream rOutStream, int bufSize) throws IOException {
+        byte[] buffer = new byte[bufSize];
+       bufSize = is.read(buffer);
+        while (bufSize != -1) {
+            rOutStream.write(buffer, 0, bufSize);
+            bufSize = is.read(buffer);
+        }
+        
+        is.close();
+        rOutStream.close();
     }
     
     // utilitiy methods:
@@ -669,20 +695,19 @@ public class RemoteDataFrameService {
         File tmpResultFile = null;
         String resultFile = tmpFilePrefix + PID + "." + tmpFileExt;
 
-        RFileInputStream rInStrean = null;
+        RFileInputStream rInStream = null;
         OutputStream outbr = null;
         try {
             tmpResultFile = new File(LOCAL_TEMP_DIR, resultFile);
             outbr = new BufferedOutputStream(new FileOutputStream(tmpResultFile));
             // open the input stream
-            rInStrean = connection.openFile(targetFilename);
-
+            rInStream = connection.openFile(targetFilename);
             if (fileSize < 1024 * 1024 * 500) {
                 byte[] obuf = new byte[fileSize];
-                rInStrean.read(obuf);
+                rInStream.read(obuf);
                 outbr.write(obuf, 0, fileSize);
             }
-            rInStrean.close();
+            rInStream.close();
             outbr.close();
             return tmpResultFile;
         } catch (FileNotFoundException fe) {
@@ -693,9 +718,9 @@ public class RemoteDataFrameService {
             ie.printStackTrace();
             logger.fine("IO exception occurred");
         } finally {
-            if (rInStrean != null) {
+            if (rInStream != null) {
                 try {
-                    rInStrean.close();
+                    rInStream.close();
                 } catch (IOException e) {
 
                 }
@@ -746,19 +771,11 @@ public class RemoteDataFrameService {
 
         // Try opening a buffered reader stream
         try {
-            BufferedReader rd = new BufferedReader(new InputStreamReader(resourceStream, "UTF-8"));
-
-            String line = rd.readLine();
-            while (line != null) {
-                resourceAsString = resourceAsString.concat(line + "\n");
-                line = rd.readLine();
-            }
+            resourceAsString = IOUtils.toString(resourceStream, "UTF-8");
             resourceStream.close();
         } catch (IOException ex) {
             logger.warning(String.format("RDATAFileReader: (readLocalResource) resource stream from path \"%s\" was invalid", path));
         }
-
-        // Return string
         return resourceAsString;
     }
 }

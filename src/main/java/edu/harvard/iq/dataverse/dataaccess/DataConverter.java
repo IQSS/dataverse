@@ -47,6 +47,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Level;
 
 
 
@@ -99,39 +100,7 @@ public class DataConverter {
         // If not cached, run the conversion:
         if (convertedFileStream == null) {
 
-            File tabFile = null;
-
-            boolean tempFilesRequired = false;
-
-            try {
-                Path tabFilePath = storageIO.getFileSystemPath();
-                tabFile = tabFilePath.toFile();
-            } catch (UnsupportedDataAccessOperationException uoex) {
-                // this means there is no direct filesystem path for this object; it's ok!
-                logger.fine("Could not open source file as a local Path - will go the temp file route.");
-                tempFilesRequired = true;
-            } catch (IOException ioex) {
-                // this is likely a fatal condition, as in, the file is unaccessible:
-                return null;
-            }
-
-            if (tempFilesRequired) {
-                ReadableByteChannel tabFileChannel = null;
-                try {
-                    logger.fine("opening datafFileIO for the source tabular file...");
-                    storageIO.open();
-                    tabFileChannel = storageIO.getReadChannel();
-
-                    FileChannel tempFileChannel;
-                    tabFile = File.createTempFile("tempTabFile", ".tmp");
-                    tempFileChannel = new FileOutputStream(tabFile).getChannel();
-                    tempFileChannel.transferFrom(tabFileChannel, 0, storageIO.getSize());
-                } catch (IOException ioex) {
-                    logger.warning("caught IOException trying to store tabular file " + storageIO.getDataFile().getStorageIdentifier() + " as a temp file.");
-
-                    return null;
-                }
-            }
+            File tabFile = downloadFromStorageIO(storageIO);
 
             if (tabFile == null) {
                 return null;
@@ -187,23 +156,46 @@ public class DataConverter {
         }
 
         return null;
-    } // end of performformatconversion();
+    }
+
+    private static File downloadFromStorageIO(StorageIO<DataFile> storageIO) {
+        File tabFile;
+        if (storageIO.isLocalFile()){
+            try {
+                Path tabFilePath = storageIO.getFileSystemPath();
+                tabFile = tabFilePath.toFile();
+            } catch (IOException ioex) {
+                // this is likely a fatal condition, as in, the file is unaccessible:
+                tabFile = null;
+            }
+        } else {
+            ReadableByteChannel tabFileChannel = null;
+            try {
+                logger.fine("opening datafFileIO for the source tabular file...");
+                storageIO.open();
+                tabFileChannel = storageIO.getReadChannel();
+                
+                FileChannel tempFileChannel;
+                tabFile = File.createTempFile("tempTabFile", ".tmp");
+                tempFileChannel = new FileOutputStream(tabFile).getChannel();
+                tempFileChannel.transferFrom(tabFileChannel, 0, storageIO.getSize());
+            } catch (IOException ioex) {
+                logger.warning("caught IOException trying to store tabular file " + storageIO.getDataFile().getStorageIdentifier() + " as a temp file.");
+                tabFile = null;
+            }
+        }
+        return tabFile;
+    }
 
     // Method for (subsettable) file format conversion.
     // The method needs the subsettable file saved on disk as in the
     // TAB-delimited format.
     // Meaning, if this is a remote subsettable file, it needs to be downloaded
-    // and stored locally as a temporary file; and if it's a fixed-field file, it
-    // needs to be converted to TAB-delimited, before you can feed the file
-    // to this method. (See performFormatConversion() method)
+    // and stored locally as a temporary file (See performFormatConversion() method)
     // The method below takes the tab file and sends it to the R server
     // (possibly running on a remote host) and gets back the transformed copy,
     // providing error-checking and diagnostics in the process.
-    // This is mostly Akio Sone's code from DVN3. 
-    // (hence some obsolete elements in the comment above: ALL of the tabular
-    // data files in Dataverse are saved in tab-delimited format - we no longer
-    // support fixed-field files!
-
+    // This is mostly Akio Sone's code from DVN3.
     private static File runFormatConversion (DataFile file, File tabFile, String formatRequested) {
 
         if ( formatRequested.equals (FILE_TYPE_TAB) ) {
@@ -220,36 +212,46 @@ public class DataConverter {
             return tabFile;
         }
 
-        File formatConvertedFile = null;
+        File formatConvertedFile;
         // create the service instance
         RemoteDataFrameService dfs = new RemoteDataFrameService();
         
         if ("RData".equals(formatRequested)) {
-            List<DataVariable> dataVariables = file.getDataTable().getDataVariables();
-            Map<String, Map<String, String>> vls = getValueTableForRequestedVariables(dataVariables);
-            logger.fine("format conversion: variables(getDataVariableForRequest())=" + dataVariables + "\n");
-            logger.fine("format conversion: variables(dataVariables)=" + dataVariables + "\n");
-            logger.fine("format conversion: value table(vls)=" + vls + "\n");
-            RJobRequest sro = new RJobRequest(dataVariables, vls);
+            if ("application/x-stata".equals(file.getOriginalFileFormat())){
+                try {
+                    String identifier = file.getStorageIdentifier();
+                    StorageIO<DataFile> storageIO = file.getStorageIO();
+                    storageIO.open(DataAccessOption.READ_ACCESS);
+                    File origFile = downloadFromStorageIO(storageIO);
+                } catch (IOException ex) {
+                    logger.severe(ex.getMessage());
+                }
+            //} else if("application/x-spss".equals(file.getOriginalFileFormat())){
+                
+            } else{
+                List<DataVariable> dataVariables = file.getDataTable().getDataVariables();
+                Map<String, Map<String, String>> vls = getValueTableForRequestedVariables(dataVariables);
+                logger.fine("format conversion: variables(getDataVariableForRequest())=" + dataVariables + "\n");
+                logger.fine("format conversion: variables(dataVariables)=" + dataVariables + "\n");
+                logger.fine("format conversion: value table(vls)=" + vls + "\n");
+                RJobRequest sro = new RJobRequest(dataVariables, vls);
 
-            sro.setTabularDataFileName(tabFile.getAbsolutePath());
-            sro.setRequestType(SERVICE_REQUEST_CONVERT);
-            sro.setFormatRequested(FILE_TYPE_RDATA);
+                sro.setTabularDataFileName(tabFile.getAbsolutePath());
+                sro.setRequestType(SERVICE_REQUEST_CONVERT);
+                sro.setFormatRequested(FILE_TYPE_RDATA);
 
-        
+                // execute the service
+                Map<String, String> resultInfo = dfs.execute(sro);
 
-            // execute the service
-            Map<String, String> resultInfo = dfs.execute(sro);
+                //resultInfo.put("offlineCitation", citation);
+                logger.fine("resultInfo="+resultInfo+"\n");
 
-            //resultInfo.put("offlineCitation", citation);
-            logger.fine("resultInfo="+resultInfo+"\n");
+                // check whether a requested file is actually created
 
-            // check whether a requested file is actually created
-
-            if ("true".equals(resultInfo.get("RexecError"))){
-                logger.fine("R-runtime error trying to convert a file.");
-                return  null;
-            } else {
+                if ("true".equals(resultInfo.get("RexecError"))){
+                    logger.fine("R-runtime error trying to convert a file.");
+                    return  null;
+                }
                 String dataFrameFileName = resultInfo.get("dataFrameFileName");
                 logger.fine("data frame file name: "+dataFrameFileName);
 
@@ -263,13 +265,11 @@ public class DataConverter {
         }
             
 
-        if (formatConvertedFile != null && formatConvertedFile.exists()) {
-            logger.fine("frmtCnvrtdFile:length=" + formatConvertedFile.length());
-        } else {
+        if (formatConvertedFile == null || !formatConvertedFile.exists()) {
             logger.warning("Format-converted file was not properly created.");
             return null;
         }
-
+        logger.fine("frmtCnvrtdFile:length=" + formatConvertedFile.length());
         return formatConvertedFile;
     }
 
@@ -278,10 +278,9 @@ public class DataConverter {
         for (DataVariable dataVar : dataVariables){
             Map<String, String> varLabels = new HashMap<>();
             for (VariableCategory varCatagory : dataVar.getCategories()){
-                if (varCatagory.getLabel() == null){
-                    varCatagory.setLabel("LOL");
+                if (varCatagory.getLabel() != null){
+                    varLabels.put(varCatagory.getValue(), varCatagory.getLabel());
                 }
-                varLabels.put(varCatagory.getValue(), varCatagory.getLabel());
             }
             if (!varLabels.isEmpty()){
                 allVarLabels.put("v"+dataVar.getId(), varLabels);
@@ -296,7 +295,7 @@ public class DataConverter {
         if (altFileName == null || altFileName.isEmpty()) {
             altFileName = "Converted";
         }
-
+        // Fixme:" should this be else if?
         if ( formatRequested != null ) {
             altFileName = FileUtil.replaceExtension(altFileName, formatRequested);
         }
