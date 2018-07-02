@@ -606,7 +606,11 @@ public class DataCitation {
 				// you end up doing new GlobalId((New GlobalId(dv)).toString())
 				// - doing an extra formatting-and-parsing-again
 				// This achieves the same thing:
-				return new GlobalId(dv);
+				if(!isDirect()) {
+					return new GlobalId(dsv.getDataset());
+				} else {
+					return new GlobalId(dv);
+				}
 			}
 		}
 		return null;
