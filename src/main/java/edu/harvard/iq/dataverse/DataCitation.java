@@ -330,7 +330,7 @@ public class DataCitation {
 		// EndNote (see the longer comment in the EndNote section below)>
 
 		
-		if (getFileTitle()!=null) {
+		if ((getFileTitle()!=null)&&isDirect()) {
 			out.write("TY  - CHAP" + "\r\n");
 			out.write("T1  - " + getFileTitle() + "\r\n");
 			out.write("T2  - " + getTitle() + "\r\n");
