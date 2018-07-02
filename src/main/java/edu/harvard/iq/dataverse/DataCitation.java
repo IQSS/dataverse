@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,6 +35,8 @@ import org.apache.commons.lang.StringUtils;
  * @author gdurand
  */
 public class DataCitation {
+	
+	private static final Logger logger = Logger.getLogger(DataCitation.class.getCanonicalName());
 
 	private List<String> authors = new ArrayList<String>();
 	private String title;
@@ -546,6 +547,11 @@ public class DataCitation {
 			} catch (Exception ex) {
 				// ignore
 			}
+		}
+		if (date == null) {
+			//As a last resort, pick the current date
+			logger.warning("Unable to find citation date for datasetversion: " + dsv.getId());
+			date = new Date();
 		}
 		return date;
 	}
