@@ -288,17 +288,17 @@
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left" role="menu">
                                                     <li>
-                                                        <a jsf:id="endNoteLink-2" jsf:action="#{FilePage.fileDownloadService.downloadDatafileCitationXML(FilePage.fileMetadata)}" >
+                                                        <a jsf:id="endNoteLink-2" jsf:action="#{FilePage.fileDownloadService.downloadDirectDatafileCitationXML(FilePage.fileMetadata)}" >
                                                             #{bundle['dataset.cite.downloadBtn.xml']}
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a jsf:id="risLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatafileCitationRIS(FilePage.fileMetadata)}">
+                                                        <a jsf:id="risLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadDirectDatafileCitationRIS(FilePage.fileMetadata)}">
                                                             #{bundle['dataset.cite.downloadBtn.ris']}
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a jsf:id="bibLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatafileCitationBibtex(FilePage.fileMetadata)}" target="_blank">
+                                                        <a jsf:id="bibLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadDirectDatafileCitationBibtex(FilePage.fileMetadata)}" target="_blank">
                                                             #{bundle['dataset.cite.downloadBtn.bib']}
                                                         </a>
                                                     </li>

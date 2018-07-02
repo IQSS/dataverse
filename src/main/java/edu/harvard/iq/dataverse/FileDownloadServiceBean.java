@@ -236,19 +236,23 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void downloadDatasetCitationXML(Dataset dataset) {
-        downloadCitationXML(null, dataset);
+        downloadCitationXML(null, dataset, false);
     }
 
     public void downloadDatafileCitationXML(FileMetadata fileMetadata) {
-        downloadCitationXML(fileMetadata, null);
+        downloadCitationXML(fileMetadata, null, false);
+    }
+    
+    public void downloadDirectDatafileCitationXML(FileMetadata fileMetadata) {
+        downloadCitationXML(fileMetadata, null, true);
     }
 
-    public void downloadCitationXML(FileMetadata fileMetadata, Dataset dataset) {
+    public void downloadCitationXML(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
     	DataCitation citation=null;
         if (dataset != null){
         	citation = new DataCitation(dataset.getLatestVersion());
         } else {
-            citation= new DataCitation(fileMetadata);
+            citation= new DataCitation(fileMetadata, direct);
         }
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
@@ -274,20 +278,24 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     public void downloadDatasetCitationRIS(Dataset dataset) {
 
-        downloadCitationRIS(null, dataset);
+        downloadCitationRIS(null, dataset, false);
 
     }
 
     public void downloadDatafileCitationRIS(FileMetadata fileMetadata) {
-        downloadCitationRIS(fileMetadata, null);
+        downloadCitationRIS(fileMetadata, null, false);
+    }
+    
+    public void downloadDirectDatafileCitationRIS(FileMetadata fileMetadata) {
+        downloadCitationRIS(fileMetadata, null, true);
     }
 
-    public void downloadCitationRIS(FileMetadata fileMetadata, Dataset dataset) {
+    public void downloadCitationRIS(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
     	DataCitation citation=null;
         if (dataset != null){
         	citation = new DataCitation(dataset.getLatestVersion());
         } else {
-            citation= new DataCitation(fileMetadata);
+            citation= new DataCitation(fileMetadata, direct);
         }
 
         FacesContext ctx = FacesContext.getCurrentInstance();
@@ -320,20 +328,24 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     public void downloadDatasetCitationBibtex(Dataset dataset) {
 
-        downloadCitationBibtex(null, dataset);
+        downloadCitationBibtex(null, dataset, false);
 
     }
 
     public void downloadDatafileCitationBibtex(FileMetadata fileMetadata) {
-        downloadCitationBibtex(fileMetadata, null);
+        downloadCitationBibtex(fileMetadata, null, false);
     }
 
-    public void downloadCitationBibtex(FileMetadata fileMetadata, Dataset dataset) {
+    public void downloadDirectDatafileCitationBibtex(FileMetadata fileMetadata) {
+        downloadCitationBibtex(fileMetadata, null, true);
+    }
+    
+    public void downloadCitationBibtex(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
     	DataCitation citation=null;
         if (dataset != null){
         	citation = new DataCitation(dataset.getLatestVersion());
         } else {
-            citation= new DataCitation(fileMetadata);
+            citation= new DataCitation(fileMetadata, direct);
         }
         
         FacesContext ctx = FacesContext.getCurrentInstance();
