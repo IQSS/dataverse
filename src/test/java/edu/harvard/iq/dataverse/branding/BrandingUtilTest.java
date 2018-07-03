@@ -77,10 +77,11 @@ public class BrandingUtilTest {
         System.out.println("testEmailClosing");
         String message = BundleUtil.getStringFromBundle("notification.email.closing",
                 Arrays.asList(
-                        "LibraScholar"
+                        "support@librascholar.edu",
+                        "LibraScholar Support Team"
                 ));
         System.out.println("message: " + message);
-        assertEquals("\n\nThank you,\nLibraScholar",
+        assertEquals("\n\nYou may contact us for support at support@librascholar.edu.\n\nThank you,\nLibraScholar Support Team",
                 message);
     }
 

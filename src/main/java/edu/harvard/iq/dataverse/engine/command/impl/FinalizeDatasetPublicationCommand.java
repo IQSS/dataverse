@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.IdServiceBean;
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -27,8 +28,12 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.persistence.Query;
 
 /**
  *
@@ -36,9 +41,13 @@ import java.util.logging.Logger;
  *
  * @author michael
  */
+
 @RequiredPermissions(Permission.PublishDataset)
 public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCommand<Dataset> {
 
+	@Inject
+	SettingsWrapper settingsWrapper;
+	
     private static final Logger logger = Logger.getLogger(FinalizeDatasetPublicationCommand.class.getName());
     private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
     
@@ -53,7 +62,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         registerExternalIdentifier(theDataset, ctxt);        
-
+        
         if (theDataset.getPublicationDate() == null) {
             theDataset.setReleaseUser((AuthenticatedUser) getUser());
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
@@ -74,9 +83,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         // comes from there. There's a chance that the final merge, at the end of this
         // command, would be sufficient. -- L.A. Sep. 6 2017
         theDataset = ctxt.em().merge(theDataset);
-        
+        //if the publisher hasn't contributed to this version
         DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), getUser());
-
+        
         if (ddu == null) {
             ddu = new DatasetVersionUser();
             ddu.setDatasetVersion(theDataset.getLatestVersion());
@@ -89,8 +98,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         ctxt.em().merge(ddu);
         
         updateParentDataversesSubjectsField(theDataset, ctxt);
-        publicizeExternalIdentifier(theDataset, ctxt);
-
+             publicizeExternalIdentifier(ctxt); 
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
         if (privateUrl != null) {
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
@@ -104,6 +112,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
         // Remove locks
         ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
+        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.pidRegister));
         if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
             ctxt.engine().submit( 
                     new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
@@ -165,14 +174,30 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
     }
 
-    private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
+    private void publicizeExternalIdentifier(CommandContext ctxt) throws CommandException {
         String protocol = theDataset.getProtocol();
         IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, ctxt);
-        if (idServiceBean!= null )
         try {
-            idServiceBean.publicizeIdentifier(dataset);
+        	//A false return value indicates a failure in calling the service
+            if(!idServiceBean.publicizeIdentifier(theDataset)) throw new Throwable();
+            theDataset.setGlobalIdCreateTime(new Date());
+            theDataset.setIdentifierRegistered(true);
+            for (DataFile df : theDataset.getFiles()) {
+                logger.fine("registering global id for file "+df.getId());
+                //A false return value indicates a failure in calling the service
+                if(!idServiceBean.publicizeIdentifier(df)) throw new Throwable();
+                df.setGlobalIdCreateTime(new Date());
+                df.setIdentifierRegistered(true);
+                // this merge() on an individual file below is unnecessary:
+                //DataFile merged = ctxt.em().merge(df);
+            }
         } catch (Throwable e) {
-            throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
+            //if publicize fails remove the lock for registration
+            ctxt.datasets().removeDatasetLocks(theDataset.getId(), DatasetLock.Reason.pidRegister);
+            //maybe add notification?
+            List<String> args = idServiceBean.getProviderInformation();
+            args.add(settingsWrapper.getSupportTeamName());
+            throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
         }
     }
     
@@ -285,7 +310,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      */
     private void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt) throws CommandException {
         IdServiceBean idServiceBean = IdServiceBean.getBean(theDataset.getProtocol(), ctxt);
-        if (theDataset.getGlobalIdCreateTime() == null) {
+        if (!theDataset.isIdentifierRegistered()) {
           if (idServiceBean!=null) {
             try {
               if (!idServiceBean.alreadyExists(theDataset)) {

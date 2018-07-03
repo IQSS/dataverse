@@ -4,6 +4,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
@@ -60,12 +61,15 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import java.util.Date;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
+import javax.persistence.Query;
 import javax.ws.rs.QueryParam;
 /**
  * Where the secure, setup API calls live.
@@ -89,6 +93,8 @@ public class Admin extends AbstractApiBean {
     IngestServiceBean ingestService;
     @EJB
     DataFileServiceBean fileService;
+    @EJB
+    DatasetServiceBean datasetService;
 
     // Make the session available
     @Inject
@@ -1000,10 +1006,83 @@ public class Admin extends AbstractApiBean {
                 .add("errors", errorArray)
         );
     }
-    
+
     @GET
     @Path("/isOrcid")
     public Response isOrcidEnabled() {
         return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
     }
+
+    @GET
+    @Path("{id}/registerDataFile")
+    public Response registerDataFile(@PathParam("id") String id ) {
+        logger.info("Starting to register  " +  id + " file id. " + new Date());
+        
+        try{
+            User u =findUserOrDie();
+            DataverseRequest r = createDataverseRequest(u);
+            DataFile df = findDataFileOrDie(id);
+            if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
+                execCommand(new RegisterDvObjectCommand(r, df));
+            } else {
+                return ok("File was already registered. ");
+            }
+            
+        } catch (WrappedResponse r){
+            logger.info("Failed to register file id: "+ id);
+        } catch (Exception e){
+            logger.info("Failed to register file id: "+ id + " Unexpecgted Exception " + e.getMessage());
+        }
+        return ok("Datafile registration complete. File registered successfully.");
+    }
+    
+    @GET
+    @Path("/registerDataFileAll")
+    public Response registerDataFileAll() {
+        Integer count = fileService.findAll().size();
+        Integer successes = 0;
+        Integer alreadyRegistered = 0;
+        logger.info("Starting to register  " +  count + " files. " + new Date());
+        for (DataFile df : fileService.findAll()) {
+            try {
+                if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())&& df.isReleased()) {
+                    User u =findAuthenticatedUserOrDie();
+                    DataverseRequest r = createDataverseRequest(u);
+                    execCommand(new RegisterDvObjectCommand(r, df));
+                    successes++;
+                    if (successes % 100 == 0){
+                        logger.info(successes + " of  " +  count + " files registered successfully. " + new Date());
+                    }                   
+                } else {
+                    alreadyRegistered++;
+                }
+            } catch (WrappedResponse ex) {
+                logger.info("Failed to register file id: "+df.getId());
+                Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception e){
+                logger.info("Unexpected Exception: " + e.getMessage());
+            }          
+        }
+        logger.info(alreadyRegistered + " of  " +  count + " files were already registered. " + new Date());
+        logger.info(successes + " of  " +  count + " files registered successfully. " + new Date());
+        
+        return ok("Datafile registration complete." + successes + " of  " +  count + " files registered successfully.");
+    }    
+
+    @DELETE
+    @Path("/clearMetricsCache")
+    public Response clearMetricsCache() {
+        em.createNativeQuery("DELETE FROM metric").executeUpdate();
+        return ok("all metric caches cleared.");
+    }
+
+    @DELETE
+    @Path("/clearMetricsCache/{name}")
+    public Response clearMetricsCacheByName(@PathParam("name") String name) {
+        Query deleteQuery = em.createNativeQuery("DELETE FROM metric where metricname = ?");
+        deleteQuery.setParameter(1, name);
+        deleteQuery.executeUpdate();
+        return ok("metric cache " + name + " cleared.");
+    }
+
 }

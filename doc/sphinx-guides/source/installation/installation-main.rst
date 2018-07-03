@@ -109,7 +109,7 @@ Problems Sending Email
 
 If your Dataverse installation is not sending system emails, you may need to provide authentication for your mail host. First, double check the SMTP server being used with this Glassfish asadmin command:
 
-``asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
+``./asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
 
 This should return the DNS of the mail host you configured during or after installation. mail/notifyMailSession is the JavaMail Session that's used to send emails to users. 
 
@@ -159,8 +159,8 @@ mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
 
 The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. See the below example:
 
-- Delete: ``asadmin delete-javamail-resource mail/MyMailSession``
-- Create (remove brackets and replace the variables inside): ``asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
+- Delete: ``./asadmin delete-javamail-resource mail/MyMailSession``
+- Create (remove brackets and replace the variables inside): ``./asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
 
 Be sure you save the changes made here and then restart your Glassfish server to test it out.
 
@@ -179,15 +179,15 @@ Drop database
 
 In order to drop the database, you have to stop Glassfish, which will have open connections. Before you stop Glassfish, you may as well undeploy the war file. First, find the name like this:
 
-``asadmin list-applications``
+``./asadmin list-applications``
 
 Then undeploy it like this:
 
-``asadmin undeploy dataverse-VERSION``
+``./asadmin undeploy dataverse-VERSION``
 
 Stop Glassfish with the init script provided in the :doc:`prerequisites` section or just use:
 
-``asadmin stop-domain``
+``./asadmin stop-domain``
 
 With Glassfish down, you should now be able to drop your database and recreate it:
 
@@ -198,7 +198,7 @@ Clear Solr
 
 The database is fresh and new but Solr has stale data it in. Clear it out with this command:
 
-``curl http://localhost:8983/solr/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"``
+``curl http://localhost:8983/solr/collection1/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"``
 
 
 Deleting Uploaded Files

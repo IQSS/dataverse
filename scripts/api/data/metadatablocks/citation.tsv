@@ -3,7 +3,7 @@
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
 	title	Title	Full title by which the Data Project is known.	Enter title...	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation
 	alternativeTitle	Alternative Title	A title by which the work is commonly referred, or an abbreviation of the title.		text	1		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	alternativeURL	Alternative URL	A URL where the Data Project can be viewed, such as a personal or project website.	Enter full URL, starting with http://	url	2		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	alternativeURL	Alternative URL	A URL where the Data Project can be viewed, such as a personal or project website.	Enter full URL, starting with http://	url	2	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	otherId	QDRID	The QDR ID assigned to the project		none	3	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	otherIdAgency	QDRID	Name of agency which generated this identifier.	provided by QDR	text	4		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
 	otherIdValue	Identifier	Other identifier that corresponds to this Data Project.	provided by QDR	text	5	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
@@ -22,7 +22,7 @@
 	keyword	Keywords	Key terms that describe important aspects of the Data Project.		none	18		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	keywordValue	Term	Key terms that describe important aspects of the Data Project. Can be used for building keyword indexes and for classification and retrieval purposes. A controlled vocabulary can be employed. The vocab attribute is provided for specification of the controlled vocabulary in use, such as LCSH, MeSH, or others. The vocabURI attribute specifies the location for the full controlled vocabulary.		text	19	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	keyword	citation
 	keywordVocabulary	Vocabulary	QDR mainly uses the ICPSR subject thesaurus	provided by QDR	text	20	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation
-	keywordVocabularyURI	Vocabulary URL	QDR mainly uses the ICPSR subject thesaurus	provided by QDR	url	21	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation
+	keywordVocabularyURI	Vocabulary URL	QDR mainly uses the ICPSR subject thesaurus	provided by QDR	url	21	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation
 	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.		none	22	;	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	timePeriodCoveredStart	Start	Start date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	23	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
 	timePeriodCoveredEnd	End	End date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	24	#NAME: #VALUE 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
@@ -40,7 +40,7 @@
 	publicationCitation	Citation	The full bibliographic citation for this related publication.		textbox	36	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation
 	publicationIDType	Identifier Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI), URL).		text	37	#VALUE: 	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	publication	citation
 	publicationIDNumber	Identifier	The identifier for the selected ID type.		text	38	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation
-	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).	Enter full URL, starting with http://	url	39	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
+	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).	Enter full URL, starting with http://	url	39	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
 	notesText	Notes	Additional important information about the Data Project.		textbox	40		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation
 	language	Language	Language(s) of materials in the Data Project		text	41		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		citation
 	contributor	Contributor	The organization or person responsible for either collecting, managing, or otherwise contributing in some form to the development of the resource.		none	42	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
@@ -71,19 +71,19 @@
 	producerName	Name	Producer name	FamilyName, GivenName or Organization	text	67	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	producer	citation
 	producerAffiliation	Affiliation	The organization with which the producer is affiliated.		text	68	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	producerAbbreviation	Abbreviation	The abbreviation by which the producer is commonly known.		text	69	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
-	producerURL	URL	Producer URL points to the producer's web presence, if appropriate. Enter an absolute URL where the producer's web site is found, such as http://www.my.org.  	Enter full URL, starting with http://	url	70	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
+	producerURL	URL	Producer URL points to the producer's web presence, if appropriate. Enter an absolute URL where the producer's web site is found, such as http://www.my.org.  	Enter full URL, starting with http://	url	70	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	producerLogoURL	Logo URL	URL for the producer's logo, which points to this  producer's web-accessible logo image. Enter an absolute URL where the producer's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	71	<img src="#VALUE" alt="#NAME" class="metadata-logo"/><br/>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, published or archived).	YYYY-MM-DD	date	72		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
 	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	73		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	topicClassification	Topic Classification	The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.  		none	74		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	topicClassValue	Term	Topic or Subject term that is relevant to this Data Project.		text	75	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	topicClassification	citation
 	topicClassVocab	Vocabulary	Provided for specification of the controlled vocabulary in use, e.g., LCSH, MeSH, etc.		text	76	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
-	topicClassVocabURI	Vocabulary URL	Specifies the URL location for the full controlled vocabulary.	Enter full URL, starting with http://	url	77	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
+	topicClassVocabURI	Vocabulary URL	Specifies the URL location for the full controlled vocabulary.	Enter full URL, starting with http://	url	77	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
 	distributor	Distributor	The organization designated by the author or producer to generate copies of the particular work including any necessary editions or revisions.		none	78		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	distributorName	Name	Distributor name	FamilyName, GivenName or Organization	text	79	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	distributor	citation
 	distributorAffiliation	Affiliation	The organization with which the distributor contact is affiliated.		text	80	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
 	distributorAbbreviation	Abbreviation	The abbreviation by which this distributor is commonly known (e.g., IQSS, ICPSR).		text	81	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
-	distributorURL	URL	Distributor URL points to the distributor's web presence, if appropriate. Enter an absolute URL where the distributor's web site is found, such as http://www.my.org.		url	82	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
+	distributorURL	URL	Distributor URL points to the distributor's web presence, if appropriate. Enter an absolute URL where the distributor's web site is found, such as http://www.my.org.		url	82	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
 	distributionDate	Distribution Date	Date that the work was made available for distribution/presentation.	YYYY-MM-DD	date	83		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
 	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Data Project to the repository.		text	84		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	dateOfDeposit	Deposit Date	Date that the Data Project was deposited into the repository.	YYYY-MM-DD	date	85		FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
@@ -234,85 +234,86 @@
 	language	Māori		103											
 	language	Marathi (Marāṭhī)		104											
 	language	Marshallese		105											
-	language	Mongolian		106											
-	language	Nauru		107											
-	language	Navajo, Navaho		108											
-	language	Northern Ndebele		109											
-	language	Nepali		110											
-	language	Ndonga		111											
-	language	Norwegian Bokmål		112											
-	language	Norwegian Nynorsk		113											
-	language	Norwegian		114											
-	language	Nuosu		115											
-	language	Southern Ndebele		116											
-	language	Occitan		117											
-	language	Ojibwe, Ojibwa		118											
-	language	Old Church Slavonic,Church Slavonic,Old Bulgarian		119											
-	language	Oromo		120											
-	language	Oriya		121											
-	language	Ossetian, Ossetic		122											
-	language	Panjabi, Punjabi		123											
-	language	Pāli		124											
-	language	Persian (Farsi)		125											
-	language	Polish		126											
-	language	Pashto, Pushto		127											
-	language	Portuguese		128											
-	language	Quechua		129											
-	language	Romansh		130											
-	language	Kirundi		131											
-	language	Romanian		132											
-	language	Russian		133											
-	language	Sanskrit (Saṁskṛta)		134											
-	language	Sardinian		135											
-	language	Sindhi		136											
-	language	Northern Sami		137											
-	language	Samoan		138											
-	language	Sango		139											
-	language	Serbian		140											
-	language	Scottish Gaelic, Gaelic		141											
-	language	Shona		142											
-	language	Sinhala, Sinhalese		143											
-	language	Slovak		144											
-	language	Slovene		145											
-	language	Somali		146											
-	language	Southern Sotho		147											
-	language	Spanish, Castilian		148											
-	language	Sundanese		149											
-	language	Swahili		150											
-	language	Swati		151											
-	language	Swedish		152											
-	language	Tamil		153											
-	language	Telugu		154											
-	language	Tajik		155											
-	language	Thai		156											
-	language	Tigrinya		157											
-	language	Tibetan Standard, Tibetan, Central		158											
-	language	Turkmen		159											
-	language	Tagalog		160											
-	language	Tswana		161											
-	language	Tonga (Tonga Islands)		162											
-	language	Turkish		163											
-	language	Tsonga		164											
-	language	Tatar		165											
-	language	Twi		166											
-	language	Tahitian		167											
-	language	Uyghur, Uighur		168											
-	language	Ukrainian		169											
-	language	Urdu		170											
-	language	Uzbek		171											
-	language	Venda		172											
-	language	Vietnamese		173											
-	language	Volapük		174											
-	language	Walloon		175											
-	language	Welsh		176											
-	language	Wolof		177											
-	language	Western Frisian		178											
-	language	Xhosa		179											
-	language	Yiddish		180											
-	language	Yoruba		181											
-	language	Zhuang, Chuang		182											
-	language	Zulu		183											
-	language	Not applicable		184											
+	language	Mixtepec Mixtec		106									
+	language	Mongolian		107										
+	language	Nauru		108											
+	language	Navajo, Navaho		109											
+	language	Northern Ndebele		110											
+	language	Nepali		111											
+	language	Ndonga		112											
+	language	Norwegian Bokmål		113											
+	language	Norwegian Nynorsk		114											
+	language	Norwegian		115											
+	language	Nuosu		116											
+	language	Southern Ndebele		117											
+	language	Occitan		118											
+	language	Ojibwe, Ojibwa		119											
+	language	Old Church Slavonic,Church Slavonic,Old Bulgarian		120											
+	language	Oromo		121											
+	language	Oriya		122											
+	language	Ossetian, Ossetic		123											
+	language	Panjabi, Punjabi		124											
+	language	Pāli		125											
+	language	Persian (Farsi)		126											
+	language	Polish		127											
+	language	Pashto, Pushto		128											
+	language	Portuguese		129											
+	language	Quechua		130											
+	language	Romansh		131											
+	language	Kirundi		132											
+	language	Romanian		133											
+	language	Russian		134											
+	language	Sanskrit (Saṁskṛta)		135											
+	language	Sardinian		136											
+	language	Sindhi		137											
+	language	Northern Sami		138											
+	language	Samoan		139											
+	language	Sango		140											
+	language	Serbian		141											
+	language	Scottish Gaelic, Gaelic		142											
+	language	Shona		143											
+	language	Sinhala, Sinhalese		144											
+	language	Slovak		145											
+	language	Slovene		146											
+	language	Somali		147											
+	language	Southern Sotho		148											
+	language	Spanish, Castilian		149											
+	language	Sundanese		150											
+	language	Swahili		151											
+	language	Swati		152											
+	language	Swedish		153											
+	language	Tamil		154											
+	language	Telugu		155											
+	language	Tajik		156											
+	language	Thai		157											
+	language	Tigrinya		158											
+	language	Tibetan Standard, Tibetan, Central		159											
+	language	Turkmen		160											
+	language	Tagalog		161											
+	language	Tswana		162											
+	language	Tonga (Tonga Islands)		163											
+	language	Turkish		164											
+	language	Tsonga		165											
+	language	Tatar		166											
+	language	Twi		167											
+	language	Tahitian		168											
+	language	Uyghur, Uighur		169											
+	language	Ukrainian		170											
+	language	Urdu		171											
+	language	Uzbek		172											
+	language	Venda		173											
+	language	Vietnamese		174											
+	language	Volapük		175											
+	language	Walloon		176											
+	language	Welsh		177											
+	language	Wolof		178											
+	language	Western Frisian		179											
+	language	Xhosa		180											
+	language	Yiddish		181											
+	language	Yoruba		182											
+	language	Zhuang, Chuang		183											
+	language	Zulu		184											
+	language	Not applicable		185											
 	country	Afghanistan		1											
 	country	Albania		2											
 	country	Algeria		3											

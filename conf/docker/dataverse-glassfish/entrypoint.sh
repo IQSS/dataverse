@@ -126,6 +126,13 @@ if [ "$1" = 'dataverse' ]; then
 #        ./setup-irods.sh
 #    fi
 
+    # We do change the Solr server in Minishift/OpenShift, which is
+    # the primary target for all of the work under conf/docker.
+    echo -e "\n\nRestarting Dataverse in case Solr host was changed..."
+    /usr/local/glassfish4/glassfish/bin/asadmin stop-domain
+    sleep 3
+    /usr/local/glassfish4/glassfish/bin/asadmin start-domain
+
     echo -e "\n\nDataverse started"
 
     sleep infinity

@@ -4,7 +4,7 @@
 
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.8.6-qdr</version>
+    <version>4.9.1-qdr</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
@@ -196,13 +196,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>4.6.0</version>
-        </dependency>
-        <dependency>
-            <!-- required by Solr... prevents java.lang.NoClassDefFoundError: org/apache/commons/logging/LogFactory -->
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.1.3</version>
+            <version>7.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -371,12 +365,12 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.4.1</version>
+            <version>4.5.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
-            <version>4.4.1</version>
+            <version>4.4.8</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
@@ -387,7 +381,7 @@
         <dependency>
             <groupId>org.javaswift</groupId>
             <artifactId>joss</artifactId>
-            <version>0.9.10</version>
+            <version>0.10.0</version>
         </dependency>
         <dependency>
             <groupId>com.maxmind.geoip2</groupId>

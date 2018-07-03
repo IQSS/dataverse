@@ -127,6 +127,11 @@ public class DataverseServiceBean implements java.io.Serializable {
         return em.createQuery(qr, Dataverse.class).setParameter("ownerId", ownerId).getResultList();
     }
     
+    public List<Long> findIdsByOwnerId(Long ownerId) {
+        String qr = "select o.id from Dataverse as o where o.owner.id =:ownerId order by o.id";
+        return em.createQuery(qr, Long.class).setParameter("ownerId", ownerId).getResultList();
+    }
+    
     public List<Dataverse> findPublishedByOwnerId(Long ownerId) {
         String qr ="select object(o) from Dataverse as o where o.owner.id =:ownerId and o.publicationDate is not null order by o.name";
         return em.createQuery(qr, Dataverse.class).setParameter("ownerId", ownerId).getResultList();
@@ -487,22 +492,17 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         String searchResult;
         try {
-            System.out.print("select  t0.ALIAS FROM DATAVERSE t0, DVOBJECT t1,  DVOBJECT t2 WHERE (t0.ID = t1.ID) AND (t2.OWNER_ID = t1.ID)  AND (t2.ID =" + dvId + ")");
             searchResult = (String) em.createNativeQuery("select  t0.ALIAS FROM DATAVERSE t0, DVOBJECT t1,  DVOBJECT t2 WHERE (t0.ID = t1.ID) AND (t2.OWNER_ID = t1.ID)  AND (t2.ID =" + dvId + ")").getSingleResult();
 
         } catch (Exception ex) {
-            System.out.print("catching exception");
-            System.out.print("catching exception" + ex.getMessage());
             return retVal;
         }
 
         if (searchResult == null) {
-            System.out.print("searchResult == null");
             return retVal;
         }
 
         if (searchResult != null) {
-            System.out.print(searchResult);
             return searchResult;
         }
         
@@ -556,6 +556,42 @@ public class DataverseServiceBean implements java.io.Serializable {
             if (searchResult[2] != null) {
                 solrSearchResult.setDataverseParentAlias((String) searchResult[2]);
             }
+        }
+    }
+    
+    // function to recursively find ids of all children of a dataverse that 
+    // are also of type dataverse
+    public List<Long> findAllDataverseDataverseChildren(Long dvId) {
+        // get list of Dataverse children
+        List<Long> dataverseChildren = findIdsByOwnerId(dvId);
+        
+        if (dataverseChildren == null) {
+            return dataverseChildren;
+        } else {
+            List<Long> newChildren = new ArrayList<>();
+            for (Long childDvId : dataverseChildren) {
+                newChildren.addAll(findAllDataverseDataverseChildren(childDvId));
+            }
+            dataverseChildren.addAll(newChildren);
+            return dataverseChildren;
+        }
+    }
+    
+    // function to recursively find ids of all children of a dataverse that are 
+    // of type dataset
+    public List<Long> findAllDataverseDatasetChildren(Long dvId) {
+        // get list of Dataverse children
+        List<Long> dataverseChildren = findIdsByOwnerId(dvId);
+        // get list of Dataset children
+        List<Long> datasetChildren = datasetService.findIdsByOwnerId(dvId);
+        
+        if (dataverseChildren == null) {
+            return datasetChildren;
+        } else {
+            for (Long childDvId : dataverseChildren) {
+                datasetChildren.addAll(findAllDataverseDatasetChildren(childDvId));
+            }
+            return datasetChildren;
         }
     }
 }  

@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -296,12 +297,14 @@ public class JsonPrinter {
                 .add("protocol", ds.getProtocol())
                 .add("authority", ds.getAuthority())
                 .add("publisher", getRootDataverseNameforCitation(ds))
-                .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD());
+                .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
+                .add("storageIdentifier", ds.getStorageIdentifier());
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId())
+                .add("storageIdentifier", dsv.getDataset().getStorageIdentifier())
                 .add("versionNumber", dsv.getVersionNumber())
                 .add("versionMinorNumber", dsv.getMinorVersionNumber())
                 .add("versionState", dsv.getVersionState().name())
@@ -558,9 +561,16 @@ public class JsonPrinter {
             fileName = df.getFileMetadata().getLabel();
         }
         
+        String pidURL = "";
+        
+        if (new GlobalId(df).toURL() != null){
+            pidURL = new GlobalId(df).toURL().toString();
+        }
         
         return jsonObjectBuilder()
                 .add("id", df.getId())
+                .add("persistentId", df.getGlobalId())
+                .add("pidURL", pidURL)
                 .add("filename", fileName)
                 .add("contentType", df.getContentType())            
                 .add("filesize", df.getFilesize())            

@@ -28,7 +28,6 @@ import org.jsoup.Jsoup;
 public class StringUtil {
        
     private static final Logger logger = Logger.getLogger(StringUtil.class.getCanonicalName());
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
     
     public static final boolean nonEmpty( String str ) {
         return ! isEmpty(str);
@@ -53,6 +52,20 @@ public class StringUtil {
       return true;
     }
     
+    public static String substringIncludingLast(String str, String separator) {
+      if (isEmpty(str)) {
+          return str;
+      }
+      if (isEmpty(separator)) {
+          return "";
+      }
+      int pos = str.lastIndexOf(separator);
+      if (pos == -1 || pos == (str.length() - separator.length())) {
+          return "";
+      }
+      return str.substring(pos);
+  }
+    
     public static Optional<String> toOption(String s) {
         if ( s == null ) {
             return Optional.empty();
@@ -61,18 +74,6 @@ public class StringUtil {
         return s.isEmpty() ? Optional.empty() : Optional.of(s);
     }
     
-    /**
-     * @todo Unless there is a compelling reason not to, we should switch to the
-     * validation routines in EMailValidator.
-     */
-    @Deprecated
-    public static boolean isValidEmail( String s ) {
-        logger.fine("Validating <<<" + s + ">>>.");
-        if (s == null) {
-            return false;
-        }
-        return EMAIL_PATTERN.matcher(s).matches();
-    }
     
     public static final boolean isAlphaNumericChar(char c) {
         // TODO: consider using Character.isLetterOrDigit(c)

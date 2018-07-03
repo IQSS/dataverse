@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -149,10 +150,14 @@ public class SettingsWrapper implements java.io.Serializable {
         return systemConfig.isRsyncDownload();
     }
     
+    public boolean isDataFilePIDSequentialDependent(){
+        return systemConfig.isDataFilePIDSequentialDependent();
+    }
+    
     public String getSupportTeamName() {
         String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
         InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
-        return BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
+        return BrandingUtil.getSupportTeamName(systemAddress, ResourceBundle.getBundle("Bundle").getString("institution.acronym"));
     }
 
     public boolean isRootDataverseThemeDisabled() {

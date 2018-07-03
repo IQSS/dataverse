@@ -345,7 +345,7 @@ div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5
 .form-group > .button-block, 
 .panel-body > .button-block, 
 td.col-file-action > .button-block, .col-manage-action > .button-block,
-div.ui-datatable-header > .button-block, .button-block.tab-header, #topDatasetBlock > #actionButtonBlock > .button-block {margin-top:0;}
+div.ui-datatable-header > .button-block, .button-block.tab-header, #topDatasetBlock > #actionButtonBlock > .button-block, .inline-buttons > .button-block {margin-top:0;}
 th.col-file-action.text-right {text-align: right;}
 form.btn-form {display:inline-block;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group, .button-block span.btn.ui-state-disabled, .button-block .button-container {margin-right:1em;}
@@ -365,6 +365,7 @@ td.col-file-action span.ingest-warning, .button-block span.ingest-warning {margi
 .button-block .btn:only-child, .button-block div.btn-group:only-child {margin-right:0;}
 
 .button-block ul.dropdown-menu li.disabled span.ui-commandlink.ui-state-disabled {display: block; padding: 3px 20px; color: #777; background: none; opacity:1.0;}
+.button-single {display: block; padding: 3px 3px; color: #777; background: none; opacity:1.0;}
 div.field-add-delete a.btn {margin:0 1em 0 0;}
 div.field-add-delete a.btn:last-child {margin-right:0;}
 div.field-add-delete a.btn.compound-field-btn {margin-top:1.8em;}
@@ -691,7 +692,7 @@ div[id$="filesTable"] .col-file-thumb div.thumbnail-block span.file-thumbnail-ic
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block span.file-thumbnail-preview-img {display:block;}
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block div.file-icon-restricted-block {display:block;position:absolute;bottom:-4px;right:-1px;}
 div[id$="filesTable"] .col-file-metadata {padding-left:0; padding-right:0; border-left:0; border-right:0; text-align:left; font-weight:normal;}
-div[id$="filesTable"] td.col-file-action {padding-left:0; border-left:0; overflow:visible;}
+div[id$="filesTable"] td.col-file-action {padding-left:0; border-left:0;}
 div[id$="filesTable"] div.file-tags-block {padding-bottom:2px;}
 div[id$="filesTable"] div.file-tags-block a.ui-commandlink {font-size:12px;}
 div[id$="filesTable"] div.file-tags-block span.label {display:inline-block;}
@@ -719,7 +720,7 @@ div[id$="filesTable"].ui-datatable.ui-datatable-scrollable {padding-right:12px;}
 #file-replace-original-block div[id$="filesTable"] .col-file-metadata {padding:4px 10px;}
 
 /* HACK */
-div[id$="filesTable"] div.ui-datatable-scrollable-body > table {margin-bottom:140px;}
+div[id$="filesTable"] div.ui-datatable-scrollable-body > table, div[id$="filesTable"] div.ui-datatable-tablewrapper > table {margin-bottom:140px;}
 
 span.ingest-warning {display:inline-block; font-size:24px; line-height:1; vertical-align: middle;}
 span.ingest-warning span.glyphicon {top:3px} 
@@ -743,7 +744,7 @@ div.dvnDifferanceTable .diffDetailBlock {display:block;}
 
 /* MANAGE TABLE + DROPDOWN BUTTON */
 div.manageTable.ui-datatable div.ui-datatable-tablewrapper, div.manageTable.ui-datatable td.col-manage-action {overflow:visible;}
-div[id$="filesTable"].ui-datatable.ui-datatable-scrollable thead th, div[id$="filesTable"] div.ui-datatable-scrollable-header {overflow:visible !important;}
+div[id$="filesTable"].ui-datatable div.ui-datatable-scrollable-header, div[id$="filesTable"].ui-datatable thead th.col-file-action, div[id$="filesTable"].ui-datatable tbody td.col-file-action {overflow:visible !important;}
 thead.ui-datatable-scrollable-theadclone {display:none}
 
 /* FILE */
