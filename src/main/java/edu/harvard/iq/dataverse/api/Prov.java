@@ -42,7 +42,6 @@ public class Prov extends AbstractApiBean {
     @POST
     @Path("{id}/prov-json")
     @Consumes("application/json")
-//MAD: SHOULD NOT WORK ON PUBLISHED
     public Response addProvJson(String body, @PathParam("id") String idSupplied, @QueryParam("entityName") String entityName) {
         if(!systemConfig.isProvCollectionEnabled()) {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
@@ -54,6 +53,10 @@ public class Prov extends AbstractApiBean {
             }
             if(dataFile.isReleased() && dataFile.getProvEntityName() != null){
                 return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.jsonUpdateNotAllowed"));
+            }
+            
+            if(!provUtil.isProvValid(body)) {
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError"));
             }
             
             /*Add when we actually integrate provCpl*/

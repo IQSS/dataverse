@@ -7,9 +7,11 @@ package edu.harvard.iq.dataverse;
 
 import com.google.gson.JsonParser;
 import com.google.gson.JsonObject;
+import edu.harvard.iq.dataverse.api.AbstractApiBeanTest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Logger;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,11 +24,83 @@ public class ProvUtilFragmentTest {
     
     private ProvUtilFragmentBean provUtilBean;
     JsonParser jsonParser;
+    private static final Logger logger = Logger.getLogger(ProvUtilFragmentTest.class.getCanonicalName());
     
     @Before
     public void setUp() {
         provUtilBean = new ProvUtilFragmentBean();
         jsonParser = new JsonParser();
+    }
+    
+    @Test
+    public void testProvValidator() {   
+        String validJsonString = "{\n" +
+            "    \"entity\": {\n" +
+            "        \"ex:report2\": {\n" +
+            "            \"prov:type\": \"report\",\n" +
+            "            \"ex:version\": 2\n" +
+            "        },\n" +
+            "        \"ex:report1\": {\n" +
+            "            \"prov:type\": \"report\",\n" +
+            "            \"ex:version\": 1\n" +
+            "        },\n" +
+            "        \"bob:bundle1\": {\n" +
+            "            \"prov:type\": {\n" +
+            "                \"$\": \"prov:Bundle\",\n" +
+            "                \"type\": \"xsd:QName\"\n" +
+            "            }\n" +
+            "        }\n" +
+            "    },\n" +
+            "    \"bundle\": {\n" +
+            "        \"alice:bundle2\": {\n" +
+            "            \"entity\": {\n" +
+            "                \"ex:report2\": {\n" +
+            "                    \"prov:type\": \"not report\",\n" +
+            "                    \"ex:version\": 2\n" +
+            "                },\n" +
+            "                \"ex:report1\": {\n" +
+            "                }\n" +
+            "            }\n" +
+            "        }\n" +
+            "    }\n" +
+            "}";
+        
+        assertTrue(provUtilBean.isProvValid(validJsonString)); 
+        
+        //This string has the "entity" section misnamed to "entitddd"
+        String invalidJsonString = "{\n" +
+            "    \"entitddd\": {\n" +
+            "        \"ex:report2\": {\n" +
+            "            \"prov:type\": \"report\",\n" +
+            "            \"ex:version\": 2\n" +
+            "        },\n" +
+            "        \"ex:report1\": {\n" +
+            "            \"prov:type\": \"report\",\n" +
+            "            \"ex:version\": 1\n" +
+            "        },\n" +
+            "        \"bob:bundle1\": {\n" +
+            "            \"prov:type\": {\n" +
+            "                \"$\": \"prov:Bundle\",\n" +
+            "                \"type\": \"xsd:QName\"\n" +
+            "            }\n" +
+            "        }\n" +
+            "    },\n" +
+            "    \"bundle\": {\n" +
+            "        \"alice:bundle2\": {\n" +
+            "            \"entity\": {\n" +
+            "                \"ex:report2\": {\n" +
+            "                    \"prov:type\": \"not report\",\n" +
+            "                    \"ex:version\": 2\n" +
+            "                },\n" +
+            "                \"ex:report1\": {\n" +
+            "                }\n" +
+            "            }\n" +
+            "        }\n" +
+            "    }\n" +
+            "}";
+        
+        assertFalse(provUtilBean.isProvValid(invalidJsonString)); 
+
     }
     
     @Test

@@ -9,13 +9,21 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.json.JsonObject;
+import org.everit.json.schema.Schema;
+import org.everit.json.schema.ValidationException;
+import org.everit.json.schema.loader.SchemaLoader;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 
 public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Serializable{
    
     HashMap<String,ProvEntityFileData> provJsonParsedEntities;
     JsonParser parser = new JsonParser();
+    private static final Logger logger = Logger.getLogger(ProvUtilFragmentBean.class.getCanonicalName());
+
     
     public HashMap<String,ProvEntityFileData> startRecurseNames(String jsonString) {
         provJsonParsedEntities = new HashMap<>();
@@ -58,7 +66,6 @@ public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Ser
                             String value = s.getValue().getAsString();
                             e.fileType = value;
                         }
-
                     }
                 } 
                 if(null != outerKey && (outerKey.equals("entity") || outerKey.endsWith(":entity"))) {
@@ -94,6 +101,370 @@ public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Ser
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(je);
     }
+
+    public boolean isProvValid(String jsonInput) {
+        try { 
+            schema.validate(new JSONObject(jsonInput)); // throws a ValidationException if this object is invalid
+        } catch (ValidationException vx) {
+            logger.info("Prov schema error : " + vx); //without classLoader is blows up in actual deployment
+            return false;
+        } 
+
+        return true;
+    }
     
-   
+    //Pulled from https://www.w3.org/Submission/2013/SUBM-prov-json-20130424/schema
+    //Not the prettiest way of accessing the schema, but loading the .json file as an external resource
+    //turned out to be very painful, especially when also trying to exercise it via unit tests
+    public final String provSchema = 
+        "{\n" +
+        "    \"id\": \"http://provenance.ecs.soton.ac.uk/prov-json/schema#\",\n" +
+        "    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n" +
+        "    \"description\": \"Schema for a PROV-JSON document\",\n" +
+        "    \"type\": \"object\",\n" +
+        "    \"additionalProperties\": false,\n" +
+        "    \"properties\": {\n" +
+        "        \"prefix\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"patternProperties\": {\n" +
+        "                        \"^[a-zA-Z0-9_\\\\-]+$\": { \"type\" : \"string\", \"format\": \"uri\" }\n" +
+        "            }\n" +
+        "        },\n" +
+        "        \"entity\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/entity\" }\n" +
+        "        },\n" +
+        "        \"activity\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/activity\" }\n" +
+        "        },\n" +
+        "        \"agent\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/agent\" }\n" +
+        "        },\n" +
+        "        \"wasGeneratedBy\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/generation\" }\n" +
+        "        },\n" +
+        "        \"used\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/usage\" }\n" +
+        "        },\n" +
+        "        \"wasInformedBy\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/communication\" }\n" +
+        "        },\n" +
+        "        \"wasStartedBy\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/start\" }\n" +
+        "        },\n" +
+        "        \"wasEndedby\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/end\" }\n" +
+        "        },\n" +
+        "        \"wasInvalidatedBy\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/invalidation\" }\n" +
+        "        },\n" +
+        "        \"wasDerivedFrom\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/derivation\" }\n" +
+        "        },\n" +
+        "        \"wasAttributedTo\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/attribution\" }\n" +
+        "        },\n" +
+        "        \"wasAssociatedWith\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/association\" }\n" +
+        "        },\n" +
+        "        \"actedOnBehalfOf\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/delegation\" }\n" +
+        "        },\n" +
+        "        \"wasInfluencedBy\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/influence\" }\n" +
+        "        },\n" +
+        "        \"specializationOf\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/specialization\" }\n" +
+        "        },\n" +
+        "        \"alternateOf\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/alternate\" }\n" +
+        "        },\n" +
+        "        \"hadMember\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/membership\" }\n" +
+        "        },\n" +
+        "        \"bundle\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"additionalProperties\": { \"$ref\":\"#/definitions/bundle\" }\n" +
+        "        }\n" +
+        "    },\n" +
+        "    \"definitions\": {\n" +
+        "        \"typedLiteral\": {\n" +
+        "            \"title\": \"PROV-JSON Typed Literal\",\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"properties\": {\n" +
+        "                \"$\": { \"type\": \"string\" },\n" +
+        "                \"type\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"lang\": { \"type\": \"string\" }\n" +
+        "            },\n" +
+        "            \"required\": [\"$\"],\n" +
+        "            \"additionalProperties\": false\n" +
+        "        },\n" +
+        "        \"stringLiteral\": {\"type\": \"string\"},\n" +
+        "        \"numberLiteral\": {\"type\": \"number\"},\n" +
+        "        \"booleanLiteral\": {\"type\": \"boolean\"},\n" +
+        "        \"literalArray\": {\n" +
+        "            \"type\": \"array\",\n" +
+        "            \"minItems\": 1,\n" +
+        "            \"items\": {\n" +
+        "                \"anyOf\": [\n" +
+        "                    { \"$ref\": \"#/definitions/stringLiteral\" },\n" +
+        "                    { \"$ref\": \"#/definitions/numberLiteral\" },\n" +
+        "                    { \"$ref\": \"#/definitions/booleanLiteral\" },\n" +
+        "                    { \"$ref\": \"#/definitions/typedLiteral\" }\n" +
+        "                ]\n" +
+        "            }\n" +
+        "        },\n" +
+        "        \"attributeValues\": {\n" +
+        "            \"anyOf\": [\n" +
+        "                { \"$ref\": \"#/definitions/stringLiteral\" },\n" +
+        "                { \"$ref\": \"#/definitions/numberLiteral\" },\n" +
+        "                { \"$ref\": \"#/definitions/booleanLiteral\" },\n" +
+        "                { \"$ref\": \"#/definitions/typedLiteral\" },\n" +
+        "                { \"$ref\": \"#/definitions/literalArray\" }\n" +
+        "            ]\n" +
+        "        },\n" +
+        "        \"entity\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"title\": \"entity\",\n" +
+        "            \"additionalProperties\": { \"$ref\": \"#/definitions/attributeValues\" }\n" +
+        "        },\n" +
+        "        \"agent\": { \"$ref\": \"#/definitions/entity\" },\n" +
+        "        \"activity\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"title\": \"activity\",\n" +
+        "            \"prov:startTime\": { \"type\": \"string\", \"format\": \"date-time\" },\n" +
+        "            \"prov:endTime\": { \"type\": \"string\", \"format\": \"date-time\" },\n" +
+        "            \"additionalProperties\": { \"$ref\": \"#/definitions/attributeValues\" }\n" +
+        "        },\n" +
+        "        \"generation\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"title\": \"generation/usage\",\n" +
+        "            \"properties\": {\n" +
+        "                \"prov:entity\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:activity\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:time\": { \"type\": \"string\", \"format\": \"date-time\" }\n" +
+        "            },\n" +
+        "            \"required\": [\"prov:entity\"],\n" +
+        "            \"additionalProperties\": { \"$ref\": \"#/definitions/attributeValues\" }\n" +
+        "        },\n" +
+        "        \"usage\": {\"$ref\":\"#/definitions/generation\"},\n" +
+        "        \"communication\":{\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"title\": \"communication\",\n" +
+        "            \"properties\": {\n" +
+        "                \"prov:informant\": {\"type\": \"string\", \"format\": \"uri\"},\n" +
+        "                \"prov:informed\": {\"type\": \"string\", \"format\": \"uri\"}\n" +
+        "            },\n" +
+        "            \"required\": [\"prov:informant\", \"prov:informed\"],\n" +
+        "            \"additionalProperties\": { \"$ref\": \"#/definitions/attributeValues\" }\n" +
+        "        },\n" +
+        "        \"start\":{\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"title\": \"start/end\",\n" +
+        "            \"properties\": {\n" +
+        "                \"prov:activity\": {\"type\": \"string\", \"format\": \"uri\"},\n" +
+        "                \"prov:time\": {\"type\": \"string\", \"format\": \"date-time\"},\n" +
+        "                \"prov:trigger\": {\"type\": \"string\", \"format\": \"uri\"}\n" +
+        "            },\n" +
+        "            \"required\": [\"prov:activity\"],\n" +
+        "            \"additionalProperties\": { \"$ref\": \"#/definitions/attributeValues\" }\n" +
+        "        },\n" +
+        "        \"end\": {\"$ref\":\"#/definitions/start\"},\n" +
+        "        \"invalidation\":{\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"title\": \"invalidation\",\n" +
+        "            \"properties\": {\n" +
+        "                \"prov:entity\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:time\": { \"type\": \"string\", \"format\": \"date-time\" },\n" +
+        "                \"prov:activity\": { \"type\": \"string\", \"format\": \"uri\" }\n" +
+        "            },\n" +
+        "            \"required\": [\"prov:entity\"],\n" +
+        "            \"additionalProperties\": { \"$ref\": \"#/definitions/attributeValues\" }\n" +
+        "        },\n" +
+        "        \"derivation\":{\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"title\": \"derivation\",\n" +
+        "            \"properties\": {\n" +
+        "                \"prov:generatedEntity\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:usedEntity\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:activity\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:generation\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:usage\": { \"type\": \"string\", \"format\": \"uri\" }\n" +
+        "            },\n" +
+        "            \"required\": [\"prov:generatedEntity\", \"prov:usedEntity\"],\n" +
+        "            \"additionalProperties\": { \"$ref\": \"#/definitions/attributeValues\" }\n" +
+        "        },\n" +
+        "        \"attribution\":{\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"title\": \"attribution\",\n" +
+        "            \"properties\": {\n" +
+        "                \"prov:entity\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:agent\": { \"type\": \"string\", \"format\": \"uri\" }\n" +
+        "            },\n" +
+        "            \"required\": [\"prov:entity\", \"prov:agent\"],\n" +
+        "            \"additionalProperties\": { \"$ref\": \"#/definitions/attributeValues\" }\n" +
+        "        },\n" +
+        "        \"association\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"title\": \"association\",\n" +
+        "            \"properties\": {\n" +
+        "                \"prov:activity\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:agent\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:plan\": { \"type\": \"string\", \"format\": \"uri\" }\n" +
+        "            },\n" +
+        "            \"required\": [\"prov:activity\"],\n" +
+        "            \"additionalProperties\": { \"$ref\": \"#/definitions/attributeValues\" }\n" +
+        "        },\n" +
+        "        \"delegation\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"title\": \"delegation\",\n" +
+        "            \"properties\": {\n" +
+        "                \"prov:delegate\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:responsible\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:activity\": { \"type\": \"string\", \"format\": \"uri\" }\n" +
+        "            },\n" +
+        "            \"required\": [\"prov:delegate\", \"prov:responsible\"],\n" +
+        "            \"additionalProperties\": { \"$ref\": \"#/definitions/attributeValues\" }\n" +
+        "        },\n" +
+        "        \"influence\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"title\": \"\",\n" +
+        "            \"properties\": {\n" +
+        "                \"prov:influencer\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:influencee\": { \"type\": \"string\", \"format\": \"uri\" }\n" +
+        "            },\n" +
+        "            \"required\": [\"prov:influencer\", \"prov:influencee\"],\n" +
+        "            \"additionalProperties\": { \"$ref\": \"#/definitions/attributeValues\" }\n" +
+        "        },\n" +
+        "        \"specialization\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"title\": \"specialization\",\n" +
+        "            \"properties\": {\n" +
+        "                \"prov:generalEntity\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:specificEntity\": { \"type\": \"string\", \"format\": \"uri\" }\n" +
+        "            },\n" +
+        "            \"required\": [\"prov:generalEntity\", \"prov:specificEntity\"],\n" +
+        "            \"additionalProperties\": { \"$ref\": \"#/definitions/attributeValues\" }\n" +
+        "        },\n" +
+        "        \"alternate\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"title\": \"alternate\",\n" +
+        "            \"properties\": {\n" +
+        "                \"prov:alternate1\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:alternate2\": { \"type\": \"string\", \"format\": \"uri\" }\n" +
+        "            },\n" +
+        "            \"required\": [\"prov:alternate1\", \"prov:alternate2\"],\n" +
+        "            \"additionalProperties\": { \"$ref\": \"#/definitions/attributeValues\" }\n" +
+        "        },\n" +
+        "        \"membership\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"title\": \"membership\",\n" +
+        "            \"properties\": {\n" +
+        "                \"prov:collection\": { \"type\": \"string\", \"format\": \"uri\" },\n" +
+        "                \"prov:entity\": { \"type\": \"string\", \"format\": \"uri\" }\n" +
+        "            },\n" +
+        "            \"required\": [\"prov:collection\", \"prov:entity\"],\n" +
+        "            \"additionalProperties\": { \"$ref\": \"#/definitions/attributeValues\" }\n" +
+        "        },\n" +
+        "        \"bundle\": {\n" +
+        "            \"type\": \"object\",\n" +
+        "            \"title\": \"bundle\",\n" +
+        "            \"properties\":{\n" +
+        "                \"prefix\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"patternProperties\": {\n" +
+        "                        \"^[a-zA-Z0-9_\\\\-]+$\": { \"type\" : \"string\", \"format\": \"uri\" }\n" +
+        "                    }\n" +
+        "                },\n" +
+        "                \"entity\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/entity\" }\n" +
+        "                },\n" +
+        "                \"activity\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/activity\" }\n" +
+        "                },\n" +
+        "                \"agent\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/agent\" }\n" +
+        "                },\n" +
+        "                \"wasGeneratedBy\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/generation\" }\n" +
+        "                },\n" +
+        "                \"used\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/usage\" }\n" +
+        "                },\n" +
+        "                \"wasInformedBy\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/communication\" }\n" +
+        "                },\n" +
+        "                \"wasStartedBy\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/start\" }\n" +
+        "                },\n" +
+        "                \"wasEndedby\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/end\" }\n" +
+        "                },\n" +
+        "                \"wasInvalidatedBy\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/invalidation\" }\n" +
+        "                },\n" +
+        "                \"wasDerivedFrom\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/derivation\" }\n" +
+        "                },\n" +
+        "                \"wasAttributedTo\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/attribution\" }\n" +
+        "                },\n" +
+        "                \"wasAssociatedWith\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/association\" }\n" +
+        "                },\n" +
+        "                \"actedOnBehalfOf\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/delegation\" }\n" +
+        "                },\n" +
+        "                \"wasInfluencedBy\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/influence\" }\n" +
+        "                },\n" +
+        "                \"specializationOf\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/specialization\" }\n" +
+        "                },\n" +
+        "                \"alternateOf\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/alternate\" }\n" +
+        "                },\n" +
+        "                \"hadMember\": {\n" +
+        "                    \"type\": \"object\",\n" +
+        "                    \"additionalProperties\": { \"$ref\":\"#/definitions/membership\" }\n" +
+        "                }\n" +
+        "            }\n" +
+        "        }\n" +
+        "    }\n" +
+        "}"; 
+    
+    JSONObject rawSchema = new JSONObject(new JSONTokener(provSchema)); //BOOM NULL
+    Schema schema = SchemaLoader.load(rawSchema);
 }

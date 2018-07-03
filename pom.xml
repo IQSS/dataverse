@@ -141,6 +141,13 @@
         </dependency>
         <!-- END Data Deposit API v1 (SWORD v2) -->
         <dependency>
+            <!-- There are later versions of this lib available at jitpack.io,
+                 but it seemed better to not add another repo. -->
+            <groupId>org.everit.json</groupId>
+            <artifactId>org.everit.json.schema</artifactId>
+            <version>1.5.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.3m</version>
@@ -458,6 +465,22 @@
     </dependencies>
 
     <build>
+<!--        <testResources>
+            <testResource>
+                <directory>${project.basedir}/src/main/resources</directory>
+            </testResource>
+        </testResources>-->
+<!--        <testResources>
+            <testResource>
+              <directory>${project.basedir}/src/test/java</directory>
+              <excludes>
+                  <exclude>**/*.java</exclude>
+              </excludes>
+            </testResource>
+            <testResource>
+              <directory>${project.basedir}/src/test/resources</directory>
+            </testResource>
+          </testResources>-->
         <resources>
             <resource>
                 <directory>src/main/java</directory>
