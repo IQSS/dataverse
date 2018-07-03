@@ -63,7 +63,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      * @param ctxt The command context in which this command runs.
      */
     protected void updateDatasetUser(CommandContext ctxt) {
-        DatasetVersionUser datasetDataverseUser = ctxt.datasets().getDatasetVersionUser(dataset.getLatestVersion(), getUser());
+        DatasetVersionUser datasetDataverseUser = ctxt.datasets().getDatasetVersionUser(getDataset().getLatestVersion(), getUser());
 
         if (datasetDataverseUser != null) {
             // Update existing dataset-user

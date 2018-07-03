@@ -87,8 +87,12 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         }
         
         String nonNullDefaultIfKeyNotFound = "";
-        if (theDataset.getProtocol()==null) theDataset.setProtocol(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound));
-        if (theDataset.getAuthority()==null) theDataset.setAuthority(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound));
+        if (theDataset.getProtocol()==null) {
+            theDataset.setProtocol(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound));
+        }
+        if (theDataset.getAuthority()==null) {
+            theDataset.setAuthority(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound));
+        }
         if (theDataset.getStorageIdentifier() == null) {
             try {
                 DataAccess.createNewStorageIO(theDataset, "placeholder");
