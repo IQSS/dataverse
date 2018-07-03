@@ -222,13 +222,22 @@ public class DataConverter {
                                                                 "application/x-spss-sav",
                                                                 "application/x-spss-por"});
         if ("RData".equals(formatRequested)) {
+            String origFormat = file.getOriginalFileFormat();
             Map<String, String> resultInfo;
-            if (directFormats.contains(file.getOriginalFileFormat())){
+            if (origFormat.contains("stata") || origFormat.contains("spss")){
                 try {
+                    if (origFormat.contains("stata")){
+                        origFormat = "dta";
+                    } else if (origFormat.contains("sav")){
+                        origFormat = "sav";
+                    } else if (origFormat.contains("por")){
+                        origFormat = "por";
+                    }
+                    
                     StorageIO<DataFile> storageIO = file.getStorageIO();
                     storageIO.open(DataAccessOption.READ_ACCESS);
                     File origFile = downloadFromStorageIO(storageIO);
-                    resultInfo = dfs.directConvert(origFile, file.getOriginalFileFormat());
+                    resultInfo = dfs.directConvert(origFile, origFormat);
                 } catch (IOException ex) {
                     logger.severe(ex.getMessage());
                     resultInfo = null;

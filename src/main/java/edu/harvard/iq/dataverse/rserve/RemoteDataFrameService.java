@@ -32,7 +32,6 @@ import org.rosuda.REngine.*;
 import org.rosuda.REngine.Rserve.*;
 
 import org.apache.commons.lang.*;
-import org.apache.commons.lang.builder.*;
 
 /**
  * 
@@ -151,7 +150,21 @@ public class RemoteDataFrameService {
 
             RFileOutputStream rOutFile = connection.createFile(tempFileNameIn);
             copyWithBuffer(inFile, rOutFile, 1024);
-            
+                        
+            // We need to initialize our R session:
+            // send custom R code library over to the Rserve and load the code:
+            connection.voidEval("install.packages(\"haven\")");
+            connection.voidEval("library(haven)\n" +
+                                "direct_export <- function(file, fmt, dsnprfx){\n" +
+                                "    if (fmt == \"dta\"){\n" +
+                                "        table <- read_dta(file)\n" +
+                                "    } else if (fmt == \"sav\"){\n" +
+                                "        table <- read_sav(file)\n" +
+                                "    } else if (fmt == \"por\"){\n" +
+                                "        table <- read_por(file)\n" +
+                                "    }\n" +
+                                "    save(table, file=dsnprfx)\n" +
+                                "}");
             
             String dataFileName = "Data." + PID + ".RData";
             
@@ -184,7 +197,7 @@ public class RemoteDataFrameService {
             connection.close();
         
         } catch (Exception e) {
-            logger.warning(e.getMessage());
+            e.printStackTrace();
             result.put("RexecError", "true");
         }
         
@@ -223,7 +236,6 @@ public class RemoteDataFrameService {
             // send custom R code library over to the Rserve and load the code:
             String rscript = readLocalResource(DATAVERSE_R_FUNCTIONS);
             connection.voidEval(rscript);
-            
             logger.fine("raw variable type="+Arrays.toString(jobRequest.getVariableTypes()));
             connection.assign("vartyp", new REXPInteger(jobRequest.getVariableTypes()));
         
@@ -526,7 +538,7 @@ public class RemoteDataFrameService {
         logger.fine("RSERVE_HOST="+RSERVE_HOST);
         RConnection connection = new RConnection(RSERVE_HOST, RSERVE_PORT);
         connection.login(RSERVE_USER, RSERVE_PWD);
-        logger.info(">" + connection.eval("R.version$version.string").asString() + "<");
+        logger.fine(">" + connection.eval("R.version$version.string").asString() + "<");
         // check working directories
         // This needs to be done *before* we try to create any files
         // there!

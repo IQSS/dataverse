@@ -2,7 +2,6 @@ library(foreign)
 library(stats)
 library(methods)
 library(R2HTML)
-
 options(digits.secs = 3)
 
 
@@ -375,11 +374,16 @@ createDataverseDataFrame<-function(dtfrm, dwnldoptn, dsnprfx) {
     save(x,file=dsnprfx)
 } # end of createDataverseDataFrame
 
-direct_export<-function(file, fmt, dsnprfx){
-    if (fmt = "application/x-stata"){
-        table <- read_stata(file)
-    } else if (fmt = "application/x-spss-sav"){
-        table <- read_spss(file)
+
+library(haven)
+
+direct_export <- function(file, fmt, dsnprfx){
+    if (fmt == "dta"){
+        table <- read_dta(file)
+    } else if (fmt == "sav"){
+        table <- read_sav(file)
+    } else if (fmt == "por"){
+        table <- read_por(file)
     }
-    save(x, file=dsnprfx)
+    save(table, file=dsnprfx)
 }
