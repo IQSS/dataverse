@@ -2,16 +2,17 @@ library(foreign)
 library(stats)
 library(methods)
 library(R2HTML)
+library(haven)
 options(digits.secs = 3)
 
 
 ############ parameters ########################
 univarstathdr<-c("Valid Cases", "Missing Cases(NAs)", "Total", "Mean", "Standard deviation", "Skewness", "Kurtosis", "Coefficient of variation", "Mode", "Minimum","1st Quartile","Median","3rd Quartile","Maximum","Range","Interquartile Range","Normality Test(Shapiro-Wilk Statistic)", "Normality Test(Shapiro-Wilk Statistic: p value)")
 
-imgprfx1<-c("<img src=\"http://")
+imgprfx1<-c("<img src="http://")
 imgprfx2<-c("/nph-dmpJpg.pl?jpgfn=")
-imgsffx1<-c("\" >\n")
-imgsffx2<-c("\" >\n")
+imgsffx1<-c("" >n")
+imgsffx2<-c("" >n")
 
 ############# parameters #######################
 # Note: 
@@ -23,7 +24,7 @@ imgsffx2<-c("\" >\n")
 #    the empty entries that were supposed to represent Missing Values, when the subset contained a single numeric column, 
 #    no matter what the na.strings= was set to. 
 
-read.dataverseTabData<-function (file, header = FALSE, sep = "\t", quote = "", dec = ".", col.names=NULL, na.strings = "NA",colClasses = NA,  colClassesx = NA, nrows = -1, skip = 0, check.names = TRUE,fill = !blank.lines.skip, strip.white = FALSE, blank.lines.skip = FALSE, comment.char = "", varFormat=list()) 
+read.dataverseTabData<-function (file, header = FALSE, sep = "t", quote = "", dec = ".", col.names=NULL, na.strings = "NA",colClasses = NA,  colClassesx = NA, nrows = -1, skip = 0, check.names = TRUE,fill = !blank.lines.skip, strip.white = FALSE, blank.lines.skip = FALSE, comment.char = "", varFormat=list()) 
 {
     if (is.character(file)) {
         file <- file(file, "r")
@@ -65,8 +66,8 @@ read.dataverseTabData<-function (file, header = FALSE, sep = "\t", quote = "", d
          # And remove the double quotes we had put around the non-missing
          # string values as they were stored in the TAB files:
 
-         data[[i]]<-sub("^\"", "", data[[i]])
-         data[[i]]<-sub("\"$", "", data[[i]])
+         data[[i]]<-sub("^"", "", data[[i]])
+         data[[i]]<-sub(""$", "", data[[i]])
 
          # Special processing for dates and times:
             
@@ -124,13 +125,13 @@ read.dataverseTabData<-function (file, header = FALSE, sep = "\t", quote = "", d
 createvalindex <-function(dtfrm, attrname=NULL){
 
     if (is.null(dtfrm)) {
-        stop("dataframe is not specified\n")
+        stop("dataframe is not specifiedn")
     } else if (is.null(attrname)){
-        stop("attrname is is not specified\n")
+        stop("attrname is is not specifiedn")
     } else if (!exists('dtfrm')) {
-        stop("dataframe is not found\n")
+        stop("dataframe is not foundn")
     } else if (!is.data.frame(dtfrm) ) {
-        stop("Specified object is not a data.frame\n")
+        stop("Specified object is not a data.framen")
     }
         
     #DBG<-TRUE
@@ -142,9 +143,9 @@ createvalindex <-function(dtfrm, attrname=NULL){
     } else if (attrname == 'missval.index') {
         tabletype<-'missval.table'
         valtable<-attr(dtfrm, 'missval.table')
-    } else stop ("Specified attrname must be either val.index or missval.index\n")
+    } else stop ("Specified attrname must be either val.index or missval.indexn")
     
-    if (DBG) {cat("\nattribute name=",attrname,"\n")}
+    if (DBG) {cat("nattribute name=",attrname,"n")}
 
     if (length(valtable)) {
         vlindex  <- list();
@@ -152,18 +153,18 @@ createvalindex <-function(dtfrm, attrname=NULL){
         lstall<-list()
         vltbl<-list()
         if (DBG) {
-            cat("length(",attrname,")=",length(valtable),"\n")
-            cat("varidset(",attrname,")=",names(valtable),"\n")
+            cat("length(",attrname,")=",length(valtable),"n")
+            cat("varidset(",attrname,")=",names(valtable),"n")
         }
         nameset<-names(valtable)
         if (DBG) {
             str(nameset)
-            cat("\nnameset:", paste(nameset,collapse="|"), "\n",sep="")
+            cat("nnameset:", paste(nameset,collapse="|"), "n",sep="")
         }
         for (i in 1:(length(valtable))){
         if (DBG) {
-            cat("var=",i,"\n", sep="")
-            cat("\tlstall:", paste(if (length(lstall)) {as.vector(lstall,mode="integer")} else {"empty"}, collapse=","), "\n",sep="")
+            cat("var=",i,"n", sep="")
+            cat("tlstall:", paste(if (length(lstall)) {as.vector(lstall,mode="integer")} else {"empty"}, collapse=","), "n",sep="")
         }
             nameseti<-nameset[i]
             if (!is.null(lstall[[as.character(i)]])){next}
@@ -175,39 +176,39 @@ createvalindex <-function(dtfrm, attrname=NULL){
             vlindex[[as.character(nameseti)]]<-nameset[i]
             vltbl[[as.character(nameseti)]]<-valtable[[i]]
 
-            if (DBG) {cat("\tlsti:", paste(as.vector(lsti, mode="integer"),collapse=","), "\n",sep="")}
+            if (DBG) {cat("tlsti:", paste(as.vector(lsti, mode="integer"),collapse=","), "n",sep="")}
             for (j in i:length(valtable)){
                 if (!is.null(lstall[[as.character(j)]])){next}
                 if (attrname == 'val.index') {
                     if (  identical( names(valtable[[i]]), names(valtable[[j]])  ) & identical(valtable[[i]], valtable[[j]]) ) {
-                        if (DBG) {cat("\tVL:new duplicate (var#) to be added:", j,"\n",sep="")}
+                        if (DBG) {cat("tVL:new duplicate (var#) to be added:", j,"n",sep="")}
                         lsti[[as.character(j)]]<-j
                         vlindex[[as.character(nameset[j])]]<-nameseti
                         lstall[[as.character(j)]]<-j
                     }
                 } else if (attrname == 'missval.index') {
                     if ( identical(valtable[[i]], valtable[[j]]) ) {
-                        if (DBG) {cat("\tMSVL: new duplicate (var#) to be added:", j,"\n",sep="")}
+                        if (DBG) {cat("tMSVL: new duplicate (var#) to be added:", j,"n",sep="")}
                         lsti[[as.character(j)]]<-j
                         vlindex[[as.character(nameset[j])]]<-nameseti
                         lstall[[as.character(j)]]<-j
                     }
                 }
             }
-            if (DBG) {cat("\tlsti to be attached to vlst:", paste(as.vector(lsti, mode="integer"),collapse=","), "\n",sep="")}
+            if (DBG) {cat("tlsti to be attached to vlst:", paste(as.vector(lsti, mode="integer"),collapse=","), "n",sep="")}
             if (length(lsti)){
                 vlst[[nameseti]]<-nameset[as.vector(lsti, mode="integer")]
             }
         }
         if (DBG) {
-            cat("\nvlst=attr(dtfrm,'val.list')  <- vlst\n")
+            cat("nvlst=attr(dtfrm,'val.list')  <- vlstn")
             str(vlst)
-            cat("\nvlindex=attr(dtfrm,'val.index') <- vlindex\n")
+            cat("nvlindex=attr(dtfrm,'val.index') <- vlindexn")
             str(vlindex)
-            cat("\nvltbl=attr(dtfrm,'val.table')<- valtablex\n")
+            cat("nvltbl=attr(dtfrm,'val.table')<- valtablexn")
             str(vltbl)
-            cat("\nnames(vltbl): equivalent to tmpunique\n")
-            cat("unique var IDs:", paste(names(vltbl),collapse="|"), "\n",sep="")
+            cat("nnames(vltbl): equivalent to tmpuniquen")
+            cat("unique var IDs:", paste(names(vltbl),collapse="|"), "n",sep="")
         }
         attr(dtfrm, attrname)<-vlindex
 
@@ -268,11 +269,11 @@ createDataverseDataFrame<-function(dtfrm, dwnldoptn, dsnprfx) {
     # using the value labels maps supplied by the Dataverse.
 
     if (DBG) {
-            # cat("inside the for loop\n")
+            # cat("inside the for loopn")
             # cat("class: ")
             # cat(class(x[[i]]))
-            # cat("\n")
-            cat("VAR TYPE: ",paste(VARTYPE[i],"\n",sep=""))
+            # cat("n")
+            cat("VAR TYPE: ",paste(VARTYPE[i],"n",sep=""))
     }       
 
 
@@ -283,9 +284,9 @@ createDataverseDataFrame<-function(dtfrm, dwnldoptn, dsnprfx) {
             if (!(is.null(VALINDEX[[as.character(i)]]))) {
 
                 vti <- VALTABLE[[VALINDEX[[as.character(i)]]]]
-                # cat(paste(class(vti),"\n"))
-                # cat(paste(length(vti),"\n"))
-                # cat(paste("VTI", vti, "\n", sep=" : "))
+                # cat(paste(class(vti),"n"))
+                # cat(paste(length(vti),"n"))
+                # cat(paste("VTI", vti, "n", sep=" : "))
 
                 # if the type is > 0 - i.e., numeric, we'll treat the levels
                 # as numeric values. we'll treat them as strings otherwise:
@@ -344,12 +345,12 @@ createDataverseDataFrame<-function(dtfrm, dwnldoptn, dsnprfx) {
                 ordered=TRUE)
                 } else {
                     if (DBG) {
-                        cat("no ordered value labels supplied\n")
-                        cat(paste(length(vlevsi),"\n",sep=""))
+                        cat("no ordered value labels suppliedn")
+                        cat(paste(length(vlevsi),"n",sep=""))
                         orderedfct<-(VARTYPE[i]>0 && ((length(vlevsi)-length(mti)>2)))
-                        cat(paste(as.character(orderedfct),"\n", sep=""))
-                        cat(paste("MTI", mti,"\n",sep=" : "))
-                        cat(paste("VLEVSI", vlevsi,"\n",sep=" : "))
+                        cat(paste(as.character(orderedfct),"n", sep=""))
+                        cat(paste("MTI", mti,"n",sep=" : "))
+                        cat(paste("VLEVSI", vlevsi,"n",sep=" : "))
                     }
       
                     x[[i]]  <-  factor(x[[i]],
@@ -373,9 +374,6 @@ createDataverseDataFrame<-function(dtfrm, dwnldoptn, dsnprfx) {
     # SAVE AS R WORKSPACE: 
     save(x,file=dsnprfx)
 } # end of createDataverseDataFrame
-
-
-library(haven)
 
 direct_export <- function(file, fmt, dsnprfx){
     if (fmt == "dta"){

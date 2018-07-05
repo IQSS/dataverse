@@ -161,32 +161,36 @@ public class DataConverter {
     }
 
     private static File downloadFromStorageIO(StorageIO<DataFile> storageIO) {
-        File tabFile;
         if (storageIO.isLocalFile()){
             try {
                 Path tabFilePath = storageIO.getFileSystemPath();
-                tabFile = tabFilePath.toFile();
+                return tabFilePath.toFile();
             } catch (IOException ioex) {
                 // this is likely a fatal condition, as in, the file is unaccessible:
-                tabFile = null;
             }
         } else {
-            ReadableByteChannel tabFileChannel = null;
             try {
-                logger.fine("opening datafFileIO for the source tabular file...");
                 storageIO.open();
-                tabFileChannel = storageIO.getReadChannel();
-                
-                FileChannel tempFileChannel;
-                tabFile = File.createTempFile("tempTabFile", ".tmp");
-                tempFileChannel = new FileOutputStream(tabFile).getChannel();
-                tempFileChannel.transferFrom(tabFileChannel, 0, storageIO.getSize());
-            } catch (IOException ioex) {
+                return downloadFromByteChannel(storageIO.getReadChannel(), storageIO.getSize());
+            } catch (IOException ex) {
                 logger.warning("caught IOException trying to store tabular file " + storageIO.getDataFile().getStorageIdentifier() + " as a temp file.");
-                tabFile = null;
             }
         }
-        return tabFile;
+        return null;
+    }
+
+    private static File downloadFromByteChannel(ReadableByteChannel tabFileChannel, long size) {
+        try {
+            logger.fine("opening datafFileIO for the source tabular file...");
+            
+            File tabFile = File.createTempFile("tempTabFile", ".tmp");
+            FileChannel tempFileChannel = new FileOutputStream(tabFile).getChannel();
+            tempFileChannel.transferFrom(tabFileChannel, 0, size);
+            return tabFile;
+        } catch (IOException ioex) {
+            logger.warning("caught IOException trying to store tabular file as a temp file.");
+        }
+        return null;
     }
 
     // Method for (subsettable) file format conversion.
@@ -225,24 +229,23 @@ public class DataConverter {
             String origFormat = file.getOriginalFileFormat();
             Map<String, String> resultInfo;
             if (origFormat.contains("stata") || origFormat.contains("spss")){
-                try {
-                    if (origFormat.contains("stata")){
-                        origFormat = "dta";
-                    } else if (origFormat.contains("sav")){
-                        origFormat = "sav";
-                    } else if (origFormat.contains("por")){
-                        origFormat = "por";
-                    }
+                if (origFormat.contains("stata")){
+                    origFormat = "dta";
+                } else if (origFormat.contains("sav")){
+                    origFormat = "sav";
+                } else if (origFormat.contains("por")){
+                    origFormat = "por";
+                }
                     
+                try {
                     StorageIO<DataFile> storageIO = file.getStorageIO();
-                    storageIO.open(DataAccessOption.READ_ACCESS);
-                    File origFile = downloadFromStorageIO(storageIO);
+                    long size = storageIO.getAuxObjectSize("orig");
+                    File origFile = downloadFromByteChannel((ReadableByteChannel) storageIO.openAuxChannel("orig"), size);
                     resultInfo = dfs.directConvert(origFile, origFormat);
                 } catch (IOException ex) {
-                    logger.severe(ex.getMessage());
-                    resultInfo = null;
+                    ex.printStackTrace();
+                    return null;
                 }
-            //} else if("application/x-spss".equals(file.getOriginalFileFormat())){
                 
             } else{
                 List<DataVariable> dataVariables = file.getDataTable().getDataVariables();

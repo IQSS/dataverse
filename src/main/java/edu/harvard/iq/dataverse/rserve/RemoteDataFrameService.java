@@ -121,24 +121,6 @@ public class RemoteDataFrameService {
         logger.fine("tempFileNameOut=" + tempFileNameOut);
 
     }
-
-
-    
-    public void setupWorkingDirectory(RConnection connection) {
-        
-        try {
-            // check the temp directory; try to create it if it doesn't exist:
-
-            String checkWrkDir = "if (!file_test('-d', '" + RSERVE_TMP_DIR + "')) {dir.create('" + RSERVE_TMP_DIR + "', showWarnings = FALSE, recursive = TRUE);}";
-
-            logger.fine("w permission=" + checkWrkDir);
-            connection.voidEval(checkWrkDir);
-
-        } catch (RserveException rse) {
-            rse.printStackTrace();
-        }
-    }
-    
     
     public Map<String, String> directConvert(File originalFile, String fmt){
         
@@ -153,26 +135,16 @@ public class RemoteDataFrameService {
                         
             // We need to initialize our R session:
             // send custom R code library over to the Rserve and load the code:
-            connection.voidEval("install.packages(\"haven\")");
-            connection.voidEval("library(haven)\n" +
-                                "direct_export <- function(file, fmt, dsnprfx){\n" +
-                                "    if (fmt == \"dta\"){\n" +
-                                "        table <- read_dta(file)\n" +
-                                "    } else if (fmt == \"sav\"){\n" +
-                                "        table <- read_sav(file)\n" +
-                                "    } else if (fmt == \"por\"){\n" +
-                                "        table <- read_por(file)\n" +
-                                "    }\n" +
-                                "    save(table, file=dsnprfx)\n" +
-                                "}");
+            String rscript = readLocalResource(DATAVERSE_R_FUNCTIONS);
+            connection.voidEval(rscript);
             
             String dataFileName = "Data." + PID + ".RData";
             
             // data file to be copied back to the dvn
             String dsnprfx = RSERVE_TMP_DIR + "/" + dataFileName;
             
-            String command = "direct_export(file='"+tempFileNameIn+"'," + "fmt='" + fmt + "'" +
-                             ", dsnprfx='" + dsnprfx + "')";
+            String command = "direct_export(file='"+tempFileNameIn+"'," +
+                             "fmt='" + fmt + "'" + ", dsnprfx='" + dsnprfx + "')";
                         
             connection.voidEval(command);
             
@@ -197,7 +169,7 @@ public class RemoteDataFrameService {
             connection.close();
         
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.severe(e.getMessage());
             result.put("RexecError", "true");
         }
         
@@ -498,7 +470,7 @@ public class RemoteDataFrameService {
             
             result.putAll(buildResult(connection, dsnprfx, wbFileSize, result));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.severe(e.getMessage());
             result.put("RexecError", "true");
         }
         
@@ -544,6 +516,21 @@ public class RemoteDataFrameService {
         // there!
         setupWorkingDirectory(connection);
         return connection;
+    }
+    
+    public void setupWorkingDirectory(RConnection connection) {
+        
+        try {
+            // check the temp directory; try to create it if it doesn't exist:
+
+            String checkWrkDir = "if (!file_test('-d', '" + RSERVE_TMP_DIR + "')) {dir.create('" + RSERVE_TMP_DIR + "', showWarnings = FALSE, recursive = TRUE);}";
+
+            logger.fine("w permission=" + checkWrkDir);
+            connection.voidEval(checkWrkDir);
+
+        } catch (RserveException rse) {
+            rse.printStackTrace();
+        }
     }
     
 
