@@ -104,6 +104,7 @@ public class FileUtil implements java.io.Serializable  {
         STATISTICAL_FILE_EXTENSION.put("sas", "application/x-sas-syntax");
         STATISTICAL_FILE_EXTENSION.put("sps", "application/x-spss-syntax");
         STATISTICAL_FILE_EXTENSION.put("csv", "text/csv");
+        STATISTICAL_FILE_EXTENSION.put("tsv", "text/tsv");
     }
     
     private static MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
@@ -119,7 +120,7 @@ public class FileUtil implements java.io.Serializable  {
     public static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
     public static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
     
-    public static final String MIME_TYPE_TAB   = "text/tab-separated-values";
+    public static final String MIME_TYPE_TSV   = "text/tab-separated-values";
     
     public static final String MIME_TYPE_FITS  = "application/fits";
     

@@ -90,6 +90,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     private static final String MIME_TYPE_STATA13 = "application/x-stata-13";
     private static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
     private static final String MIME_TYPE_CSV   = "text/csv";
+    private static final String MIME_TYPE_TSV   = "text/tab-separated-values";
     private static final String MIME_TYPE_CSV_ALT = "text/comma-separated-values";
     private static final String MIME_TYPE_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
@@ -99,7 +100,6 @@ public class DataFileServiceBean implements java.io.Serializable {
     // as "tabular data":
     // TODO: - add more to this list? -- L.A. 4.0 beta13
     
-    private static final String MIME_TYPE_TAB   = "text/tab-separated-values";
     private static final String MIME_TYPE_FIXED_FIELD = "text/x-fixed-field";
     private static final String MIME_TYPE_SAS_TRANSPORT = "application/x-sas-transport";
     private static final String MIME_TYPE_SAS_SYSTEM = "application/x-sas-system";
@@ -481,7 +481,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // If content type indicates it's tabular data, spend 2 extra queries 
         // looking up the data table and tabular tags objects:
         
-        if (MIME_TYPE_TAB.equalsIgnoreCase(contentType)) {
+        if (MIME_TYPE_TSV.equalsIgnoreCase(contentType)) {
             Object[] dtResult;
             try {
                 dtResult = (Object[]) em.createNativeQuery("SELECT ID, UNF, CASEQUANTITY, VARQUANTITY, ORIGINALFILEFORMAT FROM dataTable WHERE DATAFILE_ID = " + id).getSingleResult();
@@ -1165,6 +1165,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             case MIME_TYPE_STATA13:
             case MIME_TYPE_RDATA:
             case MIME_TYPE_CSV:
+            case MIME_TYPE_TSV:
             case MIME_TYPE_CSV_ALT:
             case MIME_TYPE_XLSX:
             case MIME_TYPE_SPSS_SAV:
@@ -1386,7 +1387,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // And these are the formats we DON'T know how to ingest, 
         // but nevertheless recognize as "tabular data":
         
-        return (MIME_TYPE_TAB.equalsIgnoreCase(contentType)
+        return (MIME_TYPE_TSV.equalsIgnoreCase(contentType)
             || MIME_TYPE_FIXED_FIELD.equalsIgnoreCase(contentType) 
             || MIME_TYPE_SAS_TRANSPORT.equalsIgnoreCase(contentType)
             || MIME_TYPE_SAS_SYSTEM.equalsIgnoreCase(contentType));
@@ -1504,7 +1505,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }  // end: isReplacementFile
     
     public List<Long> selectFilesWithMissingOriginalTypes() {
-        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND t.originalfileformat='" + MIME_TYPE_TAB + "' ORDER BY f.id");
+        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND t.originalfileformat='" + MIME_TYPE_TSV + "' ORDER BY f.id");
         
         try {
             return query.getResultList();
