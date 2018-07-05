@@ -141,9 +141,7 @@ EPEL6 provides R-3.3, which is known to work well. Some installations have run E
 
 If you have an installed R 3.3 or 3.4 installation from EPEL, you may lock that version in place using the _yum-plugin-versionlock_ yum plugin, or simply add this line to the "epel" section of /etc/yum.repos.d/epel.repo::
 
-```
-exclude=R-*,openblas-*,libRmath*
-```
+	exclude=R-*,openblas-*,libRmath*
 
 RHEL users may want to log in to their organization's respective RHN interface, find the particular machine in question and:
 
