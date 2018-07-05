@@ -168,7 +168,7 @@ public class RemoteDataFrameService {
  
             connection.close();
         
-        } catch (Exception e) {
+        } catch (IOException | REXPMismatchException | RserveException e) {
             logger.severe(e.getMessage());
             result.put("RexecError", "true");
         }

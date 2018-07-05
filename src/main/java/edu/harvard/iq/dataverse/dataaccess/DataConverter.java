@@ -222,9 +222,6 @@ public class DataConverter {
         // create the service instance
         RemoteDataFrameService dfs = new RemoteDataFrameService();
         
-        List<String> directFormats = Arrays.asList(new String[]{"application/x-stata",
-                                                                "application/x-spss-sav",
-                                                                "application/x-spss-por"});
         if ("RData".equals(formatRequested)) {
             String origFormat = file.getOriginalFileFormat();
             Map<String, String> resultInfo;
