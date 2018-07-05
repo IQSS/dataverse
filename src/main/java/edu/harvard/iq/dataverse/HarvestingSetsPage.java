@@ -16,9 +16,12 @@ import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OaiSetException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -239,7 +242,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             success = true;
 
         } catch (Exception ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Failed to create OAI set");
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("harvest.oaicreate.fail"));
              logger.log(Level.SEVERE, "Failed to create OAI set" + ex.getMessage(), ex);
         }
         
@@ -276,12 +279,11 @@ public class HarvestingSetsPage implements java.io.Serializable {
         try {
             oaiSetService.save(oaiSet);
             configuredHarvestingSets = oaiSetService.findAll(); 
-                        
-            JsfHelper.addSuccessMessage("Succesfully updated OAI set &#34;" + oaiSet.getSpec() + "&#34;.");
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("harvest.oaiupdate.success",   Arrays.asList(oaiSet.getSpec())));
             success = true;
 
         } catch (Exception ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Failed to update OAI set.");
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("harvest.oaiupdate.fail"));
              logger.log(Level.SEVERE, "Failed to update OAI set." + ex.getMessage(), ex);
         }
         
@@ -309,7 +311,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
                 configuredHarvestingSets = oaiSetService.findAll();
                 JsfHelper.addInfoMessage(JH.localize("harvestserver.tab.header.action.delete.infomessage"));
             } catch (Exception ex) {
-                String failMessage = "Failed to delete harvesting set; unknown exception: "+ex.getMessage();
+                String failMessage = BundleUtil.getStringFromBundle("harvest.delete.fail")+ex.getMessage();
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             }
         } else {
@@ -421,7 +423,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             datasetsFound = oaiSetService.validateDefinitionQuery(getNewSetQuery());
         } catch (OaiSetException ose) {
             FacesContext.getCurrentInstance().addMessage(getNewSetQueryInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "Search failed for the query provided. Message from the Dataverse search server: "+ose.getMessage()));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvest.search.failed")+ose.getMessage()));
             setSetQueryValidated(false);
             return;
         }
@@ -519,7 +521,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         try {          
             runSetExport(oaiSet);
         } catch (Exception ex) {
-            String failMessage = "Sorry, could not start re-export on selected OAI set (unknown server error).";
+            String failMessage = BundleUtil.getStringFromBundle("harvest.reexport.fail");
             JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             return;
         } 
