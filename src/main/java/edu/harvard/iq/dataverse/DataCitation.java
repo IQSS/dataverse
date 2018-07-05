@@ -597,15 +597,17 @@ public class DataCitation {
 				|| HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
 				|| HarvestingClient.HARVEST_STYLE_DATAVERSE
 						.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
-			if (!StringUtils.isEmpty(dv.getIdentifier())) {
 				// creating a global id like this:
 				// persistentId = new GlobalId(dv.getGlobalId());
 				// you end up doing new GlobalId((New GlobalId(dv)).toString())
 				// - doing an extra formatting-and-parsing-again
 				// This achieves the same thing:
 				if(!isDirect()) {
+				if (!StringUtils.isEmpty(dsv.getDataset().getIdentifier())) {
 					return new GlobalId(dsv.getDataset());
+				}
 				} else {
+				if (!StringUtils.isEmpty(dv.getIdentifier())) {
 					return new GlobalId(dv);
 				}
 			}
