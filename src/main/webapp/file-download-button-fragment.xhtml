@@ -153,7 +153,7 @@
                 <li role="presentation" class="divider"></li>
             </ui:remove>
             <li>
-                <p:commandLink rendered="#{!downloadPopupRequired}"
+                <p:commandLink rendered="#{!downloadPopupRequired and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'original')}">
@@ -161,7 +161,7 @@
                         <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                     </h:outputFormat>
                 </p:commandLink>
-                <p:commandLink rendered="#{downloadPopupRequired}"
+                <p:commandLink rendered="#{downloadPopupRequired and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'original' )}"

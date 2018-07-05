@@ -1,11 +1,14 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -81,8 +84,10 @@ import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -92,6 +97,7 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -405,6 +411,303 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
             
         }
+    }
+    
+    @PUT
+    @Path("{id}/deleteMetadata")
+    public Response deleteVersionMetadata(String jsonBody, @PathParam("id") String id) throws WrappedResponse {
+
+        DataverseRequest req = createDataverseRequest(findUserOrDie());
+
+        return processDatasetFieldDataDelete(jsonBody, id, req);
+    }
+
+    private Response processDatasetFieldDataDelete(String jsonBody, String id, DataverseRequest req) {
+        try (StringReader rdr = new StringReader(jsonBody)) {
+
+            Dataset ds = findDatasetOrDie(id);
+            JsonObject json = Json.createReader(rdr).readObject();
+            DatasetVersion dsv = ds.getEditVersion();
+
+            List<DatasetField> fields = new LinkedList<>();
+            DatasetField singleField = null;
+
+            JsonArray fieldsJson = json.getJsonArray("fields");
+            if (fieldsJson == null) {
+                singleField = jsonParser().parseField(json, Boolean.FALSE);
+                fields.add(singleField);
+            } else {
+                fields = jsonParser().parseMultipleFields(json);
+            }
+
+            dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
+
+            List<ControlledVocabularyValue> controlledVocabularyItemsToRemove = new ArrayList();
+            List<DatasetFieldValue> datasetFieldValueItemsToRemove = new ArrayList();
+            List<DatasetFieldCompoundValue> datasetFieldCompoundValueItemsToRemove = new ArrayList();
+
+            for (DatasetField updateField : fields) {
+                boolean found = false;
+                for (DatasetField dsf : dsv.getDatasetFields()) {
+                    if (dsf.getDatasetFieldType().equals(updateField.getDatasetFieldType())) {
+                        if (dsf.getDatasetFieldType().isAllowMultiples()) { 
+                            if (updateField.getDatasetFieldType().isControlledVocabulary()) {
+                                if (dsf.getDatasetFieldType().isAllowMultiples()) {
+                                    for (ControlledVocabularyValue cvv : updateField.getControlledVocabularyValues()) {
+                                        for (ControlledVocabularyValue existing : dsf.getControlledVocabularyValues()) {
+                                            if (existing.getStrValue().equals(cvv.getStrValue())) {
+                                                found = true;
+                                                controlledVocabularyItemsToRemove.add(existing);
+                                            }
+                                        }
+                                        if (!found) {
+                                            logger.log(Level.SEVERE, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + cvv.getStrValue() + " not found.");
+                                            return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + cvv.getStrValue() + " not found.");
+                                        }
+                                    }
+                                    for (ControlledVocabularyValue remove : controlledVocabularyItemsToRemove) {
+                                        dsf.getControlledVocabularyValues().remove(remove);
+                                    }
+
+                                } else {
+                                    if (dsf.getSingleControlledVocabularyValue().getStrValue().equals(updateField.getSingleControlledVocabularyValue().getStrValue())) {
+                                        found = true;
+                                        dsf.setSingleControlledVocabularyValue(null);
+                                    }
+
+                                }
+                            } else {
+                                if (!updateField.getDatasetFieldType().isCompound()) {
+                                    if (dsf.getDatasetFieldType().isAllowMultiples()) {
+                                        for (DatasetFieldValue dfv : updateField.getDatasetFieldValues()) {
+                                            for (DatasetFieldValue edsfv : dsf.getDatasetFieldValues()) {
+                                                if (edsfv.getDisplayValue().equals(dfv.getDisplayValue())) {
+                                                    found = true;
+                                                    datasetFieldValueItemsToRemove.add(dfv);
+                                                }
+                                            }
+                                            if (!found) {
+                                                logger.log(Level.SEVERE, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + dfv.getDisplayValue() + " not found.");
+                                                return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + dfv.getDisplayValue() + " not found.");
+                                            }
+                                        }
+                                        datasetFieldValueItemsToRemove.forEach((remove) -> {
+                                            dsf.getDatasetFieldValues().remove(remove);
+                                        });
+
+                                    } else {
+                                        if (dsf.getSingleValue().getDisplayValue().equals(updateField.getSingleValue().getDisplayValue())) {
+                                            found = true;
+                                            dsf.setSingleValue(null);
+                                        }
+
+                                    }
+                                } else {
+                                    for (DatasetFieldCompoundValue dfcv : updateField.getDatasetFieldCompoundValues()) {
+                                        String deleteVal = getCompoundDisplayValue(dfcv);
+                                        for (DatasetFieldCompoundValue existing : dsf.getDatasetFieldCompoundValues()) {
+                                            String existingString = getCompoundDisplayValue(existing);
+                                            if (existingString.equals(deleteVal)) {
+                                                found = true;
+                                                datasetFieldCompoundValueItemsToRemove.add(existing);
+                                            }
+                                        }
+                                        datasetFieldCompoundValueItemsToRemove.forEach((remove) -> {
+                                            dsf.getDatasetFieldCompoundValues().remove(remove);
+                                        });
+                                        if (!found) { 
+                                            logger.log(Level.SEVERE, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + deleteVal + " not found.");
+                                            return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + deleteVal + " not found.");
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            found = true;
+                            dsf.setSingleValue(null);
+                            dsf.setSingleControlledVocabularyValue(null);
+                        }
+                        break;
+                    }
+                }
+                if (!found){
+                    String displayValue = !updateField.getDisplayValue().isEmpty() ? updateField.getDisplayValue() : updateField.getCompoundDisplayValue();
+                    logger.log(Level.SEVERE, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found." );
+                    return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found." );
+                }
+            }           
+
+
+            
+            boolean updateDraft = ds.getLatestVersion().isDraft();
+            DatasetVersion managedVersion = execCommand(updateDraft
+                    ? new UpdateDatasetVersionCommand(req, dsv)
+                    : new CreateDatasetVersionCommand(req, ds, dsv));
+            return ok(json(managedVersion));
+
+        } catch (JsonParseException ex) {
+            logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
+            return error(Response.Status.BAD_REQUEST, "Error processing metadata delete: " + ex.getMessage());
+
+        } catch (WrappedResponse ex) {
+            logger.log(Level.SEVERE, "Delete metadata error: " + ex.getMessage(), ex);
+            return ex.getResponse();
+
+        }
+    
+    }
+    
+    private String getCompoundDisplayValue (DatasetFieldCompoundValue dscv){
+        String returnString = "";
+                    for (DatasetField dsf : dscv.getChildDatasetFields()) {
+                for (String value : dsf.getValues()) {
+                    if (!(value == null)) {
+                        returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
+                    }
+                }
+            }
+        return returnString;
+    }
+    
+    @PUT
+    @Path("{id}/editMetadata")
+    public Response editVersionMetadata(String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) throws WrappedResponse{
+
+        Boolean replaceData = replace != null;
+
+        DataverseRequest req = createDataverseRequest(findUserOrDie());
+
+        return processDatasetUpdate(jsonBody, id, req, replaceData);
+    }
+    
+    
+    private Response processDatasetUpdate(String jsonBody, String id, DataverseRequest req, Boolean replaceData){
+        try (StringReader rdr = new StringReader(jsonBody)) {
+           
+            Dataset ds = findDatasetOrDie(id);
+            JsonObject json = Json.createReader(rdr).readObject();
+            DatasetVersion dsv = ds.getEditVersion();
+
+            List<DatasetField> fields = new LinkedList<>();
+            DatasetField singleField = null; 
+            
+            JsonArray fieldsJson = json.getJsonArray("fields");
+            if( fieldsJson == null ){
+                singleField  = jsonParser().parseField(json, Boolean.FALSE);
+                fields.add(singleField);
+            } else{
+                fields = jsonParser().parseMultipleFields(json);
+            }
+            
+
+            String valdationErrors = validateDatasetFieldValues(fields);
+
+            if (!valdationErrors.isEmpty()) {
+                logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + valdationErrors, valdationErrors);
+                return error(Response.Status.BAD_REQUEST, "Error parsing dataset update: " + valdationErrors);
+            }
+
+            dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
+                
+            //loop through the update fields     
+            // and compare to the version fields  
+            //if exist add/replace values
+            //if not add entire dsf
+            for (DatasetField updateField : fields) {
+            boolean found = false;            
+            for (DatasetField dsf : dsv.getDatasetFields()) {
+                    if (dsf.getDatasetFieldType().equals(updateField.getDatasetFieldType())) {
+                        found = true;
+                        if (dsf.isEmpty() || dsf.getDatasetFieldType().isAllowMultiples() || replaceData ) {
+                            if(replaceData){
+                                if(dsf.getDatasetFieldType().isAllowMultiples()){
+                                    dsf.setDatasetFieldCompoundValues(new ArrayList());
+                                    dsf.setDatasetFieldValues(new ArrayList());
+                                    dsf.getControlledVocabularyValues().clear();
+                                } else {
+                                    dsf.setSingleValue("");
+                                    dsf.setSingleControlledVocabularyValue(null);
+                                }
+                            }
+                            if (updateField.getDatasetFieldType().isControlledVocabulary()) {
+                                if (dsf.getDatasetFieldType().isAllowMultiples()){
+                                for (ControlledVocabularyValue cvv : updateField.getControlledVocabularyValues()) {
+                                    if (!dsf.getDisplayValue().contains(cvv.getStrValue())) {
+                                        dsf.getControlledVocabularyValues().add(cvv);
+                                    }
+                                }
+                                } else {
+                                   dsf.setSingleControlledVocabularyValue(updateField.getSingleControlledVocabularyValue()); 
+                                }
+                            } else {
+                                if (!updateField.getDatasetFieldType().isCompound()) {
+                                    if (dsf.getDatasetFieldType().isAllowMultiples()) {
+                                        for (DatasetFieldValue dfv : updateField.getDatasetFieldValues()) {
+                                            if (!dsf.getDisplayValue().contains(dfv.getDisplayValue())) {
+                                                dfv.setDatasetField(dsf);
+                                                dsf.getDatasetFieldValues().add(dfv);
+                                            }
+                                        }
+                                    } else {
+                                        dsf.setSingleValue(updateField.getValue());
+                                    }
+                                } else {
+                                    for (DatasetFieldCompoundValue dfcv : updateField.getDatasetFieldCompoundValues()) {
+                                        if (!dsf.getCompoundDisplayValue().contains(updateField.getCompoundDisplayValue())) {
+                                            dfcv.setParentDatasetField(dsf);
+                                            dsf.setDatasetVersion(dsv);
+                                            dsf.getDatasetFieldCompoundValues().add(dfcv);
+
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            if (!dsf.isEmpty() && !dsf.getDatasetFieldType().isAllowMultiples() || !replaceData) {
+                                return error(Response.Status.BAD_REQUEST, "You may not add data to a field that already has data and does not allow multiples. Use replace=true to replace existing data (" + dsf.getDatasetFieldType().getDisplayName() + ")" );
+                            }
+                        }
+                        break;
+                    }
+                }
+                if(!found){
+                    updateField.setDatasetVersion(dsv);
+                    dsv.getDatasetFields().add(updateField);
+                }
+            }
+            boolean updateDraft = ds.getLatestVersion().isDraft();
+            DatasetVersion managedVersion = execCommand(updateDraft
+                    ? new UpdateDatasetVersionCommand(req, dsv)
+                    : new CreateDatasetVersionCommand(req, ds, dsv));
+            return ok(json(managedVersion));
+
+        } catch (JsonParseException ex) {
+            logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
+            return error(Response.Status.BAD_REQUEST, "Error parsing dataset update: " + ex.getMessage());
+
+        } catch (WrappedResponse ex) {
+            logger.log(Level.SEVERE, "Update metdata error: " + ex.getMessage(), ex);
+            return ex.getResponse();
+
+        }
+    }
+    
+    private String validateDatasetFieldValues(List<DatasetField> fields) {
+        StringBuilder error = new StringBuilder();
+
+        for (DatasetField dsf : fields) {
+            if (dsf.getDatasetFieldType().isAllowMultiples() && dsf.getControlledVocabularyValues().isEmpty()
+                    && dsf.getDatasetFieldCompoundValues().isEmpty() && dsf.getDatasetFieldValues().isEmpty()) {
+                error.append("Empty multiple value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
+            } else if (!dsf.getDatasetFieldType().isAllowMultiples() && dsf.getSingleValue().getValue().isEmpty()) {
+                error.append("Empty value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
+            }
+        }
+
+        if (!error.toString().isEmpty()) {
+            return (error.toString());
+        }
+        return "";
     }
     
     /**
