@@ -208,8 +208,7 @@ public class DataCitation {
 		}
 		// append UNF
 		if (!StringUtils.isEmpty(UNF)) {
-			// QDRCustom: Use period to join values, not comma
-			citation.append(". ").append(UNF).append(" [fileUNF]");
+			citation.append(separator).append(UNF).append(" [fileUNF]");
 		}
 
 		for (DatasetField dsf : optionalValues) {
