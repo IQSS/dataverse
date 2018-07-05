@@ -35,7 +35,7 @@ import org.apache.commons.lang.StringUtils;
  * @author gdurand
  */
 public class DataCitation {
-	
+
 	private static final Logger logger = Logger.getLogger(DataCitation.class.getCanonicalName());
 
 	private List<String> authors = new ArrayList<String>();
@@ -55,8 +55,7 @@ public class DataCitation {
 	public DataCitation(DatasetVersion dsv) {
 		this(dsv, false);
 	}
-	
-	
+
 	public DataCitation(DatasetVersion dsv, boolean direct) {
 		this.direct = direct;
 		// authors (or producer)
@@ -65,7 +64,7 @@ public class DataCitation {
 		// year
 		date = getDateFrom(dsv);
 		year = new SimpleDateFormat("yyyy").format(date);
-		
+
 		// title
 		title = dsv.getTitle();
 
@@ -99,7 +98,7 @@ public class DataCitation {
 	public DataCitation(FileMetadata fm) {
 		this(fm, false);
 	}
-	
+
 	public DataCitation(FileMetadata fm, boolean direct) {
 		this.direct = direct;
 		DatasetVersion dsv = fm.getDatasetVersion();
@@ -142,7 +141,7 @@ public class DataCitation {
 	public String getTitle() {
 		return title;
 	}
-	
+
 	public String getFileTitle() {
 		return fileTitle;
 	}
@@ -151,7 +150,6 @@ public class DataCitation {
 		return direct;
 	}
 
-	
 	public String getYear() {
 		return year;
 	}
@@ -176,7 +174,7 @@ public class DataCitation {
 	public String toString() {
 		return toString(false);
 	}
-	
+
 	public String toString(boolean html) {
 		// first add comma separated parts
 		String separator = ". ";
@@ -240,15 +238,14 @@ public class DataCitation {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		//Use UTF-8?
+		// Use UTF-8?
 		return buffer.toString();
 	}
-	
+
 	public void writeAsBibtexCitation(OutputStream os) throws IOException {
-		//Use UTF-8?
-		 Writer out
-		   = new BufferedWriter(new OutputStreamWriter(os));
-		if(getFileTitle() !=null && isDirect()) {
+		// Use UTF-8?
+		Writer out = new BufferedWriter(new OutputStreamWriter(os));
+		if (getFileTitle() != null && isDirect()) {
 			out.write("@incollection{");
 		} else {
 			out.write("@data{");
@@ -260,18 +257,18 @@ public class DataCitation {
 		out.write("publisher = {");
 		out.write(publisher);
 		out.write("},\r\n");
-		if(getFileTitle() !=null && isDirect()) {
-		out.write("title = {");
-		out.write(fileTitle);
-		out.write("},\r\n");
-		out.write("booktitle = {");
-		out.write(title);
-		out.write("},\r\n");
+		if (getFileTitle() != null && isDirect()) {
+			out.write("title = {");
+			out.write(fileTitle);
+			out.write("},\r\n");
+			out.write("booktitle = {");
+			out.write(title);
+			out.write("},\r\n");
 		} else {
 			out.write("title = {");
 			out.write(title);
 			out.write("},\r\n");
-			
+
 		}
 		out.write("year = {");
 		out.write(year);
@@ -284,20 +281,20 @@ public class DataCitation {
 		out.write("url = {");
 		out.write(persistentId.toURL().toString());
 		out.write("}\r\n");
-		if(getFileTitle()!=null) {
-			if(isDirect()) {
+		if (getFileTitle() != null) {
+			if (isDirect()) {
 				out.write("note = {");
 				out.write("This reference is to a file ");
-						if(getUNF()!=null) {
-							out.write("(UNF=" + getUNF()+")");
-						}
-						out.write(", with the given doi, within a dataset");
+				if (getUNF() != null) {
+					out.write("(UNF=" + getUNF() + ")");
+				}
+				out.write(", with the given doi, within a dataset");
 				out.write("}\r\n");
 			} else {
 				out.write("note = {");
 				out.write("This reference is to a file ");
-				if(getUNF()!=null) {
-					out.write("(UNF=" + getUNF()+")");
+				if (getUNF() != null) {
+					out.write("(UNF=" + getUNF() + ")");
 				}
 				out.write(" within a dataset with the given doi");
 				out.write("}\r\n");
@@ -315,22 +312,19 @@ public class DataCitation {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		//Use UTF-8?
+		// Use UTF-8?
 		return buffer.toString();
 	}
 
-	
 	public void writeAsRISCitation(OutputStream os) throws IOException {
-		//Use UTF-8?
-		Writer out
-		   = new BufferedWriter(new OutputStreamWriter(os));
+		// Use UTF-8?
+		Writer out = new BufferedWriter(new OutputStreamWriter(os));
 		out.write("Provider: " + publisher + "\r\n");
 		out.write("Content: text/plain; charset=\"us-ascii\"" + "\r\n");
 		// Using type "DBASE" - "Online Database", for consistency with
 		// EndNote (see the longer comment in the EndNote section below)>
 
-		
-		if ((getFileTitle()!=null)&&isDirect()) {
+		if ((getFileTitle() != null) && isDirect()) {
 			out.write("TY  - DBASE" + "\r\n");
 			out.write("T1  - " + getFileTitle() + "\r\n");
 			out.write("T2  - " + getTitle() + "\r\n");
@@ -348,14 +342,14 @@ public class DataCitation {
 
 		// a DataFile citation also includes filename und UNF, if applicable:
 		if (getFileTitle() != null) {
-			if(!isDirect()) {
+			if (!isDirect()) {
 				out.write("C1  - " + getFileTitle() + "\r\n");
 			}
 			if (getUNF() != null) {
 				out.write("C2  - " + getUNF() + "\r\n");
 			}
-			if(isDirect()) {
-			out.write("N1  - This reference is to a file, with the given identifier, within a dataset.\r\n");
+			if (isDirect()) {
+				out.write("N1  - This reference is to a file, with the given identifier, within a dataset.\r\n");
 			} else {
 				out.write("N1  - This reference is to a file within the dataset with the given identifier.\r\n");
 			}
@@ -368,134 +362,133 @@ public class DataCitation {
 		out.flush();
 	}
 
-    private XMLOutputFactory xmlOutputFactory = null;
+	private XMLOutputFactory xmlOutputFactory = null;
 
-    public String toEndNoteString() {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        writeAsEndNoteCitation(outStream);
-        String xml = outStream.toString();
-        return xml; 
-    } 
-    
-    public void writeAsEndNoteCitation(OutputStream os) {
+	public String toEndNoteString() {
+		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+		writeAsEndNoteCitation(outStream);
+		String xml = outStream.toString();
+		return xml;
+	}
 
-        xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
-        XMLStreamWriter xmlw = null;
-        try {
-            xmlw = xmlOutputFactory.createXMLStreamWriter(os);
-            xmlw.writeStartDocument();
-            createEndNoteXML(xmlw);
-            xmlw.writeEndDocument();
-        } catch (XMLStreamException ex) {
-            Logger.getLogger("global").log(Level.SEVERE, null, ex);
-            throw new EJBException("ERROR occurred during creating endnote xml.", ex);
-        } finally {
-            try {
-                if (xmlw != null) {
-                    xmlw.close();
-                }
-            } catch (XMLStreamException ex) {
-            }
-        }
-    }
-    
-    private void createEndNoteXML(XMLStreamWriter xmlw) throws XMLStreamException {
+	public void writeAsEndNoteCitation(OutputStream os) {
 
-    	xmlw.writeStartElement("xml");
-        xmlw.writeStartElement("records");
+		xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
+		XMLStreamWriter xmlw = null;
+		try {
+			xmlw = xmlOutputFactory.createXMLStreamWriter(os);
+			xmlw.writeStartDocument();
+			createEndNoteXML(xmlw);
+			xmlw.writeEndDocument();
+		} catch (XMLStreamException ex) {
+			Logger.getLogger("global").log(Level.SEVERE, null, ex);
+			throw new EJBException("ERROR occurred during creating endnote xml.", ex);
+		} finally {
+			try {
+				if (xmlw != null) {
+					xmlw.close();
+				}
+			} catch (XMLStreamException ex) {
+			}
+		}
+	}
 
-        xmlw.writeStartElement("record");
+	private void createEndNoteXML(XMLStreamWriter xmlw) throws XMLStreamException {
 
-        // "Ref-type" indicates which of the (numerous!) available EndNote
-        // schemas this record will be interpreted as. 
-        // This is relatively important. Certain fields with generic 
-        // names like "custom1" and "custom2" become very specific things
-        // in specific schemas; for example, custom1 shows as "legal notice"
-        // in "Journal Article" (ref-type 84), or as "year published" in 
-        // "Government Document". 
-        // We don't want the UNF to show as a "legal notice"! 
-        // We have found a ref-type that works ok for our purposes - 
-        // "Online Database" (type 45). In this one, the fields Custom1 
-        // and Custom2 are not translated and just show as is. 
-        // And "Custom1" still beats "legal notice". 
-        // -- L.A. 12.12.2014 beta 10
-        
-        xmlw.writeStartElement("ref-type");
-        xmlw.writeAttribute("name", "Online Database");
-        xmlw.writeCharacters("45");
-        xmlw.writeEndElement(); // ref-type
+		xmlw.writeStartElement("xml");
+		xmlw.writeStartElement("records");
 
-        xmlw.writeStartElement("contributors");
-        xmlw.writeStartElement("authors");
-        for (String author : authors) {
-            xmlw.writeStartElement("author");
-            xmlw.writeCharacters(author);
-            xmlw.writeEndElement(); // author                    
-        }
-        xmlw.writeEndElement(); // authors 
-        xmlw.writeEndElement(); // contributors 
+		xmlw.writeStartElement("record");
 
-        xmlw.writeStartElement("titles");
-        xmlw.writeStartElement("title");
-        xmlw.writeCharacters(title);
-        xmlw.writeEndElement(); // title
-        
-        xmlw.writeEndElement(); // titles
+		// "Ref-type" indicates which of the (numerous!) available EndNote
+		// schemas this record will be interpreted as.
+		// This is relatively important. Certain fields with generic
+		// names like "custom1" and "custom2" become very specific things
+		// in specific schemas; for example, custom1 shows as "legal notice"
+		// in "Journal Article" (ref-type 84), or as "year published" in
+		// "Government Document".
+		// We don't want the UNF to show as a "legal notice"!
+		// We have found a ref-type that works ok for our purposes -
+		// "Online Database" (type 45). In this one, the fields Custom1
+		// and Custom2 are not translated and just show as is.
+		// And "Custom1" still beats "legal notice".
+		// -- L.A. 12.12.2014 beta 10
 
-        xmlw.writeStartElement("section");
-        String sectionString;
-        sectionString = new SimpleDateFormat("yyyy-MM-dd").format(date);
+		xmlw.writeStartElement("ref-type");
+		xmlw.writeAttribute("name", "Online Database");
+		xmlw.writeCharacters("45");
+		xmlw.writeEndElement(); // ref-type
 
-        xmlw.writeCharacters(sectionString);
-        xmlw.writeEndElement(); // publisher
+		xmlw.writeStartElement("contributors");
+		xmlw.writeStartElement("authors");
+		for (String author : authors) {
+			xmlw.writeStartElement("author");
+			xmlw.writeCharacters(author);
+			xmlw.writeEndElement(); // author
+		}
+		xmlw.writeEndElement(); // authors
+		xmlw.writeEndElement(); // contributors
 
-        xmlw.writeStartElement("dates");
-        xmlw.writeStartElement("year");
-        xmlw.writeCharacters(year);
-        xmlw.writeEndElement(); // year
-        xmlw.writeEndElement(); // dates
+		xmlw.writeStartElement("titles");
+		xmlw.writeStartElement("title");
+		xmlw.writeCharacters(title);
+		xmlw.writeEndElement(); // title
 
-        xmlw.writeStartElement("publisher");
-        xmlw.writeCharacters(publisher);
-        xmlw.writeEndElement(); // publisher
+		xmlw.writeEndElement(); // titles
 
-        xmlw.writeStartElement("urls");
-        xmlw.writeStartElement("related-urls");
-        xmlw.writeStartElement("url");
-        xmlw.writeCharacters(getPersistentId().toURL().toString());
-        xmlw.writeEndElement(); // url
-        xmlw.writeEndElement(); // related-urls
-        xmlw.writeEndElement(); // urls
-        
-        // a DataFile citation also includes the filename and (for Tabular
-        // files) the UNF signature, that we put into the custom1 and custom2 
-        // fields respectively:
-        
-        
-        if (getFileTitle() != null) {
-            xmlw.writeStartElement("custom1");
-            xmlw.writeCharacters(fileTitle);
-            xmlw.writeEndElement(); // custom1
-            
-                if (getUNF() != null) {
-                    xmlw.writeStartElement("custom2");
-                    xmlw.writeCharacters(getUNF());
-                    xmlw.writeEndElement(); // custom2
-            }
-        }
+		xmlw.writeStartElement("section");
+		String sectionString;
+		sectionString = new SimpleDateFormat("yyyy-MM-dd").format(date);
 
-        xmlw.writeStartElement("electronic-resource-num");
-        String electResourceNum = persistentId.getProtocol() + "/" + persistentId.getAuthority() + "/" + persistentId.getIdentifier();
-        xmlw.writeCharacters(electResourceNum);
-        xmlw.writeEndElement();
-        //<electronic-resource-num>10.3886/ICPSR03259.v1</electronic-resource-num>                  
-        xmlw.writeEndElement(); // record
+		xmlw.writeCharacters(sectionString);
+		xmlw.writeEndElement(); // publisher
 
-        xmlw.writeEndElement(); // records
-        xmlw.writeEndElement(); // xml
+		xmlw.writeStartElement("dates");
+		xmlw.writeStartElement("year");
+		xmlw.writeCharacters(year);
+		xmlw.writeEndElement(); // year
+		xmlw.writeEndElement(); // dates
 
-    }
+		xmlw.writeStartElement("publisher");
+		xmlw.writeCharacters(publisher);
+		xmlw.writeEndElement(); // publisher
 
+		xmlw.writeStartElement("urls");
+		xmlw.writeStartElement("related-urls");
+		xmlw.writeStartElement("url");
+		xmlw.writeCharacters(getPersistentId().toURL().toString());
+		xmlw.writeEndElement(); // url
+		xmlw.writeEndElement(); // related-urls
+		xmlw.writeEndElement(); // urls
+
+		// a DataFile citation also includes the filename and (for Tabular
+		// files) the UNF signature, that we put into the custom1 and custom2
+		// fields respectively:
+
+		if (getFileTitle() != null) {
+			xmlw.writeStartElement("custom1");
+			xmlw.writeCharacters(fileTitle);
+			xmlw.writeEndElement(); // custom1
+
+			if (getUNF() != null) {
+				xmlw.writeStartElement("custom2");
+				xmlw.writeCharacters(getUNF());
+				xmlw.writeEndElement(); // custom2
+			}
+		}
+
+		xmlw.writeStartElement("electronic-resource-num");
+		String electResourceNum = persistentId.getProtocol() + "/" + persistentId.getAuthority() + "/"
+				+ persistentId.getIdentifier();
+		xmlw.writeCharacters(electResourceNum);
+		xmlw.writeEndElement();
+		// <electronic-resource-num>10.3886/ICPSR03259.v1</electronic-resource-num>
+		xmlw.writeEndElement(); // record
+
+		xmlw.writeEndElement(); // records
+		xmlw.writeEndElement(); // xml
+
+	}
 
 	// helper methods
 	private String formatString(String value, boolean escapeHtml) {
@@ -541,7 +534,7 @@ public class DataCitation {
 			}
 		} else {
 			try {
-				citationDate= sdf.parse(dsv.getDistributionDate());
+				citationDate = sdf.parse(dsv.getDistributionDate());
 			} catch (ParseException ex) {
 				// ignore
 			} catch (Exception ex) {
@@ -549,7 +542,7 @@ public class DataCitation {
 			}
 		}
 		if (citationDate == null) {
-			//As a last resort, pick the current date
+			// As a last resort, pick the current date
 			logger.warning("Unable to find citation date for datasetversion: " + dsv.getId());
 			citationDate = new Date();
 		}
@@ -600,24 +593,22 @@ public class DataCitation {
 				|| HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
 				|| HarvestingClient.HARVEST_STYLE_DATAVERSE
 						.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
-			if (!StringUtils.isEmpty(dv.getIdentifier())) {
-				// creating a global id like this:
-				// persistentId = new GlobalId(dv.getGlobalId());
-				// you end up doing new GlobalId((New GlobalId(dv)).toString())
-				// - doing an extra formatting-and-parsing-again
-				// This achieves the same thing:
-				if(!isDirect()) {
+			// creating a global id like this:
+			// persistentId = new GlobalId(dv.getGlobalId());
+			// you end up doing new GlobalId((New GlobalId(dv)).toString())
+			// - doing an extra formatting-and-parsing-again
+			// This achieves the same thing:
+			if (!isDirect()) {
+				if (!StringUtils.isEmpty(dsv.getDataset().getIdentifier())) {
 					return new GlobalId(dsv.getDataset());
-				} else {
+				}
+			} else {
+				if (!StringUtils.isEmpty(dv.getIdentifier())) {
 					return new GlobalId(dv);
 				}
 			}
 		}
 		return null;
 	}
-
-
-	
-	
 
 }
