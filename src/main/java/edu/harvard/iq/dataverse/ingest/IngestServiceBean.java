@@ -306,8 +306,7 @@ public class IngestServiceBean {
                     String fileName = fileMetadata.getLabel();
 
                     boolean metadataExtracted = false;
-
-                    if (FileUtil.ingestableAsTabular(dataFile)) {
+                    if (FileUtil.CanIngestAsTabular(dataFile)) {
                         /*
                          * Note that we don't try to ingest the file right away - 
                          * instead we mark it as "scheduled for ingest", then at 
@@ -667,9 +666,7 @@ public class IngestServiceBean {
     
     public boolean ingestAsTabular(Long datafile_id) { //DataFile dataFile) throws IOException {
         DataFile dataFile = fileService.find(datafile_id);
-        
         boolean ingestSuccessful = false;
-        
         
         // Locate ingest plugin for the file format by looking
         // it up with the Ingest Service Provider Registry:

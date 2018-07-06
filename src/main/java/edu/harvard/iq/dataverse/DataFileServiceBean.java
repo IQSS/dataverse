@@ -1108,74 +1108,6 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
     
-    /*// TODO: 
-    // Document this.
-    // -- L.A. 4.0 beta14
-    
-    public boolean isTemporaryPreviewAvailable(String fileSystemId, String mimeType) {
-        
-        String filesRootDirectory = System.getProperty("dataverse.files.directory");
-        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
-            filesRootDirectory = "/tmp/files";
-        }
-
-        String fileSystemName = filesRootDirectory + "/temp/" + fileSystemId;
-        
-        String imageThumbFileName = null;
-        
-        if ("application/pdf".equals(mimeType)) {
-            imageThumbFileName = ImageThumbConverter.generatePDFThumbnailFromFile(fileSystemName);
-        } else if (mimeType != null && mimeType.startsWith("image/")) {
-            imageThumbFileName = ImageThumbConverter.generateImageThumbnailFromFile(fileSystemName);
-        }
-        
-        if (imageThumbFileName != null) {
-            return true; 
-        }
-            
-        return false;
-    }*/
-    
-    /* 
-     * TODO: 
-     * similar method, but for non-default thumbnail sizes:
-    
-    
-    public boolean isThumbnailAvailableForSize (DataFile file) {
-        return false; 
-    }*/
-    
-    public boolean ingestableAsTabular(DataFile dataFile) {
-        /* 
-         * In the final 4.0 we'll be doing real-time checks, going through the 
-         * available plugins and verifying the lists of mime types that they 
-         * can handle. In 4.0 beta, the ingest plugins are still built into the 
-         * main code base, so we can just go through a hard-coded list of mime 
-         * types. -- L.A. 
-         */
-        
-        String mimeType = dataFile.getContentType();
-        
-        if (mimeType == null) {
-            return false;
-        }
-        
-        switch (mimeType) {
-            case MIME_TYPE_STATA:
-            case MIME_TYPE_STATA13:
-            case MIME_TYPE_RDATA:
-            case MIME_TYPE_CSV:
-            case MIME_TYPE_TSV:
-            case MIME_TYPE_CSV_ALT:
-            case MIME_TYPE_XLSX:
-            case MIME_TYPE_SPSS_SAV:
-            case MIME_TYPE_SPSS_POR:
-            return true;
-        }
-
-        return false;
-    }
-    
     /* 
      * Methods for identifying "classes" (groupings) of files by type:
     */
@@ -1378,7 +1310,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         
         // The formats we know how to ingest: 
-        if (ingestableAsTabular(file)) {
+        if (FileUtil.CanIngestAsTabular(file)) {
             return true;
         }
         
