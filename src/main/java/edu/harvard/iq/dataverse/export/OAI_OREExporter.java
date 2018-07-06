@@ -64,13 +64,20 @@ public class OAI_OREExporter implements Exporter {
 			for (DatasetField field : fields) {
 				if (!field.isEmpty()) {
 					DatasetFieldType dfType = field.getDatasetFieldType();
-					JsonLDNamespace blockNamespace = new JsonLDNamespace(dfType.getMetadataBlock().getName(), SystemConfig.getDataverseSiteUrlStatic()
-							+ "/schema/" + dfType.getMetadataBlock().getName() + "#");
+					String namespaceUri = dfType.getMetadataBlock().getNamespaceUri();
+					if(namespaceUri==null) {
+						namespaceUri = SystemConfig.getDataverseSiteUrlStatic()
+								+ "/schema/" + dfType.getMetadataBlock().getName() + "#";
+					}
+					JsonLDNamespace blockNamespace = new JsonLDNamespace(dfType.getMetadataBlock().getName(), namespaceUri);
 					// Add context entry for metadata block
 					localContext.putIfAbsent(blockNamespace.getPrefix(), blockNamespace.getUrl());
-					
-					JsonLDTerm fieldName = new JsonLDTerm(blockNamespace, dfType.getTitle());
-
+					JsonLDTerm fieldName = null;
+					if (dfType.getUri() != null) {
+						fieldName = new JsonLDTerm(dfType.getTitle(), dfType.getUri());
+					} else {
+						fieldName = new JsonLDTerm(blockNamespace, dfType.getTitle());
+					}
 					JsonArrayBuilder vals = Json.createArrayBuilder();
 					if (!dfType.isCompound()) {
 						for (String val : field.getValues_nondisplay()) {
@@ -78,9 +85,12 @@ public class OAI_OREExporter implements Exporter {
 						}
 					} else {
 						// Needs to be recursive (as in JsonPrinter?)
-
-						JsonLDNamespace fieldNamespace = new JsonLDNamespace(dfType.getName(), SystemConfig.getDataverseSiteUrlStatic()
-								+ "/schema/" + dfType.getMetadataBlock().getName() + "/" + dfType.getName() + "#");
+						String subFieldNamespaceUri = dfType.getMetadataBlock().getNamespaceUri();
+						if(subFieldNamespaceUri==null) {
+							subFieldNamespaceUri = SystemConfig.getDataverseSiteUrlStatic()
+									+ "/schema/" + dfType.getMetadataBlock().getName() + "/" + dfType.getName() + "#";
+						}
+						JsonLDNamespace fieldNamespace = new JsonLDNamespace(dfType.getName(), subFieldNamespaceUri);
 						// Add context entry for metadata block
 						localContext.putIfAbsent(fieldNamespace.getPrefix(), fieldNamespace.getUrl());
 
@@ -93,7 +103,12 @@ public class OAI_OREExporter implements Exporter {
 								// which may have multiple values
 								if (!dsf.isEmpty()) {
 									// Add context entry - also needs to recurse
-									JsonLDTerm subFieldName = new JsonLDTerm(fieldNamespace, dsft.getTitle());
+									JsonLDTerm subFieldName = null;
+									if (dsft.getUri() != null) {
+										subFieldName = new JsonLDTerm(dsft.getTitle(), dsft.getUri());
+									} else {
+										subFieldName = new JsonLDTerm(fieldNamespace, dsft.getTitle());
+									}
 
 									List<String> values = dsf.getValues_nondisplay();
 									if (values.size() > 1) {
