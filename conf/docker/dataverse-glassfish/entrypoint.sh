@@ -77,10 +77,6 @@ if [ "$1" = 'dataverse' ]; then
         echo Postgres running; 
     else
         echo Required service Postgres not running. Have you started the required services?
-        for i in `seq 1 5`;
-        do
-            sleep 5
-        done
         exit 1 
     fi
     

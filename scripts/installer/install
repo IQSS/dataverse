@@ -180,8 +180,14 @@ if ( -e $config_default_file )
 		if ( 2 == @xs )
 		{
 			my $k = $xs[0];
-			my $v = trim($xs[1]);
-			$CONFIG_DEFAULTS{$k}=$v;
+                        my $v = trim($xs[1]);
+                        if (defined $ENV{$k} && ($k eq "POSTGRES_USER" || $k eq "POSTGRES_PASSWORD")) {
+                            $v = $ENV{$k};
+                        }
+                        if (defined $ENV{'POSTGRESQL_ADMIN_PASSWORD'} && $k eq "POSTGRES_ADMIN_PASSWORD")   {
+                            $v = $ENV{'POSTGRESQL_ADMIN_PASSWORD'};
+                        }
+                        $CONFIG_DEFAULTS{$k}=$v;
 		}
 	}
 }
