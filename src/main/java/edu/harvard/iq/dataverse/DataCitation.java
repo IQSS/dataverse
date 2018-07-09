@@ -39,6 +39,7 @@ public class DataCitation {
 	private static final Logger logger = Logger.getLogger(DataCitation.class.getCanonicalName());
 
 	private List<String> authors = new ArrayList<String>();
+	private List<String> producers = new ArrayList<String>();
 	private String title;
 	private String fileTitle = null;
 	private String year;
@@ -48,6 +49,14 @@ public class DataCitation {
 	private String UNF = null;
 	private String publisher;
 	private boolean direct;
+	private List<String> funders;
+	private String seriesTitle;
+	private String description;
+	private List<String> datesOfCollection;
+	private List<String> keywords;
+	private List<String> kindsOfData;
+	private List<String> languages;
+	private List<String> spatialCoverages;
 
 	private List<DatasetField> optionalValues = new ArrayList<>();
 	private int optionalURLcount = 0;
@@ -58,15 +67,26 @@ public class DataCitation {
 
 	public DataCitation(DatasetVersion dsv, boolean direct) {
 		this.direct = direct;
-		// authors (or producer)
-		getAuthorsFrom(dsv);
+		// authors and producers
+		getAuthorsAndProducersFrom(dsv);
+
+		funders = dsv.getUniqueGrantAgencyValues();
 
 		// year
 		date = getDateFrom(dsv);
 		year = new SimpleDateFormat("yyyy").format(date);
+		datesOfCollection = dsv.getDatesOfCollection();
 
 		// title
 		title = dsv.getTitle();
+
+		seriesTitle = dsv.getSeriesTitle();
+
+		description = dsv.getDescription();
+
+		keywords = dsv.getKeywords();
+		languages = dsv.getLanguages();
+		spatialCoverages = dsv.getSpatialCoverages();
 
 		// The Global Identifier:
 		// It is always part of the citation for the local datasets;
@@ -103,18 +123,30 @@ public class DataCitation {
 		this.direct = direct;
 		DatasetVersion dsv = fm.getDatasetVersion();
 
-		// authors (or producer)
-		getAuthorsFrom(dsv);
+		// authors and producers
+		getAuthorsAndProducersFrom(dsv);
+
+		funders = dsv.getUniqueGrantAgencyValues();
 
 		// year
 		date = getDateFrom(dsv);
 		year = new SimpleDateFormat("yyyy").format(date);
+		datesOfCollection = dsv.getDatesOfCollection();
 
 		// file Title for direct File citation
 		fileTitle = fm.getLabel();
 		DataFile df = fm.getDataFile();
 		// title
 		title = dsv.getTitle();
+
+		seriesTitle = dsv.getSeriesTitle();
+
+		// File description
+		description = fm.getDescription();
+
+		keywords = dsv.getKeywords();
+		languages = dsv.getLanguages();
+		spatialCoverages = dsv.getSpatialCoverages();
 
 		// The Global Identifier:
 		// It is always part of the citation for the local datasets;
@@ -414,43 +446,124 @@ public class DataCitation {
 		// -- L.A. 12.12.2014 beta 10
 
 		xmlw.writeStartElement("ref-type");
-		xmlw.writeAttribute("name", "Online Database");
-		xmlw.writeCharacters("45");
+		xmlw.writeAttribute("name", "Dataset");
+		xmlw.writeCharacters("59");
 		xmlw.writeEndElement(); // ref-type
 
 		xmlw.writeStartElement("contributors");
-		xmlw.writeStartElement("authors");
-		for (String author : authors) {
-			xmlw.writeStartElement("author");
-			xmlw.writeCharacters(author);
-			xmlw.writeEndElement(); // author
+		if (!authors.isEmpty()) {
+			xmlw.writeStartElement("authors");
+			for (String author : authors) {
+				xmlw.writeStartElement("author");
+				xmlw.writeCharacters(author);
+				xmlw.writeEndElement(); // author
+			}
+			xmlw.writeEndElement(); // authors
 		}
-		xmlw.writeEndElement(); // authors
+		if (!producers.isEmpty()) {
+			xmlw.writeStartElement("secondary-authors");
+			for (String producer : producers) {
+				xmlw.writeStartElement("author");
+				xmlw.writeCharacters(producer);
+				xmlw.writeEndElement(); // author
+			}
+			xmlw.writeEndElement(); // secondary-authors
+		}
+		if (!funders.isEmpty()) {
+			xmlw.writeStartElement("subsidiary-authors");
+			for (String funder : funders) {
+				xmlw.writeStartElement("author");
+				xmlw.writeCharacters(funder);
+				xmlw.writeEndElement(); // author
+			}
+			xmlw.writeEndElement(); // subsidiary-authors
+		}
 		xmlw.writeEndElement(); // contributors
 
 		xmlw.writeStartElement("titles");
-		xmlw.writeStartElement("title");
-		xmlw.writeCharacters(title);
-		xmlw.writeEndElement(); // title
+		if (fileTitle != null) {
+			xmlw.writeStartElement("title");
+			xmlw.writeCharacters(fileTitle);
+			xmlw.writeEndElement(); // title
+			xmlw.writeStartElement("secondary-title");
+			xmlw.writeCharacters(title);
+			xmlw.writeEndElement(); // secondary-title
+		} else {
+			xmlw.writeStartElement("title");
+			xmlw.writeCharacters(title);
+			xmlw.writeEndElement(); // title
+		}
 
+		if (seriesTitle != null) {
+			xmlw.writeStartElement("tertiary-title");
+			xmlw.writeCharacters(seriesTitle);
+			xmlw.writeEndElement(); // tertiary-title
+		}
 		xmlw.writeEndElement(); // titles
-
 		xmlw.writeStartElement("section");
 		String sectionString;
 		sectionString = new SimpleDateFormat("yyyy-MM-dd").format(date);
 
 		xmlw.writeCharacters(sectionString);
-		xmlw.writeEndElement(); // publisher
+		xmlw.writeEndElement(); // section
+
+		xmlw.writeStartElement("abstract");
+		xmlw.writeCharacters(description);
+		xmlw.writeEndElement(); // abstract
 
 		xmlw.writeStartElement("dates");
 		xmlw.writeStartElement("year");
 		xmlw.writeCharacters(year);
 		xmlw.writeEndElement(); // year
+		if (!datesOfCollection.isEmpty()) {
+			xmlw.writeStartElement("pub-dates");
+			for (String dateRange : datesOfCollection) {
+				xmlw.writeStartElement("date");
+				xmlw.writeCharacters(dateRange);
+				xmlw.writeEndElement(); // date
+			}
+			xmlw.writeEndElement(); // pub-dates
+		}
 		xmlw.writeEndElement(); // dates
 
+		xmlw.writeStartElement("edition");
+		xmlw.writeCharacters(version);
+		xmlw.writeEndElement(); // edition
+
+		if (!keywords.isEmpty()) {
+			xmlw.writeStartElement("keywords");
+			for (String keyword : keywords) {
+				xmlw.writeStartElement("keyword");
+				xmlw.writeCharacters(keyword);
+				xmlw.writeEndElement(); // keyword
+			}
+			xmlw.writeEndElement(); // keywords
+		}
+		if (!kindsOfData.isEmpty()) {
+			for (String kod : kindsOfData) {
+				xmlw.writeStartElement("custom3");
+				xmlw.writeCharacters(kod);
+				xmlw.writeEndElement(); // custom3
+			}
+		}
+		if (!languages.isEmpty()) {
+			for (String lang : languages) {
+				xmlw.writeStartElement("language");
+				xmlw.writeCharacters(lang);
+				xmlw.writeEndElement(); // language
+			}
+		}
 		xmlw.writeStartElement("publisher");
 		xmlw.writeCharacters(publisher);
 		xmlw.writeEndElement(); // publisher
+
+		if (!spatialCoverages.isEmpty()) {
+			for (String coverage : spatialCoverages) {
+				xmlw.writeStartElement("reviewed-item");
+				xmlw.writeCharacters(coverage);
+				xmlw.writeEndElement(); // reviewed-item
+			}
+		}
 
 		xmlw.writeStartElement("urls");
 		xmlw.writeStartElement("related-urls");
@@ -548,7 +661,7 @@ public class DataCitation {
 		return citationDate;
 	}
 
-	private void getAuthorsFrom(DatasetVersion dsv) {
+	private void getAuthorsAndProducersFrom(DatasetVersion dsv) {
 
 		dsv.getDatasetAuthors().stream().forEach((author) -> {
 			if (!author.isEmpty()) {
@@ -556,9 +669,7 @@ public class DataCitation {
 				authors.add(an);
 			}
 		});
-		if (authors.size() == 0) {
-			authors = dsv.getDatasetProducerNames();
-		}
+		producers = dsv.getDatasetProducerNames();
 	}
 
 	private String getPublisherFrom(DatasetVersion dsv) {
