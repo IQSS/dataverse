@@ -116,7 +116,7 @@ public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Ser
     //Pulled from https://www.w3.org/Submission/2013/SUBM-prov-json-20130424/schema
     //Not the prettiest way of accessing the schema, but loading the .json file as an external resource
     //turned out to be very painful, especially when also trying to exercise it via unit tests
-    public final String provSchema = 
+    public static final String provSchema = 
         "{\n" +
         "    \"id\": \"http://provenance.ecs.soton.ac.uk/prov-json/schema#\",\n" +
         "    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n" +
