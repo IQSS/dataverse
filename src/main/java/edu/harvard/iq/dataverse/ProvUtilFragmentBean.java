@@ -465,6 +465,6 @@ public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Ser
         "    }\n" +
         "}"; 
     
-    JSONObject rawSchema = new JSONObject(new JSONTokener(provSchema)); //BOOM NULL
+    JSONObject rawSchema = new JSONObject(new JSONTokener(provSchema));
     Schema schema = SchemaLoader.load(rawSchema);
 }
