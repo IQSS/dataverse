@@ -150,19 +150,6 @@ If you are interested in changing the OpenShift config file for Dataverse at ``c
 
 The slower way to iterate on the ``openshift.json`` file is to delete the project and re-create it.
 
-Making Changes to the PostgreSQL Database from the Glassfish Pod
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-You can access and modify the PostgreSQL database via an interactive terminal called psql.
-
-To log in to psql from the command line of the Glassfish pod, type the following command:
-
-``PGPASSWORD=$POSTGRES_PASSWORD; export PGPASSWORD; /usr/bin/psql -h $POSTGRES_SERVER.$POSTGRES_SERVICE_HOST -U $POSTGRES_USER -d $POSTGRES_DATABASE``
-
-To log in as an admin, type this command instead:
-
-``PGPASSWORD=$POSTGRESQL_ADMIN_PASSWORD; export PGPASSWORD; /usr/bin/psql -h $POSTGRES_SERVER.$POSTGRES_SERVICE_HOST -U postgres -d $POSTGRES_DATABASE``
-
 Scaling Dataverse by Increasing Replicas in a StatefulSet
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
