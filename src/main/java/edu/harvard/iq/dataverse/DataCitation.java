@@ -481,7 +481,7 @@ public class DataCitation {
 		xmlw.writeEndElement(); // contributors
 
 		xmlw.writeStartElement("titles");
-		if (fileTitle != null) {
+		if ((fileTitle != null) && isDirect()) {
 			xmlw.writeStartElement("title");
 			xmlw.writeCharacters(fileTitle);
 			xmlw.writeEndElement(); // title
