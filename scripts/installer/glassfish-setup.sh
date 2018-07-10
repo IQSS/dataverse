@@ -124,7 +124,7 @@ function final_setup(){
 
 }
 
-if [ $DOCKER_BUILD = "true" ]
+if [ "$DOCKER_BUILD" = "true" ]
   then
     FILES_DIR="/usr/local/glassfish4/glassfish/domains/domain1/files"
     RSERVE_HOST="localhost"
