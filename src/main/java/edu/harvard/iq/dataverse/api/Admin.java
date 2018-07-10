@@ -1049,8 +1049,8 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@GET
-	@Path("/registerDataFileAll")
-	public Response registerDataFileAll() {
+	@Path("/registerDataFileAll/{num}")
+	public Response registerDataFileAll(@PathParam("num") int num) {
 		Integer count = fileService.findAll().size();
 		Integer successes = 0;
 		Integer alreadyRegistered = 0;
@@ -1059,6 +1059,7 @@ public class Admin extends AbstractApiBean {
 		logger.info("Starting to register: analyzing " + count + " files. " + new Date());
 		logger.info("Only unregistered, published files will be registered.");
 		for (DataFile df : fileService.findAll()) {
+			if(released.intValue() > num) break;
 			try {
 				if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
 					if (df.isReleased()) {
