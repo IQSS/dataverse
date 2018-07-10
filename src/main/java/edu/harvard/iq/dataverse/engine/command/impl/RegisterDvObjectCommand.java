@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.logging.Logger;
 
 /**
  *
@@ -26,6 +27,7 @@ import java.util.Date;
 public class RegisterDvObjectCommand extends AbstractVoidCommand {
 
     private final DvObject target;
+    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand");
 
     public RegisterDvObjectCommand(DataverseRequest aRequest, DvObject target) {
         super(aRequest, target);
@@ -60,9 +62,13 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                 return;
             }
             String doiRetString = idServiceBean.createIdentifier(target);
+            logger.info("Created id: " + doiRetString);
             if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
                 if (target.isReleased()) {
+                	logger.info("Attempting to publicize id: " + doiRetString);
                     idServiceBean.publicizeIdentifier(target);
+                    logger.info("Done publicizing id: " + doiRetString);
+                    
                 }
 
                 if (!idServiceBean.registerWhenPublished() || target.isReleased()) {
