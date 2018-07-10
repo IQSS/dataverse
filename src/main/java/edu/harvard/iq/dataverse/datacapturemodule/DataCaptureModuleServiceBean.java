@@ -47,6 +47,8 @@ public class DataCaptureModuleServiceBean implements Serializable {
         logger.fine("retreiveRequestedRsyncScript using dataset identifier + " + datasetIdentifier + " to " + scriptRequestUrl);
         try
         {
+            //When the result is an error, html is returned from DCM instead of json. This causes the parser to blow up unhelpfully.
+            //Stock unirest hasn't been updated in years, but in a fork this issue seems to be improved: https://github.com/OpenUnirest/unirest-java/issues/10
             HttpResponse<JsonNode> scriptRequest = Unirest.post(scriptRequestUrl)
                                                    .field("datasetIdentifier", datasetIdentifier)
                                                    .asJson();
@@ -54,7 +56,7 @@ public class DataCaptureModuleServiceBean implements Serializable {
         }
         catch( UnirestException ex)
         {
-            String error = "Error calling " + scriptRequestUrl + ": " + ex;
+            String error = "Error calling " + scriptRequestUrl + ". This likely indicates the DCM service returned an error page and not valid json. More code is needed to show that error page. Unirest parsing error: " + ex;
             logger.info(error);
             throw new DataCaptureModuleException(error, ex);
         }
