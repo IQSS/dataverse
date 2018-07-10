@@ -172,13 +172,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, ctxt);
         try {
         	//A false return value indicates a failure in calling the service
-            if(!idServiceBean.publicizeIdentifier(theDataset)) throw new Throwable();
+            if(!idServiceBean.publicizeIdentifier(theDataset)) throw new Exception();
             theDataset.setGlobalIdCreateTime(new Date());
             theDataset.setIdentifierRegistered(true);
             for (DataFile df : theDataset.getFiles()) {
                 logger.fine("registering global id for file "+df.getId());
                 //A false return value indicates a failure in calling the service
-                if(!idServiceBean.publicizeIdentifier(df)) throw new Throwable();
+                if(!idServiceBean.publicizeIdentifier(df)) throw new Exception();
                 df.setGlobalIdCreateTime(new Date());
                 df.setIdentifierRegistered(true);
                 // this merge() on an individual file below is unnecessary:
