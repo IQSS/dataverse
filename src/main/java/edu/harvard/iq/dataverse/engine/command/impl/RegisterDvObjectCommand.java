@@ -64,7 +64,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             String doiRetString = idServiceBean.createIdentifier(target);
             logger.info("Created id: " + doiRetString);
             if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
-                if (target.isReleased()) {
+                if (idServiceBean.registerWhenPublished() && target.isReleased()) {
                 	logger.info("Attempting to publicize id: " + doiRetString);
                     idServiceBean.publicizeIdentifier(target);
                     logger.info("Done publicizing id: " + doiRetString);
@@ -92,7 +92,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                         }
                         doiRetString = idServiceBean.createIdentifier(df);
                         if (doiRetString != null && doiRetString.contains(df.getIdentifier())) {
-                            if (df.isReleased()) {
+                            if (idServiceBean.registerWhenPublished() && df.isReleased()) {
                                 idServiceBean.publicizeIdentifier(df);
                             }
                             if (!idServiceBean.registerWhenPublished() || df.isReleased()) {
