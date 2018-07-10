@@ -245,10 +245,12 @@ public class DOIEZIdServiceBean extends AbstractIdServiceBean {
     public String createIdentifier(DvObject dvObject) throws Throwable {
 
             logger.log(Level.FINE, "createIdentifier");
+            logger.info("id = " + dvObject.getIdentifier());
             if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
                 dvObject = generateIdentifier(dvObject);
             }
             String identifier = getIdentifier(dvObject);
+            logger.info("new id = " + identifier);
             HashMap<String, String> metadata = getMetadataForCreateIndicator(dvObject);
             metadata.put("datacite.resourcetype", "Dataset");
             metadata.put("_status", "reserved");
