@@ -1531,7 +1531,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
             if (!prepend.startsWith(shoulder)) {
             	if(prepend.length()>7) {
-            	prepend = prepend.substring(prepend.length()-8);
+            	prepend = prepend.substring(prepend.length()-7);
             	} 
             	prepend = shoulder + prepend;
             }
