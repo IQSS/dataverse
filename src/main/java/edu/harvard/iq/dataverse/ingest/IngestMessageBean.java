@@ -80,7 +80,7 @@ public class IngestMessageBean implements MessageListener {
                         //Thread.sleep(10000);
                         logger.fine("Finished ingest job;");
                     } else {
-                        logger.warning("Error occurred during ingest job!");
+                        logger.warning("Error occurred during ingest job for file id " + datafile_id + "!");
                     }
                 } catch (Exception ex) {
                     //ex.printStackTrace();
