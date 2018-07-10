@@ -5,8 +5,6 @@ COPY glassfish-4.1.zip /tmp
 COPY weld-osgi-bundle-2.2.10.Final-glassfish4.jar /tmp
 COPY default.config /tmp
 COPY dvinstall.zip /tmp
-COPY jhove /tmp
-COPY postgresql-42.2.2.jar /tmp
 # Install dependencies
 #RUN yum install -y unzip
 RUN yum install -y \
@@ -63,7 +61,7 @@ RUN yum -y install epel-release
 RUN yum -y install jq 
 
 #JHOVE
-RUN cp /tmp/jhove* /usr/local/glassfish4/glassfish/domains/domain1/config
+RUN cp /tmp/dvinstall/jhove* /usr/local/glassfish4/glassfish/domains/domain1/config
 
 
 #SETUP JVM OPTIONS 
@@ -73,7 +71,7 @@ RUN /tmp/dvinstall/glassfish-setup.sh
 ###glassfish-setup will handle everything in Dockerbuild
 
 ##install jdbc driver 
-RUN cp /tmp/postgresql-42.2.2.jar /usr/local/glassfish4/glassfish/domains/domain1/lib
+RUN cp /tmp/dvinstall/pgdriver/postgresql-42.2.2.jar /usr/local/glassfish4/glassfish/domains/domain1/lib
 
 # Customized persistence xml to avoid database recreation
 #RUN mkdir -p /tmp/WEB-INF/classes/META-INF/ 
