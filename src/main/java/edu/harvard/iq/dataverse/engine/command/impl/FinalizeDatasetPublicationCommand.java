@@ -189,7 +189,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             ctxt.datasets().removeDatasetLocks(theDataset.getId(), DatasetLock.Reason.pidRegister);
             //maybe add notification?
             List<String> args = idServiceBean.getProviderInformation();
-            args.add(BundleUtil.getStringFromBundle("contact.support", null));
             throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
         }
     }
