@@ -47,6 +47,9 @@ else
   exit 1
 fi
 echo Images are being built for registry org/username \"$HUBORG\" with the tag \"$TAG\".
+#
+# Build dataverse-solr
+#
 # Use "conf" directory as context so we can copy schema.xml into Solr image.
 docker build -t $HUBORG/dataverse-solr:$TAG -f solr/Dockerfile ../../conf
 if [ "$1" == 'internal' ]; then
@@ -55,6 +58,9 @@ else
   # FIXME: Check the output of "docker build" and only push on success.
   docker push $HUBORG/dataverse-solr:$TAG
 fi
+#
+# Build dataverse-glassfish
+#
 # TODO: Think about if we really need dataverse.war because it's in dvinstall.zip.
 cd ../..
 mvn clean
@@ -89,8 +95,9 @@ else
   # FIXME: Check the output of "docker build" and only push on success.
   docker push $HUBORG/dataverse-glassfish:$TAG
 fi
-# TODO: run "docker build" on conf/docker/dataverse-glassfish/init-container/Dockerfile
-<<<<<<< HEAD
+#
+# Build init-container
+#
 cp ../../scripts/installer/postgres-setup dataverse-glassfish/init-container
 docker build -t $HUBORG/init-container:$TAG dataverse-glassfish/init-container
 if [ "$1" == 'internal' ]; then
@@ -99,5 +106,3 @@ else
   # FIXME: Check the output of "docker build" and only push on success.
   docker push $HUBORG/init-container:$TAG
 fi
-=======
->>>>>>> 58110d670... get internal minishift registry working #4764
