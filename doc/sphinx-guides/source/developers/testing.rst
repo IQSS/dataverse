@@ -87,6 +87,13 @@ Unfortunately, the term "integration tests" can mean different things to differe
 - Integration tests operate on an installation of Dataverse that is running and able to talk to both PostgreSQL and Solr.
 - Integration tests are written using REST Assured.
 
+Running the full API test suite using Docker
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.txt`` in the root of the repo.
+
+Alternatively, you can run tests against Glassfish running on your laptop by following the "getting set up" steps below.
+
 Getting Set Up to Run REST Assured Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -168,7 +175,7 @@ Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)
 
   ``mvn test -Dtest=FileMetadataIT -Ddataverse.test.baseurl='http://localhost:8080'``
 
-To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.txt``.
+To see the full list of tests used by the Docker option mentioned above, see :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>`.
 
 Load/Performance Testing
 ------------------------
