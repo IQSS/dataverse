@@ -159,7 +159,7 @@ public class BatchImport extends AbstractApiBean {
         
         try {
             PrintWriter cleanupLog = null; // Cleanup log isn't needed for ImportType == NEW. We don't do any data cleanup in this mode.
-
+            logger.log(Level.INFO, "calling importService");
             JsonObjectBuilder status = importService.doImportWoI(dataverseRequest, owner, fileInputStream, fileName, ImportType.IMPORT_METADATA_ONLY, cleanupLog);
             logger.log(Level.INFO, "returned status={0}", status);
             return this.ok(status);
