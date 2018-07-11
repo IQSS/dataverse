@@ -247,10 +247,6 @@
         </p:column>
         <p:column class="col-file-metadata">
             
-            <f:facet name="header" class="text-left">
-                <p style="font-weight:normal;">#{DatasetPage.selectedFiles.size()} files are currently selected. Select all #{DatasetPage.fileMetadatasSearch.size()} files in this dataset. Clear selection.</p>
-            </f:facet>
-            
             <ui:fragment rendered="#{!empty fileMetadata.dataFile.globalId}">
                 <!-- rendered="# {!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" -->
                 <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(fileMetadata.dataFile.globalId).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
