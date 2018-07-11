@@ -488,11 +488,14 @@ public class JsonParser {
         if (filesize != null){
             dataFile.setFilesize(filesize);
         }
+        logger.log(Level.INFO, "parsing DataTable");
         // parse DataTable
         JsonArray dataTablesJson = datafileJson.getJsonArray("dataTables");
+        logger.log(Level.INFO, "dataTablesJson=-{0}", dataTablesJson.size());
         if ((dataTablesJson != null ) && (!dataTablesJson.isEmpty())){
             // get parsing results of a DataTable
             List<DataTable> dataTables = parseDataTables(dataTablesJson);
+            logger.log(Level.INFO, "dataTables:size={0}", dataTables.size());
             dataFile.setDataTables(dataTables);
             dataFile.setDataTable(dataTables.get(0));
             dataTables.get(0).setDataFile(dataFile);
@@ -506,8 +509,10 @@ public class JsonParser {
     
     
     public List<DataTable> parseDataTables(JsonArray dataTablesJson){
+        logger.log(Level.INFO, "parseDataTables={0}", dataTablesJson.size());
         List<DataTable> dataTables = new LinkedList<>();
         if ((dataTablesJson !=null) && (!dataTablesJson.isEmpty())){
+            logger.log(Level.INFO, "dataTables is not empty");
             for (JsonObject dataTableJsonL : dataTablesJson.getValuesAs(JsonObject.class)){
                 JsonObject dataTableJson = dataTableJsonL.getJsonObject("dataTable");
                 DataTable dataTable = new DataTable();
@@ -527,6 +532,7 @@ public class JsonParser {
                 dataTables.add(dataTable);
             }
         }
+        logger.log(Level.INFO, "dataTables: size(final)={0}", dataTables.size());
         return dataTables;
     }
     
@@ -534,6 +540,7 @@ public class JsonParser {
     public List<DataVariable> parseDataVariables(JsonArray dataVariablesJson){
         List<DataVariable> dataVariables = new LinkedList<>();
         if ((dataVariablesJson != null) && (!dataVariablesJson.isEmpty())) {
+            logger.log(Level.INFO, "dataVariablesJson is not empty:size={0}", dataVariablesJson.size());
             for (JsonObject dataVariableJson: dataVariablesJson.getValuesAs(JsonObject.class)){
                 DataVariable dataVariable = new DataVariable();
                 // capture scalar itemse.
