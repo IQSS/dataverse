@@ -167,6 +167,19 @@ The ``pid`` parameter holds a persistent identifier (such as a DOI or Handle). I
 
 The optional ``release`` parameter tells Dataverse to immediatly publish the dataset. If the parameter is changed to ``no``, the imported dataset will remain in ``DRAFT`` status.
 
+The JSON is the same as that supported by the native API create dataset command, although it also allows files.  For example:
+
+.. literalinclude:: ../../../../scripts/api/data/dataset-package-files.json
+
+The data files included in the API call should be placed in the dataset directory with filenames matching the specified storage identifiers, and readable by glassfish (for installations using POSIX storage, vs object stores).
+The storage identifiers for files should match the values on the filesystem inside the dataset directory, and should be unique within that directory.
+It's probably preferable to avoid spaces and special characters in the storage identifer.
+
+.. warning:: This API does not cover staging files (with correct contents, checksums, sizes, etc) in the corresponding places in the Dataverse filestore.
+
+.. warning:: Importing of Persistant Identifiers for Files is not supported by this API.
+
+.. warning:: Import of PIDs that use a different protocol or authority than Dataverse is configured for are imported if resolvable but then do not update PID metadata on subsequent update and publish.
 
 Publish a Dataverse
 ~~~~~~~~~~~~~~~~~~~
