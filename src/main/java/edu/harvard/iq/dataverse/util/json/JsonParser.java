@@ -258,6 +258,7 @@ public class JsonParser {
     }
 
     public Dataset parseDataset(JsonObject obj) throws JsonParseException {
+        logger.log(Level.INFO, "parseDataset is called");
         Dataset dataset = new Dataset();
 
         dataset.setAuthority(obj.getString("authority", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : obj.getString("authority"));
@@ -275,6 +276,7 @@ public class JsonParser {
     }
 
     public DatasetVersion parseDatasetVersion(JsonObject obj, DatasetVersion dsv) throws JsonParseException {
+            logger.log(Level.INFO, "parseDatasetVersion is called");
         try {
 
             String archiveNote = obj.getString("archiveNote", null);
@@ -332,6 +334,7 @@ public class JsonParser {
                 filesJson = obj.getJsonArray("fileMetadatas");
             }
             if (filesJson != null) {
+                logger.log(Level.INFO, "parseFiles to be called");
                 dsv.setFileMetadatas(parseFiles(filesJson, dsv));
             }
             return dsv;
@@ -377,6 +380,7 @@ public class JsonParser {
     }
     
     public List<FileMetadata> parseFiles(JsonArray metadatasJson, DatasetVersion dsv) throws JsonParseException {
+        logger.log(Level.INFO, "parseFiles is called");
         List<FileMetadata> fileMetadatas = new LinkedList<>();
 
         if (metadatasJson != null) {
@@ -392,7 +396,7 @@ public class JsonParser {
                 fileMetadata.setDirectoryLabel(directoryLabel);
                 fileMetadata.setDescription(description);
                 fileMetadata.setDatasetVersion(dsv);
-
+                logger.log(Level.INFO, "parseDataFile is to be called");
                 DataFile dataFile = parseDataFile(filemetadataJson.getJsonObject("dataFile"));
 
                 fileMetadata.setDataFile(dataFile);
@@ -414,6 +418,7 @@ public class JsonParser {
     }
     
     public DataFile parseDataFile(JsonObject datafileJson) {
+        logger.log(Level.INFO, "parseDataFile is called");
         DataFile dataFile = new DataFile();
         
         Timestamp timestamp = new Timestamp(new Date().getTime());
@@ -491,8 +496,9 @@ public class JsonParser {
         logger.log(Level.INFO, "parsing DataTable");
         // parse DataTable
         JsonArray dataTablesJson = datafileJson.getJsonArray("dataTables");
-        logger.log(Level.INFO, "dataTablesJson=-{0}", dataTablesJson.size());
+        
         if ((dataTablesJson != null ) && (!dataTablesJson.isEmpty())){
+            logger.log(Level.INFO, "dataTablesJson:size={0}", dataTablesJson.size());
             // get parsing results of a DataTable
             List<DataTable> dataTables = parseDataTables(dataTablesJson);
             logger.log(Level.INFO, "dataTables:size={0}", dataTables.size());

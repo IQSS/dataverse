@@ -552,9 +552,12 @@ public class ImportServiceBean {
 
             JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
             parser.setLenient(false);
+            
+            logger.log(Level.INFO, "dataset={0}",xstream.toXML(obj));
+            logger.log(Level.INFO, "parsing the received dataset");
             Dataset ds = parser.parseDataset(obj);
             
-            logger.log(Level.INFO, "dataset={0}", ds);
+            logger.log(Level.INFO, "dataset={0}",xstream.toXML(ds));
 
             // For ImportType.NEW, if the user supplies a global identifier, and it's not a protocol
             // we support, it will be rejected.
