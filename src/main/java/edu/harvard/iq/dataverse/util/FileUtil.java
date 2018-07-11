@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
@@ -72,7 +73,6 @@ import javax.xml.stream.XMLStreamReader;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import javax.imageio.ImageIO;
 
 
 /**
@@ -110,6 +110,8 @@ public class FileUtil implements java.io.Serializable  {
     
     public static final String MIME_TYPE_STATA = "application/x-stata";
     public static final String MIME_TYPE_STATA13 = "application/x-stata-13";
+    public static final String MIME_TYPE_STATA14 = "application/x-stata-14";
+    public static final String MIME_TYPE_STATA15 = "application/x-stata-15";
     public static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
     
     public static final String MIME_TYPE_CSV   = "text/csv";
@@ -590,7 +592,7 @@ public class FileUtil implements java.io.Serializable  {
             Long fileSize = tempFile.toFile().length();
             if (fileSizeLimit != null && fileSize > fileSizeLimit) {
                 try {tempFile.toFile().delete();} catch (Exception ex) {}
-                throw new IOException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), fileSize.toString(), fileSizeLimit.toString()));  
+                throw new IOException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)));  
             }
             
         } else {
@@ -961,7 +963,7 @@ public class FileUtil implements java.io.Serializable  {
             Long fileSize = tempFile.toFile().length();
             if (fileSizeLimit != null && fileSize > fileSizeLimit) {
                 try {tempFile.toFile().delete();} catch (Exception ex) {}
-                throw new FileExceedsMaxSizeException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), fileSize.toString(), fileSizeLimit.toString()));  
+                throw new FileExceedsMaxSizeException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)));  
             }
             
             return tempFile.toFile();
@@ -1088,6 +1090,10 @@ public class FileUtil implements java.io.Serializable  {
         if (mimeType.equals(MIME_TYPE_STATA)) {
             return true;
         } else if (mimeType.equals(MIME_TYPE_STATA13)) {
+            return true;
+        } else if (mimeType.equals(MIME_TYPE_STATA14)) {
+            return true;
+        } else if (mimeType.equals(MIME_TYPE_STATA15)) {
             return true;
         } else if (mimeType.equals(MIME_TYPE_RDATA)) {
             return true;

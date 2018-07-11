@@ -84,7 +84,7 @@ If you are convinced you'd like to try fronting Glassfish with Apache, the :doc:
 
 If you really don't want to front Glassfish with any proxy (not recommended), you can configure Glassfish to run HTTPS on port 443 like this:
 
-``asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=443``
+``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=443``
 
 What about port 80? Even if you don't front Dataverse with Apache, you may want to let Apache run on port 80 just to rewrite HTTP to HTTPS as described above. You can use a similar command as above to change the HTTP port that Glassfish uses from 8080 to 80 (substitute ``http-listener-1.port=80``). Glassfish can be used to enforce HTTPS on its own without Apache, but configuring this is an exercise for the reader. Answers here may be helpful: http://stackoverflow.com/questions/25122025/glassfish-v4-java-7-port-unification-error-not-able-to-redirect-http-to
 
@@ -338,6 +338,8 @@ The name of your root dataverse is the brand of your installation of Dataverse a
 
 Downloadable sample HTML and CSS files are provided below which you can edit as you see fit. It's up to you to create a directory in which to store these files, such as ``/var/www/dataverse`` in the examples below.
 
+You may also want to look at samples at https://github.com/shlake/LibraDataHomepage from community member Sherry Lake as well as her poster from the Dataverse Community Meeting 2018 called "Branding Your Local Dataverse": https://github.com/IQSS/dataverse/files/2128735/UVaHomePage.pdf
+
 A simpler option to brand and customize your installation is to utilize the dataverse theme, which each dataverse has, that allows you to change colors, add a logo, tagline or website link to the dataverse header section of the page. Those options are outlined in the :doc:`/user/dataverse-management` section of the User Guide.
 
 Custom Homepage
@@ -450,13 +452,13 @@ JVM Options
 
 JVM stands Java Virtual Machine and as a Java application, Glassfish can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running:
 
-``asadmin list-jvm-options | egrep 'dataverse|doi'``
+``./asadmin list-jvm-options | egrep 'dataverse|doi'``
 
 When changing values these values with ``asadmin``, you'll need to delete the old value before adding a new one, like this:
 
-``asadmin delete-jvm-options "-Ddataverse.fqdn=old.example.com"``
+``./asadmin delete-jvm-options "-Ddataverse.fqdn=old.example.com"``
 
-``asadmin create-jvm-options "-Ddataverse.fqdn=dataverse.example.com"``
+``./asadmin create-jvm-options "-Ddataverse.fqdn=dataverse.example.com"``
 
 It's also possible to change these values by stopping Glassfish, editing ``glassfish4/glassfish/domains/domain1/config/domain.xml``, and restarting Glassfish.
 
@@ -513,10 +515,14 @@ dataverse.rserve.password
 
 Configuration for :doc:`r-rapache-tworavens`.
 
+.. _dataverse.dropbox.key:
+
 dataverse.dropbox.key
 +++++++++++++++++++++
 
-Dropbox integration is optional. Enter your key here.
+Dropbox provides a Chooser app, which is a Javascript component that allows you to upload files to Dataverse from Dropbox. It is an optional configuration setting, which requires you to pass it an app key. For more information on setting up your Chooser app, visit https://www.dropbox.com/developers/chooser.
+
+``./asadmin create-jvm-options "-Ddataverse.dropbox.key={{YOUR_APP_KEY}}"``
 
 dataverse.path.imagemagick.convert
 ++++++++++++++++++++++++++++++++++
@@ -546,11 +552,11 @@ For example, the Australian Data Archive (ADA) successfully uses the Australian 
 
 Out of the box, Dataverse is configured to use base URL string from EZID. You can delete it like this:
 
-``asadmin delete-jvm-options '-Ddoi.baseurlstring=https\://ezid.cdlib.org'``
+``./asadmin delete-jvm-options '-Ddoi.baseurlstring=https\://ezid.cdlib.org'``
 
 Then, to switch to DataCite, you can issue the following command:
 
-``asadmin create-jvm-options '-Ddoi.baseurlstring=https\://mds.datacite.org'``
+``./asadmin create-jvm-options '-Ddoi.baseurlstring=https\://mds.datacite.org'``
 
 See also these related database settings below:
 
@@ -568,11 +574,11 @@ Used in conjuction with ``doi.baseurlstring``.
 
 Out of the box, Dataverse is configured with a test username from EZID. You can delete it with the following command:
 
-``asadmin delete-jvm-options '-Ddoi.username=apitest'``
+``./asadmin delete-jvm-options '-Ddoi.username=apitest'``
 
 Once you have a username from your provider, you can enter it like this:
 
-``asadmin create-jvm-options '-Ddoi.username=YOUR_USERNAME_HERE'``
+``./asadmin create-jvm-options '-Ddoi.username=YOUR_USERNAME_HERE'``
 
 .. _doi.password:
 
@@ -583,11 +589,11 @@ Out of the box, Dataverse is configured with a test password from EZID. You can 
 
 Used in conjuction with ``doi.baseurlstring``.
 
-``asadmin delete-jvm-options '-Ddoi.password=apitest'``
+``./asadmin delete-jvm-options '-Ddoi.password=apitest'``
 
 Once you have a password from your provider, you can enter it like this:
 
-``asadmin create-jvm-options '-Ddoi.password=YOUR_PASSWORD_HERE'``
+``./asadmin create-jvm-options '-Ddoi.password=YOUR_PASSWORD_HERE'``
 
 .. _dataverse.handlenet.admcredfile:
 
