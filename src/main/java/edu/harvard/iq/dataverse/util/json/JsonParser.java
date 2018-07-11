@@ -515,7 +515,7 @@ public class JsonParser {
     
     
     public List<DataTable> parseDataTables(JsonArray dataTablesJson){
-        logger.log(Level.INFO, "parseDataTables={0}", dataTablesJson.size());
+        logger.log(Level.INFO, "parseDataTables is called");
         List<DataTable> dataTables = new LinkedList<>();
         if ((dataTablesJson !=null) && (!dataTablesJson.isEmpty())){
             logger.log(Level.INFO, "dataTables is not empty");
@@ -544,6 +544,7 @@ public class JsonParser {
     
     
     public List<DataVariable> parseDataVariables(JsonArray dataVariablesJson){
+        logger.log(Level.INFO, "parseDataVariables is called");
         List<DataVariable> dataVariables = new LinkedList<>();
         if ((dataVariablesJson != null) && (!dataVariablesJson.isEmpty())) {
             logger.log(Level.INFO, "dataVariablesJson is not empty:size={0}", dataVariablesJson.size());
@@ -588,6 +589,7 @@ public class JsonParser {
     
     
     public List<SummaryStatistic> parseSummaryStatistics(JsonObject summaryStatisticsJson){
+        logger.log(Level.INFO, "parseSummaryStatistics is called");
         List<SummaryStatistic> summaryStatistics = new LinkedList<>();
         if (summaryStatisticsJson !=null){
             // mean
@@ -660,6 +662,7 @@ public class JsonParser {
     
     
     public List<VariableCategory> parseVariableCategories(JsonArray variableCategoriesJson){
+        logger.log(Level.INFO, "parseVariableCategories is called");
          List<VariableCategory> variableCategories = new LinkedList<>();
          if ((variableCategoriesJson != null) && (!variableCategoriesJson.isEmpty())){
              for (JsonObject variableCategoryJson : variableCategoriesJson.getValuesAs(JsonObject.class)){
