@@ -2,6 +2,9 @@
   "datasetVersion": {
     "termsOfUse": "CC0 Waiver",
     "license": "CC0",
+    "protocol":"doi",
+    "authority":"10.502/ZZ7",
+    "identifier":"MOSEISLEYDB94",
     "metadataBlocks": {
       "citation": {
         "fields": [
