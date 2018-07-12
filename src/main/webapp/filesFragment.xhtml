@@ -16,9 +16,9 @@
                  
                  rows="10" paginator="true" 
                  
-                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} Files Per Page {RowsPerPageDropdown} {UploadButtonBlock}"
+                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} #{bundle['file.dynamicCounter.filesPerPage']} {RowsPerPageDropdown} {UploadButtonBlock}"
                  rowsPerPageTemplate="10,25,50"
-                 currentPageReportTemplate="{startRecord} to {endRecord} of {totalRecords} Files"
+                 currentPageReportTemplate="{startRecord} #{bundle['file.dynamicCounter.to']} {endRecord} #{bundle['file.dynamicCounter.of']} {totalRecords} #{bundle['file.dynamicCounter.files']}"
                          
                  style="margin-right:1px;"
                  value="#{DatasetPage.fileMetadatasSearch}"
