@@ -3,8 +3,8 @@
     "termsOfUse": "CC0 Waiver",
     "license": "CC0",
     "protocol":"doi",
-    "authority":"10.502/ZZ7",
-    "identifier":"MOSEISLEYDB94",
+    "authority":"10.502",
+    "identifier":"ZZ7/MOSEISLEYDB94",
     "metadataBlocks": {
       "citation": {
         "fields": [
