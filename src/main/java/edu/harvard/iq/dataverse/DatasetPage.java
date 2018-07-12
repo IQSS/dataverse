@@ -4299,19 +4299,15 @@ public class DatasetPage implements java.io.Serializable {
 
     public void selectAllFiles() {
         logger.info("selectAllFiles called");
-        // FIXME: This doesn't affect the checkboxes in the UI. Why?
         List<FileMetadata> allFiles = new ArrayList<>();
-        if (isSelectAllFiles()) {
-            for (FileMetadata fm : workingVersion.getFileMetadatas()) {
-                allFiles.add(fm);
-            }
-            selectedFiles = allFiles;
+        for (FileMetadata fm : workingVersion.getFileMetadatas()) {
+            allFiles.add(fm);
         }
+        selectedFiles = allFiles;
     }
 
     public void clearSelection() {
         logger.info("clearSelection called");
-        // FIXME: This doesn't affect the checkboxes in the UI. Why?
         selectedFiles = Collections.EMPTY_LIST;
     }
 

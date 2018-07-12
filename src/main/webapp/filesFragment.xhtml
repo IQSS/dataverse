@@ -208,7 +208,7 @@
             
             <div class="row">
                 <div class="col-xs-12 bg-warning text-left" style="font-weight:normal;padding-top:.5em;">
-                    <p><h:outputText value="#{DatasetPage.numFilesSelected}"/><p:commandLink value="#{DatasetPage.selectAllFilesText}" action="#{DatasetPage.clearSelection()}"/>. <p:commandLink value="#{bundle['file.clearSelection']}" action="#{DatasetPage.clearSelection()}"/>.</p>
+                    <p><h:outputText value="#{DatasetPage.numFilesSelected}"/><p:commandLink value="#{DatasetPage.selectAllFilesText}" action="#{DatasetPage.selectAllFiles}" update="@form"/>. <p:commandLink value="#{bundle['file.clearSelection']}" action="#{DatasetPage.clearSelection}" update="@form"/>.</p>
                 </div>
             </div>
             
