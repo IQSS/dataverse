@@ -4288,4 +4288,31 @@ public class DatasetPage implements java.io.Serializable {
         }
         return "";
     }
+
+    public String getNumFilesSelected() {
+        return BundleUtil.getStringFromBundle("file.numFilesSelected", Arrays.asList(String.valueOf(selectedFiles.size())));
+    }
+
+    public String getSelectAllFilesText() {
+        return BundleUtil.getStringFromBundle("file.selectAllFiles", Arrays.asList(String.valueOf(fileMetadatasSearch.size())));
+    }
+
+    public void selectAllFiles() {
+        logger.info("selectAllFiles called");
+        // FIXME: This doesn't affect the checkboxes in the UI. Why?
+        List<FileMetadata> allFiles = new ArrayList<>();
+        if (isSelectAllFiles()) {
+            for (FileMetadata fm : workingVersion.getFileMetadatas()) {
+                allFiles.add(fm);
+            }
+            selectedFiles = allFiles;
+        }
+    }
+
+    public void clearSelection() {
+        logger.info("clearSelection called");
+        // FIXME: This doesn't affect the checkboxes in the UI. Why?
+        selectedFiles = Collections.EMPTY_LIST;
+    }
+
 }
