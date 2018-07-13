@@ -162,6 +162,20 @@ public class SettingsWrapper implements java.io.Serializable {
     public boolean isRootDataverseThemeDisabled() {
         return isTrueForKey(Key.DisableRootDataverseTheme, false);
     }
+    
+    public String getDropBoxKey() {
+
+        String configuredDropBoxKey = System.getProperty("dataverse.dropbox.key");
+        if (configuredDropBoxKey != null) {
+            return configuredDropBoxKey;
+        }
+        return "";
+    }
+    
+    public Boolean isHasDropBoxKey() {
+
+        return !getDropBoxKey().isEmpty();
+    }
 
 }
 

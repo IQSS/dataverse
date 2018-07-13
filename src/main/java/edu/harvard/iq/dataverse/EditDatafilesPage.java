@@ -9,10 +9,13 @@ import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
+import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -65,6 +68,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.FacesEvent;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.context.RequestContext;
 
@@ -114,7 +119,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     @Inject PermissionsWrapper permissionsWrapper;
     @Inject FileDownloadHelper fileDownloadHelper;
     @Inject ProvPopupFragmentBean provPopupFragmentBean;
-
+    @Inject
+    SettingsWrapper settingsWrapper;
     private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
     private Dataset dataset = new Dataset();
@@ -531,7 +537,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             logger.fine("The page is called with " + selectedFileIdsList.size() + " file ids.");
 
             populateFileMetadatas();
-
+            setUpRsync();
             // and if no filemetadatas can be found for the specified file ids 
             // and version id - same deal, send them to the "not found" page. 
             // (at least for now; ideally, we probably want to show them a page 
@@ -832,7 +838,10 @@ public class EditDatafilesPage implements java.io.Serializable {
        return ResourceBundle.getBundle("Bundle").getString(msgName);
     }
     
-    
+    public void deleteFilesCompleted(){
+        
+    }
+        
     public void deleteFiles() {
         logger.info("entering bulk file delete (EditDataFilesPage)");
         if (isFileReplaceOperation()){
@@ -986,18 +995,23 @@ public class EditDatafilesPage implements java.io.Serializable {
                     if (markedForDelete.getDataFile().getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
                         nfIt.remove();
                     }
-                }                
+                }
                 
             }
         }
 
      
         if (fileNames != null) {
+            if(newFiles.isEmpty()){
+                fileMetadatas = new ArrayList<>();
+            }
             String successMessage = getBundleString("file.deleted.success");
             logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);
+
         }
+        
     }
 
     public String saveWithTermsOfUse() {
@@ -1672,11 +1686,94 @@ public class EditDatafilesPage implements java.io.Serializable {
         // uploadStarted() is triggered by PrimeFaces <p:upload onStart=... when an upload is 
         // started. It will be called *once*, even if it is a multiple file upload 
         // (either through drag-and-drop or select menu). 
-       
         logger.fine("upload started");
         
         uploadInProgress = true;        
     }
+    
+    
+    private Boolean hasRsyncScript = false;
+    public Boolean isHasRsyncScript() {
+        return hasRsyncScript;
+    }
+
+    public void setHasRsyncScript(Boolean hasRsyncScript) {
+        this.hasRsyncScript = hasRsyncScript;
+    }
+    
+    private  void setUpRsync() {
+        if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
+            try {
+                ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
+                logger.fine("script: " + scriptRequestResponse.getScript());
+                if (scriptRequestResponse.getScript() != null && !scriptRequestResponse.getScript().isEmpty()) {
+                    setRsyncScript(scriptRequestResponse.getScript());
+                    rsyncScriptFilename = "upload-" + workingVersion.getDataset().getIdentifier() + ".bash";
+                    setHasRsyncScript(true);
+                } else {
+                    setHasRsyncScript(false);
+                }
+            } catch (RuntimeException ex) {
+                logger.warning("Problem getting rsync script: " + ex.getLocalizedMessage());
+            } catch (CommandException cex) {
+                logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
+            }
+        }
+    }
+    
+    public void downloadRsyncScript() {
+
+        String bibFormatDowload = new BibtexCitation(workingVersion).toString();
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("application/download");
+
+        String contentDispositionString;
+
+        contentDispositionString = "attachment;filename=" + rsyncScriptFilename;
+        response.setHeader("Content-Disposition", contentDispositionString);
+
+        try {
+            ServletOutputStream out = response.getOutputStream();
+            out.write(getRsyncScript().getBytes());
+            out.flush();
+            ctx.responseComplete();
+        } catch (IOException e) {
+            String error = "Problem getting bytes from rsync script: " + e;
+            logger.warning(error);
+            return; 
+        }
+        
+        // If the script has been successfully downloaded, lock the dataset:
+        String lockInfoMessage = "script downloaded";
+        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, session.getUser() != null ? ((AuthenticatedUser)session.getUser()).getId() : null, lockInfoMessage);
+        if (lock != null) {
+            dataset.addLock(lock);
+        } else {
+            logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
+        }
+        
+    }
+    
+        /**
+     * The contents of the script.
+     */
+    private String rsyncScript = "";
+
+    public String getRsyncScript() {
+        return rsyncScript;
+    }
+
+    public void setRsyncScript(String rsyncScript) {
+        this.rsyncScript = rsyncScript;
+    }
+
+    private String rsyncScriptFilename;
+
+    public String getRsyncScriptFilename() {
+        return rsyncScriptFilename;
+    }
+
     
     public void uploadFinished() {
         // This method is triggered from the page, by the <p:upload ... onComplete=...

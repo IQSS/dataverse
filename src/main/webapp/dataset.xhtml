@@ -198,13 +198,13 @@
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu pull-right text-left" role="menu">
-                                        <ui:fragment rendered="#{!settingsWrapper.rsyncUpload}">
+                                        <!-- show upload files button to support dual mode -->
                                         <li>                                           
                                             <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD">
                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.upload']}"/>
                                             </h:outputLink>
                                         </li>
-                                        </ui:fragment>
+                                        
                                         <li>
                                             <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:post_edit_metadata()">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
@@ -560,8 +560,10 @@
                             </script>
                         </p:fragment>
 
-                        <ui:fragment id="uploadFilesOnCreateTab" rendered="#{!DatasetPage.workingVersion.deaccessioned and
+                        <ui:fragment id="uploadFilesOnCreateTab" rendered="#{!DatasetPage.workingVersion.deaccessioned and                          
                                                                              (DatasetPage.editMode == 'CREATE')}">
+                            <ui:remove>
+                                 <!-- Removing this because it is now included in editFilesFragment with render logic therein -->
                             <div jsf:rendered="#{settingsWrapper.rsyncUpload}" data-widget="content" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" id="datasetForm:tabView">
                                 <!-- Create-Upload Disabled // Static Tab Layout -->
                                 <ul role="tablist" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
@@ -576,15 +578,16 @@
                                 </div>
                                 <!-- END: Create-Upload Disabled // Static Tab Layout -->
                             </div>
-                            
-                            <ui:fragment rendered="#{!settingsWrapper.rsyncUpload}">
+                            </ui:remove>
+
                                 <ui:include src="editFilesFragment.xhtml">
                                     <ui:param name="datasetPage" value="true"/>
                                     <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
                                     <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
                                     <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
+                                    <ui:param name="createDataset" value="true"/>
                                 </ui:include>
-                            </ui:fragment>
+
                         </ui:fragment>
 
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
