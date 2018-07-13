@@ -28,7 +28,7 @@ import java.util.*;
 import java.lang.reflect.*;
 import java.util.regex.*;
 import java.util.zip.*;
-import java.util.logging.*;
+import java.util.logging.Logger;
 import org.apache.commons.lang.builder.*;
 
 /**

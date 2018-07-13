@@ -38,7 +38,7 @@ import edu.harvard.iq.dataverse.batch.entities.JobExecutionEntity;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.listener.ItemReadListener;
@@ -159,9 +159,9 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         jobParams = jobOperator.getParameters(jobContext.getInstanceId());
         
         // log job info
-        jobLogger.log(Level.INFO, "Job ID = " + jobContext.getExecutionId());
-        jobLogger.log(Level.INFO, "Job Name = " + jobContext.getJobName());
-        jobLogger.log(Level.INFO, "Job Status = " + jobContext.getBatchStatus());
+        jobLogger.log(Level.INFO, "Job ID = {0}", jobContext.getExecutionId());
+        jobLogger.log(Level.INFO, "Job Name = {0}", jobContext.getJobName());
+        jobLogger.log(Level.INFO, "Job Status = {0}", jobContext.getBatchStatus());
         
         jobParams.setProperty("datasetGlobalId", getDatasetGlobalId());
         
@@ -172,7 +172,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         }
         
         if (!dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
-            getJobLogger().log(Level.SEVERE, "Dataset " + dataset.getGlobalId() + " is not locked for DCM upload. Exiting");
+            getJobLogger().log(Level.SEVERE, "Dataset {0} is not locked for DCM upload. Exiting", dataset.getGlobalId());
             jobContext.setExitStatus("FAILED");
             throw new IOException("Dataset " + dataset.getGlobalId() + " is not locked for DCM upload");
         }
@@ -254,7 +254,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
 
         boolean canIssueCommand = permissionServiceBean
                 .requestOn(new DataverseRequest(user, (HttpServletRequest) null), dataset)
-                .canIssue(UpdateDatasetCommand.class);
+                .canIssue(UpdateDatasetVersionCommand.class);
         if (!canIssueCommand) {
             getJobLogger().log(Level.SEVERE, "User doesn't have permission to import files into this dataset.");
             return false;
@@ -351,9 +351,10 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             String datasetId = jobParams.getProperty("datasetId");
             
             dataset = datasetServiceBean.find(new Long(datasetId));
+
             if (dataset != null) {
                 getJobLogger().log(Level.INFO, "Dataset Identifier (datasetId=" + datasetId + "): " + dataset.getIdentifier());
-                return dataset.getGlobalId();
+                return dataset.getGlobalId().asString();
             }
         }
         if (jobParams.containsKey("datasetPrimaryKey")) {
@@ -362,7 +363,8 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             if (dataset != null) {
                 getJobLogger().log(Level.INFO, "Dataset Identifier (datasetPrimaryKey=" + datasetPrimaryKey + "): " 
                     + dataset.getIdentifier());
-                return dataset.getGlobalId();
+                
+                return dataset.getGlobalId().asString();
             }
         }
         

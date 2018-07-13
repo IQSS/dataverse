@@ -1,6 +1,6 @@
 #!/bin/bash
 PSQL=psql
-DB_NAME=dvndb
+DB_NAME=dataverse_app
 SQL_FILENAME=dropall.sql
 
 $PSQL $DB_NAME -t -c"SELECT 'drop table \"' || tablename || '\" cascade;' FROM pg_tables WHERE schemaname='public';" > $SQL_FILENAME
