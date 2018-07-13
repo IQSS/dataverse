@@ -66,25 +66,25 @@ public class Dataverse extends DvObjectContainer {
     
     private static final long serialVersionUID = 1L;
 
-    @NotBlank(message = "Please enter a name.")
+    @NotBlank(message = "{dataverse.name}")
     @Column( nullable = false )
     private String name;
 
     /**
      * @todo add @Column(nullable = false) for the database to enforce non-null
      */
-    @NotBlank(message = "Please enter an alias.")
+    @NotBlank(message = "{dataverse.alias}")
     @Column(nullable = false, unique=true)
-    @Size(max = 60, message = "Alias must be at most 60 characters.")
-    @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'."), 
-        @Pattern(regexp=".*\\D.*", message="Alias should not be a number")})
+    @Size(max = 60, message = "{dataverse.aliasLength}")
+    @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "{dataverse.nameIllegalCharacters}"),
+        @Pattern(regexp=".*\\D.*", message="{dataverse.aliasNotnumber}")})
     private String alias;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @NotNull(message = "Please select a category for your dataverse.")
+    @NotNull(message = "{dataverse.category}")
     @Column( nullable = false )
     private DataverseType dataverseType;
        
