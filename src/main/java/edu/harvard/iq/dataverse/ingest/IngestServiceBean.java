@@ -20,7 +20,6 @@
 
 package edu.harvard.iq.dataverse.ingest;
 
-import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -41,12 +40,8 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
-import edu.harvard.iq.dataverse.dataaccess.UnsupportedDataAccessOperationException;
-import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
-import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
@@ -55,7 +50,7 @@ import edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits.FITS
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReader;
-import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTA117FileReader;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.NewDTAFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileReaderSpi;
@@ -76,8 +71,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.nio.channels.Channel;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -106,7 +99,6 @@ import javax.jms.Queue;
 import javax.jms.QueueConnectionFactory;
 import javax.annotation.Resource;
 import javax.ejb.Asynchronous;
-import javax.ejb.EJBException;
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 import javax.jms.QueueSender;
@@ -114,7 +106,6 @@ import javax.jms.QueueSession;
 import javax.jms.Message;
 import javax.faces.bean.ManagedBean;
 import javax.faces.application.FacesMessage;
-import javax.persistence.Query;
 
 /**
  *
@@ -434,7 +425,7 @@ public class IngestServiceBean {
 
                     scheduledFiles.add(dataFile);
                 
-                    logger.fine("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest, for dataset: " + dataset.getGlobalId());
+                    logger.fine("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest, for dataset: " + dataset.getGlobalIdString());
                     count++;
                 } else {
                     dataFile.setIngestDone();
@@ -544,9 +535,6 @@ public class IngestServiceBean {
             if (dataFile.getDataTable().getDataVariables().get(i).isIntervalContinuous()) {
                 logger.fine("subsetting continuous vector");
 
-                StorageIO<DataFile> storageIO = dataFile.getStorageIO();
-                storageIO.open();
-
                 if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormat())) {
                     Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                     logger.fine("Calculating summary statistics on a Float vector;");
@@ -577,9 +565,6 @@ public class IngestServiceBean {
             if (dataFile.getDataTable().getDataVariables().get(i).isIntervalDiscrete()
                     && dataFile.getDataTable().getDataVariables().get(i).isTypeNumeric()) {
                 logger.fine("subsetting discrete-numeric vector");
-
-                StorageIO<DataFile> storageIO = dataFile.getStorageIO();
-                storageIO.open();
 
                 Long[] variableVector = TabularSubsetGenerator.subsetLongVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                 // We are discussing calculating the same summary stats for 
@@ -613,9 +598,6 @@ public class IngestServiceBean {
         
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if (dataFile.getDataTable().getDataVariables().get(i).isTypeCharacter()) {
-
-                StorageIO<DataFile> storageIO = dataFile.getStorageIO();
-                storageIO.open();
 
                 logger.fine("subsetting character vector");
                 String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
@@ -672,6 +654,7 @@ public class IngestServiceBean {
         // it up with the Ingest Service Provider Registry:
         String fileName = dataFile.getFileMetadata().getLabel();
         TabularDataFileReader ingestPlugin = getTabDataReaderByMimeType(dataFile.getContentType());
+        logger.fine("Using ingest plugin " + ingestPlugin.getClass());
 
         if (ingestPlugin == null) {
             dataFile.SetIngestProblem();
@@ -736,7 +719,7 @@ public class IngestServiceBean {
             dataFile = fileService.save(dataFile);
             
             dataFile = fileService.save(dataFile);
-            logger.fine("Ingest failure (IO Exception): "+ingestEx.getMessage()+ ".");
+            logger.warning("Ingest failure (IO Exception): " + ingestEx.getMessage() + ".");
             return false;
         } catch (Exception unknownEx) {
             // this is a bit of a kludge, to make sure no unknown exceptions are
@@ -798,6 +781,7 @@ public class IngestServiceBean {
                 }
 
                 if (!postIngestTasksSuccessful) {
+                    logger.warning("Ingest failure (!postIngestTasksSuccessful).");
                     return false;
                 }
 
@@ -844,6 +828,7 @@ public class IngestServiceBean {
                 }
 
                 if (!databaseSaveSuccessful) {
+                    logger.warning("Ingest failure (!databaseSaveSuccessful).");
                     return false;
                 }
 
@@ -894,6 +879,7 @@ public class IngestServiceBean {
             logger.warning("Ingest failed to produce data obect.");
         }
 
+        logger.fine("Returning ingestSuccessful: " + ingestSuccessful);
         return ingestSuccessful;
     }
 
@@ -946,7 +932,11 @@ public class IngestServiceBean {
         if (mimeType.equals(FileUtil.MIME_TYPE_STATA)) {
             ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
         } else if (mimeType.equals(FileUtil.MIME_TYPE_STATA13)) {
-            ingestPlugin = new DTA117FileReader(new DTAFileReaderSpi());
+            ingestPlugin = new NewDTAFileReader(new DTAFileReaderSpi(), 117);
+        } else if (mimeType.equals(FileUtil.MIME_TYPE_STATA14)) {
+            ingestPlugin = new NewDTAFileReader(new DTAFileReaderSpi(), 118);
+        } else if (mimeType.equals(FileUtil.MIME_TYPE_STATA15)) {
+            ingestPlugin = new NewDTAFileReader(new DTAFileReaderSpi(), 119);
         } else if (mimeType.equals(FileUtil.MIME_TYPE_RDATA)) {
             ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
         } else if (mimeType.equals(FileUtil.MIME_TYPE_CSV) || mimeType.equals(FileUtil.MIME_TYPE_CSV_ALT)) {

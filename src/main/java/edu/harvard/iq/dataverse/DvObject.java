@@ -19,10 +19,12 @@ import javax.persistence.*;
             query = "SELECT o FROM DvObject o ORDER BY o.id"),
     @NamedQuery(name = "DvObject.findById",
             query = "SELECT o FROM DvObject o WHERE o.id=:id"),
-	@NamedQuery(name = "DvObject.ownedObjectsById",
+    @NamedQuery(name = "DvObject.ownedObjectsById",
 			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
     @NamedQuery(name = "DvObject.findByGlobalId",
-    query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype")
+            query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
+    @NamedQuery(name = "DvObject.findByProtocolIdentifierAuthority",
+            query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol")
 })
 @Entity
 // Inheritance strategy "JOINED" will create 4 db tables - 
@@ -103,10 +105,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
      */
     private Timestamp indexTime;
 
-    /**
-     * @todo Make this nullable=true. Currently we can't because the
-     * CreateDataverseCommand saves the dataverse before it assigns a role.
-     */
     @Column(nullable = true)
     private Timestamp permissionModificationTime;
 
@@ -285,8 +283,33 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         this.identifierRegistered = identifierRegistered;
     }  
     
-    public String getGlobalId() {       
-        return new GlobalId(this).toString();
+    /**
+     * 
+     * @return This object's global id in a string form.
+     * @deprecated use {@code dvobj.getGlobalId().asString()}.
+     */
+    public String getGlobalIdString() {       
+        final GlobalId globalId = getGlobalId();
+        return globalId != null ? globalId.asString() : null;
+    }
+    
+    public void setGlobalId( GlobalId pid ) {
+        if ( pid == null ) {
+            setProtocol(null);
+            setAuthority(null);
+            setIdentifier(null);
+        } else {
+            setProtocol(pid.getProtocol());
+            setAuthority(pid.getAuthority());
+            setIdentifier(pid.getIdentifier());
+        }
+    }
+    
+    public GlobalId getGlobalId() {
+        // FIXME should return NULL when the fields are null. Currenntly, 
+        //       a lot of code depends call this method, so this fix can't be 
+        //       a part of the current PR.
+        return new GlobalId(getProtocol(), getAuthority(), getIdentifier());
     }
     
     public abstract <T> T accept(Visitor<T> v);

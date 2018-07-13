@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -17,13 +16,13 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.search.IndexResponse;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  * Same as {@link DeleteDatasetCommand}, but does not stop if the dataset is
@@ -58,7 +57,6 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         // explicitly, or we'll get a constraint violation when deleting:
         doomed.setThumbnailFile(null);
         final Dataset managedDoomed = ctxt.em().merge(doomed);
-
         
         List<String> datasetAndFileSolrIdsToDelete = new ArrayList<>();
         // files need to iterate through and remove 'by hand' to avoid
@@ -90,9 +88,9 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             ctxt.em().remove(ra);
         }   
         
-        IdServiceBean idServiceBean = IdServiceBean.getBean(ctxt);
-        try {
-            if (idServiceBean.alreadyExists(doomed)) {
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
+        try{
+            if(idServiceBean.alreadyExists(doomed)){
                 idServiceBean.deleteIdentifier(doomed);
                 for (DataFile df : doomed.getFiles()) {
                     idServiceBean.deleteIdentifier(df);
