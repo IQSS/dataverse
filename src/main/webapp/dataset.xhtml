@@ -1153,7 +1153,7 @@
                             <p:commandButton styleClass="btn btn-default" id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
                         </div>
                     </p:dialog>
-                    
+                    <ui:remove>
                     <p:dialog id="rsyncUploadInfoPopup" styleClass="smallPopUp" header="#{bundle['file.uploadFiles']}" widgetVar="rsyncUpload_popup" modal="true">
                         <!-- RSYNC UPLOAD POPUP -->
                         <p:ajax event="close" update=":datasetForm,:messagePanel" listener="#{DatasetPage.closeRsyncScriptPopup}" />
@@ -1202,7 +1202,7 @@
                         </div>
                         <!-- END RSYNC UPLOAD POPUP -->
                     </p:dialog>
-
+</ui:remove>
                     <!-- Request Access Sign Up/Log In Button -->
                     <p:dialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
                         <p class="help-block">
