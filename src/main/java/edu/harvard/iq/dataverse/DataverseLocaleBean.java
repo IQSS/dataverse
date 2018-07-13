@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -108,9 +107,21 @@ public class DataverseLocaleBean implements Serializable {
     public void setLocaleCode(String localeCode) {
         this.localeCode = localeCode;
     }
+    
+    public String getLocaleTitle() {
+        if (dataverseLocales != null) {
+            for (Iterator<DataverseLocale> it = dataverseLocales.iterator(); it.hasNext(); ) {
+                DataverseLocale dL = it.next();
+                if (dL.getId().toString().equals(localeCode)) {
+                    return dL.getDisplayName();
+                }
+            }
+        }
+        
+        return "English";
+    }
 
-    public void countryLocaleCodeChanged(ValueChangeEvent e){
-        String id = e.getNewValue().toString();
+    public void countryLocaleCodeChanged(String id){
 
         for (Iterator<DataverseLocale> it = dataverseLocales.iterator(); it.hasNext(); ) {
             DataverseLocale dL = it.next();
