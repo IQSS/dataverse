@@ -54,6 +54,8 @@ public class IngestableDataChecker implements java.io.Serializable {
     // Map that returns a Stata Release number
     private static Map<Byte, String> stataReleaseNumber = new HashMap<Byte, String>();
     public static String STATA_13_HEADER = "<stata_dta><header><release>117</release>";
+    public static String STATA_14_HEADER = "<stata_dta><header><release>118</release>";
+    public static String STATA_15_HEADER = "<stata_dta><header><release>119</release>";
     // Map that returns a reader-implemented mime-type
     private static Set<String> readableFileTypes = new HashSet<String>();
     private static Map<String, Method> testMethods = new HashMap<String, Method>();
@@ -91,6 +93,8 @@ public class IngestableDataChecker implements java.io.Serializable {
         readableFileTypes.add("application/x-spss-por");
         readableFileTypes.add("application/x-rlang-transport");
         readableFileTypes.add("application/x-stata-13");
+        readableFileTypes.add("application/x-stata-14");
+        readableFileTypes.add("application/x-stata-15");
 
         Pattern p = Pattern.compile(regex);
         ptn = Pattern.compile(rdargx);
@@ -259,7 +263,45 @@ public class IngestableDataChecker implements java.io.Serializable {
             }
             
         }
-        
+
+        if ((result == null) && (buff.capacity() >= STATA_14_HEADER.length())) {
+            // Let's see if it's a "new" STATA (v.14+) format:
+            buff.rewind();
+            byte[] headerBuffer = null;
+            String headerString = null;
+            try {
+                headerBuffer = new byte[STATA_14_HEADER.length()];
+                buff.get(headerBuffer, 0, STATA_14_HEADER.length());
+                headerString = new String(headerBuffer, "US-ASCII");
+            } catch (Exception ex) {
+                // probably a buffer underflow exception;
+                // we don't have to do anything... null will
+                // be returned, below.
+            }
+            if (STATA_14_HEADER.equals(headerString)) {
+                result = "application/x-stata-14";
+            }
+        }
+
+        if ((result == null) && (buff.capacity() >= STATA_15_HEADER.length())) {
+            // Let's see if it's a "new" STATA (v.14+) format:
+            buff.rewind();
+            byte[] headerBuffer = null;
+            String headerString = null;
+            try {
+                headerBuffer = new byte[STATA_15_HEADER.length()];
+                buff.get(headerBuffer, 0, STATA_15_HEADER.length());
+                headerString = new String(headerBuffer, "US-ASCII");
+            } catch (Exception ex) {
+                // probably a buffer underflow exception;
+                // we don't have to do anything... null will
+                // be returned, below.
+            }
+            if (STATA_15_HEADER.equals(headerString)) {
+                result = "application/x-stata-15";
+            }
+        }
+
         return result;
     }
 
