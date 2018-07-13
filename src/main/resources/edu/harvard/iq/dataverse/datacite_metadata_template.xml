@@ -11,7 +11,9 @@
     <publicationYear>${publisherYear}</publicationYear>
     <resourceType resourceTypeGeneral="Dataset"/>
     <relatedIdentifiers>
-        <relatedIdentifier relationType="IsPartOf" relatedIdentifierType="DOI">${datasetIdentifier}</relatedIdentifier>
+        <!--Make this dynamic
+        <relatedIdentifier relationType="HasPart" relatedIdentifierType="DOI">${fileIdentifier}</relatedIdentifier>-->
+        ${relatedIdentifiers}
     </relatedIdentifiers>
     <descriptions>
         <description descriptionType="Abstract">${description}</description>

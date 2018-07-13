@@ -150,8 +150,8 @@ public class DOIDataCiteRegisterService {
         } else {
             metadataTemplate.setDatasetIdentifier("");
         }
-        String xmlMetadata = metadataTemplate.generateXML();
-        logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
+       String xmlMetadata = metadataTemplate.generateXML();
+        logger.log(Level.INFO, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }
 
@@ -217,6 +217,26 @@ public class DOIDataCiteRegisterService {
         }
         return retString;
     }
+    
+    public String setUpFileIdentifiers(DvObject dvObject)
+    {
+     StringBuilder sb = new StringBuilder();
+     String fileIdentifiers;
+        
+        if(dvObject.isInstanceofDataset()){
+            Dataset ds = (Dataset) dvObject;
+            
+            for(int i = 0; i < ds.getFiles().size(); i++)
+                sb.append(ds.getFiles().get(i).getIdentifier() + "|:|");
+          
+            fileIdentifiers = sb.toString();
+        }
+        else
+            fileIdentifiers = "";
+        
+        return fileIdentifiers;
+    }
+    
 
     public boolean testDOIExists(String identifier) {
         boolean doiExists;
@@ -274,6 +294,7 @@ class DataCiteMetadataTemplate {
     private static String template;
 
     static {
+        //use other template for files
         try (InputStream in = DataCiteMetadataTemplate.class.getResourceAsStream("datacite_metadata_template.xml")) {
             template = Util.readAndClose(in, "utf-8");
         } catch (Exception e) {
@@ -288,6 +309,8 @@ class DataCiteMetadataTemplate {
     private String xmlMetadata;
     private String identifier;
     private String datasetIdentifier;
+    //or possibly ………
+    private List<String> datafileIdentifiers;
     private List<String> creators;
     private String title;
     private String publisher;
@@ -297,6 +320,7 @@ class DataCiteMetadataTemplate {
     private List<String[]> contacts;
     private List<String[]> producers;
 
+    
     public List<String[]> getProducers() {
         return producers;
     }
@@ -331,12 +355,24 @@ class DataCiteMetadataTemplate {
 
     public DataCiteMetadataTemplate() {
     }
+    
+     
+    public List<String> getDatafileIdentifiers() {
+        return datafileIdentifiers;
+    }
+
+    public void setDatafileIdentifiers(List<String> datafileIdentifiers) {
+        this.datafileIdentifiers = datafileIdentifiers;
+    }
 
     public DataCiteMetadataTemplate(String xmlMetaData) {
         this.xmlMetadata = xmlMetaData;
         Document doc = Jsoup.parseBodyFragment(xmlMetaData);
         Elements identifierElements = doc.select("identifier");
         if (identifierElements.size() > 0) {
+            //Why do we only get the first element. Is it because
+            //there should be only one element in here? If so, why
+            //does identifierElements need to be an ArrayList?
             identifier = identifierElements.get(0).html();
         }
         Elements creatorElements = doc.select("creatorName");
@@ -389,7 +425,7 @@ class DataCiteMetadataTemplate {
             creatorsElement.append("</creator>");
         }
         xmlMetadata = xmlMetadata.replace("${creators}", creatorsElement.toString());
-
+     
         StringBuilder contributorsElement = new StringBuilder();
         for (String[] contact : this.getContacts()) {
             if (!contact[0].isEmpty()) {
@@ -407,9 +443,21 @@ class DataCiteMetadataTemplate {
             }
             contributorsElement.append("</contributor>");
         }
+        
+        StringBuilder fileIdentifiersElement = new StringBuilder();
+        
+        for (String fileIdentifier : datafileIdentifiers){
+            fileIdentifiersElement.append("<relatedIdentifier>");
+            fileIdentifiersElement.append(fileIdentifier);
+            fileIdentifiersElement.append("</relatedIdentifier");
+        }
+        xmlMetadata = xmlMetadata.replace("${relatedIdentifiers}", fileIdentifiersElement.toString());
+        
+        
         xmlMetadata = xmlMetadata.replace("{$contributors}", contributorsElement.toString());
         return xmlMetadata;
     }
+   
 
     public static String getTemplate() {
         return template;

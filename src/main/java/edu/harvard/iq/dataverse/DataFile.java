@@ -453,7 +453,7 @@ public class DataFile extends DvObject implements Comparable {
 //        return this.fileSystemName;
 //    }
 //
-//    public void setStorageIdentifier(String storageIdentifier) {
+//    public void setStorageIdentifier(String storageifier) {
 //        this.fileSystemName = storageIdentifier;
 //    }
     
