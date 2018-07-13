@@ -29,7 +29,6 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
-import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleException;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -40,7 +39,6 @@ import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
@@ -66,9 +64,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -78,15 +76,11 @@ import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
-import edu.harvard.iq.dataverse.workflow.Workflow;
-import edu.harvard.iq.dataverse.workflow.WorkflowContext;
-import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -210,8 +204,8 @@ public class Datasets extends AbstractApiBean {
             // (the way Access API streams its output). 
             // -- L.A., 4.5
             
-            logger.fine("xml to return: " + xml);
             String mediaType = MediaType.TEXT_PLAIN;//PM - output formats appear to be either JSON or XML, unclear why text/plain is being used as default content-type.
+
             if (instance.isXMLFormat(exporter)){
                 mediaType = MediaType.APPLICATION_XML;
             }
@@ -398,9 +392,20 @@ public class Datasets extends AbstractApiBean {
             incomingVersion.setCreateTime(null);
             incomingVersion.setLastUpdateTime(null);
             boolean updateDraft = ds.getLatestVersion().isDraft();
-            DatasetVersion managedVersion = execCommand( updateDraft
-                                                             ? new UpdateDatasetVersionCommand(req, incomingVersion)
-                                                             : new CreateDatasetVersionCommand(req, ds, incomingVersion));
+            
+            DatasetVersion managedVersion;
+            if ( updateDraft ) {
+                final DatasetVersion editVersion = ds.getEditVersion();
+                editVersion.setDatasetFields(incomingVersion.getDatasetFields());
+                editVersion.setTermsOfUseAndAccess( incomingVersion.getTermsOfUseAndAccess() );
+                Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
+                managedVersion = managedDataset.getEditVersion();
+            } else {
+                managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, incomingVersion));
+            }
+//            DatasetVersion managedVersion = execCommand( updateDraft
+//                                                             ? new UpdateDatasetVersionCommand(req, incomingVersion)
+//                                                             : new CreateDatasetVersionCommand(req, ds, incomingVersion));
             return ok( json(managedVersion) );
                     
         } catch (JsonParseException ex) {
@@ -540,9 +545,9 @@ public class Datasets extends AbstractApiBean {
 
             
             boolean updateDraft = ds.getLatestVersion().isDraft();
-            DatasetVersion managedVersion = execCommand(updateDraft
-                    ? new UpdateDatasetVersionCommand(req, dsv)
-                    : new CreateDatasetVersionCommand(req, ds, dsv));
+            DatasetVersion managedVersion = updateDraft 
+                    ? execCommand(new UpdateDatasetVersionCommand(ds, req)).getEditVersion()
+                    : execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
             return ok(json(managedVersion));
 
         } catch (JsonParseException ex) {
@@ -676,9 +681,14 @@ public class Datasets extends AbstractApiBean {
                 }
             }
             boolean updateDraft = ds.getLatestVersion().isDraft();
-            DatasetVersion managedVersion = execCommand(updateDraft
-                    ? new UpdateDatasetVersionCommand(req, dsv)
-                    : new CreateDatasetVersionCommand(req, ds, dsv));
+            DatasetVersion managedVersion;
+            
+            if ( updateDraft ) {
+                managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getEditVersion();
+            } else {
+                managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
+            }
+            
             return ok(json(managedVersion));
 
         } catch (JsonParseException ex) {
@@ -1073,7 +1083,7 @@ public class Datasets extends AbstractApiBean {
     public Response returnToAuthor(@PathParam("id") String idSupplied, String jsonBody) {
         
         if (jsonBody == null || jsonBody.isEmpty()) {
-            return error(Response.Status.BAD_REQUEST, "You must supply JSON to this API endpoint and it must contain a reason for returning the dataset.");
+            return error(Response.Status.BAD_REQUEST, "You must supply JSON to this API endpoint and it must contain a reason for returning the dataset (field: reasonForReturn).");
         }
         StringReader rdr = new StringReader(jsonBody);
         JsonObject json = Json.createReader(rdr).readObject();
@@ -1087,10 +1097,9 @@ public class Datasets extends AbstractApiBean {
             }
             AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset, reasonForReturn ));
-            boolean inReview = updatedDataset.isLockedFor(DatasetLock.Reason.InReview);
 
             JsonObjectBuilder result = Json.createObjectBuilder();
-            result.add("inReview", inReview);
+            result.add("inReview", false);
             result.add("message", "Dataset id " + updatedDataset.getId() + " has been sent back to the author(s).");
             return ok(result);
         } catch (WrappedResponse wr) {

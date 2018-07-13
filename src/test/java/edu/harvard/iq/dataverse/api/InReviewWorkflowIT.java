@@ -15,8 +15,6 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.startsWith;
-import static org.hamcrest.Matchers.endsWith;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;

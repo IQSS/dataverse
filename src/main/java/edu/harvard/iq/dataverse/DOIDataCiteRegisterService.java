@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -44,7 +45,7 @@ public class DOIDataCiteRegisterService {
         return new DataCiteRESTfullClient(System.getProperty("doi.baseurlstring"), System.getProperty("doi.username"), System.getProperty("doi.password"));
     }
     
-    public String createIdentifierLocal(String identifier, HashMap<String, String> metadata, DvObject dvObject) {
+    public String createIdentifierLocal(String identifier, Map<String, String> metadata, DvObject dvObject) {
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
         String status = metadata.get("_status").trim();
         String target = metadata.get("_target");
@@ -67,7 +68,7 @@ public class DOIDataCiteRegisterService {
         return retString;
     }
     
-    public String registerIdentifier(String identifier, HashMap<String, String> metadata, DvObject dvObject) throws IOException {
+    public String registerIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
         String retString = "";
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
         DOIDataCiteRegisterCache rc = findByDOI(identifier);
@@ -112,7 +113,7 @@ public class DOIDataCiteRegisterService {
             return retString;
     }
      
-    private String getMetadataFromDvObject(String identifier, HashMap<String, String> metadata,DvObject dvObject) {
+    private String getMetadataFromDvObject(String identifier, Map<String, String> metadata,DvObject dvObject) {
         
         Dataset dataset = null;
         

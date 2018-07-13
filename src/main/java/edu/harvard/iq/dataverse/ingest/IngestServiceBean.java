@@ -20,7 +20,6 @@
 
 package edu.harvard.iq.dataverse.ingest;
 
-import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -41,12 +40,8 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataaccess.FileAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
-import edu.harvard.iq.dataverse.dataaccess.UnsupportedDataAccessOperationException;
-import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
-import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
@@ -76,8 +71,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.nio.channels.Channel;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -106,7 +99,6 @@ import javax.jms.Queue;
 import javax.jms.QueueConnectionFactory;
 import javax.annotation.Resource;
 import javax.ejb.Asynchronous;
-import javax.ejb.EJBException;
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 import javax.jms.QueueSender;
@@ -114,7 +106,6 @@ import javax.jms.QueueSession;
 import javax.jms.Message;
 import javax.faces.bean.ManagedBean;
 import javax.faces.application.FacesMessage;
-import javax.persistence.Query;
 
 /**
  *
@@ -435,7 +426,7 @@ public class IngestServiceBean {
 
                     scheduledFiles.add(dataFile);
                 
-                    logger.fine("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest, for dataset: " + dataset.getGlobalId());
+                    logger.fine("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest, for dataset: " + dataset.getGlobalIdString());
                     count++;
                 } else {
                     dataFile.setIngestDone();
