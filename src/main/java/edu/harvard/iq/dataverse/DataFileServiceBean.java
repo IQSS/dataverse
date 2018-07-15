@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -1515,7 +1509,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     
     
-    public String generateDataFileIdentifier(DataFile datafile, IdServiceBean idServiceBean) {
+    public String generateDataFileIdentifier(DataFile datafile, GlobalIdServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
 
@@ -1543,18 +1537,17 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
     
-    private String generateIdentifierAsRandomString(DataFile datafile, IdServiceBean idServiceBean, String prepend) {
-
+    private String generateIdentifierAsRandomString(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier = null;
         do {
             identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
-        } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
+        } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
 
         return identifier;
     }
 
-    private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, IdServiceBean idServiceBean, String prepend) {
-        
+
+    private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier; 
         do {
             StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
@@ -1566,37 +1559,36 @@ public class DataFileServiceBean implements java.io.Serializable {
                 return null; 
             }
             identifier = prepend + identifierNumeric.toString();
-        } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
+        } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
         
         return identifier;
     }
     
-    private String generateIdentifierAsDependentSequentialNumber(DataFile datafile, IdServiceBean idServiceBean, String prepend) {
-        
+    private String generateIdentifierAsDependentSequentialNumber(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier;
         Long retVal;
 
         retVal = new Long(0);
 
-
         do {
             retVal++;
             identifier = prepend + retVal.toString();
 
-        } while (!isIdentifierUniqueInDatabase(identifier, datafile, idServiceBean));
+        } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
 
         return identifier;
     }
 
     /**
      * Check that a identifier entered by the user is unique (not currently used
-     * for any other study in this Dataverse Network) alos check for duplicate
-     * in EZID if needed
+     * for any other study in this Dataverse Network). Also check for duplicate
+     * in the remote PID service if needed
      * @param userIdentifier
      * @param datafile
      * @param idServiceBean
-     * @return   */
-    public boolean isIdentifierUniqueInDatabase(String userIdentifier, DataFile datafile, IdServiceBean idServiceBean) {
+     * @return  {@code true} iff the global identifier is unique.
+     */
+    public boolean isGlobalIdUnique(String userIdentifier, DataFile datafile, GlobalIdServiceBean idServiceBean) {
         String testProtocol = "";
         String testAuthority = "";
         if (datafile.getAuthority() != null){
@@ -1609,10 +1601,12 @@ public class DataFileServiceBean implements java.io.Serializable {
         } else {
             testProtocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol);
         }
-        String query = "SELECT d FROM DvObject d WHERE d.identifier = '" + userIdentifier + "'";
-        query += " and d.protocol ='" + testProtocol + "'";
-        query += " and d.authority = '" + testAuthority + "'";
-        boolean u = em.createQuery(query).getResultList().isEmpty();
+        
+        boolean u = em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
+            .setParameter("protocol", testProtocol)
+            .setParameter("authority", testAuthority)
+            .setParameter("identifier",userIdentifier)
+            .getResultList().isEmpty();
             
         try{
             if (idServiceBean.alreadyExists(datafile)) {
