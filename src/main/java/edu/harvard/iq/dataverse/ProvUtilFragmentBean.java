@@ -108,6 +108,9 @@ public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Ser
         } catch (ValidationException vx) {
             logger.info("Prov schema error : " + vx); //without classLoader is blows up in actual deployment
             return false;
+        } catch (Exception ex) {
+            logger.info("Prov file error : " + ex);
+            return false;
         } 
 
         return true;
