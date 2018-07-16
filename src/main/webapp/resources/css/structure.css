@@ -768,7 +768,7 @@ div[id$="filesTable"] .ui-paginator .ui-paginator-last {
     border-bottom-right-radius: 4px;
     margin-right: 20px;
 }
-div[id$="filesTable"] .ui-paginator [class^="ui-paginator-"]:not(.ui-state-active):hover {
+div[id$="filesTable"] .ui-paginator [class^="ui-paginator-"]:not(.ui-paginator-current):not(.ui-state-active):hover {
     background-color: rgb(238, 238, 238);
     border-color: rgb(221, 221, 221);
 }

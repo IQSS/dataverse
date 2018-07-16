@@ -178,13 +178,28 @@
                 </div>
             </div>
             
-            <div class="row" jsf:rendered="#{DatasetPage.selectedFiles.size() gt 1}">
+            <div class="row" jsf:rendered="#{DatasetPage.selectedFiles.size() gt 0}">
                 <div class="col-xs-12 bg-warning text-left" style="font-weight:normal;padding-top:.5em;">
                     <!-- SELECTION MESSAGE -->
+                    
+                    <!--
+                    return BundleUtil.getStringFromBundle("file.numFilesSelected", Arrays.asList(String.valueOf(selectedFiles.size())));
+                    return BundleUtil.getStringFromBundle("file.selectAllFiles", Arrays.asList(String.valueOf(fileMetadatasSearch.size())));
+                    -->
+                    
+                    
                     <p>
-                        <h:outputText value="#{DatasetPage.numFilesSelected}"/> 
-                        &#160;<p:commandLink rendered="#{DatasetPage.workingVersion.fileMetadatas.size() gt 1 and (DatasetPage.selectedFiles.size() le DatasetPage.workingVersion.fileMetadatas.size())}" value="#{DatasetPage.selectAllFilesText}" action="#{DatasetPage.selectAllFiles}" update="@form"/>
-                        &#160;<p:commandLink value="#{bundle['file.clearSelection']}" action="#{DatasetPage.clearSelection}" update="@form"/>
+                        <h:outputFormat value="#{bundle['file.numFilesSelected']}">
+                            <f:param value="#{DatasetPage.selectedFiles.size()}"/>
+                        </h:outputFormat>
+                        &#160;
+                        <p:commandLink rendered="#{DatasetPage.workingVersion.fileMetadatas.size() gt 1 and (DatasetPage.selectedFiles.size() le DatasetPage.workingVersion.fileMetadatas.size())}" action="#{DatasetPage.selectAllFiles}" update="@form">
+                            <h:outputFormat value="#{bundle['file.selectAllFiles']}">
+                                <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
+                            </h:outputFormat>
+                        </p:commandLink>
+                        &#160;
+                        <p:commandLink value="#{bundle['file.clearSelection']}" action="#{DatasetPage.clearSelection}" update="@form"/>
                     </p>
                 </div>
             </div>

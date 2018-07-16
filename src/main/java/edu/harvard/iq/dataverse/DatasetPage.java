@@ -4289,14 +4289,6 @@ public class DatasetPage implements java.io.Serializable {
         return "";
     }
 
-    public String getNumFilesSelected() {
-        return BundleUtil.getStringFromBundle("file.numFilesSelected", Arrays.asList(String.valueOf(selectedFiles.size())));
-    }
-
-    public String getSelectAllFilesText() {
-        return BundleUtil.getStringFromBundle("file.selectAllFiles", Arrays.asList(String.valueOf(fileMetadatasSearch.size())));
-    }
-
     public void selectAllFiles() {
         logger.info("selectAllFiles called");
         List<FileMetadata> allFiles = new ArrayList<>();
