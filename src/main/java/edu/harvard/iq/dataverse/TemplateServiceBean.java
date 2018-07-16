@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -55,16 +56,17 @@ public class TemplateServiceBean {
     
     public void incrementUsageCount(Long templateId) {
 
-        Long usageCount = (Long) em.createNativeQuery(
-                "select usageCount from  Template  "
-                + "WHERE id=" + templateId
-        ).getSingleResult();
-        
-        usageCount++;
-        
-        em.createNativeQuery(
-                "update Template SET  usagecount = " + usageCount + " "
-                + "WHERE id=" + templateId
-        ).executeUpdate();
+        // Use object instead of Native Queries to update count
+        //also catch/log exceptions so that create dataset will succeed
+        //Issue 4847 SEK 7/16/2018
+        try {
+            Template toUpdate = em.find(Template.class, templateId);
+            Long usage = toUpdate.getUsageCount();
+            usage++;
+            toUpdate.setUsageCount(usage);
+            em.merge(toUpdate);
+        } catch (Exception e) {
+            logger.log(Level.INFO, "Increment usage count failed on template id {0}. ", templateId);
+        }
     }
 }
