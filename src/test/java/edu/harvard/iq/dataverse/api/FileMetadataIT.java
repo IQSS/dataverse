@@ -125,11 +125,12 @@ public class FileMetadataIT {
             shouldFailDueToLeadingAndTrailingSeparators.prettyPrint();
             shouldFailDueToLeadingAndTrailingSeparators.then().assertThat()
                     // Note that the JSON under test actually exercises leading too but only the first (trailing) is exercised here.
-                    .body("message", equalTo("Validation failed: Directory Name cannot contain leading or trailing file separators. Invalid value: 'data/subdir1/'."))
+                    .body("message", equalTo("Validation Failed: Directory Name cannot contain leading or trailing file separators. (Invalid value:data/subdir1/)."))
                     // not sure why this changed from BAD_REQUEST to FORBIDDEN, perhaps the "API cleanup" at https://github.com/IQSS/dataverse/pull/3381
                     .statusCode(FORBIDDEN.getStatusCode());
 
             // create dataset and set id
+            System.out.println("Creating dataset....");
             dsId = given()
                     .header(keyString, token)
                     .body(IOUtils.toString(classLoader.getResourceAsStream("json/complete-dataset-with-files.json")))
@@ -137,6 +138,7 @@ public class FileMetadataIT {
                     .post("/api/dataverses/" + testName + "/datasets")
                     .then().assertThat().statusCode(201)
                     .extract().jsonPath().getInt("data.id");
+            System.out.println("Dataset created with id " + dsId);
             // check that both directory labels were persisted
             String dirLabel1 = given()
                     .header(keyString, token)

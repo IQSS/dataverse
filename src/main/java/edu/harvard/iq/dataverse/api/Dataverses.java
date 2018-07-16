@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
@@ -25,15 +26,16 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AddRoleAssigneesToExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetExplicitGroupCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ImportDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListExplicitGroupsCommand;
@@ -41,6 +43,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRolesCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveRoleAssigneesFromExplicitGroupCommand;
@@ -48,6 +52,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.StringUtil;
+import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
@@ -85,6 +92,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.util.Date;
+import java.util.Optional;
 
 /**
  * A REST API for dataverses.
@@ -94,11 +103,6 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 @Path("dataverses")
 public class Dataverses extends AbstractApiBean {
        
-    /**
-     * @deprecated switch to lower case "logger".
-     */
-    @Deprecated
-    private static final Logger LOGGER = Logger.getLogger(Dataverses.class.getName());
     private static final Logger logger = Logger.getLogger(Dataverses.class.getCanonicalName());
 
     @EJB
@@ -108,7 +112,7 @@ public class Dataverses extends AbstractApiBean {
     
 	@POST
 	public Response addRoot( String body ) {
-        LOGGER.info("Creating root dataverse");
+        logger.info("Creating root dataverse");
 		return addDataverse( body, "");
 	}
 	
@@ -122,10 +126,10 @@ public class Dataverses extends AbstractApiBean {
             dvJson = Json.createReader(rdr).readObject();
             d = jsonParser().parseDataverse(dvJson);
         } catch ( JsonParsingException jpe ) {
-            LOGGER.log(Level.SEVERE, "Json: {0}", body);
+            logger.log(Level.SEVERE, "Json: {0}", body);
             return error( Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         } catch (JsonParseException ex) {
-            Logger.getLogger(Dataverses.class.getName()).log(Level.SEVERE, "Error parsing dataverse from json: " + ex.getMessage(), ex);
+            logger.log(Level.SEVERE, "Error parsing dataverse from json: " + ex.getMessage(), ex);
             return error( Response.Status.BAD_REQUEST,
                     "Error parsing the POSTed json into a dataverse: " + ex.getMessage() );
         }
@@ -164,7 +168,7 @@ public class Dataverses extends AbstractApiBean {
                     }
                     String error = sb.toString();
                     if (!error.isEmpty()) {
-                        LOGGER.log(Level.INFO, error);
+                        logger.log(Level.INFO, error);
                         return ww.refineResponse(error);
                     }
             return ww.getResponse();
@@ -185,10 +189,10 @@ public class Dataverses extends AbstractApiBean {
                     }
                 }
             }
-            LOGGER.log(Level.SEVERE, sb.toString());
+            logger.log(Level.SEVERE, sb.toString());
             return error( Response.Status.INTERNAL_SERVER_ERROR, "Error creating dataverse: " + sb.toString() );
         } catch ( Exception ex ) {
-			LOGGER.log(Level.SEVERE, "Error creating dataverse", ex);
+			logger.log(Level.SEVERE, "Error creating dataverse", ex);
 			return error( Response.Status.INTERNAL_SERVER_ERROR, "Error creating dataverse: " + ex.getMessage() );
             
         }
@@ -200,54 +204,29 @@ public class Dataverses extends AbstractApiBean {
         try {
             User u = findUserOrDie();
             Dataverse owner = findDataverseOrDie(parentIdtf);
-            
-            JsonObject json;
-            try ( StringReader rdr = new StringReader(jsonBody) ) {
-                json = Json.createReader(rdr).readObject();
-            } catch ( JsonParsingException jpe ) {
-                LOGGER.log(Level.SEVERE, "Json: {0}", jsonBody);
-                return error( Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
-            }
-            
-            Dataset ds = new Dataset();
+            Dataset ds = parseDataset(jsonBody);
             ds.setOwner(owner);
-          
-            JsonObject jsonVersion = json.getJsonObject("datasetVersion");
-            if ( jsonVersion == null) {
-                return error(Status.BAD_REQUEST, "Json POST data are missing datasetVersion object.");
-            }
-            try {
-                try {
-                    DatasetVersion version = new DatasetVersion();
-                    version.setDataset(ds);
-                    // Use the two argument version so that the version knows which dataset it's associated with.
-                    version = jsonParser().parseDatasetVersion(jsonVersion, version);
-                    
-                    // force "initial version" properties
-                    version.setMinorVersionNumber(null);
-                    version.setVersionNumber(null);
-                    version.setVersionState(DatasetVersion.VersionState.DRAFT);
-                    LinkedList<DatasetVersion> versions = new LinkedList<>();
-                    versions.add(version);
-                    version.setDataset(ds);
-                    
-                    ds.setVersions( versions );
-                } catch ( javax.ejb.TransactionRolledbackLocalException rbe ) {
-                    throw rbe.getCausedByException();
-                }
-            } catch (JsonParseException ex) {
-                LOGGER.log( Level.INFO, "Error parsing dataset version from Json", ex);
-                return error(Status.BAD_REQUEST, "Error parsing datasetVersion: " + ex.getMessage() );
-            } catch ( Exception e ) {
-                LOGGER.log( Level.WARNING, "Error parsing dataset version from Json", e);
-                return error(Status.INTERNAL_SERVER_ERROR, "Error parsing datasetVersion: " + e.getMessage() );
+            
+            if ( ds.getVersions().isEmpty() ) {
+                return badRequest("Please provide initial version in the dataset json");
             }
             
-            Dataset managedDs = execCommand(new CreateDatasetCommand(ds, createDataverseRequest(u)));
+            // clean possible version metadata
+            DatasetVersion version = ds.getVersions().get(0); 
+            version.setMinorVersionNumber(null);
+            version.setVersionNumber(null);
+            version.setVersionState(DatasetVersion.VersionState.DRAFT);
+                
+            ds.setAuthority(null);
+            ds.setIdentifier(null);
+            ds.setProtocol(null);
+            ds.setGlobalIdCreateTime(null);
+            
+            Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
             return created("/datasets/" + managedDs.getId(),
                     Json.createObjectBuilder()
                             .add("id", managedDs.getId())
-                            .add("persistentId", managedDs.getGlobalId())
+                            .add("persistentId", managedDs.getGlobalIdString())
             );
                 
         } catch ( WrappedResponse ex ) {
@@ -255,6 +234,80 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 	
+    
+    @POST
+    @Path("{identifier}/datasets/:import")
+    public Response importDataset( String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam ) {
+        try {
+            User u = findUserOrDie();
+            Dataverse owner = findDataverseOrDie(parentIdtf);
+            Dataset ds = parseDataset(jsonBody);
+            ds.setOwner(owner);
+            
+            if ( ds.getVersions().isEmpty() ) {
+                return badRequest("Supplied json must contain a single dataset version.");
+            }
+            
+            DatasetVersion version = ds.getVersions().get(0);
+            if ( version.getVersionState() == null ) {
+                version.setVersionState(DatasetVersion.VersionState.DRAFT);
+            }
+            
+            if ( nonEmpty(pidParam) ) {
+                Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
+                if ( maybePid.isPresent() ) {
+                    ds.setGlobalId(maybePid.get());
+                } else {
+                    // unparsable PID passed. Terminate.
+                    return badRequest("Cannot parse the PID parameter '" + pidParam + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
+                }
+            }
+            
+            if ( ds.getIdentifier() == null ) {
+                return badRequest("Please provide a persistent identifier, either by including it in the JSON, or by using the pid query parameter.");
+            }
+            boolean shouldRelease = StringUtil.isTrue(releaseParam);
+            DataverseRequest request = createDataverseRequest(u);
+            
+            if ( shouldRelease ) {
+                DatasetVersion latestVersion = ds.getLatestVersion();
+                latestVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+                latestVersion.setVersionNumber(1l);
+                latestVersion.setMinorVersionNumber(0l);
+                if ( latestVersion.getCreateTime() != null ) {
+                    latestVersion.setCreateTime(new Date());
+                }
+                if ( latestVersion.getLastUpdateTime() != null ) {
+                    latestVersion.setLastUpdateTime(new Date() );
+                }
+            }
+            
+            Dataset managedDs = execCommand(new ImportDatasetCommand(ds, request));
+            JsonObjectBuilder responseBld = Json.createObjectBuilder()
+                    .add("id", managedDs.getId())
+                    .add("persistentId", managedDs.getGlobalIdString());
+            
+            if ( shouldRelease ) {
+                PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
+                responseBld.add("releaseCompleted", res.isCompleted());
+            }
+            
+            return created("/datasets/" + managedDs.getId(), responseBld);
+                
+        } catch ( WrappedResponse ex ) {
+            return ex.getResponse();
+        }
+    }
+    
+    private Dataset parseDataset(String datasetJson ) throws WrappedResponse {
+        try ( StringReader rdr = new StringReader(datasetJson) ) {
+            return jsonParser().parseDataset(Json.createReader(rdr).readObject());
+        } catch ( JsonParsingException | JsonParseException jpe ) {
+            logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", datasetJson);
+            throw new WrappedResponse( error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage()) );
+        }
+    }
+    
 	@GET
 	@Path("{identifier}")
 	public Response viewDataverse( @PathParam("identifier") String idtf ) {
@@ -610,7 +663,7 @@ public class Dataverses extends AbstractApiBean {
 			return ok(json(execCommand(new AssignRoleCommand(assignee, theRole, dataverse, req, privateUrlToken))));
 			
 		} catch (WrappedResponse ex) {
-			LOGGER.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
+			logger.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
 			return ex.getResponse();
 		}
 	}
