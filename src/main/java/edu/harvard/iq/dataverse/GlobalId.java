@@ -13,6 +13,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.ejb.EJB;
 
 /**
@@ -25,6 +27,7 @@ public class GlobalId implements java.io.Serializable {
     public static final String HDL_PROTOCOL = "hdl";
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
     public static final String DOI_RESOLVER_URL = "https://doi.org/";
+    public static final String DISALLOWED_CHARACTERS = ".*[<>()].*";
     
     public static Optional<GlobalId> parse(String identifierString) {
         try {
@@ -226,6 +229,11 @@ public class GlobalId implements java.io.Serializable {
         
         return true;
     }
-    
-    
+
+    public static boolean hasDisallowedImportCharacters(String pidParam) {
+        Pattern p = Pattern.compile(DISALLOWED_CHARACTERS);
+        Matcher m = p.matcher(pidParam);
+        return m.matches();
+    }
+
 }

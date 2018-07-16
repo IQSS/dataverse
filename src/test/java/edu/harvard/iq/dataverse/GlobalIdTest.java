@@ -108,5 +108,16 @@ public class GlobalIdTest {
         assertFalse( new GlobalId( null, "10.123", "123").isComplete() );
         assertTrue( new GlobalId( "doi", "10.123", "123").isComplete() );
     }
-   
+
+    @Test
+    public void testDisallowedCharacters() {
+        assertFalse(GlobalId.hasDisallowedImportCharacters("doi:10.5072/FK2/Q1RSNG"));
+        assertTrue(GlobalId.hasDisallowedImportCharacters("<"));
+        assertTrue(GlobalId.hasDisallowedImportCharacters("foo<"));
+        assertTrue(GlobalId.hasDisallowedImportCharacters("<foo"));
+        assertTrue(GlobalId.hasDisallowedImportCharacters(">"));
+        assertTrue(GlobalId.hasDisallowedImportCharacters("("));
+        assertTrue(GlobalId.hasDisallowedImportCharacters(")"));
+        assertTrue(GlobalId.hasDisallowedImportCharacters("doi:10.5072/FK2/(sici)1099-1409(199908/10)3:6/7<672::aid-jpp192>3.0.co;2-8"));
+    }
 }
