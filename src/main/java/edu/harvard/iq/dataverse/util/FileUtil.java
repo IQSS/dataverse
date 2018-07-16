@@ -122,7 +122,7 @@ public class FileUtil implements java.io.Serializable  {
     public static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
     public static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
     
-    public static final String MIME_TYPE_TAB   = "text/tab-separated-values";
+    public static final String MIME_TYPE_TSV   = "text/tab-separated-values";
     
     public static final String MIME_TYPE_FITS  = "application/fits";
     
