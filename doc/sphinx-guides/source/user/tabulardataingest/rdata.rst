@@ -174,13 +174,13 @@ discussed in depth on R-related forums, and no attempt is made to
 summarize it all in any depth here; this is just to made you aware of
 this being a potentially complex issue!)
 
-An important thing to keep in mind, in connection with the DVN ingest
+An important thing to keep in mind, in connection with the Dataverse ingest
 of R files, is that it will **reject** an R data file with any time
 values that have time zones that we can't recognize. This is done in
 order to avoid (some) of the potential issues outlined above.
 
 It is also recommended that any vectors containing time values
-ingested into the DVN are reviewed, and the resulting entries in the
+ingested into the Dataverse are reviewed, and the resulting entries in the
 TAB files are compared against the original values in the R data
 frame, to make sure they have been ingested as expected. 
 
