@@ -10,13 +10,13 @@
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-    
+ 
     <!-- Files Table -->
     <p:dataTable id="filesTable" 
                  
-                 rows="10" paginator="true" 
+                 rows="10" paginator="#{DatasetPage.workingVersion.fileMetadatas.size() gt 10}" paginatorPosition="bottom"
                  
-                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} #{bundle['file.dynamicCounter.filesPerPage']} {RowsPerPageDropdown} {UploadButtonBlock}"
+                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} #{bundle['file.dynamicCounter.filesPerPage']} {RowsPerPageDropdown} {TestCustomBlock}"
                  rowsPerPageTemplate="10,25,50"
                  currentPageReportTemplate="{startRecord} #{bundle['file.dynamicCounter.to']} {endRecord} #{bundle['file.dynamicCounter.of']} {totalRecords} #{bundle['file.dynamicCounter.files']}"
                          
@@ -33,33 +33,8 @@
         <p:ajax event="rowUnselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
         <p:ajax event="rowDblselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this"/>
         
-        <f:facet name="paginatorTopLeft">
-            <h:outputText value="TEST"/>
-        </f:facet>
-        
-        <f:facet name="{UploadButtonBlock}">
-            <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->
-            <!-- tab-header pull-right -->
-            <span jsf:id="uploadComputeBlock" class=""
-                 jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
-                                 and (DatasetPage.canUpdateDataset()
-                                 or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
-                <p:commandLink type="button" styleClass="btn btn-default btn-access  #{DatasetPage.workingVersion.fileMetadatas.size() > 0 or DatasetPage.lockedFromEdits ? 'disabled' : ''}" title="#{bundle['file.uploadFiles']}" onclick="PF('rsyncUpload_popup').show()"
-                                rendered="#{DatasetPage.sessionUserAuthenticated 
-                                            and DatasetPage.canUpdateDataset()
-                                            and !widgetWrapper.widgetView and settingsWrapper.rsyncUpload}">
-                    <!-- RSYNC UPLOAD FILES BUTTON -->
-                    <span class="glyphicon glyphicon-plus"/> <h:outputText value="#{bundle['file.uploadFiles']}"/>
-                </p:commandLink>
-                <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
-                              type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits ? 'ui-state-disabled' : ''}"
-                              disabled="#{DatasetPage.lockedFromEdits}" rendered="#{DatasetPage.sessionUserAuthenticated 
-                                                                            and DatasetPage.canUpdateDataset()
-                                                                            and !widgetWrapper.widgetView and !settingsWrapper.rsyncUpload}">
-                    <!-- UPLOAD FILES BUTTON -->
-                    <span class="glyphicon #{DatasetPage.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
-                </h:outputLink>
-            </span>
+        <f:facet name="{TestCustomBlock}">
+            <!-- TESTCUSTOM -->
         </f:facet>
         
         <f:facet name="header">
@@ -122,48 +97,46 @@
                 </div>
             </div>
             <div class="row" style="margin-bottom:6px;">
-                <div id="filesHeaderCount" class="col-xs-2 text-left">
+                <div id="filesHeaderCount" class="col-xs-3 text-left">
                     
+                    <!-- TESTLEFT > COUNTER -->
                     
                     <ui:remove>
-                    
                     <!-- Files Count -->
                     <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold">
                         <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
                     </h:outputFormat>
-                    
-                    
                     </ui:remove>
                     
                 </div>
 
-                <div id="filesButtons" class="col-xs-10">
+                <div id="filesButtons" class="col-xs-9">
                     
-                    <!-- UPLOAD REMOVED -->
-
-                    <div jsf:id="restrictDeleteBlock" class="button-block pull-right text-right"
-                         jsf:rendered="#{DatasetPage.editMode == 'CREATE' and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
-                        <div class="btn-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
-                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                                <li>
-                                    <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(true)}">
-                                        <h:outputText value="#{bundle['file.restrict']}"/>
-                                    </p:commandLink>
-                                </li>
-                                <li>
-                                    <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(false)}">
-                                        <h:outputText value="#{bundle['file.unrestrict']}"/>
-                                    </p:commandLink>
-                                </li>
-                            </ul>
-                        </div>
-                        <p:commandLink type="button" styleClass="btn btn-default" title="#{bundle['file.delete']}" onclick="checkFilesSelected();">
-                            <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']} 
+                    <!-- TESTRIGHT > COMPUTE.RESTRICT.SORT -->
+                    
+                    <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->
+                    <!-- tab-header pull-right -->
+                    <div jsf:id="uploadComputeBlock" class="pull-right"
+                          jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
+                                         and (DatasetPage.canUpdateDataset()
+                                         or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
+                        <p:commandLink type="button" styleClass="btn btn-default btn-access  #{DatasetPage.workingVersion.fileMetadatas.size() > 0 or DatasetPage.lockedFromEdits ? 'disabled' : ''}" title="#{bundle['file.uploadFiles']}" onclick="PF('rsyncUpload_popup').show()"
+                                        rendered="#{DatasetPage.sessionUserAuthenticated 
+                                                    and DatasetPage.canUpdateDataset()
+                                                    and !widgetWrapper.widgetView and settingsWrapper.rsyncUpload}">
+                            <!-- RSYNC UPLOAD FILES BUTTON -->
+                            <span class="glyphicon glyphicon-plus"/> <h:outputText value="#{bundle['file.uploadFiles']}"/>
                         </p:commandLink>
+                        <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
+                                      type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits ? 'ui-state-disabled' : ''}"
+                                      disabled="#{DatasetPage.lockedFromEdits}" rendered="#{DatasetPage.sessionUserAuthenticated 
+                                                                                    and DatasetPage.canUpdateDataset()
+                                                                                    and !widgetWrapper.widgetView and !settingsWrapper.rsyncUpload}">
+                            <!-- UPLOAD FILES BUTTON -->
+                            <span class="glyphicon #{DatasetPage.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
+                        </h:outputLink>
                     </div>
+
                     <div id="sortBlock" class="button-block btn-group pull-right" jsf:rendered="#{DatasetPage.sortButtonEnabled and DatasetPage.fileMetadatas.size() gt 1}">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                             <!--SORT BUTTON-->
@@ -205,19 +178,20 @@
                 </div>
             </div>
             
-            
-            <div class="row">
+            <div class="row" jsf:rendered="#{DatasetPage.selectedFiles.size() gt 1}">
                 <div class="col-xs-12 bg-warning text-left" style="font-weight:normal;padding-top:.5em;">
-                    <p><h:outputText value="#{DatasetPage.numFilesSelected}"/><p:commandLink value="#{DatasetPage.selectAllFilesText}" action="#{DatasetPage.selectAllFiles}" update="@form"/>. <p:commandLink value="#{bundle['file.clearSelection']}" action="#{DatasetPage.clearSelection}" update="@form"/>.</p>
+                    <!-- SELECTION MESSAGE -->
+                    <p>
+                        <h:outputText value="#{DatasetPage.numFilesSelected}"/> 
+                        &#160;<p:commandLink rendered="#{DatasetPage.workingVersion.fileMetadatas.size() gt 1 and (DatasetPage.selectedFiles.size() le DatasetPage.workingVersion.fileMetadatas.size())}" value="#{DatasetPage.selectAllFilesText}" action="#{DatasetPage.selectAllFiles}" update="@form"/>
+                        &#160;<p:commandLink value="#{bundle['file.clearSelection']}" action="#{DatasetPage.clearSelection}" update="@form"/>
+                    </p>
                 </div>
             </div>
-            
-            
         </f:facet>
         
         <p:column selectionMode="multiple" class="text-center" style="width:20px !important;"  />
         <p:column class="col-file-thumb" style="width:64px !important;">
-            
             <div class="thumbnail-block text-center">
                 <!-- Thumbnail Preview -->
                 <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and DatasetPage.isThumbnailAvailable(fileMetadata)}"
@@ -243,10 +217,8 @@
                     <span class="icon-unlock text-success"/>
                 </div>
             </div>
-            
         </p:column>
         <p:column class="col-file-metadata">
-            
             <ui:fragment rendered="#{!empty fileMetadata.dataFile.globalId}">
                 <!-- rendered="# {!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" -->
                 <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(fileMetadata.dataFile.globalId).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
@@ -299,7 +271,6 @@
                     </ui:repeat>
                 </ui:fragment>
             </div>
-
         </p:column>
         <p:column class="col-file-action text-right #{settingsWrapper.rsyncDownload ? 'col-file-access' : ''}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
             <f:facet name="header" class="col-file-action text-right">
@@ -345,8 +316,6 @@
                     <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
                 </div>
                 
-                
-                
                 <!-- DOWNLOAD -->
                 <div jsf:id="downloadButtonBlock" class="btn-group" 
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
@@ -386,14 +355,13 @@
             </div>
             
             <!---Modular configure-->
-            
-                <ui:fragment rendered="#{!widgetWrapper.widgetView and DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset() and (DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id).size() > 0 or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
-                    <ui:include src="file-configure-dropdown-fragment.xhtml">
-                        <ui:param name="configureTools" value="#{DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id)}"/>
-                        <ui:param name="fileId" value="#{fileMetadata.dataFile.id}"/>
-                        <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
-                    </ui:include>
-                </ui:fragment>
+            <ui:fragment rendered="#{!widgetWrapper.widgetView and DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset() and (DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id).size() > 0 or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+                <ui:include src="file-configure-dropdown-fragment.xhtml">
+                    <ui:param name="configureTools" value="#{DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                    <ui:param name="fileId" value="#{fileMetadata.dataFile.id}"/>
+                    <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
+                </ui:include>
+            </ui:fragment>
 
             <div class="btn-group" jsf:rendered="#{!settingsWrapper.rsyncDownload}">
                 <ui:include src="file-download-button-fragment.xhtml">
@@ -418,76 +386,5 @@
                 </ui:include>
             </div>
         </p:column>
-    </p:dataTable>
-    
-        <style>
-            div[id$="dataFilesTab"] div.ui-paginator.ui-widget-header{
-                font-weight: normal;
-                background: none;
-                border: 0;
-            }
-            div[id$="dataFilesTab"] div.ui-paginator span.ui-paginator-pages{
-                padding: 0;
-                margin-right: 0;
-            }
-            div[id$="dataFilesTab"] span.ui-corner-all[class^="ui-paginator"]{
-                padding-top: 6px;
-                padding-right: 12px;
-                padding-bottom: 6px;
-                padding-left: 12px;
-                margin-left: -1px;
-                margin-right: 0;
-                line-height: 1.42857143;
-                color: rgb(51, 122, 183);
-                text-decoration: none;
-                background: none;
-                background-color: rgb(255, 255, 255);
-                border-top-width: 1px;
-                border-right-width: 1px;
-                border-bottom-width: 1px;
-                border-left-width: 1px;
-                border-top-style: solid;
-                border-right-style: solid;
-                border-bottom-style: solid;
-                border-left-style: solid;
-                border-top-color: rgb(221, 221, 221);
-                border-right-color: rgb(221, 221, 221);
-                border-bottom-color: rgb(221, 221, 221);
-                border-left-color: rgb(221, 221, 221);
-                border-image-source: initial;
-                border-image-slice: initial;
-                border-image-width: initial;
-                border-image-outset: initial;
-                border-image-repeat: initial;
-                border-radius: 0;
-            }
-            div[id$="dataFilesTab"] span.ui-corner-all[class^="ui-paginator"]:not(.ui-state-active):hover{
-                color: rgb(35, 82, 124);
-                background-color: rgb(238, 238, 238);
-                border-top-color: rgb(221, 221, 221);
-                border-right-color: rgb(221, 221, 221);
-                border-bottom-color: rgb(221, 221, 221);
-                border-left-color: rgb(221, 221, 221);
-            }
-            div[id$="dataFilesTab"] span.ui-paginator-first.ui-corner-all[class^="ui-paginator"]{
-                border-top-left-radius: 4px;
-                border-bottom-left-radius: 4px;
-            }
-            div[id$="dataFilesTab"] span.ui-paginator-last.ui-corner-all[class^="ui-paginator"]{
-                border-top-right-radius: 4px;
-                border-bottom-right-radius: 4px;
-                margin-right: 20px;
-            }
-            div[id$="dataFilesTab"] span.ui-state-active[class^="ui-paginator"]{
-                box-shadow: none;
-                color: rgb(255, 255, 255);
-                cursor: default;
-                background-color: rgb(51, 122, 183);
-                border-top-color: rgb(51, 122, 183);
-                border-right-color: rgb(51, 122, 183);
-                border-bottom-color: rgb(51, 122, 183);
-                border-left-color: rgb(51, 122, 183);
-            }
-        </style>
-    
+    </p:dataTable>    
 </ui:composition>

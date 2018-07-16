@@ -720,7 +720,65 @@ div[id$="filesTable"].ui-datatable.ui-datatable-scrollable {padding-right:12px;}
 #file-replace-original-block div[id$="filesTable"] .col-file-metadata {padding:4px 10px;}
 
 /* HACK */
-div[id$="filesTable"] div.ui-datatable-scrollable-body > table, div[id$="filesTable"] div.ui-datatable-tablewrapper > table {margin-bottom:140px;}
+/* div[id$="filesTable"] div.ui-datatable-scrollable-body > table, div[id$="filesTable"] div.ui-datatable-tablewrapper > table {margin-bottom:140px;} */
+
+/* PAGINATION */
+div[id$="filesTable"] .ui-paginator {
+    font-weight: normal;
+    background: none;
+    border: 0;
+    margin-top:6px;
+}
+div[id$="filesTable"] .ui-paginator .ui-paginator-pages {
+    padding: 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+div[id$="filesTable"] .ui-paginator .ui-paginator-page, 
+div[id$="filesTable"] .ui-paginator .ui-paginator-next, 
+div[id$="filesTable"] .ui-paginator .ui-paginator-last, 
+div[id$="filesTable"] .ui-paginator .ui-paginator-first, 
+div[id$="filesTable"] .ui-paginator .ui-paginator-prev {
+    display: inline-block;
+    padding: 6px 12px;
+    zoom: 1;
+    margin-left: -1px;
+    margin-right: 0;
+    line-height: 1.42857143;
+    color: rgb(51, 122, 183);
+    text-decoration: none;
+
+    background: none;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid rgb(221, 221, 221);
+
+    border-radius: 0;
+    outline: 0;
+}
+div[id$="filesTable"] .ui-paginator .ui-paginator-current {
+    font-weight: bold;
+}
+div[id$="filesTable"] .ui-paginator .ui-paginator-first {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    margin-left: 20px;
+}
+div[id$="filesTable"] .ui-paginator .ui-paginator-last {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    margin-right: 20px;
+}
+div[id$="filesTable"] .ui-paginator [class^="ui-paginator-"]:not(.ui-state-active):hover {
+    background-color: rgb(238, 238, 238);
+    border-color: rgb(221, 221, 221);
+}
+div[id$="filesTable"] .ui-paginator .ui-paginator-pages .ui-state-active {
+    box-shadow: none !important;
+    color: rgb(255, 255, 255);
+    cursor: default;
+    background-color: rgb(51, 122, 183);
+    border-color: rgb(51, 122, 183);
+}
 
 span.ingest-warning {display:inline-block; font-size:24px; line-height:1; vertical-align: middle;}
 span.ingest-warning span.glyphicon {top:3px} 
