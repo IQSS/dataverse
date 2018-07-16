@@ -1073,8 +1073,7 @@ public class FileUtil implements java.io.Serializable  {
                 return true;
             default:
                 return false;
-
-        return false;
+        }
     }
     
     public static String getFilesTempDirectory() {
