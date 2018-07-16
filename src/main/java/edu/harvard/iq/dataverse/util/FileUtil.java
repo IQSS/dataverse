@@ -104,6 +104,7 @@ public class FileUtil implements java.io.Serializable  {
         STATISTICAL_FILE_EXTENSION.put("sas", "application/x-sas-syntax");
         STATISTICAL_FILE_EXTENSION.put("sps", "application/x-spss-syntax");
         STATISTICAL_FILE_EXTENSION.put("csv", "text/csv");
+        STATISTICAL_FILE_EXTENSION.put("tsv", "text/tsv");
     }
     
     private static MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
@@ -121,7 +122,7 @@ public class FileUtil implements java.io.Serializable  {
     public static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
     public static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
     
-    public static final String MIME_TYPE_TAB   = "text/tab-separated-values";
+    public static final String MIME_TYPE_TSV   = "text/tab-separated-values";
     
     public static final String MIME_TYPE_FITS  = "application/fits";
     
@@ -470,34 +471,6 @@ public class FileUtil implements java.io.Serializable  {
         }
         logger.fine("end isGraphML()");
         return isGraphML;
-    }
-    
-    /**
-     * The number of bytes in a kilobyte, megabyte and gigabyte:
-     */
-    public static final long ONE_KB = 1024;
-    public static final long ONE_MB = ONE_KB * ONE_KB;
-    public static final long ONE_GB = ONE_KB * ONE_MB;
- 
-    public static String getFriendlySize(Long filesize) {
-        if (filesize == null || filesize < 0) {
-            return "unknown";
-        }
-
-        long bytesize = filesize;
-        String displaySize;
-
-        if (bytesize / ONE_GB > 0) {
-            displaySize = String.valueOf(bytesize / ONE_GB) + "." + String.valueOf((bytesize % ONE_GB) / (100 * ONE_MB)) + " GB";
-        } else if (bytesize / ONE_MB > 0) {
-            displaySize = String.valueOf(bytesize / ONE_MB) + "." + String.valueOf((bytesize % ONE_MB) / (100 * ONE_KB)) + " MB";
-        } else if (bytesize / ONE_KB > 0) {
-            displaySize = String.valueOf(bytesize / ONE_KB) + "." + String.valueOf((bytesize % ONE_KB) / 100) + " KB";
-        } else {
-            displaySize = String.valueOf(bytesize) + " bytes";
-        }
-        return displaySize;
-
     }
 
     // from MD5Checksum.java
@@ -1068,7 +1041,7 @@ public class FileUtil implements java.io.Serializable  {
         return datestampedFolder;        
     }
     
-    public static boolean ingestableAsTabular(DataFile dataFile) {
+    public static boolean CanIngestAsTabular(DataFile dataFile) {
         String mimeType = dataFile.getContentType();
         
         return ingestableAsTabular(mimeType);
@@ -1087,27 +1060,20 @@ public class FileUtil implements java.io.Serializable  {
             return false;
         }
         
-        if (mimeType.equals(MIME_TYPE_STATA)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_STATA13)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_STATA14)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_STATA15)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_RDATA)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_CSV) || mimeType.equals(MIME_TYPE_CSV_ALT)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_XLSX)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_SPSS_SAV)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_SPSS_POR)) {
-            return true;
+        switch (mimeType) {
+            case MIME_TYPE_STATA:
+            case MIME_TYPE_STATA13:
+            case MIME_TYPE_RDATA:
+            case MIME_TYPE_CSV:
+            case MIME_TYPE_CSV_ALT:
+            case MIME_TYPE_TSV:
+            case MIME_TYPE_XLSX:
+            case MIME_TYPE_SPSS_SAV:
+            case MIME_TYPE_SPSS_POR:
+                return true;
+            default:
+                return false;
         }
-
-        return false;
     }
     
     public static String getFilesTempDirectory() {
