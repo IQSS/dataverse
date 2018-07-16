@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.StringReader;
 import java.util.HashMap;
@@ -123,7 +123,7 @@ public class Prov extends AbstractApiBean {
                 return error(BAD_REQUEST, BundleUtil.getStringFromBundle("api.prov.error.badDataFileId"));
             }
             execCommand(new PersistProvFreeFormCommand(dr, dataFile, provFreeForm));
-            execCommand(new UpdateDatasetCommand(dataFile.getOwner(), dr));
+            execCommand(new UpdateDatasetVersionCommand(dataFile.getOwner(), dr));
             dataFile = findDataFileOrDie(idSupplied);
             JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
             jsonResponse.add("message", "Free-form provenance data saved for Data File : " + dataFile.getFileMetadata().getProvFreeForm());

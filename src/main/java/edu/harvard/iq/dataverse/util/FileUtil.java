@@ -111,6 +111,8 @@ public class FileUtil implements java.io.Serializable  {
     
     public static final String MIME_TYPE_STATA = "application/x-stata";
     public static final String MIME_TYPE_STATA13 = "application/x-stata-13";
+    public static final String MIME_TYPE_STATA14 = "application/x-stata-14";
+    public static final String MIME_TYPE_STATA15 = "application/x-stata-15";
     public static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
     
     public static final String MIME_TYPE_CSV   = "text/csv";
@@ -607,11 +609,11 @@ public class FileUtil implements java.io.Serializable  {
                         || suppliedContentType.equals("")
                         || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
                         || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
-                        || (ingestableAsTabular(suppliedContentType)
+                        || (canIngestAsTabular(suppliedContentType)
                             && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV)
                             && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV_ALT)
                             && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_XLSX))
-                        || ingestableAsTabular(recognizedType)
+                        || canIngestAsTabular(recognizedType)
                         || recognizedType.equals("application/fits-gzipped")
                         || recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
                         || recognizedType.equals(MIME_TYPE_ZIP)) {
@@ -1039,13 +1041,13 @@ public class FileUtil implements java.io.Serializable  {
         return datestampedFolder;        
     }
     
-    public static boolean CanIngestAsTabular(DataFile dataFile) {
+    public static boolean canIngestAsTabular(DataFile dataFile) {
         String mimeType = dataFile.getContentType();
         
-        return ingestableAsTabular(mimeType);
+        return canIngestAsTabular(mimeType);
     } 
     
-    public static boolean ingestableAsTabular(String mimeType) {
+    public static boolean canIngestAsTabular(String mimeType) {
         /* 
          * In the final 4.0 we'll be doing real-time checks, going through the 
          * available plugins and verifying the lists of mime types that they 
@@ -1061,6 +1063,8 @@ public class FileUtil implements java.io.Serializable  {
         switch (mimeType) {
             case MIME_TYPE_STATA:
             case MIME_TYPE_STATA13:
+            case MIME_TYPE_STATA14:
+            case MIME_TYPE_STATA15:
             case MIME_TYPE_RDATA:
             case MIME_TYPE_CSV:
             case MIME_TYPE_CSV_ALT:

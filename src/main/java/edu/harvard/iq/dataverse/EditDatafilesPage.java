@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -1198,8 +1198,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                         
             Command<Dataset> cmd;
             try {
-                cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
-                ((UpdateDatasetCommand) cmd).setValidateLenient(true);
+                cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
+                ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
                 dataset = commandEngine.submit(cmd);
             
             } catch (EJBException ex) {
@@ -1375,12 +1375,12 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     
     private String returnToDraftVersion(){      
-         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&version=DRAFT&faces-redirect=true";    
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&version=DRAFT&faces-redirect=true";    
     }
     
     private String returnToDatasetOnly(){
          dataset = datasetService.find(dataset.getId());
-         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId()  +  "&faces-redirect=true";       
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString()  +  "&faces-redirect=true";       
     }
     
     private String returnToFileLandingPage() {

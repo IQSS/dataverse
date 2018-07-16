@@ -75,12 +75,10 @@ public class DataFile extends DvObject implements Comparable {
     
     public static final Long ROOT_DATAFILE_ID_DEFAULT = (long) -1;
     
-    private String name;
-    
     @Expose
     @NotBlank
     @Column( nullable = false )
-    @Pattern(regexp = "^.*/.*$", message = "Content-Type must contain a slash")
+    @Pattern(regexp = "^.*/.*$", message = "{contenttype.slash}")
     private String contentType;
     
 
@@ -236,16 +234,6 @@ public class DataFile extends DvObject implements Comparable {
         this.previousDataFileId = null;
     }
     
-    // The dvObject field "name" should not be used in
-    // datafile objects.
-    // The file name must be stored in the file metadata.
-    @Deprecated
-    public DataFile(String name, String contentType) {
-        this.name = name;
-        this.contentType = contentType;
-        this.fileMetadatas = new ArrayList<>();
-    }    
-    
     @Override
     public boolean isEffectivelyPermissionRoot() {
         return false;
@@ -311,30 +299,6 @@ public class DataFile extends DvObject implements Comparable {
         }
         return builder;
     }
-
-    /**
-     * Return a list of Tag labels
-     * 
-     * If there are none, return an empty list
-     * 
-     * @return 
-     */
-    /*
-    public List<String> getTagsLabelsOnly() {
-        
-        List<DataFileTag> tags = this.getTags();
-        
-        if (tags == null){
-            return new ArrayList<String>();
-        }
-        
-        return tags.stream()
-                        .map(x -> x.getTypeLabel())
-                        .collect(Collectors.toList())
-                    ;
-    }
-    */
-    
     public void setTags(List<DataFileTag> dataFileTags) {
         this.dataFileTags = dataFileTags;
     }
@@ -414,19 +378,6 @@ public class DataFile extends DvObject implements Comparable {
      */
     public String getOriginalFormatLabel() {
         return FileUtil.getUserFriendlyOriginalType(this);
-    }
-   
-    // The dvObject field "name" should not be used in
-    // datafile objects.
-    // The file name must be stored in the file metadata.
-    @Deprecated
-    public String getName() {
-        return name;
-    }
-
-    @Deprecated
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getContentType() {
@@ -753,7 +704,8 @@ public class DataFile extends DvObject implements Comparable {
 
     @Override
     protected String toStringExtras() {
-        return "name:" + getName();
+        FileMetadata fmd = getLatestFileMetadata();
+        return "label:" + (fmd!=null? fmd.getLabel() : "[no metadata]");
     }
 	
 	@Override
@@ -761,31 +713,15 @@ public class DataFile extends DvObject implements Comparable {
 		return v.visit(this);
 	}
         
+    @Override
     public String getDisplayName() {
-        // @todo should we show the published version label instead?
-        // currently this method is not being used
        return getLatestFileMetadata().getLabel(); 
-       /*
-       Taking out null check to see if npe persists.
-       Really shouldn't need it 
-       a file should always have a latest metadata
-       
-               ////if (getLatestFileMetadata() != null) {
-           return getLatestFileMetadata().getLabel(); 
-       // }
-       // logger.fine("DataFile getLatestFileMetadata is null for DataFile id = " + this.getId());
-       // return "";
-       
-       */
-
-
     }
     
     @Override
     public int compareTo(Object o) {
         DataFile other = (DataFile) o;
         return this.getDisplayName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
-
     }
     
     /**
@@ -899,7 +835,7 @@ public class DataFile extends DvObject implements Comparable {
         // https://github.com/IQSS/dataverse/issues/761, https://github.com/IQSS/dataverse/issues/2110, https://github.com/IQSS/dataverse/issues/3191
         //
         datasetMap.put("title", thisFileMetadata.getDatasetVersion().getTitle());
-        datasetMap.put("persistentId", getOwner().getGlobalId());
+        datasetMap.put("persistentId", getOwner().getGlobalIdString());
         datasetMap.put("url", getOwner().getPersistentURL());
         datasetMap.put("version", thisFileMetadata.getDatasetVersion().getSemanticVersion());
         datasetMap.put("id", getOwner().getId());
