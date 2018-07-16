@@ -72,7 +72,7 @@ public class DataFile extends DvObject implements Comparable {
     @Expose
     @NotBlank
     @Column( nullable = false )
-    @Pattern(regexp = "^.*/.*$", message = "Content-Type must contain a slash")
+    @Pattern(regexp = "^.*/.*$", message = "{contenttype.slash}")
     private String contentType;
     
 

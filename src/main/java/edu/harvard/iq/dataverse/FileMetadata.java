@@ -51,13 +51,13 @@ public class FileMetadata implements Serializable {
 
     @Expose
     @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$", 
-            message = "File Name cannot contain any of the following characters: \\ / : * ? \" < > | ; # .")    
-    @NotBlank(message = "Please specify a file name.")
+            message = "{filename.illegalCharacters}")
+    @NotBlank(message = "{filename.blank}")
     @Column( nullable=false )
     private String label = "";
     
     @Pattern(regexp="|[^/\\\\]|^[^/\\\\]+.*[^/\\\\]+$",
-            message = "Directory Name cannot contain leading or trailing file separators.")    
+            message = "{directoryname.illegalCharacters}")
     @Expose
     @Column ( nullable=true )
     private String directoryLabel;
