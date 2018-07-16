@@ -1060,25 +1060,19 @@ public class FileUtil implements java.io.Serializable  {
             return false;
         }
         
-        if (mimeType.equals(MIME_TYPE_STATA)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_STATA13)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_STATA14)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_STATA15)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_RDATA)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_CSV) || mimeType.equals(MIME_TYPE_CSV_ALT)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_XLSX)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_SPSS_SAV)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_SPSS_POR)) {
-            return true;
-        }
+        switch (mimeType) {
+            case MIME_TYPE_STATA:
+            case MIME_TYPE_STATA13:
+            case MIME_TYPE_RDATA:
+            case MIME_TYPE_CSV:
+            case MIME_TYPE_CSV_ALT:
+            case MIME_TYPE_TSV:
+            case MIME_TYPE_XLSX:
+            case MIME_TYPE_SPSS_SAV:
+            case MIME_TYPE_SPSS_POR:
+                return true;
+            default:
+                return false;
 
         return false;
     }
