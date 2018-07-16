@@ -508,7 +508,7 @@
                             <h:inputHidden value="#{DatasetPage.lockedForAnyReason}" id="datasetLockedForAnyReasonVariable" />
                             <h:inputHidden value="#{DatasetPage.stateChanged}" id="datasetStateChangedVariable" />
 
-                            <p:remoteCommand name="refreshAllLocksCommand" process="@this" update=":#{p:component('pageRefreshFragment')}" actionListener="#{DatasetPage.refreshAllLocks()}"/>
+                            <p:remoteCommand name="refreshAllLocksCommand" process="@this" update=":#{p:resolveClientId('datasetForm:pageRefreshFragment', view)}" actionListener="#{DatasetPage.refreshAllLocks()}"/>
                             <p:remoteCommand name="refreshAllCommand" process="@this" update=":datasetForm:topDatasetBlockFragment,:datasetForm:tabView:filesTable,:messagePanel" actionListener="#{DatasetPage.refresh}"/>
 
                             <!-- see the comment in the javascript below that explains what this button is for -->
