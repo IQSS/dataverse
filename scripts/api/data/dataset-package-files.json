@@ -1,0 +1,130 @@
+{
+  "datasetVersion": {
+    "termsOfUse": "CC0 Waiver",
+    "license": "CC0",
+    "protocol":"doi",
+    "authority":"10.502",
+    "identifier":"ZZ7/MOSEISLEYDB94",
+    "metadataBlocks": {
+      "citation": {
+        "fields": [
+          {
+            "typeName": "title",
+            "multiple": false,
+            "value": "Imported dataset with package files No. 3",
+            "typeClass": "primitive"
+          },
+          {
+            "typeName": "productionDate",
+            "multiple": false,
+            "value": "2011-02-23",
+            "typeClass": "primitive"
+          },
+          {
+            "typeName": "dsDescription",
+            "multiple": true,
+            "value": [
+              {
+                "dsDescriptionValue": {
+                  "typeName": "dsDescriptionValue",
+                  "multiple": false,
+                  "value": "Native Dataset",
+                  "typeClass": "primitive"
+                }
+              }
+            ],
+            "typeClass": "compound"
+          },
+          {
+            "typeName": "subject",
+            "multiple": true,
+            "value": [
+              "Medicine, Health and Life Sciences"
+            ],
+            "typeClass": "controlledVocabulary"
+          },
+          {
+            "typeName": "author",
+            "multiple": true,
+            "value": [
+              {
+                "authorAffiliation": {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "value": "LibraScholar Medical School",
+                  "typeClass": "primitive"
+                },
+                "authorName": {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "value": "Doc, Bob",
+                  "typeClass": "primitive"
+                }
+              },
+              {
+                "authorAffiliation": {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "value": "LibraScholar Medical School",
+                  "typeClass": "primitive"
+                },
+                "authorName": {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "value": "Prof, Arthur",
+                  "typeClass": "primitive"
+                }
+              }
+            ],
+            "typeClass": "compound"
+          },
+          {
+            "typeName": "depositor",
+            "multiple": false,
+            "value": "Prof, Arthur",
+            "typeClass": "primitive"
+          },
+          {
+            "typeName": "datasetContact",
+            "multiple": true,
+            "value": [
+              {
+                "datasetContactEmail": {
+                  "typeName": "datasetContactEmail",
+                  "multiple": false,
+                  "value": "aprof@mailinator.com",
+                  "typeClass": "primitive"
+                }
+              }
+            ],
+            "typeClass": "compound"
+          }
+        ],
+        "displayName": "Citation Metadata"
+      }
+    },
+    "files": [
+      {
+        "description": "",
+        "label": "pub",
+        "restricted": false,
+        "version": 1,
+        "datasetVersionId": 1,
+        "dataFile": {
+          "id": 4,
+          "filename": "pub",
+          "contentType": "application/vnd.dataverse.file-package",
+          "filesize": 1698795873,
+          "description": "",
+          "storageIdentifier": "162017e5ad5-ee2a2b17fee9",
+          "originalFormatLabel": "UNKNOWN",
+          "rootDataFileId": -1,
+          "checksum": {
+            "type": "SHA-1",
+            "value": "54bc7ddb096a490474bd8cc90cbed1c96730f350"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -260,7 +260,7 @@ public class JsonParser {
         DatasetVersion dsv = new DatasetVersion(); 
         dsv.setDataset(dataset);
         dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv);
-        LinkedList<DatasetVersion> versions = new LinkedList<>();
+        List<DatasetVersion> versions = new ArrayList<>(1);
         versions.add(dsv);
 
         dataset.setVersions(versions);
@@ -406,17 +406,18 @@ public class JsonParser {
                 fileMetadata.setDirectoryLabel(directoryLabel);
                 fileMetadata.setDescription(description);
                 fileMetadata.setDatasetVersion(dsv);
-
-                DataFile dataFile = parseDataFile(filemetadataJson.getJsonObject("dataFile"));
-
-                fileMetadata.setDataFile(dataFile);
-                dataFile.getFileMetadatas().add(fileMetadata);
-                dataFile.setOwner(dsv.getDataset());
                 
-                if (dsv.getDataset().getFiles() == null) {
-                    dsv.getDataset().setFiles(new ArrayList<>());
+                if ( filemetadataJson.containsKey("dataFile") ) {
+                    DataFile dataFile = parseDataFile(filemetadataJson.getJsonObject("dataFile"));
+                    dataFile.getFileMetadatas().add(fileMetadata);
+                    dataFile.setOwner(dsv.getDataset());
+                    fileMetadata.setDataFile(dataFile);
+                    if (dsv.getDataset().getFiles() == null) {
+                        dsv.getDataset().setFiles(new ArrayList<>());
+                    }
+                    dsv.getDataset().getFiles().add(dataFile);
                 }
-                dsv.getDataset().getFiles().add(dataFile);
+                
 
                 fileMetadatas.add(fileMetadata);
                 fileMetadata.setCategories(getCategories(filemetadataJson, dsv.getDataset()));
@@ -433,6 +434,10 @@ public class JsonParser {
         dataFile.setCreateDate(timestamp);
         dataFile.setModificationTime(timestamp);
         dataFile.setPermissionModificationTime(timestamp);
+        
+        if ( datafileJson.containsKey("filesize") ) {
+            dataFile.setFilesize(datafileJson.getJsonNumber("filesize").longValueExact());
+        }
         
         String contentType = datafileJson.getString("contentType", null);
         if (contentType == null) {

@@ -750,6 +750,8 @@ As of this writing "doi" and "hdl" are the only valid option for the protocol fo
 
 Use the authority assigned to you by your DoiProvider or HandleProvider.
 
+Please note that the authority cannot have a slash ("/") in it.
+
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
 .. _:Shoulder:

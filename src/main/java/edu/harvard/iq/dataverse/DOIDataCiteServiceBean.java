@@ -1,13 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -18,7 +14,7 @@ import javax.ejb.Stateless;
  * @author luopc
  */
 @Stateless
-public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
+public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
 
     private static final Logger logger = Logger.getLogger(DOIDataCiteServiceBean.class.getCanonicalName());
 
@@ -52,43 +48,34 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
     @Override
     public String createIdentifier(DvObject dvObject) throws Exception {
         logger.log(Level.FINE,"createIdentifier");
-            if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
-                dvObject = generateIdentifier(dvObject);
-            }
-            String identifier = getIdentifier(dvObject);
-            HashMap<String, String> metadata = getMetadataForCreateIndicator(dvObject);
+        if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
+            dvObject = generateIdentifier(dvObject);
+        }
+        String identifier = getIdentifier(dvObject);
+        Map<String, String> metadata = getMetadataForCreateIndicator(dvObject);
         metadata.put("_status", "reserved");
         try {
             String retString = doiDataCiteRegisterService.createIdentifierLocal(identifier, metadata, dvObject);
             logger.log(Level.FINE, "create DOI identifier retString : " + retString);
             return retString;
         } catch (Exception e) {
-            logger.log(Level.WARNING, "Identifier not created: create failed");
-            logger.log(Level.WARNING, "String {0}", e.toString());
-            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
+            logger.log(Level.WARNING, "Identifier not created: create failed", e);
             throw e;
         }
     }
-    
-        @Override
+
+    @Override
     public HashMap getIdentifierMetadata(DvObject dvObject) {
-                logger.log(Level.FINE,"getIdentifierMetadata");
+        logger.log(Level.FINE,"getIdentifierMetadata");
         String identifier = getIdentifier(dvObject);
         HashMap<String, String> metadata = new HashMap<>();
         try {
             metadata = doiDataCiteRegisterService.getMetadata(identifier);
         } catch (Exception e) {
-            logger.log(Level.WARNING, "getIdentifierMetadata failed");
-            logger.log(Level.WARNING, "String {0}", e.toString());
-            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
-            return metadata;
+            logger.log(Level.WARNING, "getIdentifierMetadata failed", e);
         }
         return metadata;
-}
+    }
     
 
     /**
@@ -109,7 +96,6 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
         } catch (Exception e) {
             logger.log(Level.WARNING, "None existing so we can use this identifier");
             logger.log(Level.WARNING, "identifier: {0}", identifierOut);
-            return metadata;
         }
         return metadata;
     }
@@ -129,11 +115,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
            HashMap<String, String> metadata = doiDataCiteRegisterService.getMetadata(identifier);
             doiDataCiteRegisterService.modifyIdentifier(identifier, metadata, dvObject);
         } catch (Exception e) {
-            logger.log(Level.WARNING, "modifyMetadata failed");
-            logger.log(Level.WARNING, "String " + e.toString());
-            logger.log(Level.WARNING, "localized message " + e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause " + e.getCause());
-            logger.log(Level.WARNING, "message " + e.getMessage());
+            logger.log(Level.WARNING, "modifyMetadata failed", e);
             throw e;
         }
         return identifier;
@@ -178,25 +160,26 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
         try {
             doiMetadata = doiDataCiteRegisterService.getMetadata(identifier);
         } catch (Exception e) {
-            logger.log(Level.WARNING, "get matadata failed cannot delete");
-            logger.log(Level.WARNING, "String {0}", e.toString());
-            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause ", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
+            logger.log(Level.WARNING, "deleteIdentifier: get matadata failed. " + e.getMessage(), e);
         }
 
         String idStatus = doiMetadata.get("_status");
 
-        if (idStatus != null && idStatus.equals("reserved")) {
-            logger.log(Level.INFO, "Delete status is reserved..");
-            try {
-                doiDataCiteRegisterService.deleteIdentifier(identifier);
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "delete failed");
-                logger.log(Level.WARNING, "String {0}", e.toString());
-                logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-                logger.log(Level.WARNING, "cause", e.getCause());
-                logger.log(Level.WARNING, "message {0}", e.getMessage());
+        if ( idStatus != null ) {
+            switch ( idStatus ) {
+                case "reserved":
+                    logger.log(Level.INFO, "Delete status is reserved..");
+                    try {
+                        doiDataCiteRegisterService.deleteIdentifier(identifier);
+                    } catch (Exception e) {
+                        logger.log(Level.WARNING, "delete failed: " + e.getMessage(), e);
+                    }
+                    break;
+                       
+                case "public":
+                    //if public then it has been released set to unavailable and reset target to n2t url
+                    updateIdentifierStatus(dvObject, "unavailable");
+                    break;
             }
             return;
         }
@@ -206,14 +189,21 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
         }
     }
 
-    protected HashMap<String, String> getUpdateMetadataFromDataset(Dataset datasetIn) {
-        logger.log(Level.FINE,"getUpdateMetadataFromDataset");
-        HashMap<String, String> metadata = super.getMetadataForCreateIndicator(datasetIn);
-        metadata.put("datacite.publicationyear", generateYear(datasetIn));
-        return metadata;
+    private boolean updateIdentifierStatus(DvObject dvObject, String statusIn) {
+        logger.log(Level.FINE,"updateIdentifierStatus");
+        String identifier = getIdentifier(dvObject);
+        Map<String, String> metadata = getUpdateMetadata(dvObject);
+        metadata.put("_status", statusIn);
+        metadata.put("_target", getTargetUrl(dvObject));
+        try {
+            doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject);
+            return true;
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "modifyMetadata failed: " + e.getMessage(), e);
+            return false;
+        }
     }
 
-    
     @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
         logger.log(Level.FINE,"updateIdentifierStatus");
@@ -221,7 +211,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
             dvObject = generateIdentifier(dvObject);
         }
         String identifier = getIdentifier(dvObject);
-        HashMap<String, String> metadata = getUpdateMetadata(dvObject);
+        Map<String, String> metadata = getUpdateMetadata(dvObject);
         metadata.put("_status", "public");
         metadata.put("datacite.publicationyear", generateYear(dvObject));
         metadata.put("_target", getTargetUrl(dvObject));
@@ -229,11 +219,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
             doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject);
             return true;
         } catch (Exception e) {
-            logger.log(Level.WARNING, "modifyMetadata failed");
-            logger.log(Level.WARNING, "String {0}", e.toString());
-            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
+            logger.log(Level.WARNING, "modifyMetadata failed: " + e.getMessage(), e);
             return false;
         }
     }
