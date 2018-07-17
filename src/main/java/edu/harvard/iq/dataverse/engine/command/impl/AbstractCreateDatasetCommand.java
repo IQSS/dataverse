@@ -18,7 +18,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**;
+/** 
  * An abstract base class for commands that creates {@link Dataset}s.
  *
  * @author michael
