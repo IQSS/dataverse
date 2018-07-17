@@ -352,10 +352,17 @@ class DataCiteMetadataTemplate {
     }
 
     public String generateXML() {
+        // Can't use "UNKNOWN" here because DataCite will respond with "[facet 'pattern'] the value 'unknown' is not accepted by the pattern '[\d]{4}'"
+        String publisherYearFinal = "9999";
+        // FIXME: Investigate why this.publisherYear is sometimes null now that pull request #4606 has been merged.
+        if (this.publisherYear != null) {
+            // Added to prevent a NullPointerException when trying to destroy datasets when using DataCite rather than EZID.
+            publisherYearFinal = this.publisherYear;
+        }
         xmlMetadata = template.replace("${identifier}", this.identifier.trim())
                 .replace("${title}", this.title)
                 .replace("${publisher}", this.publisher)
-                .replace("${publisherYear}", this.publisherYear)
+                .replace("${publisherYear}", publisherYearFinal)
                 .replace("${description}", this.description);
         StringBuilder creatorsElement = new StringBuilder();
         for (DatasetAuthor author : authors) {
