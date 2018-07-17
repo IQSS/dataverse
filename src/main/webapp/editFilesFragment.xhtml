@@ -597,11 +597,11 @@
 
     <!-- Popups -->
     <p:dialog styleClass="smallPopUp" header="#{bundle['file.addreplace.content_type.header']}" widgetVar="fileTypeDifferentPopup" id="fileTypeDifferentPopup" modal="true">
-        <p class="text-info"><span class="glyphicon glyphicon-info-sign"/> #{EditDatafilesPage.warningMessageForPopUp}</p>
+        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{EditDatafilesPage.warningMessageForPopUp}</p>
         <div class="button-block">
             <p:commandButton value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()" 
                              action="#{EditDatafilesPage.deleteFiles()}"
-                             update="@([id$=filesTable]), @([id$=filesButtons]), :#{p:component('filesTable')},:messagePanel,:#{p:component('fileUpload')},uploadMessage"/>
+                             update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage"/>
             <p:commandButton value="#{bundle.continue}" onclick="PF('fileTypeDifferentPopup').hide()" type="button" />
         </div>
     </p:dialog>
@@ -612,8 +612,8 @@
             <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
         </ui:fragment>
         <div class="button-block">
-            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);deleteFinished();"
-                             update="@([id$=filesTable]),@([id$=filesButtons]),:#{p:component('filesTable')},:messagePanel,:#{p:component('fileUpload')},uploadMessage" action="#{EditDatafilesPage.deleteFiles()}" />
+            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);"
+                             update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage" action="#{EditDatafilesPage.deleteFiles()}" />
             <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
         </div>
     </p:dialog>

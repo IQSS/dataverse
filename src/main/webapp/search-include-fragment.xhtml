@@ -649,7 +649,7 @@
     <h:form>
         <p:remoteCommand name="postLoad"
                          process="@this"
-                         update=":#{p:component('resultsTable')}"
+                         update=":#{p:resolveClientId('resultsTable', view)}"
                          actionListener="#{SearchIncludeFragment.setDisplayCardValues()}" />
     </h:form>
 
