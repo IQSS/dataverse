@@ -52,7 +52,7 @@
             <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/>
             <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/>
         </ui:include>
-        <div class="container" id="content">
+	<div class="container #{contentContainerClass}" id="content">
             <ui:insert name="body">#{bundle.defaultBody}</ui:insert>
         </div>
         <!-- FOOTER BLOCK -->

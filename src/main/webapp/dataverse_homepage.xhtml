@@ -13,7 +13,8 @@
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{empty DataversePage.dataverse.name ? bundle.new : DataversePage.dataverse.name} #{bundle.dataverse}"/>
-            <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
+	    <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
+	    <ui:param name="contentContainerClass" value="custom-homepage"/>
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="showDataverseHeader" value="false"/>
