@@ -53,6 +53,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVe
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ImportFromFileSystemCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ImportFromS3Command;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
@@ -695,6 +696,7 @@ public class Datasets extends AbstractApiBean {
         }
     }
     
+    //MAD: Maybe rename to something more reflective of the importing happening after validation
     @POST
     @Path("{identifier}/dataCaptureModule/checksumValidation")
     public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject jsonFromDcm) {
@@ -712,20 +714,49 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset dataset = findDatasetOrDie(id);
             if ("validation passed".equals(statusMessageFromDcm)) {
-                String uploadFolder = jsonFromDcm.getString("uploadFolder");
-                int totalSize = jsonFromDcm.getInt("totalSize");
-                ImportMode importMode = ImportMode.MERGE;
-                try {
-                    JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(findUserOrDie()), dataset, uploadFolder, new Long(totalSize), importMode));
-                    long jobId = jsonFromImportJobKickoff.getInt("executionId");
-                    String message = jsonFromImportJobKickoff.getString("message");
-                    JsonObjectBuilder job = Json.createObjectBuilder();
-                    job.add("jobId", jobId);
-                    job.add("message", message);
-                    return ok(job);
-                } catch (WrappedResponse wr) {
-                    String message = wr.getMessage();
-                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
+               logger.log(Level.INFO, "Checksum Validation passed for DCM."); 
+
+               
+               
+                String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file";
+                if(storageDriver.equals("s3")) {
+                    
+                    logger.log(Level.INFO, "S3 storage driver used for DCM (dataset id={0})", dataset.getId());
+                    String uploadFolder = jsonFromDcm.getString("uploadFolder"); //MAD: HAVE THIS BE THE BUCKET/FOLDER INFO??
+                    try {
+                        JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromS3Command(createDataverseRequest(findUserOrDie()), dataset, uploadFolder));
+//                        long jobId = jsonFromImportJobKickoff.getInt("executionId");
+//                        String message = jsonFromImportJobKickoff.getString("message");
+                        JsonObjectBuilder job = Json.createObjectBuilder();
+//                        job.add("jobId", jobId);
+//                        job.add("message", message);
+                        return ok(job);
+                    } catch (WrappedResponse wr) {
+                        String message = wr.getMessage();
+                        return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
+                    }
+
+                } else if (storageDriver.equals("file")) {
+                    logger.log(Level.INFO, "File storage driver used for (dataset id={0})", dataset.getId());
+                    String uploadFolder = jsonFromDcm.getString("uploadFolder");
+                    int totalSize = jsonFromDcm.getInt("totalSize");
+                    ImportMode importMode = ImportMode.MERGE;
+                    try {
+                        JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(findUserOrDie()), dataset, uploadFolder, new Long(totalSize), importMode));
+                        long jobId = jsonFromImportJobKickoff.getInt("executionId");
+                        String message = jsonFromImportJobKickoff.getString("message");
+                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        job.add("jobId", jobId);
+                        job.add("message", message);
+                        return ok(job);
+                    } catch (WrappedResponse wr) {
+                        String message = wr.getMessage();
+                        return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
+                    }
+                } else {
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Invalid storage driver for dcm");
+
+                    //MAD: THROW BETTER ERROR
                 }
             } else if ("validation failed".equals(statusMessageFromDcm)) {
                 Map<String, AuthenticatedUser> distinctAuthors = permissionService.getDistinctUsersWithPermissionOn(Permission.EditDataset, dataset);
