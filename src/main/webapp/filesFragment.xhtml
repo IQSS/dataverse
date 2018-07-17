@@ -111,9 +111,10 @@
                             </ui:remove>
                         <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
                                       type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits ? 'ui-state-disabled' : ''}"
-                                      disabled="#{DatasetPage.lockedFromEdits}" rendered="#{DatasetPage.sessionUserAuthenticated 
+                                      disabled="#{DatasetPage.lockedFromEdits or DatasetPage.workingVersion.hasPackageFile}" rendered="#{DatasetPage.sessionUserAuthenticated 
                                                                                     and DatasetPage.canUpdateDataset()
-                                                                                    and !widgetWrapper.widgetView }">
+                                                                                    and !widgetWrapper.widgetView
+                                                                                    and !DatasetPage.workingVersion.hasPackageFile }">
                             <!-- UPLOAD FILES BUTTON -->
                             <span class="glyphicon #{DatasetPage.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
@@ -364,7 +365,7 @@
                     </ui:include>
                 </ui:fragment>
 
-            <div class="btn-group" jsf:rendered="#{!settingsWrapper.rsyncDownload}">
+            <div class="btn-group" jsf:rendered="#{!fileMetadata.dataFile.filePackage}">
                 <ui:include src="file-download-button-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
@@ -378,7 +379,7 @@
                 </ui:include>
             </div>
             
-            <div class="col-xs-12 text-left small" jsf:rendered="#{settingsWrapper.rsyncDownload}">
+            <div class="col-xs-12 text-left small" jsf:rendered="#{fileMetadata.dataFile.filePackage}">
                 <!-- Data Access for Rsync Download -->
                 <ui:include src="file-data-access-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>

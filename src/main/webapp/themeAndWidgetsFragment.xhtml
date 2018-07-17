@@ -7,7 +7,7 @@
     <!-- Theme and Widgets Edit Tabs -->
         <p:tabView  rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
             <p:tab id="themeTab" title="#{bundle['dataverse.theme.title']}" rendered="#{not settingsWrapper.rootDataverseThemeDisabled or themeWidgetFragment.editDv.owner != null}">
-                <p:fragment autoUpdate="true">
+                <p:autoUpdate>
                     <!-- Dataverse Theme Panel -->
                     <div class="row form-horizontal">
                         <div class="form-group" jsf:rendered="#{themeWidgetFragment.editDv.owner!=null}">
@@ -178,7 +178,7 @@
                             </div>
                         </div>
                     </ui:fragment>
-                </p:fragment>
+                </p:autoUpdate>
                 <div class="button-block">
                     <p:commandButton class="btn btn-default" value="#{bundle.saveChanges}" update=":#{p:resolveClientId('messagePanel', view)}, :themeWidgetsForm" action="#{themeWidgetFragment.save()}" oncomplete="bind_bsui_components();"/>
                     <p:commandButton class="btn btn-default" action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeCancel" value="#{bundle.cancel}"/>

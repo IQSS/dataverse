@@ -478,6 +478,16 @@ public class DatasetVersion implements Serializable {
         return true;
     }
     
+    public boolean isHasPackageFile(){
+        if (this.fileMetadatas.isEmpty()){
+            return false;
+        }
+        if(this.fileMetadatas.size() > 1){
+            return false;
+        }
+        return this.fileMetadatas.get(0).getDataFile().getContentType().equals("application/vnd.dataverse.file-package");
+    }
+    
     public void updateDefaultValuesFromTemplate(Template template) {
         if (!template.getDatasetFields().isEmpty()) {
             this.setDatasetFields(this.copyDatasetFields(template.getDatasetFields()));
