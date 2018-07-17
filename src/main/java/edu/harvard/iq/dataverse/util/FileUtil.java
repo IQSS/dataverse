@@ -109,20 +109,21 @@ public class FileUtil implements java.io.Serializable  {
     
     private static MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
     
-    public static final String MIME_TYPE_STATA = "application/x-stata";
+    public static final String MIME_TYPE_STATA   = "application/x-stata";
     public static final String MIME_TYPE_STATA13 = "application/x-stata-13";
     public static final String MIME_TYPE_STATA14 = "application/x-stata-14";
     public static final String MIME_TYPE_STATA15 = "application/x-stata-15";
-    public static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
+    public static final String MIME_TYPE_RDATA   = "application/x-rlang-transport";
     
-    public static final String MIME_TYPE_CSV   = "text/csv";
+    public static final String MIME_TYPE_CSV     = "text/csv";
     public static final String MIME_TYPE_CSV_ALT = "text/comma-separated-values";
+    public static final String MIME_TYPE_TSV     = "text/tsv";
+    public static final String MIME_TYPE_TSV_ALT = "text/tab-separated-values";
+    public static final String MIME_TYPE_XLSX    = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     
-    public static final String MIME_TYPE_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     public static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
     public static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
     
-    public static final String MIME_TYPE_TSV   = "text/tsv";
     
     public static final String MIME_TYPE_FITS  = "application/fits";
     
@@ -138,6 +139,8 @@ public class FileUtil implements java.io.Serializable  {
     public static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
     
     public static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
+    
+    public static final String MIME_TYPE_INGESTED_FILE = "text/tab-separated-values";
 
 
     /**
@@ -1069,6 +1072,7 @@ public class FileUtil implements java.io.Serializable  {
             case MIME_TYPE_CSV:
             case MIME_TYPE_CSV_ALT:
             case MIME_TYPE_TSV:
+            case MIME_TYPE_TSV_ALT:
             case MIME_TYPE_XLSX:
             case MIME_TYPE_SPSS_SAV:
             case MIME_TYPE_SPSS_POR:

@@ -84,8 +84,9 @@ public class DataFileServiceBean implements java.io.Serializable {
     private static final String MIME_TYPE_STATA13 = "application/x-stata-13";
     private static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
     private static final String MIME_TYPE_CSV   = "text/csv";
-    private static final String MIME_TYPE_TSV   = "text/tab-separated-values";
     private static final String MIME_TYPE_CSV_ALT = "text/comma-separated-values";
+    private static final String MIME_TYPE_TSV   = "text/tsv";
+    private static final String MIME_TYPE_TSV_ALT   = "text/tab-separated-values";
     private static final String MIME_TYPE_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
     private static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
