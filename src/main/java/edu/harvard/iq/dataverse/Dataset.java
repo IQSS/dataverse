@@ -30,6 +30,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.net.URL;
 
 /**
  *
@@ -226,8 +227,13 @@ public class Dataset extends DvObjectContainer {
         this.fileAccessRequest = fileAccessRequest;
     }
 
+    /**
+     * Calculates he persistent URL pointing to this dataset. May be {@code null}.
+     * @return the persistent URL pointing to this dataset, or {@code null}.
+     */
     public String getPersistentURL() {
-        return new GlobalId(this).toURL().toString();
+        final URL pidUrl = new GlobalId(this).toURL();
+        return pidUrl != null ? pidUrl.toString() : null;
     }
     
     public List<DataFile> getFiles() {

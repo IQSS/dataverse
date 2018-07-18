@@ -52,9 +52,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
@@ -225,7 +224,7 @@ public class Dataverses extends AbstractApiBean {
             return created("/datasets/" + managedDs.getId(),
                 Json.createObjectBuilder()
                     .add("id", managedDs.getId())
-                    .add("persistentId", managedDs.getGlobalIdString())
+                    .add("persistentId", managedDs.getGlobalId().asString())
             );
 
         } catch (WrappedResponse ex) {
@@ -240,7 +239,6 @@ public class Dataverses extends AbstractApiBean {
             User u = findUserOrDie();
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = parseDataset(jsonBody);
-            logger.info("ImportDataset: " + ds.getProtocol() + "||" + ds.getAuthority() + "||" + ds.getIdentifier());
             
             ds.setOwner(owner);
 
@@ -253,13 +251,22 @@ public class Dataverses extends AbstractApiBean {
                 version.setVersionState(DatasetVersion.VersionState.DRAFT);
             }
 
-            if (nonEmpty(pidParam)) {
+            if (isEmpty(pidParam)) {
+                // look into the json for PID
+                // We're reading the pid directly, rather than parsing it using GlobalId.parse, to allow complex PID to be pre-separated
+                //   to their components by the user.
+                if ( (ds.getProtocol() != null) && (ds.getAuthority()!=null) && (ds.getIdentifier()!=null) && ds.getGlobalId().toURL()==null ) {
+                    return badRequest("Illegal Persistent identifier.");
+                }
+                
+            } else {
+                // use the PID passed in the parameter.
                 Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
                 if (maybePid.isPresent()) {
                     ds.setGlobalId(maybePid.get());
                 } else {
                     // unparsable PID passed. Terminate.
-                    return badRequest("Cannot parse the PID parameter '" + pidParam + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
+                    return badRequest("Cannot parse the 'pid' parameter '" + pidParam + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
                 }
             }
 
@@ -285,7 +292,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset managedDs = execCommand(new ImportDatasetCommand(ds, request));
             JsonObjectBuilder responseBld = Json.createObjectBuilder()
                 .add("id", managedDs.getId())
-                .add("persistentId", managedDs.getGlobalIdString());
+                .add("persistentId", managedDs.getGlobalId().asString());
 
             if (shouldRelease) {
                 PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));

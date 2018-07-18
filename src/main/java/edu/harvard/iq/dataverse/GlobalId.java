@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -100,12 +94,13 @@ public class GlobalId implements java.io.Serializable {
         this.identifier = identifier;
     }
     
+    @Override
     public String toString() {
         return asString();
     }
     
     /**
-     * Returns {@code this}' string representation. Differs from {@link #toString}
+     * Returns {@code this}' string representation. Differs from {@link #toString()}
      * which can also contain debug data, if needed.
      * 
      * @return The string representation of this global id.

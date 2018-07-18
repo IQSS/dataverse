@@ -253,10 +253,10 @@ public class JsonParser {
     public Dataset parseDataset(JsonObject obj) throws JsonParseException {
         Dataset dataset = new Dataset();
 
-        dataset.setAuthority(obj.getString("authority", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : obj.getString("authority"));
-        dataset.setProtocol(obj.getString("protocol", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : obj.getString("protocol"));
+        dataset.setAuthority(obj.getString("authority", null));
+        dataset.setProtocol(obj.getString("protocol", null));
         dataset.setIdentifier(obj.getString("identifier",null));
-
+        
         DatasetVersion dsv = new DatasetVersion(); 
         dsv.setDataset(dataset);
         dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv);

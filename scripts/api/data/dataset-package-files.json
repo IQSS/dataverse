@@ -1,10 +1,10 @@
 {
+  "protocol":"doi",
+  "authority":"10.7910/DVN",
+  "identifier":"MOSEISLEY",
   "datasetVersion": {
     "termsOfUse": "CC0 Waiver",
     "license": "CC0",
-    "protocol":"doi",
-    "authority":"10.502",
-    "identifier":"ZZ7/MOSEISLEYDB94",
     "metadataBlocks": {
       "citation": {
         "fields": [
