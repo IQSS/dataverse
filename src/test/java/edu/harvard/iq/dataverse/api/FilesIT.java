@@ -313,7 +313,7 @@ public class FilesIT {
                  * via API in a consistent location.
                  */
                 //                .body("message", equalTo(successMsgAdd))
-                .body("data.files[0].dataFile.contentType", equalTo("text/tab-separated-values"))
+                .body("data.files[0].dataFile.contentType", equalTo("text/tsv"))
                 .body("data.files[0].label", equalTo("data.tsv"))
                 .body("data.files[0].description", equalTo(""))
                 .statusCode(OK.getStatusCode());
@@ -349,9 +349,10 @@ public class FilesIT {
         
         msgt(replaceRespWrongCtype.prettyPrint());
         
-        String errMsgCtype = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", Arrays.asList("Tab-Delimited", "GIF Image"));
+        String errMsgCtype = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", Arrays.asList("text/tsv", "GIF Image"));
 
-        
+
+        replaceRespWrongCtype.prettyPrint();
         replaceRespWrongCtype.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
@@ -364,6 +365,8 @@ public class FilesIT {
         msg("Replace file - 1st time");
         String pathToFile2 = "scripts/search/data/replace_test/growing_file/2016-02/data.tsv";
         JsonObjectBuilder json = Json.createObjectBuilder()
+                // "forceReplace=true required after pull request #4854 was merged
+                .add("forceReplace", true)
                 .add("description", "My Tabular Data")
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
@@ -381,7 +384,7 @@ public class FilesIT {
                  */
                 //                .body("message", equalTo(successMsg2))
                 .body("data.files[0].label", equalTo("data.tsv"))
-                .body("data.files[0].dataFile.contentType", equalTo("text/tab-separated-values"))
+                .body("data.files[0].dataFile.contentType", equalTo("text/tsv"))
                 .body("data.files[0].description", equalTo("My Tabular Data"))
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 //.body("data.rootDataFileId", equalTo(origFileId))              
@@ -409,7 +412,10 @@ public class FilesIT {
         // -------------------------
         msg("Replace file (again)");
         String pathToFile3 = "scripts/search/data/replace_test/growing_file/2016-03/data.tsv";
-        Response replaceResp2 = UtilIT.replaceFile(newDataFileId.toString(), pathToFile3, apiToken);
+        JsonObjectBuilder json2 = Json.createObjectBuilder()
+                // "forceReplace=true" required after pull request #4854 was merged
+                .add("forceReplace", true);
+        Response replaceResp2 = UtilIT.replaceFile(newDataFileId.toString(), pathToFile3, json2.build(), apiToken);
         
         msgt("2nd replace: " + replaceResp2.prettyPrint());
         
