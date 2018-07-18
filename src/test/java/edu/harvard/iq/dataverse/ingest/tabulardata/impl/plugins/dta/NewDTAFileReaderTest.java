@@ -55,7 +55,6 @@ public class NewDTAFileReaderTest {
         assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
     }
     
-    @Ignore
     @Test
     public void testDates() throws IOException {
         instance = new NewDTAFileReader(null, 118);
