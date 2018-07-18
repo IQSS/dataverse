@@ -167,7 +167,7 @@ public class FilePage implements java.io.Serializable {
           
             if (fileMetadata == null){
                 logger.fine("fileMetadata is null! Checking finding most recent version file was in.");
-                fileMetadata = findMostRecentVersionFileIsIn(file);
+                fileMetadata = datafileService.findMostRecentVersionFileIsIn(file);
                 if (fileMetadata == null) {
                     return permissionsWrapper.notFound();
                 }
@@ -852,15 +852,6 @@ public class FilePage implements java.io.Serializable {
     //This can probably be replaced by calling JsfHelper from the provpopup bean
     public void showProvError() {
         JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.metadataTab.provenance.error"));
-    }
-
-    private FileMetadata findMostRecentVersionFileIsIn(DataFile file) {
-        List<FileMetadata> fileMetadatas = file.getFileMetadatas();
-        if (fileMetadatas == null || fileMetadatas.isEmpty()) {
-            return null;
-        } else {
-            return fileMetadatas.get(0);
-        }
     }
 
 }
