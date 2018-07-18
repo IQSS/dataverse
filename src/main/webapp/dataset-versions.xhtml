@@ -32,7 +32,7 @@
    <!-- Retrieve version differences after the page load -->
    <p:remoteCommand  name="postLoadVersionTabList"
            process="@this"
-           update=":#{p:component('versionsTable')}"
+           update=":#{p:resolveClientId('datasetForm:tabView:versionsTable', view)}"
            actionListener="#{DatasetPage.postLoadSetVersionTabList()}" />
     <div class="text-right margin-bottom">
         <p:commandLink type="button" styleClass="btn btn-default" onclick="testCheckBoxes();"
