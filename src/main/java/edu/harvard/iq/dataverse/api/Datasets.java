@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
+import edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordWriter;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleException;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
@@ -71,6 +72,7 @@ import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.s3ImportUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -79,6 +81,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
@@ -96,6 +99,7 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -150,6 +154,12 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     EjbDataverseEngine commandEngine;
+    
+//MAD: Remove these when fixing the injection issues 
+    @EJB
+    DataFileServiceBean dataFileServiceBean;
+    @EJB
+    DatasetServiceBean datasetServiceBean;
      
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -697,9 +707,10 @@ public class Datasets extends AbstractApiBean {
     }
     
     //MAD: Maybe rename to something more reflective of the importing happening after validation
+    //MAD: REMOVE THE THROWS IOEXCEPTION/CommandException WHEN I FINISH OTHER PARTS
     @POST
     @Path("{identifier}/dataCaptureModule/checksumValidation")
-    public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject jsonFromDcm) {
+    public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject jsonFromDcm) throws IOException, CommandException {
         logger.log(Level.FINE, "jsonFromDcm: {0}", jsonFromDcm);
         AuthenticatedUser authenticatedUser = null;
         try {
@@ -723,18 +734,76 @@ public class Datasets extends AbstractApiBean {
                     
                     logger.log(Level.INFO, "S3 storage driver used for DCM (dataset id={0})", dataset.getId());
                     String uploadFolder = jsonFromDcm.getString("uploadFolder"); //MAD: HAVE THIS BE THE BUCKET/FOLDER INFO??
-                    try {
-                        JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromS3Command(createDataverseRequest(findUserOrDie()), dataset, uploadFolder));
-//                        long jobId = jsonFromImportJobKickoff.getInt("executionId");
-//                        String message = jsonFromImportJobKickoff.getString("message");
+
+                    s3ImportUtil s3imp = new s3ImportUtil(); //MAD: BAD
+//                    try {
+                        
+                        s3imp.copyFromS3(dataset, uploadFolder);
+                        DataFile packageFile = s3imp.createPackageDataFile(dataset, uploadFolder, commandEngine, dataFileServiceBean);
+                        if (packageFile == null) {
+                            //MAD: DO SOMETHING
+
+                            logger.log(Level.SEVERE, "File package import failed.");
+                            //jobContext.setExitStatus("FAILED");
+                            //return;
+                        }
+                        DatasetLock dcmLock = dataset.getLockFor(DatasetLock.Reason.DcmUpload);
+                        if (dcmLock == null) {
+                            logger.log(Level.WARNING, "Dataset not locked for DCM upload");
+                        } else {
+                            datasetServiceBean.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.DcmUpload);
+                            dataset.removeLock(dcmLock);
+                        }
+                        //MAD: COPIED FROM FileRecordWriter.updateDatasetVersion
+                        // update version using the command engine to enforce user permissions and constraints
+  
+                        if (dataset.getVersions().size() == 1 && dataset.getLatestVersion().getVersionState() == DatasetVersion.VersionState.DRAFT) {
+                            //try {
+                                Command<DatasetVersion> cmd;
+                                cmd = new UpdateDatasetVersionCommand(new DataverseRequest(authenticatedUser, (HttpServletRequest) null), dataset.getLatestVersion());
+                                commandEngine.submit(cmd);
+                            //} catch (CommandException ex) {
+                            //    String commandError = "CommandException updating DatasetVersion from batch job: " + ex.getMessage();
+                            //    logger.log(Level.SEVERE, commandError);
+                                //jobContext.setExitStatus("FAILED");
+                            //}
+                        } else {
+                            String constraintError = "ConstraintException updating DatasetVersion form batch job: dataset must be a "
+                                    + "single version in draft mode.";
+                            logger.log(Level.SEVERE, constraintError);
+                            //jobContext.setExitStatus("FAILED");
+                        }
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
                         JsonObjectBuilder job = Json.createObjectBuilder();
-//                        job.add("jobId", jobId);
-//                        job.add("message", message);
                         return ok(job);
-                    } catch (WrappedResponse wr) {
-                        String message = wr.getMessage();
-                        return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
-                    }
+                        
+//                    } catch (Exception e) {
+//                        String message = e.getMessage();
+//                        return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
+//
+//                    }
+
+//                    try {
+//                        JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromS3Command(createDataverseRequest(findUserOrDie()), dataset, uploadFolder));
+////                        long jobId = jsonFromImportJobKickoff.getInt("executionId");
+////                        String message = jsonFromImportJobKickoff.getString("message");
+//                        JsonObjectBuilder job = Json.createObjectBuilder();
+////                        job.add("jobId", jobId);
+////                        job.add("message", message);
+//                        return ok(job);
+//                    } catch (WrappedResponse wr) {
+//                        String message = wr.getMessage();
+//                        return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
+//                    }
 
                 } else if (storageDriver.equals("file")) {
                     logger.log(Level.INFO, "File storage driver used for (dataset id={0})", dataset.getId());
