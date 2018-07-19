@@ -34,7 +34,7 @@
                         <div class="panel-heading" role="tab" id="headingOne">
                             <h4 class="panel-title">
                               <a role="button" data-toggle="collapse" data-parent="#fileUploadFragment" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                Upload with HTTP via your browser
+                                #{bundle['file.fromHTTP']}
                               </a>
                             </h4>
                         </div>
@@ -45,7 +45,7 @@
                             <div class="panel-body">
 
                                 <p class="help-block">
-                                    Help message proving value and info about HTTP upload to the user.
+                                    #{bundle['file.fromHTTP.help']}
                                 </p>
 
                                 <p class="help-block">
@@ -236,7 +236,7 @@
                         <div class="panel-heading" role="tab" id="headingTwo">
                           <h4 class="panel-title">
                             <a class="collapsed" role="button" data-toggle="collapse" data-parent="#fileUploadFragment" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                              Upload with Dropbox
+                              #{bundle['file.fromDropbox']}
                             </a>
                           </h4>
                         </div>
@@ -244,7 +244,7 @@
                             <div class="panel-body">
                                 
                                 <p class="help-block">
-                                    Help message proving value and info about Dropbox to the user.
+                                    #{bundle['file.fromDropbox.help']}
                                 </p>
                                 
                                 <!-- Dropbox Upload -->
@@ -268,7 +268,7 @@
                                 <div class="panel-heading" role="tab" id="headingThree">
                                     <h4 class="panel-title">
                                         <a class="collapsed" role="button" data-toggle="collapse" data-parent="#fileUploadFragment" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                            Upload with rsync+ssh via Data Capture Module (DCM)
+                                            #{bundle['file.fromRsync']}
                                         </a>
                                     </h4>
                                 </div>
@@ -276,7 +276,7 @@
                                 <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
                                     <div class="panel-body">
                                         <p jsf:rendered="#{empty EditDatafilesPage.fileMetadatas}" class="help-block">
-                                            Help message proving value and info about rsync to the user.
+                                            #{bundle['file.fromRsync.help']}
                                         </p>
                                         <p jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}" class="help-block">
                                             <span class="text-danger">Warning message about how this option is not available because of uploaded files to this dataset.</span>
