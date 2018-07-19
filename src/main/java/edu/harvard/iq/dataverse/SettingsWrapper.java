@@ -150,6 +150,14 @@ public class SettingsWrapper implements java.io.Serializable {
         return systemConfig.isRsyncDownload();
     }
     
+    public boolean isHTTPUpload(){
+        return systemConfig.isHTTPUpload();
+    }
+    
+    public boolean isDropBoxUpload(){
+        return systemConfig.isDropBoxUpload();
+    }
+    
     public boolean isDataFilePIDSequentialDependent(){
         return systemConfig.isDataFilePIDSequentialDependent();
     }

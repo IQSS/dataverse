@@ -27,7 +27,7 @@
                     
                     <!-- TODO: ACCORDION OPTIONS SCALABLE >1? -->
                     
-                    <div class="panel panel-default">
+                    <div class="panel panel-default" jsf:rendered="#{settingsWrapper.HTTPUpload}">
                         
                         <!-- TODO: New help text needed for these panels, replace placeholder text here and add final msg text to bundle -->
                         
@@ -228,7 +228,7 @@
                         </div>
                     </div>
                     
-                    <ui:fragment rendered="#{settingsWrapper.isHasDropBoxKey()}">
+                    <ui:fragment rendered="#{settingsWrapper.isHasDropBoxKey() and settingsWrapper.dropBoxUpload}">
                     <div class="panel panel-default">
                         
                         <!-- TODO: New help text needed for these panels, replace placeholder text here and add final msg text to bundle -->

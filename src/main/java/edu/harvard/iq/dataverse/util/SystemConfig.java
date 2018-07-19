@@ -835,12 +835,17 @@ public class SystemConfig {
          * rsync+ssh but DCM may support additional methods in the future.
          */
         RSYNC("dcm/rsync+ssh"),
-        // TODO: Add "native/dropbox"?
         /**
          * Traditional Dataverse file handling, which tends to involve users
          * uploading and downloading files using a browser or APIs.
          */
-        NATIVE("native/http");
+        NATIVE("native/http"),
+        /**
+         * Traditional Dataverse file handling, which tends to involve users
+         * uploading and downloading files using a browser or APIs.
+         */
+        
+        DROPBOX("native/dropbox");
 
         private final String text;
 
@@ -967,14 +972,31 @@ public class SystemConfig {
     }
     
     public boolean isRsyncUpload(){
-        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
-        return uploadMethods != null &&  uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
     }
     
+    public boolean isHTTPUpload(){       
+        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());       
+    }
+    
+    public boolean isDropBoxUpload(){
+        return  getUploadMethodAvailable(SystemConfig.FileUploadMethods.DROPBOX.toString());       
+    }
+    
+
     public boolean isRsyncDownload()
     {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-        return downloadMethods !=null && downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString());
+        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
+    }
+    
+    private Boolean getUploadMethodAvailable(String method){
+        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
+        if (uploadMethods==null){
+            return false;
+        } else {
+           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+        }
     }
     
     public boolean isDataFilePIDSequentialDependent(){
