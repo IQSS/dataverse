@@ -45,10 +45,6 @@
                             <div class="panel-body">
 
                                 <p class="help-block">
-                                    #{bundle['file.fromHTTP.help']}
-                                </p>
-
-                                <p class="help-block">
                                     <span class="glyphicon glyphicon-info-sign"/>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false" 
                                                     rendered="#{systemConfig.maxFileUploadSize !=null and !empty systemConfig.maxFileUploadSize}">
@@ -243,10 +239,6 @@
                         <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
                             <div class="panel-body">
                                 
-                                <p class="help-block">
-                                    #{bundle['file.fromDropbox.help']}
-                                </p>
-                                
                                 <!-- Dropbox Upload -->
                                 <div jsf:id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{(!(empty EditDatafilesPage.dropBoxKey))}">
                                     <div class="panel-body">
@@ -275,9 +267,6 @@
                             <ui:fragment rendered="#{!createDataset}"> 
                                 <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
                                     <div class="panel-body">
-                                        <p jsf:rendered="#{empty EditDatafilesPage.fileMetadatas}" class="help-block">
-                                            #{bundle['file.fromRsync.help']}
-                                        </p>
                                         <p jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}" class="help-block">
                                             <span class="text-danger">Warning message about how this option is not available because of uploaded files to this dataset.</span>
                                         </p>
