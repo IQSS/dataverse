@@ -102,6 +102,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
+import org.primefaces.event.data.PageEvent;
 
 
 /**
@@ -217,6 +218,11 @@ public class DatasetPage implements java.io.Serializable {
     private List<Template> dataverseTemplates = new ArrayList<>();
     private Template defaultTemplate;
     private Template selectedTemplate;
+    /**
+     * In the file listing, the page the user is on. This is zero-indexed so if
+     * the user clicks page 2 in the UI, this will be 1.
+     */
+    private int filePaginatorPage;
     private String persistentId;
     private String version;
     private String protocol = "";
@@ -952,8 +958,14 @@ public class DatasetPage implements java.io.Serializable {
     public void reset() {
         dataset.setGuestbook(null);
     }
-    
 
+    public int getFilePaginatorPage() {
+        return filePaginatorPage;
+    }
+
+    public void setFilePaginatorPage(int filePaginatorPage) {
+        this.filePaginatorPage = filePaginatorPage;
+    }
 
     public String getGlobalId() {
         return persistentId;
@@ -4301,6 +4313,13 @@ public class DatasetPage implements java.io.Serializable {
     public void clearSelection() {
         logger.info("clearSelection called");
         selectedFiles = Collections.EMPTY_LIST;
+    }
+
+    public void fileListingPaginatorListener(PageEvent event) {
+        // From https://stackoverflow.com/questions/17487670/update-component-at-change-of-page-on-primefaces-datagrid-with-pagination
+        filePaginatorPage = event.getPage();
+        // FIXME: Change this to logger.fine (or remove) once we get filesHeaderCount in the xhtml to update.
+        logger.info("A PageEvent happened. Updating filePaginatorPage to " + filePaginatorPage + " (zero-indexed).");
     }
 
 }
