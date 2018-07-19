@@ -51,7 +51,8 @@ echo Images are being built for registry org/username \"$HUBORG\" with the tag \
 # Build dataverse-solr
 #
 # Use "conf" directory as context so we can copy schema.xml into Solr image.
-docker build -t $HUBORG/dataverse-solr:$TAG -f solr/Dockerfile ../../conf
+cp ../solr/7.3.0/schema.xml solr/
+docker build -t $HUBORG/dataverse-solr:$TAG  solr/
 if [ "$1" == 'internal' ]; then
   echo "Skipping docker push because we're using the internal Minishift registry."
 else

@@ -1,6 +1,4 @@
-=================================
 Docker, Kubernetes, and OpenShift
-=================================
 
 Dataverse is exploring the use of Docker, Kubernetes, OpenShift and other container-related technologies.
 
@@ -182,7 +180,7 @@ To log in as an admin, type this command instead:
 Scaling Dataverse by Increasing Replicas in a StatefulSet
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Glassfish and PostgreSQL Pods are in a "StatefulSet" which is a concept from OpenShift and Kubernetes that you can read about at https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+Glassfish, Solr and PostgreSQL Pods are in a "StatefulSet" which is a concept from OpenShift and Kubernetes that you can read about at https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
 
 As of this writing, the ``openshift.json`` file has a single "replica" for each of these two stateful sets. It's possible to increase the number of replicas from 1 to 3, for example, with this command:
 
@@ -193,6 +191,115 @@ The command above should result in two additional Glassfish pods being spun up. 
 Once you have multiple Glassfish servers you may notice bugs that will require additional configuration to fix. One such bug has to do with Dataverse logos which are stored at ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos`` on each of the Glassfish servers. This means that the logo will look fine when you just uploaded it because you're on the server with the logo on the local file system but when you visit that dataverse in the future and you're on a differernt Glassfish server, you will see a broken image. (You can find some discussion of this logo bug at https://github.com/IQSS/dataverse-aws/issues/10 and http://irclog.iq.harvard.edu/dataverse/2016-10-21 .) This is all "advanced" installation territory (see the :doc:`/installation/advanced` section of the Installation Guide) and OpenShift might be a good environment in which to work on some of these bugs.
 
 Multiple PostgreSQL servers are possible within the OpenShift environment as well and have been set up with some amount of replication. "dataverse-postgresql-0" is the master and non-zero pods are the slaves. We have just scratched the surface of this configuration but replication from master to slave seems to we working. Future work could include failover and making Dataverse smarter about utilizing multiple PostgreSQL servers for reads. Right now we assume Dataverse is only being used with a single PostgreSQL server and that it's the master.
+
+Solr supports index distribution and replication for scaling. For OpenShift use, we choose replication. It's possible to scale up solar using the method method similar to Glassfish, as mentioned aboved
+In OpenShift, the first Solr pod, dataverse-solr-0, will be the master node, and the rest will be slave nodes
+
+
+Configuring Persistent Volumes and Solr master node recovery 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Solr requires backing up the search index to a storage. For our proof of concept, we configure a hostPath, which allows solr containers to access the hosts' file system, for our Solr containers backups. To read more about OpenShift/Kubernetes' persistent volumes, please visit https://kubernetes.io/docs/concepts/storage/persistent-volumes
+To allow containers to use host's storage, we need to allow access to that directory first. In this example, we expose /tmp/share to the containers:
+```
+mkdir /tmp/share           # Create a directory that could be mounted in container. This is mounted as /share in container.
+chcon -R -t svirt_sandbox_file_t /tmp/share/ # Change selinux label so that containers can read/write from/to directory.
+chmod 777 -R /tmp/share
+oc login -u system:admin
+oc edit scc restricted     # Update allowHostDirVolumePlugin to true and runAsUser type to RunAsAny
+```
+
+To add a persistent volume and persistent volume claim, in conf/docker/openshift/openshift.json, add the following to objects in openshift.json:
+```
+    {
+      "kind" : "PersistentVolume",
+      "apiVersion" : "v1",
+      "metadata":{
+        "name" : "solr-index-backup",
+        "labels":{
+          "name" : "solr-index-backup",
+          "type" : "local"
+        }
+      },
+      "spec":{
+        "capacity":{
+          "storage" : "8Gi"
+        },
+        "accessModes":[
+          "ReadWriteMany", "ReadWriteOnce",  "ReadOnlyMany"
+        ],
+        "hostPath": {
+          "path" : "/tmp/share"
+        }
+      }
+    },
+    {
+      "kind" : "PersistentVolumeClaim",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "solr-claim"
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteMany", "ReadWriteOnce",  "ReadOnlyMany"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "3Gi"
+          }
+        },
+        "selector":{
+          "matchLabels":{
+            "name" : "solr-index-backup",
+            "type" : "local"
+            }
+          }
+        }
+      }
+```
+
+To make solr container mount the hostPath, add the following part under dataverse-solr.spec.spec (for Solr StatefulSet):
+```
+    {
+      "kind": "StatefulSet",
+      "apiVersion": "apps/v1beta1",
+	  "metadata": {
+        "name": "dataverse-solr",
+	  ....
+
+      "spec": {
+        "serviceName" : "dataverse-solr-service",
+		.....
+
+          "spec": {
+            "volumes": [
+              {
+                "name": "solr-index-backup",
+                "persistentVolumeClaim": {
+                  "claimName": "solr-claim"
+                }
+              }
+            ],
+
+			"containers": [
+              ....
+
+                "volumeMounts":[
+                  {
+                    "mountPath" : "/home/share",
+                    "name" : "solr-index-backup"
+                  }  
+
+```
+
+Solr is now ready for backup and recovery. In order to backup:
+
+```
+	oc rsh dataverse-solr-0
+	curl 'http://localhost:8983/solr/collection1/replication?command=backup&location=/home/share'  
+```
+
+In solr entrypoint.sh, it's configured so that if dataverse-solr-0 failed, it will get the latest version of the index in the backup and restore. All backups are store in /tmp/share in the host, or /home/share in solr containers
 
 Running Containers to Run as Root in Minishift
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
