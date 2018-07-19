@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordWriter;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.ImportFromS3Command;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -30,14 +29,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 /**
- *
+ * This class is for importing files added to s3 outside of dataverse.
+ * Specifically, it is intended to be used along dcm.
+ * Most of this code has been ported from FileRecordWriter, pruning out
+ * the incomplete sections for importing individual files instead of folder-packages
  * @author matthew
  */
 
@@ -45,7 +45,7 @@ import javax.json.JsonObjectBuilder;
 @Stateless
 public class S3PackageImporter extends AbstractApiBean implements java.io.Serializable{
     
-    private static final Logger logger = Logger.getLogger(ImportFromS3Command.class.getName());
+    private static final Logger logger = Logger.getLogger(S3PackageImporter.class.getName());
 
     private AmazonS3 s3 = null;
     
@@ -67,13 +67,10 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         }
 
         JsonObjectBuilder bld = jsonObjectBuilder();
-        /**
-         * batch import as-individual-datafiles is disabled in this iteration;
-         * only the import-as-a-package is allowed. -- L.A. Feb 2 2017
-         */
+
         String fileMode = FileRecordWriter.FILE_MODE_PACKAGE_FILE;
 
-        String dcmBucketName = "test-dcm"; //MAD: PUT IN CONFIGS
+        String dcmBucketName =System.getProperty("dataverse.files.dcm-s3-bucket-name");  //"test-dcm"; //MAD: PUT IN CONFIGS
         String dcmDatasetKey = s3ImportPath;
         String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
         String dvDatasetKey = dataset.getAuthority() + "/" + dataset.getIdentifier(); //+ "/" + itemTag;
@@ -85,14 +82,6 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
                 new Object[]{dcmBucketName, dcmDatasetKey, dvBucketName, dvDatasetKey});
         
         try {
-            /** MAD: CLEAN
-             * Current constraints: 1. only supports merge and replace mode 2.
-             * valid dataset 3. valid dataset directory 4. valid user & user has
-             * edit dataset permission 5. only one dataset version 6. dataset
-             * version is draft
-             */
-
-
             if (dataset.getVersions().size() != 1) {
                 String error = "Error creating FilesystemImportJob with dataset with ID: " + dataset.getId() + " - Dataset has more than one version.";
                 logger.info(error);
@@ -153,11 +142,8 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
 //MAD: Are checksums possible / needed with s3?? 
 //MAD: The FileRecordWriter code also renames the folder to the storage identifier. Why?
             
-            
-            
             logger.log(Level.INFO, "Successfully created a file of type package");
 
-            
         } catch (Exception e) {
             logger.log(Level.INFO, "S3 Import error: " +   e.getStackTrace());
             logger.log(Level.INFO, "S3 Import error b: " + e.getMessage());
@@ -177,7 +163,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             
         //MAD: NO CHECKSUM ACTUALLY DONE
             packageFile.setChecksumType(DataFile.ChecksumType.SHA1); // initial default
-            packageFile.setChecksumValue("FAKE");
+            packageFile.setChecksumValue("FAKE"); //MAD: Change to something
             // check system property first, otherwise use the batch job property:
 //            String jobChecksumType;
 //            if (System.getProperty("checksumType") != null) {
