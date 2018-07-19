@@ -72,7 +72,7 @@ import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-import edu.harvard.iq.dataverse.s3ImportUtil;
+import edu.harvard.iq.dataverse.S3PackageImporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -160,6 +160,9 @@ public class Datasets extends AbstractApiBean {
     DataFileServiceBean dataFileServiceBean;
     @EJB
     DatasetServiceBean datasetServiceBean;
+    
+    @EJB
+    S3PackageImporter s3PackageImporter;
      
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -735,11 +738,11 @@ public class Datasets extends AbstractApiBean {
                     logger.log(Level.INFO, "S3 storage driver used for DCM (dataset id={0})", dataset.getId());
                     String uploadFolder = jsonFromDcm.getString("uploadFolder"); //MAD: HAVE THIS BE THE BUCKET/FOLDER INFO??
 
-                    s3ImportUtil s3imp = new s3ImportUtil(); //MAD: BAD
+                    //s3ImportUtil s3imp = new s3ImportUtil(); //MAD: BAD
 //                    try {
                         
-                        s3imp.copyFromS3(dataset, uploadFolder);
-                        DataFile packageFile = s3imp.createPackageDataFile(dataset, uploadFolder, commandEngine, dataFileServiceBean);
+                        s3PackageImporter.copyFromS3(dataset, uploadFolder);
+                        DataFile packageFile = s3PackageImporter.createPackageDataFile(dataset, uploadFolder);//, commandEngine, dataFileServiceBean);
                         if (packageFile == null) {
                             //MAD: DO SOMETHING
 

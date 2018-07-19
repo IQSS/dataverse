@@ -13,6 +13,7 @@ import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordWriter;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -28,6 +29,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -35,11 +40,20 @@ import javax.json.JsonObjectBuilder;
  *
  * @author matthew
  */
-public class s3ImportUtil {
+
+@Named
+@Stateless
+public class S3PackageImporter extends AbstractApiBean implements java.io.Serializable{
     
     private static final Logger logger = Logger.getLogger(ImportFromS3Command.class.getName());
 
     private AmazonS3 s3 = null;
+    
+    @EJB
+    DataFileServiceBean dataFileServiceBean;
+
+    @EJB
+    EjbDataverseEngine commandEngine;
     
     public JsonObject copyFromS3(Dataset dataset, String s3ImportPath) throws IOException {
 
@@ -157,7 +171,7 @@ public class s3ImportUtil {
     }
     
     //MAD: Passing the commandEngine like this seems bad... but the dependency injection didn't work, probably because this class isn't connected right
-    public DataFile createPackageDataFile(Dataset dataset, String folderName, EjbDataverseEngine commandEngine, DataFileServiceBean dataFileServiceBean) {
+    public DataFile createPackageDataFile(Dataset dataset, String folderName) { //EjbDataverseEngine commandEngine, DataFileServiceBean dataFileServiceBean) {
             DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
             FileUtil.generateStorageIdentifier(packageFile);
             
