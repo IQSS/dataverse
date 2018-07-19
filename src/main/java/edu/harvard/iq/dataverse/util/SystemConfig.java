@@ -975,6 +975,7 @@ public class SystemConfig {
         return getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
     }
     
+    // Controls if HTTP upload is enabled for both GUI and API.
     public boolean isHTTPUpload(){       
         return getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());       
     }

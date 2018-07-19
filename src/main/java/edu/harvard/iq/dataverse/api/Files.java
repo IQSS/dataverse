@@ -151,7 +151,10 @@ public class Files extends AbstractApiBean {
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
                     @FormDataParam("file") final FormDataBodyPart formDataBodyPart
                     ){
-        
+
+        if (!systemConfig.isHTTPUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
+        }
         // -------------------------------------
         // (1) Get the user from the API key
         // -------------------------------------
