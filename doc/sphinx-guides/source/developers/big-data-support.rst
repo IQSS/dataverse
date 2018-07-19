@@ -21,7 +21,7 @@ Installation instructions can be found at https://github.com/sbgrid/data-capture
 Once you have installed a DCM, you will need to configure two database settings on the Dataverse side. These settings are documented in the :doc:`/installation/config` section of the Installation Guide:
 
 - ``:DataCaptureModuleUrl`` should be set to the URL of a DCM you installed.
-- ``:UploadMethods`` should be set to ``dcm/rsync+ssh``.
+- ``:UploadMethods`` should include ``dcm/rsync+ssh``.
   
 This will allow your Dataverse installation to communicate with your DCM, so that Dataverse can download rsync scripts for your users.
 
