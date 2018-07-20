@@ -10,6 +10,7 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
@@ -132,10 +133,9 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
                 
                 s3.copyObject(new CopyObjectRequest(dcmBucketName, dcmFileKey, dvBucketName, dvDatasetKey+"/"+copyFileName));
                 
+//MAD: Leaving commented for now for testing
+                //s3.deleteObject(new DeleteObjectRequest(dcmBucketName, dcmFileKey));
             }
-            
-            //After copy we need to import.
-
             
             DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
             
@@ -151,7 +151,6 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             bld.add("message", "Import Exception - " + e.getMessage());
             return bld.build();
         }
-        //createPackageDataFile(dataset);
         return null;
 
     }

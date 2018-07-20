@@ -56,7 +56,7 @@ public class DataCaptureModuleServiceBean implements Serializable {
         }
         catch( UnirestException ex)
         {
-            String error = "Error calling " + scriptRequestUrl + ". This likely indicates the DCM service returned an error page and not valid json. More code is needed to show that error page. Unirest parsing error: " + ex;
+            String error = "Error calling " + scriptRequestUrl + ". This likely indicates the DCM service returned an error page and not valid json. Unirest parsing error: " + ex;
             logger.info(error);
             throw new DataCaptureModuleException(error, ex);
         }
