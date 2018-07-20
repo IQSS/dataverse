@@ -239,12 +239,16 @@ public class PermissionServiceBean {
     }
 
     public boolean hasPermissionsFor(DataverseRequest req, DvObject dvo, Permission p) {
-        if (!req.getUser().isAuthenticated() && PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY.contains(p)) {
+        User user = req.getUser();
+        if (user.isSuperuser()){
+            return true;
+        }
+        else if (!user.isAuthenticated() && PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY.contains(p)) {
             return false;
         }
 
         // Start with permissions specifically given to the user
-        if (hasPermissionsForSingleRoleAssignee(req.getUser(), dvo, p)) {
+        if (hasPermissionsForSingleRoleAssignee(user, dvo, p)) {
             return true;
         }
 
@@ -259,12 +263,6 @@ public class PermissionServiceBean {
     }
 
     private boolean hasPermissionsForSingleRoleAssignee(RoleAssignee ra, DvObject d, Permission p) {
-        // super user check
-        // for 4.0, we are allowing superusers all permissions
-        // for secure data, we may need to restrict some of the permissions
-        if (ra instanceof AuthenticatedUser && ((AuthenticatedUser) ra).isSuperuser()) {
-            return true;
-        }
         // File special case.
         if (d instanceof DataFile && p.equals(Permission.DownloadFile)) {
             // unrestricted files that are part of a release dataset 
@@ -285,13 +283,6 @@ public class PermissionServiceBean {
         // Direct assignments to ra on d
         for (RoleAssignment asmnt : assignmentsFor(ra, d)) {
             if (asmnt.getRole().permissions().contains(p)) {
-                return true;
-            }
-        }
-
-        // Recurse up the group containment hierarchy.
-        for (Group grp : groupService.groupsFor(ra, d)) {
-            if (hasPermissionsForSingleRoleAssignee(grp, d, p)) {
                 return true;
             }
         }
