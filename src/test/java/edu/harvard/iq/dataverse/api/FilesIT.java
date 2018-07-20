@@ -349,7 +349,7 @@ public class FilesIT {
         
         msgt(replaceRespWrongCtype.prettyPrint());
         
-        String errMsgCtype = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", Arrays.asList("text/tsv", "GIF Image"));
+        String errMsgCtype = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", Arrays.asList("Tab-Delimited", "GIF Image"));
 
 
         replaceRespWrongCtype.prettyPrint();
