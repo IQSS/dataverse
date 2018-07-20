@@ -96,8 +96,6 @@ COPY ./entrypoint.sh /
 #COPY ./setup-irods.sh /root/dvinstall
 COPY ./Dockerfile /
 
-VOLUME /usr/local/glassfish4/glassfish/domains/domain1/files
-
 EXPOSE      8080 
 
 ENTRYPOINT ["/entrypoint.sh"]
