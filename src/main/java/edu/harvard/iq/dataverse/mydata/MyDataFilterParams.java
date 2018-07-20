@@ -5,14 +5,8 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-
-import static edu.harvard.iq.dataverse.DvObject.DATASET_DTYPE_STRING;
-import static edu.harvard.iq.dataverse.DvObject.DATAVERSE_DTYPE_STRING;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -22,18 +16,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import org.apache.commons.lang.StringUtils;
-import org.primefaces.json.JSONException;
-import org.primefaces.json.JSONObject;
 
 /**
  *
@@ -44,11 +32,6 @@ public class MyDataFilterParams {
 
     private static final Logger logger = Logger.getLogger(MyDataFilterParams.class.getCanonicalName());
 
-    @EJB
-    DataverseRoleServiceBean dataverseRoleService;
-    @EJB
-    RoleAssigneeServiceBean roleAssigneeService;
-    
     // -----------------------------------
     // Static Reference objects
     // -----------------------------------
