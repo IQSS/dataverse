@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -37,6 +39,8 @@ import org.primefaces.json.JSONObject;
  *
  * @author rmp553
  */
+@Stateless
+@Named
 public class MyDataFilterParams {
 
     private static final Logger logger = Logger.getLogger(MyDataFilterParams.class.getCanonicalName());
