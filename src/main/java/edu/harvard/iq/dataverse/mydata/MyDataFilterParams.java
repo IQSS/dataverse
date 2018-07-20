@@ -39,8 +39,7 @@ import org.primefaces.json.JSONObject;
  *
  * @author rmp553
  */
-@Stateless
-@Named
+
 public class MyDataFilterParams {
 
     private static final Logger logger = Logger.getLogger(MyDataFilterParams.class.getCanonicalName());
@@ -161,30 +160,7 @@ public class MyDataFilterParams {
         
         // Do something here if none chosen!
         this.roleIds = roleIds;
-        if (this.roleIds == null) {
-        	this.roleIds=new ArrayList<Long>();
-        }	
-		if (this.roleIds.isEmpty()) {
-			List<DataverseRole> roleList = new ArrayList<DataverseRole>();
 
-			if (authenticatedUser.isSuperuser()) {
-
-				roleList = dataverseRoleService.findAll();
-			} else {
-				// (2) For a regular users
-				if(roleAssigneeService == null) {
-					logger.warning("RAS is null");
-				}
-				if(this.dataverseRequest == null) {
-					logger.warning("DVR is null");
-				}
-				roleList = roleAssigneeService.getAssigneeDataverseRoleFor(this.dataverseRequest);
-
-			}
-			for (DataverseRole role : roleList) {
-				this.roleIds.add(role.getId());
-			}
-		}
         
         if ((searchTerm == null)||(searchTerm.trim().isEmpty())){
             this.searchTerm = MyDataFilterParams.defaultSearchTerm;
