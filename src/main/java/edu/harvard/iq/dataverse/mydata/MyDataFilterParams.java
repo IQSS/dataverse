@@ -5,10 +5,14 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+
 import static edu.harvard.iq.dataverse.DvObject.DATASET_DTYPE_STRING;
 import static edu.harvard.iq.dataverse.DvObject.DATAVERSE_DTYPE_STRING;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -20,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -35,6 +41,11 @@ public class MyDataFilterParams {
 
     private static final Logger logger = Logger.getLogger(MyDataFilterParams.class.getCanonicalName());
 
+    @EJB
+    DataverseRoleServiceBean dataverseRoleService;
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeService;
+    
     // -----------------------------------
     // Static Reference objects
     // -----------------------------------
@@ -146,6 +157,25 @@ public class MyDataFilterParams {
         
         // Do something here if none chosen!
         this.roleIds = roleIds;
+        if (this.roleIds == null) {
+        	this.roleIds=new ArrayList<Long>();
+        }	
+        if(this.roleIds.isEmpty()){
+            List<DataverseRole> roleList = new ArrayList<>();
+            
+        if (authenticatedUser.isSuperuser()){
+        
+            roleList = dataverseRoleService.findAll();
+        }else{
+            // (2) For a regular users
+            roleList = roleAssigneeService.getAssigneeDataverseRoleFor(dataverseRequest);
+           
+        }
+        for (DataverseRole role: roleList) {
+        	this.roleIds.add(role.getId());
+        }
+        }
+       
         
         if ((searchTerm == null)||(searchTerm.trim().isEmpty())){
             this.searchTerm = MyDataFilterParams.defaultSearchTerm;
