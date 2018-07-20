@@ -168,6 +168,12 @@ public class MyDataFilterParams {
 				roleList = dataverseRoleService.findAll();
 			} else {
 				// (2) For a regular users
+				if(roleAssigneeService == null) {
+					logger.warning("RAS is null");
+				}
+				if(this.dataverseRequest == null) {
+					logger.warning("DVR is null");
+				}
 				roleList = roleAssigneeService.getAssigneeDataverseRoleFor(this.dataverseRequest);
 
 			}
