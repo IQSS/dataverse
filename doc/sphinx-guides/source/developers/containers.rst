@@ -134,7 +134,23 @@ Making Changes
 Making Changes to Docker Images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you're interested in using Minishift for development and want to change the Dataverse code, you will need to get set up to create Docker images based on your changes and push them to a Docker registry such as Docker Hub (or Minishift's internal registry, if you can get that working, mentioned below). See the section below on Docker for details.
+If you're interested in using Minishift for development and want to change the Dataverse code, you will need to get set up to create Docker images based on your changes and make them available within Minishift.
+
+It is recommended to add experimental images to Minishift's internal registry. Note that despite what https://docs.openshift.org/latest/minishift/openshift/openshift-docker-registry.html says you will not use ``docker push`` because we have seen "unauthorized: authentication required” when trying to push to it as reported at https://github.com/minishift/minishift/issues/817 . Rather you will run ``docker build`` and run ``docker images`` to see that your newly build images are listed in Minishift's internal registry.
+
+First, set the Docker environment variables so that ``docker build`` and ``docker images`` refer to the internal Minishift registry rather than your normal Docker setup:
+
+``eval $(minishift docker-env)``
+
+When you're ready to build, change to the right directory:
+
+``cd conf/docker``
+
+And then run the build script in "internal" mode:
+
+``./build.sh internal``
+
+Note that ``conf/openshift/openshift.json`` must not have ``imagePullPolicy`` set to ``Always`` or it will pull from "iqss" on Docker Hub. Changing it to ``IfNotPresent`` allow Minishift to use the images shown from ``docker images`` rather than the ones on Docker Hub.
 
 Using Minishift for day to day Dataverse development might be something we want to investigate in the future. These blog posts talk about developing Java applications using Minishift/OpenShift:
 
@@ -233,6 +249,8 @@ The "all in one" Docker files are in ``conf/docker-aio`` and you should follow t
 Future production use on Minishift/OpenShift/Kubernetes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+FIXME: rewrite this section to talk about only pushing stable images to Docker Hub.
+
 When working with Docker in the context of Minishift, follow the instructions above and make sure you get the Dataverse Docker images running in Minishift before you start messing with them.
 
 As of this writing, the Dataverse Docker images we publish under https://hub.docker.com/u/iqss/ are highly experimental. They were originally tagged with branch names like ``kick-the-tires`` and as of this writing the ``latest`` tag should be considered highly experimental and not for production use. See https://github.com/IQSS/dataverse/issues/4040 for the latest status and please reach out if you'd like to help!
@@ -245,7 +263,7 @@ Edit one of the files:
 
 ``vim dataverse-glassfish/Dockerfile``
 
-At this point you want to build the image and run it. We are assuming you want to run it in your Minishift environment. We will be building your image and pushing it to Docker Hub. Then you will be pulling the image down from Docker Hub to run in your Minishift installation. If this sounds inefficient, you're right, but we haven't been able to figure out how to make use of Minishift's built in registry (see below) so we're pushing to Docker Hub instead.
+At this point you want to build the image and run it. We are assuming you want to run it in your Minishift environment. We will be building your image and pushing it to Docker Hub.
 
 Log in to Docker Hub with an account that has access to push to the ``iqss`` organization:
 
@@ -278,15 +296,6 @@ Again, Dataverse Docker images on Docker Hub are highly experimental at this poi
 - Only a single Glassfish server can be used. See "Dedicated timer server in a Dataverse server cluster" in the :doc:`/admin/timers` section of the Installation Guide.
 - Only a single PostgreSQL server can be used.
 - Only a single Solr server can be used.
-
-Get Set Up to Push Docker Images to Minishift Registry
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-FIXME https://docs.openshift.org/latest/minishift/openshift/openshift-docker-registry.html indicates that it should be possible to make use of the builtin registry in Minishift while iterating on Docker images but you may get "unauthorized: authentication required" when trying to push to it as reported at https://github.com/minishift/minishift/issues/817 so until we figure this out, you must push to Docker Hub instead. Run ``docker login`` and use the ``conf/docker/build.sh`` script to push Docker images you create to https://hub.docker.com/u/iqss/
-
-If you want to troubleshoot this, take a close look at the ``docker login`` command you're using to make sure the OpenShift token is being sent.
-
-An alternative to using the the Minishift Registry is to do a local build. This isn't documented but should work within Minishift because it's an all-in-one OpenShift environment. The steps at a high level are to ssh into the Minishift VM and then do a ``docker build``. For a stateful set, the image pull policy should be never.
 
 ----
 

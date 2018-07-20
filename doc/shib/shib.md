@@ -76,17 +76,17 @@ Now https://shibtest.dataverse.org shouldn't give any browser warnings or `curl`
 
 ## Force HTTPS with Apache
 
-Use https://github.com/IQSS/dataverse/blob/auth/conf/httpd/conf.d/dataverse.conf as a template and make sure `RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L]` is active.
+Use https://github.com/IQSS/dataverse/blob/master/conf/httpd/conf.d/dataverse.conf as a template and make sure `RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L]` is active.
 
 Run `service httpd restart`.
 
 ## Update/verify files under /etc/shibboleth
 
-For /etc/shibboleth/shibboleth2.xml use the version from https://github.com/IQSS/dataverse/blob/auth/conf/vagrant/etc/shibboleth/shibboleth2.xml but replace "pdurbin.pagekite.me" with the "shibtest.dataverse.org".
+For /etc/shibboleth/shibboleth2.xml use the version from https://github.com/IQSS/dataverse/blob/master/conf/vagrant/etc/shibboleth/shibboleth2.xml but replace "pdurbin.pagekite.me" with the "shibtest.dataverse.org".
 
-Put https://github.com/IQSS/dataverse/blob/auth/conf/vagrant/etc/shibboleth/dataverse-idp-metadata.xml at /etc/shibboleth/dataverse-idp-metadata.xml
+Put https://github.com/IQSS/dataverse/blob/master/conf/vagrant/etc/shibboleth/dataverse-idp-metadata.xml at /etc/shibboleth/dataverse-idp-metadata.xml
 
-Put https://github.com/IQSS/dataverse/blob/auth/conf/vagrant/etc/shibboleth/attribute-map.xml at 
+Put https://github.com/IQSS/dataverse/blob/master/conf/vagrant/etc/shibboleth/attribute-map.xml at 
 
 After making these changes, run `service shibd restart` and `service httpd restart`.
 

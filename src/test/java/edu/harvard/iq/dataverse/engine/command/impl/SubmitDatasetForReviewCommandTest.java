@@ -27,10 +27,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
-import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -139,25 +137,11 @@ public class SubmitDatasetForReviewCommandTest {
         );
     }
 
-    @After
-    public void tearDown() {
-    }
-
-    @Test
+    @Test( expected=IllegalArgumentException.class )
     public void testDatasetNull() {
-        dataset = null;
-        String expected = "Can't submit for review. Dataset is null.";
-        String actual = null;
-        Dataset updatedDataset = null;
-        try {
-            updatedDataset = testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
-        } catch (CommandException ex) {
-            actual = ex.getMessage();
-        }
-        assertEquals(expected, actual);
-        assertNull(updatedDataset);
+        new SubmitDatasetForReviewCommand(dataverseRequest, null);
     }
-
+    
     @Test
     public void testReleasedDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);

@@ -74,6 +74,6 @@ public class CSVFileReaderSpi extends TabularDataFileReaderSpi{
   
   @Override
   public TabularDataFileReader createReaderInstance(Object ext) throws IOException {
-    return new CSVFileReader(this);
+    return new CSVFileReader(this, ',');
   }
 }
