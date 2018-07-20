@@ -11,8 +11,10 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordWriter;
@@ -22,6 +24,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -56,7 +59,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
     @EJB
     EjbDataverseEngine commandEngine;
     
-    public JsonObject copyFromS3(Dataset dataset, String s3ImportPath) throws IOException {
+    public void copyFromS3(Dataset dataset, String s3ImportPath) throws Exception {
 
         
         try {
@@ -71,120 +74,99 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
 
         String fileMode = FileRecordWriter.FILE_MODE_PACKAGE_FILE;
 
-        String dcmBucketName =System.getProperty("dataverse.files.dcm-s3-bucket-name");  //"test-dcm"; //MAD: PUT IN CONFIGS
+        String dcmBucketName = System.getProperty("dataverse.files.dcm-s3-bucket-name");  //"test-dcm"; //MAD: PUT IN CONFIGS
         String dcmDatasetKey = s3ImportPath;
         String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
+//MAD: In more than 1 place, maybe make function?
         String dvDatasetKey = dataset.getAuthority() + "/" + dataset.getIdentifier(); //+ "/" + itemTag;
-//        File dvBucketKey = new File(dvBucketName
-//                + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier()); //MAD: this may need another folder for the package... or something else
         
-        //MAD: IS THIS LOGGER A SECURITY ISSUE?
         logger.log(Level.INFO, "S3 Import related attributes. dcmBucketName: {0} | dcmDatasetKey: {1} | dvBucketName: {2} | dvDatasetKey: {3} |", 
                 new Object[]{dcmBucketName, dcmDatasetKey, dvBucketName, dvDatasetKey});
         
-        try {
-            if (dataset.getVersions().size() != 1) {
-                String error = "Error creating FilesystemImportJob with dataset with ID: " + dataset.getId() + " - Dataset has more than one version.";
-                logger.info(error);
-                throw new IOException(error); //MAD CHOOSE BETTER ERROR
-            }
-
-            if (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) {
-                String error = "Error creating FilesystemImportJob with dataset with ID: " + dataset.getId() + " - Dataset isn't in DRAFT mode.";
-                logger.info(error);
-                throw new IOException(error); //MAD CHOOSE BETTER ERROR
-            }
-            
-            ListObjectsRequest req = new ListObjectsRequest().withBucketName(dcmBucketName).withPrefix(dcmDatasetKey);
-            ObjectListing storedDcmDatsetFilesList;
-            try {
-                storedDcmDatsetFilesList = s3.listObjects(req);
-                logger.log(Level.INFO, "S3 Import debug 1");
-            } catch (SdkClientException sce) {
-                logger.info("Caught an SdkClientException in s3ImportUtil:    " + sce.getMessage());
-                throw new IOException ("S3 listAuxObjects: failed to get a listing for "+dcmDatasetKey);
-            }
-            List<S3ObjectSummary> storedDcmDatasetFilesSummary = storedDcmDatsetFilesList.getObjectSummaries();
-            logger.log(Level.INFO, "S3 Import debug 2");
-            try {
-                while (storedDcmDatsetFilesList.isTruncated()) {
-                    logger.fine("S3 listAuxObjects: going to next page of list");
-                    storedDcmDatsetFilesList = s3.listNextBatchOfObjects(storedDcmDatsetFilesList);
-                    if (storedDcmDatsetFilesList != null) {
-                        storedDcmDatasetFilesSummary.addAll(storedDcmDatsetFilesList.getObjectSummaries());
-                    }
-                }
-            } catch (AmazonClientException ase) {
-                logger.info("Caught an AmazonServiceException in s3ImportUtil:    " + ase.getMessage());
-                throw new IOException("S3AccessIO: Failed to get aux objects for listing.");
-            }
-            logger.log(Level.INFO, "S3 Import debug 3. Size " + storedDcmDatasetFilesSummary.size() + " |  Contents " + storedDcmDatasetFilesSummary );
-            
-            for (S3ObjectSummary item : storedDcmDatasetFilesSummary) {
-               
-                logger.log(Level.INFO, "S3 Import file copy for {0}", new Object[]{item});
-                //MAD: In here we do all the copy commands
-                String dcmFileKey = item.getKey();
-                
-                String copyFileName = dcmFileKey.substring(dcmFileKey.lastIndexOf('/') + 1); //MAD: maybe break into method if used more than once... maybe not here
-                
-                logger.log(Level.INFO, "S3 file copy related attributes. dcmBucketName: {0} | dcmFileKey: {1} | dvBucketName: {2} | copyFilePath: {3} |", 
-                    new Object[]{dcmBucketName, dcmFileKey, dvBucketName, dvDatasetKey+"/"+copyFileName});
-                
-                s3.copyObject(new CopyObjectRequest(dcmBucketName, dcmFileKey, dvBucketName, dvDatasetKey+"/"+copyFileName));
-                
-//MAD: Leaving commented for now for testing
-                //s3.deleteObject(new DeleteObjectRequest(dcmBucketName, dcmFileKey));
-            }
-            
-            DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
-            
-//MAD: Are checksums possible / needed with s3?? 
-//MAD: The FileRecordWriter code also renames the folder to the storage identifier. Why?
-            
-            logger.log(Level.INFO, "Successfully created a file of type package");
-
-        } catch (Exception e) {
-            logger.log(Level.INFO, "S3 Import error: " +   e.getStackTrace());
-            logger.log(Level.INFO, "S3 Import error b: " + e.getMessage());
-            logger.log(Level.INFO, "S3 Import error c: " + e);
-            bld.add("message", "Import Exception - " + e.getMessage());
-            return bld.build();
+        if (dataset.getVersions().size() != 1) {
+            String error = "Error creating FilesystemImportJob with dataset with ID: " + dataset.getId() + " - Dataset has more than one version.";
+            logger.info(error);
+            throw new IllegalStateException(error);
         }
-        return null;
+
+        if (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) {
+            String error = "Error creating FilesystemImportJob with dataset with ID: " + dataset.getId() + " - Dataset isn't in DRAFT mode.";
+            logger.info(error);
+            throw new IllegalStateException(error);
+        }
+
+        ListObjectsRequest req = new ListObjectsRequest().withBucketName(dcmBucketName).withPrefix(dcmDatasetKey);
+        ObjectListing storedDcmDatsetFilesList;
+        try {
+            storedDcmDatsetFilesList = s3.listObjects(req);
+//MAD: Eventually remove these noisy debug messages completely
+            logger.log(Level.INFO, "S3 Import debug 1");
+        } catch (SdkClientException sce) {
+            logger.info("Caught an SdkClientException in s3ImportUtil:    " + sce.getMessage());
+            throw new IOException ("S3 listAuxObjects: failed to get a listing for "+dcmDatasetKey);
+        }
+        List<S3ObjectSummary> storedDcmDatasetFilesSummary = storedDcmDatsetFilesList.getObjectSummaries();
+        logger.log(Level.INFO, "S3 Import debug 2");
+        try {
+            while (storedDcmDatsetFilesList.isTruncated()) {
+                logger.fine("S3 listAuxObjects: going to next page of list");
+                storedDcmDatsetFilesList = s3.listNextBatchOfObjects(storedDcmDatsetFilesList);
+                if (storedDcmDatsetFilesList != null) {
+                    storedDcmDatasetFilesSummary.addAll(storedDcmDatsetFilesList.getObjectSummaries());
+                }
+            }
+        } catch (AmazonClientException ase) {
+            logger.info("Caught an AmazonServiceException in s3ImportUtil:    " + ase.getMessage());
+            throw new IOException("S3AccessIO: Failed to get aux objects for listing.");
+        }
+        logger.log(Level.INFO, "S3 Import debug 3. Size " + storedDcmDatasetFilesSummary.size() + " |  Contents " + storedDcmDatasetFilesSummary );
+
+        for (S3ObjectSummary item : storedDcmDatasetFilesSummary) {
+
+            logger.log(Level.INFO, "S3 Import file copy for {0}", new Object[]{item});
+            String dcmFileKey = item.getKey();
+
+            String copyFileName = dcmFileKey.substring(dcmFileKey.lastIndexOf('/') + 1); //MAD: maybe break into method if used more than once... maybe not here
+
+            logger.log(Level.INFO, "S3 file copy related attributes. dcmBucketName: {0} | dcmFileKey: {1} | dvBucketName: {2} | copyFilePath: {3} |", 
+                new Object[]{dcmBucketName, dcmFileKey, dvBucketName, dvDatasetKey+"/"+copyFileName});
+
+            s3.copyObject(new CopyObjectRequest(dcmBucketName, dcmFileKey, dvBucketName, dvDatasetKey+"/"+copyFileName));                
+//MAD: Leaving commented for now for testing
+            //s3.deleteObject(new DeleteObjectRequest(dcmBucketName, dcmFileKey));
+        }
+ 
+//MAD: The FileRecordWriter code also renames the folder to the storage identifier. Why?
 
     }
     
-    //MAD: Passing the commandEngine like this seems bad... but the dependency injection didn't work, probably because this class isn't connected right
-    public DataFile createPackageDataFile(Dataset dataset, String folderName) { //EjbDataverseEngine commandEngine, DataFileServiceBean dataFileServiceBean) {
+    public DataFile createPackageDataFile(Dataset dataset, String folderName, long totalSize) {
             DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
+            packageFile.setChecksumType(DataFile.ChecksumType.SHA1); // initial default
+            
             FileUtil.generateStorageIdentifier(packageFile);
             
-        //MAD: NO CHECKSUM ACTUALLY DONE
-            packageFile.setChecksumType(DataFile.ChecksumType.SHA1); // initial default
-            packageFile.setChecksumValue("FAKE"); //MAD: Change to something
-            // check system property first, otherwise use the batch job property:
-//            String jobChecksumType;
-//            if (System.getProperty("checksumType") != null) {
-//                jobChecksumType = System.getProperty("checksumType");
-//            } else {
-//                jobChecksumType = checksumType;
-//            }
-
-//packageFile.setChecksumValue(FileUtil.CalculateCheckSum(checksumManifestPath, packageFile.getChecksumType()));
             
+            String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
+            String dvDatasetKey = dataset.getAuthority() + "/" + dataset.getIdentifier(); //+ "/" + itemTag;
+            S3Object s3object = null; 
+
+            s3object = s3.getObject(new GetObjectRequest(dvBucketName, dvDatasetKey+"/files.sha"));
+           
+            InputStream in = s3object.getObjectContent();
+            String checksumVal = FileUtil.CalculateChecksum(in, packageFile.getChecksumType());
+
+            packageFile.setChecksumValue(checksumVal); 
             
             logger.log(Level.INFO, "createPackageDataFile 1");
-        //MAD: All below coppied from FileRecordWriter
-            packageFile.setFilesize(0); //MAD: was totalSize
+
+            packageFile.setFilesize(totalSize); //MAD: was totalSize
             packageFile.setModificationTime(new Timestamp(new Date().getTime()));
             packageFile.setCreateDate(new Timestamp(new Date().getTime()));
             packageFile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
             packageFile.setOwner(dataset);
             dataset.getFiles().add(packageFile);
 
-
-            
             packageFile.setIngestDone();
 
             // set metadata and add to latest version
@@ -200,8 +182,6 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             dataset.getLatestVersion().getFileMetadatas().add(fmd);
             fmd.setDatasetVersion(dataset.getLatestVersion());
 
-            
-//MAD: This is blowing up. I assume because there is no commandEngine to get the context from
             logger.log(Level.INFO, "createPackageDataFile 2.1 . commandEngine: " + commandEngine);
             
             IdServiceBean idServiceBean = IdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
@@ -230,7 +210,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
                 try {
                     doiRetString = idServiceBean.createIdentifier(packageFile);
                 } catch (Throwable e) {
-
+                    //MAD: I'm pretty sure this wasn't caught in the orig code either but...
                 }
 
                 // Check return value to make sure registration succeeded

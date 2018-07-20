@@ -148,9 +148,7 @@ public class Datasets extends AbstractApiBean {
     @EJB
     EjbDataverseEngine commandEngine;
     
-//MAD: Remove these when fixing the injection issues 
-    @EJB
-    DataFileServiceBean dataFileServiceBean;
+//MAD: Should I add this or fix the code using it?
     @EJB
     DatasetServiceBean datasetServiceBean;
     
@@ -703,7 +701,6 @@ public class Datasets extends AbstractApiBean {
     }
     
     //MAD: Maybe rename to something more reflective of the importing happening after validation
-    //MAD: REMOVE THE THROWS IOEXCEPTION/CommandException WHEN I FINISH OTHER PARTS
     
     /**
      * This api endpoint triggers the creation of a "package" file in a dataset 
@@ -716,7 +713,7 @@ public class Datasets extends AbstractApiBean {
      * The initial design of the DCM/Dataverse interaction was not to use packages, but to allow import of all individual files natively into Dataverse.
      * But due to the possibly immense number of files (millions) the package approach was taken.
      * This is relevant because the posix ("file") code contains many remnants of that development work.
-     * The s3 code was written later and is set to only support import as packages.
+     * The s3 code was written later and is set to only support import as packages. It takes a lot from FileRecordWriter.
      * -MAD 4.9.1
      */
     @POST
@@ -739,11 +736,12 @@ public class Datasets extends AbstractApiBean {
                logger.log(Level.INFO, "Checksum Validation passed for DCM."); 
 
                 String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file";
+                String uploadFolder = jsonFromDcm.getString("uploadFolder");
+                int totalSize = jsonFromDcm.getInt("totalSize");
                 
                 if (storageDriver.equals("file")) {
                     logger.log(Level.INFO, "File storage driver used for (dataset id={0})", dataset.getId());
-                    String uploadFolder = jsonFromDcm.getString("uploadFolder");
-                    int totalSize = jsonFromDcm.getInt("totalSize");
+
                     ImportMode importMode = ImportMode.MERGE;
                     try {
                         JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(findUserOrDie()), dataset, uploadFolder, new Long(totalSize), importMode));
@@ -760,12 +758,12 @@ public class Datasets extends AbstractApiBean {
                 } else if(storageDriver.equals("s3")) {
                     
                     logger.log(Level.INFO, "S3 storage driver used for DCM (dataset id={0})", dataset.getId());
-                    String uploadFolder = jsonFromDcm.getString("uploadFolder"); //MAD: HAVE THIS BE THE BUCKET/FOLDER INFO??
-
                     try {
                         
+                        //Where the lifting is actually done, moving the s3 files over and having dataverse know of the existance of the package
                         s3PackageImporter.copyFromS3(dataset, uploadFolder);
-                        DataFile packageFile = s3PackageImporter.createPackageDataFile(dataset, uploadFolder);//, commandEngine, dataFileServiceBean);
+                        DataFile packageFile = s3PackageImporter.createPackageDataFile(dataset, uploadFolder, new Long(totalSize));
+                        
                         if (packageFile == null) {
                             logger.log(Level.SEVERE, "S3 File package import failed.");
                             return error(Response.Status.INTERNAL_SERVER_ERROR, "S3 File package import failed.");
@@ -796,10 +794,11 @@ public class Datasets extends AbstractApiBean {
                         JsonObjectBuilder job = Json.createObjectBuilder();
                         return ok(job);
                         
-                    } catch (IOException e) {
+                    } catch (Exception e) {
+//MAD: This is probably not helping with the debugging of the error handling
                         String message = e.getMessage();
                         return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to move the files into Dataverse. Message was '" + message + "'.");
-                    }
+                    } 
                 } else {
                     return error(Response.Status.INTERNAL_SERVER_ERROR, "Invalid storage driver in Dataverse, not compatible with dcm");
                 }
@@ -822,7 +821,6 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
 
     @POST
     @Path("{id}/submitForReview")
