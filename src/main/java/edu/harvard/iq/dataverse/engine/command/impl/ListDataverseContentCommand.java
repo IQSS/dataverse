@@ -4,6 +4,8 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -33,16 +35,32 @@ public class ListDataverseContentCommand extends AbstractCommand<List<DvObject>>
     @Override
     public List<DvObject> execute(CommandContext ctxt) throws CommandException {
         LinkedList<DvObject> result = new LinkedList<>();
-        
-        for (Dataset ds : ctxt.datasets().findByOwnerId(dvToList.getId())) {            
-            if (ds.isReleased() || ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)) {
-                result.add(ds);
+        User user = getRequest().getUser();
+        if (user.isSuperuser()) {
+            result.addAll(ctxt.datasets().findByOwnerId(dvToList.getId()));
+            result.addAll(ctxt.dataverses().findByOwnerId(dvToList.getId()));
+        } else if (user.isAuthenticated()) {
+            AuthenticatedUser au = (AuthenticatedUser) user;
+            for (Dataset ds : ctxt.datasets().findByOwnerId(dvToList.getId())) {
+                if (ds.isReleased() || ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)) {
+                    result.add(ds);
+                }
             }
-        }
-        
-        for (Dataverse dv : ctxt.dataverses().findByOwnerId(dvToList.getId())) {
-            if (dv.isReleased() || ctxt.permissions().requestOn(getRequest(), dv).has(Permission.ViewUnpublishedDataverse)) {
-                result.add(dv);
+            for (Dataverse dv : ctxt.dataverses().findByOwnerId(dvToList.getId())) {
+                if (dv.isReleased() || ctxt.permissions().requestOn(getRequest(), dv).has(Permission.ViewUnpublishedDataverse)) {
+                    result.add(dv);
+                }
+            }
+        } else {
+            for (Dataset ds : ctxt.datasets().findByOwnerId(dvToList.getId())) {
+                if (ds.isReleased()) {
+                    result.add(ds);
+                }
+            }
+            for (Dataverse dv : ctxt.dataverses().findByOwnerId(dvToList.getId())) {
+                if (dv.isReleased()) {
+                    result.add(dv);
+                }
             }
         }
 
