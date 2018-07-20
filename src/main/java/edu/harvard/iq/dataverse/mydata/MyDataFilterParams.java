@@ -160,22 +160,21 @@ public class MyDataFilterParams {
         if (this.roleIds == null) {
         	this.roleIds=new ArrayList<Long>();
         }	
-        if(this.roleIds.isEmpty()){
-            List<DataverseRole> roleList = new ArrayList<>();
-            
-        if (authenticatedUser.isSuperuser()){
-        
-            roleList = dataverseRoleService.findAll();
-        }else{
-            // (2) For a regular users
-            roleList = roleAssigneeService.getAssigneeDataverseRoleFor(dataverseRequest);
-           
-        }
-        for (DataverseRole role: roleList) {
-        	this.roleIds.add(role.getId());
-        }
-        }
-       
+		if (this.roleIds.isEmpty()) {
+			List<DataverseRole> roleList = new ArrayList<DataverseRole>();
+
+			if (authenticatedUser.isSuperuser()) {
+
+				roleList = dataverseRoleService.findAll();
+			} else {
+				// (2) For a regular users
+				roleList = roleAssigneeService.getAssigneeDataverseRoleFor(this.dataverseRequest);
+
+			}
+			for (DataverseRole role : roleList) {
+				this.roleIds.add(role.getId());
+			}
+		}
         
         if ((searchTerm == null)||(searchTerm.trim().isEmpty())){
             this.searchTerm = MyDataFilterParams.defaultSearchTerm;
