@@ -45,11 +45,14 @@ public class DOIDataCiteRegisterService {
     }
     
     public String createIdentifierLocal(String identifier, HashMap<String, String> metadata, DvObject dvObject) {
+        logger.info(identifier + "$$$$$");
+        logger.info(dvObject.getAuthorString());
+        logger.info(metadata.toString());
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
         String status = metadata.get("_status").trim();
         String target = metadata.get("_target");
         String retString = "";
-        DOIDataCiteRegisterCache rc = findByDOI(identifier);
+        DOIDataCiteRegisterCache rc = findByDOI(identifier);    
         if (rc == null) {
             rc = new DOIDataCiteRegisterCache();
             rc.setDoi(identifier);
@@ -64,6 +67,8 @@ public class DOIDataCiteRegisterService {
             rc.setUrl(target);
         }
         retString = "success to reserved " + identifier;
+        
+        
         return retString;
     }
     
@@ -150,7 +155,9 @@ public class DOIDataCiteRegisterService {
         } else {
             metadataTemplate.setDatasetIdentifier("");
         }
-       String xmlMetadata = metadataTemplate.generateXML();
+        
+        
+       String xmlMetadata = metadataTemplate.generateXML(dvObject);
         logger.log(Level.INFO, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }
@@ -394,7 +401,7 @@ class DataCiteMetadataTemplate {
         }
     }
 
-    public String generateXML() {
+    public String generateXML(DvObject dvObject) {
         xmlMetadata = template.replace("${identifier}", this.identifier.trim())
                 .replace("${title}", this.title)
                 .replace("${publisher}", this.publisher)
@@ -446,16 +453,51 @@ class DataCiteMetadataTemplate {
         
         StringBuilder fileIdentifiersElement = new StringBuilder();
         
-        for (String fileIdentifier : datafileIdentifiers){
+        generateFileIdentifiers(dvObject);
+        
+        if (datafileIdentifiers != null) {
+            for (String fileIdentifier : datafileIdentifiers){
             fileIdentifiersElement.append("<relatedIdentifier>");
             fileIdentifiersElement.append(fileIdentifier);
             fileIdentifiersElement.append("</relatedIdentifier");
         }
+        
         xmlMetadata = xmlMetadata.replace("${relatedIdentifiers}", fileIdentifiersElement.toString());
+        }
         
         
         xmlMetadata = xmlMetadata.replace("{$contributors}", contributorsElement.toString());
         return xmlMetadata;
+    }
+    
+    public void generateFileIdentifiers(DvObject dvObject)
+    {
+        
+        if (dvObject.isInstanceofDataset())
+        {
+            Dataset dataset = (Dataset) dvObject;
+            
+            if (!(dataset.getFiles().get(0).getIdentifier() == null))
+            {
+            
+                //t = "hello" + dataset.getFiles().get(0);
+                datafileIdentifiers = new ArrayList<>();
+                for (DataFile dataFile : dataset.getFiles())
+                {
+                    datafileIdentifiers.add(dataFile.getIdentifier());
+                    int x = xmlMetadata.indexOf("</relatedIdentifiers>") - 1;
+
+                    //Fails at line below. It goes through all this twice and since the "relatedIdentifier" line gets taken out the first time it is failing when it goes through the second time
+                   xmlMetadata = xmlMetadata.replace("{relatedIdentifier}", dataFile.getIdentifier());
+                   xmlMetadata = xmlMetadata.substring(0, x) + "<relatedIdentifier relatedIdentifierType=\"hasPart\" "
+                           + "relationType=\"DOI\">${relatedIdentifier}</relatedIdentifier>" + template.substring(x, template.length()-1);
+
+                }
+            
+            xmlMetadata = xmlMetadata.replace("<relatedIdentifier relatedIdentifierType=\"hasPart\" relationType=\"DOI\">${relatedIdentifier}</relatedIdentifier>", "");
+            
+            }
+        }
     }
    
 

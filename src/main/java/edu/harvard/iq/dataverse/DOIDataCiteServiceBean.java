@@ -54,6 +54,7 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
         logger.log(Level.FINE,"createIdentifier");
             if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
                 dvObject = generateIdentifier(dvObject);
+                System.out.println(":)");
             }
             String identifier = getIdentifier(dvObject);
             HashMap<String, String> metadata = getMetadataForCreateIndicator(dvObject);
@@ -67,7 +68,6 @@ public class DOIDataCiteServiceBean extends AbstractIdServiceBean {
             logger.log(Level.WARNING, "String {0}", e.toString());
             logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
             logger.log(Level.WARNING, "cause", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
             throw e;
         }
     }
