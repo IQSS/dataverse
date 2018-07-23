@@ -320,6 +320,18 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
 
+    public FileMetadata findMostRecentVersionFileIsIn(DataFile file) {
+        if (file == null) {
+            return null;
+        }
+        List<FileMetadata> fileMetadatas = file.getFileMetadatas();
+        if (fileMetadatas == null || fileMetadatas.isEmpty()) {
+            return null;
+        } else {
+            return fileMetadatas.get(0);
+        }
+    }
+
     public DataFile findCheapAndEasy(Long id) {
         DataFile dataFile;
 

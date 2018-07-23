@@ -215,4 +215,10 @@ public class DataFileServiceBeanTest {
     private DataFile createDataFile(String contentType) {
         return createDataFile(contentType, "");
     }
+
+    @Test
+    public void testfindMostRecentVersionFileIsIn() {
+        assertEquals(null, dataFileServiceBean.findMostRecentVersionFileIsIn(null));
+    }
+
 }
