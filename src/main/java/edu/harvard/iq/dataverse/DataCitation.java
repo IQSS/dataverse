@@ -356,18 +356,65 @@ public class DataCitation {
 		// EndNote (see the longer comment in the EndNote section below)>
 
 		if ((getFileTitle() != null) && isDirect()) {
-			out.write("TY  - DBASE" + "\r\n");
+			out.write("TY  - DATA" + "\r\n");
 			out.write("T1  - " + getFileTitle() + "\r\n");
 			out.write("T2  - " + getTitle() + "\r\n");
 		} else {
-			out.write("TY  - DBASE" + "\r\n");
+			out.write("TY  - DATA" + "\r\n");
 			out.write("T1  - " + getTitle() + "\r\n");
 		}
+		if (seriesTitle != null) {
+			out.write("T3  - " + seriesTitle + "\r\n");
+		}
+		out.write("AB  - " + description + "\r\n");
 		for (String author : authors) {
 			out.write("AU  - " + author + "\r\n");
 		}
+		if (!producers.isEmpty()) {
+			for (String author : producers) {
+				out.write("A2  - " + author + "\r\n");
+			}
+		}
+		if (!funders.isEmpty()) {
+			for (String author : funders) {
+				out.write("A4  - " + author + "\r\n");
+			}
+		}
+		if (!kindsOfData.isEmpty()) {
+			for (String kod : kindsOfData) {
+				out.write("C3  - " + kod + "\r\n");
+			}
+		}	
+		if (!datesOfCollection.isEmpty()) {
+			for (String dateRange : datesOfCollection) {
+				out.write("DA  - " + dateRange + "\r\n");
+			}
+		}
+
+		
 		out.write("DO  - " + persistentId.toString() + "\r\n");
+		out.write("ET  - " + version + "\r\n");
+		if (!keywords.isEmpty()) {
+			for (String keyword : keywords) {
+				out.write("KW  - " + keyword + "\r\n");
+			}
+		}
+		if (!languages.isEmpty()) {
+			for (String lang : languages) {
+				out.write("LA  - " + lang + "\r\n");
+			}
+		}
+
 		out.write("PY  - " + year + "\r\n");
+		
+		if (!spatialCoverages.isEmpty()) {
+			for (String coverage : spatialCoverages) {
+				out.write("RI  - " + coverage + "\r\n");
+			}
+		}
+		
+		out.write("SE  - " + date + "\r\n");
+
 		out.write("UR  - " + persistentId.toURL().toString() + "\r\n");
 		out.write("PB  - " + publisher + "\r\n");
 
