@@ -4298,12 +4298,8 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void selectAllFiles() {
-        logger.info("selectAllFiles called");
-        List<FileMetadata> allFiles = new ArrayList<>();
-        for (FileMetadata fm : workingVersion.getFileMetadatas()) {
-            allFiles.add(fm);
-        }
-        selectedFiles = allFiles;
+        logger.fine("selectAllFiles called");
+        selectedFiles = workingVersion.getFileMetadatas();
     }
 
     public void clearSelection() {
