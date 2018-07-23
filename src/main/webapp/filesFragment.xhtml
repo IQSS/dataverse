@@ -10,7 +10,8 @@
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
- 
+    <o:importFunctions type="java.lang.Math" />
+    <p:remoteCommand name="refreshPaginator" action="#{DatasetPage.refreshPaginator()}" process="@this" update="@form" />
     <!-- Files Table -->
     <p:dataTable id="filesTable" 
                  rows="10" paginator="#{DatasetPage.workingVersion.fileMetadatas.size() gt 10}" paginatorPosition="bottom"
@@ -22,18 +23,19 @@
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  rendered="#{empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
-                 emptyMessage="#{bundle['file.notFound.tip']}">
+                 emptyMessage="#{bundle['file.notFound.tip']}"
+                 >
         <!-- Attempted solution from https://stackoverflow.com/questions/17487670/update-component-at-change-of-page-on-primefaces-datagrid-with-pagination -->
         <!-- Suggestion to use oncomplete at https://stackoverflow.com/questions/28628989/primefaces-paginator-selection -->
         <!-- Something about skipChildren=false mentioned at https://github.com/primefaces/primefaces/issues/1362#issuecomment-216529851 via https://github.com/primefaces/primefaces/issues/687-->
-        <p:ajax event="page" listener="#{DatasetPage.fileListingPaginatorListener}" update="filesHeaderCount"/>
-        <p:ajax  event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" update="filesTable" /> 
+        <p:ajax event="page" listener="#{DatasetPage.fileListingPaginatorListener}" update="filesTable" process="@this"  oncomplete="refreshPaginator()"  immediate="true"/>
+        <p:ajax event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" update="filesTable" /> 
         <p:ajax event="rowUnselectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
         <p:ajax event="rowSelect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
         <p:ajax event="rowSelectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
         <p:ajax event="rowUnselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
         <p:ajax event="rowDblselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this"/>
-        
+
         <f:facet name="header">
             <div class="row form-inline" jsf:id="cloudStorageBlock" jsf:rendered="#{DatasetPage.showComputeButton()}">
                 <!-- Cloud Storage Access -->
@@ -108,8 +110,8 @@
                         <!-- FIXME: DatasetPage.filePage is being updated in the backing bean according to the log but not here. Why? />-->
                         <!-- FIXME: Math is hard. Fix this for 10 per page.-->
                         <!-- Also get it working for all values in rowsPerPageTemplate (currently 10,25,50). This might help: https://stackoverflow.com/questions/21381846/primefaces-datatable-how-to-catch-rows-per-page-event-->
-                        <f:param value="#{DatasetPage.filePaginatorPage + 1}"/>
-                        <f:param value="#{(DatasetPage.filePaginatorPage + 1) * 10}"/>
+                        <f:param value="#{(DatasetPage.filePaginatorPage * DatasetPage.rowsPerPage) + 1}"/>
+                        <f:param value="#{Math:min((DatasetPage.filePaginatorPage + 1) * DatasetPage.rowsPerPage,DatasetPage.fileMetadatasSearch.size()) }"/>
                         <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
                     </h:outputFormat>
                 </div>
