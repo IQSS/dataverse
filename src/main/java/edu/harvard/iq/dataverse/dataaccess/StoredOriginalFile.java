@@ -116,10 +116,12 @@ public class StoredOriginalFile {
             return ".RData";
         } else if (fileType.equalsIgnoreCase("text/csv") || fileType.equalsIgnoreCase("text/comma-separated-values")) {
             return ".csv";
+        } else if (fileType.equalsIgnoreCase("text/tsv") || fileType.equalsIgnoreCase("text/tab-separated-values")) {
+            return ".tsv";
         } else if (fileType.equalsIgnoreCase("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
             return ".xlsx";
         }
-
+        logger.severe(fileType + " does not have an associated file extension");
         return "";
     }
 }

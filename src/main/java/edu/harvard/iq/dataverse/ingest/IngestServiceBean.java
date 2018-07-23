@@ -297,8 +297,7 @@ public class IngestServiceBean {
                     String fileName = fileMetadata.getLabel();
 
                     boolean metadataExtracted = false;
-
-                    if (FileUtil.ingestableAsTabular(dataFile)) {
+                    if (FileUtil.canIngestAsTabular(dataFile)) {
                         /*
                          * Note that we don't try to ingest the file right away - 
                          * instead we mark it as "scheduled for ingest", then at 
@@ -649,9 +648,7 @@ public class IngestServiceBean {
     
     public boolean ingestAsTabular(Long datafile_id) {
         DataFile dataFile = fileService.find(datafile_id);
-        
         boolean ingestSuccessful = false;
-        
         
         // Locate ingest plugin for the file format by looking
         // it up with the Ingest Service Provider Registry:
@@ -754,9 +751,9 @@ public class IngestServiceBean {
 
                 dataFile.setFilesize(tabFile.length());
 
-                // and change the mime type to "tabular" on the final datafile, 
+                // and change the mime type to "Tabular Data" on the final datafile, 
                 // and replace (or add) the extension ".tab" to the filename: 
-                dataFile.setContentType(FileUtil.MIME_TYPE_TAB);
+                dataFile.setContentType(FileUtil.MIME_TYPE_INGESTED_FILE);
                 IngestUtil.modifyExistingFilename(dataFile.getOwner().getLatestVersion(), dataFile.getFileMetadata(), FileUtil.replaceExtension(fileName, "tab"));
 
                 if (FileUtil.MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
@@ -958,8 +955,10 @@ public class IngestServiceBean {
         } else if (mimeType.equals(FileUtil.MIME_TYPE_RDATA)) {
             ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
         } else if (mimeType.equals(FileUtil.MIME_TYPE_CSV) || mimeType.equals(FileUtil.MIME_TYPE_CSV_ALT)) {
-            ingestPlugin = new CSVFileReader(new CSVFileReaderSpi());
-        } else if (mimeType.equals(FileUtil.MIME_TYPE_XLSX)) {
+            ingestPlugin = new CSVFileReader(new CSVFileReaderSpi(), ',');
+        } else if (mimeType.equals(FileUtil.MIME_TYPE_TSV) || mimeType.equals(FileUtil.MIME_TYPE_TSV_ALT)) {
+            ingestPlugin = new CSVFileReader(new CSVFileReaderSpi(), '\t');
+        }  else if (mimeType.equals(FileUtil.MIME_TYPE_XLSX)) {
             ingestPlugin = new XLSXFileReader(new XLSXFileReaderSpi());
         } else if (mimeType.equals(FileUtil.MIME_TYPE_SPSS_SAV)) {
             ingestPlugin = new SAVFileReader(new SAVFileReaderSpi());
@@ -1574,7 +1573,7 @@ public class IngestServiceBean {
         if (dataFile != null && dataFile.isTabularData()) {
             String originalFormat = dataFile.getDataTable().getOriginalFileFormat();
             Long datatableId = dataFile.getDataTable().getId();
-            if (StringUtil.isEmpty(originalFormat) || originalFormat.equals(FileUtil.MIME_TYPE_TAB)) {
+            if (StringUtil.isEmpty(originalFormat) || originalFormat.equals(FileUtil.MIME_TYPE_INGESTED_FILE)) {
 
                 // We need to determine the mime type of the saved original
                 // and save it in the database. 
