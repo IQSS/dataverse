@@ -1495,6 +1495,7 @@ public class DatasetPage implements java.io.Serializable {
                             setHasRsyncScript(true);
                             setRsyncScript(scriptRequestResponse.getScript());
                             rsyncScriptFilename = "upload-"+ workingVersion.getDataset().getIdentifier() + ".bash";
+                            rsyncScriptFilename = rsyncScriptFilename.replace("/", "_");
                         }
                         else{
                             setHasRsyncScript(false);
