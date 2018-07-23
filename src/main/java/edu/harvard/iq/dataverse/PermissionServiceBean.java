@@ -272,7 +272,7 @@ public class PermissionServiceBean {
         
         // Direct assignments to ra on d
         for (RoleAssignment asmnt : assignmentsFor(ra, d)) {
-            p.retainAll(asmnt.getRole().permissions());
+            p.removeAll(asmnt.getRole().permissions());
             if (p.isEmpty()) {
                 return true;
             }
