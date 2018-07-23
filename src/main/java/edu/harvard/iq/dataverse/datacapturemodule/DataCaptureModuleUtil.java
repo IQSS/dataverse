@@ -5,6 +5,7 @@ import com.mashape.unirest.http.JsonNode;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.util.Arrays;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -15,11 +16,11 @@ public class DataCaptureModuleUtil {
     private static final Logger logger = Logger.getLogger(DataCaptureModuleUtil.class.getCanonicalName());
 
     public static boolean rsyncSupportEnabled(String uploadMethodsSettings) {
-        logger.fine("uploadMethodsSettings: " + uploadMethodsSettings);
-        if (uploadMethodsSettings != null && SystemConfig.FileUploadMethods.RSYNC.toString().equals(uploadMethodsSettings)) {
-            return true;
-        } else {
+        logger.fine("uploadMethodsSettings: " + uploadMethodsSettings);; 
+        if (uploadMethodsSettings==null){
             return false;
+        } else {
+           return  Arrays.asList(uploadMethodsSettings.toLowerCase().split("\\s*,\\s*")).contains(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
     }
 
