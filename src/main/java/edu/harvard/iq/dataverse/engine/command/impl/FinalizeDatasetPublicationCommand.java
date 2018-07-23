@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
@@ -181,6 +182,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         String protocol = getDataset().getProtocol();
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
         if ( idServiceBean != null ){
+        	List<String> args = idServiceBean.getProviderInformation();
             try {
             	//A false return value indicates a failure in calling the service
             	if(!idServiceBean.publicizeIdentifier(dataset)) throw new Exception();
@@ -195,7 +197,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 }
             } catch (Throwable e) {
                 ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.pidRegister);
-                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
+                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args),this); 
             }
         }
     }
