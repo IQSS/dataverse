@@ -15,9 +15,8 @@
     <!-- Files Table -->
     <p:dataTable id="filesTable" 
                  rows="10" paginator="#{DatasetPage.workingVersion.fileMetadatas.size() gt 10}" paginatorPosition="bottom"
-                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} #{bundle['file.dynamicCounter.filesPerPage']} {RowsPerPageDropdown}"
+                 paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} #{bundle['file.dynamicCounter.filesPerPage']} {RowsPerPageDropdown}"
                  rowsPerPageTemplate="10,25,50"
-                 currentPageReportTemplate="{startRecord} #{bundle['file.dynamicCounter.to']} {endRecord} #{bundle['file.dynamicCounter.of']} {totalRecords} #{bundle['file.dynamicCounter.files']}"
                  style="margin-right:1px;"
                  value="#{DatasetPage.fileMetadatasSearch}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
