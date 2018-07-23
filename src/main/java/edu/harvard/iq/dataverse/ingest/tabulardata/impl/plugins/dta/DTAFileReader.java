@@ -1367,7 +1367,6 @@ public class DTAFileReader extends TabularDataFileReader{
         // we've just built:
        
         for (int i = 0; i < nvar; i++) {
-            dataTable.getDataVariables().get(i).setLabled(true);
             if (valueLabelsLookupTable[i] != null) {
                 if (tempValueLabelTable.get(valueLabelsLookupTable[i]) != null) {
                     // What if it is null? -- is it a legit condition, that 

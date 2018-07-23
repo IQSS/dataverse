@@ -167,17 +167,17 @@ public class DataVariable implements Serializable {
     @OneToMany (mappedBy="dataVariable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
     @OrderBy("catOrder")
     private Collection<VariableCategory> categories;
-    
-    /*
-     * Variable Lables, for labled data.
-     * Uses VariableCategory for storage.
-     */
-    private boolean isLabled = false;
-    
+
     /*
      * The boolean "ordered": identifies ordered categorical variables ("ordinals"). 
      */
     private boolean orderedFactor = false; 
+
+    /**
+     * On ingest, we set "factor" to true only if the format is RData and the
+     * variable is a factor in R. See also "orderedFactor" above.
+     */
+    private boolean factor;
     
     /*
      * the "Universe" of the variable. (see the DDI documentation for the 
@@ -426,23 +426,20 @@ public class DataVariable implements Serializable {
     public Collection<VariableCategory> getCategories() {
         return this.categories;
     }
-
-    public boolean isLabled () {
-        return (categories != null && isLabled &&categories.size() > 0);
-    }
-    
-    public void setLabled(boolean labled) {
-        this.isLabled = labled;
-    }
     
     public void setCategories(List<VariableCategory> categories) {
         this.categories = categories;
     }
 
+    /**
+     * In the future, when users can edit variable metadata, they may be able to
+     * specify that their variable is categorical. At that point, add `&& isFactor`.
+     */
     public boolean isCategorical () {
-        return (categories != null && !isLabled &&categories.size() > 0);
+        return (categories != null && categories.size() > 0);
     }
     
+    // Only R supports the concept of ordered categorical.
     public boolean isOrderedCategorical () {
         return isCategorical() && orderedFactor; 
     }
@@ -450,7 +447,15 @@ public class DataVariable implements Serializable {
     public void setOrderedCategorical (boolean ordered) {
         orderedFactor = ordered; 
     }
-    
+
+    public boolean isFactor() {
+        return factor;
+    }
+
+    public void setFactor(boolean factor) {
+        this.factor = factor;
+    }
+
     /* getter and setter for weightedVariables - not yet implemented!
     public java.util.Collection<WeightedVarRelationship> getWeightedVariables() {
         return this.weightedVariables;

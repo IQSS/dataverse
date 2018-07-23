@@ -1217,7 +1217,6 @@ public class NewDTAFileReader extends TabularDataFileReader {
             // DataVariables: 
             for (int i = 0; i < dataVariables.size(); i++) {
                 DataVariable dataVariable = dataVariables.get(i);
-                dataVariable.setLabled(true);
                 if (label_table_name.equals(valueLabelsLookupTable[i])) {
                     logger.fine("cross-linking value label table for " + label_table_name);
                     
