@@ -19,8 +19,6 @@ import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-//import static javax.ws.rs.core.Response.Status.
 import edu.harvard.iq.dataverse.DataFile;
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -42,7 +40,6 @@ import javax.json.JsonObjectBuilder;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.Matchers.startsWith;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;

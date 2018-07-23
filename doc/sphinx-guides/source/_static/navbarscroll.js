@@ -3,7 +3,7 @@
     See: http://stackoverflow.com/questions/10732690/offsetting-an-html-anchor-to-adjust-for-fixed-header    
 */
 $jqTheme(document).ready(function() {
-  $jqTheme('a[href*=#]:not([href=#])').on('click', function() {
+  $jqTheme('a[href*="#"]:not([href="#"])').on('click', function() {
     if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') 
 && location.hostname == this.hostname) {
       var target = $jqTheme(this.hash);
