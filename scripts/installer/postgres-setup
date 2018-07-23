@@ -38,11 +38,6 @@ my %CONFIG_PROMPTS = (
     'POSTGRES_PASSWORD', 'Postgres user password',
 );
 
-    $CONFIG_DEFAULTS{'POSTGRES_PORT'} = $ENV{'DB_PORT'};
-    $CONFIG_DEFAULTS{'POSTGRES_SERVER'} = $ENV{'DB_HOST'};
-    $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} = $ENV{'DB_NAME'};
-    $CONFIG_DEFAULTS{'POSTGRES_USER'} = $ENV{'DB_USER'};
-    $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} = $ENV{'DB_PASS'};
 # Supported Posstgres JDBC drivers:
 # (have to be configured explicitely, so that Perl "taint" (security) mode
 # doesn't get paranoid)
@@ -55,6 +50,27 @@ my $pg_major_version = 0;
 my $pg_minor_version = 0;
 my $pod_name = "";
 $pod_name = $ENV{'MY_POD_NAME'};
+
+
+##Handling container env
+
+if ($pod_name eq "start-glassfish")
+{
+    print "Init container starting \n";
+    $CONFIG_DEFAULTS{'POSTGRES_SERVER'} = $ENV{"POSTGRES_SERVER"} . "." .  $ENV{"POSTGRES_SERVICE_HOST"};
+    $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} = $ENV{"POSTGRES_DATABASE"};
+    $CONFIG_DEFAULTS{'POSTGRES_USER'} = $ENV{"POSTGRES_USER"};
+    $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} = $ENV{"POSTGRES_PASSWORD"};
+    $WORKING_OS = "CentOS";
+}
+else
+{
+    $CONFIG_DEFAULTS{'POSTGRES_PORT'} = $ENV{'DB_PORT'};
+    $CONFIG_DEFAULTS{'POSTGRES_SERVER'} = $ENV{'DB_HOST'};
+    $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} = $ENV{'DB_NAME'};
+    $CONFIG_DEFAULTS{'POSTGRES_USER'} = $ENV{'DB_USER'};
+    $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} = $ENV{'DB_PASS'};
+}
 
 my $POSTGRES_SYS_UID;
 if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' || $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq '127.0.0.1' ) 
@@ -111,18 +127,6 @@ for my $sys_path_dir (@sys_path_dirs) {
     print $psql_exec;
 	last;
     }
-}
-
-##Handling container env
-
-if ($pod_name eq "start-glassfish")
-{
-    print "Init container starting \n";
-    $CONFIG_DEFAULTS{'POSTGRES_SERVER'} = $ENV{"POSTGRES_SERVER"} . "." .  $ENV{"POSTGRES_SERVICE_HOST"};
-    $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} = $ENV{"POSTGRES_DATABASE"};
-    $CONFIG_DEFAULTS{'POSTGRES_USER'} = $ENV{"POSTGRES_USER"};
-    $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} = $ENV{"POSTGRES_PASSWORD"};
-    $WORKING_OS = "CentOS";
 }
 
 my $psql_major_version = 0;

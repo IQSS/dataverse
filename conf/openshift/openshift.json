@@ -153,7 +153,7 @@
         "name": "dataverse-plus-glassfish"
       },
       "spec": {
-        "dockerImageRepository": "iqss/dataverse-glassfish:latest"
+        "dockerImageRepository": "charlesthao96/dataverse-glassfish:4874"
       }
     },
     {
@@ -199,28 +199,56 @@
             "initContainers": [
               {
                 "name": "start-glassfish",
-                "image": "iqss/init-container:latest",
+                "image": "charlesthao96/init-container:test",
                 "imagePullPolicy": "Always",
                 "env": [
+                  {
+                    "name": "CONTAINER_NAME",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "metadata.name"
+                      }
+                    }
+                  },
                   {
                     "name": "MY_POD_NAME",
                     "value": "start-glassfish"
                   },
                   {
+                    "name": "POSTGRESQL_ADMIN_PASSWORD",
+                    "valueFrom": {
+                        "secretKeyRef": {
+                    	    "name" : "dataverse-postgresql-admin-secret",
+                    	    "key" : "postgresql-admin-password"
+                    	}
+                    } 
+                  },
+                  {
                     "name": "POSTGRES_SERVER",
                     "value": "dataverse-postgresql-0"
                   },
+                  
                   {
                     "name": "POSTGRES_SERVICE_HOST",
                     "value": "dataverse-postgresql-service"
                   },
                   {
                     "name": "POSTGRES_USER",
-                    "value": "dvnapp"
+                    "valueFrom": {
+                    	"secretKeyRef": {
+                    		"name" : "dataverse-postgres-secret",
+                    		"key" : "postgres-user"
+                    	}
+                    }
                   },
                   {
                     "name": "POSTGRES_PASSWORD",
-                    "value": "secret"
+                    "valueFrom": {
+                    	"secretKeyRef": {
+                    		"name" : "dataverse-postgres-secret",
+                    		"key" : "postgres-password"
+                    	}
+                    }
                   },
                   {
                     "name": "POSTGRES_DATABASE",
@@ -232,7 +260,7 @@
             "containers": [
               {
                 "name": "dataverse-plus-glassfish",
-                "image": "charlesthao96/dataverse-glassfish:testinit",
+                "image": "charlesthao96/dataverse-glassfish:4874",
                 "ports": [
                   {
                     "containerPort": 8080,
@@ -528,7 +556,7 @@
             "containers": [
               {
                 "name": "iqss-dataverse-solr",
-                "image": "iqss-dataverse-solr:latest",
+                "image": "iqssdataverse-solr:latest",
                 "ports": [
                   {
                     "containerPort": 8983,
