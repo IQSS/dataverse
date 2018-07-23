@@ -184,7 +184,7 @@ public class MyDataFilterParams {
         }
 
         if ((this.roleIds == null)||(this.roleIds.isEmpty())){
-            this.addError("No results. Please select at least one Role.");
+            this.addError("No results for " + this.authenticatedUser.getName());
             return;
         }
 
