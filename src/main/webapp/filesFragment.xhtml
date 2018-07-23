@@ -99,16 +99,10 @@
                     <!-- Files Count -->
                     <!--
                     TO-DO: 
-                    - Convert static "1 to 10 of..." to dynamic counter wired to dataTable paginator with p:ajax. FIXME: No longer static but see other FIXMEs.
-                    - Remove {CurrentPageReport} from paginatorTemplate attribute, as well as currentPageReportTemplate attribute
-                    - Sanity check configurable Compute UI elements above the dataTable to make sure we didn't break nothing
                     - ?Fix misleading "# Files Selected on Upload Files/Edit Files pg?
                     - ?Copy over new selection message to Upload Files/Edit Files pg?
                     -->
                     <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold">
-                        <!-- FIXME: DatasetPage.filePage is being updated in the backing bean according to the log but not here. Why? />-->
-                        <!-- FIXME: Math is hard. Fix this for 10 per page.-->
-                        <!-- Also get it working for all values in rowsPerPageTemplate (currently 10,25,50). This might help: https://stackoverflow.com/questions/21381846/primefaces-datatable-how-to-catch-rows-per-page-event-->
                         <f:param value="#{(DatasetPage.filePaginatorPage * DatasetPage.rowsPerPage) + 1}"/>
                         <f:param value="#{Math:min((DatasetPage.filePaginatorPage + 1) * DatasetPage.rowsPerPage,DatasetPage.fileMetadatasSearch.size()) }"/>
                         <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
