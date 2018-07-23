@@ -177,6 +177,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     private void publicizeExternalIdentifier(CommandContext ctxt) throws CommandException {
         String protocol = theDataset.getProtocol();
         IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, ctxt);
+        List<String> args = idServiceBean.getProviderInformation();
         try {
         	//A false return value indicates a failure in calling the service
             if(!idServiceBean.publicizeIdentifier(theDataset)) throw new Throwable();
@@ -195,7 +196,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             //if publicize fails remove the lock for registration
             ctxt.datasets().removeDatasetLocks(theDataset.getId(), DatasetLock.Reason.pidRegister);
             //maybe add notification?
-            List<String> args = idServiceBean.getProviderInformation();
+            
             args.add(settingsWrapper.getSupportTeamName());
             throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
         }
