@@ -197,7 +197,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             ctxt.datasets().removeDatasetLocks(theDataset.getId(), DatasetLock.Reason.pidRegister);
             //maybe add notification?
             
-            args.add(settingsWrapper.getSupportTeamName());
+            args.add("temp support name");
             throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
         }
     }
