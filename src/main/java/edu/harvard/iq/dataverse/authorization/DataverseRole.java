@@ -89,15 +89,15 @@ public class DataverseRole implements Serializable  {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Pattern(regexp=".+", message="A Role must have a name.")
+    @Pattern(regexp=".+", message="{role.name}")
     @Column( nullable = false )
     private String name;
     
-    @Size(max = 255, message = "Description must be at most 255 characters.")
+    @Size(max = 255, message = "{desc.maxLength}")
     private String description;
     
-    @Size(max = 16, message = "Alias must be at most 16 characters.")
-    @Pattern(regexp = "[a-zA-Z0-9\\_\\-]+", message = "Alias cannot be empty. Valid characters are a-Z, 0-9, '_', and '-'.")
+    @Size(max = 16, message = "{alias.maxLength}")
+    @Pattern(regexp = "[a-zA-Z0-9\\_\\-]+", message = "{alias.illegalCharacters}")
     @Column(nullable = false, unique=true)
     private String alias;
 	

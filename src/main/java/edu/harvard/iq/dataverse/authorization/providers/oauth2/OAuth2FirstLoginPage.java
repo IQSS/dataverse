@@ -74,11 +74,11 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     OAuth2UserRecord newUser;
 
-    @NotBlank(message = "Please enter your username.")
+    @NotBlank(message = "{oauth.username}")
     String username;
 
-    @NotBlank(message = "Please enter a valid email address.")
-    @ValidateEmail(message = "Please enter a valid email address.")
+    @NotBlank(message = "{user.invalidEmail}")
+    @ValidateEmail(message = "{user.invalidEmail}")
     String selectedEmail;
 
     String password;

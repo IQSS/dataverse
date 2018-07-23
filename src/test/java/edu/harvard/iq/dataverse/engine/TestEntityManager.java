@@ -5,13 +5,21 @@
  */
 package edu.harvard.iq.dataverse.engine;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.FlushModeType;
+import javax.persistence.Id;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
@@ -27,10 +35,14 @@ import javax.persistence.metamodel.Metamodel;
  * @author skraffmi
  */
 public class TestEntityManager implements EntityManager {
-
+    
+    Set<Object> newlyPersistedObjects = new HashSet<>();
+    Map<Class,Map<Object,Object>> tables = new HashMap<>();
+    final AtomicLong nextId = new AtomicLong(0);
+    
     @Override
     public void persist(Object entity) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        newlyPersistedObjects.add( entity );
     }
 
     @Override
@@ -70,7 +82,24 @@ public class TestEntityManager implements EntityManager {
 
     @Override
     public void flush() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        newlyPersistedObjects.stream().forEach( o -> {
+            Class<?> clz = o.getClass();
+            if ( ! tables.containsKey(clz) ) {
+                tables.put( clz, new HashMap<>());
+            }
+            for ( Field f : clz.getFields() ) {
+                if ( f.getAnnotation(Id.class) != null ) {
+                    long id = nextId.incrementAndGet();
+                    try {
+                        f.setAccessible(true);
+                        f.set(o, id);
+                        tables.get(clz).put(id, o);
+                    } catch (IllegalArgumentException | IllegalAccessException ex) {
+                        Logger.getLogger(TestEntityManager.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        });
     }
 
     @Override

@@ -191,13 +191,14 @@
             </div>
         </p:column>
         <p:column class="col-file-metadata">
-            <ui:fragment rendered="#{!empty fileMetadata.dataFile.globalId}">
+            
+            <ui:fragment rendered="#{!empty fileMetadata.dataFile.globalIdString}">
                 <!-- rendered="# {!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" -->
-                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(fileMetadata.dataFile.globalId).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(fileMetadata.dataFile.globalIdString).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
                     #{fileMetadata.label}
                 </a>
             </ui:fragment>
-            <ui:fragment rendered="#{empty fileMetadata.dataFile.globalId}">
+            <ui:fragment rendered="#{empty fileMetadata.dataFile.globalIdString}">
                 <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
                     #{fileMetadata.label}
                 </a>

@@ -8,9 +8,9 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public abstract class AbstractIdServiceBean implements IdServiceBean {
+public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean {
 
-    private static final Logger logger = Logger.getLogger(AbstractIdServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(AbstractGlobalIdServiceBean.class.getCanonicalName());
 
     @EJB
     DataverseServiceBean dataverseService;
@@ -31,25 +31,24 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
         return protocol + ":" + authority + "/" + identifier;
     }
 
-    
     @Override
-    public HashMap<String, String> getMetadataForCreateIndicator(DvObject dvObjectIn) {
+    public Map<String, String> getMetadataForCreateIndicator(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getMetadataForCreateIndicator(DvObject)");
-        HashMap<String, String> metadata = new HashMap<>();
+        Map<String, String> metadata = new HashMap<>();
         metadata = addBasicMetadata(dvObjectIn, metadata);
         metadata.put("datacite.publicationyear", generateYear(dvObjectIn));
         metadata.put("_target", getTargetUrl(dvObjectIn));
         return metadata;
     }
 
-    protected HashMap<String, String> getUpdateMetadata(DvObject dvObjectIn) {
+    protected Map<String, String> getUpdateMetadata(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getUpdateMetadataFromDataset");
-        HashMap<String, String> metadata = new HashMap<>();
+        Map<String, String> metadata = new HashMap<>();
         metadata = addBasicMetadata(dvObjectIn, metadata);
         return metadata;
     }
     
-    protected HashMap<String, String> addBasicMetadata(DvObject dvObjectIn, HashMap<String, String> metadata) {
+    protected Map<String, String> addBasicMetadata(DvObject dvObjectIn, Map<String, String> metadata) {
 
         String authorString = dvObjectIn.getAuthorString();
 
@@ -71,20 +70,24 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
 
     protected String getTargetUrl(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getTargetUrl");
-        return systemConfig.getDataverseSiteUrl() + dvObjectIn.getTargetUrl() + dvObjectIn.getGlobalId();
+        return systemConfig.getDataverseSiteUrl() + dvObjectIn.getTargetUrl() + dvObjectIn.getGlobalIdString();
     }
     
     @Override
     public String getIdentifier(DvObject dvObject) {
-        return dvObject.getGlobalId();
+        return dvObject.getGlobalId().asString();
+    }
+
+    protected String getTargetUrl(Dataset datasetIn) {
+        logger.log(Level.FINE,"getTargetUrl");
+        return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + datasetIn.getGlobalIdString();
     }
     
     protected String generateYear (DvObject dvObjectIn){
         return dvObjectIn.getYearPublishedCreated(); 
     }
     
-    @Override
-    public HashMap<String, String> getMetadataForTargetURL(DvObject dvObject) {
+    public Map<String, String> getMetadataForTargetURL(DvObject dvObject) {
         logger.log(Level.FINE,"getMetadataForTargetURL");
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put("_target", getTargetUrl(dvObject));
@@ -96,7 +99,7 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
 
         String protocol = dvObject.getProtocol() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : dvObject.getProtocol();
         String authority = dvObject.getAuthority() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : dvObject.getAuthority();
-        IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, commandEngine.getContext());
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, commandEngine.getContext());
         if (dvObject.isInstanceofDataset()) {
             dvObject.setIdentifier(datasetService.generateDatasetIdentifier((Dataset) dvObject, idServiceBean));
         } else {
@@ -110,4 +113,5 @@ public abstract class AbstractIdServiceBean implements IdServiceBean {
         }
         return dvObject;
     }
+    
 }
