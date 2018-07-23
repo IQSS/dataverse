@@ -243,11 +243,11 @@ public class MailServiceBean implements java.io.Serializable {
     } 
     
     private String getDatasetLink(Dataset dataset){        
-        return  systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + dataset.getGlobalId();
+        return  systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString();
     } 
     
     private String getDatasetDraftLink(Dataset dataset){        
-        return  systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&version=DRAFT" + "&faces-redirect=true"; 
+        return  systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&version=DRAFT" + "&faces-redirect=true"; 
     } 
     
     private String getDataverseLink(Dataverse dataverse){       
@@ -485,7 +485,7 @@ public class MailServiceBean implements java.io.Serializable {
             case CHECKSUMFAIL:
                 dataset =  (Dataset) targetObject;
                 String checksumFailMsg = BundleUtil.getStringFromBundle("notification.checksumfail", Arrays.asList(
-                        dataset.getGlobalId()
+                        dataset.getGlobalIdString()
                 ));
                 logger.fine("checksumFailMsg: " + checksumFailMsg);
                 return messageText += checksumFailMsg;
@@ -494,7 +494,7 @@ public class MailServiceBean implements java.io.Serializable {
                 version =  (DatasetVersion) targetObject;
                 String fileImportMsg = BundleUtil.getStringFromBundle("notification.mail.import.filesystem", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
-                        version.getDataset().getGlobalId(),
+                        version.getDataset().getGlobalIdString(),
                         version.getDataset().getDisplayName()
                 ));
                 logger.fine("fileImportMsg: " + fileImportMsg);
@@ -503,7 +503,7 @@ public class MailServiceBean implements java.io.Serializable {
             case CHECKSUMIMPORT:
                 version =  (DatasetVersion) targetObject;
                 String checksumImportMsg = BundleUtil.getStringFromBundle("notification.import.checksum", Arrays.asList(
-                        version.getDataset().getGlobalId(),
+                        version.getDataset().getGlobalIdString(),
                         version.getDataset().getDisplayName()
                 ));
                 logger.fine("checksumImportMsg: " + checksumImportMsg);

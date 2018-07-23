@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.api;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
@@ -21,8 +20,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -123,7 +122,7 @@ public class Files extends AbstractApiBean {
 
         // update the dataset
         try {
-            engineSvc.submit(new UpdateDatasetCommand(dataFile.getOwner(), dataverseRequest));
+            engineSvc.submit(new UpdateDatasetVersionCommand(dataFile.getOwner(), dataverseRequest));
         } catch (CommandException ex) {
             return error(BAD_REQUEST, "Problem saving datafile " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
         }
@@ -158,7 +157,7 @@ public class Files extends AbstractApiBean {
         // -------------------------------------
         User authUser;
         try {
-            authUser = this.findUserOrDie();
+            authUser = findUserOrDie();
         } catch (AbstractApiBean.WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN, 
                     ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")

@@ -7,34 +7,46 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
+import java.util.Optional;
 import javax.ejb.EJB;
-import javax.persistence.Query;
 
 /**
  *
  * @author skraffmiller
  */
 public class GlobalId implements java.io.Serializable {
-
     
     public static final String DOI_PROTOCOL = "doi";
     public static final String HDL_PROTOCOL = "hdl";
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
     public static final String DOI_RESOLVER_URL = "https://doi.org/";
     
+    public static Optional<GlobalId> parse(String identifierString) {
+        try {
+            return Optional.of(new GlobalId(identifierString));
+        } catch ( IllegalArgumentException _iae) {
+            return Optional.empty();
+        }
+    }
+    
     private static final Logger logger = Logger.getLogger(GlobalId.class.getName());
     
     @EJB
     SettingsServiceBean settingsService;
 
+    /**
+     * 
+     * @param identifier The string to be parsed
+     * @throws IllegalArgumentException if the passed string cannot be parsed.
+     */
     public GlobalId(String identifier) {
-        
         // set the protocol, authority, and identifier via parsePersistentId        
-        if (!this.parsePersistentId(identifier)){
+        if ( ! parsePersistentId(identifier) ){
             throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
         }
     }
@@ -45,8 +57,7 @@ public class GlobalId implements java.io.Serializable {
         this.identifier = identifier;
     }
     
-    public GlobalId(DvObject dvObject)
-    {
+    public GlobalId(DvObject dvObject) {
         this.authority = dvObject.getAuthority();
         this.protocol = dvObject.getProtocol();
         this.identifier = dvObject.getIdentifier(); 
@@ -56,6 +67,15 @@ public class GlobalId implements java.io.Serializable {
     private String authority;
     private String identifier;
 
+    /**
+     * Tests whether {@code this} instance has all the data required for a 
+     * global id.
+     * @return {@code true} iff all the fields are non-empty; {@code false} otherwise.
+     */
+    public boolean isComplete() {
+        return !(isEmpty(protocol)||isEmpty(authority)||isEmpty(identifier));
+    }
+    
     public String getProtocol() {
         return protocol;
     }
@@ -79,8 +99,18 @@ public class GlobalId implements java.io.Serializable {
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
-
+    
     public String toString() {
+        return asString();
+    }
+    
+    /**
+     * Returns {@code this}' string representation. Differs from {@link #toString}
+     * which can also contain debug data, if needed.
+     * 
+     * @return The string representation of this global id.
+     */
+    public String asString() {
         if (protocol == null || authority == null || identifier == null) {
             return "";
         }
@@ -119,9 +149,11 @@ public class GlobalId implements java.io.Serializable {
      *       identifier: 111012
      *
      * @param identifierString
-     * 
+     * @param separator the string that separates the authority from the identifier.
+     * @param destination the global id that will contain the parsed data.
+     * @return {@code destination}, after its fields have been updated, or
+     *         {@code null} if parsing failed.
      */
-    
     private boolean parsePersistentId(String identifierString) {
 
         if (identifierString == null) {
@@ -147,18 +179,17 @@ public class GlobalId implements java.io.Serializable {
                 //Strip any whitespace, ; and ' from identifier (should finding them cause a failure instead?)
                 identifier = formatIdentifierString(identifierString.substring(index2 + 1));
             } else {
-                logger.info("Error parsing identifier: " + identifierString
-                        + ": ':<authority>/<identifier>' not found in string");
+                logger.log(Level.INFO, "Error parsing identifier: {0}: '':<authority>/<identifier>'' not found in string", identifierString);
                 return false;
             }
         } else {
-            logger.info("Error parsing identifier: " + identifierString + ": '<protocol>:' not found in string");
+            logger.log(Level.INFO, "Error parsing identifier: {0}: ''<protocol>:'' not found in string", identifierString);
             return false;
         }
         return true;
     }
     
-    private String formatIdentifierString(String str){
+    private static String formatIdentifierString(String str){
         
         if (str == null){
             return null;

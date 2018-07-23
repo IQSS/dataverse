@@ -8,7 +8,7 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -75,11 +75,11 @@ public class CollectionListManagerImpl implements CollectionListManager {
                      * data, say in the root dataverse? Remove this todo if
                      * there are no complaints. :)
                      */
-                    if (!permissionService.isUserAllowedOn(user, new UpdateDatasetCommand(dataset, dvReq), dataset)) {
+                    if (!permissionService.isUserAllowedOn(user, new UpdateDatasetVersionCommand(dataset, dvReq), dataset)) {
                         continue;
                     }
-                    String editUri = baseUrl + "/edit/study/" + dataset.getGlobalId();
-                    String editMediaUri = baseUrl + "/edit-media/study/" + dataset.getGlobalId();
+                    String editUri = baseUrl + "/edit/study/" + dataset.getGlobalIdString();
+                    String editMediaUri = baseUrl + "/edit-media/study/" + dataset.getGlobalIdString();
                     Entry entry = feed.addEntry();
                     entry.setId(editUri);
                     entry.setTitle(datasetService.getTitleFromLatestVersion(dataset.getId()));
