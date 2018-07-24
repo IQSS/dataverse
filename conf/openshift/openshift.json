@@ -203,8 +203,25 @@
                 "imagePullPolicy": "IfNotPresent",
                 "env": [
                   {
+                    "name": "CONTAINER_NAME",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "metadata.name"
+                      }
+                    }
+                  },
+                  {
                     "name": "MY_POD_NAME",
                     "value": "start-glassfish"
+                  },
+                  {
+                    "name": "POSTGRESQL_ADMIN_PASSWORD",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "dataverse-postgresql-admin-secret",
+                        "key": "postgresql-admin-password"
+                      }
+                    }
                   },
                   {
                     "name": "POSTGRES_SERVER",
@@ -216,11 +233,21 @@
                   },
                   {
                     "name": "POSTGRES_USER",
-                    "value": "dvnapp"
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "dataverse-postgres-secret",
+                        "key": "postgres-user"
+                      }
+                    }
                   },
                   {
                     "name": "POSTGRES_PASSWORD",
-                    "value": "secret"
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "dataverse-postgres-secret",
+                        "key": "postgres-password"
+                      }
+                    }
                   },
                   {
                     "name": "POSTGRES_DATABASE",
