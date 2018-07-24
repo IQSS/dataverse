@@ -480,6 +480,7 @@ if ($postgresonly) {
 
 if ( system( $psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
 {
+    print ($psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" . "\n");
     print STDERR "Oops, haven't been able to connect to the database " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . ",\n";
     print STDERR "running on " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . ", as user " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . ".\n\n";
     print STDERR "Aborting the installation (sorry!)\n";
