@@ -148,10 +148,6 @@ public class Datasets extends AbstractApiBean {
     @EJB
     EjbDataverseEngine commandEngine;
     
-//MAD: Should I add this or fix the code using it?
-    @EJB
-    DatasetServiceBean datasetServiceBean;
-    
     @EJB
     S3PackageImporter s3PackageImporter;
      
@@ -700,8 +696,6 @@ public class Datasets extends AbstractApiBean {
         }
     }
     
-    //MAD: Maybe rename to something more reflective of the importing happening after validation
-    
     /**
      * This api endpoint triggers the creation of a "package" file in a dataset 
      *    after that package has been moved onto the same filesystem via the Data Capture Module.
@@ -772,7 +766,7 @@ public class Datasets extends AbstractApiBean {
                         if (dcmLock == null) {
                             logger.log(Level.WARNING, "Dataset not locked for DCM upload");
                         } else {
-                            datasetServiceBean.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.DcmUpload);
+                            datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.DcmUpload);
                             dataset.removeLock(dcmLock);
                         }
                         
@@ -794,8 +788,7 @@ public class Datasets extends AbstractApiBean {
                         JsonObjectBuilder job = Json.createObjectBuilder();
                         return ok(job);
                         
-                    } catch (Exception e) {
-//MAD: This is probably not helping with the debugging of the error handling
+                    }  catch (IOException e) {
                         String message = e.getMessage();
                         return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to move the files into Dataverse. Message was '" + message + "'.");
                     } 

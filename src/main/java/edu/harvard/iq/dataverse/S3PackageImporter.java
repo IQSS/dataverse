@@ -59,9 +59,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
     @EJB
     EjbDataverseEngine commandEngine;
     
-    public void copyFromS3(Dataset dataset, String s3ImportPath) throws Exception {
-
-        
+    public void copyFromS3(Dataset dataset, String s3ImportPath) throws IOException {
         try {
             s3 = AmazonS3ClientBuilder.standard().defaultClient();
         } catch (Exception e) {
@@ -74,11 +72,11 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
 
         String fileMode = FileRecordWriter.FILE_MODE_PACKAGE_FILE;
 
-        String dcmBucketName = System.getProperty("dataverse.files.dcm-s3-bucket-name");  //"test-dcm"; //MAD: PUT IN CONFIGS
+        String dcmBucketName = System.getProperty("dataverse.files.dcm-s3-bucket-name");
         String dcmDatasetKey = s3ImportPath;
         String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
-//MAD: In more than 1 place, maybe make function?
-        String dvDatasetKey = dataset.getAuthority() + "/" + dataset.getIdentifier(); //+ "/" + itemTag;
+
+        String dvDatasetKey = getS3DatasetKey(dataset);
         
         logger.log(Level.INFO, "S3 Import related attributes. dcmBucketName: {0} | dcmDatasetKey: {1} | dvBucketName: {2} | dvDatasetKey: {3} |", 
                 new Object[]{dcmBucketName, dcmDatasetKey, dvBucketName, dvDatasetKey});
@@ -99,14 +97,11 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         ObjectListing storedDcmDatsetFilesList;
         try {
             storedDcmDatsetFilesList = s3.listObjects(req);
-//MAD: Eventually remove these noisy debug messages completely
-            logger.log(Level.INFO, "S3 Import debug 1");
         } catch (SdkClientException sce) {
             logger.info("Caught an SdkClientException in s3ImportUtil:    " + sce.getMessage());
             throw new IOException ("S3 listAuxObjects: failed to get a listing for "+dcmDatasetKey);
         }
         List<S3ObjectSummary> storedDcmDatasetFilesSummary = storedDcmDatsetFilesList.getObjectSummaries();
-        logger.log(Level.INFO, "S3 Import debug 2");
         try {
             while (storedDcmDatsetFilesList.isTruncated()) {
                 logger.fine("S3 listAuxObjects: going to next page of list");
@@ -119,36 +114,37 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             logger.info("Caught an AmazonServiceException in s3ImportUtil:    " + ase.getMessage());
             throw new IOException("S3AccessIO: Failed to get aux objects for listing.");
         }
-        logger.log(Level.INFO, "S3 Import debug 3. Size " + storedDcmDatasetFilesSummary.size() + " |  Contents " + storedDcmDatasetFilesSummary );
-
         for (S3ObjectSummary item : storedDcmDatasetFilesSummary) {
 
             logger.log(Level.INFO, "S3 Import file copy for {0}", new Object[]{item});
             String dcmFileKey = item.getKey();
 
-            String copyFileName = dcmFileKey.substring(dcmFileKey.lastIndexOf('/') + 1); //MAD: maybe break into method if used more than once... maybe not here
+            String copyFileName = dcmFileKey.substring(dcmFileKey.lastIndexOf('/') + 1);
 
             logger.log(Level.INFO, "S3 file copy related attributes. dcmBucketName: {0} | dcmFileKey: {1} | dvBucketName: {2} | copyFilePath: {3} |", 
                 new Object[]{dcmBucketName, dcmFileKey, dvBucketName, dvDatasetKey+"/"+copyFileName});
 
             s3.copyObject(new CopyObjectRequest(dcmBucketName, dcmFileKey, dvBucketName, dvDatasetKey+"/"+copyFileName));                
-//MAD: Leaving commented for now for testing
-            //s3.deleteObject(new DeleteObjectRequest(dcmBucketName, dcmFileKey));
+            
+            try {
+                s3.deleteObject(new DeleteObjectRequest(dcmBucketName, dcmFileKey));
+            }  catch (AmazonClientException ase) {
+                logger.warning("Caught an AmazonClientException deleting s3 object from dcm bucket: " + ase.getMessage());
+                throw new IOException("Failed to delete object" + new Object[]{item});
+            }
         }
- 
-//MAD: The FileRecordWriter code also renames the folder to the storage identifier. Why?
 
     }
     
     public DataFile createPackageDataFile(Dataset dataset, String folderName, long totalSize) {
             DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
-            packageFile.setChecksumType(DataFile.ChecksumType.SHA1); // initial default
+            packageFile.setChecksumType(DataFile.ChecksumType.SHA1);
             
             FileUtil.generateStorageIdentifier(packageFile);
             
             
             String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
-            String dvDatasetKey = dataset.getAuthority() + "/" + dataset.getIdentifier(); //+ "/" + itemTag;
+            String dvDatasetKey = getS3DatasetKey(dataset);
             S3Object s3object = null; 
 
             s3object = s3.getObject(new GetObjectRequest(dvBucketName, dvDatasetKey+"/files.sha"));
@@ -157,10 +153,8 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             String checksumVal = FileUtil.CalculateChecksum(in, packageFile.getChecksumType());
 
             packageFile.setChecksumValue(checksumVal); 
-            
-            logger.log(Level.INFO, "createPackageDataFile 1");
 
-            packageFile.setFilesize(totalSize); //MAD: was totalSize
+            packageFile.setFilesize(totalSize);
             packageFile.setModificationTime(new Timestamp(new Date().getTime()));
             packageFile.setCreateDate(new Timestamp(new Date().getTime()));
             packageFile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
@@ -171,9 +165,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
 
             // set metadata and add to latest version
             FileMetadata fmd = new FileMetadata();
-            fmd.setLabel(folderName.substring(folderName.lastIndexOf('/') + 1)); //MAD: In the file code there was a check to verify this name alongside the checksum calc
-            
-            logger.log(Level.INFO, "createPackageDataFile 2");
+            fmd.setLabel(folderName.substring(folderName.lastIndexOf('/') + 1));
             
             fmd.setDataFile(packageFile);
             packageFile.getFileMetadatas().add(fmd);
@@ -181,22 +173,17 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
 
             dataset.getLatestVersion().getFileMetadatas().add(fmd);
             fmd.setDatasetVersion(dataset.getLatestVersion());
-
-            logger.log(Level.INFO, "createPackageDataFile 2.1 . commandEngine: " + commandEngine);
             
             IdServiceBean idServiceBean = IdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
-            logger.log(Level.INFO, "createPackageDataFile 2.1 . packageFile: " + packageFile);
             if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
                 String packageIdentifier = dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean);
-                logger.log(Level.INFO, "createPackageDataFile 2.1.5 . dataFileServiceBean: " + dataFileServiceBean);
-                logger.log(Level.INFO, "createPackageDataFile 2.1.6 . packageIdentifier: " + packageIdentifier);
                 packageFile.setIdentifier(packageIdentifier);
             }
             
             String nonNullDefaultIfKeyNotFound = "";
             String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
             String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-            logger.log(Level.INFO, "createPackageDataFile 3");
+
             if (packageFile.getProtocol() == null) {
                 packageFile.setProtocol(protocol);
             }
@@ -210,7 +197,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
                 try {
                     doiRetString = idServiceBean.createIdentifier(packageFile);
                 } catch (Throwable e) {
-                    //MAD: I'm pretty sure this wasn't caught in the orig code either but...
+                    
                 }
 
                 // Check return value to make sure registration succeeded
@@ -219,7 +206,11 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
                     packageFile.setGlobalIdCreateTime(new Date());
                 }
             }
-        logger.log(Level.INFO, "createPackageDataFile 4");
+
         return packageFile;
+    }
+    
+    public String getS3DatasetKey(Dataset dataset) {
+        return dataset.getAuthority() + "/" + dataset.getIdentifier();
     }
 }
