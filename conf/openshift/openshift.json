@@ -200,7 +200,7 @@
               {
                 "name": "start-glassfish",
                 "image": "iqss/init-container:latest",
-                "imagePullPolicy": "Always",
+                "imagePullPolicy": "IfNotPresent",
                 "env": [
                   {
                     "name": "CONTAINER_NAME",
@@ -338,7 +338,7 @@
                     "value": "dvndb"
                   }
                 ],
-                "imagePullPolicy": "Always",
+                "imagePullPolicy": "IfNotPresent",
                 "securityContext": {
                   "capabilities": {},
                   "privileged": false
@@ -492,7 +492,7 @@
                     "memory": "256Mi"
                   }
                 },
-                "imagePullPolicy": "Always",
+                "imagePullPolicy": "IfNotPresent",
                 "securityContext": {
                   "capabilities": {},
                   "privileged": false
@@ -568,7 +568,7 @@
                     "memory": "1024Mi"
                   }
                 },
-                "imagePullPolicy": "Always",
+                "imagePullPolicy": "IfNotPresent",
                 "securityContext": {
                   "capabilities": {},
                   "privileged": false
