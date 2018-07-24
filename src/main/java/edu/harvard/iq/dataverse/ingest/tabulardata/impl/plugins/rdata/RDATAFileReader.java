@@ -90,7 +90,7 @@ public class RDATAFileReader extends TabularDataFileReader {
   // RServe static variables
   private static String RSERVE_HOST = System.getProperty("dataverse.rserve.host");
   private static String RSERVE_USER = System.getProperty("dataverse.rserve.user");
-  private static String RSERVE_PASSWORD = System.getProperty("dataverse.rserve.pwrd");
+  private static String RSERVE_PASSWORD = System.getProperty("dataverse.rserve.password");
   private static int RSERVE_PORT;
   
   // TODO: 

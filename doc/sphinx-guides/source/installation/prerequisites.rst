@@ -269,7 +269,53 @@ If the installed location of the convert executable is different from ``/usr/bin
 
 (see the :doc:`config` section for more information on the JVM options)
 
+R
+-
 
+Dataverse uses `R <https://https://cran.r-project.org/>`_ to ingest R (.RData) files as tabular data; to export tabular data as .RData files; and to generate .prep metadata for tabular data files, used by external data exploration tools, such as `Data Explorer <https://github.com/scholarsportal/Dataverse-Data-Explorer>`_ and `TwoRavens <https://github.com/IQSS/TwoRavens>`_. R can be considered an optional component, meaning that if you don't have R installed, you will still be able to run and use Dataverse - but the pieces of functionality specific to tabular data mentioned above will not be available to your users. 
+
+Installing R
+============
+
+Can be installed with :fixedwidthplain:`yum`::
+
+       yum install R R-devel
+
+EPEL distribution is strongly recommended. The version of R currently available from epel6 and epel7 is 3.5; it has been tested and is known to work on RedHat and CentOS versions 6 and 7.
+
+If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ):
+
+RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 7::
+
+       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 6::
+
+       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+
+RHEL users will want to log in to their organization's respective RHN interface, find the particular machine in question and:
+
+• click on "Subscribed Channels: Alter Channel Subscriptions"
+• enable EPEL, Server Extras, Server Optional
+
+Installing the required R libraries
+===================================
+
+The following R packages (libraries) are required::
+
+    R2HTML
+    rjson
+    DescTools
+    Rserve
+    haven
+
+Install them following the normal R package installation procedures. For example, with the following R commands::
+
+	install.packages("R2HTML", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("rjson", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("DescTools", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("Rserve", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("haven", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
 
 Now that you have all the prerequisites in place, you can proceed to the :doc:`installation-main` section.
 
