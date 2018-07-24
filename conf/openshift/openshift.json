@@ -18,19 +18,19 @@
       "metadata": {
         "name": "dataverse-admin-secret"
       },
-      "stringData" : {
-        "admin-password" : "${ADMIN_PASSWORD}"
+      "stringData": {
+        "admin-password": "${ADMIN_PASSWORD}"
       }
     },
-  	{
+    {
       "kind": "Secret",
       "apiVersion": "v1",
       "metadata": {
         "name": "dataverse-postgres-secret"
       },
-      "stringData" : {
-        "postgres-user" : "${POSTGRES_USER}",
-        "postgres-password" : "${POSTGRES_PASSWORD}"
+      "stringData": {
+        "postgres-user": "${POSTGRES_USER}",
+        "postgres-password": "${POSTGRES_PASSWORD}"
       }
     },
     {
@@ -39,9 +39,9 @@
       "metadata": {
         "name": "dataverse-postgresql-secret"
       },
-      "stringData" : {
-        "postgresql-user" : "${POSTGRESQL_USER}",
-        "postgresql-password" : "${POSTGRESQL_PASSWORD}"
+      "stringData": {
+        "postgresql-user": "${POSTGRESQL_USER}",
+        "postgresql-password": "${POSTGRESQL_PASSWORD}"
       }
     },
     {
@@ -50,9 +50,9 @@
       "metadata": {
         "name": "dataverse-postgresql-master-secret"
       },
-      "stringData" : {
-        "postgresql-master-user" : "${POSTGRESQL_MASTER_USER}",
-        "postgresql-master-password" : "${POSTGRESQL_MASTER_PASSWORD}"
+      "stringData": {
+        "postgresql-master-user": "${POSTGRESQL_MASTER_USER}",
+        "postgresql-master-password": "${POSTGRESQL_MASTER_PASSWORD}"
       }
     },
     {
@@ -61,8 +61,8 @@
       "metadata": {
         "name": "dataverse-postgresql-admin-secret"
       },
-      "stringData" : {
-        "postgresql-admin-password" : "${POSTGRESQL_ADMIN_PASSWORD}"
+      "stringData": {
+        "postgresql-admin-password": "${POSTGRESQL_ADMIN_PASSWORD}"
       }
     },
     {
@@ -260,11 +260,11 @@
                   {
                     "name": "POSTGRESQL_ADMIN_PASSWORD",
                     "valueFrom": {
-                        "secretKeyRef": {
-                    	    "name" : "dataverse-postgresql-admin-secret",
-                    	    "key" : "postgresql-admin-password"
-                    	}
-                    } 
+                      "secretKeyRef": {
+                        "name": "dataverse-postgresql-admin-secret",
+                        "key": "postgresql-admin-password"
+                      }
+                    }
                   },
                   {
                     "name": "POSTGRES_SERVICE_HOST",
@@ -277,10 +277,10 @@
                   {
                     "name": "ADMIN_PASSWORD",
                     "valueFrom": {
-                    	"secretKeyRef": {
-                    		"name" : "dataverse-admin-secret",
-                    		"key" : "admin-password"
-                    	}
+                      "secretKeyRef": {
+                        "name": "dataverse-admin-secret",
+                        "key": "admin-password"
+                      }
                     }
                   },
                   {
@@ -290,19 +290,19 @@
                   {
                     "name": "POSTGRES_USER",
                     "valueFrom": {
-                    	"secretKeyRef": {
-                    		"name" : "dataverse-postgres-secret",
-                    		"key" : "postgres-user"
-                    	}
+                      "secretKeyRef": {
+                        "name": "dataverse-postgres-secret",
+                        "key": "postgres-user"
+                      }
                     }
                   },
                   {
                     "name": "POSTGRES_PASSWORD",
                     "valueFrom": {
-                    	"secretKeyRef": {
-                    		"name" : "dataverse-postgres-secret",
-                    		"key" : "postgres-password"
-                    	}
+                      "secretKeyRef": {
+                        "name": "dataverse-postgres-secret",
+                        "key": "postgres-password"
+                      }
                     }
                   },
                   {
@@ -396,37 +396,37 @@
                   {
                     "name": "POSTGRESQL_USER",
                     "valueFrom": {
-                    	"secretKeyRef": {
-                    		"name" : "dataverse-postgresql-secret",
-                    		"key" : "postgresql-user"
-                    	}
+                      "secretKeyRef": {
+                        "name": "dataverse-postgresql-secret",
+                        "key": "postgresql-user"
+                      }
                     }
                   },
                   {
                     "name": "POSTGRESQL_MASTER_USER",
                     "valueFrom": {
-                    	"secretKeyRef": {
-                    		"name" : "dataverse-postgresql-master-secret",
-                    		"key" : "postgresql-master-user"
-                    	}
+                      "secretKeyRef": {
+                        "name": "dataverse-postgresql-master-secret",
+                        "key": "postgresql-master-user"
+                      }
                     }
                   },
                   {
                     "name": "POSTGRESQL_PASSWORD",
                     "valueFrom": {
-                    	"secretKeyRef": {
-                    		"name" : "dataverse-postgresql-secret",
-                    		"key" : "postgresql-password"
-                    	}
+                      "secretKeyRef": {
+                        "name": "dataverse-postgresql-secret",
+                        "key": "postgresql-password"
+                      }
                     }
                   },
                   {
                     "name": "POSTGRESQL_MASTER_PASSWORD",
                     "valueFrom": {
-                    	"secretKeyRef": {
-                    		"name" : "dataverse-postgresql-master-secret",
-                    		"key" : "postgresql-master-password"
-                    	}
+                      "secretKeyRef": {
+                        "name": "dataverse-postgresql-master-secret",
+                        "key": "postgresql-master-password"
+                      }
                     }
                   },
                   {
@@ -452,10 +452,10 @@
                   {
                     "name": "POSTGRESQL_ADMIN_PASSWORD",
                     "valueFrom": {
-                    	"secretKeyRef": {
-                    		"name" : "dataverse-postgresql-admin-secret",
-                    		"key" : "postgresql-admin-password"
-                    	}
+                      "secretKeyRef": {
+                        "name": "dataverse-postgresql-admin-secret",
+                        "key": "postgresql-admin-password"
+                      }
                     }
                   }
                 ],
@@ -585,52 +585,52 @@
   ],
   "parameters": [
     {
-  	"name": "ADMIN_PASSWORD",
-  	"description": "admin password",
-        "generate": "expression",
-        "from": "[a-zA-Z0-9]{8}"
+      "name": "ADMIN_PASSWORD",
+      "description": "admin password",
+      "generate": "expression",
+      "from": "[a-zA-Z0-9]{8}"
     },
     {
-        "name": "POSTGRES_USER",
-        "description": "postgres user",
-        "generate": "expression",
-        "from": "user[A-Z0-9]{3}"
+      "name": "POSTGRES_USER",
+      "description": "postgres user",
+      "generate": "expression",
+      "from": "user[A-Z0-9]{3}"
     },
     {
-        "name": "POSTGRES_PASSWORD",
-        "description": "postgres password",
-        "generate": "expression",
-        "from": "[a-zA-Z0-9]{8}"
+      "name": "POSTGRES_PASSWORD",
+      "description": "postgres password",
+      "generate": "expression",
+      "from": "[a-zA-Z0-9]{8}"
     },
     {
-        "name": "POSTGRESQL_USER",
-        "description": "postgresql user",
-        "generate": "expression",
-        "from": "user[A-Z0-9]{3}"
+      "name": "POSTGRESQL_USER",
+      "description": "postgresql user",
+      "generate": "expression",
+      "from": "user[A-Z0-9]{3}"
     },
     {
-        "name": "POSTGRESQL_MASTER_USER",
-        "description": "postgresql master user",
-        "generate": "expression",
-        "from": "user[A-Z0-9]{3}"
+      "name": "POSTGRESQL_MASTER_USER",
+      "description": "postgresql master user",
+      "generate": "expression",
+      "from": "user[A-Z0-9]{3}"
     },
     {
-        "name": "POSTGRESQL_PASSWORD",
-        "description": "postgresql password",
-        "generate": "expression",
-        "from": "[a-zA-Z0-9]{8}"
+      "name": "POSTGRESQL_PASSWORD",
+      "description": "postgresql password",
+      "generate": "expression",
+      "from": "[a-zA-Z0-9]{8}"
     },
     {
-        "name": "POSTGRESQL_MASTER_PASSWORD",
-        "description": "postgresql master password",
-        "generate": "expression",
-        "from": "[a-zA-Z0-9]{8}"
+      "name": "POSTGRESQL_MASTER_PASSWORD",
+      "description": "postgresql master password",
+      "generate": "expression",
+      "from": "[a-zA-Z0-9]{8}"
     },
     {
-        "name": "POSTGRESQL_ADMIN_PASSWORD",
-        "description": "postgresql admin password",
-        "generate": "expression",
-        "from": "[a-zA-Z0-9]{8}"
+      "name": "POSTGRESQL_ADMIN_PASSWORD",
+      "description": "postgresql admin password",
+      "generate": "expression",
+      "from": "[a-zA-Z0-9]{8}"
     }
   ]
 }
