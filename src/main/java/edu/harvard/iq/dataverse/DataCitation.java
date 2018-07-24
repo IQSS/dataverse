@@ -555,7 +555,7 @@ public class DataCitation {
 		xmlw.writeEndElement(); // section
 
 		xmlw.writeStartElement("abstract");
-		xmlw.writeCharacters(description);
+		xmlw.writeCharacters(StringEscapeUtils.escapeXml(description));
 		xmlw.writeEndElement(); // abstract
 
 		xmlw.writeStartElement("dates");
