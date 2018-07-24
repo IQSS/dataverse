@@ -221,12 +221,14 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             }
             
             //---------------------------------------
-            // Make sure that the upload type is not rsync
+            // Make sure that the upload type is not rsync - handled above for dual mode
             // ------------------------------------- 
-            if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, SettingsServiceBean.Key.UploadMethods + " contains " + SystemConfig.FileUploadMethods.RSYNC + ". Please use rsync file upload.");
-            }
 
+            if (dataset.getEditVersion().isHasPackageFile()) {                
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile"));
+            }
+            
+            
             // Right now we are only supporting UriRegistry.PACKAGE_SIMPLE_ZIP but
             // in the future maybe we'll support other formats? Rdata files? Stata files?
             /**
