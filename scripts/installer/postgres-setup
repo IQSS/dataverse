@@ -60,6 +60,7 @@ if ($pod_name eq "start-glassfish")
     $CONFIG_DEFAULTS{'POSTGRES_SERVER'} = $ENV{"POSTGRES_SERVER"} . "." .  $ENV{"POSTGRES_SERVICE_HOST"};
     $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} = $ENV{"POSTGRES_DATABASE"};
     $CONFIG_DEFAULTS{'POSTGRES_USER'} = $ENV{"POSTGRES_USER"};
+    $CONFIG_DEFAULTS{'POSTGRES_ADMIN_PASSWORD'} = $ENV{"POSTGRES_ADMIN_PASSWORD"};
     $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} = $ENV{"POSTGRES_PASSWORD"};
     $WORKING_OS = "CentOS";
 }
@@ -327,6 +328,7 @@ if (system( $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'}
     # without opening remote access for the admin user. They will simply 
     # have to run this script in the "postgres-only" mode on that server, locally, 
     # then resume the installation here: 
+    print ($psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1 \n" );
     print "Nope, I haven't been able to connect to the remote Postgres server as the admin user.\n";
     print "(Or you simply don't have psql installed on this server)\n";
     print "It IS possible to configure a database for your Dataverse on a remote server,\n";
@@ -480,7 +482,6 @@ if ($postgresonly) {
 
 if ( system( $psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
 {
-    print ($psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" . "\n");
     print STDERR "Oops, haven't been able to connect to the database " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . ",\n";
     print STDERR "running on " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . ", as user " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . ".\n\n";
     print STDERR "Aborting the installation (sorry!)\n";

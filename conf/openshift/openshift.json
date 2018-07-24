@@ -153,7 +153,7 @@
         "name": "dataverse-plus-glassfish"
       },
       "spec": {
-        "dockerImageRepository": "charlesthao/dataverse-glassfish:4874"
+        "dockerImageRepository": "iqss/dataverse-glassfish:latest"
       }
     },
     {
@@ -199,8 +199,8 @@
             "initContainers": [
               {
                 "name": "start-glassfish",
-                "image": "charlesthao96/init-container:test",
-                "imagePullPolicy": "IfNotPresent",
+                "image": "iqss/init-container:latest",
+                "imagePullPolicy": "Always",
                 "env": [
                   {
                     "name": "CONTAINER_NAME",
@@ -215,7 +215,7 @@
                     "value": "start-glassfish"
                   },
                   {
-                    "name": "POSTGRESQL_ADMIN_PASSWORD",
+                    "name": "POSTGRES_ADMIN_PASSWORD",
                     "valueFrom": {
                         "secretKeyRef": {
                     	    "name" : "dataverse-postgresql-admin-secret",
@@ -260,7 +260,7 @@
             "containers": [
               {
                 "name": "dataverse-plus-glassfish",
-                "image": "charlesthao96/dataverse-glassfish:4874",
+                "image": "iqss/dataverse-glassfish:latest",
                 "ports": [
                   {
                     "containerPort": 8080,
@@ -338,7 +338,7 @@
                     "value": "dvndb"
                   }
                 ],
-                "imagePullPolicy": "IfNotPresent",
+                "imagePullPolicy": "Always",
                 "securityContext": {
                   "capabilities": {},
                   "privileged": false
@@ -492,7 +492,7 @@
                     "memory": "256Mi"
                   }
                 },
-                "imagePullPolicy": "IfNotPresent",
+                "imagePullPolicy": "Always",
                 "securityContext": {
                   "capabilities": {},
                   "privileged": false
@@ -556,7 +556,7 @@
             "containers": [
               {
                 "name": "iqss-dataverse-solr",
-                "image": "iqss-dataverse-solr:latest",
+                "image": "iqss/dataverse-solr",
                 "ports": [
                   {
                     "containerPort": 8983,
@@ -568,7 +568,7 @@
                     "memory": "1024Mi"
                   }
                 },
-                "imagePullPolicy": "IfNotPresent",
+                "imagePullPolicy": "Always",
                 "securityContext": {
                   "capabilities": {},
                   "privileged": false
