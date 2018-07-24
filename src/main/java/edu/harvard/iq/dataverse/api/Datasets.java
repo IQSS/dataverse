@@ -72,6 +72,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -1084,15 +1085,15 @@ public class Datasets extends AbstractApiBean {
                         if (dcmLock == null) {
                             logger.log(Level.WARNING, "Dataset not locked for DCM upload");
                         } else {
-                            datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.DcmUpload);
+                            datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.DcmUpload);
                             dataset.removeLock(dcmLock);
                         }
                         
                         // update version using the command engine to enforce user permissions and constraints
                         if (dataset.getVersions().size() == 1 && dataset.getLatestVersion().getVersionState() == DatasetVersion.VersionState.DRAFT) {
                             try {
-                                Command<DatasetVersion> cmd;
-                                cmd = new UpdateDatasetVersionCommand(new DataverseRequest(authenticatedUser, (HttpServletRequest) null), dataset.getLatestVersion());
+                                Command<Dataset> cmd;
+                                cmd = new UpdateDatasetVersionCommand(dataset, new DataverseRequest(authenticatedUser, (HttpServletRequest) null));
                                 commandEngine.submit(cmd);
                             } catch (CommandException ex) {
                                 return error(Response.Status.INTERNAL_SERVER_ERROR, "CommandException updating DatasetVersion from batch job: " + ex.getMessage());

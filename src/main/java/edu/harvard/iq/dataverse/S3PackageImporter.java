@@ -174,7 +174,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             dataset.getLatestVersion().getFileMetadatas().add(fmd);
             fmd.setDatasetVersion(dataset.getLatestVersion());
             
-            IdServiceBean idServiceBean = IdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
+            GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
             if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
                 String packageIdentifier = dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean);
                 packageFile.setIdentifier(packageIdentifier);
@@ -193,7 +193,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
 
             if (!packageFile.isIdentifierRegistered()) {
                 String doiRetString = "";
-                idServiceBean = IdServiceBean.getBean(commandEngine.getContext());
+                idServiceBean = GlobalIdServiceBean.getBean(commandEngine.getContext());
                 try {
                     doiRetString = idServiceBean.createIdentifier(packageFile);
                 } catch (Throwable e) {
