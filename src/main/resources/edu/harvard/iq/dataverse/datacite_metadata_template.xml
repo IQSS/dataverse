@@ -10,9 +10,7 @@
     <publisher>${publisher}</publisher>
     <publicationYear>${publisherYear}</publicationYear>
     <resourceType resourceTypeGeneral="Dataset"/>
-    <relatedIdentifiers>
-        <relatedIdentifier relatedIdentifierType="hasPart" relationType="DOI">${relatedIdentifier}</relatedIdentifier>
-    </relatedIdentifiers>
+    ${relatedIdentifiers}
     <descriptions>
         <description descriptionType="Abstract">${description}</description>
     </descriptions>
