@@ -170,9 +170,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         String protocol = theDataset.getProtocol();
         IdServiceBean idServiceBean = IdServiceBean.getBean(protocol, ctxt);
         try {
-            idServiceBean.publicizeIdentifier(theDataset);
-            theDataset.setGlobalIdCreateTime(new Date());
-            theDataset.setIdentifierRegistered(true);
+            
             for (DataFile df : theDataset.getFiles()) {
                 logger.fine("registering global id for file "+df.getId());
                 idServiceBean.publicizeIdentifier(df);
@@ -181,6 +179,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 // this merge() on an individual file below is unnecessary:
                 //DataFile merged = ctxt.em().merge(df);
             }
+            idServiceBean.publicizeIdentifier(theDataset);
+            theDataset.setGlobalIdCreateTime(new Date());
+            theDataset.setIdentifierRegistered(true);
         } catch (Throwable e) {
             //if publicize fails remove the lock for registration
             ctxt.datasets().removeDatasetLocks(theDataset.getId(), DatasetLock.Reason.pidRegister);
