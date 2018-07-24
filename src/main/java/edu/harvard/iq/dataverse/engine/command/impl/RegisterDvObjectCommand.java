@@ -55,14 +55,14 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
 				return;
 			}
 			String doiRetString = idServiceBean.createIdentifier(target);
-			if (!idServiceBean.registerWhenPublished()) {
-				// Should register ID before publicize() is called
-				// For example, DOIEZIdServiceBean tries to recreate the id if the identifier isn't registered before
-				// publicizeIdentifier is called
-				target.setIdentifierRegistered(true);
-				target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-			}
 			if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
+				if (!idServiceBean.registerWhenPublished()) {
+					// Should register ID before publicize() is called
+					// For example, DOIEZIdServiceBean tries to recreate the id if the identifier isn't registered before
+					// publicizeIdentifier is called
+					target.setIdentifierRegistered(true);
+					target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+				}
 				if (target.isReleased()) {
 					idServiceBean.publicizeIdentifier(target);
 				}
@@ -86,15 +86,15 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
 							}
 						}
 						doiRetString = idServiceBean.createIdentifier(df);
-						if (!idServiceBean.registerWhenPublished()) {
-							// Should register ID before publicize() is called
-							// For example, DOIEZIdServiceBean tries to recreate the id if the identifier isn't registered before
-							// publicizeIdentifier is called
-							df.setIdentifierRegistered(true);
-							df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-						}
 
 						if (doiRetString != null && doiRetString.contains(df.getIdentifier())) {
+							if (!idServiceBean.registerWhenPublished()) {
+								// Should register ID before publicize() is called
+								// For example, DOIEZIdServiceBean tries to recreate the id if the identifier isn't registered before
+								// publicizeIdentifier is called
+								df.setIdentifierRegistered(true);
+								df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+							}
 							if (df.isReleased()) {
 								idServiceBean.publicizeIdentifier(df);
 							}
