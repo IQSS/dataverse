@@ -66,7 +66,8 @@ This allows the installer to be run in non-interactive mode (with ``./install -y
 
 All the Glassfish configuration tasks performed by the installer are isolated in the shell script ``dvinstall/glassfish-setup.sh`` (as ``asadmin`` commands). 
 
-**IMPORTANT:** The instller will also ask for an external site URL for Dataverse. It is _imperative_ that this value be supplied accurately, or a long list of functions will be inoperable, including:
+**IMPORTANT:** The installer will also ask for an external site URL for Dataverse. It is *imperative* that this value be supplied accurately, or a long list of functions will be inoperable, including:
+
 - email confirmation links
 - password reset links
 - generating a Private URL
