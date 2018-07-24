@@ -1,3 +1,5 @@
+.. role:: fixedwidthplain
+
 =============
 Prerequisites
 =============
@@ -316,6 +318,59 @@ Install them following the normal R package installation procedures. For example
 	install.packages("DescTools", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
 	install.packages("Rserve", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
 	install.packages("haven", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+
+Rserve
+======
+
+Dataverse uses `Rserve <https://rforge.net/Rserve/>`_ to communicate
+to R. Rserve is installed as a library package, as described in the
+step above. It runs as a daemon process on the server, accepting
+network connections on a dedicated port. This requires some extra 
+configuration and we provide a  script (:fixedwidthplain:`scripts/r/rserve/rserve-setup.sh`) for setting it up.  
+Run the script as follows (as root)::
+
+    cd <DATAVERSE SOURCE TREE>/scripts/r/rserve
+    ./rserve-setup.sh
+
+The setup script will create a system user :fixedwidthplain:`rserve`
+that will run the daemon process.  It will install the startup script
+for the daemon (:fixedwidthplain:`/etc/init.d/rserve`), so that it
+gets started automatically when the system boots.  This is an
+:fixedwidthplain:`init.d`-style startup file. If this is a
+RedHat/CentOS 7 system, you may want to use the
+:fixedwidthplain:`systemctl`-style file
+:fixedwidthplain:`rserve.service` instead. (Copy it into the
+:fixedwidthplain:`/usr/lib/systemd/system/` directory)
+
+
+Note that the setup will also set the Rserve password to
+":fixedwidthplain:`rserve`".  Rserve daemon runs under a
+non-privileged user id, so there's not much potential for security
+damage through unauthorized access. It is however still a good idea
+**to change the password**. The password is specified in
+:fixedwidthplain:`/etc/Rserv.pwd`.  You can consult `Rserve
+documentation <https://rforge.net/Rserve/doc.html>`_ for more
+information on password encryption and access security.
+
+You should already have the following 4 JVM options added to your
+:fixedwidthplain:`domain.xml` by the Dataverse installer::
+
+        <jvm-options>-Ddataverse.rserve.host=localhost</jvm-options>
+        <jvm-options>-Ddataverse.rserve.port=6311</jvm-options>
+        <jvm-options>-Ddataverse.rserve.user=rserve</jvm-options>
+        <jvm-options>-Ddataverse.rserve.password=rserve</jvm-options>
+
+If you have changed the password, make sure it is correctly specified
+in the :fixedwidthplain:`dataverse.rserve.password` option above.  If
+Rserve is running on a host that's different from your Dataverse
+server, change the :fixedwidthplain:`dataverse.rserve.host` option
+above as well (and make sure the port 6311 on the Rserve host is not
+firewalled from your Dataverse host).
+
+
+
+
+
 
 Now that you have all the prerequisites in place, you can proceed to the :doc:`installation-main` section.
 
