@@ -232,7 +232,7 @@
             "containers": [
               {
                 "name": "dataverse-plus-glassfish",
-                "image": "charlesthao96/dataverse-glassfish:testinit",
+                "image": "iqss/dataverse-glassfish:testinit",
                 "ports": [
                   {
                     "containerPort": 8080,
