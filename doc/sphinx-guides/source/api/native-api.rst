@@ -147,12 +147,43 @@ values are ``true`` and ``false`` (both are valid JSON expressions). ::
 
 .. note:: Previous endpoints ``GET http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` and ``POST http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` are deprecated, but supported.
 
+
+.. _create-dataset-command: 
+
 Create a Dataset in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To create a dataset, you must create a JSON file containing all the metadata you want such as in this example file: :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>`. Then, you must decide which dataverse to create the dataset in and target that datavese with either the "alias" of the dataverse (e.g. "root" or the database id of the dataverse (e.g. "1"). The initial version state will be set to ``DRAFT``::
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets --upload-file dataset-finch1.json
+
+Import a Dataset into a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note:: This action requires a Dataverse account with super-user permissions.
+
+To import a dataset with an existing persistent identifier (PID), the dataset's metadata should be prepared in Dataverse's native JSON format. The PID is provided as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, and then releases it::
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets/:import?pid=$PERSISTENT_IDENTIFIER&release=yes --upload-file dataset.json
+
+The ``pid`` parameter holds a persistent identifier (such as a DOI or Handle). The import will fail if no PID is provided, or if the provided PID fails validation.
+
+The optional ``release`` parameter tells Dataverse to immediately publish the dataset. If the parameter is changed to ``no``, the imported dataset will remain in ``DRAFT`` status.
+
+The JSON format is the same as that supported by the native API's :ref:`create dataset command<create-dataset-command>`, although it also allows packages.  For example:
+
+.. literalinclude:: ../../../../scripts/api/data/dataset-package-files.json
+
+Before calling the API, make sure the data files referenced by the ``POST``\ ed JSON are placed in the dataset directory with filenames matching their specified storage identifiers. In installations using POSIX storage, these files must be made readable by GlassFish.
+
+.. tip:: If possible, it's best to avoid spaces and special characters in the storage identifier in order to avoid potential portability problems. The storage identifier corresponds with the filesystem name (or bucket identifier) of the data file, so these characters may cause unpredictability with filesystem tools.
+
+.. warning:: 
+  
+  * This API does not cover staging files (with correct contents, checksums, sizes, etc.) in the corresponding places in the Dataverse filestore.
+  * This API endpoint does not support importing *files'* persistent identifiers.
+  * A Dataverse server can import datasets with a valid PID that uses a different protocol or authority than said server is configured for. However, the server will not update the PID metadata on subsequent update and publish actions.
+
 
 Publish a Dataverse
 ~~~~~~~~~~~~~~~~~~~
@@ -247,7 +278,7 @@ Update Metadata For a Dataset
 
 Updates the metadata for a dataset. If a draft of the dataset already exists, the metadata of that draft is overwritten; otherwise, a new draft is created with this metadata.
 
-You cannot currently target a specific field such as the title of a dataset and only update that one field. Instead, you must download a JSON representation of the dataset, edit the JSON you download, and then send the updated JSON to the Dataverse server.
+You must download a JSON representation of the dataset, edit the JSON you download, and then send the updated JSON to the Dataverse server.
 
 For example, after making your edits, your JSON file might look like :download:`dataset-update-metadata.json <../_static/api/dataset-update-metadata.json>` which you would send to Dataverse like this::
 
@@ -262,6 +293,29 @@ Now that the resulting JSON file only contains the ``metadataBlocks`` key, you c
     vi dataset-update-metadata.json
 
 Now that you've made edits to the metadata in your JSON file, you can send it to Dataverse as described above.
+
+Edit Dataset Metadata
+~~~~~~~~~~~~~~~~~~~~~
+
+Alternatively to replacing an entire dataset version with its JSON representation you may add data to dataset fields that are blank or accept multiple values with the following ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/editMetadata/?persistentId=$PID --upload-file dataset-add-metadata.json    
+
+You may also replace existing metadata in dataset fields with the following (adding the parameter replace=true)   ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/editMetadata?persistentId=$PID&replace=true --upload-file dataset-update-metadata.json
+    
+For these edits your JSON file need only include those dataset fields which you would like to edit. A sample JSON file may be downloaded here: :download:`dataset-edit-metadata-sample.json <../_static/api/dataset-edit-metadata-sample.json>` 
+
+Delete Dataset Metadata
+~~~~~~~~~~~~~~~~~~~~~~~
+
+You may delete some of the metadata of a dataset version by supplying a file with a JSON representation of dataset fields that you would like to delete with the following ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/deleteMetadata/?persistentId=$PID --upload-file dataset-delete-author-metadata.json    
+    
+For these deletes your JSON file must include an exact match of those dataset fields which you would like to delete. A sample JSON file may be downloaded here: :download:`dataset-delete-author-metadata.json <../_static/api/dataset-delete-author-metadata.json>` 
+
 
 Publish a Dataset
 ~~~~~~~~~~~~~~~~~
@@ -457,6 +511,7 @@ Files
 
     GET http://$SERVER/api/access/datafile/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
 
+
 Adding Files
 ^^^^^^^^^^^^
 
@@ -478,9 +533,13 @@ A curl example using a ``pid``::
 Replacing Files
 ^^^^^^^^^^^^^^^
 
-Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note that metadata such as description and tags are not carried over from the file being replaced.
+Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note that metadata such as description and tags are not carried over from the file being replaced
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://demo.dataverse.org/api/files/$FILE_ID/replace"
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' \
+  -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}'\
+  "https://demo.dataverse.org/api/files/$FILE_ID/replace"
 
 Example python code to replace a file.  This may be run by changing these parameters in the sample code:
 

@@ -10,6 +10,7 @@
       xmlns:c="http://java.sun.com/jsp/jstl/core"      
       lang="en">
     <h:head>
+	<o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <f:facet name="first">
             <title><h:outputText value="#{pageTitle}"/></title>
 	    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -19,7 +20,7 @@
             <meta http-equiv="Content-Language" content="en"/>
             <meta name="viewport" content="width=device-width, initial-scale=1"/>
             <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-            <meta name="description" content="#{bundle['head.meta.description']}"/>
+            <meta name="description" content="#{MarkupChecker:stripAllTags(DataversePage.dataverse.description)}"/>
         </f:facet>
         <link type="image/png" rel="icon" href="#{resource['images/favicondataverse.png']}" />
         <link type="image/png" rel="image_src" href="#{resource['images/dataverseproject.png']}" />
@@ -79,7 +80,6 @@
             </div>
         </p:dialog>
         <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap-hover-dropdown.min.js']}?version=#{systemConfig.getVersion()}"></script>
         <script type="text/javascript" defer="defer" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
         <script type="text/javascript" defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
         <script type="text/javascript" defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>

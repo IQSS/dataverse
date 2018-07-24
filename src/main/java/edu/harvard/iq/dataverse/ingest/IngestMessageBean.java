@@ -80,7 +80,7 @@ public class IngestMessageBean implements MessageListener {
                         //Thread.sleep(10000);
                         logger.fine("Finished ingest job;");
                     } else {
-                        logger.warning("Error occurred during ingest job!");
+                        logger.warning("Error occurred during ingest job for file id " + datafile_id + "!");
                     }
                 } catch (Exception ex) {
                     //ex.printStackTrace();
@@ -128,7 +128,7 @@ public class IngestMessageBean implements MessageListener {
                 if (datafile != null) {
                     Dataset dataset = datafile.getOwner();
                     if (dataset != null && dataset.getId() != null) {
-                        datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.Ingest);
+                        datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.Ingest);
                     }
                 } 
             } 

@@ -20,7 +20,6 @@
 package edu.harvard.iq.dataverse.batch.jobs.importer.filesystem;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
@@ -28,7 +27,6 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -50,21 +48,17 @@ import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
-import org.ocpsoft.common.util.Strings;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 @Named
 @Dependent
@@ -108,8 +102,6 @@ public class FileRecordWriter extends AbstractItemWriter {
 
     public static String FILE_MODE_INDIVIDUAL_FILES = "individual_files";
     public static String FILE_MODE_PACKAGE_FILE = "package_file";
-    
-    
     
     @PostConstruct
     public void init() {
@@ -171,7 +163,7 @@ public class FileRecordWriter extends AbstractItemWriter {
                 if (dcmLock == null) {
                     getJobLogger().log(Level.WARNING, "Dataset not locked for DCM upload");
                 } else {
-                    datasetServiceBean.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.DcmUpload);
+                    datasetServiceBean.removeDatasetLocks(dataset, DatasetLock.Reason.DcmUpload);
                     dataset.removeLock(dcmLock);
                 }
                 updateDatasetVersion(dataset.getLatestVersion());
@@ -197,8 +189,8 @@ public class FileRecordWriter extends AbstractItemWriter {
         // update version using the command engine to enforce user permissions and constraints
         if (dataset.getVersions().size() == 1 && version.getVersionState() == DatasetVersion.VersionState.DRAFT) {
             try {
-                Command<DatasetVersion> cmd;
-                cmd = new UpdateDatasetVersionCommand(new DataverseRequest(user, (HttpServletRequest) null), version);
+                Command<Dataset> cmd;
+                cmd = new UpdateDatasetVersionCommand(version.getDataset(), new DataverseRequest(user, (HttpServletRequest) null));
                 commandEngine.submit(cmd);
             } catch (CommandException ex) {
                 String commandError = "CommandException updating DatasetVersion from batch job: " + ex.getMessage();
@@ -366,7 +358,7 @@ public class FileRecordWriter extends AbstractItemWriter {
         dataset.getLatestVersion().getFileMetadatas().add(fmd);
         fmd.setDatasetVersion(dataset.getLatestVersion());
         
-        IdServiceBean idServiceBean = IdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
             packageFile.setIdentifier(dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean));
         }
@@ -382,7 +374,7 @@ public class FileRecordWriter extends AbstractItemWriter {
 
         if (!packageFile.isIdentifierRegistered()) {
             String doiRetString = "";
-            idServiceBean = IdServiceBean.getBean(commandEngine.getContext());
+            idServiceBean = GlobalIdServiceBean.getBean(commandEngine.getContext());
             try {
                 doiRetString = idServiceBean.createIdentifier(packageFile);
             } catch (Throwable e) {

@@ -117,7 +117,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     
     /** Given alias of the group, e.g by the user that created it. Unique in the owner. */
     @NotBlank
-    @Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'.")
+    @Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "{dataverse.nameIllegalCharacters}")
     private String groupAliasInOwner;
     
     /** Alias of the group. Calculated from the group's name and its owner id. Unique in the table. */

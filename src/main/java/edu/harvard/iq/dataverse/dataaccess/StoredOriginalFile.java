@@ -106,7 +106,7 @@ public class StoredOriginalFile {
             return ".sav";
         } else if (fileType.equalsIgnoreCase("application/x-spss-por")) {
             return ".por";
-        } else if (fileType.equalsIgnoreCase("application/x-stata") || fileType.equalsIgnoreCase("application/x-stata-13")) {
+        } else if (fileType.equalsIgnoreCase("application/x-stata") || fileType.equalsIgnoreCase("application/x-stata-13") || fileType.equalsIgnoreCase("application/x-stata-14") || fileType.equalsIgnoreCase("application/x-stata-15")) {
             return ".dta";
         } else if (fileType.equalsIgnoreCase("application/x-dvn-csvspss-zip")) {
             return ".zip";
@@ -116,10 +116,12 @@ public class StoredOriginalFile {
             return ".RData";
         } else if (fileType.equalsIgnoreCase("text/csv") || fileType.equalsIgnoreCase("text/comma-separated-values")) {
             return ".csv";
+        } else if (fileType.equalsIgnoreCase("text/tsv") || fileType.equalsIgnoreCase("text/tab-separated-values")) {
+            return ".tsv";
         } else if (fileType.equalsIgnoreCase("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
             return ".xlsx";
         }
-
+        logger.severe(fileType + " does not have an associated file extension");
         return "";
     }
 }
