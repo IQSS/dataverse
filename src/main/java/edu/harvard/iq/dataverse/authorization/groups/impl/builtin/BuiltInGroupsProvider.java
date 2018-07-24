@@ -46,9 +46,10 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
     @Override
     public Set<Group> groupsFor( RoleAssignee ra, DvObject dvo ) {
         if ( ra instanceof User) {
-            return (Set<Group>) ((ra instanceof AuthenticatedUser)
-                    ? CollectionHelper.asSet(AllUsers.get(), AuthenticatedUsers.get())
-                    : Collections.singleton(AllUsers.get()));
+            if (ra instanceof AuthenticatedUser){
+                return CollectionHelper.asSet(AllUsers.get(), AuthenticatedUsers.get());
+            }
+            return Collections.singleton(AllUsers.get());
         } else {
             return Collections.emptySet();
         }

@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Address;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.util.TimeoutCache;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -98,13 +99,20 @@ public class IpGroupsServiceBean {
         return em.createNamedQuery("IpGroup.findAll", IpGroup.class).getResultList();
     }
     
+    // One minute cache with max of 10 entries
+    TimeoutCache<IpAddress, Set<IpGroup>> groupCache = new TimeoutCache<>(10, 60*1000);
     public Set<IpGroup> findAllIncludingIp( IpAddress ipa ) {
+        Set<IpGroup> cached = groupCache.get(ipa);
+        if (cached != null){
+            return cached;
+        }
+        logger.info("IP cache miss " + ipa);
         if ( ipa instanceof IPv4Address ) {
             IPv4Address ip4 = (IPv4Address) ipa;
             List<IpGroup> groupList = em.createNamedQuery("IPv4Range.findGroupsContainingAddressAsLong", IpGroup.class)
                     .setParameter("addressAsLong", ip4.toBigInteger()).getResultList();
             return new HashSet<>(groupList);
-            
+
         } else if ( ipa instanceof IPv6Address ) {
             IPv6Address ip6 = (IPv6Address) ipa;
             long[] ip6arr = ip6.toLongArray();
@@ -114,8 +122,9 @@ public class IpGroupsServiceBean {
                     .setParameter("c", ip6arr[2])
                     .setParameter("d", ip6arr[3])
                     .getResultList();
-            return new HashSet<>(groupList);
-            
+            cached = new HashSet<>(groupList);
+            return groupCache.put(ipa, cached);
+
         } else {
             throw new IllegalArgumentException( "Unknown IpAddress type: " + ipa.getClass() + " (for IpAddress:" + ipa + ")" );
         }

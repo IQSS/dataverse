@@ -41,8 +41,7 @@ public class ListDataverseContentCommand extends AbstractCommand<List<DvObject>>
         if (user.isSuperuser()) {
             result.addAll(ctxt.datasets().findByOwnerId(dvToList.getId()));
             result.addAll(ctxt.dataverses().findByOwnerId(dvToList.getId()));
-        } else if (user.isAuthenticated()) {
-            AuthenticatedUser au = (AuthenticatedUser) user;
+        } else {
             List<Dataset> datasets = ctxt.datasets().findByOwnerId(dvToList.getId());
             int i = 0;
             long t0 = System.currentTimeMillis();
@@ -63,11 +62,7 @@ public class ListDataverseContentCommand extends AbstractCommand<List<DvObject>>
                 }
             }
             logger.info(""+(System.currentTimeMillis()-t0));
-        } else {
-            result.addAll(ctxt.datasets().findPublishedByOwnerId(dvToList.getId()));
-            result.addAll(ctxt.dataverses().findPublishedByOwnerId(dvToList.getId()));
         }
-
         return result;
     }
 

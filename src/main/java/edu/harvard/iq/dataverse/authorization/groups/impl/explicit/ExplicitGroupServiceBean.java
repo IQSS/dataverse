@@ -4,12 +4,14 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.TimeoutCache;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -29,6 +31,7 @@ import javax.persistence.PersistenceContext;
 @Stateless
 public class ExplicitGroupServiceBean {
     
+    private static final Logger logger = Logger.getLogger(ExplicitGroupServiceBean.class.getName());
     @EJB
     private RoleAssigneeServiceBean roleAssigneeSvc;
     
@@ -114,13 +117,22 @@ public class ExplicitGroupServiceBean {
         return provider.updateProvider( egs );
     }
     
+    
+    // One minute cache with max of 10 entries
+    TimeoutCache<RoleAssignee, Set<ExplicitGroup>> groupCache = new TimeoutCache<>(10, 60*1000);
     /**
      * Finds all the explicit groups {@code ra} is a member of.
      * @param ra the role assignee whose membership list we seek
      * @return set of the explicit groups that contain {@code ra}.
      */
     public Set<ExplicitGroup> findGroups( RoleAssignee ra ) {
-        return findClosure(findDirectlyContainingGroups(ra));
+        Set<ExplicitGroup> closure = groupCache.get(ra);
+        if (closure == null){
+            logger.info("Explicit cache miss " + ra);
+            closure = findClosure(findDirectlyContainingGroups(ra));
+            groupCache.put(ra, closure);
+        }
+        return closure;
     }
     
     /**
@@ -156,6 +168,7 @@ public class ExplicitGroupServiceBean {
         }
     }
 
+    
     /**
      * Finds all the groups {@code ra} is a member of, in the context of {@code o}.
      * This includes both direct and indirect memberships.
@@ -164,9 +177,7 @@ public class ExplicitGroupServiceBean {
      * @return All the groups in {@code o}'s context that {@code ra} is a member of.
      */
     public Set<ExplicitGroup> findGroups( RoleAssignee ra, DvObject o ) {
-        Set<ExplicitGroup> directGroups = findDirectGroups(ra, o);
-        Set<ExplicitGroup> closure = findClosure(directGroups);
-        return closure.stream()
+        return findGroups(ra).stream()
                 .filter( g -> g.owner.isAncestorOf(o) )
                 .collect( Collectors.toSet() );
     }
