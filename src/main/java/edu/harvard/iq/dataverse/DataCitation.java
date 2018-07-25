@@ -454,7 +454,7 @@ public class DataCitation {
 		xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
 		XMLStreamWriter xmlw = null;
 		try {
-			xmlw = xmlOutputFactory.createXMLStreamWriter(os, "utf-8");
+			xmlw = xmlOutputFactory.createXMLStreamWriter(os);
 			xmlw.writeStartDocument();
 			createEndNoteXML(xmlw);
 			xmlw.writeEndDocument();
