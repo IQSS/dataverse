@@ -143,7 +143,7 @@ The simplest way to install R on RHEL/CentOS systems is with yum, using the EPEL
        yum install epel-release
        yum install R R-devel
 
-Both EPEL6 and EPEL7 currently provide R-3.4, which has been tested and appears to work well. R 3.4, offered by EPEL until also works well. We recommend using the currently available EPEL version for all the new installations. But if you already have a working R 3.4 installation from EPEL and you don't have a specific need to upgrade, you may lock that version in place using the _yum-plugin-versionlock_ yum plugin, or simply add this line to the "epel" section of /etc/yum.repos.d/epel.repo::
+Both EPEL6 and EPEL7 currently provide R 3.5, which has been tested and appears to work well. R 3.4, offered by EPEL until also works well. We recommend using the currently available EPEL version for all the new installations. But if you already have a working R 3.4 installation from EPEL and you don't have a specific need to upgrade, you may lock that version in place using the ``yum-versionlock`` yum plugin, or simply add this line to the "epel" section of /etc/yum.repos.d/epel.repo::
 
 	exclude=R-*,openblas-*,libRmath*
 
@@ -184,7 +184,9 @@ If you are using RHEL/CentOS 7 and R 3.4, download :download:`rapache-1.2.7-rpm0
 
 	yum install apache-1.2.7-rpm0.x86_64.rpm
 
-If you are using RHEL/CentOS 7 in combination with R 3.5, download :download:`rapache-1.2.9_R-3.5.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.9_R-3.5.x86_64.rpm>` which was built against R-3.5.
+If you are using RHEL/CentOS 7 in combination with R 3.5, download :download:`rapache-1.2.9_R-3.5.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.9_R-3.5.x86_64.rpm>` and install it with::
+
+       	yum install rapache-1.2.9_R-3.5.x86_64.rpm
 
 d. Install the build environment for R:
 ---------------------------------------
