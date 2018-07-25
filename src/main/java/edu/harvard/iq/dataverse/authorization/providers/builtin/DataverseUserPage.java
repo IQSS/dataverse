@@ -124,10 +124,10 @@ public class DataverseUserPage implements java.io.Serializable {
     private EditMode editMode;
     private String redirectPage = "dataverse.xhtml";
 
-    @NotBlank(message = "The new password is blank: re-type it again.")
+    @NotBlank(message = "{password.retype}")
     private String inputPassword;
 
-    @NotBlank(message = "Please enter your current password.")
+    @NotBlank(message = "{password.current}")
     private String currentPassword;
     private Long dataverseId;
     private List<UserNotification> notificationsList;
@@ -271,7 +271,7 @@ public class DataverseUserPage implements java.io.Serializable {
             ((UIInput) toValidate).setValid(false);
 
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Password Error", "Please enter a new password for your account.");
+                    BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesError"), BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesErrorDesc"));
             context.addMessage(toValidate.getClientId(context), message);
             return;
 
@@ -364,15 +364,11 @@ public class DataverseUserPage implements java.io.Serializable {
             AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo);
             String emailAfterUpdate = savedUser.getEmail();
             editMode = null;
-            StringBuilder msg = new StringBuilder( passwordChanged ? "Your account password has been successfully changed." 
-                                                                   : "Your account information has been successfully updated.");
+            StringBuilder msg = new StringBuilder( passwordChanged ? BundleUtil.getStringFromBundle("userPage.passwordChanged" )
+                                                                   :  BundleUtil.getStringFromBundle("userPage.informationUpdated"));
             if (!emailBeforeUpdate.equals(emailAfterUpdate)) {
                 String expTime = ConfirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires());
-                msg.append(" Your email address has changed and must be re-verified. Please check your inbox at ")
-                        .append(currentUser.getEmail())
-                        .append(" and follow the link we've sent. \n\nAlso, please note that the link will only work for the next ")
-                        .append(expTime)
-                        .append(" before it has expired.");
+                List<String> args = Arrays.asList(currentUser.getEmail(),expTime);
                 // delete unexpired token, if it exists (clean slate)
                 confirmEmailService.deleteTokenForUser(currentUser);
                 try {
@@ -381,7 +377,7 @@ public class DataverseUserPage implements java.io.Serializable {
                     logger.log(Level.INFO, "Unable to send email confirmation link to user id {0}", savedUser.getId());
                 }
                 session.setUser(currentUser);
-                JsfHelper.addSuccessMessage(msg.toString());
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.changed", args));
             } else {
                 JsfHelper.addFlashMessage(msg.toString());
             }

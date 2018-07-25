@@ -63,6 +63,9 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
  */
 
 public class DTAFileReader extends TabularDataFileReader{
+
+    private static final Logger logger = Logger.getLogger(DTAFileReader.class.getCanonicalName());
+
     //@Inject
     //VariableServiceBean varService;
     // static fields, STATA-specific constants, etc. 
@@ -545,8 +548,13 @@ public class DTAFileReader extends TabularDataFileReader{
                     + new String(Hex.encodeHex(magic_number)) + "<-");
         }
 
+        logger.info("magic_number[0]: " + magic_number[0]);
+        logger.info("magic_number[1]: " + magic_number[1]);
+        logger.info("magic_number[2]: " + magic_number[2]);
         if (magic_number[2] != 1) {
             dbgLog.fine("3rd byte is not 1: given file is not stata-dta type");
+            // FIXME: Figure out the magic number for Stata 14.
+            // FIXME: Figure out the magic number for Stata 15.
             throw new IllegalArgumentException("The file is not in a STATA format that we can read or support.");
         } else if ((magic_number[1] != 1) && (magic_number[1] != 2)) {
             dbgLog.fine("2nd byte is neither 0 nor 1: this file is not stata-dta type");
@@ -2013,7 +2021,6 @@ public class DTAFileReader extends TabularDataFileReader{
                 Those names still work but are considered anachronisms.
 
         */
-        
         long milliSeconds;
         String decodedDateTime=null;
         String format = null;
@@ -2022,7 +2029,7 @@ public class DTAFileReader extends TabularDataFileReader{
             // tc is a relatively new format
             // datum is millisecond-wise
 
-            milliSeconds = Long.parseLong(rawDatum)+ STATA_BIAS_TO_EPOCH;
+            milliSeconds = Math.round(new Double(rawDatum)) + STATA_BIAS_TO_EPOCH;
             decodedDateTime = sdf_ymdhmsS.format(new Date(milliSeconds));
             format = sdf_ymdhmsS.toPattern();
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tc: result="+decodedDateTime+", format = "+format);
@@ -2037,7 +2044,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
         } else if (FormatType.matches("^%t?w.*")){
 
-            long weekYears = Long.parseLong(rawDatum);
+            long weekYears = Math.round(new Double(rawDatum));
             long left = Math.abs(weekYears)%52L;
             long years;
             if (weekYears < 0L){
@@ -2068,7 +2075,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
         } else if (FormatType.matches("^%t?m.*")){
             // month 
-            long monthYears = Long.parseLong(rawDatum);
+            long monthYears = Math.round(new Double(rawDatum));
             long left = Math.abs(monthYears)%12L;
             long years;
             if (monthYears < 0L){
@@ -2096,7 +2103,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
         } else if (FormatType.matches("^%t?q.*")){
             // quater
-            long quaterYears = Long.parseLong(rawDatum);
+            long quaterYears = Math.round(new Double(rawDatum));
             long left = Math.abs(quaterYears)%4L;
             long years;
             if (quaterYears < 0L){

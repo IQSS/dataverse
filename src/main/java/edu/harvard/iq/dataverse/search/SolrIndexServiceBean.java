@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -386,6 +387,16 @@ public class SolrIndexServiceBean {
         UpdateResponse commitResponse = solrServer.commit();
     }
 
+    public IndexResponse indexPermissionsOnSelfAndChildren(long definitionPointId) {
+        DvObject definitionPoint = dvObjectService.findDvObject(definitionPointId);
+        if ( definitionPoint == null ) {
+            logger.log(Level.WARNING, "Cannot find a DvOpbject with id of {0}", definitionPointId);
+            return null;
+        } else {
+            return indexPermissionsOnSelfAndChildren(definitionPoint);
+        }
+    }
+    
     /**
      * We use the database to determine direct children since there is no
      * inheritance

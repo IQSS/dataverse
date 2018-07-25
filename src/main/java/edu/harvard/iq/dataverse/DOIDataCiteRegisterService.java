@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -44,7 +45,7 @@ public class DOIDataCiteRegisterService {
         return new DataCiteRESTfullClient(System.getProperty("doi.baseurlstring"), System.getProperty("doi.username"), System.getProperty("doi.password"));
     }
     
-    public String createIdentifierLocal(String identifier, HashMap<String, String> metadata, DvObject dvObject) {
+    public String createIdentifierLocal(String identifier, Map<String, String> metadata, DvObject dvObject) {
     
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
         String status = metadata.get("_status").trim();
@@ -70,7 +71,7 @@ public class DOIDataCiteRegisterService {
         return retString;
     }
     
-    public String registerIdentifier(String identifier, HashMap<String, String> metadata, DvObject dvObject) throws IOException {
+    public String registerIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
         String retString = "";
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
         DOIDataCiteRegisterCache rc = findByDOI(identifier);
@@ -115,7 +116,7 @@ public class DOIDataCiteRegisterService {
             return retString;
     }
      
-    private String getMetadataFromDvObject(String identifier, HashMap<String, String> metadata,DvObject dvObject) {
+    private String getMetadataFromDvObject(String identifier, Map<String, String> metadata,DvObject dvObject) {
         
         Dataset dataset = null;
         
@@ -148,7 +149,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
         if (dvObject.isInstanceofDataFile()) {
             DataFile df = (DataFile) dvObject;
-            String datasetPid = df.getOwner().getGlobalId();
+            String datasetPid = df.getOwner().getGlobalId().asString();
             metadataTemplate.setDatasetIdentifier(datasetPid);
         } else {
             metadataTemplate.setDatasetIdentifier("");
@@ -395,11 +396,17 @@ class DataCiteMetadataTemplate {
     }
 
     public String generateXML(DvObject dvObject) {
+        // Can't use "UNKNOWN" here because DataCite will respond with "[facet 'pattern'] the value 'unknown' is not accepted by the pattern '[\d]{4}'"
+        String publisherYearFinal = "9999";
+        // FIXME: Investigate why this.publisherYear is sometimes null now that pull request #4606 has been merged.
+        if (this.publisherYear != null) {
+            // Added to prevent a NullPointerException when trying to destroy datasets when using DataCite rather than EZID.
+            publisherYearFinal = this.publisherYear;
+        }
         xmlMetadata = template.replace("${identifier}", this.identifier.trim())
                 .replace("${title}", this.title)
                 .replace("${publisher}", this.publisher)
-                .replace("${publisherYear}", this.publisherYear)
-                .replace("${datasetIdentifier}", this.datasetIdentifier)
+                .replace("${publisherYear}", publisherYearFinal)
                 .replace("${description}", this.description);
         StringBuilder creatorsElement = new StringBuilder();
         for (DatasetAuthor author : authors) {
@@ -463,7 +470,7 @@ class DataCiteMetadataTemplate {
                 for (DataFile dataFile : dataset.getFiles()) {
                     String add = "";
                     sb.append("");
-                    if (!dataFile.getGlobalId().isEmpty()) {
+                    if (!dataFile.getGlobalId().asString().isEmpty()) {
                         add = "<relatedIdentifier relatedIdentifierType=\"DOI\" relationType=\"HasPart\""
                                 + ">" + dataFile.getGlobalId() + "</relatedIdentifier>";
                         if (sb.toString().isEmpty()) {

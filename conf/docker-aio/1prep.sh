@@ -22,5 +22,6 @@ mvn package
 cd scripts/installer
 make clean
 make
+mkdir -p ../../conf/docker-aio/dv/install
 cp dvinstall.zip ../../conf/docker-aio/dv/install/
 
