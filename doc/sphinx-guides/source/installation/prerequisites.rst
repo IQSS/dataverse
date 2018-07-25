@@ -367,9 +367,12 @@ server, change the :fixedwidthplain:`dataverse.rserve.host` option
 above as well (and make sure the port 6311 on the Rserve host is not
 firewalled from your Dataverse host).
 
+Notes
+=====
 
-
-
+If you choose to use TwoRavens data exploration tool, you will have to
+install more R components and libraries. Please consult and follow the
+instructions in the TowRavens section of the Guide.
 
 
 Now that you have all the prerequisites in place, you can proceed to the :doc:`installation-main` section.
