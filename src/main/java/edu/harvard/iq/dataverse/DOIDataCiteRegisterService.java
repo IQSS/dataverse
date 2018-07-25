@@ -45,9 +45,7 @@ public class DOIDataCiteRegisterService {
     }
     
     public String createIdentifierLocal(String identifier, HashMap<String, String> metadata, DvObject dvObject) {
-        logger.info(identifier + "$$$$$");
-        logger.info(dvObject.getAuthorString());
-        logger.info(metadata.toString());
+    
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
         String status = metadata.get("_status").trim();
         String target = metadata.get("_target");
@@ -301,7 +299,6 @@ class DataCiteMetadataTemplate {
     private static String template;
 
     static {
-        //use other template for files
         try (InputStream in = DataCiteMetadataTemplate.class.getResourceAsStream("datacite_metadata_template.xml")) {
             template = Util.readAndClose(in, "utf-8");
         } catch (Exception e) {
@@ -316,7 +313,6 @@ class DataCiteMetadataTemplate {
     private String xmlMetadata;
     private String identifier;
     private String datasetIdentifier;
-    //or possibly ………
     private List<String> datafileIdentifiers;
     private List<String> creators;
     private String title;
@@ -377,9 +373,6 @@ class DataCiteMetadataTemplate {
         Document doc = Jsoup.parseBodyFragment(xmlMetaData);
         Elements identifierElements = doc.select("identifier");
         if (identifierElements.size() > 0) {
-            //Why do we only get the first element. Is it because
-            //there should be only one element in here? If so, why
-            //does identifierElements need to be an ArrayList?
             identifier = identifierElements.get(0).html();
         }
         Elements creatorElements = doc.select("creatorName");
@@ -451,15 +444,10 @@ class DataCiteMetadataTemplate {
             contributorsElement.append("</contributor>");
         }
         
-       // StringBuilder fileIdentifiersElement = new StringBuilder();
-        
-      //  generateFileIdentifiers(dvObject);
         String relIdentifiers = generateRelatedIdentifiers (dvObject);
         
         xmlMetadata = xmlMetadata.replace("${relatedIdentifiers}", relIdentifiers);
 
-        
-        
         xmlMetadata = xmlMetadata.replace("{$contributors}", contributorsElement.toString());
         return xmlMetadata;
     }
@@ -483,7 +471,6 @@ class DataCiteMetadataTemplate {
                         }
                         sb.append(add);
                     }
-
                 }
 
                 if (!sb.toString().isEmpty()) {
@@ -507,12 +494,10 @@ class DataCiteMetadataTemplate {
 
             if (!dataset.getFiles().isEmpty() && !(dataset.getFiles().get(0).getIdentifier() == null)) {
 
-                //t = "hello" + dataset.getFiles().get(0);
                 datafileIdentifiers = new ArrayList<>();
                 for (DataFile dataFile : dataset.getFiles()) {
                     datafileIdentifiers.add(dataFile.getIdentifier());
                     int x = xmlMetadata.indexOf("</relatedIdentifiers>") - 1;
-                    //Fails at line below. It goes through all this twice and since the "relatedIdentifier" line gets taken out the first time it is failing when it goes through the second time
                     xmlMetadata = xmlMetadata.replace("{relatedIdentifier}", dataFile.getIdentifier());
                     xmlMetadata = xmlMetadata.substring(0, x) + "<relatedIdentifier relatedIdentifierType=\"hasPart\" "
                             + "relationType=\"doi\">${relatedIdentifier}</relatedIdentifier>" + template.substring(x, template.length() - 1);
