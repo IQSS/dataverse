@@ -209,7 +209,7 @@
                                   disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}"
                                   fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
                                   process="filesTable" 
-                                  update="@form, :datasetForm, @([id$=filesButtons])"
+                                  update=":datasetForm:filesTable, @([id$=filesButtons])"
                                   label="#{bundle['file.selectToAddBtn']}"
                                   oncomplete="javascript:dataset_fileupload_rebind();uploadFinished(PF('fileUploadWidget'));uploadFinished();"
                                   onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
