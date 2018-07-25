@@ -92,6 +92,12 @@ install TwoRavens in the past, and it didn't work, please see the part of
 section ``1.b.`` where we explain how to completely erase all the previously 
 built packages.
  
+Note that the installation process below supercedes the basic R setup
+described in the "Prerequisites" portion of the Installation
+Guide. Meaning that once completed, it installs everything needed to
+run TwoRavens **plus** everything needed to ingest RData files, export
+as RData, and use Data Explorer.
+
 
 1. Prerequisites
 ++++++++++++++++
@@ -132,18 +138,16 @@ change it to
 b. R:
 -----
 
-The simplest way to install R on RHEL/CentOS 6 systems is with yum, using the EPEL repository:
+The simplest way to install R on RHEL/CentOS systems is with yum, using the EPEL repository:
 
        yum install epel-release
        yum install R R-devel
 
-EPEL6 provides R-3.3, which is known to work well. Some installations have run EPEL7's former 3.4 release with success, but EPEL7 currently provides R-3.5, a significant release with many new features which may challenge backwards compatibility. You may wish to compile the older 3.3 or 3.4 versions [from source](https://cran.r-project.org/src/base/R-3/).
-
-If you have an installed R 3.3 or 3.4 installation from EPEL, you may lock that version in place using the _yum-plugin-versionlock_ yum plugin, or simply add this line to the "epel" section of /etc/yum.repos.d/epel.repo::
+Both EPEL6 and EPEL7 currently provide R-3.4, which has been tested and appears to work well. R 3.4, offered by EPEL until also works well. We recommend using the currently available EPEL version for all the new installations. But if you already have a working R 3.4 installation from EPEL and you don't have a specific need to upgrade, you may lock that version in place using the _yum-plugin-versionlock_ yum plugin, or simply add this line to the "epel" section of /etc/yum.repos.d/epel.repo::
 
 	exclude=R-*,openblas-*,libRmath*
 
-RHEL users may want to log in to their organization's respective RHN interface, find the particular machine in question and:
+RHEL users may need to log in to their organization's respective RHN interface, find the particular machine in question and:
 
 • click on "Subscribed Channels: Alter Channel Subscriptions"
 • enable EPEL, Server Extras, Server Optional
@@ -166,15 +170,21 @@ Wipe clean any R packages that were left behind::
 c. rApache: 
 -----------
 
-For RHEL/CentOS 6, we recommend that you download :download:`rapache-1.2.6-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.6-rpm0.x86_64.rpm>` and install it with::
+We maintain the following rpms of rApache, built for the following version of RedHat/CentOS distribution:
+
+For RHEL/CentOS 6 and R 3.4, download :download:`rapache-1.2.6-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.6-rpm0.x86_64.rpm>` and install it with::
 
 	yum install rapache-1.2.6-rpm0.x86_64.rpm
 
-If you are using RHEL/CentOS 7, you can download our experimental :download:`rapache-1.2.7-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.7-rpm0.x86_64.rpm>` and install it with::
+For RHEL/CentOS 6 and R 3.5, download :download:`rapache-1.2.9_R-3.5-RH6.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.9_R-3.5-RH6.x86_64.rpm>` and install it with::
+
+	yum install rapache-1.2.9_R-3.5-RH6.x86_64.rpm
+
+If you are using RHEL/CentOS 7 and R 3.4, download :download:`rapache-1.2.7-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.7-rpm0.x86_64.rpm>` and install it with::
 
 	yum install apache-1.2.7-rpm0.x86_64.rpm
 
-If you are using RHEL/CentOS 7 in combination with R-3.5, you may install :download:`rapache-1.2.9_R-3.5.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.9_R-3.5.x86_64.rpm>` which was built against R-3.5.
+If you are using RHEL/CentOS 7 in combination with R 3.5, download :download:`rapache-1.2.9_R-3.5.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.9_R-3.5.x86_64.rpm>` which was built against R-3.5.
 
 d. Install the build environment for R:
 ---------------------------------------
@@ -191,6 +201,7 @@ Depending on how your system was originally set up, you may end up needing to in
 +++++++++++++++++++++++++++
 
 We provide a shell script (``r-setup.sh``) that will try to install all the needed packages. **Note:** the script is now part of the TwoRavens distribution (it **used to be** in the Dataverse source tree). 
+
 
 The script will attempt to download the packages from CRAN (or a mirror), so the system must have access to the Internet.
 
