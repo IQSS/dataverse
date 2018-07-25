@@ -79,8 +79,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     DatasetPage datasetPage;
     @Inject
     EditDatafilesPage datafilesPage;
-    @Inject
-    ProvUtilFragmentBean provUtil;
+    ProvInvestigator provUtil = ProvInvestigator.getInstance();
         
     public void handleFileUpload(FileUploadEvent event) throws IOException {
         jsonUploadedTempFile = event.getFile();

@@ -17,19 +17,31 @@ import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-
-public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Serializable{
+//This has been made a singleton because the schema validator only needs to exist once
+//and loads very slowly
+public class ProvInvestigator {
    
-    HashMap<String,ProvEntityFileData> provJsonParsedEntities;
-    JsonParser parser = new JsonParser();
-    private static final Logger logger = Logger.getLogger(ProvUtilFragmentBean.class.getCanonicalName());
-
+    private static final Logger logger = Logger.getLogger(ProvInvestigator.class.getCanonicalName());
+    private static ProvInvestigator pvSingleton;
+    
+    private ProvInvestigator() {
+        
+    }
     
     public HashMap<String,ProvEntityFileData> startRecurseNames(String jsonString) {
-        provJsonParsedEntities = new HashMap<>();
+        JsonParser parser = new JsonParser();
+        HashMap<String,ProvEntityFileData> provJsonParsedEntities = new HashMap<>();
         com.google.gson.JsonObject jsonObject = parser.parse(jsonString).getAsJsonObject();
-        recurseNames(jsonObject, null, false);
+        recurseNames(jsonObject, null, provJsonParsedEntities, false);
         return provJsonParsedEntities;
+    }
+    
+    static {
+        pvSingleton = new ProvInvestigator();
+    }
+    
+    public static ProvInvestigator getInstance() {
+        return pvSingleton;
     }
     
     /** Parsing recurser for prov json. Pulls out all names/types inside entity, including the name of each entry inside entity
@@ -37,7 +49,7 @@ public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Ser
      * Current parsing code does not parse json arrays. My understanding of the schema is that these do not take place
      * Schema: https://www.w3.org/Submission/2013/SUBM-prov-json-20130424/schema
      */
-    protected JsonElement recurseNames(JsonElement element, String outerKey, boolean atEntity) {
+    protected JsonElement recurseNames(JsonElement element, String outerKey, HashMap<String,ProvEntityFileData> provJsonParsedEntities, boolean atEntity) {
         //we need to know when we are inside of entity 
         //we also need to know when we are inside of each entity so we correctly connect the values
         if(element.isJsonObject()) {
@@ -72,9 +84,9 @@ public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Ser
                     //we are storing the entity name both as the key and in the object, the former for access and the later for ease of use when converted to a list
                     //Also, when we initialize the entity the freeform is set to null, after this recursion
                     provJsonParsedEntities.put(s.getKey(), new ProvEntityFileData(s.getKey(), null, null));
-                    recurseNames(s.getValue(),s.getKey(),true);
+                    recurseNames(s.getValue(),s.getKey(), provJsonParsedEntities, true);
                 } else {
-                    recurseNames(s.getValue(),s.getKey(),false);
+                    recurseNames(s.getValue(),s.getKey(), provJsonParsedEntities, false);
                 }
                 
             });
@@ -119,7 +131,7 @@ public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Ser
     //Pulled from https://www.w3.org/Submission/2013/SUBM-prov-json-20130424/schema
     //Not the prettiest way of accessing the schema, but loading the .json file as an external resource
     //turned out to be very painful, especially when also trying to exercise it via unit tests
-    public static final String provSchema = 
+    private static final String provSchema = 
         "{\n" +
         "    \"id\": \"http://provenance.ecs.soton.ac.uk/prov-json/schema#\",\n" +
         "    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n" +
@@ -468,6 +480,7 @@ public class ProvUtilFragmentBean extends AbstractApiBean implements java.io.Ser
         "    }\n" +
         "}"; 
     
-    JSONObject rawSchema = new JSONObject(new JSONTokener(provSchema));
-    Schema schema = SchemaLoader.load(rawSchema);
+    private static final JSONObject rawSchema = new JSONObject(new JSONTokener(provSchema));
+    private static final Schema schema = SchemaLoader.load(rawSchema);
+
 }

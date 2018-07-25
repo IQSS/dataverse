@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.ProvEntityFileData;
-import edu.harvard.iq.dataverse.ProvUtilFragmentBean;
+import edu.harvard.iq.dataverse.ProvInvestigator;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvFreeFormCommand;
@@ -35,8 +35,7 @@ public class Prov extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Prov.class.getCanonicalName());
 
-    @Inject
-    ProvUtilFragmentBean provUtil;
+    ProvInvestigator provUtil = ProvInvestigator.getInstance();
     
     /** Provenance JSON methods **/
     @POST
