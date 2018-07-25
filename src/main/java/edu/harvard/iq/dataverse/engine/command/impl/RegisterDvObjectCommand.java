@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.logging.Logger;
 
 /**
  *
@@ -26,6 +27,7 @@ import java.util.Date;
 public class RegisterDvObjectCommand extends AbstractVoidCommand {
 
     private final DvObject target;
+    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand");
 
     public RegisterDvObjectCommand(DataverseRequest aRequest, DvObject target) {
         super(aRequest, target);
@@ -60,12 +62,17 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                 return;
             }
             String doiRetString = idServiceBean.createIdentifier(target);
+            if(!idServiceBean.registerWhenPublished()) {
+            	//DOIEZId tries to recreate the id if the identifier isn't registered before publicizeIdentifier is called
+            	target.setIdentifierRegistered(true);
+            	target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+            }
+            logger.info("Created id: " + doiRetString);
             if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
                 if (target.isReleased()) {
                     idServiceBean.publicizeIdentifier(target);
                 }
-
-                if (!idServiceBean.registerWhenPublished() || target.isReleased()) {
+                if (idServiceBean.registerWhenPublished() && target.isReleased()) {
                     target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                     target.setIdentifierRegistered(true);
                 }
@@ -85,11 +92,17 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                             }
                         }
                         doiRetString = idServiceBean.createIdentifier(df);
+                        if(!idServiceBean.registerWhenPublished()) {
+                        	//DOIEZId tries to recreate the id if the identifier isn't registered before publicizeIdentifier is called
+                        	df.setIdentifierRegistered(true);
+                        	df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                        }
+
                         if (doiRetString != null && doiRetString.contains(df.getIdentifier())) {
                             if (df.isReleased()) {
                                 idServiceBean.publicizeIdentifier(df);
                             }
-                            if (!idServiceBean.registerWhenPublished() || df.isReleased()) {
+                            if (idServiceBean.registerWhenPublished() && df.isReleased()) {
                                 df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                                 df.setIdentifierRegistered(true);
                             }
