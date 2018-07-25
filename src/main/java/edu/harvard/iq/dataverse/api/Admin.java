@@ -1115,6 +1115,7 @@ public class Admin extends AbstractApiBean {
 		Integer successes = 0;
 		Integer alreadyUpdated = 0;
 		Integer rehashed = 0;
+		logger.info("Num = " + num);
 		if(num<=0) num = Long.MAX_VALUE;
 		DataFile.ChecksumType cType = null;
 		try {
@@ -1129,11 +1130,11 @@ public class Admin extends AbstractApiBean {
 			try {
 				if (!df.getChecksumType().equals(cType)) {
 					rehashed++;
-					logger.info("Datafile: " + df.getFileMetadata().getLabel() + ", " + df.getIdentifier());
+					logger.info(rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", " + df.getIdentifier());
 					//verify hash and calc new one to replace it
 					StorageIO<DataFile> storage =df.getStorageIO(); 
 					storage.open(DataAccessOption.READ_ACCESS);
-					InputStream in = df.getStorageIO().getInputStream();
+					InputStream in = storage.getInputStream();
 					if(in == null) logger.warning("Null stream");
 					String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
 					if(currentChecksum== df.getChecksumValue()) {
