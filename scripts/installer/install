@@ -751,7 +751,7 @@ sub setup {
     $ENV{'WARFILE_LOCATION'} = $WARFILE_LOCATION;
     
     #start-glassfish is a container name for OpenShift deployment 
-    unless($ENV{"MY_POD_NAME"} eq "start-glassfish") {
+    unless($ENV{"MY_POD_NAME"} eq "start-glassfish" || $ENV{"MY_POD_NAME"} eq "dataverse-glassfish-0") {
         system("perl ./postgres-setup");
     }
     
