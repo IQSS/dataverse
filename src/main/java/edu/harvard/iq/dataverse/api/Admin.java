@@ -28,6 +28,7 @@ import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailInitResponse;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
 import javax.json.Json;
@@ -1128,16 +1129,18 @@ public class Admin extends AbstractApiBean {
 			try {
 				if (!df.getChecksumType().equals(cType)) {
 					rehashed++;
+					logger.info("Datafile: " + df.getFileMetadata().getLabel() + ", " + df.getIdentifier());
 					//verify hash and calc new one to replace it
-					df.getChecksumValue();
-					df.getStorageIO().open(DataAccessOption.READ_ACCESS);
+					StorageIO<DataFile> storage =df.getStorageIO(); 
+					storage.open(DataAccessOption.READ_ACCESS);
 					InputStream in = df.getStorageIO().getInputStream();
+					if(in == null) logger.warning("Null stream");
 					String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
 					if(currentChecksum== df.getChecksumValue()) {
-						logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", " + df.getIdentifier() + " is valid");
-						df.getStorageIO().open(DataAccessOption.READ_ACCESS);
-						InputStream in2 = df.getStorageIO().getInputStream();
-
+						logger.info("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", " + df.getIdentifier() + " is valid");
+						storage.open(DataAccessOption.READ_ACCESS);
+						InputStream in2 = storage.getInputStream();
+						if(in2 == null) logger.warning("Null stream");
 						String newChecksum = FileUtil.CalculateChecksum(in2, cType);
 
 						df.setChecksumType(cType);
@@ -1158,6 +1161,7 @@ public class Admin extends AbstractApiBean {
 				
 			} catch (Exception e) {
 				logger.info("Unexpected Exception: " + e.getMessage());
+				
 			}
 		}
 		logger.info("Final Results:");
