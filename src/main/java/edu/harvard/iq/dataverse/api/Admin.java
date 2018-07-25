@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
@@ -57,8 +56,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
-
-import org.apache.commons.io.FileUtils;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
@@ -1116,7 +1113,7 @@ public class Admin extends AbstractApiBean {
 		Integer alreadyUpdated = 0;
 		Integer rehashed = 0;
 		logger.info("Num = " + num);
-		if(num<=0) num = 2; //for testing Integer.MAX_VALUE;
+		if(num<=0) num = Integer.MAX_VALUE;
 		DataFile.ChecksumType cType = null;
 		try {
 		  cType = DataFile.ChecksumType.fromString(alg);
@@ -1125,6 +1122,13 @@ public class Admin extends AbstractApiBean {
 		}
 		logger.info("Starting to rehash: analyzing " + count + " files. " + new Date());
 		logger.info("Hashes not created with " + alg + " will be verified, and, if valid, replaced with a hash using " + alg);
+		try {
+			User u = findAuthenticatedUserOrDie();
+			if(!u.isSuperuser()) return error(Status.UNAUTHORIZED, "must be superuser");
+		} catch (WrappedResponse e1) {
+			return error(Status.UNAUTHORIZED, "api key required");
+		}
+		
 		for (DataFile df : fileService.findAll()) {
 			if(rehashed.intValue() >= num) break;
 			try {
