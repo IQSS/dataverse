@@ -839,13 +839,8 @@ public class SystemConfig {
          * Traditional Dataverse file handling, which tends to involve users
          * uploading and downloading files using a browser or APIs.
          */
-        NATIVE("native/http"),
-        /**
-         * Traditional Dataverse file handling, which tends to involve users
-         * uploading and downloading files using a browser or APIs.
-         */
-        
-        DROPBOX("native/dropbox");
+        NATIVE("native/http");
+
 
         private final String text;
 
@@ -980,11 +975,6 @@ public class SystemConfig {
         return getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());       
     }
     
-    public boolean isDropBoxUpload(){
-        return  getUploadMethodAvailable(SystemConfig.FileUploadMethods.DROPBOX.toString());       
-    }
-    
-
     public boolean isRsyncDownload()
     {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);

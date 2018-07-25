@@ -224,8 +224,8 @@
                         </div>
                     </div>
                     
-                    <ui:fragment rendered="#{settingsWrapper.isHasDropBoxKey() and settingsWrapper.dropBoxUpload}">
-                    <div class="panel panel-default">
+                    <ui:fragment rendered="#{settingsWrapper.isHasDropBoxKey() and settingsWrapper.HTTPUpload}">
+                    <div jsf:id="dropboxPanel" class="panel panel-default">
                         
                         <!-- TODO: New help text needed for these panels, replace placeholder text here and add final msg text to bundle -->
                         
@@ -314,15 +314,10 @@
                                 </li>
                             </ol>
                         </ui:fragment>
-                        <ui:remove>
-                        <div class="button-block">
-                            <p:commandButton action="#{DatasetPage.finishRsyncScriptAction()}" value="#{bundle.close}" update=":datasetForm,:messagePanel" onclick="PF('rsyncUpload_popup').hide();"/>
-                        </div>
-                            </ui:remove>
                         <!-- END RSYNC UPLOAD POPUP -->
 
                                 
-                            </ui:fragment>
+                        </ui:fragment>
                             <ui:fragment rendered="#{createDataset}">
 
                                 <div  data-widget="content" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" id="datasetForm:tabView">
@@ -332,7 +327,6 @@
                                             <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.createUploadDisabled']}</p>                                    
                                         </div>
                                     </div>
-                                    <!-- END: Create-Upload Disabled // Static Tab Layout -->
                                 </div>
                             </ui:fragment> 
                         </div>  
