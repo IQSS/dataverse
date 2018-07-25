@@ -1110,13 +1110,13 @@ public class Admin extends AbstractApiBean {
 	
 	@GET
 	@Path("/updateHashValues/{alg}")
-	public Response updateHashValues(@PathParam("alg") String alg, @QueryParam("num") long num) {
+	public Response updateHashValues(@PathParam("alg") String alg, @QueryParam("num") int num) {
 		Integer count = fileService.findAll().size();
 		Integer successes = 0;
 		Integer alreadyUpdated = 0;
 		Integer rehashed = 0;
 		logger.info("Num = " + num);
-		if(num<=0) num = Long.MAX_VALUE;
+		if(num<=0) num = 2; //for testing Integer.MAX_VALUE;
 		DataFile.ChecksumType cType = null;
 		try {
 		  cType = DataFile.ChecksumType.fromString(alg);
@@ -1137,7 +1137,7 @@ public class Admin extends AbstractApiBean {
 					InputStream in = storage.getInputStream();
 					if(in == null) logger.warning("Null stream");
 					String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
-					if(currentChecksum== df.getChecksumValue()) {
+					if(currentChecksum.equals(df.getChecksumValue())) {
 						logger.info("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", " + df.getIdentifier() + " is valid");
 						storage.open(DataAccessOption.READ_ACCESS);
 						InputStream in2 = storage.getInputStream();
