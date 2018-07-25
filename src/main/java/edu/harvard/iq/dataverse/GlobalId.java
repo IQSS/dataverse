@@ -28,6 +28,7 @@ public class GlobalId implements java.io.Serializable {
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
     public static final String DOI_RESOLVER_URL = "https://doi.org/";
     public static final String DISALLOWED_CHARACTERS = ".*[<>()].*";
+    public static final String ALLOWED_CHARACTERS = "^[A-Za-z0-9._/:\\-]*$";
     
     public static Optional<GlobalId> parse(String identifierString) {
         try {
@@ -230,10 +231,17 @@ public class GlobalId implements java.io.Serializable {
         return true;
     }
 
-    public static boolean hasDisallowedImportCharacters(String pidParam) {
-        Pattern p = Pattern.compile(DISALLOWED_CHARACTERS);
+//    public static boolean hasDisallowedImportCharacters(String pidParam) {
+//        Pattern p = Pattern.compile(DISALLOWED_CHARACTERS);
+//        Matcher m = p.matcher(pidParam);
+//        return m.matches();
+//    }
+    
+    public static boolean verifyImportCharacters(String pidParam) {
+        
+        Pattern p = Pattern.compile(ALLOWED_CHARACTERS);
         Matcher m = p.matcher(pidParam);
+        
         return m.matches();
     }
-
 }
