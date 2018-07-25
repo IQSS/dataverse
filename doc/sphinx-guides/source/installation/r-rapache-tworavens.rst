@@ -209,13 +209,16 @@ The script will attempt to download the packages from CRAN (or a mirror), so the
 
 In order to run the script: 
 
-Download the TwoRavens distribution from `https://github.com/IQSS/TwoRavens/archive/a6869eb.zip <https://github.com/IQSS/TwoRavens/archive/a6869eb.zip>`_.
-Note that the link above points to a specific snapshot of the sources. Do not download the master distribution, as it may have changed since this guide, and 
-the installation scripts were written.   
+Download the current snapshot of the "dataverse-distribution" branch
+of TwoRavens from github:
+`https://github.com/IQSS/TwoRavens/archive/dataverse-distribution.zip
+<https://github.com/IQSS/TwoRavens/archive/dataverse-distribution.zip>`_.
+Once again, it is important that you download the
+"dataverse-distribution" branch, and NOT the master distribution!
 Unpack the zip file, then run the script::
 
-        unzip a6869eb.zip
-        cd TwoRavens-a6869eb28693d6df529e7cb3888c40de5f302b66/r-setup
+        unzip dataverse-distribution.zip
+        cd TwoRavens-dataverse-distribution/r-setup
         chmod +x r-setup.sh
         ./r-setup.sh
 
@@ -251,7 +254,7 @@ b. Rename the resulting directory "dataexplore" ...
 
 ...and place it in the web root directory of your apache server. We'll assume ``/var/www/html/dataexplore`` in the examples below::
 
-        mv TwoRavens-a6869eb28693d6df529e7cb3888c40de5f302b66 /var/www/html/dataexplore
+        mv TwoRavens-dataverse-distribution /var/www/html/dataexplore
 
 
 c. run the installer
