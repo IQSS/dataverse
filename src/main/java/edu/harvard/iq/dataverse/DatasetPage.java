@@ -4307,14 +4307,14 @@ public class DatasetPage implements java.io.Serializable {
         selectedFiles = Collections.EMPTY_LIST;
     }
     
-    public void fileListingPaginatorListener(PageEvent event) {
+    public void fileListingPaginatorListener(PageEvent event) {       
         setFilePaginatorPage(event.getPage());      
     }
     
     public void refreshPaginator() {
         FacesContext facesContext = FacesContext.getCurrentInstance();
         org.primefaces.component.datatable.DataTable dt = (org.primefaces.component.datatable.DataTable) facesContext.getViewRoot().findComponent("datasetForm:tabView:filesTable");
-        int rows = dt.getRowsToRender();
-        setRowsPerPage(rows);
+        setFilePaginatorPage(dt.getPage());      
+        setRowsPerPage(dt.getRowsToRender());
     }  
 }
