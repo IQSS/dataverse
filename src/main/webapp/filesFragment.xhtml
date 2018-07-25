@@ -102,7 +102,7 @@
                     - ?Fix misleading "# Files Selected on Upload Files/Edit Files pg?
                     - ?Copy over new selection message to Upload Files/Edit Files pg?
                     -->
-                    <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold">
+                    <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold" rendered="#{DatasetPage.fileMetadatasSearch.size() gt 0}">
                         <f:param value="#{(DatasetPage.filePaginatorPage * DatasetPage.rowsPerPage) + 1}"/>
                         <f:param value="#{Math:min((DatasetPage.filePaginatorPage + 1) * DatasetPage.rowsPerPage,DatasetPage.fileMetadatasSearch.size()) }"/>
                         <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
