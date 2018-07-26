@@ -22,11 +22,11 @@ import org.junit.Test;
  * @author madunlap
  */
 @Ignore
-public class ProvUtilFragmentTest {
+public class ProvInvestigatorTest {
     
     private ProvInvestigator provUtilBean;
     JsonParser jsonParser;
-    private static final Logger logger = Logger.getLogger(ProvUtilFragmentTest.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(ProvInvestigatorTest.class.getCanonicalName());
     
     @Before
     public void setUp() {
