@@ -1378,7 +1378,7 @@ public class DatasetPage implements java.io.Serializable {
                 // Set Working Version and Dataset by PersistentID
                 dataset = datasetService.findByGlobalId(persistentId);
                 if (dataset == null) {
-                    logger.warning("++++No such dataset: "+persistentId);
+                    logger.warning("No such dataset: "+persistentId);
                     return permissionsWrapper.notFound();
                 }
                 logger.fine("retrieved dataset, id="+dataset.getId());
@@ -1392,7 +1392,7 @@ public class DatasetPage implements java.io.Serializable {
                 // Set Working Version and Dataset by Datasaet Id and Version
                 dataset = datasetService.find(dataset.getId());
                 if (dataset == null) {
-                    logger.warning("????No such dataset: "+dataset);
+                    logger.warning("No such dataset: "+dataset);
                     return permissionsWrapper.notFound();
                 }
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);

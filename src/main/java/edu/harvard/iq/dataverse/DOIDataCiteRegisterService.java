@@ -37,21 +37,21 @@ public class DOIDataCiteRegisterService {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     @EJB
     DataverseServiceBean dataverseService;
 
     private DataCiteRESTfullClient openClient() throws IOException {
         return new DataCiteRESTfullClient(System.getProperty("doi.baseurlstring"), System.getProperty("doi.username"), System.getProperty("doi.password"));
     }
-    
+
     public String createIdentifierLocal(String identifier, Map<String, String> metadata, DvObject dvObject) {
-    
+
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
         String status = metadata.get("_status").trim();
         String target = metadata.get("_target");
         String retString = "";
-        DOIDataCiteRegisterCache rc = findByDOI(identifier);    
+        DOIDataCiteRegisterCache rc = findByDOI(identifier);
         if (rc == null) {
             rc = new DOIDataCiteRegisterCache();
             rc.setDoi(identifier);
@@ -66,11 +66,10 @@ public class DOIDataCiteRegisterService {
             rc.setUrl(target);
         }
         retString = "success to reserved " + identifier;
-        
-        
+
         return retString;
     }
-    
+
     public String registerIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
         String retString = "";
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
@@ -91,43 +90,43 @@ public class DOIDataCiteRegisterService {
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } else{
+        } else {
             try (DataCiteRESTfullClient client = openClient()) {
                 retString = client.postMetadata(xmlMetadata);
                 client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            }           
+            }
         }
         return retString;
     }
-    
-    public String deactivateIdentifier (String identifier, HashMap<String, String> metadata, DvObject dvObject){
-        String retString = "";
-                    DOIDataCiteRegisterCache rc = findByDOI(identifier);
-            try (DataCiteRESTfullClient client = openClient()) {
-                if (rc != null) {
-                    rc.setStatus("unavailable");
-                    retString = client.inactiveDataset(identifier.substring(identifier.indexOf(":") + 1));
-                }
-            } catch (IOException io) {
 
+    public String deactivateIdentifier(String identifier, HashMap<String, String> metadata, DvObject dvObject) {
+        String retString = "";
+        DOIDataCiteRegisterCache rc = findByDOI(identifier);
+        try (DataCiteRESTfullClient client = openClient()) {
+            if (rc != null) {
+                rc.setStatus("unavailable");
+                retString = client.inactiveDataset(identifier.substring(identifier.indexOf(":") + 1));
             }
-            return retString;
+        } catch (IOException io) {
+
+        }
+        return retString;
     }
-     
-    private String getMetadataFromDvObject(String identifier, Map<String, String> metadata,DvObject dvObject) {
-        
+
+    private String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
+
         Dataset dataset = null;
-        
-        if (dvObject instanceof Dataset){
+
+        if (dvObject instanceof Dataset) {
             dataset = (Dataset) dvObject;
         } else {
             dataset = (Dataset) dvObject.getOwner();
-        }        
-        
+        }
+
         DataCiteMetadataTemplate metadataTemplate = new DataCiteMetadataTemplate();
-        metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));       
+        metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
         metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
         if (dvObject.isInstanceofDataset()) {
@@ -135,28 +134,25 @@ public class DOIDataCiteRegisterService {
         }
         if (dvObject.isInstanceofDataFile()) {
             DataFile df = (DataFile) dvObject;
-            String fileDescription =df.getDescription();
-            metadataTemplate.setDescription(fileDescription == null ? "" :fileDescription );
-        }
-        metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
-        metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
-        metadataTemplate.setTitle(dvObject.getDisplayName());
-        String producerString =  dataverseService.findRootDataverse().getName();
-        if (producerString.isEmpty()) {
-            producerString = ":unav";
-        }
-        metadataTemplate.setPublisher(producerString);
-        metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
-        if (dvObject.isInstanceofDataFile()) {
-            DataFile df = (DataFile) dvObject;
+            String fileDescription = df.getDescription();
+            metadataTemplate.setDescription(fileDescription == null ? "" : fileDescription);
             String datasetPid = df.getOwner().getGlobalId().asString();
             metadataTemplate.setDatasetIdentifier(datasetPid);
         } else {
             metadataTemplate.setDatasetIdentifier("");
         }
-        
-        
-       String xmlMetadata = metadataTemplate.generateXML(dvObject);
+
+        metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
+        metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
+        metadataTemplate.setTitle(dvObject.getDisplayName());
+        String producerString = dataverseService.findRootDataverse().getName();
+        if (producerString.isEmpty()) {
+            producerString = ":unav";
+        }
+        metadataTemplate.setPublisher(producerString);
+        metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
+
+        String xmlMetadata = metadataTemplate.generateXML(dvObject);
         logger.log(Level.INFO, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }
@@ -200,14 +196,14 @@ public class DOIDataCiteRegisterService {
                 try (DataCiteRESTfullClient client = openClient()) {
                     retString = client.postMetadata(xmlMetadata);
                     client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
-                    
+
                 } catch (UnsupportedEncodingException ex) {
                     logger.log(Level.SEVERE, null, ex);
-                    
-                } catch ( RuntimeException rte ) {
+
+                } catch (RuntimeException rte) {
                     logger.log(Level.SEVERE, "Error creating DOI at DataCite: {0}", rte.getMessage());
                     logger.log(Level.SEVERE, "Exception", rte);
-                    
+
                 }
             }
         } else if (status.equals("unavailable")) {
@@ -223,26 +219,6 @@ public class DOIDataCiteRegisterService {
         }
         return retString;
     }
-    
-    public String setUpFileIdentifiers(DvObject dvObject)
-    {
-     StringBuilder sb = new StringBuilder();
-     String fileIdentifiers;
-        
-        if(dvObject.isInstanceofDataset()){
-            Dataset ds = (Dataset) dvObject;
-            
-            for(int i = 0; i < ds.getFiles().size(); i++)
-                sb.append(ds.getFiles().get(i).getIdentifier() + "|:|");
-          
-            fileIdentifiers = sb.toString();
-        }
-        else
-            fileIdentifiers = "";
-        
-        return fileIdentifiers;
-    }
-    
 
     public boolean testDOIExists(String identifier) {
         boolean doiExists;
@@ -324,7 +300,6 @@ class DataCiteMetadataTemplate {
     private List<String[]> contacts;
     private List<String[]> producers;
 
-    
     public List<String[]> getProducers() {
         return producers;
     }
@@ -359,8 +334,7 @@ class DataCiteMetadataTemplate {
 
     public DataCiteMetadataTemplate() {
     }
-    
-     
+
     public List<String> getDatafileIdentifiers() {
         return datafileIdentifiers;
     }
@@ -432,7 +406,7 @@ class DataCiteMetadataTemplate {
             creatorsElement.append("</creator>");
         }
         xmlMetadata = xmlMetadata.replace("${creators}", creatorsElement.toString());
-     
+
         StringBuilder contributorsElement = new StringBuilder();
         for (String[] contact : this.getContacts()) {
             if (!contact[0].isEmpty()) {
@@ -450,9 +424,9 @@ class DataCiteMetadataTemplate {
             }
             contributorsElement.append("</contributor>");
         }
-        
-        String relIdentifiers = generateRelatedIdentifiers (dvObject);
-        
+
+        String relIdentifiers = generateRelatedIdentifiers(dvObject);
+
         xmlMetadata = xmlMetadata.replace("${relatedIdentifiers}", relIdentifiers);
 
         xmlMetadata = xmlMetadata.replace("{$contributors}", contributorsElement.toString());
@@ -484,16 +458,16 @@ class DataCiteMetadataTemplate {
                     sb.append("</relatedIdentifiers>");
                 }
             }
-        } else if (dvObject.isInstanceofDataFile()){
+        } else if (dvObject.isInstanceofDataFile()) {
             DataFile df = (DataFile) dvObject;
             sb.append("<relatedIdentifiers>");
             sb.append("<relatedIdentifier relatedIdentifierType=\"DOI\" relationType=\"IsPartOf\""
-                                + ">" + df.getOwner().getGlobalId() + "</relatedIdentifier>");
+                    + ">" + df.getOwner().getGlobalId() + "</relatedIdentifier>");
             sb.append("</relatedIdentifiers>");
         }
         return sb.toString();
     }
-    
+
     public void generateFileIdentifiers(DvObject dvObject) {
 
         if (dvObject.isInstanceofDataset()) {
@@ -516,7 +490,6 @@ class DataCiteMetadataTemplate {
             }
         }
     }
-   
 
     public static String getTemplate() {
         return template;
