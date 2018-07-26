@@ -315,27 +315,6 @@ public class DataCitation {
 		out.write("url = {");
 		out.write(persistentId.toURL().toString());
 		out.write("}\r\n");
-		if(getFileTitle()!=null) {
-			if(isDirect()) {
-				out.write("note = {");
-				out.write("This reference is to a file ");
-						if(getUNF()!=null) {
-							out.write("(UNF=" + getUNF()+")");
-						}
-						out.write(", with the given doi, within a dataset");
-				out.write("}\r\n");
-			} else {
-				out.write("note = {");
-				out.write("This reference is to a file ");
-				if(getUNF()!=null) {
-					out.write("(UNF=" + getUNF()+")");
-				}
-				out.write(" within a dataset with the given doi");
-				out.write("}\r\n");
-			}
-			out.write("}");
-
-		}
 		out.flush();
 	}
 
@@ -432,13 +411,6 @@ public class DataCitation {
 			if (getUNF() != null) {
 				out.write("C2  - " + getUNF() + "\r\n");
 			}
-			if(isDirect()) {
-			out.write("N1  - This reference is to a file, with the given identifier, within a dataset.\r\n");
-			} else {
-				out.write("N1  - This reference is to a file within the dataset with the given identifier.\r\n");
-			}
-		} else {
-			out.write("N1  - This reference is to a dataset.\r\n");
 		}
 
 		// closing element:
