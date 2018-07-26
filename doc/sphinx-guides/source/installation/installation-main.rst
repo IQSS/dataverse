@@ -66,6 +66,16 @@ This allows the installer to be run in non-interactive mode (with ``./install -y
 
 All the Glassfish configuration tasks performed by the installer are isolated in the shell script ``dvinstall/glassfish-setup.sh`` (as ``asadmin`` commands). 
 
+**IMPORTANT:** The installer will also ask for an external site URL for Dataverse. It is *imperative* that this value be supplied accurately, or a long list of functions will be inoperable, including:
+
+- email confirmation links
+- password reset links
+- generating a Private URL
+- exporting to Schema.org format (and showing JSON-LD in HTML's <meta/> tag)
+- exporting to DDI format
+- which Dataverse installation an "external tool" should return to
+- which Dataverse installation Geoconnect should return to
+
 **IMPORTANT:** Please note, that "out of the box" the installer will configure the Dataverse to leave unrestricted access to the administration APIs from (and only from) localhost. Please consider the security implications of this arrangement (anyone with shell access to the server can potentially mess with your Dataverse). An alternative solution would be to block open access to these sensitive API endpoints completely; and to only allow requests supplying a pre-defined "unblock token" (password). If you prefer that as a solution, please consult the supplied script ``post-install-api-block.sh`` for examples on how to set it up. See also "Securing Your Installation" under the :doc:`config` section.
 
 The script is to a large degree a derivative of the old installer from DVN 3.x. It is written in Perl. If someone in the community is eager to rewrite it, perhaps in a different language, please get in touch. :)
