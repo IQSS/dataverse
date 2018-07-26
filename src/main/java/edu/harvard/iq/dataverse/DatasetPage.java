@@ -102,6 +102,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
+import org.primefaces.event.data.PageEvent;
 
 /**
  *
@@ -216,6 +217,13 @@ public class DatasetPage implements java.io.Serializable {
     private List<Template> dataverseTemplates = new ArrayList<>();
     private Template defaultTemplate;
     private Template selectedTemplate;
+    /**
+     * In the file listing, the page the user is on. This is zero-indexed so if
+     * the user clicks page 2 in the UI, this will be 1.
+     */
+    private int filePaginatorPage;
+    private int rowsPerPage;
+
     private String persistentId;
     private String version;
     private String protocol = "";
@@ -951,8 +959,23 @@ public class DatasetPage implements java.io.Serializable {
     public void reset() {
         dataset.setGuestbook(null);
     }
-    
 
+    public int getFilePaginatorPage() {
+        return filePaginatorPage;
+    }
+
+    public void setFilePaginatorPage(int filePaginatorPage) {
+        this.filePaginatorPage = filePaginatorPage;
+    }
+    
+    
+    public int getRowsPerPage() {
+        return rowsPerPage;
+    }
+
+    public void setRowsPerPage(int rowsPerPage) {
+        this.rowsPerPage = rowsPerPage;
+    }
 
     public String getGlobalId() {
         return persistentId;
@@ -1593,7 +1616,7 @@ public class DatasetPage implements java.io.Serializable {
 
         configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
-
+        rowsPerPage = 10;
         return null;
     }
     
@@ -2138,16 +2161,6 @@ public class DatasetPage implements java.io.Serializable {
             requestContext.execute("PF('selectFilesForDownload').show()");
             return;
         }
-
-        List<FileMetadata> allFiles = new ArrayList<>();
-        
-        if (isSelectAllFiles()){
-            for (FileMetadata fm: workingVersion.getFileMetadatas()){
-                allFiles.add(fm);
-            }
-            this.selectedFiles = allFiles;
-        }
- 
         for (FileMetadata fmd : this.selectedFiles){
             if(this.fileDownloadHelper.canDownloadFile(fmd)){
                 getSelectedDownloadableFiles().add(fmd);
@@ -4283,4 +4296,25 @@ public class DatasetPage implements java.io.Serializable {
         }
         return "";
     }
+
+    public void selectAllFiles() {
+        logger.fine("selectAllFiles called");
+        selectedFiles = workingVersion.getFileMetadatas();
+    }
+
+    public void clearSelection() {
+        logger.info("clearSelection called");
+        selectedFiles = Collections.EMPTY_LIST;
+    }
+    
+    public void fileListingPaginatorListener(PageEvent event) {       
+        setFilePaginatorPage(event.getPage());      
+    }
+    
+    public void refreshPaginator() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        org.primefaces.component.datatable.DataTable dt = (org.primefaces.component.datatable.DataTable) facesContext.getViewRoot().findComponent("datasetForm:tabView:filesTable");
+        setFilePaginatorPage(dt.getPage());      
+        setRowsPerPage(dt.getRowsToRender());
+    }  
 }
