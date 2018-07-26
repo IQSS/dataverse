@@ -270,9 +270,13 @@
                                </span>
                            </label>
                            <div class="col-sm-9">
-                               <p>
+                               <p jsf:rendered="#{!DatasetPage.workingVersion.draft}">
                                    <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.request']}" rendered="#{DatasetPage.dataset.fileAccessRequest}"/>
                                    <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.notRequest']}" rendered="#{!DatasetPage.dataset.fileAccessRequest}"/>
+                               </p>
+                               <p jsf:rendered="#{DatasetPage.workingVersion.draft}">
+                                   <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.request']}" rendered="#{DatasetPage.workingVersion.termsOfUseAndAccess.fileAccessRequest}"/>
+                                   <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.notRequest']}" rendered="#{!DatasetPage.workingVersion.termsOfUseAndAccess.fileAccessRequest}"/>
                                </p>
                            </div>
                        </div>
