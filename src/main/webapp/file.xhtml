@@ -287,17 +287,17 @@
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left" role="menu">
                                                     <li>
-                                                        <a jsf:id="endNoteLink-2" jsf:action="#{FilePage.fileMetadata.dataFile.isIdentifierRegistered() ? FilePage.fileDownloadService.downloadDirectDatafileCitationXML(FilePage.fileMetadata) : FilePage.fileDownloadService.downloadDatafileCitationXML(FilePage.fileMetadata)}" >
+                                                        <a jsf:id="endNoteLink-2" jsf:action="#{FilePage.fileDownloadService.downloadCitationXML(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" >
                                                             #{bundle['dataset.cite.downloadBtn.xml']}
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a jsf:id="risLink-2" jsf:actionListener="#{FilePage.fileMetadata.dataFile.isIdentifierRegistered() ? FilePage.fileDownloadService.downloadDirectDatafileCitationRIS(FilePage.fileMetadata) : FilePage.fileDownloadService.downloadDatafileCitationRIS(FilePage.fileMetadata)}">
+                                                        <a jsf:id="risLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadCitationRIS(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}">
                                                             #{bundle['dataset.cite.downloadBtn.ris']}
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a jsf:id="bibLink-2" jsf:actionListener="#{FilePage.fileMetadata.dataFile.isIdentifierRegistered() ? FilePage.fileDownloadService.downloadDirectDatafileCitationBibtex(FilePage.fileMetadata) : FilePage.fileDownloadService.downloadDatafileCitationBibtex(FilePage.fileMetadata)}" target="_blank">
+                                                        <a jsf:id="bibLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadCitationBibtex(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" target="_blank">
                                                             #{bundle['dataset.cite.downloadBtn.bib']}
                                                         </a>
                                                     </li>
