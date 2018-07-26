@@ -231,17 +231,18 @@ public class GlobalId implements java.io.Serializable {
         return true;
     }
 
-//    public static boolean hasDisallowedImportCharacters(String pidParam) {
-//        Pattern p = Pattern.compile(DISALLOWED_CHARACTERS);
-//        Matcher m = p.matcher(pidParam);
-//        return m.matches();
-//    }
-    
+    /**
+     * Verifies that the pid only contains allowed characters.
+     *
+     * @param pidParam
+     * @return true if pid only contains allowed characters false if pid
+     * contains characters not specified in the allowed characters regex.
+     */
     public static boolean verifyImportCharacters(String pidParam) {
-        
+
         Pattern p = Pattern.compile(ALLOWED_CHARACTERS);
         Matcher m = p.matcher(pidParam);
-        
+
         return m.matches();
     }
 }

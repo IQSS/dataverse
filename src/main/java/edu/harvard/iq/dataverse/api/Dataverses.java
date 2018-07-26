@@ -252,13 +252,13 @@ public class Dataverses extends AbstractApiBean {
             if ( version.getVersionState() == null ) {
                 version.setVersionState(DatasetVersion.VersionState.DRAFT);
             }
-            
-            if ( nonEmpty(pidParam) ) {
+
+            if (nonEmpty(pidParam)) {
                 if (GlobalId.verifyImportCharacters(pidParam)) {
                     return badRequest("PID parameter contains characters not allowed. They must match this regex on import: " + GlobalId.ALLOWED_CHARACTERS);
                 }
                 Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
-                if ( maybePid.isPresent() ) {
+                if (maybePid.isPresent()) {
                     ds.setGlobalId(maybePid.get());
                 } else {
                     // unparsable PID passed. Terminate.
