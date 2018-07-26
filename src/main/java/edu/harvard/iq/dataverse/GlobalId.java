@@ -27,7 +27,6 @@ public class GlobalId implements java.io.Serializable {
     public static final String HDL_PROTOCOL = "hdl";
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
     public static final String DOI_RESOLVER_URL = "https://doi.org/";
-    public static final String DISALLOWED_CHARACTERS = ".*[<>()].*";
     public static final String ALLOWED_CHARACTERS = "^[A-Za-z0-9._/:\\-]*$";
     
     public static Optional<GlobalId> parse(String identifierString) {
