@@ -682,6 +682,7 @@ public class DataCitation {
 			}
 			html = html.replaceFirst("<a\\W+href=\\\"(.*?)\\\".*?>(.*?)<\\/a>", label);
 		}
+		html=html.replaceAll("(\\r\\n?)+", "\r\n");
 		
 		return html;
 		
