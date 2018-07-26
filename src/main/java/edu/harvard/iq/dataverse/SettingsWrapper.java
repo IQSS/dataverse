@@ -150,6 +150,10 @@ public class SettingsWrapper implements java.io.Serializable {
         return systemConfig.isRsyncDownload();
     }
     
+    public boolean isHTTPUpload(){
+        return systemConfig.isHTTPUpload();
+    }
+    
     public boolean isDataFilePIDSequentialDependent(){
         return systemConfig.isDataFilePIDSequentialDependent();
     }
@@ -162,6 +166,20 @@ public class SettingsWrapper implements java.io.Serializable {
 
     public boolean isRootDataverseThemeDisabled() {
         return isTrueForKey(Key.DisableRootDataverseTheme, false);
+    }
+    
+    public String getDropBoxKey() {
+
+        String configuredDropBoxKey = System.getProperty("dataverse.dropbox.key");
+        if (configuredDropBoxKey != null) {
+            return configuredDropBoxKey;
+        }
+        return "";
+    }
+    
+    public Boolean isHasDropBoxKey() {
+
+        return !getDropBoxKey().isEmpty();
     }
 
 }

@@ -74,6 +74,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -1200,7 +1201,10 @@ public class Datasets extends AbstractApiBean {
                     @FormDataParam("file") final FormDataBodyPart formDataBodyPart
                     ){
 
-          
+        if (!systemConfig.isHTTPUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
+        }
+
         // -------------------------------------
         // (1) Get the user from the API key
         // -------------------------------------
@@ -1211,13 +1215,6 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.FORBIDDEN,
                     ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
                     );
-        }
-        //---------------------------------------
-        // (1A) Make sure that the upload type is not rsync
-        // ------------------------------------- 
-        
-        if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
-            return error(Response.Status.METHOD_NOT_ALLOWED, SettingsServiceBean.Key.UploadMethods + " contains " + SystemConfig.FileUploadMethods.RSYNC + ". Please use rsync file upload.");
         }
         
         
@@ -1232,6 +1229,17 @@ public class Datasets extends AbstractApiBean {
             dataset = findDatasetOrDie(idSupplied);
         } catch (WrappedResponse wr) {
             return wr.getResponse();           
+        }
+        
+        //------------------------------------
+        // (2a) Make sure dataset does not have package file
+        //
+        // --------------------------------------
+        
+        if (dataset.getEditVersion().isHasPackageFile()){
+            return error(Response.Status.FORBIDDEN,
+                    ResourceBundle.getBundle("Bundle").getString("file.api.alreadyHasPackageFile")
+                    );
         }
         
                

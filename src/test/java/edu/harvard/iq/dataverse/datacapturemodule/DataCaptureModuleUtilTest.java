@@ -26,9 +26,9 @@ public class DataCaptureModuleUtilTest {
         System.out.println("rsyncSupportEnabled");
         assertEquals(false, DataCaptureModuleUtil.rsyncSupportEnabled(null));
         assertEquals(true, DataCaptureModuleUtil.rsyncSupportEnabled("dcm/rsync+ssh"));
-        // We haven't finalized what the separator will be yet.
+        // Comma sepratated lists of upload methods are supported.
         assertEquals(false, DataCaptureModuleUtil.rsyncSupportEnabled("NATIVE:dcm/rsync+ssh"));
-        assertEquals(false, DataCaptureModuleUtil.rsyncSupportEnabled("NATIVE,dcm/rsync+ssh"));
+        assertEquals(true, DataCaptureModuleUtil.rsyncSupportEnabled("NATIVE,dcm/rsync+ssh"));
         assertEquals(false, DataCaptureModuleUtil.rsyncSupportEnabled("NATIVE"));
         assertEquals(false, DataCaptureModuleUtil.rsyncSupportEnabled("junk"));
     }

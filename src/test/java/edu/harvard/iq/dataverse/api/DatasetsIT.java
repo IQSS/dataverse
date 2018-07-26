@@ -59,7 +59,8 @@ public class DatasetsIT {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
         removeExcludeEmail.then().assertThat()
                 .statusCode(200);
-
+        /* With Dual mode, we can no longer mess with upload methods since native is now required for anything to work
+               
         Response removeDcmUrl = UtilIT.deleteSetting(SettingsServiceBean.Key.DataCaptureModuleUrl);
         removeDcmUrl.then().assertThat()
                 .statusCode(200);
@@ -67,6 +68,7 @@ public class DatasetsIT {
         Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
         removeUploadMethods.then().assertThat()
                 .statusCode(200);
+         */
     }
 
     @AfterClass
@@ -79,7 +81,7 @@ public class DatasetsIT {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
         removeExcludeEmail.then().assertThat()
                 .statusCode(200);
-
+        /* See above
         Response removeDcmUrl = UtilIT.deleteSetting(SettingsServiceBean.Key.DataCaptureModuleUrl);
         removeDcmUrl.then().assertThat()
                 .statusCode(200);
@@ -87,6 +89,7 @@ public class DatasetsIT {
         Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
         removeUploadMethods.then().assertThat()
                 .statusCode(200);
+         */
     }
 
     @Test
