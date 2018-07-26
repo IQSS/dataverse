@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -64,7 +64,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
          * UpdateDatasetThumbnailCommand since it's really the only update you
          * can do from this page.
          */
-        if (!permissionsWrapper.canIssueCommand(dataset, UpdateDatasetCommand.class)) {
+        if (!permissionsWrapper.canIssueCommand(dataset, UpdateDatasetVersionCommand.class)) {
             return permissionsWrapper.notAuthorized();
         }
         datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate);
@@ -164,7 +164,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         try {
             DatasetThumbnail datasetThumbnailFromCommand = commandEngine.submit(updateDatasetThumbnailCommand);
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.success"));
-            return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&faces-redirect=true";
+            return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&faces-redirect=true";
         } catch (CommandException ex) {
             String error = ex.getLocalizedMessage();
             /**
@@ -179,7 +179,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     public String cancel() {
         logger.fine("cancel clicked");
-        return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&faces-redirect=true";
+        return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&faces-redirect=true";
     }
 
 }

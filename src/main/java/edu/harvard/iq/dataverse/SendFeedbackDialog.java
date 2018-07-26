@@ -183,7 +183,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
     public void validateUserSum(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         if (op1 + op2 != (Long) value) {
             // TODO: Remove this English "Sum is incorrect" string. contactFormFragment.xhtml uses contact.sum.invalid instead.
-            FacesMessage msg = new FacesMessage("Sum is incorrect, please try again.");
+            FacesMessage msg = new FacesMessage(BundleUtil.getStringFromBundle("contact.sum.invalid"));
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
             throw new ValidatorException(msg);
         }
@@ -191,7 +191,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     public void validateUserEmail(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         if (!EmailValidator.getInstance().isValid((String) value)) {
-            FacesMessage msg = new FacesMessage("Invalid email.");
+            FacesMessage msg = new FacesMessage(BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"));
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
             throw new ValidatorException(msg);
         }

@@ -18,9 +18,10 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -1118,7 +1119,7 @@ public class AddReplaceFileHelper{
         
         // Make a temp. command
         //
-        CreateDatasetCommand createDatasetCommand = new CreateDatasetCommand(datasetToCheck, dvRequest, false);
+        Command createDatasetCommand = new CreateNewDatasetCommand(datasetToCheck, dvRequest);
         
         // Can this user run the command?
         //
@@ -1659,8 +1660,8 @@ public class AddReplaceFileHelper{
         }
 
         Command<Dataset> update_cmd;
-        update_cmd = new UpdateDatasetCommand(dataset, dvRequest);
-        ((UpdateDatasetCommand) update_cmd).setValidateLenient(true);  
+        update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest);
+        ((UpdateDatasetVersionCommand) update_cmd).setValidateLenient(true);  
         
         try {            
             // Submit the update dataset command 

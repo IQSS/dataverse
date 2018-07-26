@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFeaturedDataverse;
 import edu.harvard.iq.dataverse.DataverseLinkingDataverse;
 import edu.harvard.iq.dataverse.Guestbook;
-import static edu.harvard.iq.dataverse.IdServiceBean.logger;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -23,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A command to move a {@link Dataverse} between two {@link Dataverse}s.
@@ -41,7 +40,7 @@ import java.util.logging.Level;
 	@RequiredPermissions(dataverseName = "destination", value = Permission.AddDataverse)
 })
 public class MoveDataverseCommand extends AbstractVoidCommand {
-
+    private static final Logger logger = Logger.getLogger(MoveDataverseCommand.class.getName());
     final Dataverse moved;
     final Dataverse destination;
     final Boolean force;
