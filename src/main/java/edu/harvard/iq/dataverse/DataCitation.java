@@ -409,10 +409,7 @@ public class DataCitation {
 			if (getUNF() != null) {
 				out.write("C2  - " + getUNF() + "\r\n");
 			}
-		} else {
-			out.write("N1  - This reference is to a dataset.\r\n");
-		}
-
+		} 
 		// closing element:
 		out.write("ER  - \r\n");
 		out.flush();
