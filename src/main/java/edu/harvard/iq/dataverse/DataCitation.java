@@ -391,8 +391,9 @@ public class DataCitation {
 			}
 		}
 
-		
-		out.write("DO  - " + persistentId.toString() + "\r\n");
+		if (persistentId != null) {
+			out.write("DO  - " + persistentId.toString() + "\r\n");
+		}
 		out.write("ET  - " + version + "\r\n");
 		if (!keywords.isEmpty()) {
 			for (String keyword : keywords) {
@@ -635,12 +636,13 @@ public class DataCitation {
 				xmlw.writeEndElement(); // custom2
 			}
 		}
-
-		xmlw.writeStartElement("electronic-resource-num");
-		String electResourceNum = persistentId.getProtocol() + "/" + persistentId.getAuthority() + "/"
-				+ persistentId.getIdentifier();
-		xmlw.writeCharacters(electResourceNum);
-		xmlw.writeEndElement();
+		if (persistentId != null) {
+			xmlw.writeStartElement("electronic-resource-num");
+			String electResourceNum = persistentId.getProtocol() + "/" + persistentId.getAuthority() + "/"
+					+ persistentId.getIdentifier();
+			xmlw.writeCharacters(electResourceNum);
+			xmlw.writeEndElement();
+		}
 		// <electronic-resource-num>10.3886/ICPSR03259.v1</electronic-resource-num>
 		xmlw.writeEndElement(); // record
 
