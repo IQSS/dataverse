@@ -20,6 +20,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJBException;
@@ -348,7 +350,7 @@ public class DataCitation {
 		if (seriesTitle != null) {
 			out.write("T3  - " + seriesTitle + "\r\n");
 		}
-		out.write("AB  - " + description + "\r\n");
+		out.write("AB  - " + flattenHtml(description) + "\r\n");
 		for (String author : authors) {
 			out.write("AU  - " + author + "\r\n");
 		}
@@ -530,7 +532,7 @@ public class DataCitation {
 		xmlw.writeEndElement(); // section
 
 		xmlw.writeStartElement("abstract");
-		xmlw.writeCharacters(description);
+		xmlw.writeCharacters(flattenHtml(description));
 		xmlw.writeEndElement(); // abstract
 
 		xmlw.writeStartElement("dates");
@@ -653,6 +655,33 @@ public class DataCitation {
 			return text;
 		}
 
+	}
+	
+	private String flattenHtml(String html) {
+		html = html.replaceAll("<[pP]>", "\r\n");
+		html = html.replaceAll("<\\/[pP]>", "\r\n");
+		html = html.replaceAll("<[hH]\\d>", "\r\n");
+		html = html.replaceAll("<\\/[hH]\\d>", "\r\n");
+		html = html.replaceAll("<[bB]<rR>\\/?>", "\r\n");
+		html = html.replaceAll("<[uU][lL]>", "\r\n");
+		html = html.replaceAll("<\\/[uU][lL]>", "\r\n");
+		html = html.replaceAll("<[lL][iI]>", "\t*\t\r\n");
+		html = html.replaceAll("<\\/[lL][iI]>", "\r\n");
+		Pattern p = Pattern.compile("<a\\w+href=\"(.*?)\">(.*?)</a>");
+		Matcher m = p.matcher(html);
+		String url = null;
+		String label = null;
+		while(m.find()) {
+			url = m.group(1); // this variable should contain the link URL
+			label = m.group(2); // this variable should contain the link URL
+			if(!url.equals(label)) {
+				label = label + "(" + url +")";
+			}
+			html = html.replaceFirst("<a\\\\w+href=\\\"(.*?)\\\">(.*?)</a>", label);
+		}
+		
+		return html;
+		
 	}
 
 	private Date getDateFrom(DatasetVersion dsv) {
