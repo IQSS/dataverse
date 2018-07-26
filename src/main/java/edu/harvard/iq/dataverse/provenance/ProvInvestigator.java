@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.provenance;
 
 
 import com.google.gson.Gson;

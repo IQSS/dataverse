@@ -1,5 +1,13 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.provenance;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetPage;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.EditDatafilesPage;
+import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.FilePage;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -334,7 +342,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     }
     
     //Called by editFilesPage to update its metadata with stored prov freeform values for multiple DataFiles
-    Boolean updatePageMetadatasWithProvFreeform(List<FileMetadata> fileMetadatas) {
+    public Boolean updatePageMetadatasWithProvFreeform(List<FileMetadata> fileMetadatas) {
         Boolean changes = false;
         for(FileMetadata fm : fileMetadatas) {
             UpdatesEntry ue = provenanceUpdates.get(fm.getDataFile().getChecksumValue());
@@ -466,11 +474,11 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     }
     
      //for storing datafile and provjson in a map value
-    class UpdatesEntry {
-        String provJson;
-        DataFile dataFile;
-        String provFreeform;
-        Boolean deleteJson;
+    public class UpdatesEntry {
+        public String provJson;
+        public DataFile dataFile;
+        public String provFreeform;
+        public Boolean deleteJson;
         
         UpdatesEntry(DataFile dataFile, String provJson, Boolean deleteJson, String provFreeform) {
             this.provJson = provJson;

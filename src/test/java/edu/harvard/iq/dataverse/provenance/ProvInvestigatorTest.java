@@ -3,8 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.provenance;
 
+import edu.harvard.iq.dataverse.provenance.ProvEntityFileData;
+import edu.harvard.iq.dataverse.provenance.ProvInvestigator;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.api.AbstractApiBeanTest;
@@ -21,6 +23,8 @@ import org.junit.Test;
  *
  * @author madunlap
  */
+
+//Fix this ignore when we classify our tests, these tests are slow and unimportant
 @Ignore
 public class ProvInvestigatorTest {
     

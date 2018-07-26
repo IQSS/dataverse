@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.ProvEntityFileData;
-import edu.harvard.iq.dataverse.ProvInvestigator;
+import edu.harvard.iq.dataverse.provenance.ProvEntityFileData;
+import edu.harvard.iq.dataverse.provenance.ProvInvestigator;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvFreeFormCommand;
