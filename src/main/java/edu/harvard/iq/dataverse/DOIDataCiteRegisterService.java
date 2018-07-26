@@ -153,7 +153,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
 
         String xmlMetadata = metadataTemplate.generateXML(dvObject);
-        logger.log(Level.INFO, "XML to send to DataCite: {0}", xmlMetadata);
+        logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }
 
@@ -442,15 +442,11 @@ class DataCiteMetadataTemplate {
 
                 datafileIdentifiers = new ArrayList<>();
                 for (DataFile dataFile : dataset.getFiles()) {
-                    String add = "";
-                    sb.append("");
                     if (!dataFile.getGlobalId().asString().isEmpty()) {
-                        add = "<relatedIdentifier relatedIdentifierType=\"DOI\" relationType=\"HasPart\""
-                                + ">" + dataFile.getGlobalId() + "</relatedIdentifier>";
                         if (sb.toString().isEmpty()) {
                             sb.append("<relatedIdentifiers>");
                         }
-                        sb.append(add);
+                        sb.append("<relatedIdentifier relatedIdentifierType=\"DOI\" relationType=\"HasPart\">" + dataFile.getGlobalId() + "</relatedIdentifier>");
                     }
                 }
 
