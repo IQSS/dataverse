@@ -7,6 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
@@ -27,7 +28,6 @@ public class GlobalId implements java.io.Serializable {
     public static final String HDL_PROTOCOL = "hdl";
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
     public static final String DOI_RESOLVER_URL = "https://doi.org/";
-    public static final String ALLOWED_CHARACTERS = "^[A-Za-z0-9._/:\\-]*$";
     
     public static Optional<GlobalId> parse(String identifierString) {
         try {
@@ -239,7 +239,7 @@ public class GlobalId implements java.io.Serializable {
      */
     public static boolean verifyImportCharacters(String pidParam) {
 
-        Pattern p = Pattern.compile(ALLOWED_CHARACTERS);
+        Pattern p = Pattern.compile(BundleUtil.getStringFromBundle("pid.allowedCharacters"));
         Matcher m = p.matcher(pidParam);
 
         return m.matches();
