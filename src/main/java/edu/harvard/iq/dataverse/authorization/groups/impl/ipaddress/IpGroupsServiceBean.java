@@ -123,7 +123,8 @@ public class IpGroupsServiceBean {
                     .setParameter("d", ip6arr[3])
                     .getResultList();
             cached = new HashSet<>(groupList);
-            return groupCache.put(ipa, cached);
+            groupCache.put(ipa, cached);
+            return cached;
 
         } else {
             throw new IllegalArgumentException( "Unknown IpAddress type: " + ipa.getClass() + " (for IpAddress:" + ipa + ")" );
