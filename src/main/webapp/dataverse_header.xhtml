@@ -103,6 +103,17 @@
                                 </h:outputLink>
                             </li>
                         </ui:fragment>
+                        <h:form class="navbar-form navbar-left">
+                            <h:selectOneMenu value="#{dataverseLocaleBean.localeCode}" onchange="submit()"
+                                             valueChangeListener="#{dataverseLocaleBean.countryLocaleCodeChanged}"
+                                             rendered="#{dataverseLocaleBean.countriesInMap.size() > 1}"
+                                             styleClass="form-control">
+                                <f:selectItems value="#{dataverseLocaleBean.countriesInMap}" var="entry"
+                                               itemValue="#{entry.id}" itemLabel="#{entry.displayName}"
+                                />
+
+                            </h:selectOneMenu>
+                        </h:form>
                         <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                             <li class="dropdown accountName">
                                 <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown" role="menu" aria-haspopup="true" aria-expanded="false">
