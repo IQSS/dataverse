@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -52,12 +53,14 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.search.SearchException;
+import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
 import java.util.Collections;
@@ -111,6 +114,12 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
+    
+    @EJB
+    SearchServiceBean search;
+    
+    @EJB
+    DataverseServiceBean dataverseServiceBean;
 //    @EJB
 //    SystemConfig systemConfig;
 
@@ -484,48 +493,40 @@ public class Dataverses extends AbstractApiBean {
     // to be called without a PermissionException being thrown.
     @GET
     @Path("{identifier}/contents")
-    public Response listContent(@PathParam("identifier") String dvIdtf) {
-        DvObject.Visitor<JsonObjectBuilder> ser = new DvObject.Visitor<JsonObjectBuilder>() {
-
-            @Override
-            public JsonObjectBuilder visit(Dataverse dv) {
-                return Json.createObjectBuilder()
-                        .add("type", "dataverse")
-                        .add("id", dv.getId())
-                        .add("title", dv.getName());
-            }
-
-            @Override
-            public JsonObjectBuilder visit(Dataset ds) {
-                return json(ds).add("type", "dataset");
-            }
-
-            @Override
-            public JsonObjectBuilder visit(DataFile df) {
-                throw new UnsupportedOperationException("Files don't live directly in Dataverses");
-            }
-        };
-        
-        SolrQueryResponse solrQueryResponse;
+    public Response listContent(@PathParam("identifier") String dvIdtf) throws WrappedResponse {
+        List<SolrSearchResult> searchResults;
+        DataverseRequest req = null;
         try {
-            solrQueryResponse = cxtx.search().search(req, findDataverseOrDie(dvIdtf), "*", Arrays.asList("parentIdentifier:" + dvIdtf), "sort=nameSort", "order=desc", 0, true, 0);
+            searchResults = search.search(req, findDataverseOrDie(dvIdtf), "*", Arrays.asList("parentIdentifier:" + dvIdtf), "sort=nameSort", "order=desc", 0, true, 0).getSolrSearchResults();
         } catch (SearchException ex) {
-            logger.severe("could not connect to Solr");
-            return null;
+            logger.severe("Could not get results from solr");
+            return allowCors(error(Status.INTERNAL_SERVER_ERROR, "Could not get results from solr"));
         }
-        
-        List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
-        for (SolrSearchResult result : solrSearchResults) {
-            if(result.getType()=="dataverse"){
-            }
-        }
-        return allowCors(response(req -> ok(
-                execCommand(new ListDataverseContentCommand(req, findDataverseOrDie(dvIdtf)))
-                        .stream().map(dvo -> (JsonObjectBuilder) dvo.accept(ser))
-                        .collect(toJsonArray()))
-        ));
+        String rootDataverseName = dataverseServiceBean.findRootDataverse().getName();
+        return response(q -> ok(searchResults.stream().map(result -> (JsonObjectBuilder) solrResultToJson(result, rootDataverseName)).collect(toJsonArray())));
     }
-
+    
+    public JsonObjectBuilder solrResultToJson(SolrSearchResult res, String rootDataverseName) {
+        new Dataset().getPublicationDateFormattedYYYYMMDD();
+        if (res.getType()=="dataverse"){
+            return Json.createObjectBuilder()
+                    .add("type", "dataverse")
+                    .add("id", res.getId())
+                    .add("title", res.getName());
+        }else if (res.getType()=="dataset"){
+            return Json.createObjectBuilder()
+                .add("id", res.getId())
+                .add("identifier", res.getIdentifier())
+                .add("persistentUrl", res.getPersistentUrl())
+                .add("protocol", res.getProtocol())
+                .add("authority", res.getAuthority())
+                .add("publisher", rootDataverseName)
+                .add("publicationDate", res.getPublicationDateFormattedYYYYMMDD())
+                .add("storageIdentifier", res.getStorageIdentifier());
+        }
+        return null;
+    }
+        
     @GET
     @Path("{identifier}/roles")
     public Response listRoles(@PathParam("identifier") String dvIdtf) {
