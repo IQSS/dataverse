@@ -863,8 +863,10 @@ public class Access extends AbstractApiBean {
         // below, may not be necessary anymore! - need to verify... L.A. 10.21.2015
         // update: NO! we still can't just trust .isReleased(), for these purposes!
         // TODO: explain why. L.A. 10.29.2015
+        // QUESTION FOR L.A. 7/26/2018 - Can we rely on Version State of a Dataset Version?
         
-        
+        /* SEK prior way to test for published commented out 7/26/2018
+            wrt #3661
         if (df.getOwner().getReleasedVersion() != null) {
             //logger.fine("file belongs to a dataset with a released version.");
             if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
@@ -877,6 +879,19 @@ public class Access extends AbstractApiBean {
                 }
             }
         }
+        */
+        
+        /*
+        SEK 7/26/2018 for 3661 relying on the version state of the dataset versions
+            to which this file is attached check to see if at least one is  RELEASED
+        */
+        for (FileMetadata fm : df.getFileMetadatas()){
+            if(fm.getDatasetVersion().isPublished()){
+                 published = true; 
+                 break;
+            }
+        }
+        
         
         // TODO: (IMPORTANT!)
         // Business logic like this should NOT be maintained in individual 
