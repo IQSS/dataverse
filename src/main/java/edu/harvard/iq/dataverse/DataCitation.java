@@ -73,6 +73,8 @@ public class DataCitation {
 
 		funders = dsv.getUniqueGrantAgencyValues();
 
+		kindsOfData = dsv.getKindOfData();
+		
 		// year
 		date = getDateFrom(dsv);
 		year = new SimpleDateFormat("yyyy").format(date);
@@ -129,6 +131,7 @@ public class DataCitation {
 
 		funders = dsv.getUniqueGrantAgencyValues();
 
+		kindsOfData = dsv.getKindOfData();
 		// year
 		date = getDateFrom(dsv);
 		year = new SimpleDateFormat("yyyy").format(date);
