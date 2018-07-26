@@ -665,12 +665,12 @@ public class DataCitation {
 		html = html.replaceAll("<[\\/]?[bB]>", "");
 		html = html.replaceAll("<[\\/]?[iI]>", "\r\n");
 		
-		html = html.replaceAll("<[bB]<rR>[\\/]?>", "\r\n");
+		html = html.replaceAll("<[bB][rR][\\/]?>", "\r\n");
 		html = html.replaceAll("<[uU][lL]>", "\r\n");
 		html = html.replaceAll("<\\/[uU][lL]>", "\r\n");
 		html = html.replaceAll("<[lL][iI]>", "\t*  ");
 		html = html.replaceAll("<\\/[lL][iI]>", "\r\n");
-		Pattern p = Pattern.compile("<a[\\w]+href=\\\"(.*?)\\\">(.*?)<\\/a>");
+		Pattern p = Pattern.compile("<a[\\w]+href=\\\"(.*?)\\\".*?>(.*?)<\\/a>");
 		Matcher m = p.matcher(html);
 		String url = null;
 		String label = null;
