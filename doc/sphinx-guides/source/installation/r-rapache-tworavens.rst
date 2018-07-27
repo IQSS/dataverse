@@ -21,6 +21,14 @@ of Dataverse v.4.6.1) version of the installer scripts and updated this guide. W
 installation process, particularly the difficult process of installing
 correct versions of the required third party R packages.
 
+**Note that the installation process below supercedes the basic R
+setup described in the "Prerequisites" portion of the Installation
+Guide. Meaning that once completed, it installs everything needed to
+run TwoRavens, PLUS all the libraries and components required to
+ingest RData files, export as RData, and use Data Explorer.**
+
+
+
 Please be warned: 
 
 - This process may still require some system administration skills. 
@@ -92,13 +100,6 @@ install TwoRavens in the past, and it didn't work, please see the part of
 section ``1.b.`` where we explain how to completely erase all the previously 
 built packages.
  
-Note that the installation process below supercedes the basic R setup
-described in the "Prerequisites" portion of the Installation
-Guide. Meaning that once completed, it installs everything needed to
-run TwoRavens **plus** everything needed to ingest RData files, export
-as RData, and use Data Explorer.
-
-
 1. Prerequisites
 ++++++++++++++++
 

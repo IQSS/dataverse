@@ -274,7 +274,21 @@ If the installed location of the convert executable is different from ``/usr/bin
 R
 -
 
-Dataverse uses `R <https://https://cran.r-project.org/>`_ to ingest R (.RData) files as tabular data; to export tabular data as .RData files; and to generate .prep metadata for tabular data files, used by external data exploration tools, such as `Data Explorer <https://github.com/scholarsportal/Dataverse-Data-Explorer>`_ and `TwoRavens <https://github.com/IQSS/TwoRavens>`_. R can be considered an optional component, meaning that if you don't have R installed, you will still be able to run and use Dataverse - but the pieces of functionality specific to tabular data mentioned above will not be available to your users. 
+Dataverse uses `R <https://https://cran.r-project.org/>`_ to handle
+tabular data files. The instructions below describe a **minimal** R
+installation. It will allow you to ingest R (.RData) files as tabular
+data; to export tabular data as .RData files; and to run `Data
+Explorer <https://github.com/scholarsportal/Dataverse-Data-Explorer>`_
+(specifically, R is used to generate .prep metadata files that Data
+Explorer uses).  R can be considered an optional component, meaning
+that if you don't have R installed, you will still be able to run and
+use Dataverse - but the functionality specific to tabular data
+mentioned above will not be available to your users.  **Note** that if
+you choose to also install `TwoRavens
+<https://github.com/IQSS/TwoRavens>`_, it will require some extra R
+components and libraries.  Please consult the instructions in the
+TowRavens section of the Installation Guide.
+
 
 Installing R
 ============
@@ -366,14 +380,6 @@ Rserve is running on a host that's different from your Dataverse
 server, change the :fixedwidthplain:`dataverse.rserve.host` option
 above as well (and make sure the port 6311 on the Rserve host is not
 firewalled from your Dataverse host).
-
-Notes
-=====
-
-If you choose to use TwoRavens data exploration tool, you will have to
-install more R components and libraries. Please consult and follow the
-instructions in the TowRavens section of the Guide.
-
 
 Now that you have all the prerequisites in place, you can proceed to the :doc:`installation-main` section.
 
