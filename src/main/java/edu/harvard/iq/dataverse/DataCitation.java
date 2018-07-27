@@ -20,6 +20,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJBException;
@@ -72,6 +74,8 @@ public class DataCitation {
 
 		funders = dsv.getUniqueGrantAgencyValues();
 
+		kindsOfData = dsv.getKindOfData();
+		
 		// year
 		date = getDateFrom(dsv);
 		year = new SimpleDateFormat("yyyy").format(date);
@@ -128,6 +132,7 @@ public class DataCitation {
 
 		funders = dsv.getUniqueGrantAgencyValues();
 
+		kindsOfData = dsv.getKindOfData();
 		// year
 		date = getDateFrom(dsv);
 		year = new SimpleDateFormat("yyyy").format(date);
@@ -274,8 +279,8 @@ public class DataCitation {
 	}
 
 	public void writeAsBibtexCitation(OutputStream os) throws IOException {
-		// Use UTF-8?
-		Writer out = new BufferedWriter(new OutputStreamWriter(os));
+		// Use UTF-8
+		Writer out = new BufferedWriter(new OutputStreamWriter(os, "utf-8"));
 		if (getFileTitle() != null && isDirect()) {
 			out.write("@incollection{");
 		} else {
@@ -312,27 +317,6 @@ public class DataCitation {
 		out.write("url = {");
 		out.write(persistentId.toURL().toString());
 		out.write("}\r\n");
-		if (getFileTitle() != null) {
-			if (isDirect()) {
-				out.write("note = {");
-				out.write("This reference is to a file ");
-				if (getUNF() != null) {
-					out.write("(UNF=" + getUNF() + ")");
-				}
-				out.write(", with the given doi, within a dataset");
-				out.write("}\r\n");
-			} else {
-				out.write("note = {");
-				out.write("This reference is to a file ");
-				if (getUNF() != null) {
-					out.write("(UNF=" + getUNF() + ")");
-				}
-				out.write(" within a dataset with the given doi");
-				out.write("}\r\n");
-			}
-			out.write("}");
-
-		}
 		out.flush();
 	}
 
@@ -348,12 +332,11 @@ public class DataCitation {
 	}
 
 	public void writeAsRISCitation(OutputStream os) throws IOException {
-		// Use UTF-8?
-		Writer out = new BufferedWriter(new OutputStreamWriter(os));
+		// Use UTF-8
+		Writer out = new BufferedWriter(new OutputStreamWriter(os, "utf-8"));
 		out.write("Provider: " + publisher + "\r\n");
-		out.write("Content: text/plain; charset=\"us-ascii\"" + "\r\n");
-		// Using type "DBASE" - "Online Database", for consistency with
-		// EndNote (see the longer comment in the EndNote section below)>
+		out.write("Content: text/plain; charset=\"utf-8\"" + "\r\n");
+		// Using type "DATA" - see https://github.com/IQSS/dataverse/issues/4816
 
 		if ((getFileTitle() != null) && isDirect()) {
 			out.write("TY  - DATA" + "\r\n");
@@ -366,7 +349,7 @@ public class DataCitation {
 		if (seriesTitle != null) {
 			out.write("T3  - " + seriesTitle + "\r\n");
 		}
-		out.write("AB  - " + description + "\r\n");
+		out.write("AB  - " + flattenHtml(description) + "\r\n");
 		for (String author : authors) {
 			out.write("AU  - " + author + "\r\n");
 		}
@@ -391,8 +374,9 @@ public class DataCitation {
 			}
 		}
 
-		
-		out.write("DO  - " + persistentId.toString() + "\r\n");
+		if (persistentId != null) {
+			out.write("DO  - " + persistentId.toString() + "\r\n");
+		}
 		out.write("ET  - " + version + "\r\n");
 		if (!keywords.isEmpty()) {
 			for (String keyword : keywords) {
@@ -426,15 +410,7 @@ public class DataCitation {
 			if (getUNF() != null) {
 				out.write("C2  - " + getUNF() + "\r\n");
 			}
-			if (isDirect()) {
-				out.write("N1  - This reference is to a file, with the given identifier, within a dataset.\r\n");
-			} else {
-				out.write("N1  - This reference is to a file within the dataset with the given identifier.\r\n");
-			}
-		} else {
-			out.write("N1  - This reference is to a dataset.\r\n");
-		}
-
+		} 
 		// closing element:
 		out.write("ER  - \r\n");
 		out.flush();
@@ -487,10 +463,11 @@ public class DataCitation {
 		// "Government Document".
 		// We don't want the UNF to show as a "legal notice"!
 		// We have found a ref-type that works ok for our purposes -
-		// "Online Database" (type 45). In this one, the fields Custom1
+		// "Dataset" (type 59). In this one, the fields Custom1
 		// and Custom2 are not translated and just show as is.
 		// And "Custom1" still beats "legal notice".
 		// -- L.A. 12.12.2014 beta 10
+		// and see https://github.com/IQSS/dataverse/issues/4816
 
 		xmlw.writeStartElement("ref-type");
 		xmlw.writeAttribute("name", "Dataset");
@@ -555,7 +532,7 @@ public class DataCitation {
 		xmlw.writeEndElement(); // section
 
 		xmlw.writeStartElement("abstract");
-		xmlw.writeCharacters(description);
+		xmlw.writeCharacters(flattenHtml(description));
 		xmlw.writeEndElement(); // abstract
 
 		xmlw.writeStartElement("dates");
@@ -635,12 +612,13 @@ public class DataCitation {
 				xmlw.writeEndElement(); // custom2
 			}
 		}
-
-		xmlw.writeStartElement("electronic-resource-num");
-		String electResourceNum = persistentId.getProtocol() + "/" + persistentId.getAuthority() + "/"
-				+ persistentId.getIdentifier();
-		xmlw.writeCharacters(electResourceNum);
-		xmlw.writeEndElement();
+		if (persistentId != null) {
+			xmlw.writeStartElement("electronic-resource-num");
+			String electResourceNum = persistentId.getProtocol() + "/" + persistentId.getAuthority() + "/"
+					+ persistentId.getIdentifier();
+			xmlw.writeCharacters(electResourceNum);
+			xmlw.writeEndElement();
+		}
 		// <electronic-resource-num>10.3886/ICPSR03259.v1</electronic-resource-num>
 		xmlw.writeEndElement(); // record
 
@@ -677,6 +655,49 @@ public class DataCitation {
 			return text;
 		}
 
+	}
+	
+	/** This method flattens html for the textual export formats.
+	 * It removes <b> and <i> tags, replaces <br>, <p> and headers <hX> with 
+	 * line breaks, converts lists to form where items start with an indented '*  ',
+	 * and converts links to simple text showing the label and, if different, 
+	 * the url in parenthesis after it. Since these operations may create
+	 * multiple line breaks, a final step limits the changes and compacts multiple 
+	 * line breaks into one.  
+	 * @param html input string
+	 * @return the flattened text output
+	 */
+	private String flattenHtml(String html) {
+		html = html.replaceAll("<[pP]>", "\r\n");
+		html = html.replaceAll("<\\/[pP]>", "\r\n");
+		html = html.replaceAll("<[hH]\\d>", "\r\n");
+		html = html.replaceAll("<\\/[hH]\\d>", "\r\n");
+		html = html.replaceAll("<[\\/]?[bB]>", "");
+		html = html.replaceAll("<[\\/]?[iI]>", "\r\n");
+		
+		html = html.replaceAll("<[bB][rR][\\/]?>", "\r\n");
+		html = html.replaceAll("<[uU][lL]>", "\r\n");
+		html = html.replaceAll("<\\/[uU][lL]>", "\r\n");
+		html = html.replaceAll("<[lL][iI]>", "\t*  ");
+		html = html.replaceAll("<\\/[lL][iI]>", "\r\n");
+		Pattern p = Pattern.compile("<a\\W+href=\\\"(.*?)\\\".*?>(.*?)<\\/a>");
+		Matcher m = p.matcher(html);
+		String url = null;
+		String label = null;
+		while(m.find()) {
+			url = m.group(1); // this variable should contain the link URL
+			label = m.group(2); // this variable should contain the label
+			//display either the label or label(url)
+			if(!url.equals(label)) {
+				label = label + "(" + url +")";
+			}
+			html = html.replaceFirst("<a\\W+href=\\\"(.*?)\\\".*?>(.*?)<\\/a>", label);
+		}
+		//Note, this does not affect single '\n' chars originally in the text
+		html=html.replaceAll("(\\r\\n?)+", "\r\n");
+		
+		return html;
+		
 	}
 
 	private Date getDateFrom(DatasetVersion dsv) {
