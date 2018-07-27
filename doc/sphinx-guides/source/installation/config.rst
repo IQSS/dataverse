@@ -1297,7 +1297,7 @@ Sets how long a cached metrics result is used before re-running the query for a 
 :Languages
 ++++++++++
 
-Sets which languages should be available. If there are more than One, a dropdown is displayed
-in the headder. This should be formated as a json array as shown below.
+Sets which languages should be available. If there is more than one, a dropdown is displayed
+in the header. This should be formated as a JSON array as shown below.
 
 ``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{  "locale":"en", "title":"English"},  {  "locale":"fr", "title":"Français"}]'``
