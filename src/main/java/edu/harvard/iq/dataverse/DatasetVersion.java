@@ -929,7 +929,7 @@ public class DatasetVersion implements Serializable {
 
 		List<String> seriesNames = getCompoundChildFieldValues(DatasetFieldConstant.series,
 				DatasetFieldConstant.seriesName);
-		if (seriesNames.size() != 1) {
+		if (seriesNames.size() > 1) {
 			logger.warning("More than one series title found for datasetVersion: " + this.id);
 		}
 		if (!seriesNames.isEmpty()) {
