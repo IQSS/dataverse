@@ -163,5 +163,8 @@ public class SettingsWrapper implements java.io.Serializable {
         return isTrueForKey(Key.DisableRootDataverseTheme, false);
     }
 
+    public String getLanguages(){
+        return get(":Languages", "[]");
+    }
 }
 

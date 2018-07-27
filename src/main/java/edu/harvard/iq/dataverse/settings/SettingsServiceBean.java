@@ -356,6 +356,9 @@ public class SettingsServiceBean {
         If 'DEPENEDENT' then the DOI will be the Dataset DOI plus a file DOI with a slash in between.
         */
         DataFilePIDFormat, 
+        /* Json array of supported languages
+        */
+        Languages,
         /*
         Number for the minimum number of files to send PID registration to asynchronous workflow
         */

@@ -1,17 +1,13 @@
 package edu.harvard.iq.dataverse;
 
-
-import java.io.BufferedReader;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.*;
 import java.util.logging.Logger;
 
-
 import javax.faces.context.FacesContext;
-import javax.faces.event.ValueChangeEvent;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
@@ -19,85 +15,56 @@ import org.json.*;
 
 @Named
 @javax.enterprise.context.SessionScoped
-
 public class DataverseLocaleBean implements Serializable {
-
 
     private static final Logger logger = Logger.getLogger(DataverseLocaleBean.class.getCanonicalName());
 
-    private List<DataverseLocale> dataverseLocales;
-    private static Map<String,Object> languages;
+    @Inject
+    SettingsWrapper settingsWrapper;
 
-    String json_url= "http://localhost:8080/resources/lang/languages.json";
-
-    JSONObject json_obj;
-
+    // Map from locale to display name eg     en -> English
+    private Map<String, String> dataverseLocales;
 
     private String localeCode;
-    private Locale locale;
 
-    FacesContext context = FacesContext.getCurrentInstance();
+    FacesContext context = null;//FacesContext.getCurrentInstance();
 
     {
-        if (context== null){
-            locale= new Locale ("");
-        } else if(context.getViewRoot().getLocale().getLanguage()== "en_US" || context.getViewRoot().getLocale().getLanguage()== "en"){
-            locale= new Locale ("");
-        }else{
-            locale= context.getViewRoot().getLocale();
+        if (context == null || context.getViewRoot().getLocale().getLanguage() == "en_US") {
+            localeCode = "en";
+        } else {
+            localeCode = context.getViewRoot().getLocale().getLanguage();
         }
     }
 
-
-    public DataverseLocaleBean(){
+    public DataverseLocaleBean() {
 
     }
 
-    private static String readUrl(String urlString) throws Exception {
-        BufferedReader reader = null;
-        try {
-            URL url = new URL(urlString);
-            reader = new BufferedReader(new InputStreamReader(url.openStream()));
-            StringBuffer buffer = new StringBuffer();
-            int read;
-            char[] chars = new char[1024];
-            while ((read = reader.read(chars)) != -1)
-                buffer.append(chars, 0, read);
-
-            return buffer.toString();
-        } finally {
-            if (reader != null)
-                reader.close();
-        }
-    }
-
-
-    public List<DataverseLocale> getCountriesInMap() {
-        dataverseLocales = new ArrayList<DataverseLocale>();
+    public Map<String, String> getCountriesMap() {
+        dataverseLocales = new LinkedHashMap<>();
 
         try {
-            json_obj = new JSONObject(readUrl(json_url));
-            JSONArray json_array = json_obj.getJSONArray("languages");
-            for (int i = 0; i < json_array.length(); i++) {
-                String title = json_array.getJSONObject(i).getString("title");
-                String localeStr = json_array.getJSONObject(i).getString("locale");
+            JSONArray entries = new JSONArray(settingsWrapper.getValueForKey(SettingsServiceBean.Key.Languages, "[]"));
+            for (Object obj : entries) {
+                JSONObject entry = (JSONObject) obj;
+                String title = entry.getString("title");
+                String locale = entry.getString("locale");
 
-                dataverseLocales.add(new DataverseLocale(i , title, new Locale(localeStr)));
+                dataverseLocales.put(locale, title);
             }
-        } catch (Exception e) {
+        } catch (JSONException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
         return dataverseLocales;
     }
 
-    public Locale getLocale(){
-        return this.locale;
-    }
-
-    public void setLocale(Locale _locale){
-        this.locale = _locale;
+    public boolean useLocale() {
+        if (dataverseLocales == null) {
+            getCountriesMap();
+        }
+        return dataverseLocales.size() > 1;
     }
 
     public String getLocaleCode() {
@@ -107,36 +74,22 @@ public class DataverseLocaleBean implements Serializable {
     public void setLocaleCode(String localeCode) {
         this.localeCode = localeCode;
     }
-    
+
     public String getLocaleTitle() {
-        if (dataverseLocales != null) {
-            for (Iterator<DataverseLocale> it = dataverseLocales.iterator(); it.hasNext(); ) {
-                DataverseLocale dL = it.next();
-                if (dL.getId().toString().equals(localeCode)) {
-                    return dL.getDisplayName();
-                }
-            }
+        if (dataverseLocales == null) {
+            getCountriesMap();
         }
-        
-        return "English";
+        return dataverseLocales.get(localeCode);
     }
 
-    public void countryLocaleCodeChanged(String id){
-
-        for (Iterator<DataverseLocale> it = dataverseLocales.iterator(); it.hasNext(); ) {
-            DataverseLocale dL = it.next();
-
-            if (dL.getId().toString().equals(id)) {
-                FacesContext.getCurrentInstance()
-                        .getViewRoot().setLocale((Locale) dL.getName());
-
-                setLocaleCode(dL.getId().toString());
-                setLocale((Locale) dL.getName());
-             }
+    public void countryLocaleCodeChanged(String code) {
+        if (dataverseLocales == null) {
+            getCountriesMap();
         }
-
+        localeCode = code;
+        FacesContext.getCurrentInstance()
+                .getViewRoot().setLocale(new Locale(dataverseLocales.get(code)));
         try {
-
             String url = ((HttpServletRequest) FacesContext.getCurrentInstance()
                     .getExternalContext().getRequest()).getHeader("referer");
             FacesContext.getCurrentInstance().getExternalContext().redirect(url);
@@ -147,9 +100,4 @@ public class DataverseLocaleBean implements Serializable {
 
     }
 
-
-
-
-
 }
-
