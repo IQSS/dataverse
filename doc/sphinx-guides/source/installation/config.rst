@@ -1293,3 +1293,11 @@ Enable the collection of provenance metadata on Dataverse via the provenance pop
 Sets how long a cached metrics result is used before re-running the query for a request. Note this only effects queries on the current month, previous months queries are cached indefinitely. The default timeout is 7 days (10080 minutes).
 
 ``curl -X PUT -d 10080 http://localhost:8080/api/admin/settings/:MetricsCacheTimeoutMinutes``
+
+:Languages
+++++++++++
+
+Sets which languages should be available. If there are more than One, a dropdown is displayed
+in the headder. This should be formated as a json array as shown below.
+
+``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{  "locale":"en", "title":"English"},  {  "locale":"fr", "title":"Français"}]'``
