@@ -2,7 +2,7 @@ This docker-compose setup is intended for use in development, small scale evalua
 
 Setup:
 
-- build docker-aio image with name dv0 as described in ../docker-aio` (don't run setupIT.bash)
+- build docker-aio image with name dv0 as described in ../docker-aio` (don't start up the docker image or run setupIT.bash)
 - work in the `conf/docker-dcm` directory for below commands
 - download/prepare dependencies: `./0prep.sh`
 - build dcm/dv0dcm images with docker-compose: `docker-compose -f docker-compose.yml build`
