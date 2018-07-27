@@ -335,7 +335,7 @@ public class DataCitation {
 		// Use UTF-8
 		Writer out = new BufferedWriter(new OutputStreamWriter(os, "utf-8"));
 		out.write("Provider: " + publisher + "\r\n");
-		out.write("Content: text/plain; charset=\"us-ascii\"" + "\r\n");
+		out.write("Content: text/plain; charset=\"utf-8\"" + "\r\n");
 		// Using type "DATA" - see https://github.com/IQSS/dataverse/issues/4816
 
 		if ((getFileTitle() != null) && isDirect()) {
