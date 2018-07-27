@@ -79,10 +79,10 @@ public class ShibGroupServiceBean {
     public Set<ShibGroup> findFor(AuthenticatedUser authenticatedUser) {
         Set<ShibGroup> groupsForUser = groupCache.get(authenticatedUser);
         if (groupsForUser == null) {
+            groupsForUser = new HashSet<>();
             String shibIdp = authenticatedUser.getShibIdentityProvider();
             logger.fine("IdP for user " + authenticatedUser.getIdentifier() + " is " + shibIdp);
             if (shibIdp != null) {
-                groupsForUser = new HashSet<>();
                 /**
                  * @todo Rather than a straight string equality match, we have a
                  * requirement to support regular expressions:

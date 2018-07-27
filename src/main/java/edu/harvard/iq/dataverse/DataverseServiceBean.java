@@ -179,6 +179,17 @@ public class DataverseServiceBean implements java.io.Serializable {
             return null;
         }
     }
+    
+    public List<DvObject> findDirectChildren(String identifier) {
+        try {
+            return em.createNamedQuery("Dataverse.findDirectChildren", DvObject.class)
+					.setParameter("identifier", identifier.toLowerCase())
+					.getResultList();
+        } catch ( NoResultException|NonUniqueResultException ex ) {
+            logger.fine("Unable to find the children of dataverse using identifier \"" + identifier + "\": " + ex);
+            return null;
+        }
+    }
 	
 	public boolean hasData( Dataverse dv ) {
 		TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
