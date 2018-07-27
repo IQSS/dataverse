@@ -16,4 +16,4 @@ Contents:
    stata
    rdata
    excel
-   csv/ tsv
+   csv tsv

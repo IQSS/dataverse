@@ -1,3 +1,4 @@
+:orphan:
 .. _guides_versions:
 
 Dataverse Guides Versions
