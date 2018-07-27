@@ -181,23 +181,23 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
         String protocol = getDataset().getProtocol();
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
-        if ( idServiceBean != null ){
-        	List<String> args = idServiceBean.getProviderInformation();
+        if (idServiceBean != null) {
+            List<String> args = idServiceBean.getProviderInformation();
             try {
-            	//A false return value indicates a failure in calling the service
-            	if(!idServiceBean.publicizeIdentifier(dataset)) throw new Exception();
-                dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
-                dataset.setIdentifierRegistered(true);
+                //A false return value indicates a failure in calling the service
                 for (DataFile df : dataset.getFiles()) {
                     logger.log(Level.FINE, "registering global id for file {0}", df.getId());
                     //A false return value indicates a failure in calling the service
-                    if(!idServiceBean.publicizeIdentifier(df)) throw new Exception();
+                    if (!idServiceBean.publicizeIdentifier(df)) throw new Exception();
                     df.setGlobalIdCreateTime(getTimestamp());
                     df.setIdentifierRegistered(true);
                 }
+                if (!idServiceBean.publicizeIdentifier(dataset)) throw new Exception(); 
+                dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
+                dataset.setIdentifierRegistered(true);
             } catch (Throwable e) {
                 ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.pidRegister);
-                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args),this); 
+                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
             }
         }
     }
