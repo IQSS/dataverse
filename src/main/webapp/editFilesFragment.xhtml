@@ -27,23 +27,20 @@
                     
                     <!-- TODO: ACCORDION OPTIONS SCALABLE >1? -->
                     
-                    <div class="panel panel-default" jsf:rendered="#{settingsWrapper.HTTPUpload}">
+                    <div jsf:id="httpPanel" jsf:rendered="#{settingsWrapper.HTTPUpload}" class="panel panel-default">
                         
                         <!-- TODO: New help text needed for these panels, replace placeholder text here and add final msg text to bundle -->
                         
-                        <div class="panel-heading" role="tab" id="headingOne">
+                        <div class="panel-heading" role="tab" id="headingHTTP">
                             <h4 class="panel-title">
-                              <a role="button" data-toggle="collapse" data-parent="#fileUploadFragment" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                              <a role="button" data-toggle="collapse" data-parent="#fileUploadFragment" href="#collapseHTTP" aria-expanded="true" aria-controls="collapseHTTP">
                                 #{bundle['file.fromHTTP']}
                               </a>
                             </h4>
                         </div>
                         
-                        <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
-                            
-                                                
+                        <div id="collapseHTTP" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingHTTP">
                             <div class="panel-body">
-
                                 <p class="help-block">
                                     <span class="glyphicon glyphicon-info-sign"/>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false" 
@@ -224,21 +221,19 @@
                         </div>
                     </div>
                     
-                    <ui:fragment rendered="#{settingsWrapper.isHasDropBoxKey() and settingsWrapper.HTTPUpload}">
-                    <div jsf:id="dropboxPanel" class="panel panel-default">
+                    <div jsf:id="dropboxPanel" jsf:rendered="#{settingsWrapper.isHasDropBoxKey() and settingsWrapper.HTTPUpload}" class="panel panel-default">
                         
                         <!-- TODO: New help text needed for these panels, replace placeholder text here and add final msg text to bundle -->
                         
-                        <div class="panel-heading" role="tab" id="headingTwo">
+                        <div class="panel-heading" role="tab" id="headingDropbox">
                           <h4 class="panel-title">
-                            <a class="collapsed" role="button" data-toggle="collapse" data-parent="#fileUploadFragment" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            <a class="collapsed" role="button" data-toggle="collapse" data-parent="#fileUploadFragment" href="#collapseDropbox" aria-expanded="false" aria-controls="collapseDropbox">
                               #{bundle['file.fromDropbox']}
                             </a>
                           </h4>
                         </div>
-                        <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                        <div id="collapseDropbox" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingDropbox">
                             <div class="panel-body">
-                                
                                 <!-- Dropbox Upload -->
                                 <div jsf:id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{(!(empty EditDatafilesPage.dropBoxKey))}">
                                     <div class="panel-body">
@@ -253,86 +248,77 @@
                             </div>
                         </div>
                     </div>
-                    </ui:fragment>
                     
-                    <ui:fragment rendered="#{settingsWrapper.rsyncUpload}"> 
-                        <div jsf:id="rsyncPanel" class="panel panel-default">
-                                <div class="panel-heading" role="tab" id="headingThree">
-                                    <h4 class="panel-title">
-                                        <a class="collapsed" role="button" data-toggle="collapse" data-parent="#fileUploadFragment" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                            #{bundle['file.fromRsync']}
-                                        </a>
-                                    </h4>
-                                </div>
-                            <ui:fragment rendered="#{!createDataset}"> 
-                                <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
-                                    <div class="panel-body">
-                                        <p jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}" class="help-block">
+                    <div jsf:id="rsyncPanel" jsf:rendered="#{settingsWrapper.rsyncUpload}" class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="headingRsync">
+                            <h4 class="panel-title">
+                                <a class="collapsed" role="button" data-toggle="collapse" data-parent="#fileUploadFragment" href="#collapseRsync" aria-expanded="false" aria-controls="collapseRsync">
+                                    #{bundle['file.fromRsync']}
+                                </a>
+                            </h4>
+                        </div>
+
+                        <div id="collapseRsync" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingRsync">
+                            <div class="panel-body">
+
+                                <ui:fragment rendered="#{!createDataset}"> 
+                                    <ui:fragment rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                                        <p class="help-block">
                                             <span class="text-danger">Warning message about how this option is not available because of uploaded files to this dataset.</span>
                                         </p>
-                                    </div>
-                                </div>
-                                                        <!-- RSYNC UPLOAD POPUP -->
-                       
-                        <ui:fragment rendered="#{!empty EditDatafilesPage.fileMetadatas}">
-                            <p class="help-block">
-                                <span class="glyphicon glyphicon-warning-sign text-danger"></span>
-                                <h:outputText class="text-danger" value=" #{bundle['file.rsyncUpload.filesExist']}" escape="false"/>
-                            </p>
-                        </ui:fragment>
-                            <ui:fragment rendered="#{!EditDatafilesPage.isHasRsyncScript() and empty EditDatafilesPage.fileMetadatas}">
-                            <p class="help-block">
-                                <span class="glyphicon glyphicon-warning-sign text-danger"></span>
-                                <h:outputText class="text-danger" value=" #{bundle['file.rsyncUpload.noScriptAvailable']}" escape="false"/>
-                            </p>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{EditDatafilesPage.isHasRsyncScript() and empty EditDatafilesPage.fileMetadatas}">
-                            <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"></span>
-                                <h:outputFormat value=" #{bundle['file.rsyncUpload.info']}" escape="false">
-                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                    <f:param value="#{systemConfig.guidesVersion}"/>
-                                </h:outputFormat>
-                            </p>
-                            <ol>
-                                <li>
-                                    <h:outputText value="#{bundle['file.rsyncUpload.step1']}" escape="false"/>
-                                </li>
-                                <li>
-                                    <h:outputText value="#{bundle['file.rsyncUpload.step2']} &#158; " escape="false"/>
-                                    <h:commandLink id="rsyncDL" actionListener="#{EditDatafilesPage.downloadRsyncScript()}" styleClass="btn btn-default btn-xs">
-                                        <span class="glyphicon glyphicon-download-alt"/> <h:outputText value=" #{bundle['file.rsyncUpload.step2.downloadScriptButton']}"/>
-                                    </h:commandLink>
-                                </li>
-                                <li>
-                                    <h:outputFormat value="#{bundle['file.rsyncUpload.step3']}" escape="false">
-                                        <f:param value="#{EditDatafilesPage.rsyncScriptFilename}"/>
-                                    </h:outputFormat>
-                                </li>
-                                <li>
-                                    <h:outputText value="#{bundle['file.rsyncUpload.step4']}" escape="false"/>
-                                </li>
-                            </ol>
-                        </ui:fragment>
-                        <!-- END RSYNC UPLOAD POPUP -->
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+                                            <h:outputText class="text-danger" value=" #{bundle['file.rsyncUpload.filesExist']}" escape="false"/>
+                                        </p>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{!EditDatafilesPage.isHasRsyncScript() and empty EditDatafilesPage.fileMetadatas}">
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+                                            <h:outputText class="text-danger" value=" #{bundle['file.rsyncUpload.noScriptAvailable']}" escape="false"/>
+                                        </p>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{EditDatafilesPage.isHasRsyncScript() and empty EditDatafilesPage.fileMetadatas}">
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-info-sign"></span>
+                                            <h:outputFormat value=" #{bundle['file.rsyncUpload.info']}" escape="false">
+                                                <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                                <f:param value="#{systemConfig.guidesVersion}"/>
+                                            </h:outputFormat>
+                                        </p>
+                                        <ol>
+                                            <li>
+                                                <h:outputText value="#{bundle['file.rsyncUpload.step1']}" escape="false"/>
+                                            </li>
+                                            <li>
+                                                <h:outputText value="#{bundle['file.rsyncUpload.step2']} &#158; " escape="false"/>
+                                                <h:commandLink id="rsyncDL" actionListener="#{EditDatafilesPage.downloadRsyncScript()}" styleClass="btn btn-default btn-xs">
+                                                    <span class="glyphicon glyphicon-download-alt"/> <h:outputText value=" #{bundle['file.rsyncUpload.step2.downloadScriptButton']}"/>
+                                                </h:commandLink>
+                                            </li>
+                                            <li>
+                                                <h:outputFormat value="#{bundle['file.rsyncUpload.step3']}" escape="false">
+                                                    <f:param value="#{EditDatafilesPage.rsyncScriptFilename}"/>
+                                                </h:outputFormat>
+                                            </li>
+                                            <li>
+                                                <h:outputText value="#{bundle['file.rsyncUpload.step4']}" escape="false"/>
+                                            </li>
+                                        </ol>
+                                    </ui:fragment>
+                                </ui:fragment>
 
-                                
-                        </ui:fragment>
-                            <ui:fragment rendered="#{createDataset}">
+                                <ui:fragment rendered="#{createDataset}">
+                                    <p class="help-block">
+                                        <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.createUploadDisabled']}
+                                    </p>
+                                </ui:fragment>
 
-                                <div  data-widget="content" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" id="datasetForm:tabView">
-                                    <!-- Create-Upload Disabled // Static Tab Layout -->
-                                    <div class="ui-tabs-panels panel-body">
-                                        <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
-                                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.createUploadDisabled']}</p>                                    
-                                        </div>
-                                    </div>
-                                </div>
-                            </ui:fragment> 
-                        </div>  
+                            </div>
+                        </div>
 
-                    </ui:fragment>
-                    
+                    </div>                    
                     
                     <p:message for="fileUpload" id="uploadMessage" display="text" />
                     
