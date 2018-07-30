@@ -92,6 +92,8 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.servlet.ServletOutputStream;
@@ -1144,7 +1146,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public List<Template> getDataverseTemplates() {
-        return dataverseTemplates;
+        return alphabetizeTemplates(dataverseTemplates);
     }
 
     public void setDataverseTemplates(List<Template> dataverseTemplates) {
@@ -1166,7 +1168,24 @@ public class DatasetPage implements java.io.Serializable {
     public void setSelectedTemplate(Template selectedTemplate) {
         this.selectedTemplate = selectedTemplate;
     }
+    
+    public List<Template> alphabetizeTemplates(List<Template> templates) throws NullPointerException{
+        
+        List<Template> sortedTemplates = new ArrayList<>();
+        if (templates.size() == 1) {
+            return templates;
+        } else if (templates.size() > 1) {
+            templates.stream().sorted(Comparator.comparing(Template::getName)).collect(Collectors.toList());
+            logger.info(templates.get(0).getName());
+            logger.info(templates.get(templates.size()-1).getName());
+            
+            return templates;
+        }
+        else 
+            throw new NullPointerException("There are no templates to sort");
 
+    }
+    
     public void updateSelectedTemplate(ValueChangeEvent event) {
         
         selectedTemplate = (Template) event.getNewValue();
