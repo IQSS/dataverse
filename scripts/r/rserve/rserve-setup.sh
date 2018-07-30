@@ -10,8 +10,10 @@ sleep 10
 echo 
 echo "checking if rserve user already exists:" 
 
+RSERVEDIR=/tmp/Rserv
+
 /usr/sbin/groupadd -g 97 -o -r rserve >/dev/null 2>/dev/null || :
-/usr/sbin/useradd -g rserve -o -r -d $RLIBDIR -s /bin/bash \
+/usr/sbin/useradd -g rserve -o -r -d $RSERVEDIR -s /bin/bash \
         -c "Rserve User" -u 97 rserve 2>/dev/null || :
 
 echo
