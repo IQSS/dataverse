@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
@@ -180,20 +181,23 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
         String protocol = getDataset().getProtocol();
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
-        if ( idServiceBean != null ){
+        if (idServiceBean != null) {
+            List<String> args = idServiceBean.getProviderInformation();
             try {
-                idServiceBean.publicizeIdentifier(dataset);
-                dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
-                dataset.setIdentifierRegistered(true);
+                //A false return value indicates a failure in calling the service
                 for (DataFile df : dataset.getFiles()) {
                     logger.log(Level.FINE, "registering global id for file {0}", df.getId());
-                    idServiceBean.publicizeIdentifier(df);
+                    //A false return value indicates a failure in calling the service
+                    if (!idServiceBean.publicizeIdentifier(df)) throw new Exception();
                     df.setGlobalIdCreateTime(getTimestamp());
                     df.setIdentifierRegistered(true);
                 }
+                if (!idServiceBean.publicizeIdentifier(dataset)) throw new Exception(); 
+                dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
+                dataset.setIdentifierRegistered(true);
             } catch (Throwable e) {
                 ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.pidRegister);
-                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
+                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
             }
         }
     }

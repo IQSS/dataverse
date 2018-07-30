@@ -66,12 +66,12 @@ import org.apache.commons.csv.CSVRecord;
  */
 public class CSVFileReader extends TabularDataFileReader {
 
-    private static final Logger dbglog = Logger.getLogger(CSVFileReader.class.getPackage().getName());
+    private static final Logger logger = Logger.getLogger(CSVFileReader.class.getPackage().getName());
     private static final int DIGITS_OF_PRECISION_DOUBLE = 15;
     private static final String FORMAT_IEEE754 = "%+#." + DIGITS_OF_PRECISION_DOUBLE + "e";
     private MathContext doubleMathContext;
-    private CSVFormat inFormat = CSVFormat.EXCEL;
-    private Set<Character> firstNumCharSet = new HashSet<>();
+    private CSVFormat inFormat;
+    private final Set<Character> firstNumCharSet = new HashSet<>();
 
     // DATE FORMATS
     private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[]{
@@ -88,8 +88,13 @@ public class CSVFileReader extends TabularDataFileReader {
         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     };
 
-    public CSVFileReader(TabularDataFileReaderSpi originator) {
+    public CSVFileReader(TabularDataFileReaderSpi originator, char delim) {
         super(originator);
+        if (delim == ','){
+            inFormat = CSVFormat.EXCEL;
+        } else if (delim == '\t'){
+            inFormat = CSVFormat.TDF;
+        }
     }
 
     private void init() throws IOException {
@@ -121,7 +126,7 @@ public class CSVFileReader extends TabularDataFileReader {
 
         int lineCount = readFile(localBufferedReader, dataTable, tabFileWriter);
 
-        dbglog.fine("Tab file produced: " + tabFileDestination.getAbsolutePath());
+        logger.fine("Tab file produced: " + tabFileDestination.getAbsolutePath());
 
         dataTable.setUnf("UNF:6:NOTCALCULATED");
 
@@ -454,7 +459,7 @@ public class CSVFileReader extends TabularDataFileReader {
         long linecount = parser.getRecordNumber();
         finalOut.close();
         parser.close();
-        dbglog.fine("Tmp File: " + firstPassTempFile);
+        logger.fine("Tmp File: " + firstPassTempFile);
         // Firstpass file is deleted to prevent tmp from filling up.
         firstPassTempFile.delete();
         if (dataTable.getCaseQuantity().intValue() != linecount) {

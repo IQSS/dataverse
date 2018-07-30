@@ -233,7 +233,7 @@
                             <h:inputHidden id="showAccessPopup" value="#{EditDatafilesPage.showAccessPopup}"/>
                             <div id="filesHeaderCount" class="col-xs-6 text-left">
                                 <!-- Files Count -->
-                                <h:outputFormat value="#{datasetPage ? bundle['file.count'] : bundle['file.count.selected']}" styleClass="highlightBold" rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                                <h:outputFormat value="#{datasetPage ? bundle['file.count.shown'] : bundle['file.count.shown']}" styleClass="highlightBold" rendered="#{!empty EditDatafilesPage.fileMetadatas}">
                                     <f:param value="#{EditDatafilesPage.fileMetadatas.size()}"/>
                                 </h:outputFormat>
                             </div>
