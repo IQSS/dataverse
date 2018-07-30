@@ -1169,20 +1169,17 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedTemplate = selectedTemplate;
     }
     
-    public List<Template> alphabetizeTemplates(List<Template> templates) throws NullPointerException{
+    public List<Template> alphabetizeTemplates(List<Template> templates) {
         
         List<Template> sortedTemplates = new ArrayList<>();
-        if (templates.size() == 1) {
-            return templates;
-        } else if (templates.size() > 1) {
-            templates.stream().sorted(Comparator.comparing(Template::getName)).collect(Collectors.toList());
-            logger.info(templates.get(0).getName());
-            logger.info(templates.get(templates.size()-1).getName());
+        if (templates != null && templates.size() > 1) {
+            templates = templates.stream().sorted(Comparator.comparing(Template::getName)).collect(Collectors.toList());
+            //logger.info(templates.get(0).getName());
+            //logger.info(templates.get(templates.size()-1).getName());
             
-            return templates;
+             
         }
-        else 
-            throw new NullPointerException("There are no templates to sort");
+        return templates;
 
     }
     
