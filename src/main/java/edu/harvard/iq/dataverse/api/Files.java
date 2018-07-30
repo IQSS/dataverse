@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
@@ -11,6 +12,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
@@ -27,6 +29,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -326,6 +329,63 @@ public class Files extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+
+    }
+    
+    // Note, ingestAsTabular attempts to queue an *existing* (non-tabular) DataFile 
+    // for tabular ingest. 
+    
+    @Path("{id}/ingestAsTabular")
+    @POST
+    public Response ingestDatafileAsTabular(@PathParam("id") String id) {
+
+        AuthenticatedUser u;
+        try {
+            u = findAuthenticatedUserOrDie();
+            if (!u.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "This API call can be used by superusers only");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(id);
+        } catch (WrappedResponse ex) {
+            dataFile = null;
+        }
+        
+        if (dataFile == null) {
+            return error(Response.Status.NOT_FOUND, "File not found for given id.");
+        }
+
+        if (dataFile.isTabularData()) {
+            return error(Response.Status.BAD_REQUEST, "Datafile already ingested as Tabular.");
+        }
+
+        Dataset dataset = dataFile.getOwner();
+        
+        if (dataset == null) {
+            return error(Response.Status.BAD_REQUEST, "Failed to locate the parent dataset for the datafile.");
+        }
+        
+        boolean ingestLock = dataset.isLockedFor(DatasetLock.Reason.Ingest);
+        
+        if (ingestLock) {
+            return error(Response.Status.FORBIDDEN, "Dataset already locked with an Ingest lock");
+        }
+        
+        if (!FileUtil.canIngestAsTabular(dataFile)) {
+            return error(Response.Status.BAD_REQUEST, "Tabular ingest is not supported for this file type (id: "+id+", type: "+dataFile.getContentType()+")");
+        }
+        
+        dataFile.SetIngestScheduled();
+        
+        // queue the data ingest job for asynchronous execution: 
+        ingestService.startIngestJobs(dataset, u);
+        
+        return ok("Datafile " + id + " queued for ingest");
 
     }
             
