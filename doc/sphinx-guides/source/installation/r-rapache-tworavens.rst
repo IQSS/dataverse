@@ -139,7 +139,7 @@ The simplest way to install R on RHEL/CentOS 6 systems is with yum, using the EP
 
 EPEL6 provides R-3.3, which is known to work well. Some installations have run EPEL7's former 3.4 release with success, but EPEL7 currently provides R-3.5, a significant release with many new features which may challenge backwards compatibility. You may wish to compile the older 3.3 or 3.4 versions [from source](https://cran.r-project.org/src/base/R-3/).
 
-If you have an installed R 3.3 or 3.4 installation from EPEL, you may lock that version in place using the _yum-plugin-versionlock_ yum plugin, or simply add this line to the "epel" section of /etc/yum.repos.d/epel.repo::
+If you have an installed R 3.3 or 3.4 installation from EPEL, you may lock that version in place using the yum versionlock plugin, or simply add this line to the "epel" section of /etc/yum.repos.d/epel.repo::
 
 	exclude=R-*,openblas-*,libRmath*
 
