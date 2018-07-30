@@ -22,34 +22,28 @@ public class DataverseLocaleBean implements Serializable {
     @Inject
     SettingsWrapper settingsWrapper;
 
+    {
+        init();
+        if (FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage() == "en_US") {
+            localeCode = "en";
+        } else {
+            localeCode = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
+        }
+    }
+    
     // Map from locale to display name eg     en -> English
     private Map<String, String> dataverseLocales;
 
     private String localeCode;
 
-    FacesContext context = null;//FacesContext.getCurrentInstance();
-
-    {
-        if (context == null || context.getViewRoot().getLocale().getLanguage() == "en_US") {
-            localeCode = "en";
-        } else {
-            localeCode = context.getViewRoot().getLocale().getLanguage();
-        }
-    }
-
-    public DataverseLocaleBean() {
-
-    }
-
-    public Map<String, String> getCountriesMap() {
+    public void init() {
         dataverseLocales = new LinkedHashMap<>();
-
         try {
             JSONArray entries = new JSONArray(settingsWrapper.getValueForKey(SettingsServiceBean.Key.Languages, "[]"));
             for (Object obj : entries) {
                 JSONObject entry = (JSONObject) obj;
-                String title = entry.getString("title");
                 String locale = entry.getString("locale");
+                String title = entry.getString("title");
 
                 dataverseLocales.put(locale, title);
             }
@@ -57,17 +51,29 @@ public class DataverseLocaleBean implements Serializable {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return dataverseLocales;
+        //localeCode = dataverseLocales.keySet().iterator().next();
+        /*if (FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage() == "en_US") {
+            localeCode = "en";
+        } else {
+            localeCode = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
+        }*/
     }
 
+    public Map<String, String>  getDataverseLocales(){
+        return dataverseLocales;
+    }
+    
     public boolean useLocale() {
         if (dataverseLocales == null) {
-            getCountriesMap();
+            init();
         }
         return dataverseLocales.size() > 1;
     }
 
     public String getLocaleCode() {
+        if (localeCode == null) {
+            init();
+        }
         return localeCode;
     }
 
@@ -77,14 +83,14 @@ public class DataverseLocaleBean implements Serializable {
 
     public String getLocaleTitle() {
         if (dataverseLocales == null) {
-            getCountriesMap();
+            init();
         }
         return dataverseLocales.get(localeCode);
     }
 
     public void countryLocaleCodeChanged(String code) {
         if (dataverseLocales == null) {
-            getCountriesMap();
+            init();
         }
         localeCode = code;
         FacesContext.getCurrentInstance()
