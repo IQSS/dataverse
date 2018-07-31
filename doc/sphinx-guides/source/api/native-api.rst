@@ -147,12 +147,43 @@ values are ``true`` and ``false`` (both are valid JSON expressions). ::
 
 .. note:: Previous endpoints ``GET http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` and ``POST http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` are deprecated, but supported.
 
+
+.. _create-dataset-command: 
+
 Create a Dataset in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To create a dataset, you must create a JSON file containing all the metadata you want such as in this example file: :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>`. Then, you must decide which dataverse to create the dataset in and target that datavese with either the "alias" of the dataverse (e.g. "root" or the database id of the dataverse (e.g. "1"). The initial version state will be set to ``DRAFT``::
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets --upload-file dataset-finch1.json
+
+Import a Dataset into a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note:: This action requires a Dataverse account with super-user permissions.
+
+To import a dataset with an existing persistent identifier (PID), the dataset's metadata should be prepared in Dataverse's native JSON format. The PID is provided as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, and then releases it::
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets/:import?pid=$PERSISTENT_IDENTIFIER&release=yes --upload-file dataset.json
+
+The ``pid`` parameter holds a persistent identifier (such as a DOI or Handle). The import will fail if no PID is provided, or if the provided PID fails validation.
+
+The optional ``release`` parameter tells Dataverse to immediately publish the dataset. If the parameter is changed to ``no``, the imported dataset will remain in ``DRAFT`` status.
+
+The JSON format is the same as that supported by the native API's :ref:`create dataset command<create-dataset-command>`, although it also allows packages.  For example:
+
+.. literalinclude:: ../../../../scripts/api/data/dataset-package-files.json
+
+Before calling the API, make sure the data files referenced by the ``POST``\ ed JSON are placed in the dataset directory with filenames matching their specified storage identifiers. In installations using POSIX storage, these files must be made readable by GlassFish.
+
+.. tip:: If possible, it's best to avoid spaces and special characters in the storage identifier in order to avoid potential portability problems. The storage identifier corresponds with the filesystem name (or bucket identifier) of the data file, so these characters may cause unpredictability with filesystem tools.
+
+.. warning:: 
+  
+  * This API does not cover staging files (with correct contents, checksums, sizes, etc.) in the corresponding places in the Dataverse filestore.
+  * This API endpoint does not support importing *files'* persistent identifiers.
+  * A Dataverse server can import datasets with a valid PID that uses a different protocol or authority than said server is configured for. However, the server will not update the PID metadata on subsequent update and publish actions.
+
 
 Publish a Dataverse
 ~~~~~~~~~~~~~~~~~~~
@@ -245,9 +276,9 @@ List Single Metadata Block for a Dataset
 Update Metadata For a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Updates the metadata for a dataset. If a draft of the dataset already exists, the metadata of that draft is overwritten; otherwise, a new draft is created with this metadata. 
+Updates the metadata for a dataset. If a draft of the dataset already exists, the metadata of that draft is overwritten; otherwise, a new draft is created with this metadata.
 
-You cannot currently target a specific field such as the title of a dataset and only update that one field. Instead, you must download a JSON representation of the dataset, edit the JSON you download, and then send the updated JSON to the Dataverse server.
+You must download a JSON representation of the dataset, edit the JSON you download, and then send the updated JSON to the Dataverse server.
 
 For example, after making your edits, your JSON file might look like :download:`dataset-update-metadata.json <../_static/api/dataset-update-metadata.json>` which you would send to Dataverse like this::
 
@@ -262,6 +293,29 @@ Now that the resulting JSON file only contains the ``metadataBlocks`` key, you c
     vi dataset-update-metadata.json
 
 Now that you've made edits to the metadata in your JSON file, you can send it to Dataverse as described above.
+
+Edit Dataset Metadata
+~~~~~~~~~~~~~~~~~~~~~
+
+Alternatively to replacing an entire dataset version with its JSON representation you may add data to dataset fields that are blank or accept multiple values with the following ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/editMetadata/?persistentId=$PID --upload-file dataset-add-metadata.json    
+
+You may also replace existing metadata in dataset fields with the following (adding the parameter replace=true)   ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/editMetadata?persistentId=$PID&replace=true --upload-file dataset-update-metadata.json
+    
+For these edits your JSON file need only include those dataset fields which you would like to edit. A sample JSON file may be downloaded here: :download:`dataset-edit-metadata-sample.json <../_static/api/dataset-edit-metadata-sample.json>` 
+
+Delete Dataset Metadata
+~~~~~~~~~~~~~~~~~~~~~~~
+
+You may delete some of the metadata of a dataset version by supplying a file with a JSON representation of dataset fields that you would like to delete with the following ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/deleteMetadata/?persistentId=$PID --upload-file dataset-delete-author-metadata.json    
+    
+For these deletes your JSON file must include an exact match of those dataset fields which you would like to delete. A sample JSON file may be downloaded here: :download:`dataset-delete-author-metadata.json <../_static/api/dataset-delete-author-metadata.json>` 
+
 
 Publish a Dataset
 ~~~~~~~~~~~~~~~~~
@@ -449,33 +503,43 @@ The review process can sometimes resemble a tennis match, with the authors submi
 
 
 Files
------
+~~~~~
+
+.. note:: Files can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+
+  Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::
+
+    GET http://$SERVER/api/access/datafile/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+
+
+Adding Files
+^^^^^^^^^^^^
 
 .. note:: Please note that files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the "Datasets" endpoint above for more information.
 
-Restrict a File
-~~~~~~~~~~~~~~~
+Restrict Files
+^^^^^^^^^^^^^^
 
-Restrict or unrestrict an existing file where ``id`` is the database id of the file to restrict::
-    
-    PUT http://$SERVER/api/files/{id}/restrict
+Restrict or unrestrict an existing file where ``id`` is the database id of the file or ``pid`` is the persistent id (DOI or Handle) of the file to restrict. Note that some Dataverse installations do not allow the ability to restrict files.
 
-Note that some Dataverse installations do not allow the ability to restrict files.
-
-A more detailed "restrict" example using curl::
+A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/{id}/restrict
 
-Replace a File
-~~~~~~~~~~~~~~
+A curl example using a ``pid``::
 
-Replace an existing file where ``id`` is the database id of the file to replace. Note that metadata such as description and tags are not carried over from the file being replaced::
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/:persistentId/restrict?persistentId={pid}
 
-    POST http://$SERVER/api/files/{id}/replace?key=$apiKey
+Replacing Files
+^^^^^^^^^^^^^^^
 
-A more detailed "replace" example using curl (note that ``forceReplace`` is for replacing one file type with another)::
+Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note that metadata such as description and tags are not carried over from the file being replaced
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://demo.dataverse.org/api/files/$FILE_ID/replace"
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' \
+  -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}'\
+  "https://demo.dataverse.org/api/files/$FILE_ID/replace"
 
 Example python code to replace a file.  This may be run by changing these parameters in the sample code:
 
@@ -542,6 +606,36 @@ Example python code to replace a file.  This may be run by changing these parame
     print '-' * 40
     print r.json()
     print r.status_code
+    
+Uningest a File
+~~~~~~~~~~~~~~~
+
+Reverse the ingest process performed on a file where ``id`` is the database id of the file to process. Note that this requires "super user" credentials::
+
+    POST http://$SERVER/api/files/{id}/uningest?key=$apiKey    
+
+
+Provenance
+~~~~~~~~~~
+Get Provenance JSON for an uploaded file::
+
+    GET http://$SERVER/api/files/{id}/prov-json?key=$apiKey
+
+Get Provenance Description for an uploaded file::
+
+    GET http://$SERVER/api/files/{id}/prov-freeform?key=$apiKey
+
+Create/Update Provenance JSON and provide related entity name for an uploaded file::
+
+    POST http://$SERVER/api/files/{id}/prov-json?key=$apiKey&entityName=$entity -H "Content-type:application/json" --upload-file $filePath
+
+Create/Update Provenance Description for an uploaded file. Requires a JSON file with the description connected to a key named "text"::
+
+    POST http://$SERVER/api/files/{id}/prov-freeform?key=$apiKey -H "Content-type:application/json" --upload-file $filePath
+
+Delete Provenance JSON for an uploaded file::
+
+    DELETE http://$SERVER/api/files/{id}/prov-json?key=$apiKey
 
 Builtin Users
 -------------
@@ -689,7 +783,7 @@ Get API Terms of Use URL
 Get API Terms of Use. The response contains the text value inserted as API Terms of use which uses the database setting  ``:ApiTermsOfUse``::
 
   GET http://$SERVER/api/info/apiTermsOfUse
-  
+
 Metadata Blocks
 ---------------
 
@@ -820,6 +914,116 @@ Create Global Role
 Creates a global role in the Dataverse installation. The data POSTed are assumed to be a role JSON. ::
 
     POST http://$SERVER/api/admin/roles
+
+List Users
+~~~~~~~~~~
+
+List users with the options to search and "page" through results. Only accessible to superusers. Optional parameters:
+
+* ``searchTerm`` A string that matches the beginning of a user identifier, first name, last name or email address.
+* ``itemsPerPage`` The number of detailed results to return.  The default is 25.  This number has no limit. e.g. You could set it to 1000 to return 1,000 results
+* ``selectedPage`` The page of results to return.  The default is 1.
+
+::
+
+    GET http://$SERVER/api/admin/list-users
+
+
+Sample output appears below.
+
+* When multiple pages of results exist, the ``selectedPage`` parameters may be specified.
+* Note, the resulting ``pagination`` section includes ``pageCount``, ``previousPageNumber``, ``nextPageNumber``, and other variables that may be used to re-create the UI.
+
+.. code-block:: text
+
+    {
+        "status":"OK",
+        "data":{
+            "userCount":27,
+            "selectedPage":1,
+            "pagination":{
+                "isNecessary":true,
+                "numResults":27,
+                "numResultsString":"27",
+                "docsPerPage":25,
+                "selectedPageNumber":1,
+                "pageCount":2,
+                "hasPreviousPageNumber":false,
+                "previousPageNumber":1,
+                "hasNextPageNumber":true,
+                "nextPageNumber":2,
+                "startResultNumber":1,
+                "endResultNumber":25,
+                "startResultNumberString":"1",
+                "endResultNumberString":"25",
+                "remainingResults":2,
+                "numberNextResults":2,
+                "pageNumberList":[
+                    1,
+                    2
+                ]
+            },
+            "bundleStrings":{
+                "userId":"ID",
+                "userIdentifier":"Username",
+                "lastName":"Last Name ",
+                "firstName":"First Name ",
+                "email":"Email",
+                "affiliation":"Affiliation",
+                "position":"Position",
+                "isSuperuser":"Superuser",
+                "authenticationProvider":"Authentication",
+                "roles":"Roles",
+                "createdTime":"Created Time",
+                "lastLoginTime":"Last Login Time",
+                "lastApiUseTime":"Last API Use Time"
+            },
+            "users":[
+                {
+                    "id":8,
+                    "userIdentifier":"created1",
+                    "lastName":"created1",
+                    "firstName":"created1",
+                    "email":"created1@g.com",
+                    "affiliation":"hello",
+                    "isSuperuser":false,
+                    "authenticationProvider":"BuiltinAuthenticationProvider",
+                    "roles":"Curator",
+                    "createdTime":"2017-06-28 10:36:29.444"
+                },
+                {
+                    "id":9,
+                    "userIdentifier":"created8",
+                    "lastName":"created8",
+                    "firstName":"created8",
+                    "email":"created8@g.com",
+                    "isSuperuser":false,
+                    "authenticationProvider":"BuiltinAuthenticationProvider",
+                    "roles":"Curator",
+                    "createdTime":"2000-01-01 00:00:00.0"
+                },
+                {
+                    "id":1,
+                    "userIdentifier":"dataverseAdmin",
+                    "lastName":"Admin",
+                    "firstName":"Dataverse",
+                    "email":"dataverse@mailinator2.com",
+                    "affiliation":"Dataverse.org",
+                    "position":"Admin",
+                    "isSuperuser":true,
+                    "authenticationProvider":"BuiltinAuthenticationProvider",
+                    "roles":"Admin, Contributor",
+                    "createdTime":"2000-01-01 00:00:00.0",
+                    "lastLoginTime":"2017-07-03 12:22:35.926",
+                    "lastApiUseTime":"2017-07-03 12:55:57.186"
+                }
+
+                // ... 22 more user documents ...
+            ]
+        }
+    }
+
+.. note:: "List all users" ``GET http://$SERVER/api/admin/authenticatedUsers`` is deprecated, but supported.
 
 List Single User
 ~~~~~~~~~~~~~~~~
@@ -971,9 +1175,19 @@ Restore the whitelist of IP addresses allowed to resume workflows to default (lo
 
   DELETE http://$SERVER/api/admin/workflows/ip-whitelist
 
+Metrics
+~~~~~~~
+
+Clear all cached metric results::
+
+    DELETE http://$SERVER/api/admin/clearMetricsCache
+
+Clear a specific metric cache. Currently this must match the name of the row in the table, which is named *metricName*_*metricYYYYMM* (or just *metricName* if there is no date range for the metric). For example dataversesToMonth_2018-05::
+
+    DELETE http://$SERVER/api/admin/clearMetricsCache/$metricDbName
 
 .. |CORS| raw:: html
-      
+
       <span class="label label-success pull-right">
         CORS
       </span>

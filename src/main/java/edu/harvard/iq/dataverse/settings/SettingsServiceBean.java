@@ -2,11 +2,10 @@ package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-import java.util.Arrays;
-import java.util.Collections;
+import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -52,6 +51,11 @@ public class SettingsServiceBean {
          * The container name will be appended to this on the "Compute" button 
          */
         ComputeBaseUrl,
+        /**
+         * Enables the provenance collection popup.
+         * Allows users to store their provenance json and description
+         */
+        ProvCollectionEnabled,
         /**
          * For example, https://datacapture.example.org
          */
@@ -180,7 +184,8 @@ public class SettingsServiceBean {
         Authority,
         /** DoiProvider for global id */
         DoiProvider,
-        DoiSeparator,
+        /** Shoulder for global id - used to create a common prefix on identifiers */
+        Shoulder,
         /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
         DoiUsername,
         DoiPassword,
@@ -194,6 +199,12 @@ public class SettingsServiceBean {
          * some other metrics app.
          */
         MetricsUrl,
+        
+        /**
+         * Number of minutes before a metrics query can be rerun. Otherwise a cached value is returned.
+         * Previous month dates always return cache. Only applies to new internal caching system (not miniverse).
+         */
+        MetricsCacheTimeoutMinutes,
         /* zip download size limit */
         /** Optionally override version number in guides. */
         GuidesVersion,
@@ -237,14 +248,6 @@ public class SettingsServiceBean {
         Default is false;
         */
         GeoconnectViewMaps,
-        /**
-        For DEVELOPMENT ONLY. Generate SQL statements for populating
-        MapLayerMetadata objects when Geoconnect is not available.
-        
-        When files have related MapLayerMetadata objects, the "Explore button
-        will be available to users.
-        */
-        GeoconnectDebug,
         /**
          The message added to a popup upon dataset publish
          * 
@@ -345,7 +348,17 @@ public class SettingsServiceBean {
         /**
          * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
          */
-        PVCustomPasswordResetAlertMessage
+        PVCustomPasswordResetAlertMessage,
+        /*
+        String to describe DOI format for data files. Default is INDEPENDENT. (That is independent 
+        from the Dataset DOI
+        If 'DEPENEDENT' then the DOI will be the Dataset DOI plus a file DOI with a slash in between.
+        */
+        DataFilePIDFormat, 
+        /*
+        Number for the minimum number of files to send PID registration to asynchronous workflow
+        */
+        PIDAsynchRegFileCount
         ;
 
         @Override
@@ -359,13 +372,6 @@ public class SettingsServiceBean {
     
     @EJB
     ActionLogServiceBean actionLogSvc;
-    
-    /**
-     * Values that are considered as "true".
-     * @see #isTrue(java.lang.String, boolean) 
-     */
-    public static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
-            new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
     
     /**
      * Basic functionality - get the name, return the setting, or {@code null}.
@@ -453,7 +459,7 @@ public class SettingsServiceBean {
      */
     public boolean isTrue( String name, boolean defaultValue ) {
         String val = get(name);
-        return ( val==null ) ? defaultValue : TRUE_VALUES.contains(val.trim().toLowerCase() );
+        return ( val==null ) ? defaultValue : StringUtil.isTrue(val);
     }
     
     public boolean isTrueForKey( Key key, boolean defaultValue ) {

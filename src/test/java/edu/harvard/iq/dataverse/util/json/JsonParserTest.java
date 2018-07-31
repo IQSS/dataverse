@@ -421,8 +421,7 @@ public class JsonParserTest {
             dsJson = Json.createReader(reader).readObject();
             System.out.println(dsJson != null);
             Dataset actual = sut.parseDataset(dsJson);
-            assertEquals("10.5072/FK2", actual.getAuthority());
-            assertEquals("/", actual.getDoiSeparator());
+            assertEquals("10.5072", actual.getAuthority());
             assertEquals("doi", actual.getProtocol());
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
@@ -430,6 +429,7 @@ public class JsonParserTest {
     }
 
     /**
+     * 
      * Expect an exception when the dataset version JSON contains fields
      * that the {@link DatasetFieldService} doesn't know about.
      * @throws JsonParseException as expected
@@ -625,11 +625,9 @@ public class JsonParserTest {
         public String getValueForKey( Key key /*, String defaultValue */) {
             switch (key) {
                 case Authority:
-                    return "10.5072/FK2";
+                    return "10.5072";
                 case Protocol:
                     return "doi";
-                case DoiSeparator:
-                    return "/";
                 default:
                     break;
             }

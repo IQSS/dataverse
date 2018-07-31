@@ -57,7 +57,7 @@ If you are running el6 (RHEL/CentOS 6):
 Install Shibboleth Via Yum
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``yum install shibboleth shibboleth-embedded-ds``
+``yum install shibboleth-2.6.1 shibboleth-embedded-ds-2.6.1``
 
 Configure Glassfish
 -------------------
@@ -65,7 +65,7 @@ Configure Glassfish
 Apply GRIZZLY-1787 Patch
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order for the Dataverse "download as zip" feature to work well with large files without causing ``OutOfMemoryError`` problems on Glassfish 4.1 when fronted with Apache, you should stop Glassfish, with ``asadmin stop-domain domain1``, make a backup of ``glassfish4/glassfish/modules/glassfish-grizzly-extra-all.jar``, replace it with a patched version of ``glassfish-grizzly-extra-all.jar`` downloaded from :download:`here </_static/installation/files/issues/2180/grizzly-patch/glassfish-grizzly-extra-all.jar>` (the md5 is in the :download:`README <../_static/installation/files/issues/2180/grizzly-patch/readme.md>`), and start Glassfish again with ``asadmin start-domain domain1``.
+In order for the Dataverse "download as zip" feature to work well with large files without causing ``OutOfMemoryError`` problems on Glassfish 4.1 when fronted with Apache, you should stop Glassfish, with ``./asadmin stop-domain domain1``, make a backup of ``glassfish4/glassfish/modules/glassfish-grizzly-extra-all.jar``, replace it with a patched version of ``glassfish-grizzly-extra-all.jar`` downloaded from :download:`here </_static/installation/files/issues/2180/grizzly-patch/glassfish-grizzly-extra-all.jar>` (the md5 is in the :download:`README <../_static/installation/files/issues/2180/grizzly-patch/readme.md>`), and start Glassfish again with ``./asadmin start-domain domain1``.
 
 For more background on the patch, please see https://java.net/jira/browse/GRIZZLY-1787 and https://github.com/IQSS/dataverse/issues/2180 and https://github.com/payara/Payara/issues/350
 
@@ -76,20 +76,20 @@ Glassfish HTTP and HTTPS ports
 
 Apache will be listening on ports 80 and 443 so we need to make sure Glassfish isn't using them. If you've been changing the default ports used by Glassfish per the :doc:`config` section, revert the Glassfish HTTP service to listen on 8080, the default port:
 
-``asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.port=8080``
+``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.port=8080``
 
 Likewise, if necessary, revert the Glassfish HTTPS service to listen on port 8181:
 
-``asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=8181``
+``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=8181``
 
 AJP
 ~~~
 
 A ``jk-connector`` network listener should have already been set up when you ran the installer mentioned in the :doc:`installation-main` section, but for reference, here is the command that is used:
 
-``asadmin create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector``
+``./asadmin create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector``
 
-You can verify this with ``asadmin list-network-listeners``. 
+You can verify this with ``./asadmin list-network-listeners``. 
 
 This enables the `AJP protocol <http://en.wikipedia.org/wiki/Apache_JServ_Protocol>`_ used in Apache configuration files below.
 
@@ -98,7 +98,7 @@ SSLEngine Warning Workaround
 
 When fronting Glassfish with Apache and using the jk-connector (AJP, mod_proxy_ajp), in your Glassfish server.log you can expect to see "WARNING ... org.glassfish.grizzly.http.server.util.RequestUtils ... jk-connector ... Unable to populate SSL attributes java.lang.IllegalStateException: SSLEngine is null".
 
-To hide these warnings, run ``asadmin set-log-levels org.glassfish.grizzly.http.server.util.RequestUtils=SEVERE`` so that the WARNING level is hidden as recommended at https://java.net/jira/browse/GLASSFISH-20694 and https://github.com/IQSS/dataverse/issues/643#issuecomment-49654847
+To hide these warnings, run ``./asadmin set-log-levels org.glassfish.grizzly.http.server.util.RequestUtils=SEVERE`` so that the WARNING level is hidden as recommended at https://java.net/jira/browse/GLASSFISH-20694 and https://github.com/IQSS/dataverse/issues/643#issuecomment-49654847
 
 Configure Apache
 ----------------

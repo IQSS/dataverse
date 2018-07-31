@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -49,6 +50,8 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     IndexServiceBean indexService;
     @EJB 
     DatasetServiceBean datasetService;
+    @EJB 
+    SettingsServiceBean settingsService;
     //@EJB
     //ExportService exportService;
 
@@ -130,7 +133,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                                 && (dataset.getLastExportTime() == null
                                 || dataset.getLastExportTime().before(publicationDate))) {
                         
-                            setUpdateLogger.fine("Attempting to run export on dataset " + dataset.getGlobalId());
+                            setUpdateLogger.fine("Attempting to run export on dataset " + dataset.getGlobalIdString());
                             exportAllFormats(dataset);
                         }
                     }
@@ -162,14 +165,14 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         boolean isReleased = dataset.getReleasedVersion() != null;
         
         if (isReleased && dataset.getLastExportTime() != null) {
-            OAIRecord record = recordMap.get(dataset.getGlobalId());
+            OAIRecord record = recordMap.get(dataset.getGlobalIdString());
             if (record == null) {
-                setUpdateLogger.info("creating a new OAI Record for " + dataset.getGlobalId());
-                record = new OAIRecord(setName, dataset.getGlobalId(), new Date());
+                setUpdateLogger.info("creating a new OAI Record for " + dataset.getGlobalIdString());
+                record = new OAIRecord(setName, dataset.getGlobalIdString(), new Date());
                 em.persist(record);
             } else {
                 if (record.isRemoved()) {
-                    setUpdateLogger.info("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalId());
+                    setUpdateLogger.info("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalIdString());
                     record.setRemoved(false);
                     record.setLastUpdateTime(new Date());
                 } else if (dataset.getLastExportTime().after(record.getLastUpdateTime())) {
@@ -196,7 +199,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     public void updateOaiRecordsForDataset(Dataset dataset) {
         // create Map of OaiRecords
 
-        List<OAIRecord> oaiRecords = findOaiRecordsByGlobalId(dataset.getGlobalId());
+        List<OAIRecord> oaiRecords = findOaiRecordsByGlobalId(dataset.getGlobalIdString());
         if (oaiRecords != null) {
 
             DatasetVersion releasedVersion = dataset.getReleasedVersion();
@@ -210,7 +213,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             
             for (OAIRecord record : oaiRecords) {
                 if (record.isRemoved()) {
-                    logger.fine("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalId());
+                    logger.fine("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalIdString());
                     record.setRemoved(false);
                     record.setLastUpdateTime(new Date());
                 } else if (dataset.getLastExportTime().after(record.getLastUpdateTime())) {
@@ -245,8 +248,8 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     
     public void exportAllFormats(Dataset dataset) {
         try {
-            ExportService exportServiceInstance = ExportService.getInstance();
-            logger.fine("Attempting to run export on dataset "+dataset.getGlobalId());
+            ExportService exportServiceInstance = ExportService.getInstance(settingsService);
+            logger.log(Level.FINE, "Attempting to run export on dataset {0}", dataset.getGlobalId());
             exportServiceInstance.exportAllFormats(dataset);
             datasetService.updateLastExportTimeStamp(dataset.getId());
         } catch (ExportException ee) {logger.fine("Caught export exception while trying to export. (ignoring)");}
@@ -256,7 +259,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     @TransactionAttribute(REQUIRES_NEW)
     public void exportAllFormatsInNewTransaction(Dataset dataset) throws ExportException {
         try {
-            ExportService exportServiceInstance = ExportService.getInstance();
+            ExportService exportServiceInstance = ExportService.getInstance(settingsService);
             exportServiceInstance.exportAllFormats(dataset);
             datasetService.updateLastExportTimeStamp(dataset.getId());
         } catch (Exception e) {

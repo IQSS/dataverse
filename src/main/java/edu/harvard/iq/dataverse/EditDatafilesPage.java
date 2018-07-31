@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
+import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -11,7 +13,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -23,6 +25,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -109,6 +112,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     @Inject PermissionsWrapper permissionsWrapper;
     @Inject FileDownloadHelper fileDownloadHelper;
+    @Inject ProvPopupFragmentBean provPopupFragmentBean;
 
     private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
@@ -194,7 +198,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (fileReplacePageHelper.wasPhase1Successful()){
                 logger.fine("Replace: File metadatas 'list' of 1 from the fileReplacePageHelper.");
                 return fileReplacePageHelper.getNewFileMetadatasBeforeSave();
-            }else{
+            } else {
                 logger.fine("Replace: replacement file not yet uploaded.");
                 return null;
             }            
@@ -1044,7 +1048,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // Uh oh.
             String errMsg = fileReplacePageHelper.getErrorMessages();
             
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", errMsg));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, getBundleString("dataset.save.fail"), errMsg));
             logger.severe("Dataset save failed for replace operation: " + errMsg);
             return null;
         }
@@ -1081,16 +1085,57 @@ public class EditDatafilesPage implements java.io.Serializable {
                 return saveReplacementFile();
             } catch (FileReplaceException ex) {
                 String errMsg = ex.getMessage();
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", errMsg));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, getBundleString("dataset.save.fail"), errMsg));
                 logger.log(Level.SEVERE, "Dataset save failed for replace operation: {0}", errMsg);
                 return null;
             }            
         }
+
                 
-        // Save the NEW files permanently: 
-        ingestService.addFiles(workingVersion, newFiles);
-        //boolean newDraftVersion = false; 
+        int nOldFiles = workingVersion.getFileMetadatas().size();
+        int nNewFiles = newFiles.size();
+        int nExpectedFilesTotal = nOldFiles + nNewFiles; 
         
+        if (nNewFiles > 0) {
+            // Try to save the NEW files permanently: 
+            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles);
+            
+            // reset the working list of fileMetadatas, as to only include the ones
+            // that have been added to the version successfully: 
+            fileMetadatas.clear();
+            for (DataFile addedFile : filesAdded) {
+                fileMetadatas.add(addedFile.getFileMetadata());
+            }
+            filesAdded = null; 
+        }
+        //boolean newDraftVersion = false;    
+
+        Boolean provJsonChanges = false;
+        
+        if(systemConfig.isProvCollectionEnabled()) {
+            Boolean provFreeChanges = provPopupFragmentBean.updatePageMetadatasWithProvFreeform(fileMetadatas);
+
+            try {
+                // Note that the user may have uploaded provenance metadata file(s)
+                // for some of the new files that have since failed to be permanently saved 
+                // in storage (in the ingestService.saveAndAddFilesToDataset() step, above); 
+                // these files have been dropped from the fileMetadatas list, and we 
+                // are not adding them to the dataset; but the 
+                // provenance update set still has entries for these failed files,
+                // so we are passing the fileMetadatas list to the saveStagedProvJson()
+                // method below - so that it doesn't attempt to save the entries 
+                // that are no longer valid. 
+                provJsonChanges = provPopupFragmentBean.saveStagedProvJson(false, fileMetadatas);
+            } catch (AbstractApiBean.WrappedResponse ex) {
+                JsfHelper.addErrorMessage(getBundleString("file.metadataTab.provenance.error"));
+                Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            //Always update the whole dataset if updating prov
+            //The flow that happens when datasetUpdateRequired is false has problems with doing saving actions after its merge
+            //This was the simplest way to work around this issue for prov. --MAD 4.8.6.
+            datasetUpdateRequired = datasetUpdateRequired || provFreeChanges || provJsonChanges;
+        }
+                
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
             logger.fine("issuing the dataset update command");
             // We are creating a new draft version; 
@@ -1111,6 +1156,22 @@ public class EditDatafilesPage implements java.io.Serializable {
                     }
                 }
                 
+                
+                //Moves DataFile updates from popupFragment to page for saving
+                //This does not seem to collide with the tags updating below
+                if(systemConfig.isProvCollectionEnabled() && provJsonChanges) {
+                    HashMap<String,ProvPopupFragmentBean.UpdatesEntry> provenanceUpdates = provPopupFragmentBean.getProvenanceUpdates();
+                    for (int i = 0; i < dataset.getFiles().size(); i++) {
+                        for (ProvPopupFragmentBean.UpdatesEntry ue : provenanceUpdates.values()) { 
+                            if (ue.dataFile.getStorageIdentifier() != null ) {
+                                if (ue.dataFile.getStorageIdentifier().equals(dataset.getFiles().get(i).getStorageIdentifier())) {
+                                    dataset.getFiles().set(i, ue.dataFile);
+                                }
+                            }
+                        }
+                    }
+                }
+                
                 // Tabular data tags are assigned to datafiles, not to  
                 // version-specfic filemetadatas!
                 // So if tabular tags have been modified, we also need to 
@@ -1118,6 +1179,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // similarly to what we've just done, above, for the filemetadatas.
                 // Otherwise, when we call UpdateDatasetCommand, it's not going 
                 // to update the tags in the database (issue #2798). 
+                // TODO: Is the above still true/is this still necessary?
+                // (and why?...)
                 
                 if (tabularDataTagsUpdated) {
                     for (int i = 0; i < dataset.getFiles().size(); i++) {
@@ -1132,12 +1195,11 @@ public class EditDatafilesPage implements java.io.Serializable {
                     tabularDataTagsUpdated = false;
                 }
             }
-            
-            
+                        
             Command<Dataset> cmd;
             try {
-                cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
-                ((UpdateDatasetCommand) cmd).setValidateLenient(true);
+                cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
+                ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
                 dataset = commandEngine.submit(cmd);
             
             } catch (EJBException ex) {
@@ -1154,8 +1216,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 populateDatasetUpdateFailureMessage();
                 return null;
             } catch (CommandException ex) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
-                logger.severe(ex.getMessage());
+                //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
+                logger.log(Level.INFO, "Couldn''t save dataset: {0}", ex.getMessage());
                 populateDatasetUpdateFailureMessage();
                 return null;
             }
@@ -1166,8 +1228,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             // requested that the entire dataset is updated). So we'll try to update 
             // only the filemetadatas and/or files affected, and not the 
             // entire version. 
-            // TODO: in 4.3, create SaveDataFileCommand!
-            // -- L.A. Sep. 21 2015, 4.2
             Timestamp updateTime = new Timestamp(new Date().getTime());
         
             workingVersion.setLastUpdateTime(updateTime);
@@ -1248,19 +1308,40 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             }
         }
-           
-        newFiles.clear();
+        
+
+        if (newFiles.size() > 0) {
+            logger.fine("clearing newfiles list.");
+            newFiles.clear();
+            /*
+             - We decided not to bother obtaining persistent ids for new files 
+             as they are uploaded and created. The identifiers will be assigned 
+             later, when the version is published. 
+             
+            logger.info("starting async job for obtaining persistent ids for files.");
+            datasetService.obtainPersistentIdentifiersForDatafiles(dataset);
+            */
+        }
                 
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());
-        
+       
         if (mode == FileEditMode.SINGLE){
             JsfHelper.addSuccessMessage(getBundleString("file.message.editSuccess"));
             
         } else {
-            JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
+            int nFilesTotal = workingVersion.getFileMetadatas().size();
+            if (nNewFiles == 0 || nFilesTotal == nExpectedFilesTotal) {
+                JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
+            } else if (nFilesTotal == nOldFiles) {
+                JsfHelper.addErrorMessage(getBundleString("dataset.message.addFiles.Failure"));
+            } else {
+                String warningMessage = getBundleString("dataset.message.addFiles.partialSuccess");
+                warningMessage = warningMessage.replace("{0}", "" + (nFilesTotal - nOldFiles));
+                warningMessage = warningMessage.replace("{1}", "" + nNewFiles);
+                JsfHelper.addWarningMessage(warningMessage);
+            }
         }
-
         
 
         // Call Ingest Service one more time, to 
@@ -1294,12 +1375,12 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     
     private String returnToDraftVersion(){      
-         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&version=DRAFT&faces-redirect=true";    
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&version=DRAFT&faces-redirect=true";    
     }
     
     private String returnToDatasetOnly(){
          dataset = datasetService.find(dataset.getId());
-         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId()  +  "&faces-redirect=true";       
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString()  +  "&faces-redirect=true";       
     }
     
     private String returnToFileLandingPage() {
@@ -1619,10 +1700,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         // Add the file(s) added during this last upload event, single or multiple, 
         // to the full list of new files, and the list of filemetadatas 
         // used to render the page:
-                
-        if (mode == FileEditMode.CREATE) {
-            ingestService.addFilesToDataset(workingVersion, uploadedFiles);
-        }
         
         for (DataFile dataFile : uploadedFiles) {
             fileMetadatas.add(dataFile.getFileMetadata());
@@ -1636,12 +1713,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (uploadComponentId != null) {
             if (uploadWarningMessage != null) {
                 if (uploadWarningMessageIsNotAnError) {
-                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, "upload warning", uploadWarningMessage));
+                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
                 } else {
-                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", uploadWarningMessage));
+                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
                 }
             } else if (uploadSuccessMessage != null) {
-                FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, "upload worked", uploadSuccessMessage));
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.file.uploadWorked"), uploadSuccessMessage));
             }
         }
         
@@ -1809,7 +1886,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         if (warningMessage != null){
             uploadWarningMessage = warningMessage;
-            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload warning", warningMessage));
+            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), warningMessage));
             // save the component id of the p:upload widget, so that we could 
             // send an info message there, from elsewhere in the code:
             uploadComponentId = event.getComponent().getClientId();
@@ -1939,9 +2016,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (dupeFileNamesExisting != null) {
             String duplicateFilesErrorMessage = null;
             if (multipleDupesExisting) {
-                duplicateFilesErrorMessage = "The following files already exist in the dataset: " + dupeFileNamesExisting + " (skipping)";
+                duplicateFilesErrorMessage =  getBundleString("dataset.files.exist") + dupeFileNamesExisting + getBundleString("dataset.file.skip");
             } else {
-                duplicateFilesErrorMessage = "The following file already exists in the dataset: " + dupeFileNamesExisting;
+            	duplicateFilesErrorMessage = getBundleString("dataset.file.exist") + dupeFileNamesExisting;
             }
             if (warningMessage == null) {
                 warningMessage = duplicateFilesErrorMessage;
@@ -1953,9 +2030,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (dupeFileNamesNew != null) {
             String duplicateFilesErrorMessage = null;
             if (multipleDupesNew) {
-                duplicateFilesErrorMessage = "The following files are duplicates of (an) already uploaded file(s): " + dupeFileNamesNew + " (skipping)";
+            	duplicateFilesErrorMessage = getBundleString("dataset.files.duplicate") + dupeFileNamesNew + getBundleString("dataset.file.skip");
             } else {
-                duplicateFilesErrorMessage = "The following file is a duplicate of an already uploaded file: " + dupeFileNamesNew + " (skipping)";
+            	duplicateFilesErrorMessage = getBundleString("dataset.file.duplicate") + dupeFileNamesNew + getBundleString("dataset.file.skip");
             }
 
             if (warningMessage == null) {
@@ -2253,7 +2330,6 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void  setFileMetadataSelectedForTagsPopup(FileMetadata fm){
         fileMetadataSelectedForTagsPopup = fm;
-        fileMetadataSelectedForTagsPopup.setDatasetVersion(this.getDataset().getLatestVersion());
     }
     
     public FileMetadata getFileMetadataSelectedForTagsPopup() {
@@ -2415,6 +2491,10 @@ public class EditDatafilesPage implements java.io.Serializable {
      * "file categories" (which are also considered "tags" in 4.0)
     */
     public void saveFileTagsAndCategories() {
+        if (fileMetadataSelectedForTagsPopup == null) {
+            logger.fine("No FileMetadata selected for the categories popup");
+            return; 
+        }
         // 1. File categories:
         /*
         In order to get the cancel button to work we had to separate the selected tags 
@@ -2423,66 +2503,55 @@ public class EditDatafilesPage implements java.io.Serializable {
         */
         
         fileMetadataSelectedForTagsPopup.setCategories(new ArrayList<>());
+        
+        // New, custom file category (if specified):
         if (newCategoryName != null) {
+            logger.fine("Adding new category, " + newCategoryName + " for file " + fileMetadataSelectedForTagsPopup.getLabel());
             fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
+        } else {
+            logger.fine("no category specified");
         }
-        // 2. Tabular DataFile Tags: 
+        newCategoryName = null;
+        
+        // File Categories selected from the list of existing categories: 
         if (selectedTags != null) {
             for (String selectedTag : selectedTags) {
                 
                 fileMetadataSelectedForTagsPopup.addCategoryByName(selectedTag);
             }
-        }
-
-
-        logger.fine("New category name: " + newCategoryName);
-
-        if (fileMetadataSelectedForTagsPopup != null && newCategoryName != null) {
-            logger.fine("Adding new category, for file " + fileMetadataSelectedForTagsPopup.getLabel());
-            fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
-        } else {
-            logger.fine("No FileMetadata selected, or no category specified!");
-        }
-        newCategoryName = null;
-        
+        }        
+                
         // 2. Tabular DataFile Tags: 
+        
+        if (fileMetadataSelectedForTagsPopup.getDataFile() != null && tabularDataTagsUpdated && selectedTabFileTags != null) {
+            fileMetadataSelectedForTagsPopup.getDataFile().setTags(null);
+            for (String selectedTabFileTag : selectedTabFileTags) {
+                DataFileTag tag = new DataFileTag();
+                try {
+                    tag.setTypeByLabel(selectedTabFileTag);
+                    tag.setDataFile(fileMetadataSelectedForTagsPopup.getDataFile());
+                    fileMetadataSelectedForTagsPopup.getDataFile().addTag(tag);
 
-        if (tabularDataTagsUpdated && selectedTabFileTags != null) {
-            if (fileMetadataSelectedForTagsPopup != null && fileMetadataSelectedForTagsPopup.getDataFile() != null) {
-                fileMetadataSelectedForTagsPopup.getDataFile().setTags(null);
-                for (String selectedTabFileTag : selectedTabFileTags) {
-                    DataFileTag tag = new DataFileTag();
-                    try {
-                        tag.setTypeByLabel(selectedTabFileTag);
-                        tag.setDataFile(fileMetadataSelectedForTagsPopup.getDataFile());
-                        fileMetadataSelectedForTagsPopup.getDataFile().addTag(tag);
-                        
-                    } catch (IllegalArgumentException iax) {
-                        // ignore 
-                    }
+                } catch (IllegalArgumentException iax) {
+                    // ignore 
                 }
-                
-                datasetUpdateRequired = true;
-                
-                // success message: 
-                String successMessage = getBundleString("file.assignedTabFileTags.success");
-                logger.fine(successMessage);
-                successMessage = successMessage.replace("{0}", fileMetadataSelectedForTagsPopup.getLabel());
-                JsfHelper.addFlashMessage(successMessage);
             }
-            // reset:
-            selectedTags = null;
+
+            datasetUpdateRequired = true;
         }
         
         fileMetadataSelectedForTagsPopup = null;
 
     }
     
-    public void handleSelection(final AjaxBehaviorEvent event) {
-        tabularDataTagsUpdated = true;
+    public void handleFileCategoriesSelection(final AjaxBehaviorEvent event) {
         if (selectedTags != null) {
             selectedTags = selectedTags.clone();
         }
+    }
+    
+    public void handleTabularTagsSelection(final AjaxBehaviorEvent event) {
+        tabularDataTagsUpdated = true;
     }
     
     
@@ -2534,7 +2603,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                 uploadStream = file.getInputstream();
             } catch (IOException ioex) {
                 logger.info("the file " + file.getFileName() + " failed to upload!");
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "upload failure", "the file " + file.getFileName() + " failed to upload!");
+                List<String> args = Arrays.asList(file.getFileName());
+                String msg = BundleUtil.getStringFromBundle("dataset.file.uploadFailure.detailmsg", args);
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadFailure"), msg);
                 FacesContext.getCurrentInstance().addMessage(null, message);
                 return;
             }
@@ -2542,7 +2613,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             savedLabelsTempFile = saveTempFile(uploadStream);
 
             logger.fine(file.getFileName() + " is successfully uploaded.");
-            FacesMessage message = new FacesMessage("Succesful", file.getFileName() + " is uploaded.");
+            List<String> args = Arrays.asList(file.getFileName());
+            FacesMessage message = new FacesMessage(BundleUtil.getStringFromBundle("dataset.file.upload", args));
             FacesContext.getCurrentInstance().addMessage(null, message);
         }
 
@@ -2663,6 +2735,5 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
     }
-
     
 }

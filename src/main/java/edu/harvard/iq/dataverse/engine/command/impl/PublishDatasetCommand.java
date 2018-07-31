@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -11,7 +12,9 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
+import java.util.Date;
 import java.util.Optional;
+import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -27,55 +30,84 @@ import static java.util.stream.Collectors.joining;
  */
 @RequiredPermissions(Permission.PublishDataset)
 public class PublishDatasetCommand extends AbstractPublishDatasetCommand<PublishDatasetResult> {
-
+    private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getName());
     boolean minorRelease;
+    DataverseRequest request;
+    
+    /** 
+     * The dataset was already released by an external system, and now Dataverse
+     * is just internally marking this release version as released. This is happening
+     * in scenarios like import or migration.
+     */
+    final boolean datasetExternallyReleased;
     
     public PublishDatasetCommand(Dataset datasetIn, DataverseRequest aRequest, boolean minor) {
+        this( datasetIn, aRequest, minor, false );
+    }
+    
+    public PublishDatasetCommand(Dataset datasetIn, DataverseRequest aRequest, boolean minor, boolean isPidPrePublished) {
         super(datasetIn, aRequest);
         minorRelease = minor;
-        theDataset = datasetIn;
+        datasetExternallyReleased = isPidPrePublished;
+        request = aRequest;
     }
 
     @Override
     public PublishDatasetResult execute(CommandContext ctxt) throws CommandException {
-
+        
         verifyCommandArguments();
+        
+        // Invariant 1: If we're here, publishing the dataset makes sense, from a "business logic" point of view.
+        // Invariant 2: The latest version of the dataset is the one being published, EVEN IF IT IS NOT DRAFT.
+        //              When importing a released dataset, the latest version is marked as RELEASED.
 
-        String nonNullDefaultIfKeyNotFound = "";
-        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+        Dataset theDataset = getDataset();
         
         // Set the version numbers:
 
         if (theDataset.getPublicationDate() == null) {
             // First Release
-            theDataset.getEditVersion().setVersionNumber(new Long(1)); // minor release is blocked by #verifyCommandArguments
-            theDataset.getEditVersion().setMinorVersionNumber(new Long(0));
+            theDataset.getLatestVersion().setVersionNumber(new Long(1)); // minor release is blocked by #verifyCommandArguments
+            theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
             
         } else if ( minorRelease ) {
-            theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getVersionNumber()));
-            theDataset.getEditVersion().setMinorVersionNumber(new Long(theDataset.getMinorVersionNumber() + 1));
+            theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber()));
+            theDataset.getLatestVersion().setMinorVersionNumber(new Long(theDataset.getMinorVersionNumber() + 1));
             
         } else {
             // major, non-first release
-            theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getVersionNumber() + 1));
-            theDataset.getEditVersion().setMinorVersionNumber(new Long(0));
+            theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber() + 1));
+            theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
         }
-
-        theDataset = ctxt.em().merge(theDataset);
         
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
+        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, "");
         if ( prePubWf.isPresent() ) {
             // We start a workflow
+            theDataset = ctxt.em().merge(theDataset);
             ctxt.workflows().start(prePubWf.get(), buildContext(doiProvider, TriggerType.PrePublishDataset) );
             return new PublishDatasetResult(theDataset, false);
             
         } else {
-            // Synchronous publishing (no workflow involved)
-            theDataset = ctxt.engine().submit( new FinalizeDatasetPublicationCommand(theDataset, doiProvider, getRequest()) );
-            return new PublishDatasetResult(ctxt.em().merge(theDataset), true);
+            //if there are more than required size files  then call Finalize asychronously (default is 10)
+            if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount()) {     
+                String info = "Adding File PIDs asynchronously";
+                AuthenticatedUser user = request.getAuthenticatedUser();
+                
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.pidRegister, user);
+                lock.setDataset(theDataset);
+                lock.setInfo(info);
+                ctxt.datasets().addDatasetLock(theDataset, lock);
+                ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request);
+                return new PublishDatasetResult(theDataset, false);
+                
+            } else {
+                // Synchronous publishing (no workflow involved)
+                theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(ctxt.em().merge(theDataset), doiProvider, getRequest()));
+                return new PublishDatasetResult(theDataset, true);
+            }
         }
     }
-    
     
     /**
      * See that publishing the dataset in the requested manner makes sense, at
@@ -84,32 +116,39 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
      * @throws IllegalCommandException if the publication request is invalid.
      */
     private void verifyCommandArguments() throws IllegalCommandException {
-        if (!theDataset.getOwner().isReleased()) {
-            throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + theDataset.getOwner().getAlias() + ") has not been published.", this);
-        }
-        
-        if ( theDataset.isLockedFor(DatasetLock.Reason.Workflow)
-                || theDataset.isLockedFor(DatasetLock.Reason.Ingest) ) {
-            throw new IllegalCommandException("This dataset is locked. Reason: " 
-                    + theDataset.getLocks().stream().map(l -> l.getReason().name()).collect( joining(",") )
-                    + ". Please try publishing later.", this);
-        }
-        
-        if (theDataset.getLatestVersion().isReleased()) {
-            throw new IllegalCommandException("Latest version of dataset " + theDataset.getIdentifier() + " is already released. Only draft versions can be released.", this);
-        }
-        
-        // prevent publishing of 0.1 version
-        if (minorRelease && theDataset.getVersions().size() == 1 && theDataset.getLatestVersion().isDraft()) {
-            throw new IllegalCommandException("Cannot publish as minor version. Re-try as major release.", this);
-        }
-        
-        if (minorRelease && !theDataset.getLatestVersion().isMinorUpdate()) {
-            throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
+        if (!getDataset().getOwner().isReleased()) {
+            throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + getDataset().getOwner().getAlias() + ") has not been published.", this);
         }
         
         if ( ! getUser().isAuthenticated() ) {
             throw new IllegalCommandException("Only authenticated users can release a Dataset. Please authenticate and try again.", this);
+        }
+        
+        if ( getDataset().isLockedFor(DatasetLock.Reason.Workflow)
+                || getDataset().isLockedFor(DatasetLock.Reason.Ingest) ) {
+            throw new IllegalCommandException("This dataset is locked. Reason: " 
+                    + getDataset().getLocks().stream().map(l -> l.getReason().name()).collect( joining(",") )
+                    + ". Please try publishing later.", this);
+        }
+        
+        if ( datasetExternallyReleased ) {
+            if ( ! getDataset().getLatestVersion().isReleased() ) {
+                throw new IllegalCommandException("Latest version of dataset " + getDataset().getIdentifier() + " is not marked as releasd.", this);
+            }
+                
+        } else {
+            if (getDataset().getLatestVersion().isReleased()) {
+                throw new IllegalCommandException("Latest version of dataset " + getDataset().getIdentifier() + " is already released. Only draft versions can be released.", this);
+            }
+
+            // prevent publishing of 0.1 version
+            if (minorRelease && getDataset().getVersions().size() == 1 && getDataset().getLatestVersion().isDraft()) {
+                throw new IllegalCommandException("Cannot publish as minor version. Re-try as major release.", this);
+            }
+
+            if (minorRelease && !getDataset().getLatestVersion().isMinorUpdate()) {
+                throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
+            }
         }
     }   
     

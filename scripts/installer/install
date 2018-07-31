@@ -142,20 +142,10 @@ my %CONFIG_COMMENTS = (
 
 my $API_URL = "http://localhost:8080/api";
 
-# Supported Posstgres JDBC drivers:
-# (have to be configured explicitely, so that Perl "taint" (security) mode
-# doesn't get paranoid)
-
-my %POSTGRES_DRIVERS = (
-    "8_4", "postgresql-8.4-703.jdbc4.jar",
-    "9_0", "postgresql-9.0-802.jdbc4.jar",
-    "9_1", "postgresql-9.1-902.jdbc4.jar",
-    "9_2", "postgresql-9.2-1004.jdbc4.jar",
-    "9_3", "postgresql-9.3-1104.jdbc4.jar",
-    "9_4", "postgresql-9.4.1212.jar",
-    "9_5", "postgresql-42.1.4.jar",
-    "9_6", "postgresql-42.1.4.jar"
-);
+# jodbc.postgresql.org recommends 4.2 for Java 8.
+# updated drivers may be obtained from
+#  https://jdbc.postgresql.org/download.html
+my $postgres_jdbc = "postgresql-42.2.2.jar";
 
 # A few preliminary checks:
 
@@ -190,8 +180,14 @@ if ( -e $config_default_file )
 		if ( 2 == @xs )
 		{
 			my $k = $xs[0];
-			my $v = trim($xs[1]);
-			$CONFIG_DEFAULTS{$k}=$v;
+                        my $v = trim($xs[1]);
+                        if (defined $ENV{$k} && ($k eq "POSTGRES_USER" || $k eq "POSTGRES_PASSWORD")) {
+                            $v = $ENV{$k};
+                        }
+                        if (defined $ENV{'POSTGRESQL_ADMIN_PASSWORD'} && $k eq "POSTGRES_ADMIN_PASSWORD")   {
+                            $v = $ENV{'POSTGRESQL_ADMIN_PASSWORD'};
+                        }
+                        $CONFIG_DEFAULTS{$k}=$v;
 		}
 	}
 }
@@ -538,676 +534,19 @@ unless ( -f $SQL_REFERENCE_TEMPLATE ) {
 
 # 3. CHECK POSTGRES AND JQ AVAILABILITY:
 
-my $pg_local_connection = 0;
-my $psql_exec;
-my $jq_exec = "";
-my $pg_major_version = 0;
-my $pg_minor_version = 0;
-
-my $POSTGRES_SYS_UID;
-if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' || $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq '127.0.0.1' ) 
-{
-    $pg_local_connection = 1;
-} 
-elsif ($pg_only) 
-{
-    print "In the --pg_only mode the script can only be run LOCALLY,\n";
-    print "i.e., on the server where PostgresQL is running, with the\n";
-    print "Postgres server address as localhost - \"127.0.0.1\".\n";
-    exit 1;
-}
-
-### 3a. CHECK FOR USER postgres: (NO LONGER USED!)
-
-###print "\nChecking system user \"postgres\"... ";
-
-###my $POSTGRES_SYS_NAME = "postgres";
-###$POSTGRES_SYS_UID = ( getpwnam("postgres") )[2];
-
-# 3b. LOCATE THE EXECUTABLES, FOR jq AND psql:
-
-my $sys_path = $ENV{'PATH'};
-my @sys_path_dirs = split( ":", $sys_path );
-
-for my $sys_path_dir (@sys_path_dirs) {
-    if ( -x $sys_path_dir . "/jq" ) {
-	$jq_exec = $sys_path_dir;
-	last;
-    }
-}
-if ( $jq_exec eq "" ) {
-    print STDERR "\nERROR: I haven't been able to find the jq command in your PATH! Please install it from http://stedolan.github.io/jq/\n";
-    exit 1;
-
-}
-
-
-$psql_exec = "";
-
-for my $sys_path_dir (@sys_path_dirs) {
-    if ( -x $sys_path_dir . "/psql" ) {
-	$psql_exec = $sys_path_dir;
-	last;
-    }
-}
-
-
-my $psql_major_version = 0;
-my $psql_minor_version = 0;
-
-# 3c. IF PSQL WAS FOUND IN THE PATH, CHECK ITS VERSION:
-
-unless ( $psql_exec eq "" ) {
-    open( PSQLOUT, $psql_exec . "/psql --version|" );
-
-    my $psql_version_line = <PSQLOUT>;
-    chop $psql_version_line;
-    close PSQLOUT;
-    
-    my ( $postgresName, $postgresNameLong, $postgresVersion ) = split( " ", $psql_version_line );
-
-    unless ( $postgresName eq "psql" && $postgresVersion =~ /^[0-9][0-9\.]*$/ ) {
-	print STDERR "\nWARNING: Unexpected output from psql command!\n";
-    }
-    else {
-	my (@psql_version_tokens) = split( '\.', $postgresVersion );
-
-	print "\n\nFound Postgres psql command, version $postgresVersion.\n\n";
-
-	$psql_major_version = $psql_version_tokens[0];
-	$psql_minor_version = $psql_version_tokens[1];
-
-	$pg_major_version = $psql_major_version;
-	$pg_minor_version = $psql_minor_version;
-
-    }
-}
-
-# a frequent problem with MacOSX is that the copy of psql found in the PATH
-# belongs to the older version of PostgresQL supplied with the OS, which happens
-# to be incompatible with the newer builds from the Postgres project; which are
-# recommended to be used with Dataverse. So if this is a MacOSX box, we'll
-# check what other versions of PG are available, and select the highest version
-# we can find:
-
-if ( $WORKING_OS eq "MacOSX" ) {
-    my $macos_pg_major_version = 0;
-    my $macos_pg_minor_version = 0;
-
-    for $macos_pg_minor_version ( "5", "4", "3", "2", "1", "0" ) {
-	if ( -x "/Library/PostgreSQL/9." . $macos_pg_minor_version . "/bin/psql" ) {
-	    $macos_pg_major_version = 9;
-	    if (   ( $macos_pg_major_version > $psql_major_version )
-		   || ( $macos_pg_minor_version >= $psql_minor_version ) )
-	    {
-		$psql_exec        = "/Library/PostgreSQL/9." . $macos_pg_minor_version . "/bin";
-		$pg_major_version = $macos_pg_major_version;
-		$pg_minor_version = $macos_pg_minor_version;
-	    }
-	    last;
-	}
-    }
-
-    # And if we haven't found an 9.* version of postgresql installed, we'll also check
-    # for version 8.* available:
-
-    if ( $macos_pg_major_version < 9 ) {
-	for $macos_pg_minor_version ( "4", "3" )
-	    # TODO:
-	    # Do we even want to support postgres 8.3?
-	{
-	    if ( -x "/Library/PostgreSQL/8." . $macos_pg_minor_version . "/bin/psql" ) {
-		$macos_pg_major_version = 8;
-		if (   $macos_pg_major_version > $psql_major_version
-		       || $macos_pg_minor_version > $psql_minor_version )
-		{
-		    $psql_exec        = "/Library/PostgreSQL/8." . $macos_pg_minor_version . "/bin";
-		    $pg_major_version = $macos_pg_major_version;
-		    $pg_minor_version = $macos_pg_minor_version;
-		}
-		last;
-	    }
-	}
-    }
-}
-
-
-
-my $psql_admin_exec = "";
-
-if ( $psql_exec eq "" ) 
-{ 
-    if ( $pg_local_connection ) 
-    {
-	print STDERR "\nERROR: I haven't been able to find the psql command in your PATH!\n";
-	print STDERR "Please make sure PostgresQL is properly installed; if necessary, add\n";
-	print STDERR "the location of psql to the PATH, then try again.\n\n";
-
-	exit 1;
-    }
-    else 
-    {
-	print "WARNING: I haven't been able to find the psql command in your PATH!\n";
-	print "But since we are configuring a Dataverse instance to use a remote Postgres server,\n";
-	print "we can still set up the database by running a setup script on that remote server\n";
-	print "(see below for instructions).\n";
-    }
-} else {
-
-    if ( $pg_major_version == 0 ) {
-	# hmm?
-    }
-
-    print "(We'll be Using psql version " . $pg_major_version . "." . $pg_minor_version . ")\n";
-
-
-    $psql_admin_exec = "PGPASSWORD=" . $CONFIG_DEFAULTS{'POSTGRES_ADMIN_PASSWORD'} . "; export PGPASSWORD; " . $psql_exec; 
-    $psql_exec = "PGPASSWORD=" . $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} . "; export PGPASSWORD; " . $psql_exec; 
-
-    print "Checking if we can talk to Postgres as the admin user...\n";
-}
-
-# 4. CONFIGURE POSTGRES:
-
-# 4a. BUT FIRST, CHECK IF WE CAN TALK TO POSTGRES AS THE ADMIN:
-
-if ( $psql_admin_exec eq "" || system( $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
-{
-    # No, we can't. :(
-    if ($pg_local_connection) 
-    {
-	# If Postgres is running locally, this is a fatal condition. 
-	# We'll give them some (potentially) helpful pointers and exit.
-	print "Nope, I haven't been able to connect to the local instance of PostgresQL as the admin user.\n";
-	print "\nIs postgresql running? \n";
-	print "   On a RedHat-like system, you can check the status of the daemon with\n\n";
-	print "      service postgresql status\n\n";
-	print "   and, if it's not running, start the daemon with\n\n";
-	print "      service postgresql start\n\n";
-	print "   On MacOSX, use Applications -> PostgresQL -> Start Server.\n";
-	print "   (or, if there's no \"Start Server\" item in your PostgresQL folder, \n";
-	print "   simply restart your MacOSX system!)\n";
-	print "\nAlso, please make sure that the daemon is listening to network connections!\n";
-	print "   - at least on the localhost interface. (See \"Installing Postgres\" section\n";
-	print "   of the installation manual).\n";
-	print "\nFinally, did you supply the correct admin password?\n";
-	print "   Don't know the admin password for your Postgres installation?\n";
-	print "   - then simply set the access level to \"trust\" temporarily (for localhost only!)\n";
-	print "   in your pg_hba.conf file. Again, please consult the \n";
-	print "   installation manual).\n";
-	exit 1;
-    }
-    else 
-    {
-	# If we are configuring the Dataverse instance to use a Postgres server 
-	# running on a remote host, it is possible to configure the database
-	# without opening remote access for the admin user. They will simply 
-	# have to run this script in the "postgres-only" mode on that server, locally, 
-	# then resume the installation here: 
-
-	print "Nope, I haven't been able to connect to the remote Postgres server as the admin user.\n";
-	print "(Or you simply don't have psql installed on this server)\n";
-	print "It IS possible to configure a database for your Dataverse on a remote server,\n";
-	print "without having admin access to that remote Postgres installation.\n\n";
-	print "In order to do that, pleaes copy the installer (the entire package) to the server\n";
-	print "where PostgresQL is running and run the installer with the \"--pg_only\" option:\n\n";
-	print "   ./install --pg_only\n\n";
-
-	print "Press any key to continue the installation process once that has been\n";
-	print "done. Or press ctrl-C to exit the installer.\n\n";
-
-	system "stty cbreak </dev/tty >/dev/tty 2>&1";
-	my $key = getc(STDIN);
-	system "stty -cbreak </dev/tty >/dev/tty 2>&1";
-	print "\n";
-
-	# Find out what Postgres version is running remotely:
-
-	$pg_major_version = 9;
-	$pg_minor_version = 1;
-
-	print "What version of PostgresQL is installed on the remote server?\n ["
-	    . $pg_major_version . "."
-	    . $pg_minor_version . "] ";
-	
-	my $postgresVersion = <>;
-	chop $postgresVersion;
-
-	while ( $postgresVersion ne "" && !( $postgresVersion =~ /^[0-9]+\.[0-9]+$/ ) ) {
-	    print "Please enter valid Postgres version!\n";
-	    print "(or ctrl-C to exit the installer)\n";
-	    $postgresVersion = <>;
-	    chop $postgresVersion;
-	}
-
-	unless ( $postgresVersion eq "" ) {
-	    my (@postgres_version_tokens) = split( '\.', $postgresVersion );
-
-	    unless ( ( $postgres_version_tokens[0] == 8 && $postgres_version_tokens[1] >= 4 )
-		     || ( $postgres_version_tokens[0] >= 9 ) )
-	    {
-		print STDERR "\nERROR: PostgresQL version 8.4, or newer, is required!\n";
-		print STDERR "Please make sure the right version of PostgresQL is properly installed\n";
-		print STDERR "on the remote server, then try again.\n";
-		
-		exit 1;
-	    }
-
-	    $pg_major_version = $postgres_version_tokens[0];
-	    $pg_minor_version = $postgres_version_tokens[1];
-	}
-    }
-}
-else 
-{
-    print "Yes, we can!\n";
-
-    # ok, we can proceed with configuring things...
-
-    print "\nConfiguring Postgres Database:\n";
-
-    # 4c. CHECK IF THIS DB ALREADY EXISTS:
-    
-    my $psql_command_dbcheck =
-	$psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -c \"\" -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . ">/dev/null 2>&1";
-
-    if ( ( my $exitcode = system($psql_command_dbcheck) ) == 0 ) 
-    {    
-	if ($force) 
-	{
-	    print "WARNING! Database "
-		. $CONFIG_DEFAULTS{'POSTGRES_DATABASE'}
-	    . " already exists but --force given... continuing.\n";
-	} 
-	else 
-	{
-	    print "WARNING! Database " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " already exists!\n";
-	    print "\nPlease note that you can only use this installer to create a blank, \n";
-	    print "new and shiny Dataverse database. I.e., you cannot install on top of an \n";
-	    print "existing one. Please enter a different name for the DVN database.\n";
-	    print "\nPress any key to continue, or ctrl-C to exit the installer...\n\n";
-	    
-	    system "stty cbreak </dev/tty >/dev/tty 2>&1";
-	    my $key = getc(STDIN);
-	    system "stty -cbreak </dev/tty >/dev/tty 2>&1";
-	    print "\n";
-
-	    goto ENTERCONFIG;
-	}
-    }
-
-    # 4d. CHECK IF THIS USER ALREADY EXISTS:
-    
-    my $psql_command_rolecheck =
-	$psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -c \"\" -d postgres " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " >/dev/null 2>&1";
-    if ( ( my $exitcode = system($psql_command_rolecheck) ) == 0 ) 
-    {
-	print "User (role) " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " already exists;\n";
-	print "Proceeding.";
-    }
-    else 
-    {
-	# 4e. CREATE DVN DB USER:
-
-	print "\nCreating Postgres user (role) for the DVN:\n";
-	
-	open TMPCMD, ">/tmp/pgcmd.$$.tmp";
-
-	# with md5-encrypted password:
-	my $pg_password_md5 =
-	    &create_pg_hash( $CONFIG_DEFAULTS{'POSTGRES_USER'}, $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} );
-	my $sql_command =
-	    "CREATE ROLE \""
-	    . $CONFIG_DEFAULTS{'POSTGRES_USER'}
-	    . "\" PASSWORD 'md5"
-	    . $pg_password_md5
-	    . "' NOSUPERUSER CREATEDB CREATEROLE INHERIT LOGIN";
-
-	print TMPCMD $sql_command;
-	close TMPCMD;
-	    
-	my $psql_commandline = $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -f /tmp/pgcmd.$$.tmp >/dev/null 2>&1";
-
-	my $out      = qx($psql_commandline 2>&1);
-	my $exitcode = $?;
-	unless ( $exitcode == 0 ) 
-	{
-	    print STDERR "Could not create the DVN Postgres user role!\n";
-	    print STDERR "(SQL: " . $sql_command . ")\n";
-	    print STDERR "(psql exit code: " . $exitcode . ")\n";
-	    print STDERR "(STDERR and STDOUT was: " . $out . ")\n";
-	    exit 1;
-	}
-
-	unlink "/tmp/pgcmd.$$.tmp";
-	print "done.\n";
-    }
-    
-    # 4f. CREATE DVN DB:
-    
-    print "\nCreating Postgres database:\n";
-    
-    my $psql_command =
-	$psql_exec
-	. "/createdb -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U $CONFIG_DEFAULTS{'POSTGRES_USER'} "
-	. $CONFIG_DEFAULTS{'POSTGRES_DATABASE'}
-        . " --owner="
-	. $CONFIG_DEFAULTS{'POSTGRES_USER'};
-
-    my $out      = qx($psql_command 2>&1);
-    my $exitcode = $?;
-    unless ( $exitcode == 0 ) 
-    {
-	print STDERR "Could not create Postgres database for the Dataverse app!\n";
-	print STDERR "(command: " . $psql_command . ")\n";
-	print STDERR "(psql exit code: " . $exitcode . ")\n";
-	print STDERR "(STDOUT and STDERR: " . $out . ")\n";
-	if ($force) 
-	{
-	    print STDERR "\n--force called, continuing\n";
-	}
-	else 
-	{
-	    print STDERR "\naborting the installation (sorry!)\n\n";
-	    exit 1;
-	}
-    }
-
-}
-
-if ($postgresonly) {
-    print "\nOK, done.\n";
-    print "You can now resume the installation on the main Dataverse host.\n\n";
-
-    exit 0;
-}
-    
-
-# Whether the user and the database were created locally or remotely, we'll now 
-# verify that we can talk to that database, with the credentials of the database
-# user that we want the Dataverse application to be using: 
-
-if ( system( $psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
-{
-    print STDERR "Oops, haven't been able to connect to the database " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . ",\n";
-    print STDERR "running on " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . ", as user " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . ".\n\n";
-    print STDERR "Aborting the installation (sorry!)\n";
-    exit 1; 
-}
-
+# 4. CREATE POSTGRES USER AND DATABASE
 
 # 5. CONFIGURE GLASSFISH
 
 my $glassfish_dir = $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'};
 
-print "\nProceeding with the Glassfish setup.\n";
-
-# 5b. DETERMINE HOW MUCH MEMORY TO GIVE TO GLASSFISH AS HEAP:
-
-my $gf_heap_default = "2048m";
-my $sys_mem_total   = 0;
-
-if ( -e "/proc/meminfo" && open MEMINFO, "/proc/meminfo" ) {
-    # Linux
-
-    while ( my $mline = <MEMINFO> ) {
-        if ( $mline =~ /MemTotal:[ \t]*([0-9]*) kB/ ) {
-            $sys_mem_total = $1;
-        }
-    }
-
-    close MEMINFO;
-
-# TODO: Figure out how to determine the amount of memory when running in Docker
-# because we're wondering if Dataverse can run in the free OpenShift Online
-# offering that only gives you 1 GB of memory. Obviously, if this is someone's
-# first impression of Dataverse, we want to to run well! What if you try to
-# ingest a large file or perform other memory-intensive operations? For more
-# context, see https://github.com/IQSS/dataverse/issues/4040#issuecomment-331282286
-    if ( -e "/sys/fs/cgroup/memory/memory.limit_in_bytes" && open CGROUPMEM, "/sys/fs/cgroup/memory/memory.limit_in_bytes" ) {
-        print "We must be running in Docker! Fancy!\n";
-        while ( my $limitline = <CGROUPMEM> ) {
-            # The goal of this cgroup check is for
-	    # "Setting the heap limit for Glassfish to 750MB"
-	    # to change to some other value, based on memory available.
-	    print "/sys/fs/cgroup/memory/memory.limit_in_bytes: $limitline\n";
-	    my $limit_in_kb = $limitline / 1024;
-	    print "Docker limit_in_kb =  $limit_in_kb but ignoring\n";
-	    # In openshift.json, notice how PostgreSQL and Solr have
-	    # resources.limits.memory set to "256Mi".
-	    # If you try to give the Dataverse/Glassfish container twice
-	    # as much memory (512 MB) and allow $sys_mem_total to
-	    # be set below, you should see the following:
-	    # "Setting the heap limit for Glassfish to 192MB."
-	    # FIXME: dataverse.war will not deploy with only 512 GB of memory.
-	    # Again, the goal is 1 GB total (512MB + 256MB + 256MB) for
-	    # Glassfish, PostgreSQL, and Solr to fit in the free OpenShift tier.
-	    #print "setting sys_mem_total to: $limit_in_kb\n";
-	    #$sys_mem_total = $limit_in_kb;
-	}
-        close CGROUPMEM;
-    }
-}
-elsif ( -x "/usr/sbin/sysctl" ) {
-    # MacOS X, probably...
-
-    $sys_mem_total = `/usr/sbin/sysctl -n hw.memsize`;
-    chop $sys_mem_total;
-    if ( $sys_mem_total > 0 ) {
-        $sys_mem_total = int( $sys_mem_total / 1024 );
-        # size in kb
-    }
-}
-
-if ( $sys_mem_total > 0 ) {
-    # setting the default heap size limit to 3/8 of the available
-    # amount of memory:
-    $gf_heap_default = ( int( $sys_mem_total / ( 8 / 3 * 1024 ) ) );
-
-    print "\nSetting the heap limit for Glassfish to " . $gf_heap_default . "MB. \n";
-    print "You may need to adjust this setting to better suit \n";
-    print "your system.\n\n";
-
-    #$gf_heap_default .= "m";
-
-}
-else {
-    print "\nCould not determine the amount of memory on your system.\n";
-    print "Setting the heap limit for Glassfish to 2GB. You may need \n";
-    print "to  adjust the value to better suit your system.\n\n";
-}
-
-push @CONFIG_VARIABLES, "DEF_MEM_SIZE";
-$CONFIG_DEFAULTS{"DEF_MEM_SIZE"} = $gf_heap_default;
-
-# TODO:
-# if the system has more than 4GB of memory (I believe), glassfish must
-# be run with the 64 bit flag set explicitly (at least that was the case
-# with the MacOS glassfish build...). Verify, and if still the case,
-# add a check.
-
-print "\nInstalling the Glassfish PostgresQL driver... ";
-
-my $install_driver_jar = "";
-
-$install_driver_jar = $POSTGRES_DRIVERS{ $pg_major_version . "_" . $pg_minor_version };
-
-unless ( $install_driver_jar && -e "pgdriver/" . $install_driver_jar ) {
-    die "Installer could not find POSTGRES JDBC driver for your version of PostgresQL!\n("
-      . $pg_major_version . "."
-      . $pg_minor_version . ")";
-
-}
-
-system( "/bin/cp", "pgdriver/" . $install_driver_jar, $glassfish_dir . "/glassfish/lib" );
-# more diagnostics needed?
-
-print "done!\n";
-
-print "\n*********************\n";
-print "PLEASE NOTE, SOME OF THE ASADMIN COMMANDS ARE GOING TO FAIL,\n";
-print "FOR EXAMPLE, IF A CONFIGURATION SETTING THAT WE ARE TRYING\n";
-print "TO CREATE ALREADY EXISTS; OR IF A JVM OPTION THAT WE ARE\n";
-print "DELETING DOESN'T. THESE \"FAILURES\" ARE NORMAL!\n";
-print "*********************\n\n";
-print "When/if asadmin asks you to \"Enter admin user name\",\n";
-print "it should be safe to hit return and accept the default\n";
-print "(which is \"admin\").\n";
-
-print "\nPress any key to continue...\n\n";
-
-system "stty cbreak </dev/tty >/dev/tty 2>&1";
-unless ($yes) {
-    my $key = getc(STDIN);
-}
-system "stty -cbreak </dev/tty >/dev/tty 2>&1";
-print "\n";
-
-# start domain, if not running:
-
-my $javacheck = `java -version`;
-my $exitcode  = $?;
-unless ( $exitcode == 0 ) {
-    print STDERR "$javacheck\n" if $javacheck;
-    print STDERR "Do you have java installed?\n";
-    exit 1;
-}
-my $DOMAIN = "domain1";
-my $DOMAIN_DOWN =
-  `$CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'}/bin/asadmin list-domains | grep "$DOMAIN " | grep "not running"`;
-print STDERR $DOMAIN_DOWN . "\n";
-if ($DOMAIN_DOWN) {
-    print "Trying to start domain up...\n";
-    system( "sudo -u $CONFIG_DEFAULTS{'GLASSFISH_USER'} " . $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
-
-    # TODO: (?) - retest that the domain is running now? 
-}
-else {
-    print "domain appears to be up...\n";
-}
-
-# create asadmin login, so that the user doesn't have to enter
-# the username and password for every asadmin command, if
-# access to :4848 is password-protected:
-
-system( $glassfish_dir. "/bin/asadmin login" );
-
-# NEW: configure glassfish using ASADMIN commands:
-
-my $success = &setup_glassfish();
-
-# CHECK EXIT STATUS, BARF IF SETUP SCRIPT FAILED:
-
-unless ($success) {
-    print "\nERROR! Failed to configure Glassfish domain!\n";
-    print "(see the error messages above - if any)\n";
-    print "Aborting...\n";
-
-    exit 1;
-}
-
-# Additional config files:
-
-my $JHOVE_CONFIG = "jhove.conf";
-my $JHOVE_CONF_SCHEMA = "jhoveConfig.xsd";
-
-
-my $JHOVE_CONFIG_DIST = $JHOVE_CONFIG; 
-my $JHOVE_CONF_SCHEMA_DIST = $JHOVE_CONF_SCHEMA; 
-
-# (if the installer is being run NOT as part of a distribution zipped bundle, but
-# from inside the source tree - adjust the locations of the jhove config files:
-
-unless ( -f $JHOVE_CONFIG ) {
-    $JHOVE_CONFIG_DIST = "../../conf/jhove/jhove.conf";
-    $JHOVE_CONF_SCHEMA_DIST = "../../conf/jhove/jhoveConfig.xsd";
-}
-
-# but if we can't find the files in either location, it must mean
-# that they are not running the script in the correct directory - so 
-# nothing else left for us to do but give up:
-
-unless ( -f $JHOVE_CONFIG_DIST && -f $JHOVE_CONF_SCHEMA_DIST ) {
-    print "\nERROR! JHOVE configuration files not found in the config dir!\n";
-    print "(are you running the installer in the right directory?\n";
-    print "Aborting...\n";
-    exit 1;
-}
-
-print "\nCopying additional configuration files... ";
-
-system( "/bin/cp -f " . $JHOVE_CONF_SCHEMA_DIST . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
-
-# The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
-# - so it may need to be readjusted here: 
-
-if ( $glassfish_dir ne "/usr/local/glassfish4" )
-{
-    system( "sed 's:/usr/local/glassfish4:$glassfish_dir:g' < " . $JHOVE_CONFIG_DIST . " > " . $glassfish_dir . "/glassfish/domains/domain1/config/" . $JHOVE_CONFIG);
-}
-else 
-{
-    system( "/bin/cp -f " . $JHOVE_CONFIG_DIST . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
-}
-
-print "done!\n";
-
-# check if glassfish is running:
-# TODO.
-
-# 6. DEPLOY THE APPLICATION:
-
-print "\nAttempting to deploy the application.\n";
-print "Command line: " . $glassfish_dir . "/bin/asadmin deploy " . $WARFILE_LOCATION . "\n";
-unless ((
-     my $exit_code =
-     system( $glassfish_dir . "/bin/asadmin deploy " . $WARFILE_LOCATION )
-    ) == 0 )
-{
-    print STDERR "Failed to deploy the application! WAR file: " . $WARFILE_LOCATION . ".\n";
-    print STDERR "(exit code: " . $exit_code . ")\n";
-    print STDERR "Aborting.\n";
-    exit 1;
-}
+my $done = &setup();
 
 
 # 7. PRE-POPULATE THE DATABASE:
 # (in this step some pre-supplied content is inserted into the database that we have just created;
 # it is not *necessary* for the application to run in the very basic mode; but some features - certain 
 # types of metadata imports, for example - will be unavailable if it's not done. 
-
-print "\nPre-populating the database:\n\n";
-
-my $psql_command = $psql_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_TEMPLATE";
-
-unless ( ( my $exitcode = system("$psql_command") ) == 0 ) 
-{
-    print "WARNING: Could not pre-populate Postgres database for the Dataverse application!\n";
-    print "(command: " . $psql_command . ")\n";
-    print "(psql exit code: " . $exitcode . ")\n";
-    print "\nYou must populate the database in order for all the features of your \n";
-    print "new Dataverse to be available. \n";
-    print "\n";
-    print "You can try this again, by executing the following on the command line:\n";
-    print "   psql -U $CONFIG_DEFAULTS{'POSTGRES_USER'} -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_TEMPLATE\n";
-    print "then re-start glassfish with \n\n";
-    print "   " . $glassfish_dir . "/bin/asadmin stop-domain domain1\n\n";
-    print "   " . $glassfish_dir . "/bin/asadmin start-domain domain1\n\n";
-    print "\n";
-    print "If it's still failing, please consult the installation manual and/or\n";
-    print "seek support from the Dataverse team.\n\n";
-    
-    print "Press any key to continue... ";
-    
-    system "stty cbreak </dev/tty >/dev/tty 2>&1";
-    my $key = getc(STDIN);
-    system "stty -cbreak </dev/tty >/dev/tty 2>&1";
-    print "\n";
-} 
-else 
-{
-    print "\nOK, done!\n";
-}
 
 # Check if the App is running: 
 
@@ -1379,7 +718,7 @@ unless ( socket( SOCK, PF_INET, SOCK_STREAM, $rserve_proto )
 close(SOCK);
 print "\nOK!\n";
 
-sub setup_glassfish {
+sub setup {
     my $success = 1;
     my $failure = 0;
 
@@ -1409,8 +748,23 @@ sub setup_glassfish {
     $ENV{'FILES_DIR'} =
       $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/glassfish/domains/" . $ENV{'GLASSFISH_DOMAIN'} . "/files";
     
-    system("./glassfish-setup.sh");
+    $ENV{'WARFILE_LOCATION'} = $WARFILE_LOCATION;
+    
+    #start-glassfish is a container name for OpenShift deployment 
+    unless("MY_POD_NAME" eq "start-glassfish") {
+        system("perl ./postgres-setup");
+    }
 
+    print "Finished configuring postgres \n";
+    
+    #Start and Setup Glassfish + Deploy war file
+    system("perl ./glassfish-startup");
+
+    print "Finished configuring postgres \n";
+
+    #Pre-populate the database 
+    $ENV{'PREPOPULATE'} = 1;
+    system("perl ./postgres-setup");
     if ($?) {
         return $failure;
     }
@@ -1500,4 +854,3 @@ sub set_root_contact_email
         search_replace_file($config_json,"\"email\":\"dataverse\@mailinator.com\"","\"email\":\"$contact_email\"",$config_json);
         return;
 }
-

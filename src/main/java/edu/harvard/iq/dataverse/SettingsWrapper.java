@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.MailUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.HashMap;
 import java.util.Map;
@@ -104,7 +105,7 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         
         String val = get(settingKey);;
-        return ( val==null ) ? safeDefaultIfKeyNotFound : settingService.TRUE_VALUES.contains(val.trim().toLowerCase() );
+        return ( val==null ) ? safeDefaultIfKeyNotFound : StringUtil.isTrue(val);
     }
 
     private void initSettingsMap() {
@@ -147,6 +148,10 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public boolean isRsyncDownload() {
         return systemConfig.isRsyncDownload();
+    }
+    
+    public boolean isDataFilePIDSequentialDependent(){
+        return systemConfig.isDataFilePIDSequentialDependent();
     }
     
     public String getSupportTeamName() {

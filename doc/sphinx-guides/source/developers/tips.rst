@@ -81,10 +81,10 @@ Database Schema Exploration
 
 With over 100 tables, the Dataverse PostgreSQL database ("dvndb") can be somewhat daunting for newcomers. Here are some tips for coming up to speed.
 
-pgAdmin3
+pgAdmin
 ~~~~~~~~
 
-Back in the :doc:`dev-environment` section, we had you install pgAdmin3, which can help you explore the tables and execute SQL commands. It's also listed in the :doc:`tools` section.
+Back in the :doc:`dev-environment` section, we had you install pgAdmin, which can help you explore the tables and execute SQL commands. It's also listed in the :doc:`tools` section.
 
 SchemaSpy
 ~~~~~~~~~
@@ -102,7 +102,7 @@ Deploying With ``asadmin``
 
 Sometimes you want to deploy code without using Netbeans or from the command line on a server you have ssh'ed into.
 
-For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/glassfish4`` or wherever you have installed Glassfish.
+For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/glassfish4/glassfish/bin`` or wherever you have installed Glassfish.
 
 There are four steps to this process:
 
@@ -120,7 +120,7 @@ Rather than running the installer in "interactive" mode, it's possible to put th
 Preventing Glassfish from Phoning Home
 --------------------------------------
 
-By default, Glassfish reports analytics information. The administration guide suggests this can be disabled with ``asadmin create-jvm-options -Dcom.sun.enterprise.tools.admingui.NO_NETWORK=true``, should this be found to be undesirable for development purposes.
+By default, Glassfish reports analytics information. The administration guide suggests this can be disabled with ``./asadmin create-jvm-options -Dcom.sun.enterprise.tools.admingui.NO_NETWORK=true``, should this be found to be undesirable for development purposes.
 
 Solr
 ----

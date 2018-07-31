@@ -66,7 +66,21 @@ This allows the installer to be run in non-interactive mode (with ``./install -y
 
 All the Glassfish configuration tasks performed by the installer are isolated in the shell script ``dvinstall/glassfish-setup.sh`` (as ``asadmin`` commands). 
 
+**IMPORTANT:** The installer will also ask for an external site URL for Dataverse. It is *imperative* that this value be supplied accurately, or a long list of functions will be inoperable, including:
+
+- email confirmation links
+- password reset links
+- generating a Private URL
+- exporting to Schema.org format (and showing JSON-LD in HTML's <meta/> tag)
+- exporting to DDI format
+- which Dataverse installation an "external tool" should return to
+- which Dataverse installation Geoconnect should return to
+
 **IMPORTANT:** Please note, that "out of the box" the installer will configure the Dataverse to leave unrestricted access to the administration APIs from (and only from) localhost. Please consider the security implications of this arrangement (anyone with shell access to the server can potentially mess with your Dataverse). An alternative solution would be to block open access to these sensitive API endpoints completely; and to only allow requests supplying a pre-defined "unblock token" (password). If you prefer that as a solution, please consult the supplied script ``post-install-api-block.sh`` for examples on how to set it up. See also "Securing Your Installation" under the :doc:`config` section.
+
+Dataverse uses JHOVE_ to help identify the file format (CSV, PNG, etc.) for files that users have uploaded. The installer places files called ``jhove.conf`` and ``jhoveConfig.xsd`` into the directory ``/usr/local/glassfish4/glassfish/domains/domain1/config`` by default and makes adjustments to the jhove.conf file based on the directory into which you chose to install Glassfish.
+
+.. _JHOVE: http://jhove.openpreservation.org
 
 The script is to a large degree a derivative of the old installer from DVN 3.x. It is written in Perl. If someone in the community is eager to rewrite it, perhaps in a different language, please get in touch. :)
 
@@ -109,7 +123,7 @@ Problems Sending Email
 
 If your Dataverse installation is not sending system emails, you may need to provide authentication for your mail host. First, double check the SMTP server being used with this Glassfish asadmin command:
 
-``asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
+``./asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
 
 This should return the DNS of the mail host you configured during or after installation. mail/notifyMailSession is the JavaMail Session that's used to send emails to users. 
 
@@ -159,8 +173,8 @@ mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
 
 The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. See the below example:
 
-- Delete: ``asadmin delete-javamail-resource mail/MyMailSession``
-- Create (remove brackets and replace the variables inside): ``asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
+- Delete: ``./asadmin delete-javamail-resource mail/MyMailSession``
+- Create (remove brackets and replace the variables inside): ``./asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
 
 Be sure you save the changes made here and then restart your Glassfish server to test it out.
 
@@ -179,15 +193,15 @@ Drop database
 
 In order to drop the database, you have to stop Glassfish, which will have open connections. Before you stop Glassfish, you may as well undeploy the war file. First, find the name like this:
 
-``asadmin list-applications``
+``./asadmin list-applications``
 
 Then undeploy it like this:
 
-``asadmin undeploy dataverse-VERSION``
+``./asadmin undeploy dataverse-VERSION``
 
 Stop Glassfish with the init script provided in the :doc:`prerequisites` section or just use:
 
-``asadmin stop-domain``
+``./asadmin stop-domain``
 
 With Glassfish down, you should now be able to drop your database and recreate it:
 

@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import java.util.ResourceBundle;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.util.Arrays;
 
 /**
  *
@@ -521,6 +523,10 @@ public final class DatasetVersionDifference {
             return false;
         }
         
+        if (!StringUtils.equals(fmdo.getProvFreeForm(), fmdn.getProvFreeForm())) {
+            return false;
+        }
+        
         return fmdo.isRestricted() == fmdn.isRestricted();
     }
     
@@ -607,31 +613,31 @@ public final class DatasetVersionDifference {
         String retString = "";
 
         if (addedFiles.size() > 0) {
-            retString = "Files (Added: " + addedFiles.size();
+            retString = BundleUtil.getStringFromBundle("dataset.version.file.added", Arrays.asList(addedFiles.size()+""));
         }
 
         if (removedFiles.size() > 0) {
             if (retString.isEmpty()) {
-                retString = "Files (Removed: " + removedFiles.size();
+                retString = BundleUtil.getStringFromBundle("dataset.version.file.removed", Arrays.asList(removedFiles.size()+""));
             } else {
-                retString += "; Removed: " + removedFiles.size();
+                retString += BundleUtil.getStringFromBundle("dataset.version.file.removed2", Arrays.asList(removedFiles.size()+""));
             }
         }
         
         if (replacedFiles.size() > 0) {
             if (retString.isEmpty()) {
-                retString = "Files (Replaced: " + replacedFiles.size();
+                retString = BundleUtil.getStringFromBundle("dataset.version.file.replaced", Arrays.asList(replacedFiles.size()+""));
             } else {
-                retString += "; Replaced: " + replacedFiles.size();
+                retString += BundleUtil.getStringFromBundle("dataset.version.file.replaced2", Arrays.asList(replacedFiles.size()+""));
             }
         }
         
 
         if (changedFileMetadata.size() > 0) {
             if (retString.isEmpty()) {
-                retString = "Files (Changed File Metadata: " + changedFileMetadata.size() / 2;
+                retString = BundleUtil.getStringFromBundle("dataset.version.file.changed", Arrays.asList(changedFileMetadata.size() / 2+""));
             } else {
-                retString += "; Changed File Metadata: " + changedFileMetadata.size() / 2;
+                retString += BundleUtil.getStringFromBundle("dataset.version.file.changed2", Arrays.asList(changedFileMetadata.size() / 2+""));
             }
         }
 
@@ -1004,6 +1010,21 @@ public final class DatasetVersionDifference {
             return true;
         }
         
+        // Provenance Freeform Text
+        value1 = fm1.getProvFreeForm();
+        value2 = fm2.getProvFreeForm();
+        
+        if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
+            value1 = "";
+        }
+        if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
+            value2 = "";
+        }
+
+        if (!value1.equals(value2)) {
+            return true;
+        }
+        
         //File restrictions
         
         value1 = fm1.isRestricted() ? "Restricted" : "Not Restricted";
@@ -1017,11 +1038,11 @@ public final class DatasetVersionDifference {
 
         if (fm2 == null) {
             if (fm1 == null) {
-            // this should never happen; but if it does,
-            // we return an empty diff object.
+                // this should never happen; but if it does,
+                // we return an empty diff object.
 
-            return fdi;
-        }
+                return fdi;
+            }
             fdi.setFileName1(fm1.getLabel());
             fdi.setFileType1(fm1.getDataFile().getFriendlyType());
             //fdi.setFileSize1(FileUtil. (new File(fm1.getDataFile().getFileSystemLocation()).length()));
@@ -1032,6 +1053,7 @@ public final class DatasetVersionDifference {
                 fdi.setFileCat1(fm1.getCategoriesByName().toString());
             }
 
+            fdi.setFileProvFree1(fm1.getProvFreeForm());
             fdi.setFileRest1(fm1.isRestricted() ? "Restricted" : "Not Restricted");
             fdi.setFile2Empty(true);
 
@@ -1047,7 +1069,7 @@ public final class DatasetVersionDifference {
             if(!fm2.getCategoriesByName().isEmpty()){
                 fdi.setFileCat2(fm2.getCategoriesByName().toString());
             }
-
+            fdi.setFileProvFree2(fm2.getProvFreeForm());
             fdi.setFileRest2(fm2.isRestricted() ? "Restricted" : "Not Restricted");
         } else {
             // Both are non-null metadata objects.
@@ -1111,6 +1133,24 @@ public final class DatasetVersionDifference {
                 fdi.setFileDesc2(value2);
             }
 
+            // provenance freeform
+            value1 = fm1.getProvFreeForm();
+            value2 = fm2.getProvFreeForm();
+
+            if (value1 == null || value1.isEmpty() || value1.equals(" ")) {
+                value1 = "";
+            }
+            if (value2 == null || value2.isEmpty() || value2.equals(" ")) {
+                value2 = "";
+            }
+
+            if (!value1.equals(value2)) {
+
+                fdi.setFileProvFree1(value1);
+                fdi.setFileProvFree2(value2);
+            }
+            
+            // file restricted:
             value1 = fm1.isRestricted() ? "Restricted" : "Not Restricted";
             value2 = fm2.isRestricted() ? "Restricted" : "Not Restricted";
             if (!value1.equals(value2)) {
@@ -1303,6 +1343,7 @@ public final class DatasetVersionDifference {
         private String fileSize1;
         private String fileCat1;
         private String fileDesc1;
+        private String fileProvFree1;
         private String fileRest1;
         
         private String fileName2;
@@ -1310,8 +1351,25 @@ public final class DatasetVersionDifference {
         private String fileSize2;
         private String fileCat2;
         private String fileDesc2;
+        private String fileProvFree2;
         private String fileRest2;
 
+        public String getFileProvFree1() {
+            return fileProvFree1;
+        }
+
+        public void setFileProvFree1(String fileProvFree1) {
+            this.fileProvFree1 = fileProvFree1;
+        }
+
+        public String getFileProvFree2() {
+            return fileProvFree2;
+        }
+
+        public void setFileProvFree2(String fileProvFree2) {
+            this.fileProvFree2 = fileProvFree2;
+        }
+        
         public String getFileRest1() {
             return fileRest1;
         }

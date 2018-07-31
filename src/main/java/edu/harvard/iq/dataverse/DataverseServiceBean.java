@@ -143,7 +143,7 @@ public class DataverseServiceBean implements java.io.Serializable {
      * NoResultException which is a RuntimeException?
      */
     public Dataverse findRootDataverse() {
-        return em.createQuery("select object(o) from Dataverse as o where o.owner.id = null", Dataverse.class).getSingleResult();
+        return em.createNamedQuery("Dataverse.findRoot", Dataverse.class).getSingleResult();
     }
     
     public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {
@@ -492,22 +492,17 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         String searchResult;
         try {
-            System.out.print("select  t0.ALIAS FROM DATAVERSE t0, DVOBJECT t1,  DVOBJECT t2 WHERE (t0.ID = t1.ID) AND (t2.OWNER_ID = t1.ID)  AND (t2.ID =" + dvId + ")");
             searchResult = (String) em.createNativeQuery("select  t0.ALIAS FROM DATAVERSE t0, DVOBJECT t1,  DVOBJECT t2 WHERE (t0.ID = t1.ID) AND (t2.OWNER_ID = t1.ID)  AND (t2.ID =" + dvId + ")").getSingleResult();
 
         } catch (Exception ex) {
-            System.out.print("catching exception");
-            System.out.print("catching exception" + ex.getMessage());
             return retVal;
         }
 
         if (searchResult == null) {
-            System.out.print("searchResult == null");
             return retVal;
         }
 
         if (searchResult != null) {
-            System.out.print(searchResult);
             return searchResult;
         }
         

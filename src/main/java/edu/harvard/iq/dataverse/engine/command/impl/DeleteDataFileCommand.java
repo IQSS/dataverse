@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -15,10 +14,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionExcepti
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitResult.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,6 +24,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  * Deletes a data file, both DB entity and filesystem object.
@@ -147,9 +145,18 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                     // log file and proceed deleting the database object.
                     try {
                         storageIO.open();
+                    } catch (IOException ioex) {
+                        Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE, "Error calling storageIO.open() while deleting DataFile {0}", doomed.getStorageIdentifier());
+                    }
+                    // Previously, storageIO.open() and storageIO.deleteAllAuxObjects() were in the same try/catch block
+                    // but this was preventing the auxillary objects from being deleted when the main file isn't present
+                    // on disk/storage. The call to open() was throwing an IOException so the deleteAllAuxObjects() method
+                    // never fired. Now we have them in separate try/catch blocks to go ahead and delete the auxillary
+                    // objects even if the main file can't be opened.
+                    try {
                         storageIO.deleteAllAuxObjects();
                     } catch (IOException ioex) {
-                        Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE, "Error deleting Auxiliary file(s) while deleting DataFile {0}", doomed.getStorageIdentifier());
+                        Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE, "Error calling storageIO.deleteAllAuxObjects() while deleting DataFile {0}", doomed.getStorageIdentifier());
                     }
 
                     // We only want to attempt to delete the main physical file
@@ -183,7 +190,14 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 }
             }
         }
-
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
+        try {
+            if (idServiceBean.alreadyExists(doomed)) {
+                idServiceBean.deleteIdentifier(doomed);
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Identifier deletion was not successfull:", e.getMessage());
+        }
         DataFile doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
         /**

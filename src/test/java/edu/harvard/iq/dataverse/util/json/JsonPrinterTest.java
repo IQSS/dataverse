@@ -146,6 +146,9 @@ public class JsonPrinterTest {
         FileMetadata fmd = new FileMetadata();
         DatasetVersion dsVersion = new DatasetVersion();
         DataFile dataFile = new DataFile();
+        dataFile.setProtocol("doi");
+        dataFile.setIdentifier("ABC123");
+        dataFile.setAuthority("10.5072/FK2");
         List<DataFileTag> dataFileTags = new ArrayList<>();
         DataFileTag tag = new DataFileTag();
         tag.setTypeByLabel("Survey");

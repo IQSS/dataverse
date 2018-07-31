@@ -9,6 +9,7 @@ mkdir -p testdata/doc/sphinx-guides/source/_static/util/
 cp ../solr/7.3.0/schema.xml testdata/
 cp ../solr/7.3.0/solrconfig.xml testdata/
 cp ../jhove/jhove.conf testdata/
+cp ../jhove/jhoveConfig.xsd testdata/
 cd ../../
 cp -r scripts conf/docker-aio/testdata/
 cp doc/sphinx-guides/source/_static/util/pg8-createsequence-prep.sql conf/docker-aio/testdata/doc/sphinx-guides/source/_static/util/
@@ -21,5 +22,6 @@ mvn package
 cd scripts/installer
 make clean
 make
+mkdir -p ../../conf/docker-aio/dv/install
 cp dvinstall.zip ../../conf/docker-aio/dv/install/
 

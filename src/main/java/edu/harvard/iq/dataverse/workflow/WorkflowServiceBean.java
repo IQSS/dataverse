@@ -61,7 +61,7 @@ public class WorkflowServiceBean {
     public WorkflowServiceBean() {
         providers.put(":internal", new InternalWorkflowStepSP());
 
-        logger.log(Level.INFO, "Searching for workflow step providers...");
+//        Re-enable code below, if we allow .jars in the classpath to provide WorkflowStepProviders.
 //        ServiceLoader<WorkflowStepSPI> loader = ServiceLoader.load(WorkflowStepSPI.class);
 //        try {
 //            for ( WorkflowStepSPI wss : loader ) {
@@ -90,6 +90,9 @@ public class WorkflowServiceBean {
         lockDataset(ctxt);
         forward(wf, ctxt);
     }
+    
+
+
 
     /**
      * Starting the resume process for a pending workflow. We first delete the

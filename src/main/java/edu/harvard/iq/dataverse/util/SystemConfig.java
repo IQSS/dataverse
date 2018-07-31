@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
 import java.io.FileInputStream;
@@ -223,6 +224,33 @@ public class SystemConfig {
         return solrHostColonPort;
     }
 
+    public boolean isProvCollectionEnabled() {
+        String provCollectionEnabled = settingsService.getValueForKey(SettingsServiceBean.Key.ProvCollectionEnabled, null);
+        if("true".equalsIgnoreCase(provCollectionEnabled)){         
+            return true;
+        }
+        return false;
+
+    }
+    
+    public int getMetricsCacheTimeoutMinutes() {
+        int defaultValue = 10080; //one week in minutes
+        SettingsServiceBean.Key key = SettingsServiceBean.Key.MetricsCacheTimeoutMinutes;
+        String metricsCacheTimeString = settingsService.getValueForKey(key);
+        int returnInt = 0;
+        try {
+            returnInt = Integer.parseInt(metricsCacheTimeString);
+            if (returnInt >= 0) {
+                return returnInt;
+            } else {
+                logger.info("Returning " + defaultValue + " for " + key + " because value must be greater than zero, not \"" + metricsCacheTimeString + "\".");
+            }
+        } catch (NumberFormatException ex) {
+            logger.info("Returning " + defaultValue + " for " + key + " because value must be an integer greater than zero, not \"" + metricsCacheTimeString + "\".");
+        }
+        return defaultValue;
+    }
+    
     public int getMinutesUntilConfirmEmailTokenExpires() {
         final int minutesInOneDay = 1440;
         final int reasonableDefault = minutesInOneDay;
@@ -489,13 +517,13 @@ public class SystemConfig {
     }
     
     public String getApplicationTermsOfUse() {
-        String saneDefaultForAppTermsOfUse = "There are no Terms of Use for this Dataverse installation.";
+        String saneDefaultForAppTermsOfUse = BundleUtil.getStringFromBundle("system.app.terms");
         String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
         return appTermsOfUse;
     }
 
     public String getApiTermsOfUse() {
-        String saneDefaultForApiTermsOfUse = "There are no API Terms of Use for this Dataverse installation.";
+        String saneDefaultForApiTermsOfUse = BundleUtil.getStringFromBundle("system.api.terms");
         String apiTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApiTermsOfUse, saneDefaultForApiTermsOfUse);
         return apiTermsOfUse;
     }
@@ -520,8 +548,11 @@ public class SystemConfig {
     }
 
     public Long getMaxFileUploadSize(){
-
          return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
+     }
+    
+    public String getHumanMaxFileUploadSize(){
+         return bytesToHumanReadable(getMaxFileUploadSize());
      }
 
     public Integer getSearchHighlightFragmentSize() {
@@ -866,6 +897,26 @@ public class SystemConfig {
         }
         
     }
+    
+    public enum DataFilePIDFormat {
+        DEPENDENT("DEPENDENT"),
+        INDEPENDENT("INDEPENDENT");
+        private final String text;
+
+        public String getText() {
+            return text;
+        }
+        
+        private DataFilePIDFormat(final String text){
+            this.text = text;
+        }
+        
+        @Override
+        public String toString() {
+            return text;
+        }
+        
+    }
 
     /**
      * See FileUploadMethods.
@@ -920,5 +971,24 @@ public class SystemConfig {
         return downloadMethods !=null && downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString());
     }
     
-
+    public boolean isDataFilePIDSequentialDependent(){
+        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+        if (doiIdentifierType.equals("sequentialNumber") && doiDataFileFormat.equals("DEPENDENT")){
+            return true;
+        }
+        return false;
+    }
+    
+    public int getPIDAsynchRegFileCount() {
+        String fileCount = settingsService.getValueForKey(SettingsServiceBean.Key.PIDAsynchRegFileCount, "10");
+        int retVal = 10;
+        try {
+            retVal = Integer.parseInt(fileCount);
+        } catch (NumberFormatException e) {           
+            //if no number in the setting we'll return 10
+        }
+        return retVal;
+    }
+    
 }

@@ -64,23 +64,23 @@ public class MapLayerMetadata implements Serializable {
     private Dataset dataset;
 
     @Column(nullable=false)
-    @NotBlank(message = "Please specify a layer name.")
+    @NotBlank(message = "{map.layername}")
     private String layerName;
     
     @Column(nullable=false)
-    @NotBlank(message = "Please specify a layer link.")
+    @NotBlank(message = "{map.layerlink}")
     private String layerLink;
     
     @Column(nullable=false)
-    @NotBlank(message = "Please specify am embedded map link.")
+    @NotBlank(message = "{map.link}")
     private String embedMapLink;
     
     @Column(nullable=true)
-    @NotBlank(message = "Please specify a map image link.")
+    @NotBlank(message = "{map.imagelink}")
     private String mapImageLink;
     
     @Column(nullable=false)
-    @NotBlank(message = "Please specify a WorldMap username.")
+    @NotBlank(message = "{map.username}")
     private String worldmapUsername;
    
 
