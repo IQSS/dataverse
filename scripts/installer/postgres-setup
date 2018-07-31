@@ -245,7 +245,7 @@ if ( $psql_exec eq "" )
     print "Checking if we can talk to Postgres as the admin user...\n";
 }
 
-if ($ENV{'PREPOPULATE'} == 1){
+if (defined( $ENV{'PREPOPULATE'}) && $ENV{'PREPOPULATE'} == 1 ){
     print "\nPre-populating the database:\n\n";
 
     my $SQL_REFERENCE_TEMPLATE = "../database/reference_data.sql";
@@ -354,12 +354,6 @@ else
 
     print "\nConfiguring Postgres Database:\n";
 
-    if ($pod_name eq "start-glassfish")
-    {
-        system( $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -c 'DROP DATABASE dvndb' ");
-        system( $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -c 'DROP USER dvnapp' ");
-    }
-
     # 4c. CHECK IF THIS DB ALREADY EXISTS:
     
     my $psql_command_dbcheck =
@@ -375,6 +369,10 @@ else
     } 
     else 
     {
+        if ($pod_name eq "start-glassfish" ){
+            print "WARNING! Database " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " already exists!\n";
+            exit 0;
+        }
         print "WARNING! Database " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " already exists!\n";
         print "\nPlease note that you can only use this installer to create a blank, \n";
         print "new and shiny Dataverse database. I.e., you cannot install on top of an \n";
