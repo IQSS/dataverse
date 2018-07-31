@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.TimeoutCache;
+import edu.harvard.iq.dataverse.util.TimeoutCacheWrapper;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -119,7 +120,7 @@ public class ExplicitGroupServiceBean {
     
     
     // One minute cache with max of 10 entries
-    TimeoutCache<RoleAssignee, Set<ExplicitGroup>> groupCache = new TimeoutCache<>(10, 60*1000);
+    TimeoutCache<RoleAssignee, Set<ExplicitGroup>> groupCache =  TimeoutCacheWrapper.addOrGet("explicit", 10, 60*1000);
     /**
      * Finds all the explicit groups {@code ra} is a member of.
      * @param ra the role assignee whose membership list we seek

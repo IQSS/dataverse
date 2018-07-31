@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.TimeoutCache;
+import edu.harvard.iq.dataverse.util.TimeoutCacheWrapper;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -74,11 +75,12 @@ public class ShibGroupServiceBean {
     }
 
     // One minute cache with max of 10 entries
-    TimeoutCache<AuthenticatedUser, Set<ShibGroup>> groupCache = new TimeoutCache<>(10, 60 * 1000);
+    TimeoutCache<AuthenticatedUser, Set<ShibGroup>> groupCache =  TimeoutCacheWrapper.addOrGet("shib", 10, 60*1000);;
 
     public Set<ShibGroup> findFor(AuthenticatedUser authenticatedUser) {
         Set<ShibGroup> groupsForUser = groupCache.get(authenticatedUser);
         if (groupsForUser == null) {
+            logger.info("shib cache miss" + authenticatedUser);
             groupsForUser = new HashSet<>();
             String shibIdp = authenticatedUser.getShibIdentityProvider();
             logger.fine("IdP for user " + authenticatedUser.getIdentifier() + " is " + shibIdp);

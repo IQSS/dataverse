@@ -1,14 +1,16 @@
 package edu.harvard.iq.dataverse.util;
 
 import java.util.AbstractMap;
-import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 public class TimeoutCache<K, V> implements Map<K, V> {
 
+    private static final Logger logger = Logger.getLogger(TimeoutCache.class.getName());
     private class TimeNode<V> {
 
         public V val;
@@ -21,7 +23,7 @@ public class TimeoutCache<K, V> implements Map<K, V> {
     }
 
     private final int capacity;
-    private final LinkedHashMap<K, TimeNode<V>> map;
+    private final ConcurrentHashMap<K, TimeNode<V>> map;
     private final int timeout;
 
     /* timout in milliseconds
@@ -29,13 +31,7 @@ public class TimeoutCache<K, V> implements Map<K, V> {
     public TimeoutCache(int capacity, int timeout) {
         this.capacity = capacity;
         this.timeout = timeout;
-
-        // (capacity * 4 + 2) /3 accounts for load factor of 3/4
-        this.map = new LinkedHashMap<K, TimeNode<V>>((capacity * 4 + 2) / 3, 0.75f, false) {
-            protected boolean removeEldestEntry(){
-                return size() > capacity;
-            }
-        };
+        this.map = new ConcurrentHashMap<>(capacity);
     }
 
     @Override
@@ -54,8 +50,14 @@ public class TimeoutCache<K, V> implements Map<K, V> {
 
     @Override
     public V put(K key, V val) {
-        if (map.size() == this.capacity) {
-            cull();
+        if (!map.containsKey(key)){
+            if (map.size() == this.capacity) {
+                // Delete out of date entries before newer ones
+                cull();
+                if(map.size() == this.capacity){
+                    map.remove(map.keySet().iterator().next());
+                }
+            }
         }
         TimeNode<V> ret = map.put(key, new TimeNode<>(val, System.currentTimeMillis()));
         if (ret == null){
@@ -68,7 +70,6 @@ public class TimeoutCache<K, V> implements Map<K, V> {
     */
     @Override
     public int size() {
-        cull();
         return map.size();
     }
 
@@ -76,7 +77,6 @@ public class TimeoutCache<K, V> implements Map<K, V> {
     */
     @Override
     public boolean isEmpty() {
-        cull();
         return map.isEmpty();
     }
 
@@ -103,6 +103,7 @@ public class TimeoutCache<K, V> implements Map<K, V> {
 
     @Override
     public void putAll(Map<? extends K, ? extends V> map) {
+        
         for (Entry<? extends K, ? extends V> pair : map.entrySet()) {
             put(pair.getKey(), pair.getValue());
         }
@@ -150,8 +151,6 @@ public class TimeoutCache<K, V> implements Map<K, V> {
             // dt shouldn't be less than 0, but time can be weird.
             if (dt < 0 || dt > timeout) {
                 it.remove();
-            } else {
-                break;
             }
         }
     }

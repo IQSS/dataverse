@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Addre
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Address;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.util.TimeoutCache;
+import edu.harvard.iq.dataverse.util.TimeoutCacheWrapper;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -100,7 +101,7 @@ public class IpGroupsServiceBean {
     }
     
     // One minute cache with max of 10 entries
-    TimeoutCache<IpAddress, Set<IpGroup>> groupCache = new TimeoutCache<>(10, 60*1000);
+    TimeoutCache<IpAddress, Set<IpGroup>> groupCache = TimeoutCacheWrapper.addOrGet("ip", 10, 60*1000);
     public Set<IpGroup> findAllIncludingIp( IpAddress ipa ) {
         Set<IpGroup> cached = groupCache.get(ipa);
         if (cached != null){
@@ -111,7 +112,7 @@ public class IpGroupsServiceBean {
             IPv4Address ip4 = (IPv4Address) ipa;
             List<IpGroup> groupList = em.createNamedQuery("IPv4Range.findGroupsContainingAddressAsLong", IpGroup.class)
                     .setParameter("addressAsLong", ip4.toBigInteger()).getResultList();
-            return new HashSet<>(groupList);
+            cached = new HashSet<>(groupList);
 
         } else if ( ipa instanceof IPv6Address ) {
             IPv6Address ip6 = (IPv6Address) ipa;
@@ -123,12 +124,12 @@ public class IpGroupsServiceBean {
                     .setParameter("d", ip6arr[3])
                     .getResultList();
             cached = new HashSet<>(groupList);
-            groupCache.put(ipa, cached);
-            return cached;
 
         } else {
             throw new IllegalArgumentException( "Unknown IpAddress type: " + ipa.getClass() + " (for IpAddress:" + ipa + ")" );
         }
+        groupCache.put(ipa, cached);
+        return cached;
     }
     
     /**

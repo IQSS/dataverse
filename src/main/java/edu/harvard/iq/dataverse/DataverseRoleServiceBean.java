@@ -9,17 +9,21 @@ import edu.harvard.iq.dataverse.search.IndexAsync;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
+import edu.harvard.iq.dataverse.util.TimeoutCache;
+import edu.harvard.iq.dataverse.util.TimeoutCacheWrapper;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import javax.validation.constraints.NotNull;
 
 /**
  *
@@ -219,6 +223,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         return ras;
     }
 
+    TimeoutCache<RoleAssignee, List<RoleAssignment>> rolesCache =  TimeoutCacheWrapper.addOrGet("roles", 10, 60*1000);;
     /**
      * Retrieves the roles assignments for {@code user}, directly on {@code dv}.
      * No traversal on the containment hierarchy is done.
@@ -229,16 +234,16 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
      * edu.harvard.iq.dataverse.Dataverse)
      */
-    public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
-        if (roas == null) {
-            throw new IllegalArgumentException("RoleAssignee cannot be null");
+    public List<RoleAssignment> directRoleAssignments(@NotNull RoleAssignee roas, DvObject dvo) {
+        List<RoleAssignment> unfiltered = rolesCache.get(roas);
+        if (unfiltered == null){
+            logger.info("RolesCache miss "+ roas);
+            unfiltered = em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class).
+                            setParameter("assigneeIdentifier", roas.getIdentifier())
+                            .getResultList();
+            rolesCache.put(roas, unfiltered);
         }
-        TypedQuery<RoleAssignment> query = em.createNamedQuery(
-            "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId",
-            RoleAssignment.class);
-        query.setParameter("assigneeIdentifier", roas.getIdentifier());
-        query.setParameter("definitionPointId", dvo.getId());
-        return query.getResultList();
+        return unfiltered.stream().filter(roleAssignment -> roleAssignment.getDefinitionPoint().getId() == dvo.getId()).collect(Collectors.toList());
     }
 
     /**

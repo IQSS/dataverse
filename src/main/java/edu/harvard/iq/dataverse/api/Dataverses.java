@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ImportDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListExplicitGroupsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlocksCommand;
@@ -55,6 +56,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
@@ -95,11 +97,16 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.json.JsonWriter;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.StreamingOutput;
 
 /**
  * A REST API for dataverses.
@@ -114,10 +121,10 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
-    
+
     @EJB
     SearchServiceBean search;
-    
+
     @EJB
     DataverseServiceBean dataverseServiceBean;
 //    @EJB
@@ -494,38 +501,47 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @Path("{identifier}/contents")
     public Response listContent(@PathParam("identifier") String dvIdtf) throws WrappedResponse {
-        
-        DvObject.Visitor<JsonObjectBuilder> ser = new DvObject.Visitor<JsonObjectBuilder>() {
-
-			@Override
-			public JsonObjectBuilder visit(Dataverse dv) {
-				return Json.createObjectBuilder().add("type", "dataverse")
-						.add("id", dv.getId())
-						.add("title",dv.getName() );
-			}
-            
-			@Override
-			public JsonObjectBuilder visit(Dataset ds) {
-				return json(ds).add("type", "dataset");
-			}
-
-			@Override
-			public JsonObjectBuilder visit(DataFile df) { throw new UnsupportedOperationException("Files don't live directly in Dataverses"); }
-		};
-        
-        List<DvObject> children = dataverseServiceBean.findDirectChildren(dvIdtf);
-        Map<String, DvObject> childMap= children.stream().collect(Collectors.toMap (dvo -> dvo.getIdentifier(), dvo -> dvo));
-        
-        return allowCors(response((DataverseRequest req) -> {
-            try {
-                return ok(search.search(req, findDataverseOrDie(dvIdtf), "*", Arrays.asList(SearchFields.PARENT_ID + dvIdtf), SearchFields.NAME_SORT, SortBy.DESCENDING, 0, false, Integer.MAX_VALUE)
-                        .getSolrSearchResults().stream().map(result -> (JsonObjectBuilder) childMap.get(result.getId()).accept(ser)).collect(toJsonArray()));
-            } catch (SearchException ex) {
-                return error(Status.INTERNAL_SERVER_ERROR, "Could not get results from solr");
-            }
-        }));
+        return allowCors(response((DataverseRequest req) -> listContent(req, dvIdtf)));
     }
-        
+
+    private Response listContent(DataverseRequest req, String dvIdtf) throws WrappedResponse {
+
+        DvObject.Visitor<JsonObjectBuilder> ser = new DvObject.Visitor<JsonObjectBuilder>() {
+            @Override
+            public JsonObjectBuilder visit(Dataverse dv) {
+                return Json.createObjectBuilder().add("type", "dataverse")
+                        .add("id", dv.getId())
+                        .add("title", dv.getName());
+            }
+
+            @Override
+            public JsonObjectBuilder visit(Dataset ds) {
+                return json(ds).add("type", "dataset");
+            }
+
+            @Override
+            public JsonObjectBuilder visit(DataFile df) {
+                throw new UnsupportedOperationException("Files don't live directly in Dataverses");
+            }
+        };
+
+        Dataverse dv = findDataverseOrDie(dvIdtf);
+        List<DvObject> results = execCommand(new ListDataverseContentCommand(req, dv));
+        StreamingOutput stream = new StreamingOutput() {
+
+            @Override
+            public void write(OutputStream os) throws IOException, WebApplicationException {
+                for (DvObject dvo : results) {
+                    os.write(dvo.accept(ser).build().toString().getBytes());
+                }
+                os.flush();
+                os.close();
+            }
+        };
+        return Response.ok(stream).build();
+
+    }
+
     @GET
     @Path("{identifier}/roles")
     public Response listRoles(@PathParam("identifier") String dvIdtf) {

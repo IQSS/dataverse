@@ -180,13 +180,13 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
     }
     
-    public List<DvObject> findDirectChildren(String identifier) {
+    public List<DvObject> findDirectChildren(Long id) {
         try {
             return em.createNamedQuery("Dataverse.findDirectChildren", DvObject.class)
-					.setParameter("identifier", identifier.toLowerCase())
+					.setParameter("id", id)
 					.getResultList();
         } catch ( NoResultException|NonUniqueResultException ex ) {
-            logger.fine("Unable to find the children of dataverse using identifier \"" + identifier + "\": " + ex);
+            logger.fine("Unable to find the children of dataverse using id \"" + id + "\": " + ex);
             return null;
         }
     }
