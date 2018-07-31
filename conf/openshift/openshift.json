@@ -203,24 +203,52 @@
                 "imagePullPolicy": "IfNotPresent",
                 "env": [
                   {
+                    "name": "CONTAINER_NAME",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "metadata.name"
+                      }
+                    }
+                  },
+                  {
                     "name": "MY_POD_NAME",
                     "value": "start-glassfish"
+                  },
+                  {
+                    "name": "POSTGRES_ADMIN_PASSWORD",
+                    "valueFrom": {
+                        "secretKeyRef": {
+                    	    "name" : "dataverse-postgresql-admin-secret",
+                    	    "key" : "postgresql-admin-password"
+                    	}
+                    } 
                   },
                   {
                     "name": "POSTGRES_SERVER",
                     "value": "dataverse-postgresql-0"
                   },
+                  
                   {
                     "name": "POSTGRES_SERVICE_HOST",
                     "value": "dataverse-postgresql-service"
                   },
                   {
                     "name": "POSTGRES_USER",
-                    "value": "dvnapp"
+                    "valueFrom": {
+                    	"secretKeyRef": {
+                    		"name" : "dataverse-postgres-secret",
+                    		"key" : "postgres-user"
+                    	}
+                    }
                   },
                   {
                     "name": "POSTGRES_PASSWORD",
-                    "value": "secret"
+                    "valueFrom": {
+                    	"secretKeyRef": {
+                    		"name" : "dataverse-postgres-secret",
+                    		"key" : "postgres-password"
+                    	}
+                    }
                   },
                   {
                     "name": "POSTGRES_DATABASE",
@@ -232,7 +260,7 @@
             "containers": [
               {
                 "name": "dataverse-plus-glassfish",
-                "image": "iqss/dataverse-glassfish:testinit",
+                "image": "iqss/dataverse-glassfish:latest",
                 "ports": [
                   {
                     "containerPort": 8080,
@@ -528,7 +556,7 @@
             "containers": [
               {
                 "name": "iqss-dataverse-solr",
-                "image": "iqss-dataverse-solr:latest",
+                "image": "iqss/dataverse-solr",
                 "ports": [
                   {
                     "containerPort": 8983,
