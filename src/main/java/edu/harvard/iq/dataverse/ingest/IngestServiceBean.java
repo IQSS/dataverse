@@ -753,7 +753,8 @@ public class IngestServiceBean {
         }
 
         BufferedInputStream inputStream = null; 
-        File additionalData = null; 
+        File additionalData = null;
+        File localFile = null;
         StorageIO<DataFile> storageIO = null;
                 
         try {
@@ -761,15 +762,16 @@ public class IngestServiceBean {
             storageIO.open();
              
             if (storageIO.isLocalFile()) {
+                localFile = storageIO.getFileSystemPath().toFile();
                 inputStream = new BufferedInputStream(storageIO.getInputStream());
             } else {
                 ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
-                File tempFile = File.createTempFile("tempIngestSourceFile", ".tmp");
-                FileChannel tempIngestSourceChannel = new FileOutputStream(tempFile).getChannel();
+                localFile = File.createTempFile("tempIngestSourceFile", ".tmp");
+                FileChannel tempIngestSourceChannel = new FileOutputStream(localFile).getChannel();
 
                 tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
                 
-                inputStream = new BufferedInputStream(new FileInputStream(tempFile));
+                inputStream = new BufferedInputStream(new FileInputStream(localFile));
                 logger.fine("Saved "+storageIO.getSize()+" bytes in a local temp file.");
             }
         } catch (IOException ioEx) {
@@ -792,7 +794,25 @@ public class IngestServiceBean {
             if (ingestRequest.getLabelsFile() != null) {
                 additionalData = new File(ingestRequest.getLabelsFile());
             }
-        } 
+        }
+        
+        if (forceTypeCheck) {
+            String newType = FileUtil.retestIngestableFileType(localFile, dataFile.getContentType());
+            
+            ingestPlugin = getTabDataReaderByMimeType(newType);
+            logger.fine("Re-tested file type: " + newType + "; Using ingest plugin " + ingestPlugin.getClass());
+
+            // check again:
+            if (ingestPlugin == null) {
+                // If it's still null - give up!
+            
+                dataFile.SetIngestProblem();
+                FileUtil.createIngestFailureReport(dataFile, "No ingest plugin found for file type "+dataFile.getContentType());
+                dataFile = fileService.save(dataFile);
+                logger.warning("Ingest failure: failed to detect ingest plugin (file type check forced)");
+                return false; 
+            }
+        }
         
         TabularDataIngest tabDataIngest = null; 
         try {

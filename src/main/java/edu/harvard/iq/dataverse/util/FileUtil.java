@@ -86,6 +86,16 @@ public class FileUtil implements java.io.Serializable  {
     private static final Logger logger = Logger.getLogger(FileUtil.class.getCanonicalName());
     
     private static final String[] TABULAR_DATA_FORMAT_SET = {"POR", "SAV", "DTA", "RDA"};
+    // The list of formats for which we need to re-test, if we want to attempt 
+    // to ingest the file again:
+    // Example: We have added support for Stata-13+; the new ingest plugin is called
+    // when the file type is detected as "application/x-stata-1[345]". But the 
+    // previously uploaded, but not ingested stata files are in the database
+    // typed as "application/x-stata". So we want to run the new-and-improved
+    // DTA check that will re-identify the specific DTA flavor. 
+    // If similar cases are introduced in the future, the affected formats will
+    // need to be added to the list. 
+    private static final String[] TABULAR_DATA_FORMATS_RETEST = {"DTA"};
     
     private static Map<String, String> STATISTICAL_FILE_EXTENSION = new HashMap<String, String>();
    
@@ -280,10 +290,17 @@ public class FileUtil implements java.io.Serializable  {
         
     }
     
+    public static String retestIngestableFileType(File file, String fileType) {
+        IngestableDataChecker tabChecker = new IngestableDataChecker(TABULAR_DATA_FORMATS_RETEST);
+        String newType = tabChecker.detectTabularDataFormat(file);
+        
+        return newType != null ? newType : fileType;
+    }
+    
     public static String determineFileType(File f, String fileName) throws IOException{
         String fileType = null;
         String fileExtension = getFileExtension(fileName);
-
+        
         
         
         // step 1: 
