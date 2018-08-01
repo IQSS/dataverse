@@ -367,7 +367,7 @@ public class Files extends AbstractApiBean {
         }
 
         if (dataFile.isTabularData()) {
-            return error(Response.Status.BAD_REQUEST, "Datafile already ingested as Tabular (use the \"force\" option to override).");
+            return error(Response.Status.BAD_REQUEST, "Datafile already ingested as Tabular (as of now, this API only works on uningested datafiles).");
         }
 
         Dataset dataset = dataFile.getOwner();

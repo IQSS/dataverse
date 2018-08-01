@@ -749,6 +749,8 @@ public class IngestServiceBean {
             // If this is a reingest request, we'll still have a chance
             // to find an ingest plugin for this file, once we try
             // to identify the file type again.
+            // Otherwise, we can give up - there is no point in proceeding to 
+            // the next step if no ingest plugin is available. 
             
             dataFile.SetIngestProblem();
             FileUtil.createIngestFailureReport(dataFile, "No ingest plugin found for file type "+dataFile.getContentType());
@@ -816,6 +818,8 @@ public class IngestServiceBean {
                 logger.warning("Ingest failure: failed to detect ingest plugin (file type check forced)");
                 return false; 
             }
+            
+            dataFile.setContentType(newType);
         }
         
         TabularDataIngest tabDataIngest = null; 
@@ -830,7 +834,6 @@ public class IngestServiceBean {
             FileUtil.createIngestFailureReport(dataFile, ingestEx.getMessage());
             dataFile = fileService.save(dataFile);
             
-            dataFile = fileService.save(dataFile);
             logger.warning("Ingest failure (IO Exception): " + ingestEx.getMessage() + ".");
             return false;
         } catch (Exception unknownEx) {
