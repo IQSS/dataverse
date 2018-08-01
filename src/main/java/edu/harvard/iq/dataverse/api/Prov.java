@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.ProvEntityFileData;
-import edu.harvard.iq.dataverse.ProvUtilFragmentBean;
+import edu.harvard.iq.dataverse.provenance.ProvEntityFileData;
+import edu.harvard.iq.dataverse.provenance.ProvInvestigator;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvFreeFormCommand;
@@ -35,14 +35,12 @@ public class Prov extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Prov.class.getCanonicalName());
 
-    @Inject
-    ProvUtilFragmentBean provUtil;
+    ProvInvestigator provUtil = ProvInvestigator.getInstance();
     
     /** Provenance JSON methods **/
     @POST
     @Path("{id}/prov-json")
     @Consumes("application/json")
-//MAD: SHOULD NOT WORK ON PUBLISHED
     public Response addProvJson(String body, @PathParam("id") String idSupplied, @QueryParam("entityName") String entityName) {
         if(!systemConfig.isProvCollectionEnabled()) {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
@@ -54,6 +52,10 @@ public class Prov extends AbstractApiBean {
             }
             if(dataFile.isReleased() && dataFile.getProvEntityName() != null){
                 return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.jsonUpdateNotAllowed"));
+            }
+            
+            if(!provUtil.isProvValid(body)) {
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError"));
             }
             
             /*Add when we actually integrate provCpl*/
