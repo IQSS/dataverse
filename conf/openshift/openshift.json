@@ -163,7 +163,7 @@
         "name": "iqss-dataverse-solr"
       },
       "spec": {
-        "dockerImageRepository": "charlesthao96/dataverse-solr:4762"
+        "dockerImageRepository": "iqss/dataverse-solr"
       }
     },
     {
@@ -527,8 +527,8 @@
       }
     },
     {
-      "kind": "StatefulSet",
-      "apiVersion": "apps/v1beta1",
+      "kind": "DeploymentConfig",
+      "apiVersion": "v1",
       "metadata": {
         "name": "dataverse-solr",
         "annotations": {
@@ -536,7 +536,6 @@
         }
       },
       "spec": {
-        "serviceName" : "dataverse-solr-service",
         "template": {
           "metadata": {
             "labels": {
@@ -595,12 +594,9 @@
             "type": "ConfigChange"
           }
         ],
-        "replicas": 2,
+        "replicas": 1,
         "selector": {
-          "name": "iqss-dataverse-solr",
-          "matchLabels" : {
-            "name" : "iqss-dataverse-solr"
-          }
+          "name": "iqss-dataverse-solr"
         }
       }
     }
