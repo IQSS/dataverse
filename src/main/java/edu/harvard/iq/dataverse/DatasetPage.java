@@ -1146,7 +1146,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public List<Template> getDataverseTemplates() {
-        return alphabetizeTemplates(dataverseTemplates);
+        return dataverseTemplates;
     }
 
     public void setDataverseTemplates(List<Template> dataverseTemplates) {
@@ -1169,57 +1169,6 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedTemplate = selectedTemplate;
     }
     
-    public List<Template> alphabetizeTemplates(List<Template> templates) {
-        int indexOfLastTemplate;
-        int indexOfCurrentTemplate;
-        if (isAlphabetized(templates) || templates.size() == 1) {
-            return templates;
-        } else {
-            for (Template template : templates) {
-                if (template.getName() == templates.get(0).getName()) {
-                    //do nothing
-                } else {
-                    indexOfCurrentTemplate = templates.indexOf(template);
-                    indexOfLastTemplate = templates.indexOf(template) - 1;
-                    if(template.getName().compareToIgnoreCase(templates.get(indexOfLastTemplate).getName()) < 0)
-                    {
-                        Collections.swap(templates, indexOfLastTemplate, indexOfCurrentTemplate);
-                        return alphabetizeTemplates(templates);
-                    }
-
-                }
-            }
-            
-            for (Template template : templates)
-            {
-                logger.info(template.getName());
-            }
-            return templates;
-        }
-
-    }
-    
-    public boolean isAlphabetized(List<Template> templates) {
-        int indexOfLastTemplate;
-        int comparator;
-
-        for (Template template : templates) {
-            if (template.getName() == templates.get(0).getName()) {
-                //do nothing
-            } else {
-                indexOfLastTemplate = templates.indexOf(template) - 1;
-                comparator = template.getName().compareToIgnoreCase(templates.get(indexOfLastTemplate).getName());
-                
-                if (comparator > 0)
-                {
-                    return false;
-                }
-            }
-        }
-        
-        return true;
-    }
-    
     public void updateSelectedTemplate(ValueChangeEvent event) {
         
         selectedTemplate = (Template) event.getNewValue();
@@ -1234,8 +1183,6 @@ public class DatasetPage implements java.io.Serializable {
         resetVersionUI();
     }
 
-    
-    
     /*
     // Original
     private void updateDatasetFieldInputLevels() {
@@ -1597,11 +1544,12 @@ public class DatasetPage implements java.io.Serializable {
                 return permissionsWrapper.notAuthorized(); 
             }
 
-            dataverseTemplates = dataverseService.find(ownerId).getTemplates();
-            Collections.sort(dataverseTemplates, (Template t1, Template t2) -> t1.getName().compareToIgnoreCase(t2.getName()));
+            dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
             }
+            Collections.sort(dataverseTemplates, (Template t1, Template t2) -> t1.getName().compareToIgnoreCase(t2.getName()));
+
             defaultTemplate = dataverseService.find(ownerId).getDefaultTemplate();
             if (defaultTemplate != null) {
                 selectedTemplate = defaultTemplate;
