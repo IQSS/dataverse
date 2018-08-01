@@ -22,17 +22,6 @@
         "admin-password" : "${ADMIN_PASSWORD}"
       }
     },
-  	{
-      "kind": "Secret",
-      "apiVersion": "v1",
-      "metadata": {
-        "name": "dataverse-postgres-secret"
-      },
-      "stringData" : {
-        "postgres-user" : "${POSTGRES_USER}",
-        "postgres-password" : "${POSTGRES_PASSWORD}"
-      }
-    },
     {
       "kind": "Secret",
       "apiVersion": "v1",
@@ -236,8 +225,8 @@
                     "name": "POSTGRES_USER",
                     "valueFrom": {
                     	"secretKeyRef": {
-                    		"name" : "dataverse-postgres-secret",
-                    		"key" : "postgres-user"
+                    		"name" : "dataverse-postgresql-secret",
+                    		"key" : "postgresql-user"
                     	}
                     }
                   },
@@ -245,8 +234,8 @@
                     "name": "POSTGRES_PASSWORD",
                     "valueFrom": {
                     	"secretKeyRef": {
-                    		"name" : "dataverse-postgres-secret",
-                    		"key" : "postgres-password"
+                    		"name" : "dataverse-postgresql-secret",
+                    		"key" : "postgresql-password"
                     	}
                     }
                   },
@@ -319,8 +308,8 @@
                     "name": "POSTGRES_USER",
                     "valueFrom": {
                     	"secretKeyRef": {
-                    		"name" : "dataverse-postgres-secret",
-                    		"key" : "postgres-user"
+                    		"name" : "dataverse-postgresql-secret",
+                    		"key" : "postgresql-user"
                     	}
                     }
                   },
@@ -328,8 +317,8 @@
                     "name": "POSTGRES_PASSWORD",
                     "valueFrom": {
                     	"secretKeyRef": {
-                    		"name" : "dataverse-postgres-secret",
-                    		"key" : "postgres-password"
+                    		"name" : "dataverse-postgresql-secret",
+                    		"key" : "postgresql-password"
                     	}
                     }
                   },
@@ -596,7 +585,7 @@
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "iqss-dataverse-solr:latest"
+                "name": "iqss/dataverse-solr:latest"
               }
             }
           },
@@ -619,26 +608,8 @@
         "from": "[a-zA-Z0-9]{8}"
     },
     {
-        "name": "POSTGRES_USER",
-        "description": "postgres user",
-        "generate": "expression",
-        "from": "user[A-Z0-9]{3}"
-    },
-    {
-        "name": "POSTGRES_PASSWORD",
-        "description": "postgres password",
-        "generate": "expression",
-        "from": "[a-zA-Z0-9]{8}"
-    },
-    {
         "name": "POSTGRESQL_USER",
         "description": "postgresql user",
-        "generate": "expression",
-        "from": "user[A-Z0-9]{3}"
-    },
-    {
-        "name": "POSTGRESQL_MASTER_USER",
-        "description": "postgresql master user",
         "generate": "expression",
         "from": "user[A-Z0-9]{3}"
     },
@@ -647,6 +618,12 @@
         "description": "postgresql password",
         "generate": "expression",
         "from": "[a-zA-Z0-9]{8}"
+    },
+    {
+      "name": "POSTGRESQL_MASTER_USER",
+      "description": "postgresql master user",
+      "generate": "expression",
+      "from": "user[A-Z0-9]{3}"
     },
     {
         "name": "POSTGRESQL_MASTER_PASSWORD",
