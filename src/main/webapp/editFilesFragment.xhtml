@@ -193,7 +193,6 @@
                     <!-- changes to this part of the fragment. -->
 
                     <p:fileUpload id="fileUpload" 
-                                  styleClass="margin-bottom"
                                   dragDropSupport="true"
                                   auto="true"
                                   multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}"
@@ -210,26 +209,16 @@
                                   invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" 
                                   sequential="true"
                                   widgetVar="fileUploadWidget"/>
+                                
+                                <div jsf:id="dropboxBlock" jsf:rendered="#{settingsWrapper.isHasDropBoxKey()}" class="margin-top">
+                                    <!-- Dropbox upload widget -->
+                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.fromDropbox.tip']}</p>
+                                    <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
+                                    <p:commandButton id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
+                                    <p:commandButton id="dropBoxUserButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
+                                    <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" redisplay="false" />
+                                </div>
                     
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div jsf:id="dropboxPanel" jsf:rendered="#{settingsWrapper.isHasDropBoxKey() and settingsWrapper.HTTPUpload}" class="panel panel-default">
-                        <div class="panel-heading" role="tab" id="headingDropbox">
-                          <h4 class="panel-title">
-                            <a class="collapsed" role="button" data-toggle="collapse" data-parent="#fileUploadFragment" href="#collapseDropbox" aria-expanded="false" aria-controls="collapseDropbox">
-                              #{bundle['file.fromDropbox']}
-                            </a>
-                          </h4>
-                        </div>
-                        <div id="collapseDropbox" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingDropbox">
-                            <div class="panel-body">
-                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.fromDropbox.tip']}</p>
-                                <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
-                                <p:commandButton id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
-                                <p:commandButton id="dropBoxUserButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
-                                <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" redisplay="false" />
                             </div>
                         </div>
                     </div>

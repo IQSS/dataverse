@@ -198,14 +198,11 @@
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu pull-right text-left" role="menu">
-                                        <!-- show upload files button to support dual mode Hide if a package file exists-->
-                                        <ui:fragment rendered="#{!DatasetPage.workingVersion.hasPackageFile}">
                                         <li>                                           
                                             <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD">
                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.upload']}"/>
                                             </h:outputLink>
                                         </li>
-                                        </ui:fragment>
                                         <li>
                                             <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:post_edit_metadata()">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
@@ -563,23 +560,6 @@
 
                         <ui:fragment id="uploadFilesOnCreateTab" rendered="#{!DatasetPage.workingVersion.deaccessioned and                          
                                                                              (DatasetPage.editMode == 'CREATE')}">
-                            <ui:remove>
-                                 <!-- Removing this because it is now included in editFilesFragment with render logic therein -->
-                            <div jsf:rendered="#{settingsWrapper.rsyncUpload}" data-widget="content" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" id="datasetForm:tabView">
-                                <!-- Create-Upload Disabled // Static Tab Layout -->
-                                <ul role="tablist" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
-                                    <li aria-expanded="true" role="tab" class="ui-state-default ui-tabs-selected ui-state-active ui-corner-top">
-                                        <a href="#datasetForm:tabView:dataFilesTab">#{bundle['files']}</a>
-                                    </li>
-                                </ul>
-                                <div class="ui-tabs-panels">
-                                    <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
-                                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.createUploadDisabled']}</p>                                    
-                                    </div>
-                                </div>
-                                <!-- END: Create-Upload Disabled // Static Tab Layout -->
-                            </div>
-                            </ui:remove>
 
                                 <ui:include src="editFilesFragment.xhtml">
                                     <ui:param name="datasetPage" value="true"/>
@@ -1154,56 +1134,6 @@
                             <p:commandButton styleClass="btn btn-default" id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
                         </div>
                     </p:dialog>
-                    <ui:remove>
-                    <p:dialog id="rsyncUploadInfoPopup" styleClass="smallPopUp" header="#{bundle['file.uploadFiles']}" widgetVar="rsyncUpload_popup" modal="true">
-                        <!-- RSYNC UPLOAD POPUP -->
-                        <p:ajax event="close" update=":datasetForm,:messagePanel" listener="#{DatasetPage.closeRsyncScriptPopup}" />
-                        <ui:fragment rendered="#{DatasetPage.workingVersion.fileMetadatas.size() > 0}">
-                            <p class="help-block">
-                                <span class="glyphicon glyphicon-warning-sign text-danger"></span>
-                                <h:outputText class="text-danger" value=" #{bundle['file.rsyncUpload.filesExist']}" escape="false"/>
-                            </p>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{!DatasetPage.isHasRsyncScript() and DatasetPage.workingVersion.fileMetadatas.size() == 0}">
-                            <p class="help-block">
-                                <span class="glyphicon glyphicon-warning-sign text-danger"></span>
-                                <h:outputText class="text-danger" value=" #{bundle['file.rsyncUpload.noScriptAvailable']}" escape="false"/>
-                            </p>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{DatasetPage.isHasRsyncScript() and DatasetPage.workingVersion.fileMetadatas.size() == 0}">
-                            <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"></span>
-                                <h:outputFormat value=" #{bundle['file.rsyncUpload.info']}" escape="false">
-                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                    <f:param value="#{systemConfig.guidesVersion}"/>
-                                </h:outputFormat>
-                            </p>
-                            <ol>
-                                <li>
-                                    <h:outputText value="#{bundle['file.rsyncUpload.step1']}" escape="false"/>
-                                </li>
-                                <li>
-                                    <h:outputText value="#{bundle['file.rsyncUpload.step2']} &#158; " escape="false"/>
-                                    <h:commandLink id="rsyncDL" actionListener="#{DatasetPage.downloadRsyncScript()}" styleClass="btn btn-default btn-xs">
-                                        <span class="glyphicon glyphicon-download-alt"/> <h:outputText value=" #{bundle['file.rsyncUpload.step2.downloadScriptButton']}"/>
-                                    </h:commandLink>
-                                </li>
-                                <li>
-                                    <h:outputFormat value="#{bundle['file.rsyncUpload.step3']}" escape="false">
-                                        <f:param value="#{DatasetPage.rsyncScriptFilename}"/>
-                                    </h:outputFormat>
-                                </li>
-                                <li>
-                                    <h:outputText value="#{bundle['file.rsyncUpload.step4']}" escape="false"/>
-                                </li>
-                            </ol>
-                        </ui:fragment>
-                        <div class="button-block">
-                            <p:commandButton action="#{DatasetPage.finishRsyncScriptAction()}" value="#{bundle.close}" update=":datasetForm,:messagePanel" onclick="PF('rsyncUpload_popup').hide();"/>
-                        </div>
-                        <!-- END RSYNC UPLOAD POPUP -->
-                    </p:dialog>
-</ui:remove>
                     <!-- Request Access Sign Up/Log In Button -->
                     <p:dialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
                         <p class="help-block">
