@@ -21,6 +21,16 @@
         <div class="ui-tabs-panels">
             <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
                 
+                
+                <div jsf:rendered="#{createDataset}">
+                    <p class="help-block">
+                        <h:outputFormat value="#{bundle['dataset.message.uploadFiles.message']}" escape="false">
+                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                            <f:param value="#{systemConfig.guidesVersion}"/>
+                        </h:outputFormat>
+                    </p>
+                </div>
+                
                 <!-- Upload -->
                 <div class="panel-group" role="tablist" aria-multiselectable="true"
                       id="fileUploadFragment" jsf:rendered="#{datasetPage || EditDatafilesPage.showFileUploadFragment()}">
