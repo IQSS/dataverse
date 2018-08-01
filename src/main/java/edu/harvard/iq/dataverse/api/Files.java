@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -386,6 +387,19 @@ public class Files extends AbstractApiBean {
         }
         
         dataFile.SetIngestScheduled();
+        
+        IngestRequest ingestRequest = dataFile.getIngestRequest();
+        
+        if (ingestRequest == null) {
+            ingestRequest = new IngestRequest();
+            ingestRequest.setDataFile(dataFile);
+            dataFile.setIngestRequest(ingestRequest);
+        }
+
+        dataFile.getIngestRequest().setForceTypeCheck(true);
+        
+        // update the datafile, to save the newIngest request in the database:
+        dataFile = fileService.save(dataFile);
         
         // queue the data ingest job for asynchronous execution: 
         String status = ingestService.startIngestJobForSingleFile(dataFile, u);

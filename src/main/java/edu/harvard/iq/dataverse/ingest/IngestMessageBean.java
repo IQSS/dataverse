@@ -74,7 +74,7 @@ public class IngestMessageBean implements MessageListener {
 
                 logger.fine("Start ingest job;");
                 try {
-                    if (ingestService.ingestAsTabular(datafile_id, ingestMessage.isForceTypeCheck())) {
+                    if (ingestService.ingestAsTabular(datafile_id)) {
                         //Thread.sleep(10000);
                         logger.fine("Finished ingest job;");
                     } else {

@@ -545,7 +545,6 @@ public class IngestServiceBean {
         ingestMessage = new IngestMessage(IngestMessage.INGEST_MESAGE_LEVEL_INFO);
 
         ingestMessage.addFileId(dataFile.getId());
-        ingestMessage.setForceTypeCheck(true);
 
         QueueConnection conn = null;
         QueueSession session = null;
@@ -730,16 +729,22 @@ public class IngestServiceBean {
     }
     
     
-    public boolean ingestAsTabular(Long datafile_id, boolean forceTypeCheck) { 
+    public boolean ingestAsTabular(Long datafile_id) { 
         DataFile dataFile = fileService.find(datafile_id);
         boolean ingestSuccessful = false;
+        boolean forceTypeCheck = false;
         
+        IngestRequest ingestRequest = dataFile.getIngestRequest();
+        if (ingestRequest != null) {
+            forceTypeCheck = ingestRequest.isForceTypeCheck();
+        }
+
         // Locate ingest plugin for the file format by looking
         // it up with the Ingest Service Provider Registry:
         String fileName = dataFile.getFileMetadata().getLabel();
         TabularDataFileReader ingestPlugin = getTabDataReaderByMimeType(dataFile.getContentType());
         logger.fine("Using ingest plugin " + ingestPlugin.getClass());
-
+        
         if (!forceTypeCheck && ingestPlugin == null) {
             // If this is a reingest request, we'll still have a chance
             // to find an ingest plugin for this file, once we try
@@ -784,7 +789,6 @@ public class IngestServiceBean {
             return false; 
         }
         
-        IngestRequest ingestRequest = dataFile.getIngestRequest();
         if (ingestRequest != null) {
             if (ingestRequest.getTextEncoding() != null 
                     && !ingestRequest.getTextEncoding().equals("") ) {

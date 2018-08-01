@@ -52,7 +52,6 @@ public class IngestMessage implements Serializable {
     private String versionNote;
     private String datasetVersionNumber;
     private List<Long> datafile_ids;
-    private Boolean forceTypeCheck;
 
     public String getVersionNote() {
         return versionNote;
@@ -112,16 +111,5 @@ public class IngestMessage implements Serializable {
     
     public void addFileId(Long file_id) {
         datafile_ids.add(file_id);
-    }
-    
-    public void setForceTypeCheck(boolean forceTypeCheck) {
-        this.forceTypeCheck = forceTypeCheck;
-    }
-    
-    public boolean isForceTypeCheck() {
-        if (forceTypeCheck != null) {
-            return forceTypeCheck;
-        }
-        return false;
     }
 }

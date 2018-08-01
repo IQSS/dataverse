@@ -38,9 +38,6 @@ public class IngestRequest implements Serializable {
         this.id = id;
     }
 
-    //@ManyToOne
-    //@JoinColumn(nullable=false)
-    
     @OneToOne(cascade={CascadeType.MERGE,CascadeType.PERSIST})
     @JoinColumn(name="datafile_id")
     private DataFile dataFile;
@@ -50,6 +47,8 @@ public class IngestRequest implements Serializable {
     private String controlCard;
     
     private String labelsFile; 
+    
+    private Boolean forceTypeCheck;
     
     public DataFile getDataFile() {
         return dataFile;
@@ -81,6 +80,17 @@ public class IngestRequest implements Serializable {
     
     public void setLabelsFile(String labelsFile) {
         this.labelsFile = labelsFile; 
+    }
+    
+    public void setForceTypeCheck(boolean forceTypeCheck) {
+        this.forceTypeCheck = forceTypeCheck;
+    }
+    
+    public boolean isForceTypeCheck() {
+        if (forceTypeCheck != null) {
+            return forceTypeCheck;
+        }
+        return false;
     }
     
     @Override
