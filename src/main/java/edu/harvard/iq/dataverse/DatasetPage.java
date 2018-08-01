@@ -93,8 +93,6 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.stream.Collectors;
 
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.servlet.ServletOutputStream;
