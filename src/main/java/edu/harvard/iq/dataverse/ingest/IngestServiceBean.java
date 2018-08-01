@@ -729,7 +729,7 @@ public class IngestServiceBean {
     }
     
     
-    public boolean ingestAsTabular(Long datafile_id) { 
+    public boolean ingestAsTabular(Long datafile_id) {
         DataFile dataFile = fileService.find(datafile_id);
         boolean ingestSuccessful = false;
         boolean forceTypeCheck = false;
@@ -743,7 +743,7 @@ public class IngestServiceBean {
         // it up with the Ingest Service Provider Registry:
         String fileName = dataFile.getFileMetadata().getLabel();
         TabularDataFileReader ingestPlugin = getTabDataReaderByMimeType(dataFile.getContentType());
-        logger.fine("Using ingest plugin " + ingestPlugin.getClass());
+        logger.fine("Found ingest plugin " + ingestPlugin.getClass());
         
         if (!forceTypeCheck && ingestPlugin == null) {
             // If this is a reingest request, we'll still have a chance
@@ -837,13 +837,10 @@ public class IngestServiceBean {
             logger.warning("Ingest failure (IO Exception): " + ingestEx.getMessage() + ".");
             return false;
         } catch (Exception unknownEx) {
-            // this is a bit of a kludge, to make sure no unknown exceptions are
-            // left uncaught.
             dataFile.SetIngestProblem();
             FileUtil.createIngestFailureReport(dataFile, unknownEx.getMessage());
             dataFile = fileService.save(dataFile);
             
-            dataFile = fileService.save(dataFile);
             logger.warning("Ingest failure (Exception " + unknownEx.getClass() + "): "+unknownEx.getMessage()+".");
             return false;
             
@@ -929,7 +926,6 @@ public class IngestServiceBean {
                     // in the database. 
                     logger.warning("Ingest failure: Failed to save tabular metadata (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
 
-                    dataFile = null;
                     dataFile = fileService.find(datafile_id);
 
                     if (dataFile != null) {
@@ -975,7 +971,6 @@ public class IngestServiceBean {
                     // this probably means that an error occurred while saving the file to the file system
                     logger.warning("Failed to save the tabular file produced by the ingest (resetting the ingested DataFile back to its original state)");
 
-                    dataFile = null;
                     dataFile = fileService.find(datafile_id);
 
                     if (dataFile != null) {
@@ -994,8 +989,26 @@ public class IngestServiceBean {
             logger.warning("Ingest failed to produce data obect.");
         }
 
-        logger.fine("Returning ingestSuccessful: " + ingestSuccessful);
         return ingestSuccessful;
+    }
+
+    private BufferedInputStream openFile(DataFile dataFile) throws IOException {
+        BufferedInputStream inputStream;
+        StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+        storageIO.open();
+        if (storageIO.isLocalFile()) {
+            inputStream = new BufferedInputStream(storageIO.getInputStream());
+        } else {
+            ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
+            File tempFile = File.createTempFile("tempIngestSourceFile", ".tmp");
+            FileChannel tempIngestSourceChannel = new FileOutputStream(tempFile).getChannel();
+            
+            tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
+            
+            inputStream = new BufferedInputStream(new FileInputStream(tempFile));
+            logger.fine("Saved "+storageIO.getSize()+" bytes in a local temp file.");
+        }
+        return inputStream;
     }
 
     private void restoreIngestedDataFile(DataFile dataFile, TabularDataIngest tabDataIngest, long originalSize, String originalFileName, String originalContentType) {

@@ -1167,7 +1167,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setSelectedTemplate(Template selectedTemplate) {
         this.selectedTemplate = selectedTemplate;
     }
-
+    
     public void updateSelectedTemplate(ValueChangeEvent event) {
         
         selectedTemplate = (Template) event.getNewValue();
@@ -1182,8 +1182,6 @@ public class DatasetPage implements java.io.Serializable {
         resetVersionUI();
     }
 
-    
-    
     /*
     // Original
     private void updateDatasetFieldInputLevels() {
@@ -1545,10 +1543,12 @@ public class DatasetPage implements java.io.Serializable {
                 return permissionsWrapper.notAuthorized(); 
             }
 
-            dataverseTemplates = dataverseService.find(ownerId).getTemplates();
+            dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
             }
+            Collections.sort(dataverseTemplates, (Template t1, Template t2) -> t1.getName().compareToIgnoreCase(t2.getName()));
+
             defaultTemplate = dataverseService.find(ownerId).getDefaultTemplate();
             if (defaultTemplate != null) {
                 selectedTemplate = defaultTemplate;
