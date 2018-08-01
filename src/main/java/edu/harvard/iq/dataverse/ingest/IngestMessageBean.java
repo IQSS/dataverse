@@ -68,15 +68,13 @@ public class IngestMessageBean implements MessageListener {
 
             Iterator iter = ingestMessage.getFileIds().iterator();
             datafile_id = null; 
-            // TODO: 
-            // is it going to work if multiple files are submitted for ingest? 
-            // -- L.A. Aug. 13 2014
+            
             while (iter.hasNext()) {
                 datafile_id = (Long) iter.next();
 
                 logger.fine("Start ingest job;");
                 try {
-                    if (ingestService.ingestAsTabular(datafile_id)) {
+                    if (ingestService.ingestAsTabular(datafile_id, ingestMessage.isForceTypeCheck())) {
                         //Thread.sleep(10000);
                         logger.fine("Finished ingest job;");
                     } else {

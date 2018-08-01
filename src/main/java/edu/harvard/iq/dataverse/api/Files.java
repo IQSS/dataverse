@@ -332,12 +332,17 @@ public class Files extends AbstractApiBean {
 
     }
     
-    // Note, ingestAsTabular attempts to queue an *existing* (non-tabular) DataFile 
-    // for tabular ingest. 
+    // reingest attempts to queue an *existing* DataFile 
+    // for tabular ingest. It can be used on non-tabular datafiles; to try to 
+    // ingest a file that has previously failed ingest, or to ingest a file of a
+    // type for which ingest was not previously supported. 
+    // It will also be possible to *force* reingest of a datafile that's already
+    // ingested as Tabular data; for example, to address a bug that has been 
+    // found in an ingest plugin. 
     
-    @Path("{id}/ingestAsTabular")
+    @Path("{id}/reingest")
     @POST
-    public Response ingestDatafileAsTabular(@PathParam("id") String id) {
+    public Response reingest(@PathParam("id") String id) {
 
         AuthenticatedUser u;
         try {
@@ -361,7 +366,7 @@ public class Files extends AbstractApiBean {
         }
 
         if (dataFile.isTabularData()) {
-            return error(Response.Status.BAD_REQUEST, "Datafile already ingested as Tabular.");
+            return error(Response.Status.BAD_REQUEST, "Datafile already ingested as Tabular (use the \"force\" option to override).");
         }
 
         Dataset dataset = dataFile.getOwner();
@@ -383,8 +388,18 @@ public class Files extends AbstractApiBean {
         dataFile.SetIngestScheduled();
         
         // queue the data ingest job for asynchronous execution: 
-        ingestService.startIngestJobs(dataset, u);
+        String status = ingestService.startIngestJobForSingleFile(dataFile, u);
         
+        if (status != null) {
+            // This most likely indicate some sort of a problem (for example, 
+            // the ingest job was not put on the JMS queue because of the size
+            // of the file). But we are still returning the OK status - because
+            // from the point of view of the API, it's a success - we have 
+            // successfully gone through the process of trying to schedule the 
+            // ingest job...
+            
+            return ok(status);
+        }
         return ok("Datafile " + id + " queued for ingest");
 
     }
