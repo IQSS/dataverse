@@ -105,7 +105,6 @@
         "selector": {
           "name": "iqss-dataverse-solr"
         },
-        "clusterIP": "None",
         "ports": [
           {
             "name": "search",
@@ -546,7 +545,7 @@
             "containers": [
               {
                 "name": "iqss-dataverse-solr",
-                "image": "charlesthao96/dataverse-solr:4762",
+                "image": "iqss/dataverse-solr",
                 "ports": [
                   {
                     "containerPort": 8983,
