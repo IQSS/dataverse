@@ -170,6 +170,7 @@ public class GlobalId implements java.io.Serializable {
                 }
                 //Strip any whitespace, ; and ' from authority (should finding them cause a failure instead?)
                 authority = formatIdentifierString(identifierString.substring(index1 + 1, index2));
+                if(testforNullTerminator(authority)) return false;
                 if (protocol.equals(DOI_PROTOCOL)) {
                     if (!this.checkDOIAuthority(authority)) {
                         return false;
@@ -178,6 +179,7 @@ public class GlobalId implements java.io.Serializable {
                 // Passed all checks
                 //Strip any whitespace, ; and ' from identifier (should finding them cause a failure instead?)
                 identifier = formatIdentifierString(identifierString.substring(index2 + 1));
+                if(testforNullTerminator(identifier)) return false;               
             } else {
                 logger.log(Level.INFO, "Error parsing identifier: {0}: '':<authority>/<identifier>'' not found in string", identifierString);
                 return false;
@@ -213,6 +215,12 @@ public class GlobalId implements java.io.Serializable {
         // http://www.doi.org/doi_handbook/2_Numbering.html
     }
     
+    private static boolean testforNullTerminator(String str){
+        if(str == null) {
+            return false;
+        }
+        return str.indexOf('\u0000') > 0;
+    }
     
     private boolean checkDOIAuthority(String doiAuthority){
         
