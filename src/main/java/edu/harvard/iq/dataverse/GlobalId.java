@@ -7,12 +7,15 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.ejb.EJB;
 
 /**
@@ -234,6 +237,19 @@ public class GlobalId implements java.io.Serializable {
         
         return true;
     }
-    
-    
+
+    /**
+     * Verifies that the pid only contains allowed characters.
+     *
+     * @param pidParam
+     * @return true if pid only contains allowed characters false if pid
+     * contains characters not specified in the allowed characters regex.
+     */
+    public static boolean verifyImportCharacters(String pidParam) {
+
+        Pattern p = Pattern.compile(BundleUtil.getStringFromBundle("pid.allowedCharacters"));
+        Matcher m = p.matcher(pidParam);
+
+        return m.matches();
+    }
 }

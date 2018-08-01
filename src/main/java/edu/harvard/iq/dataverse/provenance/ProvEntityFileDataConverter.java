@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.provenance;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
