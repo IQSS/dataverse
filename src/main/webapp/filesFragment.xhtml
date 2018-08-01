@@ -133,44 +133,6 @@
                             <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']} 
                         </p:commandLink>
                     </div>
-                    <div id="sortBlock" class="button-block btn-group pull-right" jsf:rendered="#{DatasetPage.sortButtonEnabled and DatasetPage.fileMetadatas.size() gt 1}">
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                            <!--SORT BUTTON-->
-                            <span class="glyphicon glyphicon-sort"/> #{bundle['file.results.btn.sort']} <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                            <li>
-                                <p:commandLink update="@form,:messagePanel" actionListener="#{DatasetPage.updateFileListing(DatasetPage.fileSortFieldName, DatasetPage.sortByAscending)}">
-                                    <h:outputText value="#{bundle['file.results.btn.sort.option.nameAZ']}"/>
-                                </p:commandLink>
-                            </li>
-                            <li>
-                                <p:commandLink update="@form,:messagePanel" actionListener="#{DatasetPage.updateFileListing(DatasetPage.fileSortFieldName, DatasetPage.sortByDescending)}">
-                                    <h:outputText value="#{bundle['file.results.btn.sort.option.nameZA']}"/>
-                                </p:commandLink>
-                            </li>
-                            <li>
-                                <p:commandLink update="@form,:messagePanel" actionListener="#{DatasetPage.updateFileListing(DatasetPage.fileSortFieldDate, DatasetPage.sortByAscending)}">
-                                    <h:outputText value="#{bundle['file.results.btn.sort.option.newest']}"/>
-                                </p:commandLink>
-                            </li>
-                            <li>
-                                <p:commandLink update="@form,:messagePanel" actionListener="#{DatasetPage.updateFileListing(DatasetPage.fileSortFieldDate, DatasetPage.sortByDescending)}">
-                                    <h:outputText value="#{bundle['file.results.btn.sort.option.oldest']}"/>
-                                </p:commandLink>
-                            </li>
-                            <li>
-                                <p:commandLink update="@form,:messagePanel" actionListener="#{DatasetPage.updateFileListing(DatasetPage.fileSortFieldSize, DatasetPage.sortByDescending)}">
-                                    <h:outputText value="#{bundle['file.results.btn.sort.option.size']}"/>
-                                </p:commandLink>
-                            </li>
-                            <li>
-                                <p:commandLink update="@form,:messagePanel" actionListener="#{DatasetPage.updateFileListing(DatasetPage.fileSortFieldType, DatasetPage.sortByAscending)}">
-                                    <h:outputText value="#{bundle['file.results.btn.sort.option.type']}"/>
-                                </p:commandLink>
-                            </li>
-                        </ul>
-                    </div>
                     </p:outputPanel>
                 </div>
             </div>
