@@ -223,7 +223,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         return ras;
     }
 
-    TimeoutCache<RoleAssignee, List<RoleAssignment>> rolesCache =  TimeoutCacheWrapper.addOrGet("roles", 10, 60*1000);;
+    TimeoutCache<RoleAssignee, List<RoleAssignment>> rolesCache =  TimeoutCacheWrapper.addOrGet("roles", 10);;
     /**
      * Retrieves the roles assignments for {@code user}, directly on {@code dv}.
      * No traversal on the containment hierarchy is done.

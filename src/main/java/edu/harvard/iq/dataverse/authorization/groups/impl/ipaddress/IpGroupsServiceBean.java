@@ -101,7 +101,7 @@ public class IpGroupsServiceBean {
     }
     
     // One minute cache with max of 10 entries
-    TimeoutCache<IpAddress, Set<IpGroup>> groupCache = TimeoutCacheWrapper.addOrGet("ip", 10, 60*1000);
+    TimeoutCache<IpAddress, Set<IpGroup>> groupCache = TimeoutCacheWrapper.addOrGet("ip", 10);
     public Set<IpGroup> findAllIncludingIp( IpAddress ipa ) {
         Set<IpGroup> cached = groupCache.get(ipa);
         if (cached != null){

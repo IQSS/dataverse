@@ -4,8 +4,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -36,23 +34,16 @@ public class ListDataverseContentCommand extends AbstractCommand<List<DvObject>>
     @Override
     public List<DvObject> execute(CommandContext ctxt) throws CommandException {
         LinkedList<DvObject> result = new LinkedList<>();
-        User user = getRequest().getUser();
-        if (user.isSuperuser()) {
+        if (getRequest().getUser().isSuperuser()) {
             result.addAll(ctxt.datasets().findByOwnerId(dvToList.getId()));
             result.addAll(ctxt.dataverses().findByOwnerId(dvToList.getId()));
         } else {
-            int i = 0;
             for (Dataset ds : ctxt.datasets().findByOwnerId(dvToList.getId())) {
-                i++;
-                logger.info("on "+i);
                 if (ds.isReleased() || ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)) {
                     result.add(ds);
                 }
             }
-            logger.info("done with datasets");
             for (Dataverse dv : ctxt.dataverses().findByOwnerId(dvToList.getId())) {
-                i++;
-                logger.info("on "+i);
                 if (dv.isReleased() || ctxt.permissions().requestOn(getRequest(), dv).has(Permission.ViewUnpublishedDataverse)) {
                     result.add(dv);
                 }

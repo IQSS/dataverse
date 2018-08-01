@@ -199,7 +199,7 @@ public class MyDataFinder {
      */
     private List<String> getSolrFilterQueries(boolean totalCountsOnly){
         if (this.hasError()){
-            throw new IllegalStateException("Error encjountered earlier.  Before calling this method on a MyDataFinder object, first check 'hasError()'");
+            throw new IllegalStateException("Error encountered earlier.  Before calling this method on a MyDataFinder object, first check 'hasError()'");
         }
         
         // init filterQueries list

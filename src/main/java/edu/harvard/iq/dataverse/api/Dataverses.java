@@ -53,11 +53,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
-import edu.harvard.iq.dataverse.search.SearchException;
-import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
-import edu.harvard.iq.dataverse.search.SolrSearchResult;
-import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -97,16 +93,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import javax.json.JsonWriter;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.StreamingOutput;
 
 /**
  * A REST API for dataverses.
@@ -122,11 +110,6 @@ public class Dataverses extends AbstractApiBean {
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
 
-    @EJB
-    SearchServiceBean search;
-
-    @EJB
-    DataverseServiceBean dataverseServiceBean;
 //    @EJB
 //    SystemConfig systemConfig;
 
@@ -501,10 +484,6 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @Path("{identifier}/contents")
     public Response listContent(@PathParam("identifier") String dvIdtf) throws WrappedResponse {
-        return allowCors(response((DataverseRequest req) -> listContent(req, dvIdtf)));
-    }
-
-    private Response listContent(DataverseRequest req, String dvIdtf) throws WrappedResponse {
 
         DvObject.Visitor<JsonObjectBuilder> ser = new DvObject.Visitor<JsonObjectBuilder>() {
             @Override
@@ -524,22 +503,12 @@ public class Dataverses extends AbstractApiBean {
                 throw new UnsupportedOperationException("Files don't live directly in Dataverses");
             }
         };
-
-        Dataverse dv = findDataverseOrDie(dvIdtf);
-        List<DvObject> results = execCommand(new ListDataverseContentCommand(req, dv));
-        StreamingOutput stream = new StreamingOutput() {
-
-            @Override
-            public void write(OutputStream os) throws IOException, WebApplicationException {
-                for (DvObject dvo : results) {
-                    os.write(dvo.accept(ser).build().toString().getBytes());
-                }
-                os.flush();
-                os.close();
-            }
-        };
-        return Response.ok(stream).build();
-
+        return allowCors(response(req -> ok(
+                execCommand(new ListDataverseContentCommand(req, findDataverseOrDie(dvIdtf)))
+                        .stream()
+                        .map(dvo -> (JsonObjectBuilder) dvo.accept(ser))
+                        .collect(toJsonArray()))
+        ));
     }
 
     @GET
