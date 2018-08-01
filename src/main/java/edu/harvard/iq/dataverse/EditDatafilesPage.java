@@ -1075,7 +1075,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public String save() {
         
-      
+        
         /*
         // Validate
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
@@ -2655,7 +2655,14 @@ public class EditDatafilesPage implements java.io.Serializable {
         tabularDataTagsUpdated = true;
     }
     
+    public void handleDescriptionChange(final AjaxBehaviorEvent event) {        
+        datasetUpdateRequired = true;
+    }
     
+    public void handleNameChange(final AjaxBehaviorEvent event) {        
+        datasetUpdateRequired = true;
+    }
+        
     /* 
      * Items for the "Advanced (Ingest) Options" popup. 
      * 

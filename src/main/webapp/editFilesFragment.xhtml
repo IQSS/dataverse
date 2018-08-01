@@ -375,7 +375,9 @@
                             <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
                                 #{bundle['file.fileName']}
                             </label>
-                            <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;"/>
+                            <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;">
+                            <p:ajax event="change" listener="#{EditDatafilesPage.handleNameChange}" update="fileName" />
+                            </p:inputText>
                             <p:message for="fileName"/>
                         </ui:fragment>
                         <!-- TYPE + SIZE + DATE + CHECKSUM -->
@@ -399,7 +401,9 @@
                                 <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
                                     #{bundle.description}
                                 </label>
-                                <p:inputTextarea id="fileDescription" immediate="true" rows="2" cols="40" value="#{fileMetadata.description}" style="width:60%; margin-top:.5em;"/>
+                                <p:inputTextarea id="fileDescription" immediate="true" rows="2" cols="40" value="#{fileMetadata.description}" style="width:60%; margin-top:.5em;"> 
+                                <p:ajax event="change" listener="#{EditDatafilesPage.handleDescriptionChange}" update="fileDescription" />
+                                </p:inputTextarea>
                                 <p:watermark for="fileDescription" value="#{bundle['file.addDescription']}"/>
                                 <p:message for="fileDescription"/>
                             </ui:fragment>
