@@ -221,7 +221,7 @@ public class SystemConfig {
 
     public String getSolrHostColonPort() {
         String SolrHost;
-        if ( System.getenv("SOLR_SERVICE_HOST") != null || System.getenv("SOLR_SERVICE_HOST") != ""){
+        if ( System.getenv("SOLR_SERVICE_HOST") != null && System.getenv("SOLR_SERVICE_HOST") != ""){
             SolrHost = System.getenv("SOLR_SERVICE_HOST");
         }
         else SolrHost = saneDefaultForSolrHostColonPort;

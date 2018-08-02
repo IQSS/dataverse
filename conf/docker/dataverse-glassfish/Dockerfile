@@ -25,6 +25,11 @@ ENV POSTGRES_USER "dvnapp"
 ENV RSERVE_USER "rserve"
 ENV RSERVE_PASSWORD "rserve"
 
+#RUN exitEarlyBeforeJq
+RUN yum -y install epel-release
+# RUN rpm --rebuilddb 
+RUN yum -y install jq 
+
 COPY dvinstall.zip /tmp
 
 #RUN ls /tmp
@@ -54,12 +59,6 @@ RUN chgrp -R 0 /home/glassfish && \
 RUN mkdir -p /usr/local/glassfish4
 RUN chgrp -R 0 /usr/local/glassfish4 && \
     chmod -R g=u /usr/local/glassfish4
-
-
-#RUN exitEarlyBeforeJq
-RUN yum -y install epel-release
-# RUN rpm --rebuilddb 
-RUN yum -y install jq 
 
 #JHOVE
 RUN cp /tmp/dvinstall/jhove* /usr/local/glassfish4/glassfish/domains/domain1/config
