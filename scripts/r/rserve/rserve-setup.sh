@@ -57,4 +57,6 @@ echo "Successfully installed Dataverse Rserve framework."
 echo
 
 
+service rserve start
+
 exit 0

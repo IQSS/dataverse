@@ -295,7 +295,7 @@ Installing R
 
 Can be installed with :fixedwidthplain:`yum`::
 
-       yum install R R-devel
+       yum install R-core R-core-devel
 
 EPEL distribution is strongly recommended. The version of R currently available from epel6 and epel7 is 3.5; it has been tested and is known to work on RedHat and CentOS versions 6 and 7.
 
@@ -355,6 +355,7 @@ RedHat/CentOS 7 system, you may want to use the
 :fixedwidthplain:`systemctl`-style file
 :fixedwidthplain:`rserve.service` instead. (Copy it into the
 :fixedwidthplain:`/usr/lib/systemd/system/` directory)
+
 
 
 Note that the setup will also set the Rserve password to

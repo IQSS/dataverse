@@ -139,10 +139,10 @@ change it to
 b. R:
 -----
 
-The simplest way to install R on RHEL/CentOS systems is with yum, using the EPEL repository:
+The simplest way to install R on RHEL/CentOS systems is with yum, using the EPEL repository::
 
        yum install epel-release
-       yum install R R-devel
+       yum install R-core R-core-devel
 
 Both EPEL6 and EPEL7 currently provide R 3.5, which has been tested and appears to work well. R 3.4, offered by EPEL until also works well. We recommend using the currently available EPEL version for all the new installations. But if you already have a working R 3.4 installation from EPEL and you don't have a specific need to upgrade, you may lock that version in place using the ``yum-versionlock`` yum plugin, or simply add this line to the "epel" section of /etc/yum.repos.d/epel.repo::
 
@@ -159,14 +159,14 @@ R completely**, erasing all the extra R packages that may have been already buil
 
 Uninstall R::
 
-        yum erase R R-devel
+        yum erase R-core R-core-devel
 
 Wipe clean any R packages that were left behind:: 
 
         rm -rf /usr/lib64/R/library/*
         rm -rf /usr/share/R/library/*
 
-... then install R with :fixedwidthplain:`yum`.  
+... then re-install R with :fixedwidthplain:`yum install`
 
 c. rApache: 
 -----------
@@ -188,6 +188,15 @@ If you are using RHEL/CentOS 7 and R 3.4, download :download:`rapache-1.2.7-rpm0
 If you are using RHEL/CentOS 7 in combination with R 3.5, download :download:`rapache-1.2.9_R-3.5.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.9_R-3.5.x86_64.rpm>` and install it with::
 
        	yum install rapache-1.2.9_R-3.5.x86_64.rpm
+
+**Please note:** 
+The rpms above cannot be *guaranteed* to work on your
+system. You may have a collection of system libraries installed on
+your system that will create a version conflict. If that's the case,
+or if you are trying to install on an operating system that's listed
+above, do not despair: simply build rApache from `source
+<http://rapache.net/downloads.html>`_ . **Make sure** to build with
+the R that's the same version you are planning on using.
 
 d. Install the build environment for R:
 ---------------------------------------
@@ -226,8 +235,11 @@ Unpack the zip file, then run the script::
 
 See the section ``II.`` of the Appendix for trouble-shooting tips. 
 
-For the Rserve package the setup script will also create a system user :fixedwidthplain:`rserve`, and install the startup script for the daemon (``/etc/init.d/rserve``). 
-The script will skip this part, if this has already been done on this system (i.e., it should be safe to run it repeatedly). 
+For the Rserve package the setup script will also create a system user
+:fixedwidthplain:`rserve`, and install the startup script for the
+daemon (``/etc/init.d/rserve``).  The script will skip this part, if
+this has already been done on this system (i.e., it should be safe to
+run it repeatedly).
 
 Note that the setup will set the Rserve password to :fixedwidthplain:`"rserve"`. 
 Rserve daemon runs under a non-privileged user id, and there appears to be a 
@@ -323,7 +335,7 @@ Compare the two files. **It is important that the two copies are identical**.
 - unless this is a brand new Dataverse installation, it may have cached summary statistics fragments that were produced with the older version of this R code. You **must remove** all such cached files::
 
         cd <DATAVERSE FILES DIRECTORY>
-        find . -name '*.prep' | while read file; do /bin/rm $f; done
+        find . -name '*.prep' | while read file; do /bin/rm $file; done
 
 *(Yes, this is a HACK! We are working on finding a better way to ensure this compatibility between 
 TwoRavens and Dataverse!)*
