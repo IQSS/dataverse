@@ -22,11 +22,7 @@
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  rendered="#{empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
-                 emptyMessage="#{bundle['file.notFound.tip']}"
-                 >
-        <!-- Attempted solution from https://stackoverflow.com/questions/17487670/update-component-at-change-of-page-on-primefaces-datagrid-with-pagination -->
-        <!-- Suggestion to use oncomplete at https://stackoverflow.com/questions/28628989/primefaces-paginator-selection -->
-        <!-- Something about skipChildren=false mentioned at https://github.com/primefaces/primefaces/issues/1362#issuecomment-216529851 via https://github.com/primefaces/primefaces/issues/687-->
+                 emptyMessage="#{bundle['file.notFound.tip']}">
         <p:ajax event="page" listener="#{DatasetPage.fileListingPaginatorListener}" update="filesTable" process="@this"  oncomplete="refreshPaginator()"  immediate="true"/>
         <p:ajax event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" update="filesTable" /> 
         <p:ajax event="rowUnselectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" />
@@ -97,11 +93,6 @@
             <div class="row" style="margin-bottom:6px;">
                 <div jsf:id="filesHeaderCount" class="col-xs-3 text-left">
                     <!-- Files Count -->
-                    <!--
-                    TO-DO: 
-                    - ?Fix misleading "# Files Selected on Upload Files/Edit Files pg?
-                    - ?Copy over new selection message to Upload Files/Edit Files pg?
-                    -->
                     <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold" rendered="#{DatasetPage.fileMetadatasSearch.size() gt 0}">
                         <f:param value="#{(DatasetPage.filePaginatorPage * DatasetPage.rowsPerPage) + 1}"/>
                         <f:param value="#{Math:min((DatasetPage.filePaginatorPage + 1) * DatasetPage.rowsPerPage,DatasetPage.fileMetadatasSearch.size()) }"/>
@@ -109,7 +100,7 @@
                     </h:outputFormat>
                 </div>
 
-                <div  class="col-xs-10">
+                <div  class="col-xs-9">
                     <p:outputPanel id="filesButtons">
                     <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->
                     <!-- tab-header pull-right -->
