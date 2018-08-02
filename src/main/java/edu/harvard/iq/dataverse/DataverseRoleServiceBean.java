@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.util.TimeoutCacheWrapper;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -223,7 +224,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         return ras;
     }
 
-    TimeoutCache<RoleAssignee, List<RoleAssignment>> rolesCache =  TimeoutCacheWrapper.addOrGet("roles", 10);;
+    private final TimeoutCache<RoleAssignee, List<RoleAssignment>> rolesCache =  TimeoutCacheWrapper.addOrGet("roles");;
     /**
      * Retrieves the roles assignments for {@code user}, directly on {@code dv}.
      * No traversal on the containment hierarchy is done.
@@ -234,7 +235,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
      * edu.harvard.iq.dataverse.Dataverse)
      */
-    public List<RoleAssignment> directRoleAssignments(@NotNull RoleAssignee roas, DvObject dvo) {
+    public List<RoleAssignment> directRoleAssignments(@NotNull RoleAssignee roas, @NotNull DvObject dvo) {
         List<RoleAssignment> unfiltered = rolesCache.get(roas);
         if (unfiltered == null){
             logger.info("RolesCache miss "+ roas);
@@ -243,7 +244,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
                             .getResultList();
             rolesCache.put(roas, unfiltered);
         }
-        return unfiltered.stream().filter(roleAssignment -> roleAssignment.getDefinitionPoint().getId() == dvo.getId()).collect(Collectors.toList());
+        return unfiltered.stream().filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId())).collect(Collectors.toList());
     }
 
     /**

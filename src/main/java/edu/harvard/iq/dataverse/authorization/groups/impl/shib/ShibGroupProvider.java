@@ -37,11 +37,14 @@ public class ShibGroupProvider implements GroupProvider<ShibGroup> {
 
     @Override
     public Set<ShibGroup> groupsFor( DataverseRequest req, DvObject dvo ) {
-        return groupsFor( req.getUser(), dvo );
+        return groupsFor(req.getUser());
     }
     
     @Override
-    public Set<ShibGroup> groupsFor(RoleAssignee ra, DvObject o) {
+    public Set<ShibGroup> groupsFor(RoleAssignee ra, DvObject dvo) {
+        return groupsFor(ra);
+    }
+    public Set<ShibGroup> groupsFor(RoleAssignee ra) {
         if ( ra instanceof User ) {
             User user = (User) ra;
             Set<ShibGroup> shibGroups = new HashSet<>();

@@ -14,9 +14,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TimeoutCacheWrapper {
     private static final ConcurrentHashMap<String, TimeoutCache> maps= new ConcurrentHashMap<>();
     
-    /* */
+    /* Convienience method for a 1 second cache with 300 entries*/
+    public static TimeoutCache addOrGet(String key){
+        return addOrGet(key, 300);
+    }
+    
+    /* Convienience method for a 1 second cache*/
     public static TimeoutCache addOrGet(String key, int capacity){
-        return addOrGet(key, capacity, 2*1000);
+        return addOrGet(key, capacity, 1000);
     }
     
     public static TimeoutCache addOrGet(String key, int capacity, int timeout){

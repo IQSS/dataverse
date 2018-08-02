@@ -116,13 +116,11 @@ public class TimeoutCache<K, V> implements Map<K, V> {
 
     @Override
     public Set<K> keySet() {
-        cull();
         return map.keySet();
     }
 
     @Override
     public Set<V> values() {
-        cull();
         Set<V> values = new HashSet<>(capacity);
         for (TimeNode<V> val : map.values()) {
             values.add(val.val);
@@ -132,7 +130,6 @@ public class TimeoutCache<K, V> implements Map<K, V> {
 
     @Override
     public Set<Entry<K, V>> entrySet() {
-        cull();
         Set<Entry<K, V>> entries = new HashSet<>(capacity);
         for (Entry<K, TimeNode<V>> entry : map.entrySet()) {
             entries.add(new AbstractMap.SimpleEntry<>(entry.getKey(), entry.getValue().val));

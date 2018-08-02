@@ -314,22 +314,25 @@ public class PermissionServiceBean {
      * @param dvo
      * @return Permissions of {@code req.getUser()} over {@code dvo}.
      */
-    public Set<Permission> permissionsFor(DataverseRequest req, DvObject dvo) {
-        // Start with permissions specifically given to the user
-        Set<Permission> permissions = permissionsForSingleRoleAssignee(req.getUser(), dvo);
-
+    public Set<Permission> permissionsFor( DataverseRequest req, DvObject dvo ) {
+        Set<Permission> permissions = EnumSet.noneOf(Permission.class);
+        
+        // Add permissions specifically given to the user
+        permissions.addAll( permissionsForSingleRoleAssignee(req.getUser(),dvo) );
+        Set<Group> groups = groupService.groupsFor(req,dvo);
+        
         // Add permissions gained from groups
-        for (Group g : groupService.groupsFor(req, dvo)) {
-            permissionsForSingleRoleAssignee(g, dvo, permissions);
+        for ( Group g : groups ) {
+            final Set<Permission> groupPremissions = permissionsForSingleRoleAssignee(g,dvo);
+            permissions.addAll(groupPremissions);
         }
-
         if (!req.getUser().isAuthenticated()) {
             permissions.removeAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
         }
-
+        
         return permissions;
     }
-
+    
     /**
      * Returns the set of permission a user/group has over a dataverse object.
      * This method takes into consideration group memberships as well, but does
@@ -340,20 +343,20 @@ public class PermissionServiceBean {
      * @return the set of permissions {@code ra} has over {@code dvo}.
      */
     public Set<Permission> permissionsFor(RoleAssignee ra, DvObject dvo) {
-
-        // Start with permissions specifically given to the user
-        Set<Permission> permissions = permissionsForSingleRoleAssignee(ra, dvo);
-
+        Set<Permission> permissions = EnumSet.noneOf(Permission.class);
+        
+        // Add permissions specifically given to the user
+        permissions.addAll( permissionsForSingleRoleAssignee(ra,dvo) );
+        
         // Add permissions gained from groups
-        Set<Group> groupsRaBelongsTo = groupService.groupsFor(ra, dvo);
-        for (Group g : groupsRaBelongsTo) {
-            permissionsForSingleRoleAssignee(g, dvo, permissions);
+        Set<Group> groupsRaBelongsTo = groupService.groupsFor(ra,dvo);
+        for ( Group g : groupsRaBelongsTo ) {
+            permissions.addAll( permissionsForSingleRoleAssignee(g,dvo) );
         }
-
         if ((ra instanceof User) && (!((User) ra).isAuthenticated())) {
             permissions.removeAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
         }
-
+        
         return permissions;
     }
 
@@ -367,17 +370,6 @@ public class PermissionServiceBean {
 
         // Start with no permissions, build from there.
         Set<Permission> retVal = EnumSet.noneOf(Permission.class);
-        return permissionsForSingleRoleAssignee(ra, d, retVal);
-    }
-
-    private Set<Permission> permissionsForSingleRoleAssignee(RoleAssignee ra, DvObject d, Set<Permission> retVal) {
-        // super user check
-        // for 4.0, we are allowing superusers all permissions
-        // for secure data, we may need to restrict some of the permissions
-        if (ra instanceof AuthenticatedUser && ((AuthenticatedUser) ra).isSuperuser()) {
-            retVal.addAll(EnumSet.allOf(Permission.class));
-            return retVal;
-        }
         // File special case.
         if (d instanceof DataFile) {
             // unrestricted files that are part of a release dataset 

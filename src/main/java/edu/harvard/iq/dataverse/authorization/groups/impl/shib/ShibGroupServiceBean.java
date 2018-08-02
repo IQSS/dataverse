@@ -75,7 +75,7 @@ public class ShibGroupServiceBean {
     }
 
     // One minute cache with max of 10 entries
-    TimeoutCache<AuthenticatedUser, Set<ShibGroup>> groupCache =  TimeoutCacheWrapper.addOrGet("shib", 10);;
+    private final TimeoutCache<AuthenticatedUser, Set<ShibGroup>> groupCache =  TimeoutCacheWrapper.addOrGet("shib");;
 
     public Set<ShibGroup> findFor(AuthenticatedUser authenticatedUser) {
         Set<ShibGroup> groupsForUser = groupCache.get(authenticatedUser);

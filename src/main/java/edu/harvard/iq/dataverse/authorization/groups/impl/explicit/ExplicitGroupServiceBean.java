@@ -120,7 +120,7 @@ public class ExplicitGroupServiceBean {
     
     
     // One minute cache with max of 10 entries
-    TimeoutCache<RoleAssignee, Set<ExplicitGroup>> groupCache =  TimeoutCacheWrapper.addOrGet("explicit", 10);
+    private final TimeoutCache<RoleAssignee, Set<ExplicitGroup>> groupCache =  TimeoutCacheWrapper.addOrGet("explicit");
     /**
      * Finds all the explicit groups {@code ra} is a member of.
      * @param ra the role assignee whose membership list we seek
