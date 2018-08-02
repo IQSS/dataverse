@@ -220,7 +220,12 @@ public class SystemConfig {
     }
 
     public String getSolrHostColonPort() {
-        String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, saneDefaultForSolrHostColonPort);
+        String SolrHost;
+        if ( System.getenv("SOLR_SERVICE_HOST") != null || System.getenv("SOLR_SERVICE_HOST") != ""){
+            SolrHost = System.getenv("SOLR_SERVICE_HOST");
+        }
+        else SolrHost = saneDefaultForSolrHostColonPort;
+        String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, SolrHost);
         return solrHostColonPort;
     }
 
