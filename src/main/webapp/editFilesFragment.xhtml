@@ -20,8 +20,7 @@
         </ul>
         <div class="ui-tabs-panels">
             <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
-                
-                
+                <!-- Create dataset workflow info msg + user guide link -->
                 <div jsf:rendered="#{createDataset}">
                     <p class="help-block">
                         <h:outputFormat value="#{bundle['dataset.message.uploadFiles.message']}" escape="false">
@@ -242,7 +241,8 @@
                             </h4>
                         </div>
 
-                        <div id="collapseRsync" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingRsync">
+                        <!-- NOTE: conditional logic for 'in' style class opens the rsync panel if HTTP is off, but isn't scalable when a third upload mode is added -->
+                        <div id="collapseRsync" class="panel-collapse collapse #{!settingsWrapper.HTTPUpload ? 'in' : ''}" role="tabpanel" aria-labelledby="headingRsync">
                             <div class="panel-body">
                                 <ui:fragment rendered="#{createDataset}">
                                     <p class="help-block">
@@ -256,10 +256,16 @@
                                             <h:outputText class="text-danger" value=" #{bundle['file.rsyncUpload.filesExist']}" escape="false"/>
                                         </p>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!EditDatafilesPage.isHasRsyncScript() and empty EditDatafilesPage.fileMetadatas}">
+                                    <ui:fragment rendered="#{!EditDatafilesPage.isHasRsyncScript() and (empty EditDatafilesPage.fileMetadatas and empty DatasetPage.workingVersion.hasPackageFile)}">
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-warning-sign text-danger"></span>
                                             <h:outputText class="text-danger" value=" #{bundle['file.rsyncUpload.noScriptAvailable']}" escape="false"/>
+                                        </p>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{!EditDatafilesPage.isHasRsyncScript() and (empty EditDatafilesPage.fileMetadatas and DatasetPage.workingVersion.hasPackageFile)}">
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+                                            <h:outputText class="text-danger" value=" #{bundle['file.rsyncUpload.filesExist']}" escape="false"/>
                                         </p>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{EditDatafilesPage.isHasRsyncScript() and empty EditDatafilesPage.fileMetadatas}">
