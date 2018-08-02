@@ -233,7 +233,7 @@ public class PORFileReader  extends TabularDataFileReader{
         
         for (int indx = 0; indx < variableTypelList.size(); indx++) {
             
-            DataVariable dv = new DataVariable();
+            DataVariable dv = new DataVariable(indx, dataTable);
             String varName = variableNameList.get(indx); 
             dv.setName(varName);
             String varLabel = variableLabelMap.get(varName);
@@ -249,13 +249,6 @@ public class PORFileReader  extends TabularDataFileReader{
             } else {
                 dv.setLabel(varLabel);
             }
-            
-            dv.setInvalidRanges(new ArrayList<>());
-            dv.setSummaryStatistics( new ArrayList<>() );
-            dv.setUnf("UNF:6:");
-            dv.setCategories(new ArrayList<>());
-            dv.setFileOrder(indx);
-            dv.setDataTable(dataTable);
             
             variableList.add(dv);            
             
@@ -1649,9 +1642,8 @@ public class PORFileReader  extends TabularDataFileReader{
         // Let's go through all the categorical value label mappings and 
         // assign them to the correct variables: 
         
-        for (int i = 0; i < dataTable.getVarQuantity().intValue(); i++) {
-            
-            String varName = dataTable.getDataVariables().get(i).getName();
+        for (DataVariable dataVariable : dataTable.getDataVariables()) {
+            String varName = dataVariable.getName();
             
             Map<String, String> valueLabelPairs = valueLabelTable.get(valueVariableMappingTable.get(varName));
             if (valueLabelPairs != null && !valueLabelPairs.isEmpty()) {
@@ -1662,8 +1654,8 @@ public class PORFileReader  extends TabularDataFileReader{
                     cat.setLabel(valueLabelPairs.get(value));
 
                     /* cross-link the variable and category to each other: */
-                    cat.setDataVariable(dataTable.getDataVariables().get(i));
-                    dataTable.getDataVariables().get(i).getCategories().add(cat);
+                    cat.setDataVariable(dataVariable);
+                    dataVariable.getCategories().add(cat);
                 }
             }
         }
