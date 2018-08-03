@@ -22,17 +22,6 @@
         "admin-password" : "${ADMIN_PASSWORD}"
       }
     },
-  	{
-      "kind": "Secret",
-      "apiVersion": "v1",
-      "metadata": {
-        "name": "dataverse-postgres-secret"
-      },
-      "stringData" : {
-        "postgres-user" : "${POSTGRES_USER}",
-        "postgres-password" : "${POSTGRES_PASSWORD}"
-      }
-    },
     {
       "kind": "Secret",
       "apiVersion": "v1",
@@ -200,27 +189,55 @@
               {
                 "name": "start-glassfish",
                 "image": "iqss/init-container:latest",
-                "imagePullPolicy": "Always",
+                "imagePullPolicy": "IfNotPresent",
                 "env": [
+                  {
+                    "name": "CONTAINER_NAME",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "metadata.name"
+                      }
+                    }
+                  },
                   {
                     "name": "MY_POD_NAME",
                     "value": "start-glassfish"
                   },
                   {
+                    "name": "POSTGRES_ADMIN_PASSWORD",
+                    "valueFrom": {
+                        "secretKeyRef": {
+                    	    "name" : "dataverse-postgresql-admin-secret",
+                    	    "key" : "postgresql-admin-password"
+                    	}
+                    } 
+                  },
+                  {
                     "name": "POSTGRES_SERVER",
                     "value": "dataverse-postgresql-0"
                   },
+                  
                   {
                     "name": "POSTGRES_SERVICE_HOST",
                     "value": "dataverse-postgresql-service"
                   },
                   {
                     "name": "POSTGRES_USER",
-                    "value": "dvnapp"
+                    "valueFrom": {
+                    	"secretKeyRef": {
+                    		"name" : "dataverse-postgresql-secret",
+                    		"key" : "postgresql-user"
+                    	}
+                    }
                   },
                   {
                     "name": "POSTGRES_PASSWORD",
-                    "value": "secret"
+                    "valueFrom": {
+                    	"secretKeyRef": {
+                    		"name" : "dataverse-postgresql-secret",
+                    		"key" : "postgresql-password"
+                    	}
+                    }
                   },
                   {
                     "name": "POSTGRES_DATABASE",
@@ -232,7 +249,7 @@
             "containers": [
               {
                 "name": "dataverse-plus-glassfish",
-                "image": "charlesthao96/dataverse-glassfish:testinit",
+                "image": "iqss/dataverse-glassfish:latest",
                 "ports": [
                   {
                     "containerPort": 8080,
@@ -291,8 +308,8 @@
                     "name": "POSTGRES_USER",
                     "valueFrom": {
                     	"secretKeyRef": {
-                    		"name" : "dataverse-postgres-secret",
-                    		"key" : "postgres-user"
+                    		"name" : "dataverse-postgresql-secret",
+                    		"key" : "postgresql-user"
                     	}
                     }
                   },
@@ -300,8 +317,8 @@
                     "name": "POSTGRES_PASSWORD",
                     "valueFrom": {
                     	"secretKeyRef": {
-                    		"name" : "dataverse-postgres-secret",
-                    		"key" : "postgres-password"
+                    		"name" : "dataverse-postgresql-secret",
+                    		"key" : "postgresql-password"
                     	}
                     }
                   },
@@ -310,7 +327,7 @@
                     "value": "dvndb"
                   }
                 ],
-                "imagePullPolicy": "Always",
+                "imagePullPolicy": "IfNotPresent",
                 "securityContext": {
                   "capabilities": {},
                   "privileged": false
@@ -464,7 +481,7 @@
                     "memory": "256Mi"
                   }
                 },
-                "imagePullPolicy": "Always",
+                "imagePullPolicy": "IfNotPresent",
                 "securityContext": {
                   "capabilities": {},
                   "privileged": false
@@ -528,7 +545,7 @@
             "containers": [
               {
                 "name": "iqss-dataverse-solr",
-                "image": "iqss-dataverse-solr:latest",
+                "image": "iqss/dataverse-solr",
                 "ports": [
                   {
                     "containerPort": 8983,
@@ -540,7 +557,7 @@
                     "memory": "1024Mi"
                   }
                 },
-                "imagePullPolicy": "Always",
+                "imagePullPolicy": "IfNotPresent",
                 "securityContext": {
                   "capabilities": {},
                   "privileged": false
@@ -568,7 +585,7 @@
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "iqss-dataverse-solr:latest"
+                "name": "iqss/dataverse-solr:latest"
               }
             }
           },
@@ -591,26 +608,8 @@
         "from": "[a-zA-Z0-9]{8}"
     },
     {
-        "name": "POSTGRES_USER",
-        "description": "postgres user",
-        "generate": "expression",
-        "from": "user[A-Z0-9]{3}"
-    },
-    {
-        "name": "POSTGRES_PASSWORD",
-        "description": "postgres password",
-        "generate": "expression",
-        "from": "[a-zA-Z0-9]{8}"
-    },
-    {
         "name": "POSTGRESQL_USER",
         "description": "postgresql user",
-        "generate": "expression",
-        "from": "user[A-Z0-9]{3}"
-    },
-    {
-        "name": "POSTGRESQL_MASTER_USER",
-        "description": "postgresql master user",
         "generate": "expression",
         "from": "user[A-Z0-9]{3}"
     },
@@ -619,6 +618,12 @@
         "description": "postgresql password",
         "generate": "expression",
         "from": "[a-zA-Z0-9]{8}"
+    },
+    {
+      "name": "POSTGRESQL_MASTER_USER",
+      "description": "postgresql master user",
+      "generate": "expression",
+      "from": "user[A-Z0-9]{3}"
     },
     {
         "name": "POSTGRESQL_MASTER_PASSWORD",

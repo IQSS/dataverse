@@ -4,7 +4,6 @@ MAINTAINER Dataverse (support@dataverse.org)
 COPY glassfish-4.1.zip /tmp
 COPY weld-osgi-bundle-2.2.10.Final-glassfish4.jar /tmp
 COPY default.config /tmp
-COPY dvinstall.zip /tmp
 # Install dependencies
 #RUN yum install -y unzip
 RUN yum install -y \
@@ -25,6 +24,8 @@ ENV POSTGRES_DB "dvndb"
 ENV POSTGRES_USER "dvnapp"
 ENV RSERVE_USER "rserve"
 ENV RSERVE_PASSWORD "rserve"
+
+COPY dvinstall.zip /tmp
 
 #RUN ls /tmp
 #
