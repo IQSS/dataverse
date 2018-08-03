@@ -3,6 +3,7 @@ library(stats)
 library(methods)
 library(R2HTML)
 library(haven)
+
 options(digits.secs = 3)
 
 
@@ -75,7 +76,7 @@ read.dataverseTabData<-function (file, header = FALSE, sep = "\t", quote = "", d
                 data[[i]] <- as(data[[i]], "character")
              } else if (!is.null(unlist(varFormat[col.names[i]]))){
                 if (varFormat[col.names[i]] == 'D'){
-            data[[i]]<-as.Date(data[[i]]);
+	            data[[i]]<-as.Date(data[[i]]);
                     colClassesx[i]<-1
                 } else if (varFormat[col.names[i]] == 'T'){
                     data[[i]]<-as.POSIXct(strptime(data[[i]], "%T"))
@@ -266,20 +267,17 @@ createDataverseDataFrame<-function(dtfrm, dwnldoptn, dsnprfx) {
 
     for (i in 1:length(x)) {
         # Recoding discrete, categorical variables as R factors;
-    # using the value labels maps supplied by the Dataverse.
+	# using the value labels maps supplied by the Dataverse.
 
-    if (DBG) {
+	if (DBG) {
             # cat("inside the for loop\n")
             # cat("class: ")
             # cat(class(x[[i]]))
             # cat("\n")
             cat("VAR TYPE: ",paste(VARTYPE[i],"\n",sep=""))
-    }       
+	}
 
-
-    # -- L.A.
-    
-    if (!is.null(VARTYPE) && VARTYPE[i]<2) {
+	if (!is.null(VARTYPE) && VARTYPE[i]<2) {
 
             if (!(is.null(VALINDEX[[as.character(i)]]))) {
 
@@ -341,8 +339,8 @@ createDataverseDataFrame<-function(dtfrm, dwnldoptn, dsnprfx) {
 
                     # cat("ordered value labels supplied")
                     x[[i]]  <-  factor(x[[i]],
-                levels=VALORDER[[as.character(i)]],
-                ordered=TRUE)
+		    		levels=VALORDER[[as.character(i)]],
+                    		ordered=TRUE)
                 } else {
                     if (DBG) {
                         cat("no ordered value labels supplied\n")
@@ -352,23 +350,23 @@ createDataverseDataFrame<-function(dtfrm, dwnldoptn, dsnprfx) {
                         cat(paste("MTI", mti,"\n",sep=" : "))
                         cat(paste("VLEVSI", vlevsi,"\n",sep=" : "))
                     }
-      
+	  
                     x[[i]]  <-  factor(x[[i]],
-                    levels=vlevsi,
-                    labels=names(vlevsi),
-                    ordered=(VARTYPE[i]>0 && ((length(vlevsi)-length(mti)>2))))
+	        		levels=vlevsi,
+			     	labels=names(vlevsi),
+			     	ordered=(VARTYPE[i]>0 && ((length(vlevsi)-length(mti)>2))))
                 }
 
                 if (DBG) {
                     attr(x,"vlevsi")<-vlevsi;
                     attr(x,"namesvlevsi")<-names(vlevsi); 
                 }
-    
-            }   
-    }
+	
+            }	
+	}
 
-    # try to add variable labels as R comments: 
-    comment(x[[i]]) <- VARLABELS[i]
+	# try to add variable labels as R comments: 
+	comment(x[[i]]) <- VARLABELS[i]
     }
 
     # SAVE AS R WORKSPACE: 

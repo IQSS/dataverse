@@ -9,10 +9,11 @@ External tools can provide additional features that are not part of Dataverse it
 Inventory of External Tools
 ---------------------------
 
-Support for external tools is just getting off the ground but TwoRavens has been converted into an external tool. See the :doc:`/user/data-exploration/tworavens` section of the User Guide for more information on TwoRavens from the user perspective and :doc:`r-rapache-tworavens` for more information on installing TwoRavens.
+Support for external tools is just getting off the ground but the following tools have been successfully integrated with Dataverse:
 
-- TwoRavens: a system of interlocking statistical tools for data exploration, analysis, and meta-analysis: http://2ra.vn
-- Data Explorer: a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis. For installation instructions see the README.md file at https://github.com/scholarsportal/Dataverse-Data-Explorer.
+- TwoRavens: a system of interlocking statistical tools for data exploration, analysis, and meta-analysis: http://2ra.vn. See the :doc:`/user/data-exploration/tworavens` section of the User Guide for more information on TwoRavens from the user perspective and the :doc:`r-rapache-tworavens` section of the Installation Guide. 
+
+- Data Explorer: a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis. See the README.md file at https://github.com/scholarsportal/Dataverse-Data-Explorer for the instructions on adding Data Explorer to your Dataverse; and the :doc:`prerequisites` section of the Installation Guide for the instructions on how to set up **basic R configuration required** (specifically, Dataverse uses R to generate .prep metadata files that are needed to run Data Explorer). 
 - [Your tool here! Please get in touch! :) ]
 
 Downloading and Adjusting an External Tool Manifest File
