@@ -82,17 +82,17 @@ public class AuthenticatedUser implements User, Serializable {
     @Column(nullable = false, unique=true)
     private String userIdentifier;
 
-    @ValidateEmail(message = "Please enter a valid email address.")
+    @ValidateEmail(message = "{user.invalidEmail}")
     @NotNull
     @Column(nullable = false, unique=true)
     private String email;
     private String affiliation;
     private String position;
     
-    @NotBlank(message = "Please enter your last name.")
+    @NotBlank(message = "{user.lastName}")
     private String lastName;
     
-    @NotBlank(message = "Please enter your first name.")
+    @NotBlank(message = "{user.firstName}")
     private String firstName;
     
     @Column(nullable = true)
