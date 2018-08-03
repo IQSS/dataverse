@@ -15,7 +15,7 @@ public class XmlValidatorTest {
 
     @Test
     public void testValidateXml() throws IOException, SAXException, ParserConfigurationException {
-        assertTrue(XmlValidator.validateXmlSchema("src/test/java/edu/harvard/iq/dataverse/util/xml/sendToDataCite.xml", new URL("http://schema.datacite.org/meta/kernel-3/metadata.xsd")));
+        assertTrue(XmlValidator.validateXmlSchema("src/test/java/edu/harvard/iq/dataverse/util/xml/sendToDataCite.xml", new URL("https://schema.datacite.org/meta/kernel-3/metadata.xsd")));
         // FIXME: Make sure the DDI we export is valid: https://github.com/IQSS/dataverse/issues/3648
 //        assertTrue(XmlValidator.validateXml("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml", new URL("http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd")));
     }

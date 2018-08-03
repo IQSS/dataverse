@@ -401,14 +401,6 @@ public class DataFile extends DvObject implements Comparable {
         super.setOwner(dataset);
     }
     
-//    public String getStorageIdentifier() {
-//        return this.fileSystemName;
-//    }
-//
-//    public void setStorageIdentifier(String storageIdentifier) {
-//        this.fileSystemName = storageIdentifier;
-//    }
-    
     public String getDescription() {
         FileMetadata fmd = getLatestFileMetadata();
         

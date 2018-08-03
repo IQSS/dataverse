@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Creates images and pushes them to Docker Hub.
 # The "latest" tag under "iqss" should be relatively stable. Don't push breaking changes there.
 # None of the tags are suitable for production use. See https://github.com/IQSS/dataverse/issues/4040

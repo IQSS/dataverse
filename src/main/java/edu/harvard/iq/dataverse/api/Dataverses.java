@@ -53,7 +53,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -256,6 +257,9 @@ public class Dataverses extends AbstractApiBean {
             }
 
             if (nonEmpty(pidParam)) {
+                if (!GlobalId.verifyImportCharacters(pidParam)) {
+                    return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
+                }
                 Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
                 if (maybePid.isPresent()) {
                     ds.setGlobalId(maybePid.get());
@@ -503,6 +507,7 @@ public class Dataverses extends AbstractApiBean {
                 throw new UnsupportedOperationException("Files don't live directly in Dataverses");
             }
         };
+
         return allowCors(response(req -> ok(
                 execCommand(new ListDataverseContentCommand(req, findDataverseOrDie(dvIdtf)))
                         .stream()
