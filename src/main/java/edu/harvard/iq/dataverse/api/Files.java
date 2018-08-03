@@ -337,9 +337,9 @@ public class Files extends AbstractApiBean {
     // for tabular ingest. It can be used on non-tabular datafiles; to try to 
     // ingest a file that has previously failed ingest, or to ingest a file of a
     // type for which ingest was not previously supported. 
-    // It will also be possible to *force* reingest of a datafile that's already
-    // ingested as Tabular data; for example, to address a bug that has been 
-    // found in an ingest plugin. 
+    // We are considering making it possible, in the future, to reingest 
+    // a datafile that's already ingested as Tabular; for example, to address a 
+    // bug that has been found in an ingest plugin. 
     
     @Path("{id}/reingest")
     @POST
@@ -359,15 +359,7 @@ public class Files extends AbstractApiBean {
         try {
             dataFile = findDataFileOrDie(id);
         } catch (WrappedResponse ex) {
-            dataFile = null;
-        }
-        
-        if (dataFile == null) {
             return error(Response.Status.NOT_FOUND, "File not found for given id.");
-        }
-
-        if (dataFile.isTabularData()) {
-            return error(Response.Status.BAD_REQUEST, "Datafile already ingested as Tabular (as of now, this API only works on uningested datafiles).");
         }
 
         Dataset dataset = dataFile.getOwner();
@@ -387,13 +379,9 @@ public class Files extends AbstractApiBean {
         }
         
         dataFile.SetIngestScheduled();
-        
-        IngestRequest ingestRequest = dataFile.getIngestRequest();
-        
-        if (ingestRequest == null) {
-            ingestRequest = new IngestRequest();
-            ingestRequest.setDataFile(dataFile);
-            dataFile.setIngestRequest(ingestRequest);
+                
+        if (dataFile.getIngestRequest() == null) {
+            dataFile.setIngestRequest(new IngestRequest(dataFile));
         }
 
         dataFile.getIngestRequest().setForceTypeCheck(true);

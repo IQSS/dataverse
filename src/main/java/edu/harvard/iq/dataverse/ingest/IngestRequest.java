@@ -50,6 +50,13 @@ public class IngestRequest implements Serializable {
     
     private Boolean forceTypeCheck;
     
+    public IngestRequest() {
+    }
+    
+    public IngestRequest(DataFile dataFile) {
+        this.dataFile = dataFile;
+    }
+    
     public DataFile getDataFile() {
         return dataFile;
     }
