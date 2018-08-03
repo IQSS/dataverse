@@ -31,7 +31,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Level;
@@ -208,13 +207,6 @@ public class PermissionServiceBean {
 
     }
 
-    public Collection<DvObject> userPermissions(User user, DvObject dvo) {
-        String powerfull_roles = "select id from dataverserole where (permissionbits&12)!=0";
-        List<Integer> roles = em.createNativeQuery(powerfull_roles).getResultList();
-        String x = "select id from dataverserole where (permissionbits&12)!=0";
-        return null;
-    }
-
     public List<RoleAssignment> assignmentsOn(DvObject d) {
         return em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
                 .setParameter("definitionPointId", d.getId()).getResultList();
@@ -314,25 +306,25 @@ public class PermissionServiceBean {
      * @param dvo
      * @return Permissions of {@code req.getUser()} over {@code dvo}.
      */
-    public Set<Permission> permissionsFor( DataverseRequest req, DvObject dvo ) {
+    public Set<Permission> permissionsFor(DataverseRequest req, DvObject dvo) {
         Set<Permission> permissions = EnumSet.noneOf(Permission.class);
-        
+
         // Add permissions specifically given to the user
-        permissions.addAll( permissionsForSingleRoleAssignee(req.getUser(),dvo) );
-        Set<Group> groups = groupService.groupsFor(req,dvo);
-        
+        permissions.addAll(permissionsForSingleRoleAssignee(req.getUser(), dvo));
+        Set<Group> groups = groupService.groupsFor(req, dvo);
+
         // Add permissions gained from groups
-        for ( Group g : groups ) {
-            final Set<Permission> groupPremissions = permissionsForSingleRoleAssignee(g,dvo);
+        for (Group g : groups) {
+            final Set<Permission> groupPremissions = permissionsForSingleRoleAssignee(g, dvo);
             permissions.addAll(groupPremissions);
         }
         if (!req.getUser().isAuthenticated()) {
             permissions.removeAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
         }
-        
+
         return permissions;
     }
-    
+
     /**
      * Returns the set of permission a user/group has over a dataverse object.
      * This method takes into consideration group memberships as well, but does
@@ -344,19 +336,19 @@ public class PermissionServiceBean {
      */
     public Set<Permission> permissionsFor(RoleAssignee ra, DvObject dvo) {
         Set<Permission> permissions = EnumSet.noneOf(Permission.class);
-        
+
         // Add permissions specifically given to the user
-        permissions.addAll( permissionsForSingleRoleAssignee(ra,dvo) );
-        
+        permissions.addAll(permissionsForSingleRoleAssignee(ra, dvo));
+
         // Add permissions gained from groups
-        Set<Group> groupsRaBelongsTo = groupService.groupsFor(ra,dvo);
-        for ( Group g : groupsRaBelongsTo ) {
-            permissions.addAll( permissionsForSingleRoleAssignee(g,dvo) );
+        Set<Group> groupsRaBelongsTo = groupService.groupsFor(ra, dvo);
+        for (Group g : groupsRaBelongsTo) {
+            permissions.addAll(permissionsForSingleRoleAssignee(g, dvo));
         }
         if ((ra instanceof User) && (!((User) ra).isAuthenticated())) {
             permissions.removeAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
         }
-        
+
         return permissions;
     }
 
