@@ -23,7 +23,6 @@ public class DataverseLocaleBean implements Serializable {
     SettingsWrapper settingsWrapper;
 
     {
-        init();
         if (FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage() == "en_US") {
             localeCode = "en";
         } else {
