@@ -81,6 +81,9 @@ public class DvObjectServiceBean implements java.io.Serializable {
                 logger.fine("no dvObject found: " + globalIdString);
                 // DO nothing, just return null.
                 return null;
+            } catch (Exception ex) {
+                logger.info("Exception caught in findByGlobalId: " + ex.getLocalizedMessage());
+                return null;
             }
             return foundDvObject;
 

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.ProvPopupFragmentBean.UpdatesEntry;
+import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -1162,7 +1162,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 if(systemConfig.isProvCollectionEnabled() && provJsonChanges) {
                     HashMap<String,ProvPopupFragmentBean.UpdatesEntry> provenanceUpdates = provPopupFragmentBean.getProvenanceUpdates();
                     for (int i = 0; i < dataset.getFiles().size(); i++) {
-                        for (UpdatesEntry ue : provenanceUpdates.values()) { 
+                        for (ProvPopupFragmentBean.UpdatesEntry ue : provenanceUpdates.values()) { 
                             if (ue.dataFile.getStorageIdentifier() != null ) {
                                 if (ue.dataFile.getStorageIdentifier().equals(dataset.getFiles().get(i).getStorageIdentifier())) {
                                     dataset.getFiles().set(i, ue.dataFile);

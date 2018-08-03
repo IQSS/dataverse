@@ -91,10 +91,7 @@ public class DataTableImportDDI {
     }
 
     private void processVar(XMLStreamReader xmlr, Map<String, DataTable> dataTablesMap, Map<String, Integer> varsPerFileMap) throws XMLStreamException {
-        DataVariable dv = new DataVariable();
-        dv.setInvalidRanges(new ArrayList<>());
-        dv.setSummaryStatistics(new ArrayList<>());
-        dv.setCategories(new ArrayList<>());
+        DataVariable dv = new DataVariable(0,null);
         dv.setName( xmlr.getAttributeValue(null, "name") );
 
         try {

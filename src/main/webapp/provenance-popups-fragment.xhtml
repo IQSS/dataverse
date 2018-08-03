@@ -38,7 +38,7 @@
 
                     <ui:fragment id="provUploadFragment" >
                         <ui:fragment rendered="#{!provPopupFragmentBean.jsonUploadedState and !provPopupFragmentBean.provJsonAlreadyPublishedRendering()}">
-                            <p class="help-block">#{bundle['file.editProvenanceDialog.bundleFile.instructions']}</p>
+                            <p class="help-block"><h:outputText value="#{bundle['file.editProvenanceDialog.bundleFile.instructions']}" escape="false"/></p>
                             <p:fileUpload id="provUpload" 
                                           styleClass="margin-bottom"
                                           dragDropSupport="true"
