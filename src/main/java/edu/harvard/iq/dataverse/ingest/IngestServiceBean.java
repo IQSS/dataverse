@@ -398,56 +398,72 @@ public class IngestServiceBean {
     // TODO: consider creating a version of this method that would take 
     // datasetversion as the argument. 
     // -- L.A. 4.6
-    // @Asynchronous - just an experiment...
-    public void startIngestJobs(Dataset dataset, AuthenticatedUser user) {
-        int count = 0;
+    public void startIngestJobsForDataset(Dataset dataset, AuthenticatedUser user) {
         List<DataFile> scheduledFiles = new ArrayList<>();
-        
-        IngestMessage ingestMessage = null;
-        
+                
         for (DataFile dataFile : dataset.getFiles()) {
             if (dataFile.isIngestScheduled()) {
                 // todo: investigate why when calling save with the file object
                 // gotten from the loop, the roles assignment added at create is removed
                 // (switching to refinding via id resolves that)                
                 dataFile = fileService.find(dataFile.getId());
-                
-                long ingestSizeLimit = -1; 
-                try {
-                    ingestSizeLimit = systemConfig.getTabularIngestSizeLimit(getTabDataReaderByMimeType(dataFile.getContentType()).getFormatName());
-                } catch (IOException ioex) {
-                    logger.warning("IO Exception trying to retrieve the ingestable format identifier from the plugin for type "+dataFile.getContentType()+" (non-fatal);");
-                }
-                
-                if (ingestSizeLimit == -1 || dataFile.getFilesize() < ingestSizeLimit) {
-                    dataFile.SetIngestInProgress();               
-                    dataFile = fileService.save(dataFile);
-
-                    scheduledFiles.add(dataFile);
-                
-                    logger.fine("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest, for dataset: " + dataset.getGlobalIdString());
-                    count++;
-                } else {
-                    dataFile.setIngestDone();
-                    dataFile = fileService.save(dataFile);
-                    
-                    logger.info("Skipping tabular ingest of the file " + dataFile.getFileMetadata().getLabel() + ", because of the size limit (set to "+ ingestSizeLimit +" bytes).");
-                }
+                scheduledFiles.add(dataFile);
             }
         }
 
+        startIngestJobs(scheduledFiles, user);
+    }
+    
+    public String startIngestJobs(List<DataFile> dataFiles, AuthenticatedUser user) {
+
+        IngestMessage ingestMessage = null;
+        StringBuilder sb = new StringBuilder();
+
+        List<DataFile> scheduledFiles = new ArrayList<>();
+        for (DataFile dataFile : dataFiles) {
+            if (dataFile.isIngestScheduled()) {
+
+                // refresh the copy of the DataFile:
+                dataFile = fileService.find(dataFile.getId());
+
+                long ingestSizeLimit = -1;
+                try {
+                    ingestSizeLimit = systemConfig.getTabularIngestSizeLimit(getTabDataReaderByMimeType(dataFile.getContentType()).getFormatName());
+                } catch (IOException ioex) {
+                    logger.warning("IO Exception trying to retrieve the ingestable format identifier from the plugin for type " + dataFile.getContentType() + " (non-fatal);");
+                }
+
+                if (ingestSizeLimit == -1 || dataFile.getFilesize() < ingestSizeLimit) {
+                    dataFile.SetIngestInProgress();
+                    scheduledFiles.add(dataFile);
+                } else {
+                    dataFile.setIngestDone();
+                    String message = "Skipping tabular ingest of the file " + dataFile.getFileMetadata().getLabel() + ", because of the size limit (set to " + ingestSizeLimit + " bytes); ";
+                    logger.info(message);
+                    sb.append(message);
+                }
+                dataFile = fileService.save(dataFile);
+            } else {
+                String message = "(Re)ingest queueing request submitted on a file not scheduled for ingest! (" + dataFile.getFileMetadata().getLabel() + "); ";
+                logger.warning(message);
+                sb.append(message);
+            }
+        }
+
+        int count = scheduledFiles.size();
+        
         if (count > 0) {
             String info = "Ingest of " + count + " tabular data file(s) is in progress.";
             logger.info(info);
-            datasetService.addDatasetLock(dataset.getId(),
-                    DatasetLock.Reason.Ingest, 
-                    (user!=null)?user.getId():null,
+            datasetService.addDatasetLock(scheduledFiles.get(0).getOwner().getId(),
+                    DatasetLock.Reason.Ingest,
+                    (user != null) ? user.getId() : null,
                     info);
-
+            
+            // Sort ingest jobs by file size: 
             DataFile[] scheduledFilesArray = (DataFile[])scheduledFiles.toArray(new DataFile[count]);
             scheduledFiles = null; 
             
-            // Sort ingest jobs by file size: 
             Arrays.sort(scheduledFilesArray, new Comparator<DataFile>() {
                 @Override
                 public int compare(DataFile d1, DataFile d2) {
@@ -456,34 +472,29 @@ public class IngestServiceBean {
                     return Long.valueOf(a).compareTo(b);
                 }
             });
-            
+
             ingestMessage = new IngestMessage(IngestMessage.INGEST_MESAGE_LEVEL_INFO);
-            
             for (int i = 0; i < count; i++) {
                 ingestMessage.addFileId(scheduledFilesArray[i].getId());
-                logger.fine("Sorted order: "+i+" (size="+scheduledFilesArray[i].getFilesize()+")");
             }
-            
+
             QueueConnection conn = null;
             QueueSession session = null;
             QueueSender sender = null;
+
             try {
                 conn = factory.createQueueConnection();
                 session = conn.createQueueSession(false, 0);
                 sender = session.createSender(queue);
 
-                //ingestMessage.addFile(new File(tempFileLocation));
-                Message message = session.createObjectMessage(ingestMessage);
+                Message queueMessage = session.createObjectMessage(ingestMessage);
 
-                //try {
-                    sender.send(message);
-                //} catch (JMSException ex) {
-                //    ex.printStackTrace();
-                //}
+                sender.send(queueMessage);
 
             } catch (JMSException ex) {
                 ex.printStackTrace();
-                //throw new IOException(ex.getMessage());
+                logger.warning("Caught exception trying to close connections after starting a (re)ingest job in the JMS queue! Stack trace below.");
+                sb.append("Failed to queue the (re)ingest job for DataFile (JMS Exception)" + (ex.getMessage() != null ? ex.getMessage() : ""));
             } finally {
                 try {
 
@@ -496,93 +507,14 @@ public class IngestServiceBean {
                     if (conn != null) {
                         conn.close();
                     }
-                } catch (JMSException ex) {
+                } catch (Exception ex) {
+                    logger.warning("Caught exception trying to close connections after starting a (re)ingest job in the JMS queue! Stack trace below.");
                     ex.printStackTrace();
                 }
             }
         }
-    }
-    
-    public String startIngestJobForSingleFile(DataFile dataFile, AuthenticatedUser user) {
-
-        IngestMessage ingestMessage = null;
-
-        if (dataFile.isIngestScheduled()) {
-
-            // refresh the copy of the DataFile:
-            dataFile = fileService.find(dataFile.getId());
-
-            long ingestSizeLimit = -1;
-            try {
-                ingestSizeLimit = systemConfig.getTabularIngestSizeLimit(getTabDataReaderByMimeType(dataFile.getContentType()).getFormatName());
-            } catch (IOException ioex) {
-                logger.warning("IO Exception trying to retrieve the ingestable format identifier from the plugin for type " + dataFile.getContentType() + " (non-fatal);");
-            }
-
-            if (ingestSizeLimit == -1 || dataFile.getFilesize() < ingestSizeLimit) {
-                dataFile.SetIngestInProgress();
-                dataFile = fileService.save(dataFile);
-            } else {
-                dataFile.setIngestDone();
-                dataFile = fileService.save(dataFile);
-
-                String message = "Skipping tabular ingest of the file " + dataFile.getFileMetadata().getLabel() + ", because of the size limit (set to " + ingestSizeLimit + " bytes).";
-                logger.info(message);
-                return message; 
-            }
-        } else {
-            return "(Re)ingest queueing request submitted on a file not scheduled for ingest! ("+dataFile.getFileMetadata().getLabel()+")";
-        }
-
-        String message = "Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest, for dataset: " + dataFile.getOwner().getGlobalIdString();
-        logger.info(message);
-
-        datasetService.addDatasetLock(dataFile.getOwner().getId(),
-                DatasetLock.Reason.Ingest,
-                (user != null) ? user.getId() : null,
-                message);
-
-        ingestMessage = new IngestMessage(IngestMessage.INGEST_MESAGE_LEVEL_INFO);
-
-        ingestMessage.addFileId(dataFile.getId());
-
-        QueueConnection conn = null;
-        QueueSession session = null;
-        QueueSender sender = null;
-        String statusMessage = null; 
         
-        try {
-            conn = factory.createQueueConnection();
-            session = conn.createQueueSession(false, 0);
-            sender = session.createSender(queue);
-
-            Message queueMessage = session.createObjectMessage(ingestMessage);
-
-            sender.send(queueMessage);
-
-        } catch (JMSException ex) {
-            ex.printStackTrace();
-            logger.warning("Caught exception trying to close connections after starting a (re)ingest job in the JMS queue! Stack trace below.");
-            statusMessage = "Failed to queue the (re)ingest job for DataFile (JMS Exception)" + (ex.getMessage() != null ? ex.getMessage() : ""); 
-        } finally {
-            try {
-
-                if (sender != null) {
-                    sender.close();
-                }
-                if (session != null) {
-                    session.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (Exception ex) {
-                logger.warning("Caught exception trying to close connections after starting a (re)ingest job in the JMS queue! Stack trace below.");
-                ex.printStackTrace();
-            }
-        }
-        
-        return statusMessage;
+        return sb.toString();
     }
 
     

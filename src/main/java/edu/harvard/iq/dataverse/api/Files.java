@@ -33,6 +33,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -390,7 +391,7 @@ public class Files extends AbstractApiBean {
         dataFile = fileService.save(dataFile);
         
         // queue the data ingest job for asynchronous execution: 
-        String status = ingestService.startIngestJobForSingleFile(dataFile, u);
+        String status = ingestService.startIngestJobs(new ArrayList<DataFile>(Arrays.asList(dataFile)), u);
         
         if (status != null) {
             // This most likely indicate some sort of a problem (for example, 
