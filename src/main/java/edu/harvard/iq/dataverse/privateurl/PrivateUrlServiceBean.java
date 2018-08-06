@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.privateurl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -9,11 +10,10 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 /**
@@ -29,14 +29,14 @@ public class PrivateUrlServiceBean implements Serializable {
 
     private static final Logger logger = Logger.getLogger(PrivateUrlServiceBean.class.getCanonicalName());
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
-
     @EJB
     DatasetServiceBean datasetServiceBean;
 
     @EJB
     SystemConfig systemConfig;
+    
+    @Inject
+    EntityManagerBean emBean;
 
     /**
      * @return A PrivateUrl if the dataset has one or null.
@@ -70,7 +70,7 @@ public class PrivateUrlServiceBean implements Serializable {
         if (privateUrlToken == null) {
             return null;
         }
-        TypedQuery<RoleAssignment> query = em.createNamedQuery(
+        TypedQuery<RoleAssignment> query = emBean.getMasterEM().createNamedQuery(
                 "RoleAssignment.listByPrivateUrlToken",
                 RoleAssignment.class);
         query.setParameter("privateUrlToken", privateUrlToken);
@@ -92,7 +92,7 @@ public class PrivateUrlServiceBean implements Serializable {
         if (dataset == null) {
             return null;
         }
-        TypedQuery<RoleAssignment> query = em.createNamedQuery(
+        TypedQuery<RoleAssignment> query = emBean.getMasterEM().createNamedQuery(
                 "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId",
                 RoleAssignment.class);
         PrivateUrlUser privateUrlUser = new PrivateUrlUser(dataset.getId());

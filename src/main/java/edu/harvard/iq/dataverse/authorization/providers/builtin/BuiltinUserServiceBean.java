@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetException;
@@ -11,11 +12,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -37,8 +37,8 @@ public class BuiltinUserServiceBean {
     @EJB
     PasswordResetServiceBean passwordResetService;
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
     
     public String encryptPassword(String plainText) {
         return PasswordEncryption.get().encrypt(plainText);
@@ -69,31 +69,31 @@ public class BuiltinUserServiceBean {
         }
         if ( aUser.getId() == null ) {
             // see that the username is unique
-            if ( em.createNamedQuery("BuiltinUser.findByUserName")
+            if ( emBean.getMasterEM().createNamedQuery("BuiltinUser.findByUserName")
                     .setParameter("userName", aUser.getUserName()).getResultList().size() > 0 ) {
                 throw new IllegalArgumentException( "BuiltinUser with username '" + aUser.getUserName() + "' already exists.");
             }
-            em.persist( aUser );
+            emBean.getMasterEM().persist( aUser );
             return aUser;
         } else {
-            return em.merge(aUser);
+            return emBean.getMasterEM().merge(aUser);
         }
     }
     
     public BuiltinUser find(Long pk) {
-        return em.find(BuiltinUser.class, pk);
+        return emBean.getEntityManager().find(BuiltinUser.class, pk);
     }    
     
     public void removeUser( String userName ) {
         final BuiltinUser user = findByUserName(userName);
         if ( user != null ) {
-            em.remove(user);
+            emBean.getMasterEM().remove(user);
         }
     }
     
     public BuiltinUser findByUserName(String userName) {
         try {
-            return em.createNamedQuery("BuiltinUser.findByUserName", BuiltinUser.class)
+            return emBean.getMasterEM().createNamedQuery("BuiltinUser.findByUserName", BuiltinUser.class)
                     .setParameter("userName", userName)
                     .getSingleResult();
         } catch (javax.persistence.NoResultException e) {
@@ -105,7 +105,7 @@ public class BuiltinUserServiceBean {
     }
 	
 	public List<BuiltinUser> listByUsernamePart ( String part ) {
-		return em.createNamedQuery("BuiltinUser.listByUserNameLike", BuiltinUser.class)
+		return emBean.getMasterEM().createNamedQuery("BuiltinUser.listByUserNameLike", BuiltinUser.class)
 				.setParameter("userNameLike", "%" + part + "%")
 				.getResultList();
 	}
@@ -116,7 +116,7 @@ public class BuiltinUserServiceBean {
      */
     public BuiltinUser findByEmail(String email) {
         try {
-            return em.createNamedQuery("BuiltinUser.findByEmail", BuiltinUser.class)
+            return emBean.getMasterEM().createNamedQuery("BuiltinUser.findByEmail", BuiltinUser.class)
                     .setParameter("email", email)
                     .getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
@@ -143,7 +143,7 @@ public class BuiltinUserServiceBean {
     }
     
     public List<BuiltinUser> findAll() {
-		return em.createNamedQuery("BuiltinUser.findAll", BuiltinUser.class).getResultList();
+		return emBean.getMasterEM().createNamedQuery("BuiltinUser.findAll", BuiltinUser.class).getResultList();
 	}
     
     public String requestPasswordUpgradeLink( BuiltinUser aUser ) throws PasswordResetException {

@@ -6,15 +6,15 @@
 
 package edu.harvard.iq.dataverse.worldmapauth;
 
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 /**
@@ -27,8 +27,8 @@ public class TokenApplicationTypeServiceBean {
     
     private static final Logger logger = Logger.getLogger(TokenApplicationTypeServiceBean.class.getCanonicalName());
     
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
     
     public TokenApplicationType getGeoConnectApplication(){
         logger.info("--getGeoConnectApplication--");
@@ -55,7 +55,7 @@ public class TokenApplicationTypeServiceBean {
         if (pk==null){
             return null;
         }
-        return em.find(TokenApplicationType.class, pk);
+        return emBean.getEntityManager().find(TokenApplicationType.class, pk);
     }
     
     /**
@@ -119,13 +119,13 @@ public class TokenApplicationTypeServiceBean {
         
         if ( tokenApp.getId() == null ) {
             tokenApp.setCreated();
-            em.persist(tokenApp);
+            emBean.getMasterEM().persist(tokenApp);
             logger.fine("New tokenApp saved");
             return tokenApp;
 	} else {
             tokenApp.setModified();
             logger.fine("Existing tokenApp saved");
-            return em.merge( tokenApp );
+            return emBean.getMasterEM().merge( tokenApp );
 	}
     }
 	        
@@ -135,7 +135,7 @@ public class TokenApplicationTypeServiceBean {
             return null;
         }
         try{
-            return em.createQuery("select m from TokenApplicationType m WHERE m.name=:name", TokenApplicationType.class)
+            return emBean.getMasterEM().createQuery("select m from TokenApplicationType m WHERE m.name=:name", TokenApplicationType.class)
 					.setParameter("name", name)
 					.getSingleResult();
         } catch ( NoResultException nre ) {
@@ -146,7 +146,7 @@ public class TokenApplicationTypeServiceBean {
     
     public List<TokenApplicationType> getAllTokenApplicationTypes(){
         String qr = "select object(o) from TokenApplicationType order by o.modified desc";
-        TypedQuery<TokenApplicationType> query = em.createQuery(qr, TokenApplicationType.class);
+        TypedQuery<TokenApplicationType> query = emBean.getMasterEM().createQuery(qr, TokenApplicationType.class);
         return query.getResultList();
     }    
     

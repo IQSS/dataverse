@@ -1,11 +1,10 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import java.util.List;
 import java.util.Optional;
 import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.inject.Inject;
 
 /**
  * CRUD for {@link OAuth2TokenData}.
@@ -15,26 +14,26 @@ import javax.persistence.PersistenceContext;
 @Stateless
 public class OAuth2TokenDataServiceBean {
     
-    @PersistenceContext
-    private EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
     
     public void store( OAuth2TokenData tokenData ) {
         if ( tokenData.getId() != null ) {
             // token exists, this is an update
-            em.merge(tokenData);
+            emBean.getMasterEM().merge(tokenData);
             
         } else {
             // ensure there's only one token for each user/service pair.
-            em.createNamedQuery("OAuth2TokenData.deleteByUserIdAndProviderId")
-                    .setParameter("userId", tokenData.getUser().getId() )
-                    .setParameter("providerId", tokenData.getOauthProviderId() )
-                    .executeUpdate();
-            em.persist( tokenData );
+            emBean.getMasterEM().createNamedQuery("OAuth2TokenData.deleteByUserIdAndProviderId")
+                              .setParameter("userId", tokenData.getUser().getId() )
+                              .setParameter("providerId", tokenData.getOauthProviderId() )
+                              .executeUpdate();
+            emBean.getMasterEM().persist( tokenData );
         }
     }
     
     public Optional<OAuth2TokenData> get( long authenticatedUserId, String serviceId ) {
-        final List<OAuth2TokenData> tokens = em.createNamedQuery("OAuth2TokenData.findByUserIdAndProviderId", OAuth2TokenData.class)
+        final List<OAuth2TokenData> tokens = emBean.getMasterEM().createNamedQuery("OAuth2TokenData.findByUserIdAndProviderId", OAuth2TokenData.class)
                 .setParameter("userId", authenticatedUserId )
                 .setParameter("providerId", serviceId )
                 .getResultList();

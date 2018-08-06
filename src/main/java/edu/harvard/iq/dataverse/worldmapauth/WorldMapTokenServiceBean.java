@@ -7,23 +7,20 @@
 package edu.harvard.iq.dataverse.worldmapauth;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 
 /**
  *
@@ -41,8 +38,8 @@ public class WorldMapTokenServiceBean {
      
     private static final Logger logger = Logger.getLogger(TokenApplicationTypeServiceBean.class.getCanonicalName());
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
     
     /**
      * 
@@ -71,7 +68,7 @@ public class WorldMapTokenServiceBean {
         if (pk==null){
             return null;
         }
-        return em.find(WorldMapToken.class, pk);
+        return emBean.getEntityManager().find(WorldMapToken.class, pk);
     }
     
 
@@ -85,7 +82,7 @@ public class WorldMapTokenServiceBean {
             return;
         }
         wmToken.expireToken();
-        em.merge(wmToken);     
+        emBean.getMasterEM().merge(wmToken);     
     }
     
     /**
@@ -99,7 +96,7 @@ public class WorldMapTokenServiceBean {
         if (wmToken==null){
             return;
         }
-        em.remove(em.merge(wmToken));
+        emBean.getMasterEM().remove(emBean.getMasterEM().merge(wmToken));
     }
     
     /*
@@ -107,11 +104,11 @@ public class WorldMapTokenServiceBean {
     */
     public void deleteExpiredTokens(){
 
-        TypedQuery<WorldMapToken> query = em.createQuery("select object(w) from WorldMapToken as w where w.hasExpired IS TRUE", WorldMapToken.class);// order by o.name");
+        TypedQuery<WorldMapToken> query = emBean.getMasterEM().createQuery("select object(w) from WorldMapToken as w where w.hasExpired IS TRUE", WorldMapToken.class);// order by o.name");
         List<WorldMapToken> tokenList = query.getResultList();
         for (WorldMapToken wmToken : tokenList) {
-           // em.remove(token);
-            em.remove(em.merge(wmToken));
+           // emBean.getMasterEM().remove(token);
+            emBean.getMasterEM().remove(emBean.getMasterEM().merge(wmToken));
 	}
     }
 
@@ -137,12 +134,12 @@ public class WorldMapTokenServiceBean {
         }
         
         if ( dvToken.getId()== null ) {            
-            em.persist(dvToken);
+            emBean.getMasterEM().persist(dvToken);
             logger.fine("New token_application saved");
             return dvToken;
 	} else {
             logger.fine("Existing token_application saved");
-            return em.merge( dvToken );
+            return emBean.getMasterEM().merge( dvToken );
 	}
     }
 	        
@@ -153,7 +150,7 @@ public class WorldMapTokenServiceBean {
         }
 
         try{
-            return em.createQuery("select m from WorldMapToken m WHERE m.token=:token", WorldMapToken.class)
+            return emBean.getMasterEM().createQuery("select m from WorldMapToken m WHERE m.token=:token", WorldMapToken.class)
 					.setParameter("token", token)
 					.getSingleResult();
         } catch ( NoResultException nre ) {
@@ -180,7 +177,7 @@ public class WorldMapTokenServiceBean {
             return null;
         }
         if (wmToken.hasTokenExpired()){
-            em.remove(em.merge(wmToken));   // Delete expired token from the database.
+            emBean.getMasterEM().remove(emBean.getMasterEM().merge(wmToken));   // Delete expired token from the database.
             logger.warning("WorldMapToken has expired.  Permission denied.");
             return null;
         }

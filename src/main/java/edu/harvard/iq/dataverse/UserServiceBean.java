@@ -12,9 +12,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
@@ -25,28 +24,28 @@ public class UserServiceBean {
 
     private static final Logger logger = Logger.getLogger(UserServiceBean.class.getCanonicalName());
 
-    @PersistenceContext
-    EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
     
     @EJB IndexServiceBean indexService;
 
     public AuthenticatedUser find(Object pk) {
-        return (AuthenticatedUser) em.find(AuthenticatedUser.class, pk);
+        return (AuthenticatedUser) emBean.getEntityManager().find(AuthenticatedUser.class, pk);
     }    
 
     
     public AuthenticatedUser save(AuthenticatedUser user) {
         if (user.getId() == null) {
-            em.persist(this);
+            emBean.getMasterEM().persist(this);
         } else {
             if (user.getCreatedTime() == null) {
                 user.setCreatedTime(new Timestamp(new Date().getTime())); // default new creation time
                 user.setLastLoginTime(user.getCreatedTime()); // sets initial lastLoginTime to creation time
                 logger.info("Creation time null! Setting user creation time to now");
             }
-            user = em.merge(user);
+            user = emBean.getMasterEM().merge(user);
         }
-        em.flush();
+        emBean.getMasterEM().flush();
 
         return user;
     }
@@ -190,7 +189,7 @@ public class UserServiceBean {
         qstr += " AND a.assigneeidentifier IN (" + identifierListString + ")";
         qstr += " ORDER by a.assigneeidentifier, d.name;";
 
-        Query nativeQuery = em.createNativeQuery(qstr);
+        Query nativeQuery = emBean.getMasterEM().createNativeQuery(qstr);
 
         List<Object[]> dbRoleResults = nativeQuery.getResultList();
         if (dbRoleResults == null){
@@ -241,9 +240,9 @@ public class UserServiceBean {
             "SELECT distinct groupalias, useridentifier FROM group_user;";
         
         
-        //System.out.println("qstr: " + qstr);
+        //SystemBean.getMasterEM().out.println("qstr: " + qstr);
 
-        nativeQuery = em.createNativeQuery(qstr);
+        nativeQuery = emBean.getMasterEM().createNativeQuery(qstr);
         List<Object[]> groupResults = nativeQuery.getResultList();
         if (groupResults == null){
             return userRoleLookup;
@@ -288,9 +287,9 @@ public class UserServiceBean {
         qstr += groupIdentifiers;
         qstr += ") ORDER by a.assigneeidentifier, d.name;";
 
-        //System.out.println("qstr: " + qstr);
+        //SystemBean.getMasterEM().out.println("qstr: " + qstr);
 
-        nativeQuery = em.createNativeQuery(qstr);
+        nativeQuery = emBean.getMasterEM().createNativeQuery(qstr);
 
         dbRoleResults = nativeQuery.getResultList();
         if (dbRoleResults == null){
@@ -310,10 +309,10 @@ public class UserServiceBean {
                 
                     for (String groupUserIdentifier : groupUserList) {
                         groupUserIdentifier = "@" + groupUserIdentifier; 
-                        //System.out.println("Group user: "+groupUserIdentifier);
+                        //SystemBean.getMasterEM().out.println("Group user: "+groupUserIdentifier);
                         List<String> userRoleList = userRoleLookup.getOrDefault(groupUserIdentifier, new ArrayList<String>());
                         if (!userRoleList.contains(groupRole)){
-                            //System.out.println("User Role: "+groupRole);
+                            //SystemBean.getMasterEM().out.println("User Role: "+groupRole);
                             userRoleList.add(groupRole);
                             userRoleLookup.put(groupUserIdentifier, userRoleList);
                         }
@@ -339,7 +338,7 @@ public class UserServiceBean {
         qstr += " WHERE id = " + userId.toString();
         qstr += ";";
         
-        Query nativeQuery = em.createNativeQuery(qstr);
+        Query nativeQuery = emBean.getMasterEM().createNativeQuery(qstr);
 
         userIdentifier = '@' + (String) nativeQuery.getSingleResult();
 
@@ -347,7 +346,7 @@ public class UserServiceBean {
         qstr += " where d.id = a.role_id and a.assigneeidentifier='" + userIdentifier + "'"
                 + " Order by d.name;";
 
-        nativeQuery = em.createNativeQuery(qstr);
+        nativeQuery = emBean.getMasterEM().createNativeQuery(qstr);
 
         List<Object[]> roleList = nativeQuery.getResultList();
 
@@ -422,7 +421,7 @@ public class UserServiceBean {
         
         logger.log(Level.FINE, "getUserCount: {0}", qstr);
 
-        Query nativeQuery = em.createNativeQuery(qstr);
+        Query nativeQuery = emBean.getMasterEM().createNativeQuery(qstr);
         nativeQuery.setParameter("searchTerm", searchTerm + "%");
        
         return nativeQuery.getResultList();
@@ -457,7 +456,7 @@ public class UserServiceBean {
         qstr += " FROM AuthenticatedUser au";
         qstr += " WHERE au.superuser = :superuserTrue";
         
-        Query query = em.createQuery(qstr);
+        Query query = emBean.getMasterEM().createQuery(qstr);
         query.setParameter("superuserTrue", true);
          
         return (Long)query.getSingleResult();
@@ -501,7 +500,7 @@ public class UserServiceBean {
         qstr += sharedSearchClause;
         qstr += ";";
                
-        Query nativeQuery = em.createNativeQuery(qstr);
+        Query nativeQuery = emBean.getMasterEM().createNativeQuery(qstr);
         nativeQuery.setParameter("searchTerm", searchTerm + "%");
         
         return (Long)nativeQuery.getSingleResult();

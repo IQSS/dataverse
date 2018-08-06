@@ -7,9 +7,8 @@ package edu.harvard.iq.dataverse;
 
 import java.util.List;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 /**
@@ -19,14 +18,14 @@ import javax.persistence.TypedQuery;
 @Stateless
 @Named
 public class ControlledVocabularyValueServiceBean implements java.io.Serializable {
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    
+    @Inject
+    EntityManagerBean emBean;
     
     public List<ControlledVocabularyValue> findByDatasetFieldTypeId(Long dsftId) {
 
         String queryString = "select o from ControlledVocabularyValue as o where o.datasetFieldType.id = " + dsftId + " ";
-        TypedQuery<ControlledVocabularyValue> query = em.createQuery(queryString, ControlledVocabularyValue.class);
+        TypedQuery<ControlledVocabularyValue> query = emBean.getMasterEM().createQuery(queryString, ControlledVocabularyValue.class);
         return query.getResultList();
         
     }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
-    <persistence-unit name="VDCNet-ejbPU" transaction-type="JTA">
+    <persistence-unit name="masterPU" transaction-type="JTA">
         <!-- provider>oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider</provider-->
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-        <jta-data-source>jdbc/VDCNetDS</jta-data-source>
+        <jta-data-source>jdbc/masterDS</jta-data-source>
         <properties>
             <!--property name="toplink.logging.level" value="FINE"/-->
 	    <!-- disabling weaving, as an experiment: - L.A. -->
@@ -11,6 +11,26 @@
 	    <!-- comment out the line below to make the app NOT build 
 		 persistence tables on startup; will make deployment
 		 faster. - L.A. -->
+            <property name="eclipselink.ddl-generation" value="create-tables"/>
+            <property name="eclipselink.cache.shared.default" value="false"/>
+            <!-- The following property allows primary keys of 0 -->
+            <property name="eclipselink.id-validation" value="NULL"/>
+            <!-- Uncomment next lines to show all SQL queries in the log -->
+            <!--<property name="eclipselink.logging.level.sql" value="FINE"/>-->
+            <!--<property name="eclipselink.logging.parameters" value="true"/>-->
+        </properties>
+    </persistence-unit>
+    <persistence-unit name="slavePU" transaction-type="JTA">
+        <!-- provider>oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider</provider-->
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <jta-data-source>jdbc/slaveDS</jta-data-source>
+        <properties>
+            <!--property name="toplink.logging.level" value="FINE"/-->
+        <!-- disabling weaving, as an experiment: - L.A. -->
+        <property name="eclipselink.weaving" value="false"/>
+        <!-- comment out the line below to make the app NOT build 
+         persistence tables on startup; will make deployment
+         faster. - L.A. -->
             <property name="eclipselink.ddl-generation" value="create-tables"/>
             <property name="eclipselink.cache.shared.default" value="false"/>
             <!-- The following property allows primary keys of 0 -->

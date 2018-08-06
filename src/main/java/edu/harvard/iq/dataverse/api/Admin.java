@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
@@ -82,6 +83,8 @@ public class Admin extends AbstractApiBean {
 
 	private static final Logger logger = Logger.getLogger(Admin.class.getName());
 
+	@Inject
+	EntityManagerBean emBean;
 	@EJB
 	BuiltinUserServiceBean builtinUserService;
 	@EJB
@@ -146,7 +149,7 @@ public class Admin extends AbstractApiBean {
 	@Path("authenticationProviders")
 	@GET
 	public Response listAuthProviders() {
-		return ok(em.createNamedQuery("AuthenticationProviderRow.findAll", AuthenticationProviderRow.class)
+		return ok(emBean.getMasterEM().createNamedQuery("AuthenticationProviderRow.findAll", AuthenticationProviderRow.class)
 				.getResultList().stream().map(r -> json(r)).collect(toJsonArray()));
 	}
 
@@ -154,11 +157,11 @@ public class Admin extends AbstractApiBean {
 	@POST
 	public Response addProvider(AuthenticationProviderRow row) {
 		try {
-			AuthenticationProviderRow managed = em.find(AuthenticationProviderRow.class, row.getId());
+			AuthenticationProviderRow managed = emBean.getEntityManager().find(AuthenticationProviderRow.class, row.getId());
 			if (managed != null) {
-				managed = em.merge(row);
+				managed = emBean.getMasterEM().merge(row);
 			} else {
-				em.persist(row);
+				emBean.getMasterEM().persist(row);
 				managed = row;
 			}
 			if (managed.isEnabled()) {
@@ -175,7 +178,7 @@ public class Admin extends AbstractApiBean {
 	@Path("authenticationProviders/{id}")
 	@GET
 	public Response showProvider(@PathParam("id") String id) {
-		AuthenticationProviderRow row = em.find(AuthenticationProviderRow.class, id);
+		AuthenticationProviderRow row = emBean.getEntityManager().find(AuthenticationProviderRow.class, id);
 		return (row != null) ? ok(json(row))
 				: error(Status.NOT_FOUND, "Can't find authetication provider with id '" + id + "'");
 	}
@@ -196,13 +199,13 @@ public class Admin extends AbstractApiBean {
 		}
 		boolean enable = Util.isTrue(body);
 
-		AuthenticationProviderRow row = em.find(AuthenticationProviderRow.class, id);
+		AuthenticationProviderRow row = emBean.getEntityManager().find(AuthenticationProviderRow.class, id);
 		if (row == null) {
 			return notFound("Can't find authentication provider with id '" + id + "'");
 		}
 
 		row.setEnabled(enable);
-		em.merge(row);
+		emBean.getMasterEM().merge(row);
 
 		if (enable) {
 			// enable a provider
@@ -235,7 +238,7 @@ public class Admin extends AbstractApiBean {
 	@GET
 	@Path("authenticationProviders/{id}/enabled")
 	public Response checkAuthenticationProviderEnabled(@PathParam("id") String id) {
-		List<AuthenticationProviderRow> prvs = em
+		List<AuthenticationProviderRow> prvs = emBean.getMasterEM()
 				.createNamedQuery("AuthenticationProviderRow.findById", AuthenticationProviderRow.class)
 				.setParameter("id", id).getResultList();
 		if (prvs.isEmpty()) {
@@ -249,9 +252,9 @@ public class Admin extends AbstractApiBean {
 	@Path("authenticationProviders/{id}/")
 	public Response deleteAuthenticationProvider(@PathParam("id") String id) {
 		authSvc.deregisterProvider(id);
-		AuthenticationProviderRow row = em.find(AuthenticationProviderRow.class, id);
+		AuthenticationProviderRow row = emBean.getEntityManager().find(AuthenticationProviderRow.class, id);
 		if (row != null) {
-			em.remove(row);
+			emBean.getMasterEM().remove(row);
 		}
 
 		return ok("AuthenticationProvider " + id + " deleted. "
@@ -1100,14 +1103,14 @@ public class Admin extends AbstractApiBean {
 	@DELETE
 	@Path("/clearMetricsCache")
 	public Response clearMetricsCache() {
-		em.createNativeQuery("DELETE FROM metric").executeUpdate();
+		emBean.getMasterEM().createNativeQuery("DELETE FROM metric").executeUpdate();
 		return ok("all metric caches cleared.");
 	}
 
 	@DELETE
 	@Path("/clearMetricsCache/{name}")
 	public Response clearMetricsCacheByName(@PathParam("name") String name) {
-		Query deleteQuery = em.createNativeQuery("DELETE FROM metric where metricname = ?");
+		Query deleteQuery = emBean.getMasterEM().createNativeQuery("DELETE FROM metric where metricname = ?");
 		deleteQuery.setParameter(1, name);
 		deleteQuery.executeUpdate();
 		return ok("metric cache " + name + " cleared.");

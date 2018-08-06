@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.harvest.server;
 
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
@@ -21,9 +22,8 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -43,8 +43,9 @@ import org.apache.solr.common.SolrDocumentList;
 @Stateless
 @Named
 public class OAISetServiceBean implements java.io.Serializable {
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    
+    @Inject
+    EntityManagerBean emBean;
     
     @EJB
     SystemConfig systemConfig;
@@ -57,7 +58,7 @@ public class OAISetServiceBean implements java.io.Serializable {
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
     public OAISet find(Object pk) {
-        return em.find(OAISet.class, pk);
+        return emBean.getEntityManager().find(OAISet.class, pk);
     }
     
     public boolean specExists(String spec) {
@@ -75,7 +76,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         OAISet oaiSet = null;
         logger.fine("Query: "+query+"; spec: "+spec);
         try {
-            oaiSet = (OAISet) em.createQuery(query).setParameter("specName", spec).getSingleResult();
+            oaiSet = (OAISet) emBean.getMasterEM().createQuery(query).setParameter("specName", spec).getSingleResult();
         } catch (Exception e) {
             // Do nothing, just return null. 
         }
@@ -85,7 +86,7 @@ public class OAISetServiceBean implements java.io.Serializable {
     public List<OAISet> findAll() {
         try {
             logger.fine("setService, findAll; query: select object(o) from OAISet as o order by o.name");
-            List<OAISet> oaiSets = em.createQuery("select object(o) from OAISet as o order by o.name", OAISet.class).getResultList();
+            List<OAISet> oaiSets = emBean.getMasterEM().createQuery("select object(o) from OAISet as o order by o.name", OAISet.class).getResultList();
             logger.fine((oaiSets != null ? oaiSets.size() : 0) + " results found.");
             return oaiSets;
         } catch (Exception e) {
@@ -99,13 +100,13 @@ public class OAISetServiceBean implements java.io.Serializable {
         if (oaiSet == null) {
             return;
         }
-        em.createQuery("delete from OAIRecord hs where hs.setName = '" + oaiSet.getSpec() + "'", OAISet.class).executeUpdate();
-        //OAISet merged = em.merge(oaiSet);
-        em.remove(oaiSet);
+        emBean.getMasterEM().createQuery("delete from OAIRecord hs where hs.setName = '" + oaiSet.getSpec() + "'", OAISet.class).executeUpdate();
+        //OAISet merged = emBean.getMasterEM().merge(oaiSet);
+        emBean.getMasterEM().remove(oaiSet);
     }
     
     public OAISet findById(Long id) {
-       return em.find(OAISet.class,id);
+       return emBean.getEntityManager().find(OAISet.class,id);
     }   
     
     private SolrClient solrServer = null;
@@ -282,7 +283,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         if (oaiSet == null) {
             return;
         }
-        em.refresh(oaiSet);
+        emBean.getMasterEM().refresh(oaiSet);
         oaiSet.setUpdateInProgress(true);
     }
     
@@ -293,12 +294,12 @@ public class OAISetServiceBean implements java.io.Serializable {
         if (oaiSet == null) {
             return;
         }
-        em.refresh(oaiSet);
+        emBean.getMasterEM().refresh(oaiSet);
         oaiSet.setDeleteInProgress(true);
     }
     
     public void save(OAISet oaiSet) {
-        em.merge(oaiSet);
+        emBean.getMasterEM().merge(oaiSet);
     }
     
 }

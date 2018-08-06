@@ -41,6 +41,7 @@ import org.xml.sax.SAXException;
 import com.lyncode.xoai.model.oaipmh.Header;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -52,8 +53,7 @@ import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.inject.Inject;
 
 /**
  *
@@ -63,8 +63,6 @@ import javax.persistence.PersistenceContext;
 @Named
 @ManagedBean
 public class HarvesterServiceBean {
-    @PersistenceContext(unitName="VDCNet-ejbPU")
-    private EntityManager em;
     
     @EJB
     DataverseServiceBean dataverseService;
@@ -95,6 +93,9 @@ public class HarvesterServiceBean {
     public HarvesterServiceBean() {
 
     }
+    
+    @Inject
+    EntityManagerBean emBean;
     
     /**
      * Called to run an "On Demand" harvest.  
@@ -399,12 +400,12 @@ public class HarvesterServiceBean {
             // directly in the database. no need to bother calling the 
             // DeleteFileCommand on them.
             for (DataFile harvestedFile : dataset.getFiles()) {
-                DataFile merged = em.merge(harvestedFile);
-                em.remove(merged);
+                DataFile merged = emBean.getMasterEM().merge(harvestedFile);
+                emBean.getMasterEM().remove(merged);
                 harvestedFile = null; 
             }
             dataset.setFiles(null);
-            Dataset merged = em.merge(dataset);
+            Dataset merged = emBean.getMasterEM().merge(dataset);
             engineService.submit(new DeleteDatasetCommand(request, merged));
         } catch (IllegalCommandException ex) {
             // TODO: log the result

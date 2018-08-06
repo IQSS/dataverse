@@ -30,6 +30,7 @@ DEFAULT_ASADMIN_OPTS=" "
 #
 DB_PORT=5432; export DB_PORT
 DB_HOST=localhost; export DB_HOST
+DB_SERVICE=localhost; export DB_SERVICE
 DB_NAME=dvndb; export DB_NAME
 DB_USER=dvnApp; export DB_USER
 DB_PASS=dvnAppPass; export DB_PASS

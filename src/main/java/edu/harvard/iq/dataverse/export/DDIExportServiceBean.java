@@ -30,8 +30,6 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLOutputFactory;
@@ -61,9 +59,6 @@ public class DDIExportServiceBean {
 
     @EJB
     VariableServiceBean variableService;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
 
     /*
      * Constants used by the worker methods:

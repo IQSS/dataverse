@@ -5,9 +5,9 @@
  */
 package edu.harvard.iq.dataverse.api.imports;
 
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.inject.Inject;
 
 /**
  *
@@ -17,12 +17,12 @@ import javax.persistence.PersistenceContext;
 public class CustomFieldServiceBean {
 
    
-     @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
      
     public CustomFieldMap findByTemplateField(String template, String field) {
         try {
-            CustomFieldMap map = (CustomFieldMap) em.createNamedQuery("CustomFieldMap.findByTemplateField").setParameter("template", template).setParameter("field", field).getSingleResult();
+            CustomFieldMap map = (CustomFieldMap) emBean.getMasterEM().createNamedQuery("CustomFieldMap.findByTemplateField").setParameter("template", template).setParameter("field", field).getSingleResult();
             return map;
         } catch (Exception ex) {
             System.out.println("Exception "+ ex + "template: "+template+" field: "+ field);

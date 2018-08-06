@@ -6,12 +6,11 @@
 
 package edu.harvard.iq.dataverse.datavariable;
 
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 /**
@@ -28,26 +27,26 @@ public class VariableServiceBean {
     
     //private static final Logger logger = Logger.getLogger(VariableServiceBean.class.getCanonicalName());
     
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
 
     public DataVariable save(DataVariable variable) {
-        DataVariable savedVariable = em.merge(variable);
+        DataVariable savedVariable = emBean.getMasterEM().merge(variable);
         return savedVariable;
     }
 
     public DataVariable find(Object pk) {
-        return em.find(DataVariable.class, pk);
-    }    
-    
+        return emBean.getEntityManager().find(DataVariable.class, pk);
+    }
+
     public List<DataVariable> findByDataFileId(Long fileId) {
-         TypedQuery<DataVariable> query = em.createQuery("select object(o) from DataVariable as o where o.dataTable.dataFile.id =:fileId order by o.fileOrder", DataVariable.class);
+         TypedQuery<DataVariable> query = emBean.getMasterEM().createQuery("select object(o) from DataVariable as o where o.dataTable.dataFile.id =:fileId order by o.fileOrder", DataVariable.class);
          query.setParameter("fileId", fileId);
          return query.getResultList();
     }
     
     public List<DataVariable> findByDataTableId(Long dtId) {
-         TypedQuery<DataVariable> query = em.createQuery("select object(o) from DataVariable as o where o.dataTable.id =:dtId order by o.fileOrder", DataVariable.class);
+         TypedQuery<DataVariable> query = emBean.getMasterEM().createQuery("select object(o) from DataVariable as o where o.dataTable.id =:dtId order by o.fileOrder", DataVariable.class);
          query.setParameter("dtId", dtId);
          return query.getResultList();
     }
@@ -61,7 +60,7 @@ public class VariableServiceBean {
      * -- L.A. 4.0
      *
     public VariableFormatType findVariableFormatTypeByName(String name) {
-        Query query = em.createQuery("SELECT t from VariableFormatType t where t.name = :name");
+        Query query = emBean.getMasterEM().createQuery("SELECT t from VariableFormatType t where t.name = :name");
         query.setParameter("name", name);
         VariableFormatType type = null;
         try {
@@ -76,7 +75,7 @@ public class VariableServiceBean {
         String query="SELECT t from VariableIntervalType t where t.name = '"+name+"'";
         VariableIntervalType type = null;
         try {
-            type=(VariableIntervalType)em.createQuery(query).getSingleResult();
+            type=(VariableIntervalType)emBean.getMasterEM().createQuery(query).getSingleResult();
         } catch (javax.persistence.NoResultException e) {
             // DO nothing, just return null.
         }
@@ -87,7 +86,7 @@ public class VariableServiceBean {
         String query = "SELECT t from SummaryStatisticType t where t.name = '" + name + "'";
         SummaryStatisticType type = null;
         try {
-            type = (SummaryStatisticType) em.createQuery(query).getSingleResult();
+            type = (SummaryStatisticType) emBean.getMasterEM().createQuery(query).getSingleResult();
         } catch (javax.persistence.NoResultException e) {
             // DO nothing, just return null.
         }
@@ -96,7 +95,7 @@ public class VariableServiceBean {
 
     public List<SummaryStatisticType> findAllSummaryStatisticType() {
         String query = "SELECT t from SummaryStatisticType t ";
-        return em.createQuery(query).getResultList();
+        return emBean.getMasterEM().createQuery(query).getResultList();
 
     }
 

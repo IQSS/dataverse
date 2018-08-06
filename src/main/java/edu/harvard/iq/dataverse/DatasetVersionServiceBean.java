@@ -21,11 +21,10 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import org.apache.commons.lang.StringUtils;
@@ -57,9 +56,9 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
     @EJB
     IndexServiceBean indexService;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    
+    @Inject
+    EntityManagerBean emBean;
 
     /**
      *  Response to a successful request from the DatasetPage
@@ -142,7 +141,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     } // end RetrieveDatasetVersionResponse
     
     public DatasetVersion find(Object pk) {
-        return em.find(DatasetVersion.class, pk);
+        return emBean.getEntityManager().find(DatasetVersion.class, pk);
     }
 
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
@@ -168,7 +167,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             String queryStr = "SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber and v.minorVersionNumber= :minorVersionNumber";
             DatasetVersion foundDatasetVersion = null;
             try {
-                Query query = em.createQuery(queryStr);
+                Query query = emBean.getMasterEM().createQuery(queryStr);
                 query.setParameter("datasetId", datasetId);
                 query.setParameter("majorVersionNumber", majorVersionNumber);
                 query.setParameter("minorVersionNumber", minorVersionNumber);
@@ -190,7 +189,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         if (majorVersionNumber != null && minorVersionNumber == null) {
 
             try {
-                TypedQuery<DatasetVersion> typedQuery = em.createQuery("SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber", DatasetVersion.class);
+                TypedQuery<DatasetVersion> typedQuery = emBean.getMasterEM().createQuery("SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber", DatasetVersion.class);
                 typedQuery.setParameter("datasetId", datasetId);
                 typedQuery.setParameter("majorVersionNumber", majorVersionNumber);
                 DatasetVersion retVal = null;
@@ -420,7 +419,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
         
         try{
-            Query query = em.createNativeQuery(queryString, DatasetVersion.class);           
+            Query query = emBean.getMasterEM().createNativeQuery(queryString, DatasetVersion.class);           
             DatasetVersion ds = (DatasetVersion) query.getSingleResult();
             
             msg("Found: " + ds);
@@ -702,7 +701,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         // First, let's see if there are thumbnails that have already been 
         // generated:
         try {
-            thumbnailFileId = (Long) em.createNativeQuery("SELECT df.id "
+            thumbnailFileId = (Long) emBean.getMasterEM().createNativeQuery("SELECT df.id "
                     + "FROM datafile df, filemetadata fm, datasetversion dv, dvobject o "
                     + "WHERE dv.id = " + versionId + " "
                     + "AND df.id = o.id "
@@ -726,7 +725,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             long imageThumbnailSizeLimit = systemConfig.getThumbnailSizeLimitImage();
 
             try {
-                thumbnailFileId = (Long) em.createNativeQuery("SELECT df.id "
+                thumbnailFileId = (Long) emBean.getMasterEM().createNativeQuery("SELECT df.id "
                         + "FROM datafile df, filemetadata fm, datasetversion dv, dvobject o "
                         + "WHERE dv.id = " + versionId + " "
                         + "AND df.id = o.id "
@@ -759,7 +758,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             // OK, let's try and generate an image thumbnail!
             long imageThumbnailSizeLimit = systemConfig.getThumbnailSizeLimitPDF();
             try {
-                thumbnailFileId = (Long) em.createNativeQuery("SELECT df.id "
+                thumbnailFileId = (Long) emBean.getMasterEM().createNativeQuery("SELECT df.id "
                         + "FROM datafile df, filemetadata fm, datasetversion dv, dvobject o "
                         + "WHERE dv.id = " + versionId + " "
                         + "AND df.id = o.id "
@@ -790,7 +789,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     
     private void assignDatasetThumbnailByNativeQuery(Long versionId, Long dataFileId) {
         try {
-            em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFileId + " WHERE id in (SELECT dataset_id FROM datasetversion WHERE id=" + versionId + ")").executeUpdate();
+            emBean.getMasterEM().createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFileId + " WHERE id in (SELECT dataset_id FROM datasetversion WHERE id=" + versionId + ")").executeUpdate();
         } catch (Exception ex) {
             // it's ok to just ignore... 
         }
@@ -809,7 +808,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         
         try {
             if (datasetId != null) {
-                searchResult = (Object[]) em.createNativeQuery("SELECT t0.VERSIONSTATE, t1.ALIAS, t2.THUMBNAILFILE_ID, t2.USEGENERICTHUMBNAIL, t3.STORAGEIDENTIFIER FROM DATASETVERSION t0, DATAVERSE t1, DATASET t2, DVOBJECT t3 WHERE t0.ID = " 
+                searchResult = (Object[]) emBean.getMasterEM().createNativeQuery("SELECT t0.VERSIONSTATE, t1.ALIAS, t2.THUMBNAILFILE_ID, t2.USEGENERICTHUMBNAIL, t3.STORAGEIDENTIFIER FROM DATASETVERSION t0, DATAVERSE t1, DATASET t2, DVOBJECT t3 WHERE t0.ID = " 
                         + datasetVersionId 
                         + " AND t1.ID = " 
                         + dataverseId
@@ -820,7 +819,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         ;
             } else {
                 // Why is this method ever called with dataset_id = null? -- L.A.
-                searchResult = (Object[]) em.createNativeQuery("SELECT t0.VERSIONSTATE, t1.ALIAS FROM DATASETVERSION t0, DATAVERSE t1 WHERE t0.ID = " + datasetVersionId + " AND t1.ID = " + dataverseId).getSingleResult();
+                searchResult = (Object[]) emBean.getMasterEM().createNativeQuery("SELECT t0.VERSIONSTATE, t1.ALIAS FROM DATASETVERSION t0, DATAVERSE t1 WHERE t0.ID = " + datasetVersionId + " AND t1.ID = " + dataverseId).getSingleResult();
             }
         } catch (Exception ex) {
             return;
@@ -899,7 +898,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         String query = "SELECT df.md5 FROM datafile df, filemetadata fm WHERE fm.datasetversion_id = " + datasetVersion.getId() + " AND fm.datafile_id = df.id;";
 
         logger.log(Level.FINE, "query: {0}", query);
-        Query nativeQuery = em.createNativeQuery(query);
+        Query nativeQuery = emBean.getMasterEM().createNativeQuery(query);
 
         return nativeQuery.getResultList();
     }
@@ -922,7 +921,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 + " AND fm.datafile_id = df.id"
                 + " AND df.md5 = '" + selectedChecksum + "';";
         
-        Query nativeQuery = em.createNativeQuery(query);
+        Query nativeQuery = emBean.getMasterEM().createNativeQuery(query);
         List<?> checksumList = nativeQuery.getResultList();
 
         return !checksumList.isEmpty();
@@ -943,7 +942,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                     + " minorversionnumber DESC," 
                     + " versionstate;";
         msg("query: " + query);
-        Query nativeQuery = em.createNativeQuery(query);
+        Query nativeQuery = emBean.getMasterEM().createNativeQuery(query);
         List<Object[]> datasetVersionInfoList = nativeQuery.getResultList();
 
         List<HashMap<String, Object>> hashList = new ArrayList<>();
@@ -992,7 +991,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                     + " AND fm.datafile_id = df.id"
                     + " ORDER BY df.id;";
         
-        Query nativeQuery = em.createNativeQuery(query);
+        Query nativeQuery = emBean.getMasterEM().createNativeQuery(query);
         List<Object[]> infoList = nativeQuery.getResultList();
 
         List<HashMap> hashList = new ArrayList<>();
@@ -1058,7 +1057,7 @@ w
                 
                 if (isFileUnfsIdentical(fileUnfsInVersion, fileUnfsInPreviousVersion)) {
                     datasetVersion.setUNF(previousDatasetVersion.getUNF());
-                    DatasetVersion saved = em.merge(datasetVersion);
+                    DatasetVersion saved = emBean.getMasterEM().merge(datasetVersion);
                     info.add("message", "Dataset version (id=" + datasetVersionId + ") has the same tabular file UNFs as a previous version. Assigned the UNF of the previous version without recalculation (" + previousDatasetVersion.getUNF() + "). Use the --forceRecalculate option if you insist on recalculating this UNF.");
                 }
             }
@@ -1067,7 +1066,7 @@ w
         // is the UNF still unset? 
         if (StringUtils.isBlank(datasetVersion.getUNF())) {
             IngestUtil.recalculateDatasetVersionUNF(datasetVersion);
-            DatasetVersion saved = em.merge(datasetVersion);
+            DatasetVersion saved = emBean.getMasterEM().merge(datasetVersion);
             info.add("message", "New UNF value saved (" + saved.getUNF() + "). Reindexing dataset.");
         }
 

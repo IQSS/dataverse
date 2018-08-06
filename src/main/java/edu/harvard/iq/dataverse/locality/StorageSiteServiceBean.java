@@ -1,24 +1,24 @@
 package edu.harvard.iq.dataverse.locality;
 
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
+import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 @Stateless
 public class StorageSiteServiceBean {
+    
+    @Inject
+    EntityManagerBean emBean;
 
     private static final Logger logger = Logger.getLogger(StorageSiteServiceBean.class.getCanonicalName());
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
-
     public StorageSite find(long id) {
-        TypedQuery<StorageSite> typedQuery = em.createQuery("SELECT OBJECT(o) FROM StorageSite AS o WHERE o.id = :id", StorageSite.class);
+        TypedQuery<StorageSite> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM StorageSite AS o WHERE o.id = :id", StorageSite.class);
         typedQuery.setParameter("id", id);
         try {
             return typedQuery.getSingleResult();
@@ -29,14 +29,14 @@ public class StorageSiteServiceBean {
 
     public List<StorageSite> findAll() {
         // TODO: order by primary first, then whatever
-        TypedQuery<StorageSite> typedQuery = em.createQuery("SELECT OBJECT(o) FROM StorageSite AS o ORDER BY o.id", StorageSite.class);
+        TypedQuery<StorageSite> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM StorageSite AS o ORDER BY o.id", StorageSite.class);
         return typedQuery.getResultList();
     }
 
     public StorageSite add(StorageSite toPersist) {
         StorageSite persisted = null;
         try {
-            persisted = em.merge(toPersist);
+            persisted = emBean.getMasterEM().merge(toPersist);
         } catch (Exception ex) {
             logger.info("Exception caught during add: " + ex);
         }
@@ -48,8 +48,8 @@ public class StorageSiteServiceBean {
         boolean wasDeleted = false;
         if (doomed != null) {
             logger.fine("deleting id " + doomed.getId());
-            em.remove(doomed);
-            em.flush();
+            emBean.getMasterEM().remove(doomed);
+            emBean.getMasterEM().flush();
             wasDeleted = true;
         } else {
             logger.warning("problem deleting id " + id);
@@ -58,7 +58,7 @@ public class StorageSiteServiceBean {
     }
 
     public StorageSite save(StorageSite storageSite) {
-        return em.merge(storageSite);
+        return emBean.getMasterEM().merge(storageSite);
     }
 
 }

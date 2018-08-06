@@ -9,10 +9,9 @@ import edu.harvard.iq.dataverse.util.LruCache;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 /**
@@ -26,14 +25,14 @@ public class DataverseFieldTypeInputLevelServiceBean {
 //    private static final Logger logger = Logger.getLogger(DataverseFieldTypeInputLevelServiceBean.class.getCanonicalName());
     public static final LruCache<Long, List<DataverseFieldTypeInputLevel>> cache = new LruCache<>();
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
 
     public List<DataverseFieldTypeInputLevel> findByDataverseId(Long dataverseId) {
         List<DataverseFieldTypeInputLevel> res = cache.get(dataverseId);
 
         if (res == null) {
-            res = em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseId", DataverseFieldTypeInputLevel.class)
+            res = emBean.getMasterEM().createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseId", DataverseFieldTypeInputLevel.class)
                 .setParameter("dataverseId", dataverseId)
                 .getResultList();
             cache.put(dataverseId, res);
@@ -66,7 +65,7 @@ public class DataverseFieldTypeInputLevelServiceBean {
         }
        
         try{
-            return em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseIdAndDatasetFieldTypeIdList", DataverseFieldTypeInputLevel.class)
+            return emBean.getMasterEM().createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseIdAndDatasetFieldTypeIdList", DataverseFieldTypeInputLevel.class)
                     .setParameter("datasetFieldIdList", datasetFieldIdList)
                     .setParameter("dataverseId", dataverseId)
                     .getResultList();
@@ -79,11 +78,11 @@ public class DataverseFieldTypeInputLevelServiceBean {
     }
             //     
     
-    //    Query query = em.createQuery("select object(o) from MapLayerMetadata as o where o.dataset=:dataset");// order by o.name");
+    //    Query query = emBean.getMasterEM().createQuery("select object(o) from MapLayerMetadata as o where o.dataset=:dataset");// order by o.name");
     //    query.setParameter("dataset", dataset);
     
     public DataverseFieldTypeInputLevel findByDataverseIdDatasetFieldTypeId(Long dataverseId, Long datasetFieldTypeId) {
-        Query query = em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseIdDatasetFieldTypeId", DataverseFieldTypeInputLevel.class);
+        Query query = emBean.getMasterEM().createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseIdDatasetFieldTypeId", DataverseFieldTypeInputLevel.class);
         query.setParameter("dataverseId", dataverseId);
         query.setParameter("datasetFieldTypeId", datasetFieldTypeId);
         try{
@@ -94,12 +93,12 @@ public class DataverseFieldTypeInputLevelServiceBean {
     }
 
     public void delete(DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel) {
-        em.remove(em.merge(dataverseFieldTypeInputLevel));
+        emBean.getMasterEM().remove(emBean.getMasterEM().merge(dataverseFieldTypeInputLevel));
         cache.invalidate();
     }
 
     public void deleteFacetsFor(Dataverse d) {
-        em.createNamedQuery("DataverseFieldTypeInputLevel.removeByOwnerId")
+        emBean.getMasterEM().createNamedQuery("DataverseFieldTypeInputLevel.removeByOwnerId")
                 .setParameter("ownerId", d.getId())
                 .executeUpdate();
         cache.invalidate(d.getId());
@@ -108,7 +107,7 @@ public class DataverseFieldTypeInputLevelServiceBean {
 
     public void create(DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel) {
 
-        em.persist(dataverseFieldTypeInputLevel);
+        emBean.getMasterEM().persist(dataverseFieldTypeInputLevel);
     }
 
 }

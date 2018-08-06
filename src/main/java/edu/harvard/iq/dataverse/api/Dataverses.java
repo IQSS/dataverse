@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -68,6 +69,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonNumber;
@@ -107,6 +109,9 @@ public class Dataverses extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Dataverses.class.getCanonicalName());
 
+    @Inject
+    EntityManagerBean emBean;
+            
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
 //    @EJB
@@ -673,7 +678,7 @@ public class Dataverses extends AbstractApiBean {
     @DELETE
     @Path("{identifier}/assignments/{id}")
     public Response deleteAssignment(@PathParam("id") long assignmentId, @PathParam("identifier") String dvIdtf) {
-        RoleAssignment ra = em.find(RoleAssignment.class, assignmentId);
+        RoleAssignment ra = emBean.getEntityManager().find(RoleAssignment.class, assignmentId);
         if (ra != null) {
             try {
                 findDataverseOrDie(dvIdtf);

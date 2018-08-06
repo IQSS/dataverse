@@ -5,6 +5,7 @@ export FILES_DIR=/usr/local/glassfish4/glassfish/domains/domain1/files
 export DB_NAME=dvndb
 export DB_PORT=5432
 export DB_HOST=localhost
+export DB_SERVICE=localhost
 export DB_USER=dvnapp
 export DB_PASS=secret
 export RSERVE_HOST=localhost

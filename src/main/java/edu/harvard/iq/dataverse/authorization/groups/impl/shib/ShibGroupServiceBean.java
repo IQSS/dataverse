@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.shib;
 
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
@@ -13,11 +14,10 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 /**
@@ -30,21 +30,20 @@ public class ShibGroupServiceBean {
 
     private static final Logger logger = Logger.getLogger(ShibGroupServiceBean.class.getCanonicalName());
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
-
     @EJB
     RoleAssigneeServiceBean roleAssigneeSvc;
     @EJB
     GroupServiceBean groupService;
     @EJB
     ActionLogServiceBean actionLogSvc;
+    @Inject
+    EntityManagerBean emBean;
 	
     /**
      * @return A ShibGroup or null.
      */
     public ShibGroup findById(Long id) {
-        TypedQuery<ShibGroup> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ShibGroup o WHERE o.id = :id", ShibGroup.class);
+        TypedQuery<ShibGroup> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM ShibGroup o WHERE o.id = :id", ShibGroup.class);
         typedQuery.setParameter("id", id);
         try {
             ShibGroup shibGroup = typedQuery.getSingleResult();
@@ -55,7 +54,7 @@ public class ShibGroupServiceBean {
     }
 
     public List<ShibGroup> findAll() {
-        TypedQuery<ShibGroup> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ShibGroup as o", ShibGroup.class);
+        TypedQuery<ShibGroup> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM ShibGroup as o", ShibGroup.class);
         return typedQuery.getResultList();
     }
 
@@ -64,9 +63,9 @@ public class ShibGroupServiceBean {
         alr.setInfo( name + ": " + shibIdp + "/" + shibIdpAttribute );
         
         ShibGroup institutionalGroup = new ShibGroup(name, shibIdpAttribute, shibIdp, groupService.getShibGroupProvider());
-        em.persist(institutionalGroup);
-        em.flush();
-        ShibGroup merged = em.merge(institutionalGroup);
+        emBean.getMasterEM().persist(institutionalGroup);
+        emBean.getMasterEM().flush();
+        ShibGroup merged = emBean.getMasterEM().merge(institutionalGroup);
         
         actionLogSvc.log(alr);
         return merged;
@@ -82,7 +81,7 @@ public class ShibGroupServiceBean {
              * requirement to support regular expressions:
              * https://docs.google.com/document/d/12Qru8Gjq4oDUiodI00oObHJog65S7QzFfFZuPU3n8aU/edit?usp=sharing
              */
-            TypedQuery<ShibGroup> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ShibGroup as o WHERE o.pattern =:shibIdP", ShibGroup.class);
+            TypedQuery<ShibGroup> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM ShibGroup as o WHERE o.pattern =:shibIdP", ShibGroup.class);
             typedQuery.setParameter("shibIdP", shibIdp);
             List<ShibGroup> matches = typedQuery.getResultList();
             groupsForUser.addAll(matches);
@@ -101,7 +100,7 @@ public class ShibGroupServiceBean {
         
         List<RoleAssignment> assignments = roleAssigneeSvc.getAssignmentsFor(doomed.getIdentifier());
         if (assignments.isEmpty()) {
-            em.remove(doomed);
+            emBean.getMasterEM().remove(doomed);
             actionLogSvc.log( alr );
             return true;
         } else {

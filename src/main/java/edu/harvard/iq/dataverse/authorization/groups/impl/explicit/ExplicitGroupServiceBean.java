@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.explicit;
 
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -14,10 +15,9 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 
 /**
  * A bean providing the {@link ExplicitGroupProvider}s with container services,
@@ -32,8 +32,8 @@ public class ExplicitGroupServiceBean {
     @EJB
     private RoleAssigneeServiceBean roleAssigneeSvc;
     
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-	protected EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
 	
     ExplicitGroupProvider provider;
     
@@ -48,7 +48,7 @@ public class ExplicitGroupServiceBean {
     
     public ExplicitGroup persist( ExplicitGroup g ) {
         if ( g.getId() == null ) {
-            em.persist( g );
+            emBean.getMasterEM().persist( g );
             return g;
         } else {
             // clean stale data once in a while
@@ -64,21 +64,21 @@ public class ExplicitGroupServiceBean {
                 }
             }
             
-            return em.merge( g );
+            return emBean.getMasterEM().merge( g );
         }    
     }
     
     public List<ExplicitGroup> findByOwner( Long dvObjectId ) {
-        return provider.updateProvider(em.createNamedQuery( "ExplicitGroup.findByOwnerId", ExplicitGroup.class)
-                 .setParameter("ownerId", dvObjectId )
-                 .getResultList());
+        return provider.updateProvider(emBean.getMasterEM().createNamedQuery( "ExplicitGroup.findByOwnerId", ExplicitGroup.class)
+                       .setParameter("ownerId", dvObjectId )
+                       .getResultList());
     }
     
     ExplicitGroup findByAlias(String groupAlias) {
         try  {
-            return provider.updateProvider( em.createNamedQuery("ExplicitGroup.findByAlias", ExplicitGroup.class)
-                    .setParameter("alias", groupAlias)
-                    .getSingleResult());
+            return provider.updateProvider( emBean.getMasterEM().createNamedQuery("ExplicitGroup.findByAlias", ExplicitGroup.class)
+                           .setParameter("alias", groupAlias)
+                           .getSingleResult());
         } catch ( NoResultException nre ) {
             return null;
         }
@@ -87,17 +87,17 @@ public class ExplicitGroupServiceBean {
     public ExplicitGroup findInOwner(Long ownerId, String groupAliasInOwner) {
         try  {
             return provider.updateProvider( 
-                    em.createNamedQuery("ExplicitGroup.findByOwnerIdAndAlias", ExplicitGroup.class)
-                        .setParameter("alias", groupAliasInOwner)
-                        .setParameter("ownerId", ownerId)
-                        .getSingleResult());
+                    emBean.getMasterEM().createNamedQuery("ExplicitGroup.findByOwnerIdAndAlias", ExplicitGroup.class)
+                          .setParameter("alias", groupAliasInOwner)
+                          .setParameter("ownerId", ownerId)
+                          .getSingleResult());
         } catch ( NoResultException nre ) {
             return null;
         }
     }
 
     public void removeGroup(ExplicitGroup explicitGroup) {
-        em.remove( explicitGroup );
+        emBean.getMasterEM().remove( explicitGroup );
     }
     
     /**
@@ -135,23 +135,23 @@ public class ExplicitGroupServiceBean {
         if ( ra instanceof AuthenticatedUser ) {
             return provider.updateProvider(
                     new HashSet<>(
-                            em.createNamedQuery("ExplicitGroup.findByAuthenticatedUserIdentifier", ExplicitGroup.class)
-                              .setParameter("authenticatedUserIdentifier", ra.getIdentifier().substring(1))
-                              .getResultList()
+                            emBean.getMasterEM().createNamedQuery("ExplicitGroup.findByAuthenticatedUserIdentifier", ExplicitGroup.class)
+                                  .setParameter("authenticatedUserIdentifier", ra.getIdentifier().substring(1))
+                                  .getResultList()
                   ));
         } else if ( ra instanceof ExplicitGroup ) {
             return provider.updateProvider(
                     new HashSet<>(
-                            em.createNamedQuery("ExplicitGroup.findByContainedExplicitGroupId", ExplicitGroup.class)
-                              .setParameter("containedExplicitGroupId", ((ExplicitGroup) ra).getId())
-                              .getResultList()
+                            emBean.getMasterEM().createNamedQuery("ExplicitGroup.findByContainedExplicitGroupId", ExplicitGroup.class)
+                                  .setParameter("containedExplicitGroupId", ((ExplicitGroup) ra).getId())
+                                  .getResultList()
                   ));
         } else {
             return provider.updateProvider(
                     new HashSet<>(
-                            em.createNamedQuery("ExplicitGroup.findByRoleAssgineeIdentifier", ExplicitGroup.class)
-                              .setParameter("roleAssigneeIdentifier", ra.getIdentifier())
-                              .getResultList()
+                            emBean.getMasterEM().createNamedQuery("ExplicitGroup.findByRoleAssgineeIdentifier", ExplicitGroup.class)
+                                  .setParameter("roleAssigneeIdentifier", ra.getIdentifier())
+                                  .getResultList()
                   ));
         }
     }
@@ -167,8 +167,8 @@ public class ExplicitGroupServiceBean {
         Set<ExplicitGroup> directGroups = findDirectGroups(ra, o);
         Set<ExplicitGroup> closure = findClosure(directGroups);
         return closure.stream()
-                .filter( g -> g.owner.isAncestorOf(o) )
-                .collect( Collectors.toSet() );
+                      .filter( g -> g.owner.isAncestorOf(o) )
+                      .collect( Collectors.toSet() );
     }
     
     /**
@@ -190,26 +190,26 @@ public class ExplicitGroupServiceBean {
         
         if ( ra instanceof ExplicitGroup ) {
             for ( DvObject cur = o; cur != null; cur=cur.getOwner() ) {
-                groupList.addAll( em.createNamedQuery("ExplicitGroup.findByOwnerAndSubExGroupId", ExplicitGroup.class)
-                  .setParameter("ownerId", cur.getId())
-                  .setParameter("subExGroupId", ((ExplicitGroup)ra).getId())
-                  .getResultList() );
+                groupList.addAll( emBean.getMasterEM().createNamedQuery("ExplicitGroup.findByOwnerAndSubExGroupId", ExplicitGroup.class)
+                                        .setParameter("ownerId", cur.getId())
+                                        .setParameter("subExGroupId", ((ExplicitGroup)ra).getId())
+                                        .getResultList() );
             }
             
         } else if ( ra instanceof AuthenticatedUser ) {
             for ( DvObject cur = o; cur != null; cur=cur.getOwner() ) {
-                groupList.addAll( em.createNamedQuery("ExplicitGroup.findByOwnerAndAuthUserId", ExplicitGroup.class)
-                  .setParameter("ownerId", cur.getId())
-                  .setParameter("authUserId", ((AuthenticatedUser)ra).getId())
-                  .getResultList() );
+                groupList.addAll( emBean.getMasterEM().createNamedQuery("ExplicitGroup.findByOwnerAndAuthUserId", ExplicitGroup.class)
+                                        .setParameter("ownerId", cur.getId())
+                                        .setParameter("authUserId", ((AuthenticatedUser)ra).getId())
+                                        .getResultList() );
             }
             
         } else {
             for ( DvObject cur = o; cur != null; cur=cur.getOwner() ) {
-                groupList.addAll( em.createNamedQuery("ExplicitGroup.findByOwnerAndRAIdtf", ExplicitGroup.class)
-                  .setParameter("ownerId", cur.getId())
-                  .setParameter("raIdtf", ra.getIdentifier())
-                  .getResultList() );
+                groupList.addAll( emBean.getMasterEM().createNamedQuery("ExplicitGroup.findByOwnerAndRAIdtf", ExplicitGroup.class)
+                                        .setParameter("ownerId", cur.getId())
+                                        .setParameter("raIdtf", ra.getIdentifier())
+                                        .getResultList() );
             }
         }
         
@@ -236,8 +236,8 @@ public class ExplicitGroupServiceBean {
            
            // add all of g's parents to the fringe, unless already visited.
            findDirectlyContainingGroups(g).stream()
-                   .filter( eg -> !(result.contains(eg)||fringe.contains(eg) ))
-                   .forEach( fringe::add );
+                                          .filter( eg -> !(result.contains(eg)||fringe.contains(eg) ))
+                                          .forEach( fringe::add );
         }
 
         return result;
@@ -251,9 +251,9 @@ public class ExplicitGroupServiceBean {
      */
     public void revokeAllGroupsForAssignee(RoleAssignee assignee) {
         if (assignee instanceof AuthenticatedUser) {
-            em.createNativeQuery("DELETE FROM explicitgroup_authenticateduser WHERE containedauthenticatedusers_id=" + ((AuthenticatedUser) assignee).getId()).executeUpdate();
+            emBean.getMasterEM().createNativeQuery("DELETE FROM explicitgroup_authenticateduser WHERE containedauthenticatedusers_id=" + ((AuthenticatedUser) assignee).getId()).executeUpdate();
         } else if (assignee instanceof ExplicitGroup) {
-            em.createNativeQuery("DELETE FROM explicitgroup_explicitgroup WHERE containedexplicitgroups_id=" + ((ExplicitGroup) assignee).getId()).executeUpdate();
+            emBean.getMasterEM().createNativeQuery("DELETE FROM explicitgroup_explicitgroup WHERE containedexplicitgroups_id=" + ((ExplicitGroup) assignee).getId()).executeUpdate();
         }
     }
     

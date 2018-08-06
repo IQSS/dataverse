@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
@@ -54,12 +55,11 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
@@ -74,8 +74,6 @@ import org.apache.commons.lang.StringUtils;
  */
 @Stateless
 public class ImportServiceBean {
-    @PersistenceContext(unitName="VDCNet-ejbPU")
-    private EntityManager em;
     
     private static final Logger logger = Logger.getLogger(ImportServiceBean.class.getCanonicalName());
 
@@ -87,6 +85,8 @@ public class ImportServiceBean {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetFieldServiceBean datasetfieldService;
+    @Inject
+    EntityManagerBean emBean;
 
     @EJB
     MetadataBlockServiceBean metadataBlockService;
@@ -352,15 +352,15 @@ public class ImportServiceBean {
                 // directly in the database. no need to bother calling the 
                 // DeleteFileCommand on them.
                 for (DataFile harvestedFile : existingDs.getFiles()) {
-                    DataFile merged = em.merge(harvestedFile);
-                    em.remove(merged);
+                    DataFile merged = emBean.getMasterEM().merge(harvestedFile);
+                    emBean.getMasterEM().remove(merged);
                     harvestedFile = null; 
                 }
                 // TODO: 
                 // Verify what happens with the indexed files in SOLR? 
                 // are they going to be overwritten by the reindexing of the dataset?
                 existingDs.setFiles(null);
-                Dataset merged = em.merge(existingDs);
+                Dataset merged = emBean.getMasterEM().merge(existingDs);
                 engineSvc.submit(new DestroyDatasetCommand(merged, dataverseRequest));
             }
             

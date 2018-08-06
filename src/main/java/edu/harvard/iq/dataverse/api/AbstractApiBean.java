@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
@@ -61,6 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -68,8 +70,6 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -243,8 +243,8 @@ public abstract class AbstractApiBean {
     @EJB
     MetricsServiceBean metricsSvc;
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    protected EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
 
     @Context
     protected HttpServletRequest httpRequest;
@@ -499,7 +499,7 @@ public abstract class AbstractApiBean {
 	}
 
 	protected DvObject findDvo( Long id ) {
-		return em.createNamedQuery("DvObject.findById", DvObject.class)
+		return emBean.getMasterEM().createNamedQuery("DvObject.findById", DvObject.class)
 				.setParameter("id", id)
 				.getSingleResult();
 	}

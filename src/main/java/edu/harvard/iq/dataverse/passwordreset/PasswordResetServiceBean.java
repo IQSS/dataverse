@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.passwordreset;
 
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
@@ -7,17 +8,15 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 @Stateless
@@ -34,9 +33,9 @@ public class PasswordResetServiceBean {
 
     @EJB
     PasswordValidatorServiceBean passwordValidatorService;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    
+    @Inject
+    EntityManagerBean emBean;
 
     /**
      * Initiate the password reset process.
@@ -60,14 +59,14 @@ public class PasswordResetServiceBean {
         // delete old tokens for the user
         List<PasswordResetData> oldTokens = findPasswordResetDataByDataverseUser(aUser);
         for (PasswordResetData oldToken : oldTokens) {
-            em.remove(oldToken);
+            emBean.getMasterEM().remove(oldToken);
         }
         
         // create a fresh token for the user
         PasswordResetData passwordResetData = new PasswordResetData(aUser);
         passwordResetData.setReason(reason);
         try {
-            em.persist(passwordResetData);
+            emBean.getMasterEM().persist(passwordResetData);
             PasswordResetInitResponse passwordResetInitResponse = new PasswordResetInitResponse(true, passwordResetData);
             if ( sendEmail ) {
                 sendPasswordResetEmail(aUser, passwordResetInitResponse.getResetUrl());
@@ -137,7 +136,7 @@ public class PasswordResetServiceBean {
      */
     private PasswordResetData findSinglePasswordResetDataByToken(String token) {
         PasswordResetData passwordResetData = null;
-        TypedQuery<PasswordResetData> typedQuery = em.createNamedQuery("PasswordResetData.findByToken", PasswordResetData.class);
+        TypedQuery<PasswordResetData> typedQuery = emBean.getMasterEM().createNamedQuery("PasswordResetData.findByToken", PasswordResetData.class);
         typedQuery.setParameter("token", token);
         try {
             passwordResetData = typedQuery.getSingleResult();
@@ -148,14 +147,14 @@ public class PasswordResetServiceBean {
     }
 
     public List<PasswordResetData> findPasswordResetDataByDataverseUser(BuiltinUser user) {
-        TypedQuery<PasswordResetData> typedQuery = em.createNamedQuery("PasswordResetData.findByUser", PasswordResetData.class);
+        TypedQuery<PasswordResetData> typedQuery = emBean.getMasterEM().createNamedQuery("PasswordResetData.findByUser", PasswordResetData.class);
         typedQuery.setParameter("user", user);
         List<PasswordResetData> passwordResetDatas = typedQuery.getResultList();
         return passwordResetDatas;
     }
 
     public List<PasswordResetData> findAllPasswordResetData() {
-        TypedQuery<PasswordResetData> typedQuery = em.createNamedQuery("PasswordResetData.findAll", PasswordResetData.class);
+        TypedQuery<PasswordResetData> typedQuery = emBean.getMasterEM().createNamedQuery("PasswordResetData.findAll", PasswordResetData.class);
         List<PasswordResetData> passwordResetDatas = typedQuery.getResultList();
         return passwordResetDatas;
     }
@@ -168,7 +167,7 @@ public class PasswordResetServiceBean {
         List<PasswordResetData> allData = findAllPasswordResetData();
         for (PasswordResetData data : allData) {
             if (data.isExpired()) {
-                em.remove(data);
+                emBean.getMasterEM().remove(data);
                 numDeleted++;
             }
         }
@@ -240,7 +239,7 @@ public class PasswordResetServiceBean {
     private boolean deleteToken(String token) {
         PasswordResetData doomed = findSinglePasswordResetDataByToken(token);
         try {
-            em.remove(doomed);
+            emBean.getMasterEM().remove(doomed);
             return true;
         } catch (Exception ex) {
             logger.info("Caught exception trying to delete token " + token + " - " + ex);

@@ -31,8 +31,6 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.ToggleSelectEvent;
@@ -72,9 +70,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     @Inject
     PermissionsWrapper permissionsWrapper;
-    
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
 
     @Inject
     DataverseSession session;
@@ -253,7 +250,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     // internal method used by removeRoleAssignments
     private void revokeRole(Long roleAssignmentId) {
         try {
-            RoleAssignment ra = em.find(RoleAssignment.class, roleAssignmentId);
+            RoleAssignment ra = emBean.getEntityManager().find(RoleAssignment.class, roleAssignmentId);
             commandEngine.submit(new RevokeRoleCommand(ra, dvRequestService.getDataverseRequest()));
             JsfHelper.addSuccessMessage( BundleUtil.getStringFromBundle("permission.roleWasRemoved" , Arrays.asList(ra.getRole().getName(), roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle())));
         } catch (PermissionException ex) {

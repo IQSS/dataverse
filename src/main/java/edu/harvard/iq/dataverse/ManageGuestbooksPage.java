@@ -18,8 +18,6 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -43,9 +41,6 @@ public class ManageGuestbooksPage implements java.io.Serializable {
 
     @EJB
     EjbDataverseEngine engineService;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    EntityManager em;
 
     @Inject
     DataversePage dvpage;

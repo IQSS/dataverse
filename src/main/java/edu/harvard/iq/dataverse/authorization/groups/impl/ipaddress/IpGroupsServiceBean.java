@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
@@ -13,10 +14,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 
 /**
  * Provides CRUD tools to efficiently manage IP groups in a Java EE container.
@@ -29,14 +29,14 @@ public class IpGroupsServiceBean {
     
     private static final Logger logger = Logger.getLogger(IpGroupsServiceBean.class.getName());
     
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-	protected EntityManager em;
-    
     @EJB
     ActionLogServiceBean actionLogSvc;
 	
     @EJB
     RoleAssigneeServiceBean roleAssigneeSvc;
+    
+    @Inject
+    EntityManagerBean emBean;
     
     /**
      * Stores (inserts/updates) the passed IP group.
@@ -57,7 +57,7 @@ public class IpGroupsServiceBean {
                 IpGroup existing = getByGroupName( grp.getPersistedGroupAlias() );
                 if ( existing == null ) {
                     // new group
-                    em.persist( grp );
+                    emBean.getMasterEM().persist( grp );
                     actionLogSvc.log( alr );
                     return grp;
                     
@@ -71,22 +71,22 @@ public class IpGroupsServiceBean {
                 }
             } else {
                 actionLogSvc.log( alr );
-                em.persist( grp );
+                emBean.getMasterEM().persist( grp );
                 return grp;
             }
         } else {
             actionLogSvc.log( alr.setActionSubType("ipUpdate") );
-            return em.merge(grp);
+            return emBean.getMasterEM().merge(grp);
         }
     }
     
     public IpGroup get( long id ) {
-       return em.find( IpGroup.class, id);
+       return emBean.getEntityManager().find( IpGroup.class, id);
     }
     
     public IpGroup getByGroupName( String alias ) {
         try {
-            return em.createNamedQuery("IpGroup.findByPersistedGroupAlias", IpGroup.class)
+            return emBean.getMasterEM().createNamedQuery("IpGroup.findByPersistedGroupAlias", IpGroup.class)
               .setParameter("persistedGroupAlias", alias)
               .getSingleResult();
         } catch ( NoResultException nre ) {
@@ -95,20 +95,20 @@ public class IpGroupsServiceBean {
     }
     
     public List<IpGroup> findAll() {
-        return em.createNamedQuery("IpGroup.findAll", IpGroup.class).getResultList();
+        return emBean.getMasterEM().createNamedQuery("IpGroup.findAll", IpGroup.class).getResultList();
     }
     
     public Set<IpGroup> findAllIncludingIp( IpAddress ipa ) {
         if ( ipa instanceof IPv4Address ) {
             IPv4Address ip4 = (IPv4Address) ipa;
-            List<IpGroup> groupList = em.createNamedQuery("IPv4Range.findGroupsContainingAddressAsLong", IpGroup.class)
+            List<IpGroup> groupList = emBean.getMasterEM().createNamedQuery("IPv4Range.findGroupsContainingAddressAsLong", IpGroup.class)
                     .setParameter("addressAsLong", ip4.toBigInteger()).getResultList();
             return new HashSet<>(groupList);
             
         } else if ( ipa instanceof IPv6Address ) {
             IPv6Address ip6 = (IPv6Address) ipa;
             long[] ip6arr = ip6.toLongArray();
-            List<IpGroup> groupList = em.createNamedQuery("IPv6Range.findGroupsContainingABCD", IpGroup.class)
+            List<IpGroup> groupList = emBean.getMasterEM().createNamedQuery("IPv6Range.findGroupsContainingABCD", IpGroup.class)
                     .setParameter("a", ip6arr[0])
                     .setParameter("b", ip6arr[1])
                     .setParameter("c", ip6arr[2])
@@ -131,7 +131,7 @@ public class IpGroupsServiceBean {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "ipDelete");
         alr.setInfo( grp.getIdentifier() );
         if ( roleAssigneeSvc.getAssignmentsFor(grp.getIdentifier()).isEmpty() ) {
-            em.remove( grp );
+            emBean.getMasterEM().remove( grp );
             actionLogSvc.log(alr);
             
         } else {

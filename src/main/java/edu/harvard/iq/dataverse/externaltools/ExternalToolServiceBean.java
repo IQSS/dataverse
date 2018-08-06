@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DESCRIPTION;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DISPLAY_NAME;
@@ -13,38 +14,36 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 @Stateless
 @Named
 public class ExternalToolServiceBean {
+    
+    @Inject
+    EntityManagerBean emBean;
 
     private static final Logger logger = Logger.getLogger(ExternalToolServiceBean.class.getCanonicalName());
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
-
     public List<ExternalTool> findAll() {
-        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o ORDER BY o.id", ExternalTool.class);
+        TypedQuery<ExternalTool> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM ExternalTool AS o ORDER BY o.id", ExternalTool.class);
         return typedQuery.getResultList();
     }
-
 
     /**
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findByType(ExternalTool.Type type) {
         List<ExternalTool> externalTools = new ArrayList<>();
-        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
+        TypedQuery<ExternalTool> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
         typedQuery.setParameter("type", type);
         List<ExternalTool> toolsFromQuery = typedQuery.getResultList();
         if (toolsFromQuery != null) {
@@ -54,7 +53,7 @@ public class ExternalToolServiceBean {
     }
 
     public ExternalTool findById(long id) {
-        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.id = :id", ExternalTool.class);
+        TypedQuery<ExternalTool> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.id = :id", ExternalTool.class);
         typedQuery.setParameter("id", id);
         try {
             ExternalTool externalTool = typedQuery.getSingleResult();
@@ -67,7 +66,7 @@ public class ExternalToolServiceBean {
     public boolean delete(long doomedId) {
         ExternalTool doomed = findById(doomedId);
         try {
-            em.remove(doomed);
+            emBean.getMasterEM().remove(doomed);
             return true;
         } catch (Exception ex) {
             logger.info("Could not delete external tool with id of " + doomedId);
@@ -76,8 +75,8 @@ public class ExternalToolServiceBean {
     }
 
     public ExternalTool save(ExternalTool externalTool) {
-        em.persist(externalTool);
-        return em.merge(externalTool);
+        emBean.getMasterEM().persist(externalTool);
+        return emBean.getMasterEM().merge(externalTool);
     }
 
     /**

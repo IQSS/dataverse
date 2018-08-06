@@ -18,8 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.inject.Inject;
 import javax.persistence.TypedQuery;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -35,9 +34,9 @@ public class DOIDataCiteRegisterService {
 
     private static final Logger logger = Logger.getLogger(DOIDataCiteRegisterService.class.getCanonicalName());
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
-
+    @Inject
+    EntityManagerBean emBean;
+    
     @EJB
     DataverseServiceBean dataverseService;
 
@@ -58,7 +57,7 @@ public class DOIDataCiteRegisterService {
             rc.setXml(xmlMetadata);
             rc.setStatus("reserved");
             rc.setUrl(target);
-            em.persist(rc);
+            emBean.getMasterEM().persist(rc);
         } else {
             rc.setDoi(identifier);
             rc.setXml(xmlMetadata);
@@ -174,7 +173,7 @@ public class DOIDataCiteRegisterService {
                 rc.setXml(xmlMetadata);
                 rc.setStatus("reserved");
                 rc.setUrl(target);
-                em.persist(rc);
+                emBean.getMasterEM().persist(rc);
             } else {
                 rc.setDoi(identifier);
                 rc.setXml(xmlMetadata);
@@ -251,7 +250,7 @@ public class DOIDataCiteRegisterService {
     }
 
     public DOIDataCiteRegisterCache findByDOI(String doi) {
-        TypedQuery<DOIDataCiteRegisterCache> query = em.createNamedQuery("DOIDataCiteRegisterCache.findByDoi",
+        TypedQuery<DOIDataCiteRegisterCache> query = emBean.getMasterEM().createNamedQuery("DOIDataCiteRegisterCache.findByDoi",
                 DOIDataCiteRegisterCache.class);
         query.setParameter("doi", doi);
         List<DOIDataCiteRegisterCache> rc = query.getResultList();
@@ -264,7 +263,7 @@ public class DOIDataCiteRegisterService {
     public void deleteIdentifier(String identifier) {
         DOIDataCiteRegisterCache rc = findByDOI(identifier);
         if (rc != null) {
-            em.remove(rc);
+            emBean.getMasterEM().remove(rc);
         }
     }
 

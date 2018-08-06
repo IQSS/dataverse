@@ -38,7 +38,7 @@ my $postgresonly = 0;
 if ($pg_only) 
 {
     @CONFIG_VARIABLES =
-      ( 'POSTGRES_SERVER', 'POSTGRES_PORT', 'POSTGRES_DATABASE', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_ADMIN_PASSWORD' );
+      ( 'POSTGRES_SERVER', 'POSTGRES_SERVICE', 'POSTGRES_PORT', 'POSTGRES_DATABASE', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_ADMIN_PASSWORD' );
 
     $postgresonly = 1;
 } 
@@ -53,6 +53,7 @@ else
 	'MAIL_SERVER',
 
 	'POSTGRES_SERVER',
+	'POSTGRES_SERVICE',
 	'POSTGRES_PORT',
 	'POSTGRES_ADMIN_PASSWORD',
 	'POSTGRES_DATABASE',
@@ -78,13 +79,14 @@ my %CONFIG_DEFAULTS = (
     'MAIL_SERVER',         'mail.hmdc.harvard.edu',
 
     'POSTGRES_ADMIN_PASSWORD', 'secret',
-    'POSTGRES_SERVER',   '127.0.0.1',
-    'POSTGRES_PORT',     5432,
-    'POSTGRES_DATABASE', 'dvndb',
-    'POSTGRES_USER',     'dvnapp',
-    'POSTGRES_PASSWORD', 'secret',
+    'POSTGRES_SERVER',         '127.0.0.1',
+    'POSTGRES_SERVICE',        '127.0.0.1',
+    'POSTGRES_PORT',           5432,
+    'POSTGRES_DATABASE',       'dvndb',
+    'POSTGRES_USER',           'dvnapp',
+    'POSTGRES_PASSWORD',       'secret',
 
-    'SOLR_LOCATION',     'LOCAL',
+    'SOLR_LOCATION', 'LOCAL',
 
     'RSERVE_HOST',     'localhost',
     'RSERVE_PORT',     6311,
@@ -99,14 +101,15 @@ my %CONFIG_PROMPTS = (
     'ADMIN_EMAIL',         'Administrator email address for this Dataverse',
     'MAIL_SERVER',         'SMTP (mail) server to relay notification messages',
 
-    'POSTGRES_SERVER',   'Postgres Server Address',
-    'POSTGRES_PORT',     'Postgres Server Port',
+    'POSTGRES_SERVER',         'Postgres Master Server Address',
+    'POSTGRES_SERVICE',        'Postgres Service Address',
+    'POSTGRES_PORT',           'Postgres Server Port',
     'POSTGRES_ADMIN_PASSWORD', 'Postgres ADMIN password',
-    'POSTGRES_DATABASE', 'Name of the Postgres Database',
-    'POSTGRES_USER',     'Name of the Postgres User',
-    'POSTGRES_PASSWORD', 'Postgres user password',
+    'POSTGRES_DATABASE',       'Name of the Postgres Database',
+    'POSTGRES_USER',           'Name of the Postgres User',
+    'POSTGRES_PASSWORD',       'Postgres user password',
 
-    'SOLR_LOCATION',     'Remote SOLR indexing service',
+    'SOLR_LOCATION', 'Remote SOLR indexing service',
 
     'RSERVE_HOST',     'Rserve Server',
     'RSERVE_PORT',     'Rserve Server Port',
@@ -123,14 +126,15 @@ my %CONFIG_COMMENTS = (
     'ADMIN_EMAIL',         ":\n(please enter a valid email address!) ",
     'MAIL_SERVER',         '',
 
-    'POSTGRES_SERVER',   '',
-    'POSTGRES_PORT',     '',
+    'POSTGRES_SERVER',         '',
+    'POSTGRES_SERVICE',        '',
+    'POSTGRES_PORT',           '',
     'POSTGRES_ADMIN_PASSWORD', ":\n - We will need this to create the user and database that the Dataverse application will be using.\n (Hit RETURN if access control is set to \"trust\" for this connection in pg_hba.conf)\n: ",
-    'POSTGRES_USER',     ":\n - This is the Postgres user that the Dataverse app will be using to talk to the database\n: ",
-    'POSTGRES_DATABASE', '',
-    'POSTGRES_PASSWORD', '',
+    'POSTGRES_USER',           ":\n - This is the Postgres user that the Dataverse app will be using to talk to the database\n: ",
+    'POSTGRES_DATABASE',       '',
+    'POSTGRES_PASSWORD',       '',
 
-    'SOLR_LOCATION',     "? \n - Leave this set to \"LOCAL\" if the SOLR will be running on the same (this) server.\n Otherwise, please enter the host AND THE PORT NUMBER of the remote SOLR service, colon-separated\n (for example: foo.edu:8983)\n: ",
+    'SOLR_LOCATION', "? \n - Leave this set to \"LOCAL\" if the SOLR will be running on the same (this) server.\n Otherwise, please enter the host AND THE PORT NUMBER of the remote SOLR service, colon-separated\n (for example: foo.edu:8983)\n: ",
 
     'RSERVE_HOST',     '',
     'RSERVE_PORT',     '',
@@ -734,6 +738,7 @@ sub setup {
 
     $ENV{'DB_PORT'} = $CONFIG_DEFAULTS{'POSTGRES_PORT'};
     $ENV{'DB_HOST'} = $CONFIG_DEFAULTS{'POSTGRES_SERVER'};
+    $ENV{'DB_SERVICE'} = $CONFIG_DEFAULTS{'POSTGRES_SERVICE'};
     $ENV{'DB_NAME'} = $CONFIG_DEFAULTS{'POSTGRES_DATABASE'};
     $ENV{'DB_USER'} = $CONFIG_DEFAULTS{'POSTGRES_USER'};
     $ENV{'DB_PASS'} = $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'};

@@ -9,9 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
@@ -24,8 +23,8 @@ import javax.persistence.TypedQuery;
 public class DatasetLinkingServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DatasetLinkingServiceBean.class.getCanonicalName());
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
     
     /**
      * @param linkingDataverseId
@@ -38,7 +37,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
     @Deprecated
     public List<Dataset> findLinkedDataverses(Long linkingDataverseId) {
         List<Dataset> retList = new ArrayList<>();
-        Query query = em.createQuery("select object(o.dataverse.id) from DatasetLinkingDataverse as o where o.linkingDataverse.id =:linkingDataverseId order by o.id");
+        Query query = emBean.getMasterEM().createQuery("select object(o.dataverse.id) from DatasetLinkingDataverse as o where o.linkingDataverse.id =:linkingDataverseId order by o.id");
         query.setParameter("linkingDataverseId", linkingDataverseId);
         for (Object o : query.getResultList()) {
             DatasetLinkingDataverse convterted = (DatasetLinkingDataverse) o;
@@ -49,7 +48,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
 
     public List<Dataset> findDatasetsThisDataverseIdHasLinkedTo(Long dataverseId) {
         List<Dataset> datasets = new ArrayList<>();
-        TypedQuery<DatasetLinkingDataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId", DatasetLinkingDataverse.class);
+        TypedQuery<DatasetLinkingDataverse> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId", DatasetLinkingDataverse.class);
         typedQuery.setParameter("dataverseId", dataverseId);
         List<DatasetLinkingDataverse> datasetLinkingDataverses = typedQuery.getResultList();
         for (DatasetLinkingDataverse datasetLinkingDataverse : datasetLinkingDataverses) {
@@ -69,7 +68,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
     public DatasetLinkingDataverse findDatasetLinkingDataverse(Long datasetId, Long linkingDataverseId) {
         DatasetLinkingDataverse foundDatasetLinkingDataverse = null;
         try {
-            foundDatasetLinkingDataverse = em.createQuery("SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId AND o.dataset.id = :datasetId", DatasetLinkingDataverse.class)
+            foundDatasetLinkingDataverse = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId AND o.dataset.id = :datasetId", DatasetLinkingDataverse.class)
                     .setParameter("datasetId", datasetId)
                     .setParameter("dataverseId", linkingDataverseId)
                     .getSingleResult();
@@ -80,21 +79,21 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
     }
 
     public List<DatasetLinkingDataverse> findDatasetLinkingDataverses(Long datasetId) {
-        return em.createQuery("select object(o) from DatasetLinkingDataverse as o where o.dataset.id =:datasetId order by o.id", DatasetLinkingDataverse.class)
+        return emBean.getMasterEM().createQuery("select object(o) from DatasetLinkingDataverse as o where o.dataset.id =:datasetId order by o.id", DatasetLinkingDataverse.class)
                 .setParameter("datasetId", datasetId)
                 .getResultList();
     }
 
     public void save(DatasetLinkingDataverse datasetLinkingDataverse) {
         if (datasetLinkingDataverse.getId() == null) {
-            em.persist(datasetLinkingDataverse);
+            emBean.getMasterEM().persist(datasetLinkingDataverse);
         } else {
-            em.merge(datasetLinkingDataverse);
+            emBean.getMasterEM().merge(datasetLinkingDataverse);
         }
     }
     
     public boolean alreadyLinked(Dataverse dataverse, Dataset dataset) {
-        TypedQuery<DatasetLinkingDataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId AND o.dataset.id = :datasetId", DatasetLinkingDataverse.class);
+        TypedQuery<DatasetLinkingDataverse> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId AND o.dataset.id = :datasetId", DatasetLinkingDataverse.class);
         typedQuery.setParameter("dataverseId", dataverse.getId());
         typedQuery.setParameter("datasetId", dataset.getId());
         return !typedQuery.getResultList().isEmpty();
