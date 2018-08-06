@@ -503,22 +503,27 @@ The review process can sometimes resemble a tennis match, with the authors submi
 
 
 Files
-~~~~~
+-----
 
-.. note:: Files can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+Adding Files
+~~~~~~~~~~~~
+
+.. Note:: Files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the Datasets_ endpoint above for more information.
+
+Accessing (downloading) files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. Note:: Access API has its own section in the Guide: :doc:`/api/dataaccess`
+
+**Note** Data Access API calls can now be made using persistent identifiers (in addition to database ids). This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
 
   Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::
 
     GET http://$SERVER/api/access/datafile/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
 
 
-Adding Files
-^^^^^^^^^^^^
-
-.. note:: Please note that files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the "Datasets" endpoint above for more information.
-
 Restrict Files
-^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 
 Restrict or unrestrict an existing file where ``id`` is the database id of the file or ``pid`` is the persistent id (DOI or Handle) of the file to restrict. Note that some Dataverse installations do not allow the ability to restrict files.
 
@@ -531,7 +536,7 @@ A curl example using a ``pid``::
     curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/:persistentId/restrict?persistentId={pid}
 
 Replacing Files
-^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~
 
 Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note that metadata such as description and tags are not carried over from the file being replaced
 
@@ -610,10 +615,23 @@ Example python code to replace a file.  This may be run by changing these parame
 Uningest a File
 ~~~~~~~~~~~~~~~
 
-Reverse the ingest process performed on a file where ``id`` is the database id of the file to process. Note that this requires "super user" credentials::
+Reverse the tabular data ingest process performed on a file where ``{id}`` is the database id of the file to process. Note that this requires "super user" credentials::
 
-    POST http://$SERVER/api/files/{id}/uningest?key=$apiKey    
+    POST http://$SERVER/api/files/{id}/uningest?key={apiKey}
 
+
+Reingest a File
+~~~~~~~~~~~~~~~
+
+Attempt to ingest an existing datafile as tabular data. This API can be used on a file that was not ingested as tabular back when it was uploaded. For example, a Stata v.14 file that was uploaded before ingest support for Stata 14 was added (in Dataverse v.4.9). It can also be used on a file that failed to ingest due to a bug in the ingest plugin that has since been fixed (hence the name "re-ingest").
+
+Note that this requires "super user" credentials:: 
+
+    POST http://$SERVER/api/files/{id}/reingest?key={apiKey}
+
+(``{id}`` is the database id of the file to process)
+
+Also, note that, at present the API cannot be used on a file that's already ingested as tabular.
 
 Provenance
 ~~~~~~~~~~
