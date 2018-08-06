@@ -754,9 +754,14 @@ sub setup {
     if ( exists($ENV{'MY_POD_NAME'}) )
     {
 	    # assume that the second postgres-setup call is sufficient outside OpenShift
+	    # nope, it's not.
 	    unless($ENV{"MY_POD_NAME"} eq "start-glassfish" || $ENV{"MY_POD_NAME"} eq "dataverse-glassfish-0") {
 		system("perl ./postgres-setup");
 	    }
+    }
+    else
+    {
+		system("perl ./postgres-setup");
     }
     
     print "Finished configuring postgres \n";
