@@ -751,14 +751,31 @@ sub setup {
     $ENV{'WARFILE_LOCATION'} = $WARFILE_LOCATION;
     
     #start-glassfish is a container name for OpenShift deployment 
-    unless($ENV{"MY_POD_NAME"} eq "start-glassfish" || $ENV{"MY_POD_NAME"} eq "dataverse-glassfish-0") {
-        system("perl ./postgres-setup");
+    if ( exists($ENV{'MY_POD_NAME'}) )
+    {
+	    # assume that the second postgres-setup call is sufficient outside OpenShift
+	    # nope, it's not - both are necessary
+	    unless($ENV{"MY_POD_NAME"} eq "start-glassfish" || $ENV{"MY_POD_NAME"} eq "dataverse-glassfish-0") {
+		system("perl ./postgres-setup");
+	    }
+    }
+    else
+    {
+		system("perl ./postgres-setup");
     }
     
     print "Finished configuring postgres \n";
     
     #Start and Setup Glassfish + Deploy war file
-    system("perl ./glassfish-startup");
+    #needs to pass on -y / $yes for non-interactive
+    unless ($yes)
+    {
+    	system("perl ./glassfish-startup");
+    }
+    else
+    {
+    	system("perl ./glassfish-startup -y");
+    }
 
     print "Finished configuring postgres \n";
 
