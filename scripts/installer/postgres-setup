@@ -49,7 +49,10 @@ my $jq_exec = "";
 my $pg_major_version = 0;
 my $pg_minor_version = 0;
 my $pod_name = "";
-$pod_name = $ENV{'MY_POD_NAME'};
+if (exists($ENV{'MY_POD_NAME'}))
+{
+	$pod_name = $ENV{'MY_POD_NAME'};
+}
 
 
 ##Handling container env
