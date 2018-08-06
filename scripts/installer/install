@@ -758,7 +758,15 @@ sub setup {
     print "Finished configuring postgres \n";
     
     #Start and Setup Glassfish + Deploy war file
-    system("perl ./glassfish-startup");
+    #needs to pass on -y / $yes for non-interactive
+    unless ($yes)
+    {
+    	system("perl ./glassfish-startup");
+    }
+    else
+    {
+    	system("perl ./glassfish-startup -y");
+    }
 
     print "Finished configuring postgres \n";
 
