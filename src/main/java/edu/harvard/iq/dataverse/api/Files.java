@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -369,6 +370,10 @@ public class Files extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, "Failed to locate the parent dataset for the datafile.");
         }
         
+        if (dataFile.isTabularData()) {
+            return error(Response.Status.BAD_REQUEST, "The datafile is already ingested as Tabular.");
+        }
+        
         boolean ingestLock = dataset.isLockedFor(DatasetLock.Reason.Ingest);
         
         if (ingestLock) {
@@ -391,10 +396,10 @@ public class Files extends AbstractApiBean {
         dataFile = fileService.save(dataFile);
         
         // queue the data ingest job for asynchronous execution: 
-        String status = ingestService.startIngestJobs(new ArrayList<DataFile>(Arrays.asList(dataFile)), u);
+        String status = ingestService.startIngestJobs(new ArrayList<>(Arrays.asList(dataFile)), u);
         
-        if (status != null) {
-            // This most likely indicate some sort of a problem (for example, 
+        if (!StringUtil.isEmpty(status)) {
+            // This most likely indicates some sort of a problem (for example, 
             // the ingest job was not put on the JMS queue because of the size
             // of the file). But we are still returning the OK status - because
             // from the point of view of the API, it's a success - we have 
