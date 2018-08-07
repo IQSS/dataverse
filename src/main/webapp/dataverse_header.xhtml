@@ -23,12 +23,7 @@
                         <span class="icon-bar"></span>
                     </button>                       
                    <!-- QDRCustom- Remove link-to-home logo -->
-                    <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
-                        <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
-                    </h:outputLink>
-                    <ui:fragment rendered="#{empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader')}">
-                        <span class="label label-default status">#{settingsWrapper.get(':StatusMessageHeader')}</span>
-                    </ui:fragment>
+                    
                 </div>
                 <!-- QDRCustom- Menu Items -->
                 <div class="collapse navbar-collapse" id="topNavBar">
@@ -310,6 +305,18 @@
                  jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
                 <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name}"/>
             </div>
+            <!--  QDR - move status message -->
+            <div>
+                <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
+                    <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
+                </h:outputLink>
+                <ui:fragment rendered="#{empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader')}">
+                    <span class="label label-default status">
+                        <!--  QDR - allow html message -->
+                        <h:outputText value="#{settingsWrapper.get(':StatusMessageHeader')}" escape="false"/>
+                    </span>
+                </ui:fragment>
+            </div>        
             <div class="dataverseHeaderBlock">
                 <div class="dataverseHeaderCell dataverseHeaderLogo" jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'SQUARE'}">
                     <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name}"/>
