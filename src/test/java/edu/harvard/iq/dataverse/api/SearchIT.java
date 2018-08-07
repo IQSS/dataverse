@@ -26,6 +26,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.search.SearchFields;
 import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -340,7 +341,7 @@ public class SearchIT {
                 .body("data.dataFileId", CoreMatchers.equalTo(null))
                 .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
-        
+
         //We now need to publish for the dataset to get the thumbnail
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         publishDataverse.prettyPrint();
@@ -351,7 +352,7 @@ public class SearchIT {
         publishDataset.prettyPrint();
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         Response getThumbnail3 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
         System.out.println("getThumbnail3: ");
         getThumbnail3.prettyPrint();
@@ -634,6 +635,66 @@ public class SearchIT {
 
         searchPart = identifier.replace("FK2/", "");
         Response searchTargeted = UtilIT.search("dsPersistentId:" + searchPart, apiToken);
+        searchTargeted.prettyPrint();
+        searchTargeted.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+
+        Response searchUntargeted = UtilIT.search(searchPart, apiToken);
+        searchUntargeted.prettyPrint();
+        searchUntargeted.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+
+    }
+
+    @Test
+    public void testSearchDates() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        System.out.println("id: " + datasetId);
+        String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
+        System.out.println("datasetPid: " + datasetPid);
+
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        System.out.println("identifier: " + identifier);
+
+        String searchPart = identifier.replace("FK2/", "");
+        Response searchUnpublished = UtilIT.search(searchPart, apiToken);
+        searchUnpublished.prettyPrint();
+        searchUnpublished.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // It's expected that you can't find it because it hasn't been published.
+                .body("data.total_count", CoreMatchers.equalTo(0));
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // FIXME: Make this dynamic
+        String today = "2018-08-07";
+        Response searchSolr = UtilIT.searchSolrDirectly(searchPart);
+        searchSolr.prettyPrint();
+        Response searchTargeted = UtilIT.search(SearchFields.DATASET_PUBLICATION_DATE + ":" + today, apiToken);
         searchTargeted.prettyPrint();
         searchTargeted.then().assertThat()
                 .statusCode(OK.getStatusCode())

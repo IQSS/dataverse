@@ -1200,6 +1200,10 @@ public class UtilIT {
         return requestSpecification.get("/api/search?q=" + query);
     }
 
+    static Response searchSolrDirectly(String query) {
+        return given().get("http://localhost:8983/solr/collection1/select?rows=1000000&wt=json&indent=true&q=" + query);
+    }
+
     static Response searchAndShowFacets(String query, String apiToken) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {

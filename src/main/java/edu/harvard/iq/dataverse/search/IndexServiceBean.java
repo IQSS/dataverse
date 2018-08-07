@@ -1129,6 +1129,7 @@ public class IndexServiceBean {
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(dataset.getPublicationDate().getTime());
             int YYYY = calendar.get(Calendar.YEAR);
+            logger.info("addDatasetReleaseDateToSolrDoc YYYY: " + YYYY);
             solrInputDocument.addField(SearchFields.PUBLICATION_DATE, YYYY);
             solrInputDocument.addField(SearchFields.DATASET_PUBLICATION_DATE, YYYY);
         }
