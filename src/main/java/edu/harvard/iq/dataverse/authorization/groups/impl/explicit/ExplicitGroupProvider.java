@@ -55,7 +55,17 @@ public class ExplicitGroupProvider implements GroupProvider {
     public Set<ExplicitGroup> groupsFor(RoleAssignee ra, DvObject o) {
         return explicitGroupSvc.findGroups(ra, o);
     }
+    
+    @Override
+    public Set<ExplicitGroup> groupsFor(RoleAssignee ra) {
+        return explicitGroupSvc.findGroups(ra);
+    }
 
+    @Override
+    public Set<ExplicitGroup> groupsFor(DataverseRequest req) {
+        return explicitGroupSvc.findGroups(req.getUser());
+    }
+    
     @Override
     public ExplicitGroup get(String groupAlias) {
         return explicitGroupSvc.findByAlias( groupAlias );

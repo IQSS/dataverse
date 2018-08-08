@@ -9,9 +9,8 @@ import edu.harvard.iq.dataverse.search.IndexAsync;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
-import edu.harvard.iq.dataverse.util.TimeoutCache;
-import edu.harvard.iq.dataverse.util.TimeoutCacheWrapper;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -223,8 +222,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 
         return ras;
     }
-
-    private final TimeoutCache<RoleAssignee, List<RoleAssignment>> rolesCache =  TimeoutCacheWrapper.addOrGet("roles");;
+    
     /**
      * Retrieves the roles assignments for {@code user}, directly on {@code dv}.
      * No traversal on the containment hierarchy is done.
@@ -236,15 +234,30 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * edu.harvard.iq.dataverse.Dataverse)
      */
     public List<RoleAssignment> directRoleAssignments(@NotNull RoleAssignee roas, @NotNull DvObject dvo) {
-        List<RoleAssignment> unfiltered = rolesCache.get(roas);
-        if (unfiltered == null){
-            logger.info("RolesCache miss "+ roas);
-            unfiltered = em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class).
+        List<RoleAssignment> unfiltered = em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class).
                             setParameter("assigneeIdentifier", roas.getIdentifier())
                             .getResultList();
-            rolesCache.put(roas, unfiltered);
-        }
         return unfiltered.stream().filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId())).collect(Collectors.toList());
+    }
+    
+    /**
+     * Retrieves the roles assignments for {@code user}, directly on {@code dv}.
+     * No traversal on the containment hierarchy is done.
+     *
+     * @param roleAssignees the user whose roles are given
+     * @param dvo the object where the roles are defined.
+     * @return Set of roles defined for the user in the given dataverse.
+     * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
+     * edu.harvard.iq.dataverse.Dataverse)
+     */
+    public List<RoleAssignment> directRoleAssignments(@NotNull Set<RoleAssignee> roleAssignees, @NotNull Collection<DvObject> dvos) {
+        List<String> raIds = roleAssignees.stream().map(roas -> roas.getIdentifier()).collect(Collectors.toList());
+        List<Long> dvoIds = dvos.stream().map(dvo -> dvo.getId()).collect(Collectors.toList());
+        
+        return em.createNamedQuery("RoleAssignment.listByAssigneeIdentifiers", RoleAssignment.class)
+                        .setParameter("assigneeIdentifiers", raIds)
+                        .setParameter("definitionPointIds", dvoIds)
+                        .getResultList();
     }
 
     /**

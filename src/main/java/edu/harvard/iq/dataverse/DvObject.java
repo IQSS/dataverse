@@ -24,7 +24,9 @@ import javax.persistence.*;
     @NamedQuery(name = "DvObject.findByGlobalId",
             query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
     @NamedQuery(name = "DvObject.findByProtocolIdentifierAuthority",
-            query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol")
+            query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol"),
+    @NamedQuery(name = "DvObject.findByOwnerId", 
+                query = "SELECT o FROM DvObject o WHERE o.owner.id=:ownerId")
 })
 @Entity
 // Inheritance strategy "JOINED" will create 4 db tables - 

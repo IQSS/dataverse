@@ -99,19 +99,12 @@ public class IpGroupsServiceBean {
         return em.createNamedQuery("IpGroup.findAll", IpGroup.class).getResultList();
     }
     
-    // One minute cache with max of 10 entries
-    private final TimeoutCache<IpAddress, Set<IpGroup>> groupCache = TimeoutCacheWrapper.addOrGet("ip");
     public Set<IpGroup> findAllIncludingIp( IpAddress ipa ) {
-        Set<IpGroup> cached = groupCache.get(ipa);
-        if (cached != null){
-            return cached;
-        }
-        logger.info("IP cache miss " + ipa);
         if ( ipa instanceof IPv4Address ) {
             IPv4Address ip4 = (IPv4Address) ipa;
             List<IpGroup> groupList = em.createNamedQuery("IPv4Range.findGroupsContainingAddressAsLong", IpGroup.class)
                     .setParameter("addressAsLong", ip4.toBigInteger()).getResultList();
-            cached = new HashSet<>(groupList);
+            return new HashSet<>(groupList);
 
         } else if ( ipa instanceof IPv6Address ) {
             IPv6Address ip6 = (IPv6Address) ipa;
@@ -122,13 +115,11 @@ public class IpGroupsServiceBean {
                     .setParameter("c", ip6arr[2])
                     .setParameter("d", ip6arr[3])
                     .getResultList();
-            cached = new HashSet<>(groupList);
+            return new HashSet<>(groupList);
 
         } else {
             throw new IllegalArgumentException( "Unknown IpAddress type: " + ipa.getClass() + " (for IpAddress:" + ipa + ")" );
         }
-        groupCache.put(ipa, cached);
-        return cached;
     }
     
     /**

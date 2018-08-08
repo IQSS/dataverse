@@ -41,7 +41,9 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
     @NamedQuery(name = "Dataset.findByIdentifierAuthorityProtocol",
                query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier AND d.protocol=:protocol AND d.authority=:authority"),
     @NamedQuery(name = "Dataset.findByOwnerIdentifier", 
-                query = "SELECT o.identifier FROM DvObject o WHERE o.owner.id=:owner_id")
+                query = "SELECT o.identifier FROM Dataset o WHERE o.owner.id=:owner_id"),
+    @NamedQuery(name = "Dataset.findObjByOwnerIdentifier", 
+                query = "SELECT o FROM Dataset o WHERE o.owner.id=:owner_id"),
 })
 
 /*

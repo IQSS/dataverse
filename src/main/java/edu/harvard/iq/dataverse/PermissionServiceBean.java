@@ -30,7 +30,10 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Level;
@@ -70,6 +73,9 @@ public class PermissionServiceBean {
 
     @EJB
     DataverseServiceBean dataverseService;
+    
+    @EJB
+    DvObjectServiceBean dvObjectServiceBean;
 
     @PersistenceContext
     EntityManager em;
@@ -212,90 +218,99 @@ public class PermissionServiceBean {
                 .setParameter("definitionPointId", d.getId()).getResultList();
     }
 
-    public boolean hasPermissionsFor(DataverseRequest req, DvObject dvo, Set<Permission> p) {
+    public List<DvObject> whichChildrenHasPermissionsFor(DataverseRequest req, DvObjectContainer dvo, Set<Permission> required) {
+        List<DvObject> children = dvObjectServiceBean.findByOwnerId(dvo.getId());
+        
+        User user = req.getUser();
+        if (user.isSuperuser()) {
+            return children;
+        } else if (!user.isAuthenticated()) {
+            Set<Permission> requiredCopy = EnumSet.copyOf(required);
+            requiredCopy.retainAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
+            if (!requiredCopy.isEmpty()) {
+                return new ArrayList<>();
+            }
+        }
+        
+                
+        Set<DvObject> parents = getPermissionAncestors(dvo);
+        Set<RoleAssignee> groups = new HashSet<>(groupService.groupsFor(req));
+        List<RoleAssignment> parentsAsignments = roleService.directRoleAssignments(groups, parents);
+        
+        for (RoleAssignment asmnt : parentsAsignments) {
+            required.removeAll(asmnt.getRole().permissions());
+        }
+        if (required.isEmpty()) {
+            return children;
+        }
+        
+        List<RoleAssignment> childrenAssignments = roleService.directRoleAssignments(groups, children);
+        Map<DvObject, Set<Permission>> roleMap = new HashMap<>();
+        for (RoleAssignment role : childrenAssignments) {
+            DvObject definitionPoint = role.getDefinitionPoint();
+            if (!roleMap.containsKey(definitionPoint)){
+                roleMap.put(definitionPoint, role.getRole().permissions());
+            } else {
+                roleMap.get(definitionPoint).addAll(role.getRole().permissions());
+            }
+        }
+        
+        List<DvObject> results = new ArrayList<>();
+        for (DvObject child : children) {
+            if (child.isReleased()){
+                results.add(child);
+            } else if (roleMap.containsKey(child) && roleMap.get(child).containsAll(required)){
+                results.add(child);
+            }
+        }
+        return results;
+    }
+
+    public boolean hasPermissionsFor(DataverseRequest req, DvObject dvo, Set<Permission> required) {
         User user = req.getUser();
         if (user.isSuperuser()) {
             return true;
         } else if (!user.isAuthenticated()) {
-            Set<Permission> p_copy = EnumSet.copyOf(p);
-            p_copy.retainAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
-            if (!p_copy.isEmpty()) {
+            Set<Permission> requiredCopy = EnumSet.copyOf(required);
+            requiredCopy.retainAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
+            if (!requiredCopy.isEmpty()) {
                 return false;
             }
         }
-        // Start with permissions specifically given to the user
-        if (hasPermissionsForSingleRoleAssignee(user, dvo, p)) {
-            return true;
-        }
-
-        // Add permissions gained from groups
-        for (Group g : groupService.groupsFor(req, dvo)) {
-            if (hasPermissionsForSingleRoleAssignee(g, dvo, p)) {
-                return true;
-            }
-        }
-
-        return false;
+        
+        Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(req, dvo));
+        ras.add(user);
+        return hasGroupPermissionsFor(ras, dvo, required);
     }
 
-    public boolean hasPermissionsFor(RoleAssignee ra, DvObject dvo, Set<Permission> p) {
+    public boolean hasPermissionsFor(RoleAssignee ra, DvObject dvo, Set<Permission> required) {
         if (ra instanceof User) {
             User user = (User) ra;
             if (user.isSuperuser()) {
                 return true;
             } else if (!user.isAuthenticated()) {
-                Set<Permission> p_copy = EnumSet.copyOf(p);
-                p_copy.retainAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
-                if (!p_copy.isEmpty()) {
+                Set<Permission> requiredCopy = EnumSet.copyOf(required);
+                requiredCopy.retainAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
+                if (!requiredCopy.isEmpty()) {
                     return false;
                 }
             }
         }
-
-        // Start with permissions specifically given to the user
-        if (hasPermissionsForSingleRoleAssignee(ra, dvo, p)) {
+        required.removeAll(getInferredPermissions(dvo));
+        if (required.isEmpty()) {
             return true;
         }
-
-        // Add permissions gained from groups
-        for (Group g : groupService.groupsFor(ra, dvo)) {
-            if (hasPermissionsForSingleRoleAssignee(g, dvo, p)) {
-                return true;
-            }
-        }
-
-        return false;
+        
+        Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(ra, dvo));
+        ras.add(ra);
+        return hasGroupPermissionsFor(ras, dvo, required);
     }
-
-    private boolean hasPermissionsForSingleRoleAssignee(RoleAssignee ra, DvObject d, Set<Permission> p) {
-        // File special case.
-        if (d instanceof DataFile && p.contains(Permission.DownloadFile)) {
-            // unrestricted files that are part of a release dataset 
-            // automatically get download permission for everybody:
-            //      -- L.A. 4.0 beta12
-
-            DataFile df = (DataFile) d;
-
-            if (!df.isRestricted()) {
-                if (df.getOwner().getReleasedVersion() != null) {
-                    if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
-                        p.remove(Permission.DownloadFile);
-                    }
-                }
-            }
+    
+    private boolean hasGroupPermissionsFor(Set<RoleAssignee> ras, DvObject dvo, Set<Permission> required) {
+        for (RoleAssignment asmnt : assignmentsFor(ras, dvo)) {
+            required.removeAll(asmnt.getRole().permissions());
         }
-        if (p.isEmpty()) {
-            return true;
-        }
-
-        // Direct assignments to ra on d
-        for (RoleAssignment asmnt : assignmentsFor(ra, d)) {
-            p.removeAll(asmnt.getRole().permissions());
-            if (p.isEmpty()) {
-                return true;
-            }
-        }
-        return p.isEmpty();
+        return required.isEmpty();
     }
 
     /**
@@ -307,21 +322,20 @@ public class PermissionServiceBean {
      * @return Permissions of {@code req.getUser()} over {@code dvo}.
      */
     public Set<Permission> permissionsFor(DataverseRequest req, DvObject dvo) {
-        Set<Permission> permissions = EnumSet.noneOf(Permission.class);
+        if (req.getUser().isSuperuser()) {
+            return EnumSet.allOf(Permission.class);
+        }
 
-        // Add permissions specifically given to the user
-        permissions.addAll(permissionsForSingleRoleAssignee(req.getUser(), dvo));
-        Set<Group> groups = groupService.groupsFor(req, dvo);
+        Set<Permission> permissions = getInferredPermissions(dvo);
 
         // Add permissions gained from groups
-        for (Group g : groups) {
-            final Set<Permission> groupPremissions = permissionsForSingleRoleAssignee(g, dvo);
-            permissions.addAll(groupPremissions);
-        }
+        Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(req, dvo));
+        ras.add(req.getUser());
+        addGroupPermissionsFor(ras, dvo, permissions);
+
         if (!req.getUser().isAuthenticated()) {
             permissions.removeAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
         }
-
         return permissions;
     }
 
@@ -335,60 +349,71 @@ public class PermissionServiceBean {
      * @return the set of permissions {@code ra} has over {@code dvo}.
      */
     public Set<Permission> permissionsFor(RoleAssignee ra, DvObject dvo) {
-        Set<Permission> permissions = EnumSet.noneOf(Permission.class);
-
-        // Add permissions specifically given to the user
-        permissions.addAll(permissionsForSingleRoleAssignee(ra, dvo));
-
-        // Add permissions gained from groups
-        Set<Group> groupsRaBelongsTo = groupService.groupsFor(ra, dvo);
-        for (Group g : groupsRaBelongsTo) {
-            permissions.addAll(permissionsForSingleRoleAssignee(g, dvo));
+        if (ra instanceof AuthenticatedUser && ((AuthenticatedUser) ra).isSuperuser()) {
+            return EnumSet.allOf(Permission.class);
         }
+
+        Set<Permission> permissions = getInferredPermissions(dvo);
+
+        Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(ra, dvo));
+        ras.add(ra);
+        addGroupPermissionsFor(ras, dvo, permissions);
+
         if ((ra instanceof User) && (!((User) ra).isAuthenticated())) {
             permissions.removeAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
+        }
+        return permissions;
+    }
+    
+    private void addGroupPermissionsFor(Set<RoleAssignee> ras, DvObject dvo, Set<Permission> permissions) {
+        for (RoleAssignment asmnt : assignmentsFor(ras, dvo)) {
+            permissions.addAll(asmnt.getRole().permissions());
+        }
+    }
+
+
+    /**
+     * Calculates permissions based on object state and other context
+     *
+     * @param dvo
+     * @return
+     */
+    private Set<Permission> getInferredPermissions(DvObject dvo) {
+
+        Set<Permission> permissions = EnumSet.noneOf(Permission.class);
+
+        if (hasDownloadPermission(dvo)) {
+            permissions.add(Permission.DownloadFile);
         }
 
         return permissions;
     }
 
-    private Set<Permission> permissionsForSingleRoleAssignee(RoleAssignee ra, DvObject d) {
-        // super user check
-        // for 4.0, we are allowing superusers all permissions
-        // for secure data, we may need to restrict some of the permissions
-        if (ra instanceof AuthenticatedUser && ((AuthenticatedUser) ra).isSuperuser()) {
-            return EnumSet.allOf(Permission.class);
-        }
-
-        // Start with no permissions, build from there.
-        Set<Permission> retVal = EnumSet.noneOf(Permission.class);
-        // File special case.
-        if (d instanceof DataFile) {
+    /**
+     * unrestricted files that are part of a release dataset automatically get
+     * download permission for everybody:
+     */
+    private boolean hasDownloadPermission(DvObject dvo) {
+        if (dvo instanceof DataFile) {
             // unrestricted files that are part of a release dataset 
             // automatically get download permission for everybody:
             //      -- L.A. 4.0 beta12
 
-            DataFile df = (DataFile) d;
+            DataFile df = (DataFile) dvo;
 
             if (!df.isRestricted()) {
                 if (df.getOwner().getReleasedVersion() != null) {
                     if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
                         for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
                             if (df.equals(fm.getDataFile())) {
-                                retVal.add(Permission.DownloadFile);
-                                break;
+                                return true;
                             }
                         }
                     }
                 }
             }
         }
-
-        // Direct assignments to ra on d
-        assignmentsFor(ra, d).forEach(
-                asmnt -> retVal.addAll(asmnt.getRole().permissions())
-        );
-        return retVal;
+        return false;
     }
 
     /**
@@ -400,17 +425,25 @@ public class PermissionServiceBean {
      * @return A set of all the role assignments for {@code ra} over {@code d}.
      */
     public Set<RoleAssignment> assignmentsFor(RoleAssignee ra, DvObject d) {
-        Set<RoleAssignment> assignments = new HashSet<>();
+        return assignmentsFor(Collections.singleton(ra), d);
+    }
+
+    public Set<RoleAssignment> assignmentsFor(Set<RoleAssignee> ras, DvObject d) {
+        Set<DvObject> permAncestors = getPermissionAncestors(d);
+        return new HashSet<>(roleService.directRoleAssignments(ras, permAncestors));
+    }
+
+    public Set<DvObject> getPermissionAncestors(DvObject d) {
+        Set<DvObject> ancestors = new HashSet<>();
         while (d != null) {
-            assignments.addAll(roleService.directRoleAssignments(ra, d));
+            ancestors.add(d);
             if (d instanceof Dataverse && ((Dataverse) d).isEffectivelyPermissionRoot()) {
-                return assignments;
+                return ancestors;
             } else {
                 d = d.getOwner();
             }
         }
-
-        return assignments;
+        return ancestors;
     }
 
     /**

@@ -113,7 +113,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     private List<Dataset> findByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Dataset> retList = new ArrayList<>();
-        TypedQuery<Dataset>  query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id", Dataset.class);
+        TypedQuery<Dataset>  query = em.createNamedQuery("Dataset.findObjByOwnerIdentifier", Dataset.class);
         query.setParameter("ownerId", ownerId);
         if (!onlyPublished) {
             return query.getResultList();
@@ -134,13 +134,13 @@ public class DatasetServiceBean implements java.io.Serializable {
     private List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Long> retList = new ArrayList<>();
         if (!onlyPublished) {
-            TypedQuery<Long> query = em.createQuery("select o.id from Dataset as o where o.owner.id =:ownerId order by o.id", Long.class);
-            query.setParameter("ownerId", ownerId);
-            return query.getResultList();
+            return em.createNamedQuery("Dataset.findByOwnerIdentifier")
+                    .setParameter("ownerId", ownerId)
+                    .getResultList();
         } else {
-            TypedQuery<Dataset> query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id", Dataset.class);
-            query.setParameter("ownerId", ownerId);
-            for (Dataset ds : query.getResultList()) {
+            List<Dataset> results = em.createNamedQuery("Dataset.findObjByOwnerIdentifier")
+                    .setParameter("ownerId", ownerId).getResultList();
+            for (Dataset ds : results) {
                 if (ds.isReleased() && !ds.isDeaccessioned()) {
                     retList.add(ds.getId());
                 }

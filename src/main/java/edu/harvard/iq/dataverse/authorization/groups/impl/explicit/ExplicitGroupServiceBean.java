@@ -118,24 +118,6 @@ public class ExplicitGroupServiceBean {
         return provider.updateProvider( egs );
     }
     
-    
-    // One minute cache with max of 10 entries
-    private final TimeoutCache<RoleAssignee, Set<ExplicitGroup>> groupCache =  TimeoutCacheWrapper.addOrGet("explicit");
-    /**
-     * Finds all the explicit groups {@code ra} is a member of.
-     * @param ra the role assignee whose membership list we seek
-     * @return set of the explicit groups that contain {@code ra}.
-     */
-    public Set<ExplicitGroup> findGroups( RoleAssignee ra ) {
-        Set<ExplicitGroup> closure = groupCache.get(ra);
-        if (closure == null){
-            logger.info("Explicit cache miss " + ra);
-            closure = findClosure(findDirectlyContainingGroups(ra));
-            groupCache.put(ra, closure);
-        }
-        return closure;
-    }
-    
     /**
      * Finds all the explicit groups {@code ra} is <b>directly</b> a member of.
      * To find all these groups and the groups the contain them (recursively upwards),
@@ -169,6 +151,15 @@ public class ExplicitGroupServiceBean {
         }
     }
 
+    
+    /**
+     * Finds all the explicit groups {@code ra} is a member of.
+     * @param ra the role assignee whose membership list we seek
+     * @return set of the explicit groups that contain {@code ra}.
+     */
+    public Set<ExplicitGroup> findGroups( RoleAssignee ra ) {
+        return findClosure(findDirectlyContainingGroups(ra));
+    }
     
     /**
      * Finds all the groups {@code ra} is a member of, in the context of {@code o}.

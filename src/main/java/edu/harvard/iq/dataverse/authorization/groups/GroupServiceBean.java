@@ -120,32 +120,17 @@ public class GroupServiceBean {
      * @deprecated Does not look into IP Groups. Use {@link #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest)}
      */
     @Deprecated
-    public Set<Group> groupsFor(AuthenticatedUser au) {
-        Set<Group> groups = new HashSet<>();
-        groups.addAll(groupsFor(au, null));
-        String identifier = au.getIdentifier();
-        if (identifier != null) {
-            try {
-                groups.addAll( explicitGroupService.findGroups(au) );
-            } catch (IndexOutOfBoundsException ex) {
-                logger.log(Level.INFO, "Couldn''t trim first character (@ sign) from identifier: {0}", identifier);
-            }
-        }
-
-        return groups;
+    public Set<Group> groupsFor(RoleAssignee ra) {
+        return groupProviders.values().stream()
+                             .flatMap(gp->(Stream<Group>)gp.groupsFor(ra).stream())
+                             .collect(toSet());
     }
 
     
-    public Set<Group> groupsFor( DataverseRequest dr ) {
-        Set<Group> groups = new HashSet<>();
-        
-        // get the global groups
-        groups.addAll( groupsFor(dr,null) );
-        
-        // add the explicit groups
-        groups.addAll( explicitGroupService.findGroups(dr.getUser()) );
-        
-        return groups;
+    public Set<Group> groupsFor( DataverseRequest req ) {
+        return groupProviders.values().stream()
+                             .flatMap(gp->(Stream<Group>)gp.groupsFor(req).stream())
+                             .collect( toSet());
     }
     
     /**
