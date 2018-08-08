@@ -6,8 +6,6 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.util.TimeoutCache;
-import edu.harvard.iq.dataverse.util.TimeoutCacheWrapper;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

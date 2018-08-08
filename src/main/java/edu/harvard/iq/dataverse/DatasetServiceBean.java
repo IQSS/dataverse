@@ -113,7 +113,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     private List<Dataset> findByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Dataset> retList = new ArrayList<>();
-        TypedQuery<Dataset>  query = em.createNamedQuery("Dataset.findObjByOwnerIdentifier", Dataset.class);
+        TypedQuery<Dataset>  query = em.createNamedQuery("Dataset.findByOwnerId", Dataset.class);
         query.setParameter("ownerId", ownerId);
         if (!onlyPublished) {
             return query.getResultList();
@@ -134,11 +134,11 @@ public class DatasetServiceBean implements java.io.Serializable {
     private List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Long> retList = new ArrayList<>();
         if (!onlyPublished) {
-            return em.createNamedQuery("Dataset.findByOwnerIdentifier")
+            return em.createNamedQuery("Dataset.findIdByOwnerId")
                     .setParameter("ownerId", ownerId)
                     .getResultList();
         } else {
-            List<Dataset> results = em.createNamedQuery("Dataset.findObjByOwnerIdentifier")
+            List<Dataset> results = em.createNamedQuery("Dataset.findByOwnerId")
                     .setParameter("ownerId", ownerId).getResultList();
             for (Dataset ds : results) {
                 if (ds.isReleased() && !ds.isDeaccessioned()) {
@@ -282,7 +282,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         Long dsId = dataset.getId();
         if (dsId != null) {
             try {
-                idResults = em.createNamedQuery("Dataset.findByOwnerIdentifier")
+                idResults = em.createNamedQuery("Dataset.findIdByOwnerId")
                                 .setParameter("owner_id", dsId).getResultList();
             } catch (NoResultException ex) {
                 logger.log(Level.FINE, "No files found in dataset id {0}. Returning a count of zero.", dsId);
