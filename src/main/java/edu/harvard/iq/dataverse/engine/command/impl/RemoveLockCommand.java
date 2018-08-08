@@ -27,7 +27,7 @@ public class RemoveLockCommand extends AbstractVoidCommand {
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
-        ctxt.datasets().removeDatasetLocks(dataset.getId(), reason);
+        ctxt.datasets().removeDatasetLocks(dataset, reason);
     }
     
 }

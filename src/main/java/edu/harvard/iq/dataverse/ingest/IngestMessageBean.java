@@ -68,9 +68,7 @@ public class IngestMessageBean implements MessageListener {
 
             Iterator iter = ingestMessage.getFileIds().iterator();
             datafile_id = null; 
-            // TODO: 
-            // is it going to work if multiple files are submitted for ingest? 
-            // -- L.A. Aug. 13 2014
+            
             while (iter.hasNext()) {
                 datafile_id = (Long) iter.next();
 
@@ -80,7 +78,7 @@ public class IngestMessageBean implements MessageListener {
                         //Thread.sleep(10000);
                         logger.fine("Finished ingest job;");
                     } else {
-                        logger.warning("Error occurred during ingest job!");
+                        logger.warning("Error occurred during ingest job for file id " + datafile_id + "!");
                     }
                 } catch (Exception ex) {
                     //ex.printStackTrace();
@@ -128,7 +126,7 @@ public class IngestMessageBean implements MessageListener {
                 if (datafile != null) {
                     Dataset dataset = datafile.getOwner();
                     if (dataset != null && dataset.getId() != null) {
-                        datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.Ingest);
+                        datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.Ingest);
                     }
                 } 
             } 

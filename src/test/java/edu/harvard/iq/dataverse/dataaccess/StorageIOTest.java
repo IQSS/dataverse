@@ -228,7 +228,7 @@ public class StorageIOTest {
 
     @Test
     public void testGenerateVariableHeader() {
-        DataVariable var = new DataVariable();
+        DataVariable var = new DataVariable(0,null);
         var.setName("Random");
 
         @SuppressWarnings("unchecked")

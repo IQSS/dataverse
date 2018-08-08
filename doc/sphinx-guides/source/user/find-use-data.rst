@@ -2,7 +2,7 @@ Finding and Using Data
 +++++++++++++++++++++++
 
 .. contents:: |toctitle|
-	:local:
+    :local:
 
 Finding Data
 ============
@@ -30,7 +30,6 @@ Result cards: after entering a search term or query, result cards that match you
 Other basic search features: 
     - Sorting results: search results can be sorted by name (A-Z or Z-A), by date (newest or oldest), or by relevancy of results. The sort button can be found above the search results, in the top right.
     - Bookmarkable URLs: search URLs can be copied and sent to a fellow researcher, or can be bookmarked for future sessions.
-
 
 Advanced Search 
 ---------------
@@ -80,6 +79,22 @@ Within the Files tab on a dataset page, you can download the files in that datas
 You may also download a file from its file page by clicking the Download button in the upper right corner of the page, or by using the Download URL listed under the Metadata tab on the lower half of the page. The Download URL can be used to directly access the file via API (or in a web browser, if needed). Certain files do not provide Download URLs for technical reasons: those that are restricted, have terms of use associated with them, or are part of a dataverse with a guestbook enabled.
 
 Tabular data files offer additional options: You can explore using the TwoRavens data visualization tool (or other :doc:`/installation/external-tools` if they have been enabled) by clicking the Explore button, or choose from a number of tabular-data-specific download options available as a dropdown under the Download button.
+
+
+Tabular Data
+------------
+
+Ingested files can be downloaded in several different ways. 
+
+- The default option is to download a tab-separated-value file which is an easy and free standard to use.
+
+- The original file, which may be in a proprietary format which requires special software
+
+- Rdata format if the instalation has configured this
+
+- The variable metadata for the file in DDI format
+
+- A subset of the columns of the data
 
 .. _rsync_download:
 
