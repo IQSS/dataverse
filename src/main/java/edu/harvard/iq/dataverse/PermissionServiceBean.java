@@ -259,8 +259,10 @@ public class PermissionServiceBean {
         for (DvObject child : children) {
             if (child.isReleased()){
                 results.add(child);
-            } else if (roleMap.containsKey(child) && roleMap.get(child).containsAll(required)){
-                results.add(child);
+            } else if (roleMap.containsKey(child)){
+                if (roleMap.get(child).containsAll(required.stream().filter(perm -> perm.appliesTo(child.getClass())).collect(Collectors.toSet()))){
+                    results.add(child);
+                }
             }
         }
         return results;
@@ -382,7 +384,7 @@ public class PermissionServiceBean {
 
         Set<Permission> permissions = EnumSet.noneOf(Permission.class);
 
-        if (hasDownloadPermission(dvo)) {
+        if (isPublicallyDownloadable(dvo)) {
             permissions.add(Permission.DownloadFile);
         }
 
@@ -393,7 +395,7 @@ public class PermissionServiceBean {
      * unrestricted files that are part of a release dataset automatically get
      * download permission for everybody:
      */
-    private boolean hasDownloadPermission(DvObject dvo) {
+    private boolean isPublicallyDownloadable(DvObject dvo) {
         if (dvo instanceof DataFile) {
             // unrestricted files that are part of a release dataset 
             // automatically get download permission for everybody:

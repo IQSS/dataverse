@@ -87,11 +87,9 @@ public class GroupServiceBean {
      * @return The groups {@code req} is part of under {@code dvo}.
      */
     public Set<Group> groupsFor( DataverseRequest req, DvObject dvo ) {
-        return groupTransitiveClosure(
-                groupProviders.values().stream()
+        return groupProviders.values().stream()
                               .flatMap(gp->(Stream<Group>)gp.groupsFor(req, dvo).stream())
-                              .collect(toSet()),
-                dvo);
+                              .collect(toSet());
     }
     
     /**
@@ -102,11 +100,9 @@ public class GroupServiceBean {
      * @return 
      */
     public Set<Group> groupsFor( RoleAssignee ra, DvObject dvo ) {
-        return groupTransitiveClosure(
-                groupProviders.values().stream()
+        return groupProviders.values().stream()
                               .flatMap(gp->(Stream<Group>)gp.groupsFor(ra, dvo).stream())
-                              .collect( toSet() ),
-                dvo);
+                              .collect( toSet() );
     }
 
     /**
