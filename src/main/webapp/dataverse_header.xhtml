@@ -308,10 +308,10 @@
             <!--  QDR - move status message -->
             <div>
                 <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
-                    <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
+                    <span class="label label-warning status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
                 </h:outputLink>
                 <ui:fragment rendered="#{empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader')}">
-                    <span class="label label-default status">
+                    <span class="label label-warning status">
                         <!--  QDR - allow html message -->
                         <h:outputText value="#{settingsWrapper.get(':StatusMessageHeader')}" escape="false"/>
                     </span>
