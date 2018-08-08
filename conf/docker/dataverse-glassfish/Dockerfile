@@ -26,9 +26,8 @@ ENV RSERVE_USER "rserve"
 ENV RSERVE_PASSWORD "rserve"
 
 #RUN exitEarlyBeforeJq
-RUN yum -y install epel-release
-# RUN rpm --rebuilddb 
-RUN yum -y install jq 
+RUN yum -y install epel-release \
+    jq 
 
 COPY dvinstall.zip /tmp
 
