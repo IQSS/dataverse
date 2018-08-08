@@ -109,6 +109,7 @@
                                         </button>
                                         <ul class="dropdown-menu pull-right text-left" role="menu">
                                             <ui:fragment rendered="#{systemConfig.provCollectionEnabled}">
+                                            <!--  Should be FilePage.isLockedFromEdits() ? -->
                                                 <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
                                                     <p:commandLink id="fileProvenanceButton"
                                                                update="editProvenancePopup"
@@ -222,7 +223,7 @@
                                 <div class="alert alert-warning" style="margin:0;padding:0 .5em;background:none;border-radius:0;border:0;color:#333;">
                                     <h:outputFormat value="#{bundle['file.citation.notice']}" escape="false">
                                         <o:param value="#{FilePage.fileMetadata.datasetVersion.dataset.displayName}"/>
-                                    </h:outputFormat><br/>
+                                    </h:outputFormat><br/><br/>
                                     <h:outputFormat value="#{bundle['file.citation.dataset']}" escape="false" />
                                 </div>
                             </div>
@@ -244,17 +245,17 @@
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left" role="menu">
                                                     <li>
-                                                        <a jsf:id="endNoteLink" jsf:action="#{DatasetPage.fileDownloadService.downloadDatasetCitationXML(DatasetPage.dataset)}" >
+                                                        <a jsf:id="endNoteLink" jsf:action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}" >
                                                             #{bundle['dataset.cite.downloadBtn.xml']}
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a jsf:id="risLink" jsf:actionListener="#{DatasetPage.fileDownloadService.downloadDatasetCitationRIS(DatasetPage.dataset)}">
+                                                        <a jsf:id="risLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion.dataset)}">
                                                             #{bundle['dataset.cite.downloadBtn.ris']}
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a jsf:id="bibLink" jsf:actionListener="#{DatasetPage.fileDownloadService.downloadDatasetCitationBibtex(DatasetPage.dataset)}" target="_blank">
+                                                        <a jsf:id="bibLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion.dataset)}" target="_blank">
                                                             #{bundle['dataset.cite.downloadBtn.bib']}
                                                         </a>
                                                     </li>
@@ -360,6 +361,7 @@
                                 <ui:include src="file-data-access-fragment.xhtml">
                                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                                     <ui:param name="datasetVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
+                                    <!--  Should be FilePage.fileDownloadService ? -->
                                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                                 </ui:include>
                             </p:tab>
