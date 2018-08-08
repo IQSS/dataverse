@@ -194,10 +194,10 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     public Dataset findByGlobalId(String globalId) {
-        return (Dataset) dvObjectService.findByGlobalId(globalId, Dataset.DATASET_DTYPE_STRING);
+        return (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset");
     }
 
-    public String generateDatasetIdentifier(Dataset dataset, IdServiceBean idServiceBean) {
+    public String generateDatasetIdentifier(Dataset dataset, GlobalIdServiceBean idServiceBean) {
         String identifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
        
@@ -212,17 +212,16 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
     
-    private String generateIdentifierAsRandomString(Dataset dataset, IdServiceBean idServiceBean, String shoulder) {
-
+    private String generateIdentifierAsRandomString(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
         String identifier = null;
         do {
             identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
-        } while (!isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean));
-
+        } while (!isIdentifierLocallyUnique(identifier, dataset));
+        
         return identifier;
     }
 
-    private String generateIdentifierAsSequentialNumber(Dataset dataset, IdServiceBean idServiceBean, String shoulder) {
+    private String generateIdentifierAsSequentialNumber(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
         
         String identifier; 
         do {
@@ -235,7 +234,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                 return null; 
             }
             identifier = shoulder + identifierNumeric.toString();
-        } while (!isIdentifierUniqueInDatabase(identifier, dataset, idServiceBean));
+        } while (!isIdentifierLocallyUnique(identifier, dataset));
         
         return identifier;
     }
@@ -246,24 +245,32 @@ public class DatasetServiceBean implements java.io.Serializable {
      * in EZID if needed
      * @param userIdentifier
      * @param dataset
-     * @param idServiceBean
-     * @return   */
-    public boolean isIdentifierUniqueInDatabase(String userIdentifier, Dataset dataset, IdServiceBean idServiceBean) {
-        String query = "SELECT d FROM Dataset d WHERE d.identifier = '" + userIdentifier + "'";
-        query += " and d.protocol ='" + dataset.getProtocol() + "'";
-        query += " and d.authority = '" + dataset.getAuthority() + "'";
-        boolean u = em.createQuery(query).getResultList().isEmpty();
-            
-        try{
-            if (idServiceBean.alreadyExists(dataset)) {
-                u = false;
-            }
+     * @param persistentIdSvc
+     * @return {@code true} if the identifier is unique, {@code false} otherwise.
+     */
+    public boolean isIdentifierUnique(String userIdentifier, Dataset dataset, GlobalIdServiceBean persistentIdSvc) {
+        if ( ! isIdentifierLocallyUnique(userIdentifier, dataset) ) return false; // duplication found in local database
+        
+        // not in local DB, look in the persistent identifier service
+        try {
+            return ! persistentIdSvc.alreadyExists(dataset);
         } catch (Exception e){
             //we can live with failure - means identifier not found remotely
         }
 
-       
-        return u;
+        return true;
+    }
+    
+    public boolean isIdentifierLocallyUnique(Dataset dataset) {
+        return isIdentifierLocallyUnique(dataset.getIdentifier(), dataset);
+    }
+    
+    public boolean isIdentifierLocallyUnique(String identifier, Dataset dataset) {
+        return em.createNamedQuery("Dataset.findByIdentifierAuthorityProtocol")
+            .setParameter("identifier", identifier)
+            .setParameter("authority", dataset.getAuthority())
+            .setParameter("protocol", dataset.getProtocol())
+            .getResultList().isEmpty();
     }
     
     public Long getMaximumExistingDatafileIdentifier(Dataset dataset) {
@@ -278,7 +285,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                 idResults = em.createNamedQuery("Dataset.findByOwnerIdentifier")
                                 .setParameter("owner_id", dsId).getResultList();
             } catch (NoResultException ex) {
-                logger.fine("No files found in dataset id " + dsId + ". Returning a count of zero.");
+                logger.log(Level.FINE, "No files found in dataset id {0}. Returning a count of zero.", dsId);
                 return zeroFiles;
             }
             if (idResults != null) {
@@ -303,20 +310,17 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user) {
 
-        DatasetVersionUser ddu = null;
-        Query query = em.createQuery("select object(o) from DatasetVersionUser as o "
-                + "where o.datasetVersion.id =:versionId and o.authenticatedUser.id =:userId");
+        TypedQuery<DatasetVersionUser> query = em.createNamedQuery("DatasetVersionUser.findByVersionIdAndUserId", DatasetVersionUser.class);
         query.setParameter("versionId", version.getId());
         String identifier = user.getIdentifier();
         identifier = identifier.startsWith("@") ? identifier.substring(1) : identifier;
         AuthenticatedUser au = authentication.getAuthenticatedUser(identifier);
         query.setParameter("userId", au.getId());
         try {
-            ddu = (DatasetVersionUser) query.getSingleResult();
+            return query.getSingleResult();
         } catch (javax.persistence.NoResultException e) {
-            // DO nothing, just return null.
+            return null;
         }
-        return ddu;
     }
 
     public boolean checkDatasetLock(Long datasetId) {
@@ -331,6 +335,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
         lock.setDataset(dataset);
         dataset.addLock(lock);
+        lock.setStartTime( new Date() );
         em.persist(lock);
         em.merge(dataset); 
         return lock;
@@ -373,22 +378,24 @@ public class DatasetServiceBean implements java.io.Serializable {
     /**
      * Removes all {@link DatasetLock}s for the dataset whose id is passed and reason
      * is {@code aReason}.
-     * @param datasetId Id of the dataset whose locks will b removed.
+     * @param dataset the dataset whose locks (for {@code aReason}) will be removed.
      * @param aReason The reason of the locks that will be removed.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void removeDatasetLocks(Long datasetId, DatasetLock.Reason aReason) {        
-        Dataset dataset = em.find(Dataset.class, datasetId);       
-        new HashSet<>(dataset.getLocks()).stream()
-                .filter( l -> l.getReason().equals(aReason))
-                .forEach( lock -> {
-                    dataset.removeLock(lock);
-                    
-                    AuthenticatedUser user = lock.getUser();
-                    user.getDatasetLocks().remove(lock);
-                    
-                    em.remove(lock);
-                });
+    public void removeDatasetLocks(Dataset dataset, DatasetLock.Reason aReason) {
+        if ( dataset != null ) {
+            new HashSet<>(dataset.getLocks()).stream()
+                    .filter( l -> l.getReason() == aReason )
+                    .forEach( lock -> {
+                        lock = em.merge(lock);
+                        dataset.removeLock(lock);
+
+                        AuthenticatedUser user = lock.getUser();
+                        user.getDatasetLocks().remove(lock);
+
+                        em.remove(lock);
+                    });
+        }
     }
     
     /*
@@ -615,10 +622,10 @@ public class DatasetServiceBean implements java.io.Serializable {
                         countAll++;
                         try {
                             recordService.exportAllFormatsInNewTransaction(dataset);
-                            exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId());
+                            exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString());
                             countSuccess++;
                         } catch (Exception ex) {
-                            exportLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId() + "; " + ex.getMessage());
+                            exportLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString() + "; " + ex.getMessage());
                             countError++;
                         }
                     }
@@ -741,7 +748,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     */
     @Asynchronous
     public void obtainPersistentIdentifiersForDatafiles(Dataset dataset) {
-        IdServiceBean idServiceBean = IdServiceBean.getBean(dataset.getProtocol(), commandEngine.getContext());
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(dataset.getProtocol(), commandEngine.getContext());
 
         //If the Id type is sequential and Dependent then write file idenitifiers outside the command
         String datasetIdentifier = dataset.getIdentifier();

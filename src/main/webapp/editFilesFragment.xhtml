@@ -233,7 +233,7 @@
                             <h:inputHidden id="showAccessPopup" value="#{EditDatafilesPage.showAccessPopup}"/>
                             <div id="filesHeaderCount" class="col-xs-6 text-left">
                                 <!-- Files Count -->
-                                <h:outputFormat value="#{datasetPage ? bundle['file.count'] : bundle['file.count.selected']}" styleClass="highlightBold" rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                                <h:outputFormat value="#{datasetPage ? bundle['file.count.shown'] : bundle['file.count.shown']}" styleClass="highlightBold" rendered="#{!empty EditDatafilesPage.fileMetadatas}">
                                     <f:param value="#{EditDatafilesPage.fileMetadatas.size()}"/>
                                 </h:outputFormat>
                             </div>
@@ -432,11 +432,11 @@
 
     <!-- Popups -->
     <p:dialog styleClass="smallPopUp" header="#{bundle['file.addreplace.content_type.header']}" widgetVar="fileTypeDifferentPopup" id="fileTypeDifferentPopup" modal="true">
-        <p class="text-info"><span class="glyphicon glyphicon-info-sign"/> #{EditDatafilesPage.warningMessageForPopUp}</p>
+        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{EditDatafilesPage.warningMessageForPopUp}</p>
         <div class="button-block">
             <p:commandButton value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()" 
                              action="#{EditDatafilesPage.deleteFiles()}"
-                             update=":#{p:component('filesTable')},:messagePanel,:#{p:component('fileUpload')},uploadMessage"/>
+                             update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage"/>
             <p:commandButton value="#{bundle.continue}" onclick="PF('fileTypeDifferentPopup').hide()" type="button" />
         </div>
     </p:dialog>
@@ -448,7 +448,7 @@
         </ui:fragment>
         <div class="button-block">
             <p:commandButton value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);"
-                             update=":#{p:component('filesTable')},:messagePanel,:#{p:component('fileUpload')},uploadMessage" action="#{EditDatafilesPage.deleteFiles()}" />
+                             update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage" action="#{EditDatafilesPage.deleteFiles()}" />
             <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button" />
         </div>
     </p:dialog>

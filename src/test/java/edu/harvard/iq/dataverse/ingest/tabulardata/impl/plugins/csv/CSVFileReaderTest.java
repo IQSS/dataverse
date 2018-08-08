@@ -50,7 +50,7 @@ public class CSVFileReaderTest {
         BufferedReader result = null;
         try (BufferedInputStream stream = new BufferedInputStream(
                 new FileInputStream(testFile))) {
-            CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi());
+            CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi(), ',');
             File outFile = instance.read(stream, null).getTabDelimitedFile();
             result = new BufferedReader(new FileReader(outFile));
             logger.fine("Final pass: " + outFile.getPath());
@@ -102,7 +102,7 @@ public class CSVFileReaderTest {
         DataTable result = null;
         try (BufferedInputStream stream = new BufferedInputStream(
                 new FileInputStream(testFile))) {
-            CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi());
+            CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi(), ',');
             result = instance.read(stream, null).getDataTable();
         } catch (IOException ex) {
             fail("" + ex);
@@ -151,7 +151,7 @@ public class CSVFileReaderTest {
 
         try (BufferedInputStream stream = new BufferedInputStream(
                 new FileInputStream(testFile))) {
-            CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi());
+            CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi(), ',');
 
             ingestResult = instance.read(stream, null);
 
@@ -295,7 +295,7 @@ public class CSVFileReaderTest {
 
         try (BufferedInputStream stream = new BufferedInputStream(
                 new FileInputStream(testFile))) {
-            CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi());
+            CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi(), ',');
 
             ingestResult = instance.read(stream, null);
 
@@ -400,7 +400,7 @@ public class CSVFileReaderTest {
     public void testBrokenCSV() {
         String brokenFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/BrokenCSV.csv";
         try {
-            new CSVFileReader(new CSVFileReaderSpi()).read(null, null);
+            new CSVFileReader(new CSVFileReaderSpi(), ',').read(null, null);
             fail("IOException not thrown on null csv");
         } catch (NullPointerException ex) {
             String expMessage = null;
@@ -411,7 +411,7 @@ public class CSVFileReaderTest {
         }
         try (BufferedInputStream stream = new BufferedInputStream(
                 new FileInputStream(brokenFile))) {
-            new CSVFileReader(new CSVFileReaderSpi()).read(stream, null);
+            new CSVFileReader(new CSVFileReaderSpi(), ',').read(stream, null);
             fail("IOException was not thrown when collumns do not align.");
         } catch (IOException ex) {
             String expMessage = BundleUtil.getStringFromBundle("ingest.csv.recordMismatch",

@@ -40,7 +40,7 @@ public class CustomQuestion implements Serializable {
     @Column( nullable = false )
     private String questionType;
     
-    @NotBlank(message = "Please enter question text.")
+    @NotBlank(message = "{custom.questiontext}")
     @Column( nullable = false )
     private String questionString;
     private boolean required;

@@ -29,12 +29,12 @@ import java.util.Base64;
 import org.apache.commons.io.IOUtils;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
-import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map.Entry;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -51,7 +51,24 @@ public class UtilIT {
     private static final String EMPTY_STRING = "";
 
     private static SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
+    
+    static Matcher<String> equalToCI( String value ) {
+        String valueLc = value.toLowerCase();
+        
+        return new BaseMatcher<String>(){
+            @Override
+            public boolean matches(Object o) {
+                if ( ! (o instanceof String) ) return false;
+                return ((String)o).toLowerCase().equals(valueLc);
+            }
 
+            @Override
+            public void describeTo(Description d) {
+                d.appendText("Should be equal to (case insensitive): '"+value+"'");
+            }
+        };
+    }
+    
     static String getRestAssuredBaseUri() {
         String saneDefaultInDev = "http://localhost:8080";
         String restAssuredBaseUri = saneDefaultInDev;
@@ -565,15 +582,9 @@ public class UtilIT {
                 .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + "?key=" + apiToken + optionalQueryParam);
     }
 
-    static Response getMetaDatafileDeprecated(String fileIdOrPersistentId, String apiToken) {
-        String idInPath = fileIdOrPersistentId; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
-            idInPath = ":persistentId";
-            optionalQueryParam = "&persistentId=" + fileIdOrPersistentId;
-        }
+    static Response testIngest(String fileName, String fileType) {
         return given()
-                .get("/api/meta/datafile/" + idInPath + "?key=" + apiToken + optionalQueryParam);
+                .get("/api/ingest/test/file?fileName=" + fileName + "&fileType=" + fileType);
     }
 
     static Response getSwordAtomEntry(String persistentId, String apiToken) {

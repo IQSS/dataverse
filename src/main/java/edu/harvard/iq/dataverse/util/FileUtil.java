@@ -104,22 +104,26 @@ public class FileUtil implements java.io.Serializable  {
         STATISTICAL_FILE_EXTENSION.put("sas", "application/x-sas-syntax");
         STATISTICAL_FILE_EXTENSION.put("sps", "application/x-spss-syntax");
         STATISTICAL_FILE_EXTENSION.put("csv", "text/csv");
+        STATISTICAL_FILE_EXTENSION.put("tsv", "text/tsv");
     }
     
     private static MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
     
-    public static final String MIME_TYPE_STATA = "application/x-stata";
+    public static final String MIME_TYPE_STATA   = "application/x-stata";
     public static final String MIME_TYPE_STATA13 = "application/x-stata-13";
-    public static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
+    public static final String MIME_TYPE_STATA14 = "application/x-stata-14";
+    public static final String MIME_TYPE_STATA15 = "application/x-stata-15";
+    public static final String MIME_TYPE_RDATA   = "application/x-rlang-transport";
     
-    public static final String MIME_TYPE_CSV   = "text/csv";
+    public static final String MIME_TYPE_CSV     = "text/csv";
     public static final String MIME_TYPE_CSV_ALT = "text/comma-separated-values";
+    public static final String MIME_TYPE_TSV     = "text/tsv";
+    public static final String MIME_TYPE_TSV_ALT = "text/tab-separated-values";
+    public static final String MIME_TYPE_XLSX    = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     
-    public static final String MIME_TYPE_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     public static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
     public static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
     
-    public static final String MIME_TYPE_TAB   = "text/tab-separated-values";
     
     public static final String MIME_TYPE_FITS  = "application/fits";
     
@@ -135,6 +139,8 @@ public class FileUtil implements java.io.Serializable  {
     public static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
     
     public static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
+    
+    public static final String MIME_TYPE_INGESTED_FILE = "text/tab-separated-values";
 
 
     /**
@@ -274,10 +280,17 @@ public class FileUtil implements java.io.Serializable  {
         
     }
     
+    public static String retestIngestableFileType(File file, String fileType) {
+        IngestableDataChecker tabChecker = new IngestableDataChecker(TABULAR_DATA_FORMAT_SET);
+        String newType = tabChecker.detectTabularDataFormat(file);
+        
+        return newType != null ? newType : fileType;
+    }
+    
     public static String determineFileType(File f, String fileName) throws IOException{
         String fileType = null;
         String fileExtension = getFileExtension(fileName);
-
+        
         
         
         // step 1: 
@@ -469,34 +482,6 @@ public class FileUtil implements java.io.Serializable  {
         logger.fine("end isGraphML()");
         return isGraphML;
     }
-    
-    /**
-     * The number of bytes in a kilobyte, megabyte and gigabyte:
-     */
-    public static final long ONE_KB = 1024;
-    public static final long ONE_MB = ONE_KB * ONE_KB;
-    public static final long ONE_GB = ONE_KB * ONE_MB;
- 
-    public static String getFriendlySize(Long filesize) {
-        if (filesize == null || filesize < 0) {
-            return "unknown";
-        }
-
-        long bytesize = filesize;
-        String displaySize;
-
-        if (bytesize / ONE_GB > 0) {
-            displaySize = String.valueOf(bytesize / ONE_GB) + "." + String.valueOf((bytesize % ONE_GB) / (100 * ONE_MB)) + " GB";
-        } else if (bytesize / ONE_MB > 0) {
-            displaySize = String.valueOf(bytesize / ONE_MB) + "." + String.valueOf((bytesize % ONE_MB) / (100 * ONE_KB)) + " MB";
-        } else if (bytesize / ONE_KB > 0) {
-            displaySize = String.valueOf(bytesize / ONE_KB) + "." + String.valueOf((bytesize % ONE_KB) / 100) + " KB";
-        } else {
-            displaySize = String.valueOf(bytesize) + " bytes";
-        }
-        return displaySize;
-
-    }
 
     // from MD5Checksum.java
     public static String CalculateCheckSum(String datafile, ChecksumType checksumType) {
@@ -634,11 +619,11 @@ public class FileUtil implements java.io.Serializable  {
                         || suppliedContentType.equals("")
                         || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
                         || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
-                        || (ingestableAsTabular(suppliedContentType)
+                        || (canIngestAsTabular(suppliedContentType)
                             && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV)
                             && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV_ALT)
                             && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_XLSX))
-                        || ingestableAsTabular(recognizedType)
+                        || canIngestAsTabular(recognizedType)
                         || recognizedType.equals("application/fits-gzipped")
                         || recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
                         || recognizedType.equals(MIME_TYPE_ZIP)) {
@@ -1066,13 +1051,13 @@ public class FileUtil implements java.io.Serializable  {
         return datestampedFolder;        
     }
     
-    public static boolean ingestableAsTabular(DataFile dataFile) {
+    public static boolean canIngestAsTabular(DataFile dataFile) {
         String mimeType = dataFile.getContentType();
         
-        return ingestableAsTabular(mimeType);
+        return canIngestAsTabular(mimeType);
     } 
     
-    public static boolean ingestableAsTabular(String mimeType) {
+    public static boolean canIngestAsTabular(String mimeType) {
         /* 
          * In the final 4.0 we'll be doing real-time checks, going through the 
          * available plugins and verifying the lists of mime types that they 
@@ -1085,23 +1070,23 @@ public class FileUtil implements java.io.Serializable  {
             return false;
         }
         
-        if (mimeType.equals(MIME_TYPE_STATA)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_STATA13)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_RDATA)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_CSV) || mimeType.equals(MIME_TYPE_CSV_ALT)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_XLSX)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_SPSS_SAV)) {
-            return true;
-        } else if (mimeType.equals(MIME_TYPE_SPSS_POR)) {
-            return true;
+        switch (mimeType) {
+            case MIME_TYPE_STATA:
+            case MIME_TYPE_STATA13:
+            case MIME_TYPE_STATA14:
+            case MIME_TYPE_STATA15:
+            case MIME_TYPE_RDATA:
+            case MIME_TYPE_CSV:
+            case MIME_TYPE_CSV_ALT:
+            case MIME_TYPE_TSV:
+            case MIME_TYPE_TSV_ALT:
+            case MIME_TYPE_XLSX:
+            case MIME_TYPE_SPSS_SAV:
+            case MIME_TYPE_SPSS_POR:
+                return true;
+            default:
+                return false;
         }
-
-        return false;
     }
     
     public static String getFilesTempDirectory() {

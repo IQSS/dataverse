@@ -3,8 +3,8 @@ package edu.harvard.iq.dataverse.api;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
@@ -21,15 +22,19 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -123,7 +128,7 @@ public class Files extends AbstractApiBean {
 
         // update the dataset
         try {
-            engineSvc.submit(new UpdateDatasetCommand(dataFile.getOwner(), dataverseRequest));
+            engineSvc.submit(new UpdateDatasetVersionCommand(dataFile.getOwner(), dataverseRequest));
         } catch (CommandException ex) {
             return error(BAD_REQUEST, "Problem saving datafile " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
         }
@@ -158,7 +163,7 @@ public class Files extends AbstractApiBean {
         // -------------------------------------
         User authUser;
         try {
-            authUser = this.findUserOrDie();
+            authUser = findUserOrDie();
         } catch (AbstractApiBean.WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN, 
                     ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
@@ -327,6 +332,83 @@ public class Files extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+
+    }
+    
+    // reingest attempts to queue an *existing* DataFile 
+    // for tabular ingest. It can be used on non-tabular datafiles; to try to 
+    // ingest a file that has previously failed ingest, or to ingest a file of a
+    // type for which ingest was not previously supported. 
+    // We are considering making it possible, in the future, to reingest 
+    // a datafile that's already ingested as Tabular; for example, to address a 
+    // bug that has been found in an ingest plugin. 
+    
+    @Path("{id}/reingest")
+    @POST
+    public Response reingest(@PathParam("id") String id) {
+
+        AuthenticatedUser u;
+        try {
+            u = findAuthenticatedUserOrDie();
+            if (!u.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "This API call can be used by superusers only");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(id);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "File not found for given id.");
+        }
+
+        Dataset dataset = dataFile.getOwner();
+        
+        if (dataset == null) {
+            return error(Response.Status.BAD_REQUEST, "Failed to locate the parent dataset for the datafile.");
+        }
+        
+        if (dataFile.isTabularData()) {
+            return error(Response.Status.BAD_REQUEST, "The datafile is already ingested as Tabular.");
+        }
+        
+        boolean ingestLock = dataset.isLockedFor(DatasetLock.Reason.Ingest);
+        
+        if (ingestLock) {
+            return error(Response.Status.FORBIDDEN, "Dataset already locked with an Ingest lock");
+        }
+        
+        if (!FileUtil.canIngestAsTabular(dataFile)) {
+            return error(Response.Status.BAD_REQUEST, "Tabular ingest is not supported for this file type (id: "+id+", type: "+dataFile.getContentType()+")");
+        }
+        
+        dataFile.SetIngestScheduled();
+                
+        if (dataFile.getIngestRequest() == null) {
+            dataFile.setIngestRequest(new IngestRequest(dataFile));
+        }
+
+        dataFile.getIngestRequest().setForceTypeCheck(true);
+        
+        // update the datafile, to save the newIngest request in the database:
+        dataFile = fileService.save(dataFile);
+        
+        // queue the data ingest job for asynchronous execution: 
+        String status = ingestService.startIngestJobs(new ArrayList<>(Arrays.asList(dataFile)), u);
+        
+        if (!StringUtil.isEmpty(status)) {
+            // This most likely indicates some sort of a problem (for example, 
+            // the ingest job was not put on the JMS queue because of the size
+            // of the file). But we are still returning the OK status - because
+            // from the point of view of the API, it's a success - we have 
+            // successfully gone through the process of trying to schedule the 
+            // ingest job...
+            
+            return ok(status);
+        }
+        return ok("Datafile " + id + " queued for ingest");
 
     }
             

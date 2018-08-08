@@ -147,12 +147,43 @@ values are ``true`` and ``false`` (both are valid JSON expressions). ::
 
 .. note:: Previous endpoints ``GET http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` and ``POST http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` are deprecated, but supported.
 
+
+.. _create-dataset-command: 
+
 Create a Dataset in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To create a dataset, you must create a JSON file containing all the metadata you want such as in this example file: :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>`. Then, you must decide which dataverse to create the dataset in and target that datavese with either the "alias" of the dataverse (e.g. "root" or the database id of the dataverse (e.g. "1"). The initial version state will be set to ``DRAFT``::
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets --upload-file dataset-finch1.json
+
+Import a Dataset into a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note:: This action requires a Dataverse account with super-user permissions.
+
+To import a dataset with an existing persistent identifier (PID), the dataset's metadata should be prepared in Dataverse's native JSON format. The PID is provided as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, and then releases it::
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets/:import?pid=$PERSISTENT_IDENTIFIER&release=yes --upload-file dataset.json
+
+The ``pid`` parameter holds a persistent identifier (such as a DOI or Handle). The import will fail if no PID is provided, or if the provided PID fails validation.
+
+The optional ``release`` parameter tells Dataverse to immediately publish the dataset. If the parameter is changed to ``no``, the imported dataset will remain in ``DRAFT`` status.
+
+The JSON format is the same as that supported by the native API's :ref:`create dataset command<create-dataset-command>`, although it also allows packages.  For example:
+
+.. literalinclude:: ../../../../scripts/api/data/dataset-package-files.json
+
+Before calling the API, make sure the data files referenced by the ``POST``\ ed JSON are placed in the dataset directory with filenames matching their specified storage identifiers. In installations using POSIX storage, these files must be made readable by GlassFish.
+
+.. tip:: If possible, it's best to avoid spaces and special characters in the storage identifier in order to avoid potential portability problems. The storage identifier corresponds with the filesystem name (or bucket identifier) of the data file, so these characters may cause unpredictability with filesystem tools.
+
+.. warning:: 
+  
+  * This API does not cover staging files (with correct contents, checksums, sizes, etc.) in the corresponding places in the Dataverse filestore.
+  * This API endpoint does not support importing *files'* persistent identifiers.
+  * A Dataverse server can import datasets with a valid PID that uses a different protocol or authority than said server is configured for. However, the server will not update the PID metadata on subsequent update and publish actions.
+
 
 Publish a Dataverse
 ~~~~~~~~~~~~~~~~~~~
@@ -277,7 +308,7 @@ You may also replace existing metadata in dataset fields with the following (add
 For these edits your JSON file need only include those dataset fields which you would like to edit. A sample JSON file may be downloaded here: :download:`dataset-edit-metadata-sample.json <../_static/api/dataset-edit-metadata-sample.json>` 
 
 Delete Dataset Metadata
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 You may delete some of the metadata of a dataset version by supplying a file with a JSON representation of dataset fields that you would like to delete with the following ::
 
@@ -472,21 +503,27 @@ The review process can sometimes resemble a tennis match, with the authors submi
 
 
 Files
-~~~~~
+-----
 
-.. note:: Files can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+Adding Files
+~~~~~~~~~~~~
+
+.. Note:: Files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the Datasets_ endpoint above for more information.
+
+Accessing (downloading) files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. Note:: Access API has its own section in the Guide: :doc:`/api/dataaccess`
+
+**Note** Data Access API calls can now be made using persistent identifiers (in addition to database ids). This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
 
   Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::
 
     GET http://$SERVER/api/access/datafile/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
 
-Adding Files
-^^^^^^^^^^^^
-
-.. note:: Please note that files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the "Datasets" endpoint above for more information.
 
 Restrict Files
-^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 
 Restrict or unrestrict an existing file where ``id`` is the database id of the file or ``pid`` is the persistent id (DOI or Handle) of the file to restrict. Note that some Dataverse installations do not allow the ability to restrict files.
 
@@ -499,11 +536,15 @@ A curl example using a ``pid``::
     curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/:persistentId/restrict?persistentId={pid}
 
 Replacing Files
-^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~
 
-Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note that metadata such as description and tags are not carried over from the file being replaced.
+Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note that metadata such as description and tags are not carried over from the file being replaced
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' "https://demo.dataverse.org/api/files/$FILE_ID/replace"
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' \
+  -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}'\
+  "https://demo.dataverse.org/api/files/$FILE_ID/replace"
 
 Example python code to replace a file.  This may be run by changing these parameters in the sample code:
 
@@ -574,10 +615,23 @@ Example python code to replace a file.  This may be run by changing these parame
 Uningest a File
 ~~~~~~~~~~~~~~~
 
-Reverse the ingest process performed on a file where ``id`` is the database id of the file to process. Note that this requires "super user" credentials::
+Reverse the tabular data ingest process performed on a file where ``{id}`` is the database id of the file to process. Note that this requires "super user" credentials::
 
-    POST http://$SERVER/api/files/{id}/uningest?key=$apiKey    
+    POST http://$SERVER/api/files/{id}/uningest?key={apiKey}
 
+
+Reingest a File
+~~~~~~~~~~~~~~~
+
+Attempt to ingest an existing datafile as tabular data. This API can be used on a file that was not ingested as tabular back when it was uploaded. For example, a Stata v.14 file that was uploaded before ingest support for Stata 14 was added (in Dataverse v.4.9). It can also be used on a file that failed to ingest due to a bug in the ingest plugin that has since been fixed (hence the name "re-ingest").
+
+Note that this requires "super user" credentials:: 
+
+    POST http://$SERVER/api/files/{id}/reingest?key={apiKey}
+
+(``{id}`` is the database id of the file to process)
+
+Also, note that, at present the API cannot be used on a file that's already ingested as tabular.
 
 Provenance
 ~~~~~~~~~~

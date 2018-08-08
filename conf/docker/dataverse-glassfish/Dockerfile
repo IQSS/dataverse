@@ -1,11 +1,9 @@
-FROM centos:7.2.1511
+FROM centos:7
 MAINTAINER Dataverse (support@dataverse.org)
 
 COPY glassfish-4.1.zip /tmp
 COPY weld-osgi-bundle-2.2.10.Final-glassfish4.jar /tmp
 COPY default.config /tmp
-COPY dvinstall.zip /tmp
-
 # Install dependencies
 #RUN yum install -y unzip
 RUN yum install -y \
@@ -27,6 +25,8 @@ ENV POSTGRES_USER "dvnapp"
 ENV RSERVE_USER "rserve"
 ENV RSERVE_PASSWORD "rserve"
 
+COPY dvinstall.zip /tmp
+
 #RUN ls /tmp
 #
 RUN find /tmp
@@ -34,13 +34,14 @@ RUN find /tmp
 #RUN exitEarly
 
 # Install Glassfish 4.1
-
-RUN cd /tmp \ 
+RUN cd /tmp \
     && unzip glassfish-4.1.zip \
     && mv glassfish4 /usr/local \
     && cd /usr/local/glassfish4/glassfish/modules \
     && rm weld-osgi-bundle.jar \
     && cp /tmp/weld-osgi-bundle-2.2.10.Final-glassfish4.jar . \
+    && cd /tmp && unzip /tmp/dvinstall.zip \
+    && chmod 777 -R /tmp/dvinstall/ \
     #FIXME: Patch Grizzly too!
     && echo "Done installing and patching Glassfish"
 
@@ -57,14 +58,21 @@ RUN chgrp -R 0 /usr/local/glassfish4 && \
 
 #RUN exitEarlyBeforeJq
 RUN yum -y install epel-release
-RUN yum install -y jq 
+# RUN rpm --rebuilddb 
+RUN yum -y install jq 
 
-# Install jq
-#RUN cd /tmp \  
-#    && wget https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 \
-#    && mv jq-linux64 /usr/local/bin \
-#    && chmod +x /usr/local/bin/jq-linux64 \
-#    && ln -s /usr/local/bin/jq-linux64 /usr/local/bin/jq
+#JHOVE
+RUN cp /tmp/dvinstall/jhove* /usr/local/glassfish4/glassfish/domains/domain1/config
+
+
+#SETUP JVM OPTIONS 
+ARG DOCKER_BUILD="true" 
+RUN echo $DOCKER_BUILD
+RUN /tmp/dvinstall/glassfish-setup.sh
+###glassfish-setup will handle everything in Dockerbuild
+
+##install jdbc driver 
+RUN cp /tmp/dvinstall/pgdriver/postgresql-42.2.2.jar /usr/local/glassfish4/glassfish/domains/domain1/lib
 
 # Customized persistence xml to avoid database recreation
 #RUN mkdir -p /tmp/WEB-INF/classes/META-INF/ 
@@ -80,7 +88,6 @@ RUN yum install -y jq
 #COPY config-dataverse /root/dvinstall
 
 #RUN cd /root/dvinstall && ./config-dataverse
-
 COPY ./entrypoint.sh /
 #COPY ./ddl /root/dvinstall
 #COPY ./init-postgres /root/dvinstall
@@ -89,8 +96,6 @@ COPY ./entrypoint.sh /
 #COPY ./setup-all.sh /root/dvinstall
 #COPY ./setup-irods.sh /root/dvinstall
 COPY ./Dockerfile /
-
-VOLUME /usr/local/glassfish4/glassfish/domains/domain1/files
 
 EXPOSE      8080 
 

@@ -4,7 +4,7 @@
 
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.9.1</version>
+    <version>4.9.2</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
@@ -59,11 +59,6 @@
                 If we update glassfish, we should return to the normal sdk as well. -->  
     <dependencies>
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-bundle</artifactId>
-            <version>${aws.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.passay</groupId>
             <artifactId>passay</artifactId>
             <version>1.1.0</version>
@@ -82,10 +77,14 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.0.1</version>
-            <type>jar</type>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.9</version>
         </dependency>
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
         <dependency>
@@ -108,6 +107,11 @@
             -->
             <version>1.1-SNAPSHOT</version>
             <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-bundle</artifactId>
+            <version>${aws.version}</version>
         </dependency>
         <dependency>
             <!-- required by org.swordapp.server.sword2-server -->
@@ -141,6 +145,13 @@
         </dependency>
         <!-- END Data Deposit API v1 (SWORD v2) -->
         <dependency>
+            <!-- There are later versions of this lib available at jitpack.io,
+                 but it seemed better to not add another repo. -->
+            <groupId>org.everit.json</groupId>
+            <artifactId>org.everit.json.schema</artifactId>
+            <version>1.5.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.3m</version>
@@ -166,7 +177,7 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>5.3</version>
+            <version>6.2</version>
         </dependency>
         <dependency>
             <groupId>org.primefaces.themes</groupId>
@@ -363,16 +374,6 @@
             <version>0.1.7</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-            <version>4.4.8</version>
-        </dependency>
-        <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>1.9</version>
@@ -458,6 +459,22 @@
     </dependencies>
 
     <build>
+<!--        <testResources>
+            <testResource>
+                <directory>${project.basedir}/src/main/resources</directory>
+            </testResource>
+        </testResources>-->
+<!--        <testResources>
+            <testResource>
+              <directory>${project.basedir}/src/test/java</directory>
+              <excludes>
+                  <exclude>**/*.java</exclude>
+              </excludes>
+            </testResource>
+            <testResource>
+              <directory>${project.basedir}/src/test/resources</directory>
+            </testResource>
+          </testResources>-->
         <resources>
             <resource>
                 <directory>src/main/java</directory>
