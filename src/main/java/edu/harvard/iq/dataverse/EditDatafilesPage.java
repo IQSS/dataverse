@@ -30,6 +30,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.EjbUtil;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -1703,7 +1704,17 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void setHasRsyncScript(Boolean hasRsyncScript) {
         this.hasRsyncScript = hasRsyncScript;
     }
-    
+
+    private String userFacingUploadWithRsyncError;
+
+    public String getUserFacingUploadWithRsyncError() {
+        return userFacingUploadWithRsyncError;
+    }
+
+    public void setUserFacingUploadWithRsyncError(String userFacingUploadWithRsyncError) {
+        this.userFacingUploadWithRsyncError = userFacingUploadWithRsyncError;
+    }
+
     private  void setUpRsync() {
         if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
             try {
@@ -1716,9 +1727,14 @@ public class EditDatafilesPage implements java.io.Serializable {
                 } else {
                     setHasRsyncScript(false);
                 }
+            } catch (EJBException ex) {
+                setUserFacingUploadWithRsyncError(BundleUtil.getStringFromBundle("file.rsyncUpload.noScriptEjbException"));
+                logger.warning("Problem getting rsync script (EJBException): " + EjbUtil.ejbExceptionToString(ex));
             } catch (RuntimeException ex) {
-                logger.warning("Problem getting rsync script: " + ex.getLocalizedMessage());
+                setUserFacingUploadWithRsyncError(ex.getLocalizedMessage());
+                logger.warning("Problem getting rsync script (RuntimeException): " + ex.getLocalizedMessage());
             } catch (CommandException cex) {
+                setUserFacingUploadWithRsyncError(cex.getLocalizedMessage());
                 logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
             }
         }

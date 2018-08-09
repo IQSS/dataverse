@@ -259,7 +259,9 @@
                                     <ui:fragment rendered="#{!EditDatafilesPage.isHasRsyncScript() and (empty EditDatafilesPage.fileMetadatas and empty DatasetPage.workingVersion.hasPackageFile)}">
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-warning-sign text-danger"></span>
-                                            <h:outputText class="text-danger" value=" #{bundle['file.rsyncUpload.noScriptAvailable']}" escape="false"/>
+                                            <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.noScriptAvailable']}">
+                                                <f:param value="#{EditDatafilesPage.userFacingUploadWithRsyncError}"/>
+                                            </h:outputFormat>
                                         </p>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!EditDatafilesPage.isHasRsyncScript() and (empty EditDatafilesPage.fileMetadatas and DatasetPage.workingVersion.hasPackageFile)}">
