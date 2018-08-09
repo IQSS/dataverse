@@ -1808,7 +1808,7 @@ public class AddReplaceFileHelper{
         // start the ingest!
         //
                
-        ingestService.startIngestJobs(dataset, dvRequest.getAuthenticatedUser());
+        ingestService.startIngestJobsForDataset(dataset, dvRequest.getAuthenticatedUser());
         
         msg("post ingest start");
         return true;

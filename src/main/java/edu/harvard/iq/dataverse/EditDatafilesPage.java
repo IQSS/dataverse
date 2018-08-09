@@ -1365,7 +1365,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution:
         if (mode == FileEditMode.UPLOAD) {
-            ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
+            ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) session.getUser());
         }
 
         if (mode == FileEditMode.SINGLE && fileMetadatas.size() > 0) {
