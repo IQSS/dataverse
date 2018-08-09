@@ -280,10 +280,17 @@ public class FileUtil implements java.io.Serializable  {
         
     }
     
+    public static String retestIngestableFileType(File file, String fileType) {
+        IngestableDataChecker tabChecker = new IngestableDataChecker(TABULAR_DATA_FORMAT_SET);
+        String newType = tabChecker.detectTabularDataFormat(file);
+        
+        return newType != null ? newType : fileType;
+    }
+    
     public static String determineFileType(File f, String fileName) throws IOException{
         String fileType = null;
         String fileExtension = getFileExtension(fileName);
-
+        
         
         
         // step 1: 
