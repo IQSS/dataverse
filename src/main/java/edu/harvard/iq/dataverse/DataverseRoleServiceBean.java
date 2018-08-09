@@ -245,12 +245,12 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * No traversal on the containment hierarchy is done.
      *
      * @param roleAssignees the user whose roles are given
-     * @param dvo the object where the roles are defined.
+     * @param dvos the objects where the roles are defined.
      * @return Set of roles defined for the user in the given dataverse.
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
      * edu.harvard.iq.dataverse.Dataverse)
      */
-    public List<RoleAssignment> directRoleAssignments(@NotNull Set<RoleAssignee> roleAssignees, @NotNull Collection<DvObject> dvos) {
+    public List<RoleAssignment> directRoleAssignments(@NotNull Set<? extends RoleAssignee> roleAssignees, @NotNull Collection<DvObject> dvos) {
         List<String> raIds = roleAssignees.stream().map(roas -> roas.getIdentifier()).collect(Collectors.toList());
         List<Long> dvoIds = dvos.stream().map(dvo -> dvo.getId()).collect(Collectors.toList());
         

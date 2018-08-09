@@ -763,7 +763,7 @@ public class Dataverses extends AbstractApiBean {
             @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> ok(
                 json(
-                        execCommand(
+                    execCommand(
                                 new AddRoleAssigneesToExplicitGroupCommand(req,
                                         findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
                                         new TreeSet<>(roleAssingeeIdentifiers))))));

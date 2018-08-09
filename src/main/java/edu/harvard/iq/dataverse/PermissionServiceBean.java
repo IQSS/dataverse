@@ -30,14 +30,13 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toList;
 import javax.persistence.Query;
 
 /**
@@ -218,54 +217,64 @@ public class PermissionServiceBean {
                 .setParameter("definitionPointId", d.getId()).getResultList();
     }
 
+    /**
+     * Returns all the children (direct descendants) of {@code dvo}, on which the user 
+     * has all the permissions specified in {@code permissions}. This method takes into
+     * account which permissions apply for which object type, so a permission that 
+     * applies only to {@link Dataset}s will not be considered when looking into
+     * the question of whether a {@link Dataverse} should be contained in the output list.
+     * @param req The request whose permissions are queried
+     * @param dvo The objects whose children we list
+     * @param required (sub)set of permissions {@code req} has on the objects in the returned list
+     * @return list of {@code dvo} children over which {@code req} has at least {@code required} permissions.
+     */
     public List<DvObject> whichChildrenHasPermissionsFor(DataverseRequest req, DvObjectContainer dvo, Set<Permission> required) {
         List<DvObject> children = dvObjectServiceBean.findByOwnerId(dvo.getId());
-        
         User user = req.getUser();
+        
+        // quick cases
         if (user.isSuperuser()) {
-            return children;
+            return children; // it's good to be king
+            
         } else if (!user.isAuthenticated()) {
-            Set<Permission> requiredCopy = EnumSet.copyOf(required);
-            requiredCopy.retainAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
-            if (!requiredCopy.isEmpty()) {
-                return new ArrayList<>();
+            if ( required.stream().anyMatch(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY::contains) ){
+                // At least one of the permissions requires that the user is authenticated, which is not the case.
+                return Collections.emptyList();
             }
         }
-        
-                
+              
+        // Actually look at permissions
         Set<DvObject> parents = getPermissionAncestors(dvo);
-        Set<RoleAssignee> groups = new HashSet<>(groupService.groupsFor(req));
+        Set<? extends RoleAssignee> groups = groupService.groupsFor(req);
         List<RoleAssignment> parentsAsignments = roleService.directRoleAssignments(groups, parents);
         
         for (RoleAssignment asmnt : parentsAsignments) {
             required.removeAll(asmnt.getRole().permissions());
         }
         if (required.isEmpty()) {
+            // All permissions are met by role assignments on the request
             return children;
         }
         
+        // Looking at each child at a time now.
+        // 1. Map childs to permissions
         List<RoleAssignment> childrenAssignments = roleService.directRoleAssignments(groups, children);
         Map<DvObject, Set<Permission>> roleMap = new HashMap<>();
-        for (RoleAssignment role : childrenAssignments) {
-            DvObject definitionPoint = role.getDefinitionPoint();
+        childrenAssignments.forEach( assignment -> {
+            DvObject definitionPoint = assignment.getDefinitionPoint();
             if (!roleMap.containsKey(definitionPoint)){
-                roleMap.put(definitionPoint, role.getRole().permissions());
+                roleMap.put(definitionPoint, assignment.getRole().permissions());
             } else {
-                roleMap.get(definitionPoint).addAll(role.getRole().permissions());
+                roleMap.get(definitionPoint).addAll(assignment.getRole().permissions());
             }
-        }
+        });
         
-        List<DvObject> results = new ArrayList<>();
-        for (DvObject child : children) {
-            if (child.isReleased()){
-                results.add(child);
-            } else if (roleMap.containsKey(child)){
-                if (roleMap.get(child).containsAll(required.stream().filter(perm -> perm.appliesTo(child.getClass())).collect(Collectors.toSet()))){
-                    results.add(child);
-                }
-            }
-        }
-        return results;
+        // 2. Filter by permission map created at (1).
+        return children.stream().filter( child -> 
+            (roleMap.containsKey(child)) &&
+            (roleMap.get(child).containsAll(required.stream().filter(perm -> perm.appliesTo(child.getClass())).collect(Collectors.toSet())))
+        ).collect( toList() );
+        
     }
 
     public boolean hasPermissionsFor(DataverseRequest req, DvObject dvo, Set<Permission> required) {
@@ -664,7 +673,6 @@ public class PermissionServiceBean {
 
             for (int dvIdAsInt : childFileIds) {
                 dataversesUserHasPermissionOn.add(Long.valueOf(dvIdAsInt));
-
             }
         }
         return dataversesUserHasPermissionOn;

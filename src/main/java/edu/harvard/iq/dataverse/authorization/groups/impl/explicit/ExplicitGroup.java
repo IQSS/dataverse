@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupException;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.HashSet;
 import java.util.Objects;
@@ -139,6 +139,11 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     }
 
     public Set<ExplicitGroup> getContainedExplicitGroups() {
+        if ( getGroupProvider() != null ) {
+            for ( ExplicitGroup g : containedExplicitGroups ) {
+                g.setProvider(getGroupProvider());
+            }
+        }
         return containedExplicitGroups;
     }
 
@@ -148,6 +153,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     protected ExplicitGroup() {}
     
     public void add( User u ) {
+        if ( u == null ) throw new IllegalArgumentException("Cannot add a null user to an explicit group.");
         if ( u instanceof AuthenticatedUser ) {
             containedAuthenticatedUsers.add((AuthenticatedUser)u);
         } else {
@@ -205,7 +211,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     public Set<String> getContainedRoleAssgineeIdentifiers() {
         Set<String> retVal = new TreeSet<>();
         retVal.addAll( containedRoleAssignees );
-        for ( ExplicitGroup subg : containedExplicitGroups ) {
+        for ( ExplicitGroup subg : getContainedExplicitGroups() ) {
             retVal.add( subg.getIdentifier() );
         }
         for ( AuthenticatedUser au : containedAuthenticatedUsers ) {
@@ -242,7 +248,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     public Set<RoleAssignee> getDirectMembers() {
         Set<RoleAssignee> res = new HashSet<>();
         
-        res.addAll( containedExplicitGroups );
+        res.addAll( getContainedExplicitGroups() );
         res.addAll( containedAuthenticatedUsers );
         for ( String idtf : containedRoleAssignees ) {
             RoleAssignee ra = provider.findRoleAssignee(idtf);
