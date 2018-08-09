@@ -36,6 +36,7 @@ import edu.harvard.iq.dataverse.GlobalIdServiceBean;
  *
  * @author michael
  */
+
 @RequiredPermissions(Permission.PublishDataset)
 public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCommand<Dataset> {
 

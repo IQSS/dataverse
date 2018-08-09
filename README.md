@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 Dataverse&#174; 
+=======
+Dataverse &#174;
+>>>>>>> refs/heads/v4.9.1-qdr
 ===============
 
 Dataverse is an [open source][] web application for sharing, citing, analyzing, and preserving research data (developed by the [Data Science and Products team](http://www.iq.harvard.edu/people/people/data-science-products) at the [Institute for Quantitative Social Science](http://iq.harvard.edu/) and the [Dataverse community][]).

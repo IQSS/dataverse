@@ -349,18 +349,30 @@ public class SettingsServiceBean {
          * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
          */
         PVCustomPasswordResetAlertMessage,
-        /*
+        /**
         String to describe DOI format for data files. Default is INDEPENDENT. (That is independent 
         from the Dataset DOI
         If 'DEPENEDENT' then the DOI will be the Dataset DOI plus a file DOI with a slash in between.
         */
         DataFilePIDFormat, 
-        /*
+        /**
         Number for the minimum number of files to send PID registration to asynchronous workflow
         */
-        PIDAsynchRegFileCount
-        ;
-
+        PIDAsynchRegFileCount,
+        
+        /**
+         * QDR Custom settings
+         * 
+         */
+        /** URL for Shibboleth Single Logout */        
+        ShibLogoutUrl,
+        /** Latest version of Terms and Conditions document */
+        ShibAuthTermsVer,
+        /** Url of integrated Drupal Site */
+        QDRDrupalSiteURL,
+        /** Base Url of this Dataverse Site */
+        QDRDataverseBaseURL;
+        
         @Override
         public String toString() {
             return ":" + name();

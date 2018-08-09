@@ -676,7 +676,7 @@
                     <!-- Popups -->
                     <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noValidSelectedFilesForDownload']}</p>
-                        <ui:fragment rendered="#{DatasetPage.dataset.fileAccessRequest}">
+                        <ui:fragment   rendered="#{DatasetPage.dataset.fileAccessRequest}"  >
                             <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.requestAccessToRestrictedFiles']}</p>
                         </ui:fragment>
                         <div class="button-block">
@@ -1207,7 +1207,7 @@
                             <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
                                 <f:param value="#{navigationWrapper.redirectPage}"/>
                                 <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}"/>
-                                <f:param value="#{widgetWrapper.widgetView ? '_blank' : '_self'}"/>
+                                <f:param value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/user/register"/>
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
@@ -1306,7 +1306,7 @@
                             </button>
                         </div>
                     </p:dialog>
-                    
+
                     <p:dialog id="computeBatchListPopup" header="#{bundle['dataset.compute.computeBatchListHeader']}" widgetVar="computeBatchListPopup" modal="true">
                         <div class="text-right">
                             <!-- Clear link -->

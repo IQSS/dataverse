@@ -1670,11 +1670,12 @@ public class DatasetPage implements java.io.Serializable {
                                 if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)) {
                                     subField.getDatasetFieldValues().get(0).setValue(creatorOrcidId);
                                 }
-                                if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)) {  
-                                   DatasetFieldType authorIdTypeDatasetField = fieldService.findByName(DatasetFieldConstant.authorIdType);
-                                   subField.setSingleControlledVocabularyValue(fieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(authorIdTypeDatasetField, "ORCID", true));
-                                }                                
                             }
+                            //QDR - pre-select ORCID even when we don't have an ORCID as part of a profile
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)) {  
+                                DatasetFieldType authorIdTypeDatasetField = fieldService.findByName(DatasetFieldConstant.authorIdType);
+                                subField.setSingleControlledVocabularyValue(fieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(authorIdTypeDatasetField, "ORCID", true));
+                             }   
                         }
                     }
                 }
@@ -2608,7 +2609,10 @@ public class DatasetPage implements java.io.Serializable {
                 
                 if (nNewFiles > 0) {
                     // Save the NEW files permanently and add the to the dataset: 
-                    
+                	
+                	//QDR-981, IQSS-4783 - add next line to assure contributor role added when files are also uploaded
+                	dataset = datasetService.find(dataset.getId());
+                	
                     // But first, fully refresh the newly created dataset (with a 
                     // datasetService.find().
                     // We have reasons to believe that the CreateDatasetCommand 
@@ -4162,7 +4166,6 @@ public class DatasetPage implements java.io.Serializable {
     
     public void downloadRsyncScript() {
 
-        String bibFormatDowload = new BibtexCitation(workingVersion).toString();
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");

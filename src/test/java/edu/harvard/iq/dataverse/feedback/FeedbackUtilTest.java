@@ -179,14 +179,14 @@ public class FeedbackUtilTest {
         assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
         String expectedBody
                 = "You have just been sent the following message from " + userEmail + " "
-                + "via the " + installationBrandName + " hosted dataverse named \"dvAlias1\":\n\n"
+                + "via the " + installationBrandName + " hosted collection named \"dvAlias1\":\n\n"
                 + "---\n\n"
                 + userMessage + "\n\n"
                 + "---\n\n"
                 + supportTeamName + "\n"
                 + systemEmail + "\n\n"
-                + "Go to dataverse https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n"
-                + "You received this email because you have been listed as a contact for the dataverse. "
+                + "Go to collection https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n"
+                + "You received this email because you have been listed as a contact for the collection. "
                 + "If you believe this was an error, please contact "
                 + supportTeamName + " at " + systemEmail + ". "
                 + "To respond directly to the individual who sent the message, simply reply to this email.";
@@ -206,7 +206,7 @@ public class FeedbackUtilTest {
         feedback = feedbacks2.get(0);
         assertEquals("support@librascholar.edu", feedback.getToEmail());
         System.out.println("body:\n\n" + feedback.getBody());
-        assertTrue(feedback.getBody().startsWith("There is no contact address on file for this dataverse so this message is being sent to the system address."));
+        assertTrue(feedback.getBody().startsWith("There is no contact address on file for this collection so this message is being sent to the system address."));
     }
 
     @Test
@@ -242,15 +242,15 @@ public class FeedbackUtilTest {
         String expected = "Hello Tom Brady,\n\n"
                 // FIXME: change from "personClickingContactOrSupportButton@example.com" to "Homer Simpson" or whatever (add to contact form).
                 + "You have just been sent the following message from " + userEmail + " "
-                + "via the " + installationBrandName + " hosted dataset "
+                + "via the " + installationBrandName + " hosted data project "
                 + "titled \"Darwin's Finches\" (doi:10.7910/DVN/TJCLKP):\n\n"
                 + "---\n\n"
                 + userMessage + "\n\n"
                 + "---\n\n"
                 + supportTeamName + "\n"
                 + systemEmail + "\n\n"
-                + "Go to dataset https://dataverse.librascholar.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/TJCLKP\n\n"
-                + "You received this email because you have been listed as a contact for the dataset. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";
+                + "Go to data project https://dataverse.librascholar.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/TJCLKP\n\n"
+                + "You received this email because you have been listed as a contact for the data project. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";
         System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
         System.out.println("EXPECTED:\n\n" + expected);
         System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
@@ -287,7 +287,7 @@ public class FeedbackUtilTest {
         System.out.println("To: " + feedback.getToEmail());
         assertEquals(systemEmail, feedback.getToEmail());
         assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
-        String expected = "There is no contact address on file for this dataset so this message is being sent to the system address.\n\n"
+        String expected = "There is no contact address on file for this data project so this message is being sent to the system address.\n\n"
                 // FIXME: Add more context for person who receives systemEmail messages.
                 // FIXME: change from "personClickingContactOrSupportButton@example.com" to "Homer Simpson" or whatever (add to contact form).
                 //                + "You have just been sent the following message from " + feedback.getFromEmail() + " "
@@ -298,8 +298,8 @@ public class FeedbackUtilTest {
                 + "---\n\n"
                 + supportTeamName + "\n"
                 + systemEmail + "\n\n"
-                + "Go to dataset https://dataverse.librascholar.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/TJCLKP\n\n"
-                + "You received this email because you have been listed as a contact for the dataset. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";
+                + "Go to data project https://dataverse.librascholar.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/TJCLKP\n\n"
+                + "You received this email because you have been listed as a contact for the data project. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";
         System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
         System.out.println("EXPECTED:\n\n" + expected);
         System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
@@ -360,17 +360,17 @@ public class FeedbackUtilTest {
         assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
         assertEquals("finch@mailinator.com", feedback.getToEmail());
         String expectedBody
-                = "Attention Dataset Contact:\n\n"
+                = "Attention Data Project Contact:\n\n"
                 + "You have just been sent the following message from " + userEmail + " "
                 + "via the LibraScholar hosted file named \"file.txt\" "
-                + "from the dataset titled \"Darwin's Finches\" (doi:10.7910/DVN/TJCLKP):\n\n"
+                + "from the data project titled \"Darwin's Finches\" (doi:10.7910/DVN/TJCLKP):\n\n"
                 + "---\n\n"
                 + userMessage + "\n\n"
                 + "---\n\n"
                 + supportTeamName + "\n"
                 + systemEmail + "\n\n"
                 + "Go to file https://dataverse.librascholar.edu/file.xhtml?fileId=42\n\n"
-                + "You received this email because you have been listed as a contact for the dataset. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";;
+                + "You received this email because you have been listed as a contact for the data project. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";;
         System.out.println("body:\n\n" + feedback.getBody());
         assertEquals(expectedBody, feedback.getBody());
 
@@ -428,7 +428,7 @@ public class FeedbackUtilTest {
         assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
         assertEquals("support@librascholar.edu", feedback.getToEmail());
         // TODO: Consider doing a more thorough test that just "starts with".
-        assertTrue(feedback.getBody().startsWith("There is no contact address on file for this dataset so this message is being sent to the system address."));
+        assertTrue(feedback.getBody().startsWith("There is no contact address on file for this data project so this message is being sent to the system address."));
     }
 
     @Test

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -116,7 +117,38 @@ public class Shib implements java.io.Serializable {
         ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
         request = (HttpServletRequest) context.getRequest();
         ShibUtil.printAttributes(request);
-
+        
+        /* 
+        * QDRCustom
+        * Direct the user to the Drupal Terms & Conditions page if the user has not 
+        * accepted the latest version of the T&C
+        */
+        Integer acceptedTermsDocVer;
+        try {
+            String acceptedTermsDocVerStr = getRequiredValueFromAssertion(ShibUtil.acceptedTermsDocVerAttribute);
+            acceptedTermsDocVer = new Integer(acceptedTermsDocVerStr);
+        } catch (Exception ex) {
+        	//Old accounts appear to not have a value which causes an exception when converting to an Integer
+        	//No other errors known to cause this but we can catch anything else that can't be parsed, just in case.
+            acceptedTermsDocVer=0; //Treat this as never having accepted any version as though a new user  
+        }
+        
+        int latestTermsDocVer = systemConfig.getShibAuthTermsVer();        
+        if (acceptedTermsDocVer < latestTermsDocVer) {            
+            String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
+            Map<String, String> params = context.getRequestParameterMap();
+            String paramRedirectPage = params.get("redirectPage");            
+            String termsConditionsPageURL = QDRDrupalSiteURL + "/qdr-sso/dv-terms-conditions-redirect?redirectPage=" + paramRedirectPage;
+            // Direct user to Drupal T&C page
+            try {
+                context.redirect(termsConditionsPageURL);
+                return;
+            } catch (IOException ex) {
+                logger.info("Unable to redirect user to Terms & Conditions Page " + termsConditionsPageURL);
+                return;
+            }
+        }
+        
         /**
          * @todo Investigate why JkEnvVar is null since it may be useful for
          * debugging per https://github.com/IQSS/dataverse/issues/2916 . See
@@ -229,7 +261,9 @@ public class Shib implements java.io.Serializable {
                 logger.info("Unable to redirect user to homepage at " + prettyFacesHomePageString);
             }
         } else {
-            state = State.PROMPT_TO_CREATE_NEW_ACCOUNT;
+            /*** QDRCustom: do not change state to allow for auto-creation of local account  ***/
+            /*** state = State.PROMPT_TO_CREATE_NEW_ACCOUNT; ***/
+            
             displayNameToPersist = displayInfo.getTitle();
             emailToPersist = emailAddress;
             /**
@@ -274,7 +308,18 @@ public class Shib implements java.io.Serializable {
                     debugSummary = "Could not find a builtin account based on the username. Here we should simply create a new Shibboleth user";
                 }
             } else {
-                debugSummary = "Could not find an auth user based on email address";
+                // QDRCustom: auto-create local account for authenticated Shibboleth user
+                debugSummary = "Could not find an auth user based on email address. Creating new local account for Shibboleth user with email: " + emailAddress;                
+                String destinationAfterAccountCreation = confirmAndCreateAccount();
+                if (destinationAfterAccountCreation != null) {
+                    try {
+                        context.redirect(destinationAfterAccountCreation);
+                        return;
+                    } catch (IOException ex) {
+                        logger.info("Unable to redirect user to page: " + destinationAfterAccountCreation);
+                        return;
+                    }                    
+                }                
             }
 
         }
@@ -305,7 +350,7 @@ public class Shib implements java.io.Serializable {
             userNotificationService.sendNotification(au,
                     new Timestamp(new Date().getTime()),
                     UserNotification.Type.CREATEACC, null);
-            return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
+            return "/dataverseuser.xhtml?selectTab=dataRelatedToMe&faces-redirect=true";
         } else {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("shib.createUser.fail"));
         }
@@ -326,7 +371,7 @@ public class Shib implements java.io.Serializable {
                 logInUserAndSetShibAttributes(au);
                 debugSummary = "Local account validated and successfully converted to a Shibboleth account. The old account username was " + builtinUsername;
                 JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.shib.success"));
-                return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
+                return "/dataverseuser.xhtml?selectTab=dataRelatedToMe&faces-redirect=true";
             } else {
                 debugSummary = "Local account validated but unable to convert to Shibboleth account.";
             }
@@ -360,7 +405,16 @@ public class Shib implements java.io.Serializable {
      * https://iqssharvard.mybalsamiq.com/projects/loginwithshibboleth-version3-dataverse40/Dataverse%20Account%20III%20-%20Agree%20Terms%20of%20Use
      */
     public String cancel() {
-        return loginpage + "?faces-redirect=true";
+        // QDRCustom
+        ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
+        // Redirect user to Shibboleth login page
+            try {
+                context.redirect(navigationWrapper.getShibLoginPath());
+                return "";
+            } catch (IOException ex) {
+                logger.info("Unable to redirect user to Shibboleth login page");
+                return "";
+            }
     }
 
     /**

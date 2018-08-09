@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
 import java.util.Random;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -130,7 +131,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     public String getMessageTo() {
         if (recipient == null) {
-            return BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
+            return BrandingUtil.getSupportTeamName(systemAddress, ResourceBundle.getBundle("Bundle").getString("institution.acronym"));
         } else if (recipient.isInstanceofDataverse()) {
             return ((Dataverse) recipient).getDisplayName() + " " + BundleUtil.getStringFromBundle("contact.contact");
         } else {
@@ -198,10 +199,10 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
 
     public String sendMessage() {
-        // FIXME: move dataverseService.findRootDataverse() to init
-        String rootDataverseName = dataverseService.findRootDataverse().getName();
-        String installationBrandName = BrandingUtil.getInstallationBrandName(rootDataverseName);
-        String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName);
+
+        String institution = ResourceBundle.getBundle("Bundle").getString("institution.acronym");
+        String installationBrandName = BrandingUtil.getInstallationBrandName(institution);
+        String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress, institution);
         List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(recipient, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName);
         if (feedbacks.isEmpty()) {
             logger.warning("No feedback has been sent!");

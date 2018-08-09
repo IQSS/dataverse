@@ -49,7 +49,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
     @Override
     public DatasetThumbnail execute(CommandContext ctxt) throws CommandException {
         if (dataset == null) {
-            String message = "Can't update dataset thumbnail. Dataset is null.";
+            String message = "Can't update data project thumbnail. Data Project is null.";
             logger.info(message);
             throw new IllegalCommandException(message, this);
         }
@@ -63,7 +63,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
 
             case setDatasetFileAsThumbnail:
                 if (dataFileIdSupplied == null) {
-                    throw new CommandException("A file was not selected to be the new dataset thumbnail.", this);
+                    throw new CommandException("A file was not selected to be the new data project thumbnail.", this);
                 }
                 DataFile datasetFileThumbnailToSwitchTo = ctxt.files().find(dataFileIdSupplied);
                 if (datasetFileThumbnailToSwitchTo == null) {
@@ -77,11 +77,11 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                         if (dataFile.getId().equals(dataFileIdSupplied)) {
                             return datasetThumbnail;
                         } else {
-                            throw new CommandException("Dataset thumbnail is should be based on file id " + dataFile.getId() + " but instead it is " + dataFileIdSupplied + ".", this);
+                            throw new CommandException("Data Project thumbnail is should be based on file id " + dataFile.getId() + " but instead it is " + dataFileIdSupplied + ".", this);
                         }
                     }
                 } else {
-                    throw new CommandException("Dataset thumbnail is unexpectedly absent.", this);
+                    throw new CommandException("Data Project thumbnail is unexpectedly absent.", this);
                 }
 
             case setNonDatasetFileAsThumbnail:
@@ -120,7 +120,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                     throw new CommandException("User wanted to remove the thumbnail it still has one!", this);
                 }
             default:
-                throw new IllegalCommandException("Whatever you are trying to do to the dataset thumbnail is not supported.", this);
+                throw new IllegalCommandException("Whatever you are trying to do to the data project thumbnail is not supported.", this);
         }
     }
 

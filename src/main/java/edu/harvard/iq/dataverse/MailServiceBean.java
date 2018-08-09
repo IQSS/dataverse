@@ -116,9 +116,14 @@ public class MailServiceBean implements java.io.Serializable {
     public boolean sendSystemEmail(String to, String subject, String messageText) {
 
         boolean sent = false;
-        String rootDataverseName = dataverseService.findRootDataverse().getName();
+
+		// QDR - uses the institution name rather than a dataverse/collection name in
+		// email subject
         InternetAddress systemAddress = getSystemAddress();
-        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName)));
+		String institutionName = ResourceBundle.getBundle("Bundle").getString("institution.acronym");
+		String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing",
+				Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress),
+						BrandingUtil.getSupportTeamName(systemAddress, institutionName)));
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
             MimeMessage msg = new MimeMessage(session);
@@ -222,8 +227,12 @@ public class MailServiceBean implements java.io.Serializable {
            Object objectOfNotification =  getObjectOfNotification(notification);
            if (objectOfNotification != null){
                String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification);
-               String rootDataverseName = dataverseService.findRootDataverse().getName();
-               String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, rootDataverseName, objectOfNotification);
+				// QDR - uses the institution name rather than a dataverse/collection name in
+				// email subject
+				String institutionName = ResourceBundle.getBundle("Bundle").getString("institution.acronym");
+				;
+				String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, institutionName,
+						objectOfNotification);
                if (!(messageText.isEmpty() || subjectText.isEmpty())){
                     retval = sendSystemEmail(emailAddress, subjectText, messageText); 
                } else {
@@ -470,14 +479,16 @@ public class MailServiceBean implements java.io.Serializable {
             case CREATEACC:
                 String rootDataverseName = dataverseService.findRootDataverse().getName();
                 InternetAddress systemAddress = getSystemAddress();
-                String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
-                        BrandingUtil.getInstallationBrandName(rootDataverseName),
-                        systemConfig.getGuidesBaseUrl(),
-                        systemConfig.getGuidesVersion(),
-                        BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName),
-                        BrandingUtil.getSupportTeamEmailAddress(systemAddress)
-                ));
-                String optionalConfirmEmailAddon = confirmEmailService.optionalConfirmEmailAddonMsg(userNotification.getUser());
+			// QDR
+			String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome",
+					Arrays.asList(ResourceBundle.getBundle("Bundle").getString("institution.acronym"),
+							ResourceBundle.getBundle("Bundle").getString("header.guides.user"),
+							settingsService.getValueForKey(SettingsServiceBean.Key.QDRDrupalSiteURL, "") + "/deposit",
+							BrandingUtil.getSupportTeamName(systemAddress,
+									ResourceBundle.getBundle("Bundle").getString("institution.acronym")),
+							BrandingUtil.getSupportTeamEmailAddress(systemAddress)));
+			String optionalConfirmEmailAddon = confirmEmailService
+					.optionalConfirmEmailAddonMsg(userNotification.getUser());
                 accountCreatedMessage += optionalConfirmEmailAddon;
                 logger.fine("accountCreatedMessage: " + accountCreatedMessage);
                 return messageText += accountCreatedMessage;

@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.ResourceBundle;
 import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -172,7 +173,8 @@ public class SchemaDotOrgExporterTest {
         assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));
         assertEquals("https://librascholar.org", json2.getJsonObject("includedInDataCatalog").getString("url"));
         assertEquals("Organization", json2.getJsonObject("provider").getString("@type"));
-        assertEquals("Dataverse", json2.getJsonObject("provider").getString("name"));
+        String orgName = ResourceBundle.getBundle("Bundle").getString("institution.name"); 
+        assertEquals(orgName, json2.getJsonObject("provider").getString("name"));
     }
 
     /**

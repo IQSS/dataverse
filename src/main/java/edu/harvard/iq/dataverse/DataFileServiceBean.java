@@ -1463,6 +1463,19 @@ public class DataFileServiceBean implements java.io.Serializable {
         if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){
             //If format is dependent then pre-pend the dataset identifier 
             prepend = datafile.getOwner().getIdentifier() + "/";
+            /*QDR Temporary
+             *  If the dataset id doesn't start with the current shoulder, we need to replace it. Given that prior ids always had shoulder + 6 characters,
+             *  we can strip the old shoulder by removing the first n chars, leaving six characters plus the '/' added above
+             *  after which we can add the new shoulder. 
+             */
+            String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
+            if (!prepend.startsWith(shoulder)) {
+            	if(prepend.length()>7) {
+            	prepend = prepend.substring(prepend.length()-7);
+            	} 
+            	prepend = shoulder + prepend;
+            }
+            
         } else {
             //If there's a shoulder prepend independent identifiers with it
         	prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");

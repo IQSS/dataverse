@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -359,6 +360,23 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // ---------------------------------
         DataverseRequest dataverseRequest = createDataverseRequest(authUser);
 
+        if (roleIds == null) {
+        	roleIds=new ArrayList<Long>();
+        }	
+		if (roleIds.isEmpty()) {
+			List<DataverseRole> roleList = new ArrayList<DataverseRole>();
+
+			if (authUser.isSuperuser()) {
+
+				roleList = dataverseRoleService.findAll();
+			} else {
+				// (2) For a regular users
+				roleList = roleAssigneeService.getAssigneeDataverseRoleFor(dataverseRequest);
+			}
+			for (DataverseRole role : roleList) {
+				roleIds.add(role.getId());
+			}
+		}
         
         MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, dtypes, pub_states, roleIds, searchTerm);
         if (filterParams.hasError()){

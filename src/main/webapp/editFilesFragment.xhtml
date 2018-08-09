@@ -149,8 +149,7 @@
                         </ui:fragment>  
                         <ui:fragment rendered="true">
                         <h:outputFormat value=" #{bundle['file.selectToAdd.tipMoreInformation']}" escape="false">
-                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                            <f:param value="#{systemConfig.guidesVersion}"/>
+                            <f:param value="#{settingsWrapper.get(':QDRDrupalSiteURL')}"/>
                         </h:outputFormat>                      
                         </ui:fragment> 
                     </p>
