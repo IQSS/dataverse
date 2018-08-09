@@ -40,6 +40,10 @@ public class Shib implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
+    @Inject
+    SettingsWrapper settingsWrapper;
+    @Inject
+    NavigationWrapper navigationWrapper;
 
     @EJB
     AuthenticationServiceBean authSvc;
@@ -51,6 +55,8 @@ public class Shib implements java.io.Serializable {
     GroupServiceBean groupService;
     @EJB
     UserNotificationServiceBean userNotificationService;
+    @EJB
+    SystemConfig systemConfig;
 
     HttpServletRequest request;
 
