@@ -20,3 +20,6 @@ curl -X POST -H "X-Dataverse-key: burrito" "http://localhost:8080/api/dataverses
 mkdir -p /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/
 ln -s /hold /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2
 
+# need to set siteUrl
+cd /usr/local/glassfish4
+bin/asadmin create-jvm-options "\"-Ddataverse.siteUrl=http\://localhost\:8084\""
