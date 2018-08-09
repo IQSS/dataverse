@@ -246,7 +246,6 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public String createIdentifier(DvObject dvObject) throws Throwable {
-<<<<<<< HEAD
         logger.log(Level.FINE, "createIdentifier");
         if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
             dvObject = generateIdentifier(dvObject);
@@ -282,32 +281,6 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
      */
     private <T> HashMap<T,T> asHashMap(Map<T,T> map) {
         return (map instanceof HashMap) ? (HashMap)map : new HashMap<>(map);
-=======
-
-            logger.log(Level.FINE, "createIdentifier");
-            logger.info("id = " + dvObject.getIdentifier());
-            if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
-                dvObject = generateIdentifier(dvObject);
-            }
-            String identifier = getIdentifier(dvObject);
-            logger.info("new id = " + identifier);
-            HashMap<String, String> metadata = getMetadataForCreateIndicator(dvObject);
-            metadata.put("datacite.resourcetype", "Dataset");
-            metadata.put("_status", "reserved");
-            try {
-                String retString = ezidService.createIdentifier(identifier, metadata);
-                logger.log(Level.FINE, "create DOI identifier retString : " + retString);
-                return retString;
-            } catch (EZIDException e) {
-                logger.log(Level.WARNING, "Identifier not created: create failed");
-                logger.log(Level.WARNING, "String {0}", e.toString());
-                logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-                logger.log(Level.WARNING, "cause", e.getCause());
-                logger.log(Level.WARNING, "message {0}", e.getMessage());
-                logger.log(Level.WARNING, "identifier: ", identifier);
-                throw e;
-            }
->>>>>>> refs/heads/v4.9.1-qdr
     }
 
 }

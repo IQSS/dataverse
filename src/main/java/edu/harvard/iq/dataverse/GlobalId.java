@@ -157,12 +157,7 @@ public class GlobalId implements java.io.Serializable {
      * @return {@code destination}, after its fields have been updated, or
      *         {@code null} if parsing failed.
      */
-<<<<<<< HEAD
     private boolean parsePersistentId(String identifierString) {
-=======
-    
-    private boolean parsePersistentId(String identifierString){
->>>>>>> refs/heads/v4.9.1-qdr
 
         if (identifierString == null){
             return false;
@@ -190,26 +185,13 @@ public class GlobalId implements java.io.Serializable {
                 identifier = formatIdentifierString(identifierString.substring(index2 + 1));
                 if(testforNullTerminator(identifier)) return false;               
             } else {
-<<<<<<< HEAD
                 logger.log(Level.INFO, "Error parsing identifier: {0}: '':<authority>/<identifier>'' not found in string", identifierString);
                 return false;
             }
-=======
-                logger.info("Error parsing identifier: " + identifierString
-                        + ": ':<authority>/<identifier>' not found in string");
-            return false;
-        } 
->>>>>>> refs/heads/v4.9.1-qdr
         } else {
-<<<<<<< HEAD
             logger.log(Level.INFO, "Error parsing identifier: {0}: ''<protocol>:'' not found in string", identifierString);
             return false;
         }
-=======
-            logger.info("Error parsing identifier: " + identifierString + ": '<protocol>:' not found in string");
-                return false;
-            }
->>>>>>> refs/heads/v4.9.1-qdr
         return true;
 
     }
