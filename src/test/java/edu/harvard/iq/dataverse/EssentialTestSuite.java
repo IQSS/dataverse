@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import com.gargoylesoftware.htmlunit.javascript.host.Console;
 import edu.harvard.iq.dataverse.api.AbstractApiBeanTest;
 import edu.harvard.iq.dataverse.api.AdminIT;
 import edu.harvard.iq.dataverse.api.BatchImportIT;
@@ -139,6 +138,7 @@ import edu.harvard.iq.dataverse.util.xml.XmlValidatorTest;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorTest;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtilTest;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenTest;
+import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -147,6 +147,8 @@ import org.junit.runners.Suite;
  * @author BMartinez
  */
 @RunWith(Suite.class)
+@Categories.IncludeCategory(EssentialTests.class)
+@Categories.ExcludeCategory(NonEssentialTests.class)
 @Suite.SuiteClasses({
     //Test Package: edu.harvard.iq.dataverse
     DatasetFieldTypeTest.class,
@@ -164,34 +166,6 @@ import org.junit.runners.Suite;
     AbstractApiBeanTest.class,
     LazyRefTest.class,
     //then some IT tests.. don't think we want these in here.
-    AdminIT.class,
-    BatchImportIT.class,
-    BuiltinUsersIT.class,
-    ConfirmEmailIT.class,
-    DataCiteIT.class,
-    DatasetsIT.class,
-    DataversesIT.class,
-    ExternalToolsIT.class,
-    FeedbackApiIT.class,
-    FilesIT.class,
-    GeoconnectIT.class,
-    HarvestingServerIT.class,
-    InReviewWorkflowIT.class,
-    InfoIT.class,
-    IpGroupsIT.class,
-    MetricsIT.class,
-    ProvIT.class,
-    S3AccessIT.class,
-    SearchIT.class,
-    StorageSitesIT.class,
-    SwordIT.class,
-    TabularIT.class,
-    ThumbnailsIT.class,
-    UsersIT.class,
-    UtilIT.class,
-    
-    
-    
     
     //TestPackage: edu.harvard.iq.dataverse.api.dto
     FieldDTOTest.class,
@@ -251,7 +225,7 @@ import org.junit.runners.Suite;
     //Test Package: edu.harvard.iq.dataverse.datacapturemodule
     DataCaptureModuleUtilTest.class,
     //There is an IT in here
-    DataCaptureModuleServiceBeanIT.class,
+    
     
     //Test Package: edu.harvard.iq.dataverse.dataset
     DatasetUtilTest.class,
@@ -383,10 +357,8 @@ import org.junit.runners.Suite;
     
     //Test Package: edu.harvard.iq.dataverse.validation
     PasswordValidatorTest.class,
-    PasswordValidatorUtilTest.class,
+    PasswordValidatorUtilTest.class
     
-    //Test Package: edu.harvard.iq.dataverse.worldmapauth
-    WorldMapTokenTest.class
 })
 public class EssentialTestSuite {
     
