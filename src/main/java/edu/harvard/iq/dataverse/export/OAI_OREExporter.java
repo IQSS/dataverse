@@ -54,7 +54,7 @@ public class OAI_OREExporter implements Exporter {
 			localContext.putIfAbsent(JsonLDNamespace.schema.getPrefix(), JsonLDNamespace.schema.getUrl());
 
 			Dataset dataset = version.getDataset();
-			String id = dataset.getGlobalId();
+			String id = dataset.getGlobalId().asString();
 			// json.getString("protocol") + ":" + json.getString("authority") + "/" +
 			// json.getString("identifier");
 			JsonArrayBuilder fileArray = Json.createArrayBuilder();

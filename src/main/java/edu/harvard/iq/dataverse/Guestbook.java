@@ -46,7 +46,7 @@ public class Guestbook implements Serializable {
     @OrderBy("displayOrder")
     private List<CustomQuestion> customQuestions;
     
-    @NotBlank(message="Enter a name for the guestbook")
+    @NotBlank(message="{guestbook.name}")
     private String name;
     
     private boolean enabled;

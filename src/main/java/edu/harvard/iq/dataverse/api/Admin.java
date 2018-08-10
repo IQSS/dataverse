@@ -1071,8 +1071,6 @@ public class Admin extends AbstractApiBean {
 					if (df.isReleased()) {
 						released++;
 						User u = findAuthenticatedUserOrDie();
-						
-						logger.info("Id " + u.getIdentifier() + " auth" + u.isAuthenticated() + " su: " + u.isSuperuser());
 						DataverseRequest r = createDataverseRequest(u);
 						execCommand(new RegisterDvObjectCommand(r, df));
 						successes++;

@@ -140,106 +140,36 @@ public class RJobRequest {
      * @return    An array of variable types(0, 1, 2, 3)
      * (3 is for Boolean)
      */
-    
     public int[] getVariableTypes() {
-        
         List<Integer> rw = new ArrayList<>();
         for (DataVariable dv : dataVariablesForRequest) {
             if (!StringUtils.isEmpty(dv.getFormatCategory())){
                 if (dv.getFormatCategory().toLowerCase().equals("date") ||
                         (dv.getFormatCategory().toLowerCase().equals("time"))){
                     rw.add(0);
+                    continue;
                 } else if (dv.getFormatCategory().equals("Boolean")) {
                     rw.add(3); 
-                } else {
-                    if (dv.isTypeNumeric()) {
-                        if (dv.getInterval() == null) {
-                            rw.add(2);
-                        } else {
-                            if (dv.isIntervalContinuous()) {
-                                rw.add(2);
-                            } else {
-                                rw.add(1);
-                            }
-                        }
-                    } else if (dv.isTypeCharacter()) {
-                        rw.add(0);
-                    }
-                }
-            } else {
-                if (dv.isTypeNumeric()) {
-                    if (dv.getInterval() == null) {
-                        rw.add(2);
-                    } else {
-                        if (dv.isIntervalContinuous()) {
-                            rw.add(2);
-                        } else {
-                            rw.add(1);
-                        }
-                    }
-                } else if (dv.isTypeCharacter()) {
-                    rw.add(0);
+                    continue;
                 }
             }
+            
+            if (dv.isTypeNumeric()) {
+                if (dv.getInterval() == null || dv.isIntervalContinuous()) {
+                    rw.add(2);
+                } else {
+                    rw.add(1);
+                }
+            } else if (dv.isTypeCharacter()) {
+                rw.add(0);
+            }
         }
-        Integer[]tmp = rw.toArray(new Integer[rw.size()]);
-        dbgLog.fine("vartype="+ StringUtils.join(tmp, ", "));
-        int[] variableTypes=new int[tmp.length];
-        for (int j=0;j<tmp.length;j++){
-            variableTypes[j]= tmp[j];
+        int[] variableTypes = new int[rw.size()];
+        for (int j=0; j<rw.size(); j++){
+            variableTypes[j] = rw.get(j);
         }
         return variableTypes;
     }
-    
-    /*
-     * TODO: get rid of this? 
-     * -- L.A. 4.0 alpha 1
-    */
-    
-    public List<String> getVariableTypesAsString() {
-        
-        List<String> rw = new ArrayList<>();
-        for (DataVariable dv : dataVariablesForRequest) {
-            
-            if (!StringUtils.isEmpty(dv.getFormatCategory())){
-                if (dv.getFormatCategory().toLowerCase().equals("date") ||
-                        dv.getFormatCategory().toLowerCase().equals("time")){
-                    rw.add("0");
-                } else {
-                    if (dv.isTypeNumeric()) {
-                        if (dv.getInterval() == null) {
-                            rw.add("2");
-                        } else {
-                            if (dv.isIntervalContinuous()) {
-                                rw.add("2");
-                            } else {
-                                rw.add("1");
-                            }
-                        }
-                    } else if (dv.isTypeCharacter()) {
-                        rw.add("0");
-                    }
-                }
-            } else {
-                if (dv.isTypeNumeric()) {
-                    if (dv.getInterval() == null) {
-                        rw.add("2");
-                    } else {
-                        if (dv.isIntervalContinuous()) {
-                            rw.add("2");
-                        } else {
-                            rw.add("1");
-                        }
-                    }
-                } else if (dv.isTypeCharacter()) {
-                    rw.add("0");
-                }
-            }
-        }
-        return rw;
-    }
-
-
 
     /**
      * Getter for property variable formats

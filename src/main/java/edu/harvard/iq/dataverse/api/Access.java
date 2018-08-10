@@ -854,29 +854,18 @@ public class Access extends AbstractApiBean {
         
         boolean published = false; 
         
-        // TODO: 
-        // this very likely creates a ton of queries; put some thought into 
-        // optimizing this stuff? -- 4.2.1
-        // 
-        // update: it appears that we can finally trust the dvObject.isReleased()
-        // method; so all this monstrous crawling through the filemetadatas, 
-        // below, may not be necessary anymore! - need to verify... L.A. 10.21.2015
-        // update: NO! we still can't just trust .isReleased(), for these purposes!
-        // TODO: explain why. L.A. 10.29.2015
         
-        
-        if (df.getOwner().getReleasedVersion() != null) {
-            //logger.fine("file belongs to a dataset with a released version.");
-            if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
-                //logger.fine("going through the list of filemetadatas that belong to the released version.");
-                for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
-                    if (df.equals(fm.getDataFile())) {
-                        //logger.fine("found a match!");
-                        published = true; 
-                    }
-                }
+        /*
+        SEK 7/26/2018 for 3661 relying on the version state of the dataset versions
+            to which this file is attached check to see if at least one is  RELEASED
+        */
+        for (FileMetadata fm : df.getFileMetadatas()){
+            if(fm.getDatasetVersion().isPublished()){
+                 published = true; 
+                 break;
             }
         }
+        
         
         // TODO: (IMPORTANT!)
         // Business logic like this should NOT be maintained in individual 

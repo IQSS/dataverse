@@ -23,12 +23,7 @@
                         <span class="icon-bar"></span>
                     </button>                       
                    <!-- QDRCustom- Remove link-to-home logo -->
-                    <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
-                        <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
-                    </h:outputLink>
-                    <ui:fragment rendered="#{empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader')}">
-                        <span class="label label-default status">#{settingsWrapper.get(':StatusMessageHeader')}</span>
-                    </ui:fragment>
+                    
                 </div>
                 <!-- QDRCustom- Menu Items -->
                 <div class="collapse navbar-collapse" id="topNavBar">
@@ -310,6 +305,18 @@
                  jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
                 <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name}"/>
             </div>
+            <!--  QDR - move status message -->
+            <div>
+                <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
+                    <span class="label label-warning status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
+                </h:outputLink>
+                <ui:fragment rendered="#{empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader')}">
+                    <span class="label label-warning status">
+                        <!--  QDR - allow html message -->
+                        <h:outputText value="#{settingsWrapper.get(':StatusMessageHeader')}" escape="false"/>
+                    </span>
+                </ui:fragment>
+            </div>        
             <div class="dataverseHeaderBlock">
                 <div class="dataverseHeaderCell dataverseHeaderLogo" jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'SQUARE'}">
                     <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name}"/>
@@ -353,7 +360,7 @@
                             </a>
                         </ui:fragment>
                         <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataset}">
-                            <c:set var="dsUrl" value="/dataset.xhtml?persistentId=#{breadcrumb.dvObject.globalId}#{breadcrumb.optionalUrlExtension }"/>
+                            <c:set var="dsUrl" value="/dataset.xhtml?persistentId=#{breadcrumb.dvObject.globalIdString}#{breadcrumb.optionalUrlExtension }"/>
                             <a id="breadcrumbLnk#{status.index}" href="#{widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? widgetWrapper.wrapURL(dsUrl) : dsUrl}" target="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : '_blank'}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>
                             </a>
@@ -371,7 +378,10 @@
 
         <ui:remove>
             <!-- Removing this temporarily until we can fix the performance issues with it;
-                 replaced with generic bookmarks; will have to see how to best make this work-->
+                 replaced with generic bookmarks; will have to see how to best make this work
+                 ...ALSO removed the 'bs/js/bootstrap-hover-dropdown.min.js' resource that this dropdown menu used;
+                 if/when this breadcrumb dropdown menu is restored to the UI, add the latest version of the js plugin from:
+                 https://github.com/CWSpear/bootstrap-hover-dropdown -->
             <div class="dropdown #{dataverseHeaderFragment.hasVisibleChildren(dv) ? 'dropdown-toggle keep-on' : ''}" data-delay="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? '800' : ''}" data-hover="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? 'dropdown' : ''}" data-target="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? '#' : ''}" data-close-others="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? 'true' : ''}">
                 <h:outputText value="#{dv.name}" styleClass="#{dataverse.id == dv.id ? 'breadcrumbActive' : ''}" rendered="#{dataverse.id == dv.id and dataset == null}"/>
                 <ui:fragment rendered="#{dataverse.id != dv.id or dataset != null}" >

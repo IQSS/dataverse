@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
@@ -30,15 +29,18 @@ import javax.persistence.StoredProcedureParameter;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.UniqueConstraint;
-import org.hibernate.validator.constraints.NotBlank;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 /**
  *
  * @author skraffmiller
  */
 @NamedQueries({
-        @NamedQuery(name = "Dataset.findByOwnerIdentifier", 
+    @NamedQuery(name = "Dataset.findByIdentifier",
+               query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier"),
+    @NamedQuery(name = "Dataset.findByIdentifierAuthorityProtocol",
+               query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier AND d.protocol=:protocol AND d.authority=:authority"),
+    @NamedQuery(name = "Dataset.findByOwnerIdentifier", 
                 query = "SELECT o.identifier FROM DvObject o WHERE o.owner.id=:owner_id")
 })
 
@@ -175,7 +177,7 @@ public class Dataset extends DvObjectContainer {
     public Set<DatasetLock> getLocks() {
         // lazy set creation
         if ( datasetLocks == null ) {
-            setLocks( new HashSet<>() );
+            datasetLocks = new HashSet<>();
         }
         return datasetLocks;
     }
@@ -227,11 +229,7 @@ public class Dataset extends DvObjectContainer {
     public String getPersistentURL() {
         return new GlobalId(this).toURL().toString();
     }
-
-    public String getGlobalId() {       
-        return new GlobalId(this).toString();
-    }
-
+    
     public List<DataFile> getFiles() {
         return files;
     }
@@ -420,15 +418,14 @@ public class Dataset extends DvObjectContainer {
 
         // "Documentation", "Data" and "Code" are the 3 default categories that we 
         // present by default:
-        // (TODO: ? - provide these as constants somewhere? -- L.A. beta15)
-        if (!ret.contains("Documentation")) {
-            ret.add("Documentation");
+        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.documentation"))) {
+            ret.add(BundleUtil.getStringFromBundle("dataset.category.documentation"));
         }
-        if (!ret.contains("Data")) {
-            ret.add("Data");
+        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.data"))) {
+            ret.add(BundleUtil.getStringFromBundle("dataset.category.data"));
         }
-        if (!ret.contains("Code")) {
-            ret.add("Code");
+        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.code"))) {
+            ret.add(BundleUtil.getStringFromBundle("dataset.category.code"));
         }
 
         return ret;
@@ -605,13 +602,13 @@ public class Dataset extends DvObjectContainer {
     public String getRemoteArchiveURL() {
         if (isHarvested()) {
             if (HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(this.getHarvestedFrom().getHarvestStyle())) {
-                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId();
+                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId().asString();
             } else if (HarvestingClient.HARVEST_STYLE_VDC.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 String rootArchiveUrl = this.getHarvestedFrom().getHarvestingUrl();
                 int c = rootArchiveUrl.indexOf("/OAIHandler");
                 if (c > 0) {
                     rootArchiveUrl = rootArchiveUrl.substring(0, c);
-                    return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId();
+                    return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId().asString();
                 }
             } else if (HarvestingClient.HARVEST_STYLE_ICPSR.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 // For the ICPSR, it turns out that the best thing to do is to 
@@ -712,7 +709,7 @@ public class Dataset extends DvObjectContainer {
     public DatasetThumbnail getDatasetThumbnail() {
         return DatasetUtil.getThumbnail(this);
     }
-
+    
     /** 
      * Handle the case where we also have the datasetVersionId.
      * This saves trying to find the latestDatasetVersion, and 

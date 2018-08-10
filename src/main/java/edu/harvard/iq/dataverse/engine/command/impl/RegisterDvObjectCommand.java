@@ -1,14 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.IdServiceBean;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -17,7 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.logging.Logger;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  *
@@ -27,7 +21,6 @@ import java.util.logging.Logger;
 public class RegisterDvObjectCommand extends AbstractVoidCommand {
 
     private final DvObject target;
-    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand");
 
     public RegisterDvObjectCommand(DataverseRequest aRequest, DvObject target) {
         super(aRequest, target);
@@ -39,7 +32,8 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         String nonNullDefaultIfKeyNotFound = "";
         String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        IdServiceBean idServiceBean = IdServiceBean.getBean(target.getProtocol(), ctxt);
+        // Get the idServiceBean that is configured to mint new IDs
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
         try {
             //Test to see if identifier already present
             //if so, leave.
@@ -62,13 +56,14 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                 return;
             }
             String doiRetString = idServiceBean.createIdentifier(target);
-            if(!idServiceBean.registerWhenPublished()) {
-            	//DOIEZId tries to recreate the id if the identifier isn't registered before publicizeIdentifier is called
-            	target.setIdentifierRegistered(true);
-            	target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-            }
-            logger.info("Created id: " + doiRetString);
             if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
+                if (!idServiceBean.registerWhenPublished()) {
+                    // Should register ID before publicize() is called
+                    // For example, DOIEZIdServiceBean tries to recreate the id if the identifier isn't registered before
+                    // publicizeIdentifier is called
+                    target.setIdentifierRegistered(true);
+                    target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                }
                 if (target.isReleased()) {
                     idServiceBean.publicizeIdentifier(target);
                 }
@@ -76,7 +71,6 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                     target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                     target.setIdentifierRegistered(true);
                 }
-
                 ctxt.em().merge(target);
                 ctxt.em().flush();
                 if (target.isInstanceofDataset()) {
@@ -92,13 +86,14 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                             }
                         }
                         doiRetString = idServiceBean.createIdentifier(df);
-                        if(!idServiceBean.registerWhenPublished()) {
-                        	//DOIEZId tries to recreate the id if the identifier isn't registered before publicizeIdentifier is called
-                        	df.setIdentifierRegistered(true);
-                        	df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                        }
-
                         if (doiRetString != null && doiRetString.contains(df.getIdentifier())) {
+                            if (!idServiceBean.registerWhenPublished()) {
+                                // Should register ID before publicize() is called
+                                // For example, DOIEZIdServiceBean tries to recreate the id if the identifier isn't registered before
+                                // publicizeIdentifier is called
+                                df.setIdentifierRegistered(true);
+                                df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                            }
                             if (df.isReleased()) {
                                 idServiceBean.publicizeIdentifier(df);
                             }
