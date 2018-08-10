@@ -67,7 +67,6 @@ import org.hibernate.validator.constraints.NotBlank;
     @NamedQuery( name="ExplicitGroup.findByContainedExplicitGroupId",
                  query="SELECT eg FROM ExplicitGroup eg join eg.containedExplicitGroups ceg "
                       +"WHERE ceg.id=:containedExplicitGroupId")
-        
 })
 @Entity
 @Table(indexes = {@Index(columnList="owner_id"),
