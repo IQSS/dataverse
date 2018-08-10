@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 /**
@@ -45,6 +46,7 @@ public class DatasetFieldValueValidatorTest {
      * Test of isValid method, of class DatasetFieldValueValidator.
      */
     @Test
+    @Category(EssentialTests.class)
     public void testIsValid() {
         System.out.println("isValid");
         DatasetFieldValue value = new DatasetFieldValue();

@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.util.xml;
 
+import edu.harvard.iq.dataverse.EssentialTests;
+import edu.harvard.iq.dataverse.NonEssentialTests;
 import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Logger;
@@ -8,6 +10,7 @@ import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.xml.sax.SAXException;
 
 public class XmlValidatorTest {
@@ -15,6 +18,7 @@ public class XmlValidatorTest {
     private static final Logger logger = Logger.getLogger(XmlValidatorTest.class.getCanonicalName());
 
     @Ignore
+    @Category(NonEssentialTests.class)
     @Test
     public void testValidateXml() throws IOException, SAXException, ParserConfigurationException {
         assertTrue(XmlValidator.validateXmlSchema("src/test/java/edu/harvard/iq/dataverse/util/xml/sendToDataCite.xml", new URL("https://schema.datacite.org/meta/kernel-3/metadata.xsd")));
@@ -23,6 +27,7 @@ public class XmlValidatorTest {
     }
 
     @Ignore
+    @Category(NonEssentialTests.class)
     @Test
     public void testWellFormedXml() {
 

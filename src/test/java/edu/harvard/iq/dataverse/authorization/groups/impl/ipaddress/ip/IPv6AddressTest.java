@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
+import edu.harvard.iq.dataverse.EssentialTests;
 import java.util.Arrays;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -23,6 +25,7 @@ public class IPv6AddressTest {
     public void tearDown() {
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testValueOfNoExpansion() {
         int[] expected = new int[]{0x2001, 0xdb8, 0x85a3, 0x0, 0x0, 0x8a2e, 0x370, 0x7334};
@@ -32,6 +35,7 @@ public class IPv6AddressTest {
         }
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testValueOfWithExpansion() {
         int[] expected = new int[]{0x2001, 0xdb8, 0x85a3, 0x0, 0, 0x8a2e, 0x370, 0x7334};
@@ -49,6 +53,7 @@ public class IPv6AddressTest {
         }
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testValueOfWithExpansionZerosAtStart() {
         int[] expected = new int[]{0, 0, 0, 0, 0, 0x8a2e, 0x370, 0x7334};
@@ -67,6 +72,7 @@ public class IPv6AddressTest {
         }
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testValueOfWithExpansionZerosAtEnd() {
         int[] expected = new int[]{0x2001, 0x8a2e, 0, 0, 0, 0, 0, 0};
@@ -84,6 +90,7 @@ public class IPv6AddressTest {
         }
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testValueOfWithExpansionSpecialCases() {
         int[] expected = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
@@ -102,32 +109,38 @@ public class IPv6AddressTest {
         }
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testLocalhostness() {
         assertTrue(IPv6Address.valueOf("::1").isLocalhost());
         assertFalse(IPv6Address.valueOf("fff::1").isLocalhost());
     }
 
+    @Category(EssentialTests.class)
     @Test(expected = IllegalArgumentException.class)
     public void testIllegalLength() {
         IPv6Address.valueOf("0:1:2:3");
     }
 
+    @Category(EssentialTests.class)
     @Test(expected = IllegalArgumentException.class)
     public void testIllegalLengthPrefix() {
         IPv6Address.valueOf(":1:2:3");
     }
 
+    @Category(EssentialTests.class)
     @Test(expected = IllegalArgumentException.class)
     public void testIllegalLengthSuffix() {
         IPv6Address.valueOf("1:2:3:");
     }
 
+    @Category(EssentialTests.class)
     @Test(expected = IllegalArgumentException.class)
     public void testIllegalNumber() {
         IPv6Address.valueOf("::xxx");
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testCompareTo() {
         IPv6Address[] expected = new IPv6Address[]{
@@ -144,6 +157,7 @@ public class IPv6AddressTest {
         assertArrayEquals(expected, scrambled);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testLongRoundTrips() {
         for (String s : Arrays.asList("a:b:c:d:e:f::1", "::", "::1", "ff:ff:ff:ff:ff:ff:ff:ff",
@@ -155,6 +169,7 @@ public class IPv6AddressTest {
         }
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testInclusionAbove() {
         IPv6Range r = new IPv6Range(IPv6Address.valueOf("dd:2:2:2:2:2:2:2"),
@@ -174,6 +189,7 @@ public class IPv6AddressTest {
         }
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testInclusionBelow() {
         IPv6Range r = new IPv6Range(IPv6Address.valueOf("dd:2:2:2:2:2:2:2"),
@@ -195,12 +211,14 @@ public class IPv6AddressTest {
         }
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testNetworkInterfaceIgnore() {
         assertEquals(IPv6Address.valueOf("fe80:0:0:0:0:0:0:1%1]]"),
                 IPv6Address.valueOf("fe80:0:0:0:0:0:0:1"));
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void testEquals() {
         IPv6Address sut = IPv6Address.valueOf("ff:ff:12:23:34::0");

@@ -1,13 +1,16 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.EssentialTests;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class SolrSearchResultTest {
 
+    @Category(EssentialTests.class)
     @Test
     public void testJson() {
 

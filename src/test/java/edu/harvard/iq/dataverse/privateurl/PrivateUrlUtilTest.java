@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -20,6 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import static org.junit.Assert.assertNull;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 
 public class PrivateUrlUtilTest {
 
@@ -28,6 +30,7 @@ public class PrivateUrlUtilTest {
         new PrivateUrlUtil();
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testIdentifier2roleAssignee() {
         RoleAssignee returnValueFromEmptyString = null;
@@ -71,11 +74,13 @@ public class PrivateUrlUtilTest {
 
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetDatasetFromRoleAssignmentNullRoleAssignment() {
         assertNull(PrivateUrlUtil.getDatasetFromRoleAssignment(null));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetDatasetFromRoleAssignmentNullDefinitionPoint() {
         DataverseRole aRole = null;
@@ -87,6 +92,7 @@ public class PrivateUrlUtilTest {
         assertNull(PrivateUrlUtil.getDatasetFromRoleAssignment(ra));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetDatasetFromRoleAssignmentNonDataset() {
         DataverseRole aRole = null;
@@ -98,6 +104,7 @@ public class PrivateUrlUtilTest {
         assertNull(PrivateUrlUtil.getDatasetFromRoleAssignment(ra));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetDatasetFromRoleAssignmentSuccess() {
         DataverseRole aRole = null;
@@ -110,11 +117,13 @@ public class PrivateUrlUtilTest {
         assertEquals("#42", ra.getAssigneeIdentifier());
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetDraftDatasetVersionFromRoleAssignmentNullRoleAssignement() {
         assertNull(PrivateUrlUtil.getDraftDatasetVersionFromRoleAssignment(null));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetDraftDatasetVersionFromRoleAssignmentNullDataset() {
         DataverseRole aRole = null;
@@ -127,6 +136,7 @@ public class PrivateUrlUtilTest {
         assertNull(datasetVersion);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetDraftDatasetVersionFromRoleAssignmentLastestIsNotDraft() {
         DataverseRole aRole = null;
@@ -144,6 +154,7 @@ public class PrivateUrlUtilTest {
         assertNull(datasetVersionOut);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetDraftDatasetVersionFromRoleAssignmentSuccess() {
         DataverseRole aRole = null;
@@ -162,11 +173,13 @@ public class PrivateUrlUtilTest {
         assertEquals("#42", ra.getAssigneeIdentifier());
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetUserFromRoleAssignmentNull() {
         assertNull(PrivateUrlUtil.getPrivateUrlUserFromRoleAssignment(null));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetUserFromRoleAssignmentNonDataset() {
         DataverseRole aRole = null;
@@ -180,6 +193,7 @@ public class PrivateUrlUtilTest {
         assertNull(privateUrlUserOut);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetUserFromRoleAssignmentSucess() {
         DataverseRole aRole = null;
@@ -193,6 +207,7 @@ public class PrivateUrlUtilTest {
         assertNotNull(privateUrlUserOut);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetPrivateUrlRedirectDataFail() {
         DataverseRole aRole = null;
@@ -208,6 +223,7 @@ public class PrivateUrlUtilTest {
         assertNull(privateUrlRedirectData);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetPrivateUrlRedirectDataSuccess() {
         DataverseRole aRole = null;
@@ -227,11 +243,13 @@ public class PrivateUrlUtilTest {
         assertEquals(privateUrlUser.getIdentifier(), privateUrlRedirectData.getPrivateUrlUser().getIdentifier());
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetDraftUrlDraftNull() {
         assertEquals("UNKNOWN", PrivateUrlUtil.getDraftUrl(null));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetDraftUrlDatasetNull() {
         DatasetVersion draft = new DatasetVersion();
@@ -239,6 +257,7 @@ public class PrivateUrlUtilTest {
         assertEquals("UNKNOWN", PrivateUrlUtil.getDraftUrl(draft));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetDraftUrlNoGlobalId() throws Exception {
         DatasetVersion draft = new DatasetVersion();
@@ -247,6 +266,7 @@ public class PrivateUrlUtilTest {
         assertEquals("UNKNOWN", PrivateUrlUtil.getDraftUrl(draft));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetDraftUrlSuccess() throws Exception {
         DatasetVersion draft = new DatasetVersion();
@@ -258,6 +278,7 @@ public class PrivateUrlUtilTest {
         assertEquals("/dataset.xhtml?persistentId=doi:10.5072/FK2/3L33T&version=DRAFT", PrivateUrlUtil.getDraftUrl(draft));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetPrivateUrlRedirectDataConstructor() throws Exception {
         Exception exception1 = null;
@@ -277,6 +298,7 @@ public class PrivateUrlUtilTest {
         assertNotNull(exception2);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetPrivateUrlFromRoleAssignmentNoSiteUrl() {
         String dataverseSiteUrl = null;
@@ -285,6 +307,7 @@ public class PrivateUrlUtilTest {
         assertNull(privateUrl);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetPrivateUrlFromRoleAssignmentDatasetNull() {
         String dataverseSiteUrl = "https://dataverse.example.edu";
@@ -298,6 +321,7 @@ public class PrivateUrlUtilTest {
         assertNull(privateUrl);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetPrivateUrlFromRoleAssignmentSuccess() {
         String dataverseSiteUrl = "https://dataverse.example.edu";
@@ -314,12 +338,14 @@ public class PrivateUrlUtilTest {
         assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=cd71e9d7-73a7-4ec8-b890-3d00499e8693", privateUrl.getLink());
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetPrivateUrlUserFromRoleAssignmentAndAssigneeNull() {
         PrivateUrlUser privateUrl = PrivateUrlUtil.getPrivateUrlUserFromRoleAssignment(null, null);
         assertNull(privateUrl);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetPrivateUrlUserFromRoleAssignmentAndAssigneeNonPrivateUrlUser() {
         DataverseRole aRole = null;
@@ -331,6 +357,7 @@ public class PrivateUrlUtilTest {
         assertNull(privateUrl);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetPrivateUrlUserFromRoleAssignmentAndAssigneeSuccess() {
         DataverseRole aRole = null;
@@ -344,6 +371,7 @@ public class PrivateUrlUtilTest {
         assertNotNull(privateUrl);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetRequiredPermissions() {
         CreatePrivateUrlCommand createPrivateUrlCommand = new CreatePrivateUrlCommand(null, null);

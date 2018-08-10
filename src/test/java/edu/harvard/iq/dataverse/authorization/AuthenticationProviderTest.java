@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.authorization;
 
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
@@ -17,6 +18,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -62,6 +64,7 @@ public class AuthenticationProviderTest {
     /**
      * Test of getFriendlyName method, of class AuthenticationProvider.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testGetFriendlyName() {
         System.out.println("getFriendlyName");

@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.export.dublincore;
 
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayOutputStream;
@@ -25,6 +26,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 import org.primefaces.json.JSONObject;
 
 /**
@@ -57,6 +59,7 @@ public class DublinCoreExportUtilTest {
     /**
      * Test of datasetJson2dublincore method, of class DublinCoreExportUtil.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testDatasetJson2dublincore() throws Exception {
 

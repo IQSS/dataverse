@@ -1,13 +1,16 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.EssentialTests;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import org.junit.experimental.categories.Category;
 
 public class BundleUtilTest {
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetStringFromBundle() {
         assertEquals(null, BundleUtil.getStringFromBundle(null));
@@ -17,6 +20,7 @@ public class BundleUtilTest {
         assertEquals("Error validating the username, email address, or password. Please try again. If the problem persists, contact an administrator.", BundleUtil.getStringFromBundle("login.error"));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetStringFromBundleWithArguments() {
         assertEquals(null, BundleUtil.getStringFromBundle(null, null));
@@ -65,6 +69,7 @@ public class BundleUtilTest {
                         Arrays.asList(BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessageDefaultInstitution"))));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetStringFromBundleWithArgumentsAndSpecificBundle() {
         assertEquals(null, BundleUtil.getStringFromBundle(null, null, null));

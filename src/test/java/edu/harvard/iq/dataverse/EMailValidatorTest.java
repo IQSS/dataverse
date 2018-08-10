@@ -2,9 +2,10 @@ package edu.harvard.iq.dataverse;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class EMailValidatorTest {
-
+    @Category(EssentialTests.class)
     @Test
     public void testIsEmailValid() {
         assertEquals(true, EMailValidator.isEmailValid("pete@mailinator.com", null));

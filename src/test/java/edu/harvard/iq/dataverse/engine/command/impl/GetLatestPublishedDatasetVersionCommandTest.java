@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
@@ -12,6 +13,7 @@ import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -21,6 +23,7 @@ public class GetLatestPublishedDatasetVersionCommandTest {
     
     TestDataverseEngine engine = new TestDataverseEngine( new TestCommandContext() );
     
+    @Category(EssentialTests.class)
     @Test
     public void testLatestPublishedNoDraft() throws CommandException {
         
@@ -33,6 +36,7 @@ public class GetLatestPublishedDatasetVersionCommandTest {
                         engine.getReqiredPermissionsForObjects().get(ds).isEmpty() );
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void testLatestPublishedWithDraft() throws CommandException {
         
@@ -46,6 +50,7 @@ public class GetLatestPublishedDatasetVersionCommandTest {
                         engine.getReqiredPermissionsForObjects().get(ds).isEmpty() );
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void testLatestNonePublished() throws CommandException {
         

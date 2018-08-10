@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.authorization;
 
+import edu.harvard.iq.dataverse.EssentialTests;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -9,6 +11,7 @@ import static org.junit.Assert.*;
  */
 public class AuthenticatedUserDisplayInfoTest {
     
+    @Category(EssentialTests.class)
     @Test
     public void testCopyConstructor() {
         AuthenticatedUserDisplayInfo src = new AuthenticatedUserDisplayInfo("fn","ln","email@address.com","Harvard","test");

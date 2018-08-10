@@ -56,10 +56,12 @@ import java.util.Random;
 import java.util.UUID;
 
 import static com.jayway.restassured.RestAssured.given;
+import edu.harvard.iq.dataverse.NonEssentialTests;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.hamcrest.Matchers.equalTo;
+import org.junit.experimental.categories.Category;
 
 /**
  * Batch File System Import Job Integration Tests
@@ -230,6 +232,7 @@ public class FileRecordJobIT {
      * This is not permitted via HTTP file upload since identical checksums are not allowed in the same dataset.
      * Ignores failed checksum manifest import.
      */
+    @Category(NonEssentialTests.class)
     @Test
     @Ignore
     public void testSameFileInDifferentDirectories() {
@@ -309,6 +312,7 @@ public class FileRecordJobIT {
         }
     }
 
+    @Category(NonEssentialTests.class)
     @Test
     @Ignore
     public void testNewEditor() {
@@ -413,6 +417,7 @@ public class FileRecordJobIT {
      * This is not permitted via HTTP file upload since identical checksums are not allowed in the same dataset.
      * Ignores failed checksum manifest import.
      */
+    @Category(NonEssentialTests.class)
     @Test
     @Ignore
     public void testSameFileInDifferentDirectoriesUnauthorizedUser() {
@@ -477,6 +482,7 @@ public class FileRecordJobIT {
         }
     }
 
+//    @Category(NonEssentialTests.class)
 //    @Test
 //    /**
 //     * Delete a file in REPLACE mode
@@ -612,6 +618,7 @@ public class FileRecordJobIT {
 //        }
 //    }
 
+   @Category(NonEssentialTests.class)
     @Test
     @Ignore
     /**
@@ -757,6 +764,7 @@ public class FileRecordJobIT {
         }
     }
 
+    @Category(NonEssentialTests.class)
     @Test
     @Ignore
     /**
@@ -826,6 +834,7 @@ public class FileRecordJobIT {
         }
     }
 
+    @Category(NonEssentialTests.class)
     @Test
     @Ignore
     /**
@@ -880,6 +889,7 @@ public class FileRecordJobIT {
 
     }
 
+    @Category(NonEssentialTests.class)
     @Test
     @Ignore
     /**
@@ -947,6 +957,7 @@ public class FileRecordJobIT {
         }
     }
 
+    @Category(NonEssentialTests.class)
     @Test
     @Ignore
     /**
@@ -1019,6 +1030,7 @@ public class FileRecordJobIT {
         }
     }
 
+    @Category(NonEssentialTests.class)
     @Test
     @Ignore
     /**
@@ -1057,6 +1069,7 @@ public class FileRecordJobIT {
 
 
 //  todo: figure out how to create a new version using the native api - sorry, i can't get this to work...
+//    @Category(NonEssentialTests.class)
 //    @Test
 //    /**
 //     * Datasets with more than one version not allowed
@@ -1101,6 +1114,7 @@ public class FileRecordJobIT {
 //        }
 //    }
 
+    @Category(NonEssentialTests.class)
     @Test
     @Ignore
     /**

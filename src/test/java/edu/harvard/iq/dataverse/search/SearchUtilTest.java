@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.EssentialTests;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import org.apache.solr.common.SolrInputDocument;
@@ -15,6 +16,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 public class SearchUtilTest {
 
@@ -38,6 +40,7 @@ public class SearchUtilTest {
     public void tearDown() {
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testSanitizeQuery() {
         System.out.println("sanitizeQuery");
@@ -50,6 +53,7 @@ public class SearchUtilTest {
         assertEquals("datasetPersistentIdentifier:hdl\\:1902.1/21919", SearchUtil.sanitizeQuery("datasetPersistentIdentifier:hdl:1902.1/21919"));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testCreateSolrDoc() {
         assertEquals(null, SearchUtil.createSolrDoc(null));
@@ -62,12 +66,14 @@ public class SearchUtilTest {
         assertEquals(SearchFields.DISCOVERABLE_BY + "=" + Arrays.asList(IndexServiceBean.getPublicGroupString()), solrInputDocument.get(SearchFields.DISCOVERABLE_BY).toString());
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetTimestampOrNull() {
         assertNull(SearchUtil.getTimestampOrNull(null));
         assertEquals("1970-01-12T10:20:54Z", SearchUtil.getTimestampOrNull(new Timestamp(987654321l)));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetSortBy() throws Exception {
 
@@ -94,6 +100,7 @@ public class SearchUtilTest {
         }
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testdetermineFinalQuery() {
         assertEquals("*", SearchUtil.determineFinalQuery(null));

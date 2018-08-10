@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.*;
@@ -19,6 +20,7 @@ import java.util.Set;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -26,6 +28,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class CreateDatasetVersionCommandTest {
     
+    @Category(EssentialTests.class)
     @Test
     public void testSimpleVersionAddition() throws Exception {
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
@@ -68,6 +71,7 @@ public class CreateDatasetVersionCommandTest {
         assertEquals(expected, testEngine.getReqiredPermissionsForObjects() );
     }
     
+    @Category(EssentialTests.class)
     @Test(expected=IllegalCommandException.class)
     public void testCantCreateTwoDraftVersions() throws Exception {
         DatasetVersion dsvNew = new DatasetVersion();

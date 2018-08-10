@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.EssentialTests;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.After;
@@ -8,6 +9,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 public class IndexUtilTest {
 
@@ -33,6 +35,7 @@ public class IndexUtilTest {
     /**
      * Test of findDvObjectIdsToProcess method, of class IndexUtil.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testFindDvObjectIdsToProcess() {
 //        System.out.println("findDvObjectIdsToProcess");

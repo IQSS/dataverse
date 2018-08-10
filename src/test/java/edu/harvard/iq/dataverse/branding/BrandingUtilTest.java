@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.branding;
 
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
@@ -7,9 +8,11 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class BrandingUtilTest {
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetInstallationBrandName() {
         System.out.println("testGetInstallationBrandName");
@@ -18,6 +21,7 @@ public class BrandingUtilTest {
         assertEquals("", BrandingUtil.getInstallationBrandName(""));// misconfiguration to set to empty string
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetSupportTeamName() throws AddressException, UnsupportedEncodingException {
         System.out.println("testGetSupportTeamName");
@@ -29,6 +33,7 @@ public class BrandingUtilTest {
         assertEquals("", BrandingUtil.getSupportTeamName(new InternetAddress("support@librascholar.edu", ""), "LibraScholar")); // misconfiguration to set to empty string
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetSupportEmailAddress() throws AddressException, UnsupportedEncodingException {
         System.out.println("testGetSupportEmailAddress");
@@ -40,6 +45,7 @@ public class BrandingUtilTest {
         assertEquals("", BrandingUtil.getSupportTeamEmailAddress(new InternetAddress("", "LibraScholar Support Team"))); // misconfiguration to set to empty string
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testWelcomeInAppNotification() {
         System.out.println("testWelcomeInAppNotification");
@@ -57,6 +63,7 @@ public class BrandingUtilTest {
                 message);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testWelcomeEmail() {
         System.out.println("testWelcomeEmail");
@@ -75,6 +82,7 @@ public class BrandingUtilTest {
                 message);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testEmailClosing() {
         System.out.println("testEmailClosing");
@@ -88,6 +96,7 @@ public class BrandingUtilTest {
                 message);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testEmailSubject() {
         System.out.println("testEmailSubject");
@@ -100,6 +109,7 @@ public class BrandingUtilTest {
                 message);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetContactHeader() {
         System.out.println("testGetContactHeader");

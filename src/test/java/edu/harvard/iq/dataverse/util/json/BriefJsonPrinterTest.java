@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
@@ -13,6 +14,7 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import javax.json.JsonObject;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -26,6 +28,7 @@ public class BriefJsonPrinterTest {
     /**
      * Test of json method, of class BriefJsonPrinter.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testJson_BuiltinUser() {
         BuiltinUser laurenIpsum = new BuiltinUser();
@@ -45,6 +48,7 @@ public class BriefJsonPrinterTest {
     /**
      * Test of json method, of class BriefJsonPrinter.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testJson_DatasetVersion() {
         Dataset ds = MocksFactory.makeDataset();
@@ -70,6 +74,7 @@ public class BriefJsonPrinterTest {
     /**
      * Test of json method, of class BriefJsonPrinter.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testJson_MetadataBlock() {
         MetadataBlock mtb = new MetadataBlock();
@@ -89,6 +94,7 @@ public class BriefJsonPrinterTest {
     /**
      * Test of json method, of class BriefJsonPrinter.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testJson_Workflow() {
         Workflow wf = new Workflow();

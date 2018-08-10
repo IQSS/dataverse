@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.datacapturemodule.UploadRequestResponse;
@@ -17,6 +18,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 public class RequestRsyncScriptCommandTest {
 
@@ -70,6 +72,7 @@ public class RequestRsyncScriptCommandTest {
     public void tearDown() {
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testHappyPath() throws Exception {
         dataset = new Dataset();

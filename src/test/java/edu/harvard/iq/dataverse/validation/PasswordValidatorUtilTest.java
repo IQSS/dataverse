@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.validation;
 
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.xml.html.HtmlPrinter;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
 
@@ -47,6 +49,7 @@ public class PasswordValidatorUtilTest {
     /**
      * Test of getPasswordRequirements method, of class PasswordValidatorUtil.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testGetPasswordRequirements() {
         System.out.println("getPasswordRequirements");
@@ -75,6 +78,7 @@ public class PasswordValidatorUtilTest {
     /**
      * Test of parseConfigString method, of class PasswordValidatorUtil.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testParseConfigString() {
         String configString = "UpperCase:1,LowerCase:4,Digit:1,Special:1";
@@ -91,6 +95,7 @@ public class PasswordValidatorUtilTest {
         assertEquals(EnglishCharacterData.Special.getCharacters(), rules.get(3).getValidCharacters());
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetRequiredCharacters() {
         int numberOfCharacteristics = 2; //influences use of # or "each" in text generation

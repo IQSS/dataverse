@@ -4,6 +4,7 @@
 
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.EssentialTests;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -56,6 +58,7 @@ public class BitSetTest {
 		}
 	}
     
+    @Category(EssentialTests.class)
     @Test
     public void testSetByParameter() {
         BitSet tSut = BitSet.emptySet();
@@ -71,6 +74,7 @@ public class BitSetTest {
 	/**
 	 * Test of unset method, of class BitSet.
 	 */
+        @Category(EssentialTests.class)
 	@Test
 	public void testUnset() {
 		sut = BitSet.fullSet();
@@ -83,6 +87,7 @@ public class BitSetTest {
 	/**
 	 * Test of copy method, of class BitSet.
 	 */
+        @Category(EssentialTests.class)
 	@Test
 	public void testCopy() {
 		sut = new BitSet( new java.util.Random().nextLong() );
@@ -92,6 +97,7 @@ public class BitSetTest {
 	/**
 	 * Test of union method, of class BitSet.
 	 */
+        @Category(EssentialTests.class)
 	@Test
 	public void testUnion() {
 		BitSet sut1 = randomSet();
@@ -109,6 +115,7 @@ public class BitSetTest {
 	/**
 	 * Test of intersect method, of class BitSet.
 	 */
+        @Category(EssentialTests.class)
 	@Test
 	public void testIntersect() {
 		BitSet sut1 = randomSet();
@@ -126,6 +133,7 @@ public class BitSetTest {
 	/**
 	 * Test of xor method, of class BitSet.
 	 */
+        @Category(EssentialTests.class)
 	@Test
 	public void testXor() {
 		BitSet sut1 = randomSet();
@@ -140,6 +148,7 @@ public class BitSetTest {
 		}
 	}
 	
+        @Category(EssentialTests.class)
 	@Test
 	public void testAsEnumSet() {
 		EnumSet<TestEnum> est = EnumSet.of(TestEnum.Hello, TestEnum.This, TestEnum.Test);
@@ -151,6 +160,7 @@ public class BitSetTest {
 	/**
 	 * Test of getBits method, of class BitSet.
 	 */
+        @Category(EssentialTests.class)
 	@Test
 	public void testGetBits() {
 		sut.set(0);

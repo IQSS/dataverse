@@ -4,6 +4,7 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.explicit;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.authorization.groups.GroupException;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsers;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
@@ -20,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -34,6 +36,7 @@ public class ExplicitGroupTest {
     public ExplicitGroupTest() {
     }
     
+    @Category(EssentialTests.class)
     @Test( expected=GroupException.class )
     public void addGroupToSelf() throws Exception {
         ExplicitGroup sut = new ExplicitGroup();
@@ -42,6 +45,7 @@ public class ExplicitGroupTest {
         fail("A group cannot be added to itself.");
     }
     
+    @Category(EssentialTests.class)
     @Test( expected=GroupException.class )
     public void addGroupToDescendant() throws GroupException{
         Dataverse dv = makeDataverse();
@@ -64,6 +68,7 @@ public class ExplicitGroupTest {
         fail("A group cannot contain its parent");
     }
     
+    @Category(EssentialTests.class)
     @Test( expected=GroupException.class )
     public void addGroupToUnrealtedGroup() throws GroupException {
         Dataverse dv1 = makeDataverse();
@@ -79,6 +84,7 @@ public class ExplicitGroupTest {
         
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void addGroup() throws GroupException {
         Dataverse dvParent = makeDataverse();
@@ -94,6 +100,7 @@ public class ExplicitGroupTest {
         assertTrue( g1.structuralContains(g2) );
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void adds() throws GroupException {
         Dataverse dvParent = makeDataverse();
@@ -110,7 +117,7 @@ public class ExplicitGroupTest {
         assertFalse( g1.structuralContains(AllUsers.get()) );
     }
     
-    
+    @Category(EssentialTests.class)
     @Test
     public void recursiveStructuralContainment() throws GroupException {
         Dataverse dvParent = makeDataverse();
@@ -157,6 +164,7 @@ public class ExplicitGroupTest {
         assertTrue( parentGroup.structuralContains(ipGroup) );
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void recursiveLogicalContainment() throws GroupException {
         Dataverse dvParent = makeDataverse();

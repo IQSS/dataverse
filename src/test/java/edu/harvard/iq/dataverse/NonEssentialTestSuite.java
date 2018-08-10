@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.AdminIT;
 import edu.harvard.iq.dataverse.api.BatchImportIT;
 import edu.harvard.iq.dataverse.api.BuiltinUsersIT;
 import edu.harvard.iq.dataverse.api.ConfirmEmailIT;
@@ -29,7 +30,10 @@ import edu.harvard.iq.dataverse.api.TabularIT;
 import edu.harvard.iq.dataverse.api.ThumbnailsIT;
 import edu.harvard.iq.dataverse.api.UsersIT;
 import edu.harvard.iq.dataverse.api.UtilIT;
+import edu.harvard.iq.dataverse.api.filesystem.FileRecordJobIT;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBeanIT;
+import edu.harvard.iq.dataverse.provenance.ProvInvestigatorTest;
+import edu.harvard.iq.dataverse.util.xml.XmlValidatorTest;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenTest;
 import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;
@@ -48,7 +52,7 @@ import org.junit.runners.Suite;
     WorldMapTokenTest.class,
             
     //Test Package: edu.harvard.iq.dataverse.api
-    edu.harvard.iq.dataverse.api.AdminIT.class,
+    AdminIT.class,
     BatchImportIT.class,
     BuiltinUsersIT.class,
     ConfirmEmailIT.class,
@@ -76,6 +80,16 @@ import org.junit.runners.Suite;
 
     //Test Package: edu.harvard.iq.dataverse.datacapturemodule
     DataCaptureModuleServiceBeanIT.class,
+    
+    //Test Package: edu.harvard.iq.dataverse.provenance
+    ProvInvestigatorTest.class,
+    
+    //TestPackage: edu.harvard.iq.dataverse.api.filesystem
+    FileRecordJobIT.class,
+    
+    //Test Package: edu.harvard.iq.dataverse.util.xml
+    XmlValidatorTest.class,
+    
 })
 public class NonEssentialTestSuite {
     

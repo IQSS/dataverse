@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -32,6 +33,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class ReturnDatasetToAuthorCommandTest {
 
@@ -142,11 +144,13 @@ public class ReturnDatasetToAuthorCommandTest {
             throw new IllegalCommandException("You must enter a reason for returning a dataset to its author.", this);
         }
      */
+    @Category(EssentialTests.class)
     @Test(expected=IllegalArgumentException.class)
     public void testDatasetNull() throws CommandException {
         new ReturnDatasetToAuthorCommand(dataverseRequest, null, "");
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testReleasedDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
@@ -163,6 +167,7 @@ public class ReturnDatasetToAuthorCommandTest {
 
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testNotInReviewDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -180,6 +185,7 @@ public class ReturnDatasetToAuthorCommandTest {
 
     /*
     FIXME - Empty Comments won't be allowed in future
+    @Category(EssentialTests.class)
     @Test
     public void testEmptyComments(){
                
@@ -202,6 +208,7 @@ public class ReturnDatasetToAuthorCommandTest {
     }
      */
     
+   @Category(EssentialTests.class)
    @Test
     public void testAllGood() {
        dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);

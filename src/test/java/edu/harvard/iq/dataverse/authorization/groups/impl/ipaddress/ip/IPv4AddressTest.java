@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
+import edu.harvard.iq.dataverse.EssentialTests;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -16,17 +18,20 @@ public class IPv4AddressTest {
     /**
      * Test of valueOf method, of class IpAddress.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testValueOf() {
         assertEquals( new IPv4Address(1,2,3,4), IPv4Address.valueOf("1.2.3.4") );
         assertEquals( new IPv4Address(127,0,0,1), IPv4Address.valueOf("127.0.0.1") );
     }
     
+    @Category(EssentialTests.class)
     @Test( expected=IllegalArgumentException.class )
     public void testValueOf_bad() {
         IPv4Address.valueOf("1.2.3");
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void testLocalhostness() {
         assertTrue( IPv4Address.valueOf("127.0.0.1").isLocalhost() );
@@ -36,12 +41,13 @@ public class IPv4AddressTest {
     /**
      * Test of toString method, of class IpAddress.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testToString() {
         assertEquals( "127.0.0.1", new IPv4Address( 127,0,0,1).toString() );
     }
     
-    
+    @Category(EssentialTests.class)
     @Test
     public void testComparator() {
         IPv4Address[] expected = new IPv4Address[]{
@@ -56,6 +62,7 @@ public class IPv4AddressTest {
         assertArrayEquals( expected, scrambled );
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void testLongRoundtrip() {
         Arrays.asList(
@@ -72,6 +79,7 @@ public class IPv4AddressTest {
         ).forEach( addr -> assertEquals( addr, new IPv4Address(addr.toLong())) );
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void testBigIntegerRoundtrip() {
         Arrays.asList(
@@ -93,6 +101,7 @@ public class IPv4AddressTest {
         ).forEach( addr -> assertEquals( addr, new IPv4Address(addr.toBigInteger())) );
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void toBigInteger() {
         assertEquals( BigInteger.ZERO, new IPv4Address(0,0,0,0).toBigInteger() );

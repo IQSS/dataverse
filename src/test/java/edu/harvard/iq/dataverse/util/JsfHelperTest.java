@@ -4,12 +4,14 @@
 
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.EssentialTests;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -42,6 +44,7 @@ public class JsfHelperTest {
 	/**
 	 * Test of enumValue method, of class JsfHelper.
 	 */
+        @Category(EssentialTests.class)
 	@Test
 	public void testEnumValue() {
 		System.out.println("enumValue");

@@ -170,9 +170,6 @@ import org.junit.runners.Suite;
     //TestPackage: edu.harvard.iq.dataverse.api.dto
     FieldDTOTest.class,
     
-    //TestPackage: edu.harvard.iq.dataverse.api.filesystem
-    FileRecordJobIT.class,
-    
     //Test Package: edu.harvard.iq.dataverse.authorization
     AuthUtilTest.class,
     AuthenticatedUserDisplayInfoTest.class,
@@ -238,8 +235,9 @@ import org.junit.runners.Suite;
     DataverseUtilTest.class,
     
     //Test Package: edu.harvard.iq.dataverse.engine
-    NoOpTestEntityManager.class,
     PermissionTest.class,
+    //These aren't JUNIT
+    NoOpTestEntityManager.class,
     TestCommandContext.class,
     TestDataverseEngine.class,
     TestEntityManager.class,
@@ -302,6 +300,7 @@ import org.junit.runners.Suite;
     MetricsUtilTest.class,
     
     //Test Package: edu.harvard.iq.dataverse.mocks
+    //not junit tests
     MockBuiltinUserServiceBean.class,
     MockExplicitGroupService.class,
     MockPasswordValidatorServiceBean.class,
@@ -317,9 +316,6 @@ import org.junit.runners.Suite;
     //Test Package: edu.harvard.iq.dataverse.privateurl
     PrivateUrlUtilTest.class,
     
-    //Test Package: edu.harvard.iq.dataverse.provenance
-    ProvInvestigatorTest.class,
-    
     //Test Package: edu.harvard.iq.dataverse.repositorystorageabstractionlayer
     RepositoryStorageAbstractionLayerUtilTest.class,
     
@@ -332,15 +328,16 @@ import org.junit.runners.Suite;
     //Test Package: edu.harvard.iq.dataverse.util
     BitSetTest.class,
     BundleUtilTest.class,
-    CollectionLiterals.class,
     FileSortFieldAndOrderTest.class,
     FileUtilTest.class,
     JsfHelperTest.class,
     LruCacheTest.class,
     MailUtilTest.class,
     MarkupCheckerTest.class,
-    MockResponse.class,
     StringUtilTest.class,
+    //not tests
+    CollectionLiterals.class,
+    MockResponse.class,
     
     //Test Package: edu.harvard.iq.dataverse.util.json
     BriefJsonPrinterTest.class,
@@ -353,7 +350,6 @@ import org.junit.runners.Suite;
     
     //Test Package: edu.harvard.iq.dataverse.util.xml
     XmlPrinterTest.class,
-    XmlValidatorTest.class,
     
     //Test Package: edu.harvard.iq.dataverse.validation
     PasswordValidatorTest.class,

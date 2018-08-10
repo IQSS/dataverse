@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
+import edu.harvard.iq.dataverse.EssentialTests;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -15,6 +16,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  * 
@@ -28,6 +30,7 @@ public class OptionalFileParamsTest {
     /**
      * Good Json Description
      */
+    @Category(EssentialTests.class)
     @Test
     public void test_01_jsonDescriptionGood() throws DataFileTagException {
 
@@ -47,6 +50,7 @@ public class OptionalFileParamsTest {
     /**
      * Good Json Description
      */
+    @Category(EssentialTests.class)
     @Test
     public void test_02_jsonDescriptionNumeric() throws DataFileTagException {
 
@@ -63,6 +67,7 @@ public class OptionalFileParamsTest {
     /**
      * Good Json Description
      */
+    @Category(EssentialTests.class)
     @Test
     public void test_03_jsonNull() throws DataFileTagException {
 
@@ -80,6 +85,7 @@ public class OptionalFileParamsTest {
     /**
      * Good Json Description
      */
+    @Category(EssentialTests.class)
     @Test
     public void test_04_jsonTagsGood() throws DataFileTagException {
 
@@ -102,6 +108,7 @@ public class OptionalFileParamsTest {
     
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void test_05_jsonTabularTagsGood() throws DataFileTagException {
 
@@ -123,6 +130,7 @@ public class OptionalFileParamsTest {
         assertTrue(instance.hasFileDataTags());
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void test_06_jsonTabularTagsBad() throws DataFileTagException {
 
@@ -141,7 +149,7 @@ public class OptionalFileParamsTest {
         }
     }
     
-    
+    @Category(EssentialTests.class)
     @Test
     public void test_07_regularInstanceGood() throws DataFileTagException {
 
@@ -161,6 +169,7 @@ public class OptionalFileParamsTest {
          
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void test_08_regularInstanceGoodWithNulls() throws DataFileTagException {
 
@@ -180,6 +189,7 @@ public class OptionalFileParamsTest {
          
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void test_09_unusedParamsGood() throws DataFileTagException {
 
@@ -200,6 +210,7 @@ public class OptionalFileParamsTest {
 
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void test_10_emptyString() throws DataFileTagException {
 

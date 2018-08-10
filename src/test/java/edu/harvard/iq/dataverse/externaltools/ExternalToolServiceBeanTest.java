@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataTable;
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,12 +11,14 @@ import javax.json.JsonObjectBuilder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class ExternalToolServiceBeanTest {
 
     public ExternalToolServiceBeanTest() {
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void testfindAll() {
         DataFile dataFile = new DataFile();
@@ -34,6 +37,7 @@ public class ExternalToolServiceBeanTest {
         assertEquals(availableExternalTools.size(), 1);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testParseAddExternalToolInput() {
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -65,6 +69,7 @@ public class ExternalToolServiceBeanTest {
         assertEquals("http://awesometool.com?fileid=42&key=7196b5ce-f200-4286-8809-03ffdbc255d7", toolUrl);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testParseAddExternalToolInputNoFileId() {
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -91,6 +96,7 @@ public class ExternalToolServiceBeanTest {
         assertEquals("Required reserved word not found: {fileId}", expectedException.getMessage());
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testParseAddExternalToolInputNull() {
         Exception expectedException = null;
@@ -103,6 +109,7 @@ public class ExternalToolServiceBeanTest {
         assertEquals("External tool manifest was null or empty!", expectedException.getMessage());
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testParseAddExternalToolInputEmptyString() {
         Exception expectedException = null;
@@ -115,6 +122,7 @@ public class ExternalToolServiceBeanTest {
         assertEquals("External tool manifest was null or empty!", expectedException.getMessage());
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testParseAddExternalToolInputUnknownReservedWord() {
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -147,6 +155,7 @@ public class ExternalToolServiceBeanTest {
         assertEquals("Unknown reserved word: mode1", expectedException.getMessage());
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testParseAddExternalToolInputNoDisplayName() {
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -165,6 +174,7 @@ public class ExternalToolServiceBeanTest {
         assertEquals("displayName is required.", expectedException.getMessage());
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testParseAddExternalToolInputNoDescription() {
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -183,6 +193,7 @@ public class ExternalToolServiceBeanTest {
         assertEquals("description is required.", expectedException.getMessage());
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testParseAddExternalToolInputNoToolUrl() {
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -202,6 +213,7 @@ public class ExternalToolServiceBeanTest {
         assertEquals("toolUrl is required.", expectedException.getMessage());
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testParseAddExternalToolInputWrongType() {
         JsonObjectBuilder job = Json.createObjectBuilder();

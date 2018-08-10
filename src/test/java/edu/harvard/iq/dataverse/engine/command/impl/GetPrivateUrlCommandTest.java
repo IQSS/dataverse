@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
@@ -12,6 +13,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class GetPrivateUrlCommandTest {
 
@@ -52,6 +54,7 @@ public class GetPrivateUrlCommandTest {
     public void tearDown() {
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testDatasetWithoutAnId() throws Exception {
         dataset = new Dataset();
@@ -59,6 +62,7 @@ public class GetPrivateUrlCommandTest {
         assertNull(privateUrl);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testDatasetWithAnId() throws Exception {
         dataset = new Dataset();

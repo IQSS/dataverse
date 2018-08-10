@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.dataset;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
@@ -11,12 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 public class DatasetUtilTest {
 
     /**
      * Test of getThumbnailCandidates method, of class DatasetUtil.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testGetThumbnailCandidates() {
         assertEquals(new ArrayList<>(), DatasetUtil.getThumbnailCandidates(null, false));
@@ -35,6 +38,7 @@ public class DatasetUtilTest {
         assertEquals(new ArrayList<>(), DatasetUtil.getThumbnailCandidates(dataset, false));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetThumbnailNullDataset() {
         assertNull(DatasetUtil.getThumbnail(null));
@@ -48,6 +52,7 @@ public class DatasetUtilTest {
         assertNull(DatasetUtil.getThumbnail(dataset, new DatasetVersion()));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetThumbnailRestricted() {
         System.out.println("testGetThumbnailRestricted");
@@ -62,6 +67,7 @@ public class DatasetUtilTest {
     /**
      * Test of deleteDatasetLogo method, of class DatasetUtil.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testDeleteDatasetLogo() {
         assertEquals(false, DatasetUtil.deleteDatasetLogo(null));
@@ -71,6 +77,7 @@ public class DatasetUtilTest {
     /**
      * Test of getDefaultThumbnailFile method, of class DatasetUtil.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testGetDefaultThumbnailFile() {
         assertNull(DatasetUtil.attemptToAutomaticallySelectThumbnailFromDataFiles(null, null));
@@ -80,6 +87,7 @@ public class DatasetUtilTest {
      * Test of persistDatasetLogoToStorageAndCreateThumbnail method, of class
      * DatasetUtil.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testPersistDatasetLogoToStorageAndCreateThumbnail() {
         assertNull(DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnail(null, null));
@@ -89,6 +97,7 @@ public class DatasetUtilTest {
     /**
      * Test of getThumbnailAsInputStream method, of class DatasetUtil.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testGetThumbnailAsInputStream() {
         assertNull(DatasetUtil.getThumbnailAsInputStream(null));
@@ -97,6 +106,7 @@ public class DatasetUtilTest {
     /**
      * Test of isDatasetLogoPresent method, of class DatasetUtil.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testIsDatasetLogoPresent() {
         Dataset dataset = MocksFactory.makeDataset();

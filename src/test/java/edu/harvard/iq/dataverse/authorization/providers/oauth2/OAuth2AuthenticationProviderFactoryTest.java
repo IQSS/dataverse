@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
+import edu.harvard.iq.dataverse.EssentialTests;
 import java.util.HashMap;
 import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -14,6 +16,7 @@ public class OAuth2AuthenticationProviderFactoryTest extends OAuth2Authenticatio
     public OAuth2AuthenticationProviderFactoryTest() {
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testDictionaryParting() {
         Map<String,String> expected = new HashMap<>();

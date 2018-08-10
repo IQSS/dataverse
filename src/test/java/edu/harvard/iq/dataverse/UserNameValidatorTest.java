@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -14,6 +15,7 @@ import org.junit.Test;
  */
 public class UserNameValidatorTest {
     
+    @Category(EssentialTests.class)
     @Test
     public void testIsUserNameValid() {
         //good usernames

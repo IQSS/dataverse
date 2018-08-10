@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -17,6 +18,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -49,24 +51,28 @@ public class SwiftAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
+    @Category(EssentialTests.class)
     @Test
     public void testPerms() throws IOException {
         assertEquals(false, datasetAccess.canRead());
         assertEquals(false, datasetAccess.canWrite());
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void testIsExpiryExpired() {
         long currentTime = 1502221467;
         assertEquals(false, swiftAccess.isExpiryExpired(60, 1502281, currentTime));
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void testGenerateTempUrlExpiry() {
         long currentTime = 1502221467;
         assertEquals(1502281, datafileAccess.generateTempUrlExpiry(60, currentTime));
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void testToHexString() {
         String str = "hello";
@@ -74,6 +80,7 @@ public class SwiftAccessIOTest {
         assertEquals("68656c6c6f", swiftAccess.toHexString(bytes));
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void testCalculateRFC2104HMAC() throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
         assertEquals("104152c5bfdca07bc633eebd46199f0255c9f49d", swiftAccess.calculateRFC2104HMAC("data", "key"));

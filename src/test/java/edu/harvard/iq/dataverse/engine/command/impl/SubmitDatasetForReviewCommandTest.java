@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -31,6 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class SubmitDatasetForReviewCommandTest {
 
@@ -137,11 +139,13 @@ public class SubmitDatasetForReviewCommandTest {
         );
     }
 
+    @Category(EssentialTests.class)
     @Test( expected=IllegalArgumentException.class )
     public void testDatasetNull() {
         new SubmitDatasetForReviewCommand(dataverseRequest, null);
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void testReleasedDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
@@ -155,6 +159,7 @@ public class SubmitDatasetForReviewCommandTest {
         assertEquals(expected, actual);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testDraftDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);

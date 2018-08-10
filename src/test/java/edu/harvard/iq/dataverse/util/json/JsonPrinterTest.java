@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -33,6 +34,7 @@ import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.junit.experimental.categories.Category;
 
 public class JsonPrinterTest {
 
@@ -105,6 +107,7 @@ public class JsonPrinterTest {
 //        jsonPrinter = new JsonPrinter(settingsSvc);
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testJson_RoleAssignment() {
         DataverseRole aRole = new DataverseRole();
@@ -122,6 +125,7 @@ public class JsonPrinterTest {
         assertEquals("e1d53cf6-794a-457a-9709-7c07629a8267", jsonObject.getString("privateUrlToken"));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testJson_PrivateUrl() {
         DataverseRole aRole = new DataverseRole();
@@ -141,6 +145,7 @@ public class JsonPrinterTest {
         assertEquals("#42", jsonObject.getJsonObject("roleAssignment").getString("assignee"));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testGetFileCategories() {
         FileMetadata fmd = new FileMetadata();
@@ -175,6 +180,7 @@ public class JsonPrinterTest {
         assertEquals("Survey", jsonObject.getJsonObject("dataFile").getJsonArray("tabularTags").getString(0));
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testDatasetContactOutOfBoxNoPrivacy() {
         MetadataBlock block = new MetadataBlock();
@@ -217,6 +223,7 @@ public class JsonPrinterTest {
 
     }
 
+    @Category(EssentialTests.class)
     @Test
     public void testDatasetContactWithPrivacy() {
         MetadataBlock block = new MetadataBlock();

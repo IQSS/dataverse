@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.EssentialTests;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
@@ -24,6 +25,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.assertTrue;
+import org.junit.experimental.categories.Category;
 
 
 /**
@@ -75,7 +77,8 @@ public class RestrictFileCommandTest {
     @After
     public void tearDown() {
     }
-        
+       
+    @Category(EssentialTests.class)
     @Test
     public void testRestrictUnpublishedFile() throws CommandException{
         file.setOwner(dataset);
@@ -87,6 +90,7 @@ public class RestrictFileCommandTest {
         
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void testRestrictPublishedFile() throws Exception{
         file.setOwner(dataset);
@@ -104,7 +108,7 @@ public class RestrictFileCommandTest {
         }
     }
     
-    
+    @Category(EssentialTests.class)
     @Test
     public void testRestrictNewFile() throws Exception {
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
@@ -113,6 +117,7 @@ public class RestrictFileCommandTest {
         assertTrue(file.getFileMetadata().isRestricted());
     }
     
+    @Category(EssentialTests.class)
     @Test
     public void testRestrictRestrictedFile() throws Exception {
         file.setOwner(dataset);
@@ -131,6 +136,7 @@ public class RestrictFileCommandTest {
         
     }
     
+    @Category(EssentialTests.class)
     @Test 
     public void testPublicInstall() throws CommandException {
         file.setOwner(dataset);

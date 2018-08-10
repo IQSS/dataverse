@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.EssentialTests;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -38,6 +40,7 @@ public class LruCacheTest {
     /**
      * Test of get method, of class LruCache.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testGetSet() {
         sut.put(1l, "hello");
@@ -50,6 +53,7 @@ public class LruCacheTest {
     /**
      * Test of setMaxSize method, of class LruCache.
      */
+    @Category(EssentialTests.class)
     @Test
     public void testLRU() {
         int maxSize = 10;
