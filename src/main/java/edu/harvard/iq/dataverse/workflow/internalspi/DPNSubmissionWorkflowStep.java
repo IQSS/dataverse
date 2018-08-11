@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
 import edu.harvard.iq.dataverse.export.BagIt_Exporter;
+import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.OAI_OREExporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -93,7 +94,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 			logger.log(Level.INFO, "Next version:{0}.{1} isMinor:{2}", new Object[] { context.getNextVersionNumber(),
 					context.getNextMinorVersionNumber(), context.isMinorRelease() });
 
-		} catch (ContentStoreException e) {
+		} catch (ContentStoreException | ExportException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
