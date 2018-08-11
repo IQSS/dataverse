@@ -48,8 +48,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 	private String host;
 	private String username;
 	private String password;
-	private String spaceId;
-	private String contentPath;
+	
 
 	private final Map<String, String> params;
 
@@ -78,14 +77,14 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 			// Store file
 
 			String contentId = name + ".zip";
-			String checksum = store.addContent(spaceId, contentId,
+			String checksum = store.addContent(name, contentId,
 					ExportService.getInstance(settingsService).getExport(context.getDataset(), BagIt_Exporter.NAME),
 					-1l, null, null, null);
 			System.out.println("Content added with checksum: " + checksum);
 
 			// Print contents of space after content addition
-			System.out.println("\n\n*** Content Listing of " + spaceId + " - after file is added ***\n\n");
-			printContentListing(store, spaceId);
+			System.out.println("\n\n*** Content Listing of " + name + " - after file is added ***\n\n");
+			printContentListing(store, name);
 			
 			logger.info("DPN step:");
 			logger.log(Level.INFO, "Submitted {0} to DPN", name);
