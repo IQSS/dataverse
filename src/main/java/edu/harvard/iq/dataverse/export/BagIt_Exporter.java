@@ -59,7 +59,7 @@ public class BagIt_Exporter implements Exporter {
 			JsonObject oremap = (JsonObject) jsonParser.parse(new InputStreamReader(mapInputStream, "UTF-8"));
 
 			BagGenerator bagger = new BagGenerator(oremap);
-			bagger.setIgnoreHashes(true); //Temporarily force sha256 computation
+			bagger.setIgnoreHashes(false); //true would force sha256 computation
 			bagger.generateBag(outputStream);
 		} catch (Exception e) {
 			logger.severe(e.getMessage());
