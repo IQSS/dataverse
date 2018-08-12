@@ -64,7 +64,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 		String port = params.containsKey("port") ? params.get("port") : DEFAULT_PORT;
 		String dpnContext = params.containsKey("context") ? params.get("context") : DEFAULT_CONTEXT;
 		ContentStoreManager storeManager = new ContentStoreManagerImpl(params.get("host"), port, dpnContext);
-		Credential credential = new Credential(username, password);
+		Credential credential = new Credential(params.get("username"), params.get("password"));
 		storeManager.login(credential);
 
 		ContentStore store;
