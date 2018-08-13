@@ -3082,6 +3082,11 @@ public class DatasetPage implements java.io.Serializable {
          this.guestbookResponse = this.guestbookResponseService.modifySelectedFileIds(guestbookResponse, getSelectedDownloadableFilesIdsString());
          this.guestbookResponse.setDownloadtype("Download");
          this.guestbookResponse.setFileFormat("Download");
+     	if(guestbookResponse.getDataFile()!=null)
+        	logger.info("DsP File: " + guestbookResponse.getDataFile().getId());
+        	if(guestbookResponse.getSelectedFileIds()!=null)
+    logger.info("DsP File Ids: " + guestbookResponse.getSelectedFileIds());
+        	
         RequestContext requestContext = RequestContext.getCurrentInstance();
         requestContext.execute("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
     }
@@ -3093,6 +3098,10 @@ public class DatasetPage implements java.io.Serializable {
     public void initGuestbookResponse(FileMetadata fileMetadata, String downloadFormat, String selectedFileIds) {
         
         this.guestbookResponse = guestbookResponseService.initGuestbookResponse(fileMetadata, downloadFormat, selectedFileIds, session);
+    	if(guestbookResponse.getDataFile()!=null)
+    	logger.info("iGB File: " + guestbookResponse.getDataFile().getId());
+    	if(guestbookResponse.getSelectedFileIds()!=null)
+logger.info("iGB File Ids: " + guestbookResponse.getSelectedFileIds());
     }
 
 
@@ -4308,7 +4317,17 @@ public class DatasetPage implements java.io.Serializable {
 
     public void clearSelection() {
         logger.info("clearSelection called");
+    	if(guestbookResponse.getDataFile()!=null)
+    	logger.info("cS File: " + guestbookResponse.getDataFile().getId());
+    	if(guestbookResponse.getSelectedFileIds()!=null)
+logger.info("cS File Ids: " + guestbookResponse.getSelectedFileIds());
         selectedFiles = Collections.EMPTY_LIST;
+        
+        
+        
+        
+        
+        guestbookResponse.setSelectedFileIds(getSelectedFilesIdsString());
     }
     
     public void fileListingPaginatorListener(PageEvent event) {       
