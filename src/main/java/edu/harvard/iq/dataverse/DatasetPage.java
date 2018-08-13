@@ -1602,6 +1602,7 @@ public class DatasetPage implements java.io.Serializable {
             if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.summary"),
                         BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
+                lockedDueToDcmUpload = true;
             }
             //This is a hack to remove dataset locks for File PID registration if 
                 //the dataset is released
@@ -2904,6 +2905,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar;    
+    private boolean lockedDueToDcmUpload;
     /**
      * Authors are not allowed to edit but curators are allowed - when Dataset is inReview
      * For all other locks edit should be locked for all editors.
@@ -2931,6 +2933,10 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         return lockedFromDownloadVar;
+    }
+
+    public boolean isLockedDueToDcmUpload() {
+        return lockedDueToDcmUpload;
     }
 
     public void setLocked(boolean locked) {

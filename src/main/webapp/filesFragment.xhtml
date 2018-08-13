@@ -116,6 +116,14 @@
                             <!-- UPLOAD FILES BUTTON -->
                             <span class="glyphicon #{DatasetPage.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
+                        <!-- REDOWNLOAD DCM SCRIPT BUTTON -->
+                        <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
+                                      type="button" styleClass="btn btn-default btn-access #{false and DatasetPage.lockedFromEdits ? 'ui-state-disabled' : ''}"
+                                      disabled="#{false}" rendered="#{DatasetPage.sessionUserAuthenticated
+                                                                                    and DatasetPage.canUpdateDataset()
+                                                                                    and !widgetWrapper.widgetView and DatasetPage.lockedDueToDcmUpload}">
+                            <h:outputText id="uploadFileToRedownloadRsyncScript" value="#{bundle['file.redownloadDcmScript']}"/>
+                        </h:outputLink>
                     </div>
                    </p:outputPanel>
                 </div>
