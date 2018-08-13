@@ -75,16 +75,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse){
-
-        if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
-        	logger.info("File: " + guestbookResponse.getDataFile().getId());
+    	if(guestbookResponse.getDataFile()!=null)
+    	logger.info("DL File: " + guestbookResponse.getDataFile().getId());
+    	if(guestbookResponse.getSelectedFileIds()!=null)
+logger.info("DL File Ids: " + guestbookResponse.getSelectedFileIds());
+    	
+        if (guestbookResponse != null && guestbookResponse.getDataFile() != null && guestbookResponse.getSelectedFileIds()!=null     ){
             writeGuestbookResponseRecord(guestbookResponse);
             // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
-            if(guestbookResponse.getDataFile()!=null) {
-            logger.info("downloading " + guestbookResponse.getDataFile().getId());
-            } else {
-            	logger.info("File now null");
-            }
             callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), true);
         }
         
@@ -98,11 +96,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                     writeGuestbookResponseRecord(guestbookResponse);
                 }
             }
-            logger.info("Downloading multiple files");
             callDownloadServlet(guestbookResponse.getSelectedFileIds(), true);
         }
-        
-        
     }
     
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
