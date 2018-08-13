@@ -1388,7 +1388,7 @@ text^1.0
        Multiple ValueSourceParsers can be registered by name, and then
        used as function names when using the "func" QParser.
     -->
-  <!-- example of registeri#ng a custom function parser  -->
+  <!-- example of registering a custom function parser  -->
   <!--
      <valueSourceParser name="myfunc"
                         class="com.mycompany.MyValueSourceParser" />
