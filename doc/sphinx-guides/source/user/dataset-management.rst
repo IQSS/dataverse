@@ -100,7 +100,7 @@ An rsync-enabled Dataverse installation has a file upload process that differs f
 
 7. Once the upload script completes its job, Dataverse will begin processing your data upload and running a checksum validation. This may take some time depending on the file size of your upload. During processing, you will see a blue bar at the bottom of the dataset page that reads "Upload in progress..." 
 
-8. Once processing is complete, you will be notified. At this point you can publish your dataset and your data will be available for download on the dataset page. **Note:** A dataset can only hold one data package. If you need to replace the data package in your dataset, contact Support.
+8. Once processing is complete, you will be notified. At this point you can publish your dataset and your data will be available for download on the dataset page.
 
 **Note:** A dataset can only hold one data package. If you need to replace the data package in your dataset, contact Support.
 
