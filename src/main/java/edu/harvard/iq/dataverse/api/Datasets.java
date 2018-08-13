@@ -1040,6 +1040,9 @@ public class Datasets extends AbstractApiBean {
                 } catch (WrappedResponse wr) {
                     String message = wr.getMessage();
                     return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
+                } catch (Exception ex) {
+                    String message = ex.getMessage();
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but an unexpected exception was caught attempting to put the files into Dataverse. Message was '" + message + "'.");
                 }
             } else if ("validation failed".equals(statusMessageFromDcm)) {
                 Map<String, AuthenticatedUser> distinctAuthors = permissionService.getDistinctUsersWithPermissionOn(Permission.EditDataset, dataset);
