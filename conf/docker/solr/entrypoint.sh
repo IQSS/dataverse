@@ -22,9 +22,8 @@ if [ "$1" = 'solr' ]; then
 
     else   
         echo "I am the slave"
-        cp /tmp/solrconfig_slave.xml $SOLR_DIR/server/solr/collection1/conf
-        cd  $SOLR_DIR/server/solr/collection1/conf/
-        mv solrconfig_slave.xml solrconfig.xml
+        cp /tmp/solrconfig_slave.xml $SOLR_DIR/server/solr/collection1/conf 
+        mv $SOLR_DIR/server/solr/collection1/conf/solrconfig_slave.xml $SOLR_DIR/server/solr/collection1/conf/solrconfig.xml
     fi
     cd $SOLR_DIR
     bin/solr start
