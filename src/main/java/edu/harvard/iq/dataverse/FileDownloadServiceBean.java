@@ -77,9 +77,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse){
 
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
+        	logger.info("File: " + guestbookResponse.getDataFile().getDisplayName());
             writeGuestbookResponseRecord(guestbookResponse);
             // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
+            if(guestbookResponse.getDataFile()!=null) {
             logger.info("downloading " + guestbookResponse.getDataFile().getDisplayName());
+            } else {
+            	logger.info("File now null");
+            }
             callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), true);
         }
         
