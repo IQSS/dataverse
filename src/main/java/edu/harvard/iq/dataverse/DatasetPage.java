@@ -2609,10 +2609,7 @@ public class DatasetPage implements java.io.Serializable {
                 
                 if (nNewFiles > 0) {
                     // Save the NEW files permanently and add the to the dataset: 
-                	
-                	//QDR-981, IQSS-4783 - add next line to assure contributor role added when files are also uploaded
-                	dataset = datasetService.find(dataset.getId());
-                	
+
                     // But first, fully refresh the newly created dataset (with a 
                     // datasetService.find().
                     // We have reasons to believe that the CreateDatasetCommand 
