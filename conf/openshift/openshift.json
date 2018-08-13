@@ -587,7 +587,7 @@
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "iqss/dataverse-solr:latest"
+                "name": "iqss-dataverse-solr:latest"
               }
             }
           },
