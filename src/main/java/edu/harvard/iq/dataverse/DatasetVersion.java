@@ -485,9 +485,17 @@ public class DatasetVersion implements Serializable {
         if(this.fileMetadatas.size() > 1){
             return false;
         }
-        return this.fileMetadatas.get(0).getDataFile().getContentType().equals("application/vnd.dataverse.file-package");
+        return this.fileMetadatas.get(0).getDataFile().getContentType().equals(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
     }
-    
+
+    public boolean isHasNonPackageFile(){
+        if (this.fileMetadatas.isEmpty()){
+            return false;
+        }
+        // The presence of any non-package file means that HTTP Upload was used (no mixing allowed) so we just check the first file.
+        return !this.fileMetadatas.get(0).getDataFile().getContentType().equals(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
+    }
+
     public void updateDefaultValuesFromTemplate(Template template) {
         if (!template.getDatasetFields().isEmpty()) {
             this.setDatasetFields(this.copyDatasetFields(template.getDatasetFields()));

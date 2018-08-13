@@ -42,6 +42,17 @@
                               </a>
                             </h4>
                         </div>
+                        <div class="panel-body" jsf:id="httpUploadDisabledDueToExistingRsyncPackage" jsf:rendered="#{EditDatafilesPage.workingVersion.hasPackageFile}">
+                            <p class="help-block">
+                                <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+                                <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.httpUploadDisabledDueToRsyncFileExisting']}">
+                                    <f:param value="#{settingsWrapper.supportTeamName}"/>
+                                </h:outputFormat>
+                            </p>
+                        </div>
+                        <div jsf:id="contentOfHttpPanel" jsf:rendered="#{!EditDatafilesPage.workingVersion.hasPackageFile}">
+                            <!-- FIXME: Indent content of HTTP Upload panel below.-->
+
                         <div id="collapseHTTP" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingHTTP">
                             <div class="panel-body">
                                 <p class="help-block">
@@ -231,6 +242,8 @@
                             </div>
                         </div>
                     </div>
+                    <!-- FIXME: Indent content of HTTP Upload panel below.-->
+                    </div>
                     
                     <div jsf:id="rsyncPanel" jsf:rendered="#{settingsWrapper.rsyncUpload}" class="panel panel-default">
                         <div class="panel-heading" role="tab" id="headingRsync">
@@ -243,6 +256,8 @@
 
                         <!-- NOTE: conditional logic for 'in' style class opens the rsync panel if HTTP is off, but isn't scalable when a third upload mode is added -->
                         <div id="collapseRsync" class="panel-collapse collapse #{!settingsWrapper.HTTPUpload ? 'in' : ''}" role="tabpanel" aria-labelledby="headingRsync">
+                        <!-- TODO: The non-collapsed version below is to make development easier. -->
+                        <!--<div id="collapseRsync" class="" role="tabpanel" aria-labelledby="headingRsync">-->
                             <div class="panel-body">
                                 <ui:fragment rendered="#{createDataset}">
                                     <p class="help-block">
@@ -250,27 +265,8 @@
                                     </p>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{!createDataset}"> 
-                                    <ui:fragment rendered="#{!empty EditDatafilesPage.fileMetadatas}">
-                                        <p class="help-block">
-                                            <span class="glyphicon glyphicon-warning-sign text-danger"></span>
-                                            <h:outputText class="text-danger" value=" #{bundle['file.rsyncUpload.filesExist']}" escape="false"/>
-                                        </p>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{!EditDatafilesPage.isHasRsyncScript() and (empty EditDatafilesPage.fileMetadatas and empty DatasetPage.workingVersion.hasPackageFile)}">
-                                        <p class="help-block">
-                                            <span class="glyphicon glyphicon-warning-sign text-danger"></span>
-                                            <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.noScriptAvailable']}">
-                                                <f:param value="#{EditDatafilesPage.userFacingUploadWithRsyncError}"/>
-                                            </h:outputFormat>
-                                        </p>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{!EditDatafilesPage.isHasRsyncScript() and (empty EditDatafilesPage.fileMetadatas and DatasetPage.workingVersion.hasPackageFile)}">
-                                        <p class="help-block">
-                                            <span class="glyphicon glyphicon-warning-sign text-danger"></span>
-                                            <h:outputText class="text-danger" value=" #{bundle['file.rsyncUpload.filesExist']}" escape="false"/>
-                                        </p>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{EditDatafilesPage.isHasRsyncScript() and empty EditDatafilesPage.fileMetadatas}">
+                                    <!-- NO RSYNC/PACKAGE FILE YET. PROVIDE INSTRUCTIONS: DOWNLOAD TO UPLOAD. -->
+                                    <ui:fragment rendered="#{empty EditDatafilesPage.workingVersion.fileMetadatas and EditDatafilesPage.isHasRsyncScript()}">
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-info-sign"></span>
                                             <h:outputFormat value=" #{bundle['file.rsyncUpload.info']}" escape="false">
@@ -297,6 +293,42 @@
                                                 <h:outputText value="#{bundle['file.rsyncUpload.step4']}" escape="false"/>
                                             </li>
                                         </ol>
+                                    </ui:fragment>
+                                    <!-- RSYNC/PACKAGE FILE ALREADY EXISTS. THERE CAN BE ONLY ONE. -->
+                                    <ui:fragment rendered="#{EditDatafilesPage.workingVersion.hasPackageFile}">
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+                                            <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.filesExist']}">
+                                                <f:param value="#{settingsWrapper.supportTeamName}"/>
+                                            </h:outputFormat>
+                                        </p>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{EditDatafilesPage.workingVersion.hasNonPackageFile}">
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+                                            <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.rsyncUploadDisabledDueFileUploadedViaHttp']}">
+                                                <f:param value="#{settingsWrapper.supportTeamName}"/>
+                                            </h:outputFormat>
+                                        </p>
+                                    </ui:fragment>
+                                    <!-- CAN'T DOWNLOAD RSYNC SCRIPT DUE to DCM BACKEND BROKEN. -->
+                                    <ui:fragment rendered="#{empty EditDatafilesPage.workingVersion.fileMetadatas and !EditDatafilesPage.isHasRsyncScript()}">
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+                                            <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.noScriptBroken']}">
+                                                <f:param value="#{settingsWrapper.supportTeamName}"/>
+                                            </h:outputFormat>
+                                        </p>
+                                    </ui:fragment>
+                                    <!-- CAN'T DOWNLOAD RSYNC SCRIPT DUE to DCM BACKEND BUSY. -->
+                                    <!-- TODO: Figure out if we can detect the difference between the DCM being down and the DCM being busy. -->
+                                    <ui:fragment rendered="#{false}">
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+                                            <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.noScriptBusy']}">
+                                                <f:param value="#{settingsWrapper.supportTeamName}"/>
+                                            </h:outputFormat>
+                                        </p>
                                     </ui:fragment>
                                 </ui:fragment>
                             </div>

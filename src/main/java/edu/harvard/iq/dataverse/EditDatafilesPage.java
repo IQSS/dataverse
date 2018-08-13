@@ -479,7 +479,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!permissionService.on(dataset).has(Permission.EditDataset)) {
             return permissionsWrapper.notAuthorized();
         }
-        
+
+        // TODO: Think about why this call to populateFileMetadatas was added. It seems like it isn't needed after all.
+//        populateFileMetadatas();
+
         // -------------------------------------------
         //  Is this a file replacement operation?
         // -------------------------------------------
@@ -1705,17 +1708,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.hasRsyncScript = hasRsyncScript;
     }
 
-    private String userFacingUploadWithRsyncError;
-
-    public String getUserFacingUploadWithRsyncError() {
-        return userFacingUploadWithRsyncError;
-    }
-
-    public void setUserFacingUploadWithRsyncError(String userFacingUploadWithRsyncError) {
-        this.userFacingUploadWithRsyncError = userFacingUploadWithRsyncError;
-    }
-
     private  void setUpRsync() {
+        logger.fine("setUpRsync called...");
         if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
             try {
                 ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
@@ -1728,13 +1722,10 @@ public class EditDatafilesPage implements java.io.Serializable {
                     setHasRsyncScript(false);
                 }
             } catch (EJBException ex) {
-                setUserFacingUploadWithRsyncError(BundleUtil.getStringFromBundle("file.rsyncUpload.noScriptEjbException"));
                 logger.warning("Problem getting rsync script (EJBException): " + EjbUtil.ejbExceptionToString(ex));
             } catch (RuntimeException ex) {
-                setUserFacingUploadWithRsyncError(ex.getLocalizedMessage());
                 logger.warning("Problem getting rsync script (RuntimeException): " + ex.getLocalizedMessage());
             } catch (CommandException cex) {
-                setUserFacingUploadWithRsyncError(cex.getLocalizedMessage());
                 logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
             }
         }
