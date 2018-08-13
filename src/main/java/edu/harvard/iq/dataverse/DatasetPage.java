@@ -3052,8 +3052,11 @@ public class DatasetPage implements java.io.Serializable {
     }
         
     public void startMultipleFileDownload (Boolean writeGuestbook){
-
-        fileDownloadService.callDownloadServlet(getDownloadableFilesIdsString(), writeGuestbook);
+        if(getDownloadableFilesIdsString().split(",").length ==1) {
+            fileDownloadService.callDownloadServlet("Download", Long.parseLong(getDownloadableFilesIdsString()), writeGuestbook);
+        } else {
+          fileDownloadService.callDownloadServlet(getDownloadableFilesIdsString(), writeGuestbook);
+        }
 
     }
  
