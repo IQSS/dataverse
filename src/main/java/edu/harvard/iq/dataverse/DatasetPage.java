@@ -2609,10 +2609,7 @@ public class DatasetPage implements java.io.Serializable {
                 
                 if (nNewFiles > 0) {
                     // Save the NEW files permanently and add the to the dataset: 
-                	
-                	//QDR-981, IQSS-4783 - add next line to assure contributor role added when files are also uploaded
-                	dataset = datasetService.find(dataset.getId());
-                	
+
                     // But first, fully refresh the newly created dataset (with a 
                     // datasetService.find().
                     // We have reasons to believe that the CreateDatasetCommand 
@@ -3056,8 +3053,11 @@ public class DatasetPage implements java.io.Serializable {
     }
         
     public void startMultipleFileDownload (Boolean writeGuestbook){
-
-        fileDownloadService.callDownloadServlet(getDownloadableFilesIdsString(), writeGuestbook);
+        if(getDownloadableFilesIdsString().split(",").length ==1) {
+            fileDownloadService.callDownloadServlet("Download", Long.parseLong(getDownloadableFilesIdsString()), writeGuestbook);
+        } else {
+          fileDownloadService.callDownloadServlet(getDownloadableFilesIdsString(), writeGuestbook);
+        }
 
     }
  
@@ -3080,8 +3080,24 @@ public class DatasetPage implements java.io.Serializable {
         }
         
          this.guestbookResponse = this.guestbookResponseService.modifySelectedFileIds(guestbookResponse, getSelectedDownloadableFilesIdsString());
+         if(this.selectedDownloadableFiles.size()<2) {
+             if(this.selectedDownloadableFiles.size()==1) {
+             Long id = selectedDownloadableFiles.get(0).getId();
+             logger.info("id: " + id);
+             DataFile df = datafileService.findCheapAndEasy(id);
+             if(df!=null) logger.info("Have df");
+             guestbookResponse.setDataFile(df);
+             }
+         } else {
+             guestbookResponse.setDataFile(null);
+         }
          this.guestbookResponse.setDownloadtype("Download");
          this.guestbookResponse.setFileFormat("Download");
+         if(guestbookResponse.getDataFile()!=null)
+            logger.info("DsP File: " + guestbookResponse.getDataFile().getId());
+            if(guestbookResponse.getSelectedFileIds()!=null)
+    logger.info("DsP File Ids: " + guestbookResponse.getSelectedFileIds());
+            
         RequestContext requestContext = RequestContext.getCurrentInstance();
         requestContext.execute("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
     }
@@ -4309,6 +4325,12 @@ public class DatasetPage implements java.io.Serializable {
     public void clearSelection() {
         logger.info("clearSelection called");
         selectedFiles = Collections.EMPTY_LIST;
+        
+        
+        
+        
+        
+        guestbookResponse.setSelectedFileIds(getSelectedFilesIdsString());
     }
     
     public void fileListingPaginatorListener(PageEvent event) {       

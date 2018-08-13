@@ -75,14 +75,26 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse){
-
-        if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
+		if (guestbookResponse.getDataFile() != null)
+			logger.info("FDL File: " + guestbookResponse.getDataFile().getId());
+		if (guestbookResponse.getSelectedFileIds() != null) {
+			logger.info("FDL File Ids: " + guestbookResponse.getSelectedFileIds());
+			String[] fileIds = guestbookResponse.getSelectedFileIds().split(",");
+			if (fileIds.length == 1) {
+				logger.info("FDL: id: " + fileIds[0]);
+				DataFile df = datafileService.findCheapAndEasy(Long.parseLong(fileIds[0]));
+				if (df != null)
+					logger.info("FDL: Have df");
+				guestbookResponse.setDataFile(df);
+			}
+		}
+        if (guestbookResponse != null && guestbookResponse.getDataFile() != null      ){
             writeGuestbookResponseRecord(guestbookResponse);
             // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
             callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), true);
         }
         
-        if (guestbookResponse != null && guestbookResponse.getSelectedFileIds() != null     ){
+        if (guestbookResponse != null && guestbookResponse.getDataFile() == null && guestbookResponse.getSelectedFileIds() != null     ){
             List<String> list = new ArrayList<>(Arrays.asList(guestbookResponse.getSelectedFileIds().split(",")));
 
             for (String idAsString : list) {
@@ -92,11 +104,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                     writeGuestbookResponseRecord(guestbookResponse);
                 }
             }
-            
             callDownloadServlet(guestbookResponse.getSelectedFileIds(), true);
         }
-        
-        
     }
     
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
@@ -115,7 +124,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             fileDownloadUrl += "?gbrecs=true";
         }
         try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+        	FacesContext fc = FacesContext.getCurrentInstance();
+        	if(!fc.getResponseComplete()) {
+            fc.getExternalContext().redirect(fileDownloadUrl);
+        	} else {
+        		logger.info("Response complete before redirect call");
+        	}
         } catch (IOException ex) {
             logger.info("Failed to issue a redirect to file download url.");
         }
