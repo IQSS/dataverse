@@ -151,7 +151,7 @@ In order to see the rsync URLs, you must run this command:
 
 ``curl -X PUT -d 'rsal/rsync' http://localhost:8080/api/admin/settings/:DownloadMethods``
 
-TODO: Document these in the Installation Guide once they're final.
+..  TODO: Document these in the Installation Guide once they're final.
 
 To specify replication sites that appear in rsync URLs:
 
