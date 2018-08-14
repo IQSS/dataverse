@@ -251,7 +251,7 @@ public class Access extends AbstractApiBean {
         for (String key : uriInfo.getQueryParameters().keySet()) {
             String value = uriInfo.getQueryParameters().getFirst(key);
             
-            if (downloadInstance.isDownloadServiceSupported(key, value)) {
+            if (downloadInstance.checkIfServiceSupportedAndSetConverter(key, value)) {
                 logger.fine("is download service supported? key="+key+", value="+value);
                 // this automatically sets the conversion parameters in 
                 // the download instance to key and value;
@@ -434,7 +434,7 @@ public class Access extends AbstractApiBean {
             throw new ServiceUnavailableException("Preprocessed Content Metadata requested on a non-tabular data file.");
         }
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
-        if (downloadInstance.isDownloadServiceSupported("format", "prep")) {
+        if (downloadInstance.checkIfServiceSupportedAndSetConverter("format", "prep")) {
             logger.fine("Preprocessed data for tabular file "+fileId);
         }
         
@@ -448,6 +448,10 @@ public class Access extends AbstractApiBean {
     */
     
     
+    
+//MAD: I think the best course is to expand this method, allowing original format as well as converted
+//Also while I'm here maybe I can support PIDs
+// - PIDs is build into findDataFileOrDieWrapper. Maybe save that for later
     // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
     @Path("datafiles/{fileIds}")
     @GET
