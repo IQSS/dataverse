@@ -2373,10 +2373,10 @@ public class DatasetPage implements java.io.Serializable {
             }
             return "";
         } else {
-            boolean validSelection = false;
+            boolean validSelection = true;
             for (FileMetadata fmd : selectedFiles) {
-                if ((fmd.isRestricted() && !restricted) || (!fmd.isRestricted() && restricted)) {
-                    validSelection = true;
+                if ((fmd.isRestricted() && restricted) || (!fmd.isRestricted() && !restricted)) {
+                    validSelection = false;
                 }
             }
             if (!validSelection) {
