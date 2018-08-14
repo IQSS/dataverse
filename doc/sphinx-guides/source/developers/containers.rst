@@ -1,4 +1,6 @@
+================================= 
 Docker, Kubernetes, and OpenShift
+=================================
 
 Dataverse is exploring the use of Docker, Kubernetes, OpenShift and other container-related technologies.
 
