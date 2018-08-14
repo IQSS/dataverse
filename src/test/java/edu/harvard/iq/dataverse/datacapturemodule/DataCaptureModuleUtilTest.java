@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.datacapturemodule;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
 import java.io.UnsupportedEncodingException;
@@ -105,4 +106,14 @@ public class DataCaptureModuleUtilTest {
         assertEquals("edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleException", DataCaptureModuleUtil.getMessageFromException(new DataCaptureModuleException(null, null)));
         assertEquals("edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleException: message1", DataCaptureModuleUtil.getMessageFromException(new DataCaptureModuleException("message1", null)));
     }
+
+    @Test
+    public void testScriptName() {
+        DatasetVersion datasetVersion = new DatasetVersion();
+        Dataset dataset = new Dataset();
+        dataset.setIdentifier("KYHURW");
+        datasetVersion.setDataset(dataset);
+        assertEquals("upload-KYHURW.bash", DataCaptureModuleUtil.getScriptName(datasetVersion));
+    }
+
 }

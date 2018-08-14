@@ -1716,7 +1716,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 logger.fine("script: " + scriptRequestResponse.getScript());
                 if (scriptRequestResponse.getScript() != null && !scriptRequestResponse.getScript().isEmpty()) {
                     setRsyncScript(scriptRequestResponse.getScript());
-                    rsyncScriptFilename = "upload-" + workingVersion.getDataset().getIdentifier() + ".bash";
+                    rsyncScriptFilename = DataCaptureModuleUtil.getScriptName(workingVersion);
                     setHasRsyncScript(true);
                 } else {
                     setHasRsyncScript(false);

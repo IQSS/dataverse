@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.datacapturemodule;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.Arrays;
@@ -73,6 +74,10 @@ public class DataCaptureModuleUtil {
             return cause.toString();
         }
         return message + " was caused by " + cause.getMessage();
+    }
+
+    public static String getScriptName(DatasetVersion datasetVersion) {
+        return "upload-" + datasetVersion.getDataset().getIdentifier() + ".bash";
     }
 
 }
