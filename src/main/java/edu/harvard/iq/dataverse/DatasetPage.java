@@ -3053,8 +3053,11 @@ public class DatasetPage implements java.io.Serializable {
     }
         
     public void startMultipleFileDownload (Boolean writeGuestbook){
-
-        fileDownloadService.callDownloadServlet(getDownloadableFilesIdsString(), writeGuestbook);
+        if(getDownloadableFilesIdsString().split(",").length ==1) {
+            fileDownloadService.callDownloadServlet("Download", Long.parseLong(getDownloadableFilesIdsString()), writeGuestbook);
+        } else {
+          fileDownloadService.callDownloadServlet(getDownloadableFilesIdsString(), writeGuestbook);
+        }
 
     }
  
@@ -3078,23 +3081,23 @@ public class DatasetPage implements java.io.Serializable {
         
          this.guestbookResponse = this.guestbookResponseService.modifySelectedFileIds(guestbookResponse, getSelectedDownloadableFilesIdsString());
          if(this.selectedDownloadableFiles.size()<2) {
-        	 if(this.selectedDownloadableFiles.size()==1) {
-        	 Long id = selectedDownloadableFiles.get(0).getId();
-        	 logger.info("id: " + id);
-        	 DataFile df = datafileService.findCheapAndEasy(id);
-        	 if(df!=null) logger.info("Have df");
-        	 guestbookResponse.setDataFile(df);
-        	 }
+             if(this.selectedDownloadableFiles.size()==1) {
+             Long id = selectedDownloadableFiles.get(0).getId();
+             logger.info("id: " + id);
+             DataFile df = datafileService.findCheapAndEasy(id);
+             if(df!=null) logger.info("Have df");
+             guestbookResponse.setDataFile(df);
+             }
          } else {
-        	 guestbookResponse.setDataFile(null);
+             guestbookResponse.setDataFile(null);
          }
          this.guestbookResponse.setDownloadtype("Download");
          this.guestbookResponse.setFileFormat("Download");
-     	if(guestbookResponse.getDataFile()!=null)
-        	logger.info("DsP File: " + guestbookResponse.getDataFile().getId());
-        	if(guestbookResponse.getSelectedFileIds()!=null)
+         if(guestbookResponse.getDataFile()!=null)
+            logger.info("DsP File: " + guestbookResponse.getDataFile().getId());
+            if(guestbookResponse.getSelectedFileIds()!=null)
     logger.info("DsP File Ids: " + guestbookResponse.getSelectedFileIds());
-        	
+            
         RequestContext requestContext = RequestContext.getCurrentInstance();
         requestContext.execute("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
     }
@@ -3106,10 +3109,6 @@ public class DatasetPage implements java.io.Serializable {
     public void initGuestbookResponse(FileMetadata fileMetadata, String downloadFormat, String selectedFileIds) {
         
         this.guestbookResponse = guestbookResponseService.initGuestbookResponse(fileMetadata, downloadFormat, selectedFileIds, session);
-    	if(guestbookResponse.getDataFile()!=null)
-    	logger.info("iGB File: " + guestbookResponse.getDataFile().getId());
-    	if(guestbookResponse.getSelectedFileIds()!=null)
-logger.info("iGB File Ids: " + guestbookResponse.getSelectedFileIds());
     }
 
 
@@ -4325,10 +4324,6 @@ logger.info("iGB File Ids: " + guestbookResponse.getSelectedFileIds());
 
     public void clearSelection() {
         logger.info("clearSelection called");
-    	if(guestbookResponse.getDataFile()!=null)
-    	logger.info("cS File: " + guestbookResponse.getDataFile().getId());
-    	if(guestbookResponse.getSelectedFileIds()!=null)
-logger.info("cS File Ids: " + guestbookResponse.getSelectedFileIds());
         selectedFiles = Collections.EMPTY_LIST;
         
         
