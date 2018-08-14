@@ -184,15 +184,27 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         if (idServiceBean != null) {
             List<String> args = idServiceBean.getProviderInformation();
             try {
-                //A false return value indicates a failure in calling the service
-                for (DataFile df : dataset.getFiles()) {
-                    logger.log(Level.FINE, "registering global id for file {0}", df.getId());
+                String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
+                // We will skip trying to regiester the global identifiers for datafiles 
+                // if the naming protocol of the dataset global id is different from the 
+                // one currently configured for the Dataverse. This is to specifically 
+                // address the issue with the datasets with handle ids registered, 
+                // that are currently configured to use DOI.
+                if (currentGlobalIdProtocol.equals(protocol)) {
                     //A false return value indicates a failure in calling the service
-                    if (!idServiceBean.publicizeIdentifier(df)) throw new Exception();
-                    df.setGlobalIdCreateTime(getTimestamp());
-                    df.setIdentifierRegistered(true);
+                    for (DataFile df : dataset.getFiles()) {
+                        logger.log(Level.FINE, "registering global id for file {0}", df.getId());
+                        //A false return value indicates a failure in calling the service
+                        if (!idServiceBean.publicizeIdentifier(df)) {
+                            throw new Exception();
+                        }
+                        df.setGlobalIdCreateTime(getTimestamp());
+                        df.setIdentifierRegistered(true);
+                    }
                 }
-                if (!idServiceBean.publicizeIdentifier(dataset)) throw new Exception(); 
+                if (!idServiceBean.publicizeIdentifier(dataset)) {
+                    throw new Exception();
+                }
                 dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
                 dataset.setIdentifierRegistered(true);
             } catch (Throwable e) {

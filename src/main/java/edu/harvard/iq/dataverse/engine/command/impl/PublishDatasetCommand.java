@@ -89,8 +89,18 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             return new PublishDatasetResult(theDataset, false);
             
         } else {
-            //if there are more than required size files  then call Finalize asychronously (default is 10)
-            if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount()) {     
+            // We will skip trying to regiester the global identifiers for datafiles 
+            // if the naming protocol of the dataset global id is different from the 
+            // one currently configured for the Dataverse. This is to specifically 
+            // address the issue with the datasets with handle ids registered, 
+            // that are currently configured to use DOI.
+            // If we are registering file-level identifiers, and there are more 
+            // than the configured limit number of files, then call Finalize 
+            // asychronously (default is 10)
+            String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
+            boolean registerGlobalIdsForFiles = currentGlobalIdProtocol.equals(theDataset.getProtocol());
+
+            if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount() && registerGlobalIdsForFiles) {     
                 String info = "Adding File PIDs asynchronously";
                 AuthenticatedUser user = request.getAuthenticatedUser();
                 
