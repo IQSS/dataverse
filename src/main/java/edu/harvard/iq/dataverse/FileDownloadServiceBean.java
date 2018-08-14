@@ -118,7 +118,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             fileDownloadUrl += "?gbrecs=true";
         }
         try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+        	FacesContext fc = FacesContext.getCurrentInstance();
+        	if(!fc.getResponseComplete()) {
+            fc.getExternalContext().redirect(fileDownloadUrl);
+        	} else {
+        		logger.info("Response complete before redirect call");
+        	}
         } catch (IOException ex) {
             logger.info("Failed to issue a redirect to file download url.");
         }
