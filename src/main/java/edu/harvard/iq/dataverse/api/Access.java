@@ -248,14 +248,29 @@ public class Access extends AbstractApiBean {
             downloadInstance.setDataverseRequestService(dvRequestService);
             downloadInstance.setCommand(engineSvc);
         }
+        
+        downloadInstance = getFileOfType(uriInfo, downloadInstance);
+        
+        /* 
+         * Provide "Access-Control-Allow-Origin" header:
+         */
+        response.setHeader("Access-Control-Allow-Origin", "*");
+                
+        /* 
+         * Provide some browser-friendly headers: (?)
+         */
+        //return retValue; 
+        return downloadInstance;
+    }
+    
+    //"MAD: This is the functionality that needs to be ported to download multiple"
+    //MAD: RENAME
+    private DownloadInstance getFileOfType(UriInfo uriInfo, DownloadInstance downloadInstance) {
         for (String key : uriInfo.getQueryParameters().keySet()) {
             String value = uriInfo.getQueryParameters().getFirst(key);
             
             if (downloadInstance.checkIfServiceSupportedAndSetConverter(key, value)) {
                 logger.fine("is download service supported? key="+key+", value="+value);
-                // this automatically sets the conversion parameters in 
-                // the download instance to key and value;
-                // TODO: I should probably set these explicitly instead. 
                 
                 if (downloadInstance.getConversionParam().equals("subset")) {
                     String subsetParam = downloadInstance.getConversionParamValue();
@@ -296,23 +311,14 @@ public class Access extends AbstractApiBean {
 
                 logger.fine("downloadInstance: "+downloadInstance.getConversionParam()+","+downloadInstance.getConversionParamValue());
                 
-                break;
+                return downloadInstance;
             } else {
                 // Service unknown/not supported/bad arguments, etc.:
                 // TODO: throw new ServiceUnavailableException(); 
             }
         }
-        
-        /* 
-         * Provide "Access-Control-Allow-Origin" header:
-         */
-        response.setHeader("Access-Control-Allow-Origin", "*");
-                
-        /* 
-         * Provide some browser-friendly headers: (?)
-         */
-        //return retValue; 
-        return downloadInstance;
+//MAD: This may not be the right call, maybe we should actually blow up?
+        return null;
     }
     
     
@@ -452,6 +458,7 @@ public class Access extends AbstractApiBean {
 //MAD: I think the best course is to expand this method, allowing original format as well as converted
 //Also while I'm here maybe I can support PIDs
 // - PIDs is build into findDataFileOrDieWrapper. Maybe save that for later
+    
     // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
     @Path("datafiles/{fileIds}")
     @GET
@@ -459,7 +466,7 @@ public class Access extends AbstractApiBean {
     public Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
 
         long setLimit = systemConfig.getZipDownloadLimit();
-        if (!(setLimit > 0L)) {
+        if (setLimit <= 0L) {
             setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
         }
         
@@ -468,7 +475,7 @@ public class Access extends AbstractApiBean {
         logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
         
         if (fileIds == null || fileIds.equals("")) {
-            throw new BadRequestException();
+            throw new BadRequestException("FileId list required to download datafile bundle");
         }
 
         String apiToken = (apiTokenParam == null || apiTokenParam.equals("")) 
@@ -480,8 +487,7 @@ public class Access extends AbstractApiBean {
         StreamingOutput stream = new StreamingOutput() {
 
             @Override
-            public void write(OutputStream os) throws IOException,
-                    WebApplicationException {
+            public void write(OutputStream os) throws IOException, WebApplicationException {
                 String fileIdParams[] = fileIds.split(",");
                 DataFileZipper zipper = null; 
                 boolean accessToUnrestrictedFileAuthorized = false; 
@@ -490,6 +496,7 @@ public class Access extends AbstractApiBean {
                 
                 if (fileIdParams != null && fileIdParams.length > 0) {
                     logger.fine(fileIdParams.length + " tokens;");
+                    
                     for (int i = 0; i < fileIdParams.length; i++) {
                         logger.fine("token: " + fileIdParams[i]);
                         Long fileId = null;
@@ -500,7 +507,12 @@ public class Access extends AbstractApiBean {
                         }
                         if (fileId != null) {
                             logger.fine("attempting to look up file id " + fileId);
-                            DataFile file = dataFileService.find(fileId);
+                            
+                            DataFile file = findDataFileOrDieWrapper(fileId.toString());
+                            
+//MAD: This is where the code gets the file, first we'll need to decide on which version of the file....                            
+                            
+                            //MAD //DataFile file = dataFileService.find(fileId);
                             if (file != null) {
                                 
                                 if ((accessToUnrestrictedFileAuthorized && !file.isRestricted()) 
@@ -511,10 +523,37 @@ public class Access extends AbstractApiBean {
                                     }
                                     logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                                     //downloadInstance.addDataFile(file);
-                                            if (gbrecs == null && file.isReleased()){
-                                                GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
-                                                guestbookResponseService.save(gbr);
-                                            }
+                                    
+                                    GuestbookResponse gbr = null;
+                                    
+                                    if (gbrecs == null && file.isReleased()){
+                                        gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
+                                        guestbookResponseService.save(gbr);
+                                    }
+                                    
+                                    DownloadInfo dInfo = new DownloadInfo(file);
+
+                                    if (file.isTabularData()) {
+                                        String originalMimeType = file.getDataTable().getOriginalFileFormat();
+                                        dInfo.addServiceAvailable(new OptionalAccessService("original", originalMimeType, "format=original","Saved original (" + originalMimeType + ")"));
+
+                                        //MAD: Do I need to add another format for the processed output? or is that inherenet?
+                                    }
+                                    
+                                    DownloadInstance downloadInstance = new DownloadInstance(dInfo);
+                                    
+                                    if (gbr != null){
+                                        downloadInstance.setGbr(gbr);
+                                        downloadInstance.setDataverseRequestService(dvRequestService);
+                                        downloadInstance.setCommand(engineSvc);
+                                    }
+                                    
+                                    //MAD: Here is where I need to call the newly broken out getFileOfType functionality
+                                    //Maybe more of the surrounding stuff ported over should be added to that as well..
+                                    
+                                    
+                                    
+                                    
                                     if (zipper == null) {
                                         // This is the first file we can serve - so we now know that we are going to be able 
                                         // to produce some output.
@@ -547,7 +586,7 @@ public class Access extends AbstractApiBean {
                         }
                     }
                 } else {
-                    throw new BadRequestException();
+                    throw new BadRequestException("Invalid FileId list for download of datafile bundle");
                 }
 
                 if (zipper == null) {
