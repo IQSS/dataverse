@@ -80,7 +80,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     	if(guestbookResponse.getSelectedFileIds()!=null)
 logger.info("DL File Ids: " + guestbookResponse.getSelectedFileIds());
     	
-        if (guestbookResponse != null && guestbookResponse.getDataFile() != null && guestbookResponse.getSelectedFileIds()!=null     ){
+        if (guestbookResponse != null && guestbookResponse.getDataFile() != null      ){
             writeGuestbookResponseRecord(guestbookResponse);
             // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
             callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), true);
