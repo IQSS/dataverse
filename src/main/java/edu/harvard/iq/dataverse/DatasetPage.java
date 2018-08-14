@@ -3077,9 +3077,14 @@ public class DatasetPage implements java.io.Serializable {
         }
         
          this.guestbookResponse = this.guestbookResponseService.modifySelectedFileIds(guestbookResponse, getSelectedDownloadableFilesIdsString());
-         if(this.selectedDownloadableFiles.size()==1) {
-        	 guestbookResponse.setDataFile(datafileService.findCheapAndEasy(selectedDownloadableFiles.get(0).getId()));
-        	 
+         if(this.selectedDownloadableFiles.size()<2) {
+        	 if(this.selectedDownloadableFiles.size()==1) {
+        	 Long id = selectedDownloadableFiles.get(0).getId();
+        	 logger.info("id: " + id);
+        	 DataFile df = datafileService.findCheapAndEasy(id);
+        	 if(df!=null) logger.info("Have df");
+        	 guestbookResponse.setDataFile(df);
+        	 }
          } else {
         	 guestbookResponse.setDataFile(null);
          }
