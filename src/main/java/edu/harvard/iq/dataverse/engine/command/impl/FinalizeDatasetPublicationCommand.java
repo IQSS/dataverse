@@ -185,12 +185,14 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             List<String> args = idServiceBean.getProviderInformation();
             try {
                 String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
+                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
                 // We will skip trying to regiester the global identifiers for datafiles 
-                // if the naming protocol of the dataset global id is different from the 
+                // if "dependent" file-level identifiers are requested, AND the naming 
+                // protocol of the dataset global id is different from the
                 // one currently configured for the Dataverse. This is to specifically 
                 // address the issue with the datasets with handle ids registered, 
                 // that are currently configured to use DOI.
-                if (currentGlobalIdProtocol.equals(protocol)) {
+                if (currentGlobalIdProtocol.equals(protocol) || dataFilePIDFormat.equals("INDEPENDENT")) {
                     //A false return value indicates a failure in calling the service
                     for (DataFile df : dataset.getFiles()) {
                         logger.log(Level.FINE, "registering global id for file {0}", df.getId());
