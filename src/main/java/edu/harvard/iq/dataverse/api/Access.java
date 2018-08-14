@@ -311,14 +311,13 @@ public class Access extends AbstractApiBean {
 
                 logger.fine("downloadInstance: "+downloadInstance.getConversionParam()+","+downloadInstance.getConversionParamValue());
                 
-                return downloadInstance;
             } else {
                 // Service unknown/not supported/bad arguments, etc.:
                 // TODO: throw new ServiceUnavailableException(); 
             }
         }
 //MAD: This may not be the right call, maybe we should actually blow up?
-        return null;
+        return downloadInstance;
     }
     
     
@@ -551,7 +550,7 @@ public class Access extends AbstractApiBean {
                                     //MAD: Here is where I need to call the newly broken out getFileOfType functionality
                                     //Maybe more of the surrounding stuff ported over should be added to that as well..
                                     
-                                    
+                                    //MAD: I should do some IT tests for this functionality for now....
                                     
                                     
                                     if (zipper == null) {
