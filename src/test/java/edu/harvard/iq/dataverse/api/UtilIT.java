@@ -548,6 +548,15 @@ public class UtilIT {
                 //                .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/access/datafile/" + fileId);
     }
+    
+    static Response downloadFiles(Integer[] fileIds) {
+        String getString = "/api/access/datafiles/";
+        for(Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        
+        return given().get(getString);
+    }
 
     static Response downloadFile(Integer fileId, String apiToken) {
         return given()
@@ -557,6 +566,13 @@ public class UtilIT {
                  */
                 //.header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
+    }
+    
+//MAD: Add persistentId functions?
+    
+    static Response downloadFileOriginal(Integer fileId) {
+        return given()
+                .get("/api/access/datafile/" + fileId + "&format=original");
     }
 
     static Response subset(String fileId, String variables, String apiToken) {
