@@ -186,7 +186,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             try {
                 String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
                 String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-                // We will skip trying to regiester the global identifiers for datafiles 
+                // We will skip trying to register the global identifiers for datafiles 
                 // if "dependent" file-level identifiers are requested, AND the naming 
                 // protocol of the dataset global id is different from the
                 // one currently configured for the Dataverse. This is to specifically 
