@@ -548,15 +548,6 @@ public class UtilIT {
                 //                .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/access/datafile/" + fileId);
     }
-    
-    static Response downloadFiles(Integer[] fileIds) {
-        String getString = "/api/access/datafiles/";
-        for(Integer fileId : fileIds) {
-            getString += fileId + ",";
-        }
-        //System.out.println("Download multiple get string: " + getString);
-        return given().get(getString);
-    }
 
     static Response downloadFile(Integer fileId, String apiToken) {
         return given()
@@ -572,6 +563,24 @@ public class UtilIT {
     static Response downloadFileOriginal(Integer fileId) {
         return given()
                 .get("/api/access/datafile/" + fileId + "?format=original");
+    }
+    
+    static Response downloadFiles(Integer[] fileIds) {
+        String getString = "/api/access/datafiles/";
+        for(Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        //System.out.println("Download multiple get string: " + getString);
+        return given().get(getString);
+    }
+    
+    static Response downloadFilesOriginal(Integer[] fileIds) {
+        String getString = "/api/access/datafiles/";
+        for(Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        //System.out.println("Download multiple get string: " + getString);
+        return given().get(getString + "?format=original");
     }
 
     static Response subset(String fileId, String variables, String apiToken) {

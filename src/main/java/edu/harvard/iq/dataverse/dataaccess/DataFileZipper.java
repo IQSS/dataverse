@@ -214,17 +214,29 @@ public class DataFileZipper {
     }
     
     public long addFileToZipStream(DataFile dataFile) throws IOException {
+        return addFileToZipStream(dataFile, false);
+    }
+    
+    public long addFileToZipStream(DataFile dataFile, boolean getOriginal) throws IOException {
         if (zipOutputStream == null) {
             openZipStream();
         }
-        
+
         boolean createManifest = fileManifest != null;
         
         DataAccessRequest daReq = new DataAccessRequest();
         StorageIO<DataFile> accessObject = DataAccess.getStorageIO(dataFile, daReq);
+        
+        //MAD: This may not be correctly checking permissions
+        if(getOriginal) {
+            StoredOriginalFile sof = new StoredOriginalFile();
+            accessObject = sof.retreive(accessObject); //switch to add original file instead
+        }
 
         if (accessObject != null) {
-            accessObject.open();
+            if(!getOriginal) { //MAD: This may be a hack
+                accessObject.open();
+            }
             long byteSize = 0;
 
             String fileName = accessObject.getFileName();

@@ -510,12 +510,25 @@ public class Access extends AbstractApiBean {
                                     if (!file.isRestricted()) {
                                         accessToUnrestrictedFileAuthorized = true;
                                     }
+                                    
+                                    Boolean getOriginal = false;
+                                    for (String key : uriInfo.getQueryParameters().keySet()) {
+                                        String value = uriInfo.getQueryParameters().getFirst(key);
+                                        if("format".equals(key) && "original".equals(value)) {
+                                            getOriginal = true;
+                                        }
+                                    }
+                                    
+//MAD: Instead of using the downloadInstance functionality, instead I should check here for the uriInfo like that functionality does
+//      If original has been provided, use it.
+//      This may mean extending parts of DataFileZipper. I'm a bit confused how to get from DataFile to the specific format...
+
                                     logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                                     //downloadInstance.addDataFile(file);
-                                            if (gbrecs == null && file.isReleased()){
-                                                GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
-                                                guestbookResponseService.save(gbr);
-                                            }
+                                    if (gbrecs == null && file.isReleased()){
+                                        GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
+                                        guestbookResponseService.save(gbr);
+                                    }
                                     if (zipper == null) {
                                         // This is the first file we can serve - so we now know that we are going to be able 
                                         // to produce some output.
@@ -525,7 +538,7 @@ public class Access extends AbstractApiBean {
                                         response.setHeader("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
                                     }
                                     if (sizeTotal + file.getFilesize() < zipDownloadSizeLimit) {
-                                        sizeTotal += zipper.addFileToZipStream(file);
+                                        sizeTotal += zipper.addFileToZipStream(file, getOriginal);
                                     } else {
                                         String fileName = file.getFileMetadata().getLabel();
                                         String mimeType = file.getContentType();
