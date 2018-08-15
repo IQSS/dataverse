@@ -282,7 +282,7 @@
                     <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
                 </div>
                 
-                <!-- DOWNLOAD -->
+                <!-- DOWNLOAD Multiple-->
                 <div jsf:id="downloadButtonBlock" class="btn-group" 
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                     and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable}">
@@ -290,18 +290,71 @@
                                     type="button" styleClass="btn btn-default"
                                     disabled="#{DatasetPage.lockedFromDownload}"
                                     update="@form"
-                                    actionListener="#{DatasetPage.validateFilesForDownload(false)}">
+                                    actionListener="#{DatasetPage.validateFilesForDownload(false, false)}">
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                     </p:commandLink>
                     <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                     <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
                                     type="button" styleClass="btn btn-default"
                                     disabled="#{DatasetPage.lockedFromDownload}"
-                                    action="#{DatasetPage.validateFilesForDownload(true)}"
+                                    action="#{DatasetPage.validateFilesForDownload(true, false)}"
                                     update="@form" oncomplete="">
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                     </p:commandLink>
                 </div>
+                
+<!--MAD: For now just creating two versions side by side -->
+
+                <div jsf:id="downloadButtonBlock2" class="btn-group" 
+                     jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
+                                    and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable}">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
+                        </button>
+                        <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+<!--MAD: Each li tag will have two render options, one for popup and one not . Test those-->
+                            <li>
+                                <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                                disabled="#{DatasetPage.lockedFromDownload}"
+                                                update="@form"
+                                                actionListener="#{DatasetPage.validateFilesForDownload(false, false)}">
+                                    <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
+                                </p:commandLink>
+                                <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
+                                <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                                disabled="#{DatasetPage.lockedFromDownload}"
+                                                action="#{DatasetPage.validateFilesForDownload(true, false)}"
+                                                update="@form" oncomplete="">
+                                    <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
+                                </p:commandLink>
+                            </li>
+                            <li>
+                                <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                                disabled="#{DatasetPage.lockedFromDownload}"
+                                                update="@form"
+                                                actionListener="#{DatasetPage.validateFilesForDownload(false, true)}">
+                                    <span class="glyphicon glyphicon-download-alt"/> #{bundle.downloadOriginal}
+                                </p:commandLink>
+                                <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
+                                <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                                disabled="#{DatasetPage.lockedFromDownload}"
+                                                action="#{DatasetPage.validateFilesForDownload(true, true)}"
+                                                update="@form" oncomplete="">
+                                    <span class="glyphicon glyphicon-download-alt"/> #{bundle.downloadOriginal}
+                                </p:commandLink>
+                            </li>
+                        </ul>
+                </div>
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
                                 type="button" styleClass="btn btn-default"                                   
                                 update="@form" action="#{DatasetPage.requestAccessMultipleFiles()}"

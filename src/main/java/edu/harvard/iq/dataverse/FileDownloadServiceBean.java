@@ -93,7 +93,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 }
             }
             
-            callDownloadServlet(guestbookResponse.getSelectedFileIds(), true);
+            callDownloadServlet(guestbookResponse.getSelectedFileIds(), true, false);
         }
         
         
@@ -109,11 +109,19 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         }
     }
-    public void callDownloadServlet(String multiFileString, Boolean gbRecordsWritten){
+    
+    public void callDownloadServlet(String multiFileString, Boolean gbRecordsWritten, Boolean downloadOriginal){
+//MAD: Add original if flagged
+        
         String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
-        if (gbRecordsWritten){
+        if (gbRecordsWritten && !downloadOriginal){
             fileDownloadUrl += "?gbrecs=true";
+        } else if (gbRecordsWritten && downloadOriginal){
+            fileDownloadUrl += "?gbrecs=true&format=original";
+        } else if (!gbRecordsWritten && downloadOriginal){
+            fileDownloadUrl += "?format=original";
         }
+        
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
         } catch (IOException ex) {
