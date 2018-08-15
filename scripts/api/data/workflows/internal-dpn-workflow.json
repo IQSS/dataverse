@@ -1,0 +1,15 @@
+{
+    "name": "DPN submission workflow",
+    "steps": [
+        {
+            "provider":":internal",
+            "stepType":"dpn",
+            "parameters": {
+                "host":"qdr.duracloud.org",
+                "username":"jimmyers",
+                "password":"dc1squonk",
+                "stepName":"dpn submission"
+            }
+        }
+    ]
+}
