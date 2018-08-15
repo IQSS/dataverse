@@ -71,7 +71,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 		try {
 			store = storeManager.getPrimaryContentStore();
 
-			String name = context.getDataset().getGlobalId().asString().replace(':', '-').replace('/', '-')
+			String name = context.getDataset().getGlobalId().asString().replace(':', '-').replace('/', '-').replace('.','-')
 					.toLowerCase();
 			store.createSpace(name);
 			// Store file
