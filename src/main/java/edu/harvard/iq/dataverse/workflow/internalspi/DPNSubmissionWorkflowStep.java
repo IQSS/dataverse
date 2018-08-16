@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -80,7 +81,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 
             String checksum = store.addContent(name, contentId, digestInputStream, -1l, null, null, null);
             logger.info("Content: " + name + " added with checksum: " + checksum);
-            String localchecksum = Base64.encodeBase64String(digestInputStream.getMessageDigest().digest());
+            String localchecksum = new BigInteger(1, digestInputStream.getMessageDigest().digest()).toString(16);
             if (!checksum.equals(localchecksum)) {
             	logger.severe(checksum + " not equal to " + localchecksum);
                 return new Failure("Error in transferring file to DPN",
