@@ -53,6 +53,9 @@ public class PermissionServiceBean {
 
     private static final Logger logger = Logger.getLogger(PermissionServiceBean.class.getName());
 
+    /**
+     * A set of permissions that con only be granted to {@link AuthentictedUser}s.
+     */
     private static final Set<Permission> PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY
             = EnumSet.copyOf(Arrays.asList(Permission.values()).stream()
                     .filter(Permission::requiresAuthenticatedUser)
@@ -375,58 +378,7 @@ public class PermissionServiceBean {
         }
         return permissions;
     }
-    
-    private void addGroupPermissionsFor(Set<RoleAssignee> ras, DvObject dvo, Set<Permission> permissions) {
-        for (RoleAssignment asmnt : assignmentsFor(ras, dvo)) {
-            permissions.addAll(asmnt.getRole().permissions());
-        }
-    }
-
-
-    /**
-     * Calculates permissions based on object state and other context
-     *
-     * @param dvo
-     * @return
-     */
-    private Set<Permission> getInferredPermissions(DvObject dvo) {
-
-        Set<Permission> permissions = EnumSet.noneOf(Permission.class);
-
-        if (isPublicallyDownloadable(dvo)) {
-            permissions.add(Permission.DownloadFile);
-        }
-
-        return permissions;
-    }
-
-    /**
-     * unrestricted files that are part of a release dataset automatically get
-     * download permission for everybody:
-     */
-    private boolean isPublicallyDownloadable(DvObject dvo) {
-        if (dvo instanceof DataFile) {
-            // unrestricted files that are part of a release dataset 
-            // automatically get download permission for everybody:
-            //      -- L.A. 4.0 beta12
-
-            DataFile df = (DataFile) dvo;
-
-            if (!df.isRestricted()) {
-                if (df.getOwner().getReleasedVersion() != null) {
-                    if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
-                        for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
-                            if (df.equals(fm.getDataFile())) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
+   
     /**
      * Returns all the role assignments that are effective for {@code ra} over
      * {@code d}. Traverses the containment hierarchy of the {@code d}.
@@ -583,44 +535,6 @@ public class PermissionServiceBean {
         return getDvObjectIdsUserHasRoleOn(user, roles, null, false);
     }
 
-    /*
-    Method takes in a user and optional list of roles and dvobject type
-    queries the role assigment table filtering by optional roles and dv
-    returns dvobject ids
-     */
-    private String getRolesClause(List<DataverseRole> roles) {
-        StringBuilder roleStringBld = new StringBuilder();
-        if (roles != null && !roles.isEmpty()) {
-            roleStringBld.append(" and role_id in (");
-            boolean first = true;
-            for (DataverseRole role : roles) {
-                if (!first) {
-                    roleStringBld.append(",");
-                }
-                roleStringBld.append(role.getId());
-                first = false;
-            }
-            roleStringBld.append(")");
-        }
-        return roleStringBld.toString();
-    }
-
-    private String getTypesClause(List<String> types) {
-        boolean firstType = true;
-        StringBuilder typeStringBld = new StringBuilder();
-        if (types != null && !types.isEmpty()) {
-            typeStringBld.append(" dtype in (");
-            for (String type : types) {
-                if (!firstType) {
-                    typeStringBld.append(",");
-                }
-                typeStringBld.append("'").append(type).append("'");
-            }
-            typeStringBld.append(") and ");
-        }
-        return typeStringBld.toString();
-    }
-
     public List<Long> getDvObjectIdsUserHasRoleOn(User user, List<DataverseRole> roles, List<String> types, boolean indirect) {
 
         String roleString = getRolesClause(roles);
@@ -726,6 +640,96 @@ public class PermissionServiceBean {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
             }
         }
+    }
+    
+    
+    private void addGroupPermissionsFor(Set<RoleAssignee> ras, DvObject dvo, Set<Permission> permissions) {
+        for (RoleAssignment asmnt : assignmentsFor(ras, dvo)) {
+            permissions.addAll(asmnt.getRole().permissions());
+        }
+    }
+
+
+    /**
+     * Calculates permissions based on object state and other context
+     *
+     * @param dvo
+     * @return
+     */
+    private Set<Permission> getInferredPermissions(DvObject dvo) {
+
+        Set<Permission> permissions = EnumSet.noneOf(Permission.class);
+
+        if (isPublicallyDownloadable(dvo)) {
+            permissions.add(Permission.DownloadFile);
+        }
+
+        return permissions;
+    }
+
+    /**
+     * unrestricted files that are part of a release dataset automatically get
+     * download permission for everybody:
+     */
+    private boolean isPublicallyDownloadable(DvObject dvo) {
+        if (dvo instanceof DataFile) {
+            // unrestricted files that are part of a release dataset 
+            // automatically get download permission for everybody:
+            //      -- L.A. 4.0 beta12
+
+            DataFile df = (DataFile) dvo;
+
+            if (!df.isRestricted()) {
+                if (df.getOwner().getReleasedVersion() != null) {
+                    if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
+                        for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
+                            if (df.equals(fm.getDataFile())) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Method takes in a user and optional list of roles and dvobject type
+     * queries the role assignment table filtering by optional roles and dv
+     * returns dvobject ids
+     */
+    private String getRolesClause(List<DataverseRole> roles) {
+        StringBuilder roleStringBld = new StringBuilder();
+        if (roles != null && !roles.isEmpty()) {
+            roleStringBld.append(" and role_id in (");
+            boolean first = true;
+            for (DataverseRole role : roles) {
+                if (!first) {
+                    roleStringBld.append(",");
+                }
+                roleStringBld.append(role.getId());
+                first = false;
+            }
+            roleStringBld.append(")");
+        }
+        return roleStringBld.toString();
+    }
+
+    private String getTypesClause(List<String> types) {
+        boolean firstType = true;
+        StringBuilder typeStringBld = new StringBuilder();
+        if (types != null && !types.isEmpty()) {
+            typeStringBld.append(" dtype in (");
+            for (String type : types) {
+                if (!firstType) {
+                    typeStringBld.append(",");
+                }
+                typeStringBld.append("'").append(type).append("'");
+            }
+            typeStringBld.append(") and ");
+        }
+        return typeStringBld.toString();
     }
 
 }
