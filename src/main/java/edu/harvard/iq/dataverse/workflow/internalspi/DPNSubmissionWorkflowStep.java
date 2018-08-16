@@ -80,7 +80,9 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 
             String checksum = store.addContent(name, contentId, digestInputStream, -1l, null, null, null);
             logger.info("Content: " + name + " added with checksum: " + checksum);
-            if (!checksum.equals(Base64.encodeBase64String(digestInputStream.getMessageDigest().digest()))) {
+            String localchecksum = Base64.encodeBase64String(digestInputStream.getMessageDigest().digest());
+            if (!checksum.equals(localchecksum)) {
+            	logger.severe(checksum + " not equal to " + localchecksum);
                 return new Failure("Error in transferring file to DPN",
                         "DPN Submission Failure: incomplete archive transfer");
             }
