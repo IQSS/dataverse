@@ -146,7 +146,7 @@ public class DatasetVersion implements Serializable {
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
     private String archiveNote;
     
-    @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
+    @Column(nullable=true, columnDefinition = "TEXT")
     private String replicaLocation;
     
     
@@ -268,11 +268,6 @@ public class DatasetVersion implements Serializable {
     }
 
     public void setReplicaLocation(String location) {
-        // @todo should this be using bean validation for trusting  length?
-        if (location != null && location.length() > ARCHIVE_NOTE_MAX_LENGTH) {
-            throw new IllegalArgumentException("Error setting replicaLocation: String length is greater than maximum (" + ARCHIVE_NOTE_MAX_LENGTH + ")."
-                    + "  StudyVersion id=" + id + ", archiveNote=" + location);
-        }
         this.replicaLocation = location;
     }
 
