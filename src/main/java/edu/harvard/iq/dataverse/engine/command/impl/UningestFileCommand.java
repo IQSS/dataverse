@@ -167,7 +167,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
             } catch (Exception e) {
                 logger.warning("Unable to delete WorldMap file - may not have existed. Data File id: " + uningest.getId());
             }
-            ctxt.mapLayerMetadata().deleteMapLayerMetadataObject(mapLayerMetadata, getUser());
+            ctxt.mapLayerMetadata().deleteMapLayerMetadataObject(mapLayerMetadata, getRequest());
         }
         
         try{

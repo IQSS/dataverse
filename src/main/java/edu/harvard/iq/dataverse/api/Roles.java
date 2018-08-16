@@ -24,33 +24,33 @@ import javax.ws.rs.core.Response;
 @Path("roles")
 public class Roles extends AbstractApiBean {
 	
-	@GET
-	@Path("{id}")
-	public Response viewRole( @PathParam("id") Long id) {
-        return response( ()-> {
+    @GET
+    @Path("{id}")
+    public Response viewRole( @PathParam("id") Long id) {
+        return response( (req)-> {
             final User user = findUserOrDie(); 
             final DataverseRole role = findRoleOrDie(id);
-            return ( permissionSvc.userOn(user, role.getOwner()).has(Permission.ManageDataversePermissions) ) 
+            return ( permissionSvc.requestOn(req, role.getOwner()).has(Permission.ManageDataversePermissions) ) 
                     ? ok( json(role) ) : permissionError("Permission required to view roles.");
         });
-	}
-	
-	@DELETE
-	@Path("{id}")
-	public Response deleteRole( @PathParam("id") Long id ) {
+    }
+
+    @DELETE
+    @Path("{id}")
+    public Response deleteRole( @PathParam("id") Long id ) {
         return response( req -> {
             execCommand( new DeleteRoleCommand(req, findRoleOrDie(id)) );
             return ok("role " + id + " deleted.");
         });
-	}
-	
-	@POST
-	public Response createNewRole( RoleDTO roleDto,
-                                   @QueryParam("dvo") String dvoIdtf ) {
-        return response( req -> ok(json(execCommand(
-                                  new CreateRoleCommand(roleDto.asRole(),
-                                                        req,findDataverseOrDie(dvoIdtf))))));
-	}
+    }
+
+    @POST
+    public Response createNewRole( RoleDTO roleDto,
+                               @QueryParam("dvo") String dvoIdtf ) {
+    return response( req -> ok(json(execCommand(
+                              new CreateRoleCommand(roleDto.asRole(),
+                                                    req,findDataverseOrDie(dvoIdtf))))));
+    }
     
     private DataverseRole findRoleOrDie( long id ) throws WrappedResponse {
         DataverseRole role = rolesSvc.find(id);

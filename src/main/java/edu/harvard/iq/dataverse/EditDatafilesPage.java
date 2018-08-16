@@ -108,8 +108,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     SystemConfig systemConfig;
     @EJB
     DataverseLinkingServiceBean dvLinkingService;
-    @Inject
+    @EJB
     DataverseRequestServiceBean dvRequestService;
+    
     @Inject PermissionsWrapper permissionsWrapper;
     @Inject FileDownloadHelper fileDownloadHelper;
     @Inject ProvPopupFragmentBean provPopupFragmentBean;
@@ -316,7 +317,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         // Check the permission
         //
-        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), this.dataset).has(permissionToCheck);
+        boolean hasPermission = this.permissionService.requestOn(dvRequestService.getDataverseRequest(), dataset).has(permissionToCheck);
 
         // Save the permission
         this.datasetPermissionMap.put(permName, hasPermission);
@@ -1584,7 +1585,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // -----------------------------------------------------------
             InputStream dropBoxStream = this.getDropBoxInputStream(fileLink, dropBoxMethod);
             if (dropBoxStream==null){
-                logger.severe("Could not retrieve dropgox input stream for: " + fileLink);
+                logger.severe( ()->"Could not retrieve dropgox input stream for: " + fileLink );
                 continue;  // Error skip this file
             }
             
@@ -1613,7 +1614,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 datafiles = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", systemConfig);
                 
             } catch (IOException ex) {
-                this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
+                logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
                 continue;
             }/*catch (FileExceedsMaxSizeException ex){
                 this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}: {2}", new Object[]{fileName, fileLink, ex.getMessage()});
@@ -1645,7 +1646,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // Check if there are duplicate files or ingest warnings
                 // -----------------------------------------------------------
                 uploadWarningMessage = processUploadedFileList(datafiles);
-                logger.fine("Warning message during upload: " + uploadWarningMessage);
+                logger.fine(()->"Warning message during upload: " + uploadWarningMessage);
                 /*if (warningMessage != null){
                      logger.fine("trying to send faces message to " + event.getComponent().getClientId());
                      FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
@@ -1871,7 +1872,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             dFileList = FileUtil.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType(), systemConfig);
             
         } catch (IOException ioex) {
-            logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
+            logger.warning(()->"Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
             return;
         } /*catch (FileExceedsMaxSizeException ex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ex.getMessage());
@@ -2050,7 +2051,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         return null;
     }
     
-    private Map<String, String> temporaryThumbnailsMap = new HashMap<>();
+    private final Map<String, String> temporaryThumbnailsMap = new HashMap<>();
     
     public boolean isTemporaryPreviewAvailable(String fileSystemId, String mimeType) {
         if (temporaryThumbnailsMap.get(fileSystemId) != null && !temporaryThumbnailsMap.get(fileSystemId).isEmpty()) {
@@ -2232,10 +2233,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         return false;
     }
     
-    /* 
+    /**
      * Items for the "Designated this image as the Dataset thumbnail: 
      */
-    
     private FileMetadata fileMetadataSelectedForThumbnailPopup = null; 
 
     /**
@@ -2506,7 +2506,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         // New, custom file category (if specified):
         if (newCategoryName != null) {
-            logger.fine("Adding new category, " + newCategoryName + " for file " + fileMetadataSelectedForTagsPopup.getLabel());
+            logger.fine(()->"Adding new category, " + newCategoryName + " for file " + fileMetadataSelectedForTagsPopup.getLabel());
             fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
         } else {
             logger.fine("no category specified");
@@ -2602,7 +2602,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             try {
                 uploadStream = file.getInputstream();
             } catch (IOException ioex) {
-                logger.info("the file " + file.getFileName() + " failed to upload!");
+                logger.info(()->"the file " + file.getFileName() + " failed to upload!");
                 List<String> args = Arrays.asList(file.getFileName());
                 String msg = BundleUtil.getStringFromBundle("dataset.file.uploadFailure.detailmsg", args);
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadFailure"), msg);
@@ -2612,7 +2612,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
             savedLabelsTempFile = saveTempFile(uploadStream);
 
-            logger.fine(file.getFileName() + " is successfully uploaded.");
+            logger.fine(()->file.getFileName() + " is successfully uploaded.");
             List<String> args = Arrays.asList(file.getFileName());
             FacesMessage message = new FacesMessage(BundleUtil.getStringFromBundle("dataset.file.upload", args));
             FacesContext.getCurrentInstance().addMessage(null, message);
@@ -2704,7 +2704,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // that had been saved previously. So we can look up the file metadatas
                 // by the file and version ids:
                 for (Long fileId : selectedFileIdsList) {
-                    logger.fine("attempting to retrieve file metadata for version id " + datasetVersionId + " and file id " + fileId);
+                    logger.fine(()->"attempting to retrieve file metadata for version id " + datasetVersionId + " and file id " + fileId);
                     FileMetadata fileMetadata =  datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(datasetVersionId, fileId);
                     if (fileMetadata != null) {
                         logger.fine("Success!");
@@ -2718,7 +2718,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
                     for (Long fileId : selectedFileIdsList) {
                         if (fileId.equals(fileMetadata.getDataFile().getId())) {
-                            logger.fine("Success! - found the file id "+fileId+" in the brand new edit version.");
+                            logger.fine(()->"Success! - found the file id "+fileId+" in the brand new edit version.");
                             fileMetadatas.add(fileMetadata);
                             selectedFileIdsList.remove(fileId);
                             break;

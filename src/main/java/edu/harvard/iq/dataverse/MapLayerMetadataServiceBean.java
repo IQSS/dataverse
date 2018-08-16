@@ -1,16 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
@@ -48,6 +42,9 @@ public class MapLayerMetadataServiceBean {
     
     @EJB
     PermissionServiceBean permissionService;
+        
+    @EJB
+    DataverseRequestServiceBean dvRequestSvc;
     
     @EJB
     SystemConfig systemConfig;
@@ -109,14 +106,14 @@ public class MapLayerMetadataServiceBean {
         First check if the given user has permission to edit this data.
         
     */
-    public boolean deleteMapLayerMetadataObject(MapLayerMetadata mapLayerMetadata, User user){
+    public boolean deleteMapLayerMetadataObject(MapLayerMetadata mapLayerMetadata, DataverseRequest req){
         logger.info("deleteMapLayerMetadataObject");
         
-        if ((mapLayerMetadata == null)||(user==null)){
+        if ((mapLayerMetadata == null)||(req==null)){
             return false;
         }
         
-        if (permissionService.userOn(user, mapLayerMetadata.getDataFile().getOwner()).has(Permission.EditDataset)) { 
+        if (permissionService.requestOn(req, mapLayerMetadata.getDataFile().getOwner()).has(Permission.EditDataset)) { 
 
             // Remove thumbnails associated with the map metadata
             // (this also sets theto set the "preview image" flag to false)
@@ -195,9 +192,9 @@ public class MapLayerMetadataServiceBean {
                 String iconBaseTag = "img";
                 String iconThumbTagPrefix = "thumb";
                 for (String cachedFileTag : cachedObjectsTags) {
-                    logger.info("found AUX tag: "+cachedFileTag);
+                    logger.info(()->"found AUX tag: "+cachedFileTag);
                     if (iconBaseTag.equals(cachedFileTag) || cachedFileTag.startsWith(iconThumbTagPrefix)) {
-                        logger.info("deleting cached AUX object "+cachedFileTag);
+                        logger.info(()->"deleting cached AUX object "+cachedFileTag);
                         storageIO.deleteAuxObject(cachedFileTag);
                     }
                 }

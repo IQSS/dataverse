@@ -3,12 +3,13 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupUtil;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -163,56 +164,6 @@ public class PermissionServiceBean {
                 return has(requiredPermissionSet);
             }
         }
-    }
-
-    /**
-     * A permission query for a given role assignee. Does not cover
-     * request-level permissions.
-     */
-    public class StaticPermissionQuery {
-
-        final DvObject subject;
-        final RoleAssignee user;
-
-        private StaticPermissionQuery(RoleAssignee user, DvObject subject) {
-            this.subject = subject;
-            this.user = user;
-        }
-
-        public StaticPermissionQuery user(RoleAssignee anotherUser) {
-            return new StaticPermissionQuery(anotherUser, subject);
-        }
-
-        /**
-         * "Fast and loose" query mechanism, allowing to pass the command class
-         * name, does not take request-level permissions into account. Command
-         * is assumed to live in
-         * {@code edu.harvard.iq.dataverse.engine.command.impl.}
-         *
-         * @deprecated Use DynamicPermissionQuery instead
-         * @param commandName
-         * @return {@code true} iff the user has the permissions required by the
-         * command on the object.
-         * @throws ClassNotFoundException
-         */
-        @Deprecated
-        public boolean canIssueCommand(String commandName) throws ClassNotFoundException {
-            return isUserAllowedOn(user,
-                    (Class<? extends Command>) Class.forName("edu.harvard.iq.dataverse.engine.command.impl." + commandName), subject);
-        }
-
-        public Set<Permission> get() {
-            return permissionsFor(user, subject);
-        }
-
-        public boolean has(Permission p) {
-            return hasPermissionsFor(user, subject, EnumSet.of(p));
-        }
-
-        public boolean has(String pName) {
-            return has(Permission.valueOf(pName));
-        }
-
     }
 
     public List<RoleAssignment> assignmentsOn(DvObject d) {
@@ -444,14 +395,6 @@ public class PermissionServiceBean {
         }
     }
 
-    public StaticPermissionQuery userOn(RoleAssignee u, DvObject d) {
-        if (u == null) {
-            // get guest user for dataverse d
-            u = GuestUser.get();
-        }
-        return new StaticPermissionQuery(u, d);
-    }
-
     public RequestPermissionQuery on(DvObject d) {
         if (d == null) {
             throw new IllegalArgumentException("Cannot query permissions on a null DvObject");
@@ -477,13 +420,21 @@ public class PermissionServiceBean {
      * Go from (User, Permission) to a list of Dataverse objects that the user
      * has the permission on.
      *
+     * Note: for performance reasons:
+     * <ul>
+     *  <li>Ignores {@link IpGroup}s, which are not useful in the current use cases</li>
+     *  <li>Ignores containment hierarchy, which does not matter at the moment since
+     *       all dataverses are permission roots.</li>
+     * </ul>
+     * 
+     * 
      * @param user
      * @param permission
-     * @return The list of dataverses {@code user} has permission
-     * {@code permission} on.
+     * @return The list of dataverses {@code user} has permission {@code permission} on.
      */
     public List<Dataverse> getDataversesUserHasPermissionOn(AuthenticatedUser user, Permission permission) {
-        Set<Group> groups = groupService.groupsFor(user);
+        DataverseRequest fauxRequest = new DataverseRequest(user, (IpAddress)null);
+        Set<Group> groups = groupService.groupsFor(fauxRequest);
         String identifiers = GroupUtil.getAllIdentifiersForUser(user, groups);
         /**
          * @todo Are there any strings in identifiers that would break this SQL
@@ -496,7 +447,7 @@ public class PermissionServiceBean {
         List<Dataverse> dataversesUserHasPermissionOn = new LinkedList<>();
         for (int dvIdAsInt : dataverseIdsToCheck) {
             Dataverse dataverse = dataverseService.find(Long.valueOf(dvIdAsInt));
-            if (userOn(user, dataverse).has(permission)) {
+            if (requestOn(fauxRequest, dataverse).has(permission)) {
                 dataversesUserHasPermissionOn.add(dataverse);
             }
         }

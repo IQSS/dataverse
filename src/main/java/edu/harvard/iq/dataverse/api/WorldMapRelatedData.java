@@ -1,30 +1,22 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.worldmapauth.TokenApplicationTypeServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
@@ -92,10 +84,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
     MapLayerMetadataServiceBean mapLayerMetadataService;
 
     @EJB
-    DatasetServiceBean datasetService;
-
-    @EJB
-    DataFileServiceBean dataFileService;
+    DataFileServiceBean dataFileSvc;
     
     @EJB
     UserNotificationServiceBean userNotificationService;
@@ -106,15 +95,6 @@ public class WorldMapRelatedData extends AbstractApiBean {
     @EJB
     TokenApplicationTypeServiceBean tokenAppServiceBean;
 
-    @EJB
-    AuthenticationServiceBean dataverseUserService;
-
-    @EJB
-    PermissionServiceBean permissionService;
-    
-    @EJB
-    SystemConfig systemConfig;
-     
     @Inject
     DataverseSession session;
     
@@ -214,13 +194,13 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
 
         // Check if the user exists
-        AuthenticatedUser dvUser = dataverseUserService.findByID(dvuser_id);
+        AuthenticatedUser dvUser = authSvc.findByID(dvuser_id);
 	if ( dvUser == null ){
             return error(Response.Status.FORBIDDEN, "Invalid user");
         }
 
         // Check if this file exists
-        DataFile dfile = dataFileService.find(datafile_id);
+        DataFile dfile = dataFileSvc.find(datafile_id);
         if (dfile==null){
            return error(Response.Status.NOT_FOUND, "DataFile not found for id: " + datafile_id);
         }
@@ -234,7 +214,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
         
         // Does this user have permission to edit metadata for this file?    
-        if (!permissionService.request(createDataverseRequest(dvUser)).on(dfile.getOwner()).has(Permission.EditDataset)){
+        if (!permissionSvc.request(createDataverseRequest(dvUser)).on(dfile.getOwner()).has(Permission.EditDataset)){
            String errMsg = "The user does not have permission to edit metadata for this file.";
            return error(Response.Status.FORBIDDEN, errMsg);
         }
@@ -592,7 +572,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
          }
 
         // check permissions!
-        if (!permissionService.request( createDataverseRequest(dvUser) ).on(dfile.getOwner()).has(Permission.EditDataset)){
+        if (!permissionSvc.request( createDataverseRequest(dvUser) ).on(dfile.getOwner()).has(Permission.EditDataset)){
            String errMsg = "The user does not have permission to edit metadata for this file. (MapLayerMetadata)";
            return error(Response.Status.FORBIDDEN, errMsg);
         }
@@ -697,7 +677,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         try ( StringReader rdr = new StringReader(jsonData) ) {
             jsonInfo = Json.createReader(rdr).readObject();
         } catch ( JsonParsingException jpe ) {
-            logger.log(Level.SEVERE, "Json: " + jsonData);
+            logger.severe(()->"Json: " + jsonData);
             return error( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
         
@@ -732,9 +712,10 @@ public class WorldMapRelatedData extends AbstractApiBean {
        // (6) Delete the mapLayerMetadata
        //   (note: permissions checked here for a second time by the mapLayerMetadataService call)
        //
-       if (!(this.mapLayerMetadataService.deleteMapLayerMetadataObject(mapLayerMetadata, wmToken.getDataverseUser()))){
+       DataverseRequest dvReq = createDataverseRequest(wmToken.getDataverseUser());
+       if (!(this.mapLayerMetadataService.deleteMapLayerMetadataObject(mapLayerMetadata, dvReq))){
             return error(Response.Status.PRECONDITION_FAILED, "Failed to delete layer");               
-       };
+       }
 
        
        return ok("Map layer metadata deleted.");

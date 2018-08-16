@@ -31,10 +31,9 @@ public class DeleteMapLayerMetadataCommand extends AbstractCommand<Boolean> {
         if (mapLayerMetadata == null) {
             return false;
         }
-        boolean mapDeleted = ctxt.mapLayerMetadata().deleteMapLayerMetadataObject(mapLayerMetadata, getUser());
-        logger.info("Boolean returned from deleteMapLayerMetadataObject: " + mapDeleted);
+        boolean mapDeleted = ctxt.mapLayerMetadata().deleteMapLayerMetadataObject(mapLayerMetadata, getRequest());
+        logger.info(()->"Boolean returned from deleteMapLayerMetadataObject: " + mapDeleted);
         return mapDeleted;
-
     }
 
 }

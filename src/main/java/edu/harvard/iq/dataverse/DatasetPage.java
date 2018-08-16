@@ -806,7 +806,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
 
-    private Map<Long, String> datafileThumbnailsMap = new HashMap<>();
+    private final Map<Long, String> datafileThumbnailsMap = new HashMap<>();
 
     public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
         
@@ -874,19 +874,16 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     /**
-     * For use in the Dataset page
-     * @return 
+     * @return {@code true} iff the current user is a superuser.
+     * @see AuthenticatedUser#isSuperuser() 
      */
     public boolean isSuperUser(){
         
-        if (!this.isSessionUserAuthenticated()){
+        if (!isSessionUserAuthenticated()){
             return false;
         }
         
-        if (this.session.getUser().isSuperuser()){
-            return true;
-        }
-        return false;
+        return session.getUser().isSuperuser();
     }
     /* 
        TODO/OPTIMIZATION: This is still costing us N SELECT FROM GuestbookResponse queries, 
@@ -912,17 +909,16 @@ public class DatasetPage implements java.io.Serializable {
        
         // Has this check already been done? 
         // 
-        if (this.datasetPermissionMap.containsKey(permName)){
+        if (datasetPermissionMap.containsKey(permName)){
             // Yes, return previous answer
-            return this.datasetPermissionMap.get(permName);
+            return datasetPermissionMap.get(permName);
         }
         
         // Check the permission
-        //
-        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), this.dataset).has(permissionToCheck);
+        boolean hasPermission = permissionService.requestOn(dvRequestService.getDataverseRequest(), dataset).has(permissionToCheck);
 
         // Save the permission
-        this.datasetPermissionMap.put(permName, hasPermission);
+        datasetPermissionMap.put(permName, hasPermission);
         
         // return true/false
         return hasPermission;
@@ -1396,31 +1392,31 @@ public class DatasetPage implements java.io.Serializable {
             // Set the workingVersion and Dataset
             // ---------------------------------------           
             if (persistentId != null) {
-                logger.fine("initializing DatasetPage with persistent ID " + persistentId);
+                logger.fine(()->"initializing DatasetPage with persistent ID " + persistentId);
                 // Set Working Version and Dataset by PersistentID
                 dataset = datasetService.findByGlobalId(persistentId);
                 if (dataset == null) {
-                    logger.warning("No such dataset: "+persistentId);
+                    logger.warning(()->"No such dataset: "+persistentId);
                     return permissionsWrapper.notFound();
                 }
-                logger.fine("retrieved dataset, id="+dataset.getId());
+                logger.fine(()->"retrieved dataset, id="+dataset.getId());
                 
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+                logger.fine(()->"retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
             } else if (dataset.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
                 dataset = datasetService.find(dataset.getId());
                 if (dataset == null) {
-                    logger.warning("No such dataset: "+dataset);
+                    logger.warning(()->"No such dataset: "+dataset);
                     return permissionsWrapper.notFound();
                 }
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.info("retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+                logger.info(()->"retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
             } else if (versionId != null) {
                 // TODO: 4.2.1 - this method is broken as of now!
@@ -1451,14 +1447,14 @@ public class DatasetPage implements java.io.Serializable {
                 // source of this harvested dataset:
                 String originalSourceURL = dataset.getRemoteArchiveURL();
                 if (originalSourceURL != null && !originalSourceURL.equals("")) {
-                    logger.fine("redirecting to "+originalSourceURL);
+                    logger.fine(()->"redirecting to "+originalSourceURL);
                     try {
                         FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceURL);
                     } catch (IOException ioex) {
                         // must be a bad URL...
                         // we don't need to do anything special here - we'll redirect
                         // to the local 404 page, below.
-                        logger.warning("failed to issue a redirect to "+originalSourceURL);
+                        logger.warning(()->"failed to issue a redirect to "+originalSourceURL);
                     }
                     return originalSourceURL;
                 }
@@ -1511,7 +1507,7 @@ public class DatasetPage implements java.io.Serializable {
                 if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
                     try {
                         ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
-                        logger.fine("script: " + scriptRequestResponse.getScript());
+                        logger.fine(()->"script: " + scriptRequestResponse.getScript());
                         if(scriptRequestResponse.getScript()!=null && !scriptRequestResponse.getScript().isEmpty()){
                             setHasRsyncScript(true);
                             setRsyncScript(scriptRequestResponse.getScript());
@@ -1521,9 +1517,9 @@ public class DatasetPage implements java.io.Serializable {
                             setHasRsyncScript(false);
                         }
                     } catch (RuntimeException ex) {
-                        logger.warning("Problem getting rsync script: " + ex.getLocalizedMessage());
+                        logger.warning(()->"Problem getting rsync script: " + ex.getLocalizedMessage());
                     } catch (CommandException cex) {
-                        logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
+                        logger.warning(()->"Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
                     }  
                 }
                    

@@ -7,11 +7,12 @@
 package edu.harvard.iq.dataverse.worldmapauth;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -22,8 +23,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 
 /**
  *
@@ -35,7 +34,10 @@ public class WorldMapTokenServiceBean {
     
     @EJB
     PermissionServiceBean permissionService;
-
+    
+    @EJB
+    DataverseRequestServiceBean requestSvc;
+    
     @EJB
     TokenApplicationTypeServiceBean tokenApplicationService;
      
@@ -176,7 +178,7 @@ public class WorldMapTokenServiceBean {
         }
         WorldMapToken wmToken = this.findByName(worldmapTokenParam);
         if (wmToken==null){
-            logger.warning("WorldMapToken not found for '" + worldmapTokenParam + "'.  Permission denied.");
+            logger.warning(()->"WorldMapToken not found for '" + worldmapTokenParam + "'.  Permission denied.");
             return null;
         }
         if (wmToken.hasTokenExpired()){
@@ -201,7 +203,8 @@ public class WorldMapTokenServiceBean {
         if (wmToken==null){
             return false;
         }
-        if (permissionService.userOn(wmToken.getDataverseUser(), wmToken.getDatafile()).has(Permission.EditDataset)) { 
+        DataverseRequest perUserReq = new DataverseRequest(wmToken.getDataverseUser(), requestSvc.getDataverseRequest().getSourceAddress());
+        if (permissionService.requestOn(perUserReq, wmToken.getDatafile()).has(Permission.EditDataset)) { 
             logger.info("WorldMap token-based auth: Token's User is still authorized to edit the dataset for the datafile.");
             return true;
         }
@@ -217,7 +220,8 @@ public class WorldMapTokenServiceBean {
         if (wmToken==null){
             return false;
         }
-        if (permissionService.userOn(wmToken.getDataverseUser(), wmToken.getDatafile()).has(Permission.DownloadFile)) { 
+        DataverseRequest perUserReq = new DataverseRequest(wmToken.getDataverseUser(), requestSvc.getDataverseRequest().getSourceAddress());
+        if (permissionService.requestOn(perUserReq, wmToken.getDatafile()).has(Permission.DownloadFile)) { 
             logger.info("WorldMap token-based auth: Token's User is still authorized to download the datafile.");
             return true;
         }
@@ -236,10 +240,10 @@ public class WorldMapTokenServiceBean {
     
     */
     public boolean isWorldMapTokenAuthorizedForDataFileDownload(String worldmapTokenParam, DataFile df){
-        logger.info("-- isWorldMapTokenAuthorizedForDataFileworldmapTokenParam " + worldmapTokenParam);
+        logger.fine(()->"-- isWorldMapTokenAuthorizedForDataFileworldmapTokenParam " + worldmapTokenParam);
         
         if ((worldmapTokenParam == null)||(df == null)){
-            logger.info("nope: worldmapTokenParam or data file is null");
+            logger.fine("nope: worldmapTokenParam or data file is null");
             return false;
         }
         
@@ -247,7 +251,7 @@ public class WorldMapTokenServiceBean {
         //
         WorldMapToken token = this.retrieveAndRefreshValidToken(worldmapTokenParam);
         if (token==null){
-            logger.info("WorldMap token-based auth: Token is not invalid.");
+            logger.fine("WorldMap token-based auth: Token is not invalid.");
             return false;
         }
         
@@ -255,21 +259,19 @@ public class WorldMapTokenServiceBean {
         // Check 2:  Does this WorldMap token's datafile match the requested datafile?
         //
         if (!(token.getDatafile().getId().equals(df.getId()))){
-            logger.info("WorldMap token-based auth: Token's datafile does not match the requested datafile.");
+            logger.fine("WorldMap token-based auth: Token's datafile does not match the requested datafile.");
             return false;
         }
         
         // Check 3:  Does this WorldMap token's user have permission for the requested datafile?
         //
         if (!(this.canTokenUserDownloadFile(token))){ 
-            logger.info("WorldMap token-based auth: Token's User is not authorized for the requested datafile.");
+            logger.fine("WorldMap token-based auth: Token's User is not authorized for the requested datafile.");
             return false;
         }
             
-        
-        logger.info("WorldMap token-based auth: Token is valid for the requested datafile");
+        logger.fine("WorldMap token-based auth: Token is valid for the requested datafile");
         return true;
-        
     }
     
     

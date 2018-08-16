@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.groups;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.Set;
+import static java.util.stream.Collectors.joining;
 
 public class GroupUtil {
 
@@ -19,9 +20,7 @@ public class GroupUtil {
         StringBuilder sb = new StringBuilder();
         sb.append("'").append(authenticatedUser.getIdentifier()).append("'");
         if (groups != null) {
-            groups.stream().forEach((group) -> {
-                sb.append(", ").append("'").append(group.getIdentifier()).append("'");
-            });
+            sb.append(groups.stream().map(Group::getIdentifier).collect(joining("','", ", '", "'")));
         }
         return sb.toString();
     }

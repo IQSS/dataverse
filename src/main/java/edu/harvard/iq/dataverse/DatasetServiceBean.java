@@ -691,7 +691,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     
     
-    public boolean isDatasetCardImageAvailable(DatasetVersion datasetVersion, User user) {        
+    public boolean isDatasetCardImageAvailable(DatasetVersion datasetVersion, DataverseRequest req) {        
         if (datasetVersion == null) {
             return false; 
         }
@@ -719,7 +719,8 @@ public class DatasetServiceBean implements java.io.Serializable {
             // us some queries when it determines the download permission on the
             // dataset as a whole? -- L.A. 4.2.1
             
-            if (fileService.isThumbnailAvailable(dataFile) && permissionService.userOn(user, dataFile).has(Permission.DownloadFile)) { //, user)) {
+            if (fileService.isThumbnailAvailable(dataFile) 
+                && permissionService.requestOn(req, dataFile).has(Permission.DownloadFile)) { 
                 return true;
             }
  

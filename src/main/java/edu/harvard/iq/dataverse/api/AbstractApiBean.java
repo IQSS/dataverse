@@ -54,7 +54,6 @@ import java.io.StringReader;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -177,8 +176,8 @@ public abstract class AbstractApiBean {
     @EJB
     protected UserServiceBean userSvc;
 
-	@EJB
-	protected DataverseRoleServiceBean rolesSvc;
+    @EJB
+    protected DataverseRoleServiceBean rolesSvc;
 
     @EJB
     protected SettingsServiceBean settingsSvc;
