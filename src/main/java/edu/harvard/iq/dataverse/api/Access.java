@@ -448,21 +448,17 @@ public class Access extends AbstractApiBean {
     */
     
     
-    
-//MAD: I think the best course is to expand this method, allowing original format as well as converted
-//Also while I'm here maybe I can support PIDs
-// - PIDs is build into findDataFileOrDieWrapper. Maybe save that for later
-    
-    // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
     public Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-
+        
         long setLimit = systemConfig.getZipDownloadLimit();
         if (!(setLimit > 0L)) {
             setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
         }
+        
+        Boolean partialResult = false;
         
         long zipDownloadSizeLimit = setLimit; 
         
@@ -477,14 +473,52 @@ public class Access extends AbstractApiBean {
                 : apiTokenParam;
         
         User apiTokenUser = findAPITokenUser(apiToken); //for use in adding gb records if necessary
-               
+        
+        //This is a repeat of logic that goes on inside the StreamingOutput write inner method
+        //Sadly we can't pass information back out of that inner class
+        //So to return the partial result code we do the check twice. 
+        //
+        //There is an open question about how this check differs from the one inside write, see below
+        //
+        //-MAD 4.9.2
+        String fileIdParams[] = fileIds.split(",");
+        if (fileIdParams != null && fileIdParams.length > 0) {
+            logger.fine(fileIdParams.length + " tokens;");
+            for (int i = 0; i < fileIdParams.length; i++) {
+                logger.fine("token: " + fileIdParams[i]);
+                Long fileId = null;
+                try {
+                    fileId = new Long(fileIdParams[i]);
+                } catch (NumberFormatException nfe) {
+                    fileId = null;
+                }
+                if (fileId != null) {
+                    logger.fine("attempting to look up file id " + fileId);
+                    DataFile file = dataFileService.find(fileId);
+                    if (file != null) {
+                        if (!isAccessAuthorized(file, apiToken)) { 
+                            partialResult = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+                
+        
+        
         StreamingOutput stream = new StreamingOutput() {
 
             @Override
             public void write(OutputStream os) throws IOException,
                     WebApplicationException {
-                String fileIdParams[] = fileIds.split(",");
                 DataFileZipper zipper = null; 
+
+//accessToUnrestrictedFileAuthorized is weird. I guess it stops repeated checks to isAccessAuthorized? 
+//Seems weird though with isAccessAuthorized being a per file check...
+//Maybe this is a performance improvement for the permissions checks?
+//If so my code for partial status should maybe be undone
+//MAD 4.9.2
                 boolean accessToUnrestrictedFileAuthorized = false; 
                 String fileManifest = "";
                 long sizeTotal = 0L;
@@ -518,10 +552,6 @@ public class Access extends AbstractApiBean {
                                             getOriginal = true;
                                         }
                                     }
-                                    
-//MAD: Instead of using the downloadInstance functionality, instead I should check here for the uriInfo like that functionality does
-//      If original has been provided, use it.
-//      This may mean extending parts of DataFileZipper. I'm a bit confused how to get from DataFile to the specific format...
 
                                     logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                                     //downloadInstance.addDataFile(file);
@@ -581,7 +611,12 @@ public class Access extends AbstractApiBean {
                 //os.close();
             }
         };
+
+        if(partialResult) {
+            return Response.status(Response.Status.PARTIAL_CONTENT).entity(stream).build();
+        }
         return Response.ok(stream).build();
+        
     }
     
     

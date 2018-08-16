@@ -1617,16 +1617,13 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         
-//MAD: Is this even called?
-
         for(DataFile f : dataset.getFiles()) {
             if(f.isTabularData()) {
                 hasTabular = true;
+                break;
             }
         }
 
-        
-            
         configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
@@ -1634,7 +1631,6 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isHasTabular() {
-        //MAD: Maybe here check if tabular exist in dataset
         return hasTabular;
     }
     
