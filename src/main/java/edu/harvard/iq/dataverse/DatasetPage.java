@@ -262,6 +262,8 @@ public class DatasetPage implements java.io.Serializable {
     
     private Boolean hasRsyncScript = false;
     
+    private Boolean hasTabular = false;
+    
     List<ExternalTool> configureTools = new ArrayList<>();
     List<ExternalTool> exploreTools = new ArrayList<>();
     Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
@@ -1614,12 +1616,28 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
             }
         }
+        
+//MAD: Is this even called?
 
+        for(DataFile f : dataset.getFiles()) {
+            if(f.isTabularData()) {
+                hasTabular = true;
+            }
+        }
+
+        
+            
         configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
         return null;
     }
+    
+    public boolean isHasTabular() {
+        //MAD: Maybe here check if tabular exist in dataset
+        return hasTabular;
+    }
+    
     
     public boolean isReadOnly() {
         return readOnly; 
@@ -2173,7 +2191,9 @@ public class DatasetPage implements java.io.Serializable {
         if(!getSelectedDownloadableFiles().isEmpty() && getSelectedNonDownloadableFiles().isEmpty()){
             if (guestbookRequired){
                 modifyGuestbookMultipleResponse();
-            } else{
+            } else {
+//MAD: Can we also see if we have even checked any files that need the original flag to be original?
+// May help with some load...
                 startMultipleFileDownload(false, downloadOriginal);
             }        
         }
@@ -2243,7 +2263,8 @@ public class DatasetPage implements java.io.Serializable {
         }
         return downloadIdString;     
     }
-    
+
+//MAD: This is a duplicate of getSelectedDownloadableFilesIdsString
     public String getDownloadableFilesIdsString() {        
         String downloadIdString = "";
         for (FileMetadata fmd : this.selectedDownloadableFiles){
@@ -2256,6 +2277,8 @@ public class DatasetPage implements java.io.Serializable {
       
     }
     
+//MAD: This is only called by the tags popup I think
+// Maybe we can tap into this logic on click of the download dropdown
     public void updateFileCounts(){
         setSelectedUnrestrictedFiles(new ArrayList<>());
         setSelectedRestrictedFiles(new ArrayList<>());
@@ -2273,7 +2296,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
 
-        private List<String> getSuccessMessageArguments() {
+    private List<String> getSuccessMessageArguments() {
         List<String> arguments = new ArrayList<>();
         arguments.add(StringEscapeUtils.escapeHtml(dataset.getDisplayName()));
         String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
@@ -3052,9 +3075,7 @@ public class DatasetPage implements java.io.Serializable {
     }
         
     public void startMultipleFileDownload (Boolean writeGuestbook, Boolean downloadOriginal){
-
         fileDownloadService.callDownloadServlet(getDownloadableFilesIdsString(), writeGuestbook, downloadOriginal);
-
     }
  
     private String downloadType = "";
