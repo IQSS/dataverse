@@ -178,7 +178,7 @@ public class SearchServiceBean {
         solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_NAME, "Variable Name");
         solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_LABEL, "Variable Label");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_SEARCHABLE, "File Type");
-        solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PUBLICATION_DATE, "Publication Date");
+        solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PUBLICATION_DATE, "Publication Year");
         solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PERSISTENT_ID, BundleUtil.getStringFromBundle("advanced.search.datasets.persistentId"));
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_PERSISTENT_ID, BundleUtil.getStringFromBundle("advanced.search.files.persistentId"));
         /**
@@ -233,7 +233,7 @@ public class SearchServiceBean {
         solrQuery.addFacetField(SearchFields.DATAVERSE_CATEGORY);
         solrQuery.addFacetField(SearchFields.METADATA_SOURCE);
 //        solrQuery.addFacetField(SearchFields.AFFILIATION);
-        solrQuery.addFacetField(SearchFields.PUBLICATION_DATE);
+        solrQuery.addFacetField(SearchFields.PUBLICATION_YEAR);
 //        solrQuery.addFacetField(SearchFields.CATEGORY);
 //        solrQuery.addFacetField(SearchFields.FILE_TYPE_MIME);
 //        solrQuery.addFacetField(SearchFields.DISTRIBUTOR);
