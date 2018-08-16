@@ -52,7 +52,7 @@ public class DataCiteRESTfullClient implements Closeable {
         try {
             context = HttpClientContext.create();
             CredentialsProvider credsProvider = new BasicCredentialsProvider();
-            credsProvider.setCredentials(new AuthScope(null, -1),
+            credsProvider.setCredentials(AuthScope.ANY,
                     new UsernamePasswordCredentials(username, password));
             context.setCredentialsProvider(credsProvider);
             
