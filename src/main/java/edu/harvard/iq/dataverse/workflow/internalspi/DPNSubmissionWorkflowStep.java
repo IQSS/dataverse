@@ -66,16 +66,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
             store = storeManager.getPrimaryContentStore();
 
             store.createSpace(name);
-        } catch (ContentStoreException e) {
-            // TODO Auto-generated catch block
-            logger.warning(e.getMessage());
-            e.printStackTrace();
-            String mesg = "DPN Submission Failure";
-            if (!(context.getNextVersionNumber() == 1) || !(context.getNextMinorVersionNumber() == 0)) {
-                mesg = mesg + ": Prior Version archiving not yet complete?";
-            }
-            return new Failure("Unable to create DPN space with name: " + name, mesg);
-        }
+       
         // Store file
 
         String contentId = name + ".v" + context.getNextVersionNumber() + "." + context.getNextMinorVersionNumber()
@@ -100,7 +91,10 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
             logger.log(Level.FINE, "Trigger Type {0}", context.getType());
             logger.log(Level.FINE, "Next version:{0}.{1} isMinor:{2}", new Object[] { context.getNextVersionNumber(),
                     context.getNextMinorVersionNumber(), context.isMinorRelease() });
+            //Document location of dataset version replica
+            context.getDataset().getReleasedVersion().setReplicaLocation(store.getBaseURL() + "/" + name + "/" + contentId + "?storeId=" + store.getStoreId());
 
+            	
         } catch (ContentStoreException | ExportException | IOException e) {
             // TODO Auto-generated catch block
             logger.warning(e.getMessage());
@@ -109,6 +103,16 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
                     "DPN Submission Failure: archive file not transferred");
         } catch (NoSuchAlgorithmException e) {
             logger.severe("MD5 MessageDigest not available!");
+        }
+        } catch (ContentStoreException e) {
+            // TODO Auto-generated catch block
+            logger.warning(e.getMessage());
+            e.printStackTrace();
+            String mesg = "DPN Submission Failure";
+            if (!(context.getNextVersionNumber() == 1) || !(context.getNextMinorVersionNumber() == 0)) {
+                mesg = mesg + ": Prior Version archiving not yet complete?";
+            }
+            return new Failure("Unable to create DPN space with name: " + name, mesg);
         }
 
         return WorkflowStepResult.OK;

@@ -6,8 +6,8 @@
             "stepType":"dpn",
             "parameters": {
                 "host":"qdr.duracloud.org",
-                "username":"jimmyers",
-                "password":"dc1squonk",
+                "username":"",
+                "password":"",
                 "stepName":"dpn submission"
             }
         }
