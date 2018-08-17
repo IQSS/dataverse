@@ -119,7 +119,7 @@ public class DataCitation {
         }
     }
 
-    public void getCommonValuesFrom(DatasetVersion dsv) {
+    private void getCommonValuesFrom(DatasetVersion dsv) {
 
         getAuthorsAndProducersFrom(dsv);
         funders = dsv.getUniqueGrantAgencyValues();
