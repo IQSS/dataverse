@@ -81,7 +81,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
                         messageDigest);
 
                 String checksum = store.addContent(spaceName, fileName, digestInputStream, -1l, null, null, null);
-                logger.info("Content: " + spaceName + " added with checksum: " + checksum);
+                logger.info("Content: " + fileName + " added with checksum: " + checksum);
                 String localchecksum = new BigInteger(1, digestInputStream.getMessageDigest().digest()).toString(16);
                 if (!checksum.equals(localchecksum)) {
                     logger.severe(checksum + " not equal to " + localchecksum);
@@ -97,12 +97,12 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
                         messageDigest);
 
                 checksum = store.addContent(spaceName, "datacite.xml", digestInputStream, -1l, null, null, null);
-                logger.info("Content: " + spaceName + " added with checksum: " + checksum);
+                logger.info("Content: datacite.xml added with checksum: " + checksum);
                 localchecksum = new BigInteger(1, digestInputStream.getMessageDigest().digest()).toString(16);
                 if (!checksum.equals(localchecksum)) {
                     logger.severe(checksum + " not equal to " + localchecksum);
                     return new Failure("Error in transferring DataCite.xml file to DPN",
-                            "DPN Submission Failure: incomplete archive transfer");
+                            "DPN Submission Failure: incomplete metadata transfer");
                 }
                 
                 logger.info("DPN step:");
