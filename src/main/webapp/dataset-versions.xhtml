@@ -142,9 +142,9 @@
             </ui:fragment>
         </p:column><!-- end: date column -->
                 <!-- <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-1"> -->
-                <p:column headerText="Replicated" class="col-sm-1">
+                <p:column headerText="Replicated" class="col-sm-1"  rendered="#{DatasetPage.isSuperUser()}">
             <ui:fragment>
-                <h:outputLink id="replicated" value="#{versionTab.replicaLocation}">
+                <h:outputLink id="replicated" value="#{versionTab.replicaLocation}" target="_blank">
                     <h:outputText  value="#{!empty(versionTab.replicaLocation)}" />
                 </h:outputLink>
             </ui:fragment>
