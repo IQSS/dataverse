@@ -105,7 +105,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
                             "DPN Submission Failure: incomplete metadata transfer");
                 }
                 
-                logger.info("DPN step:");
+                logger.info("DPN Submission step: Content Transferred");
                 logger.log(Level.FINE, "Submitted {0} to DPN", spaceName);
                 logger.log(Level.FINE, "Dataset id:{0}", context.getDataset().getId());
                 logger.log(Level.FINE, "Trigger Type {0}", context.getType());
@@ -122,7 +122,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
                 sb.append(store.getStoreId());
                 sb.append("/" + spaceName + "/" + fileName);
                 context.getDataset().getReleasedVersion().setReplicaLocation(sb.toString());
-
+                logger.info("DPN Submission step complete: " + sb.toString());
             } catch (ContentStoreException | ExportException | IOException e) {
                 // TODO Auto-generated catch block
                 logger.warning(e.getMessage());
