@@ -2,8 +2,10 @@ package edu.harvard.iq.dataverse.workflow;
 
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
@@ -26,6 +28,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -55,6 +58,9 @@ public class WorkflowServiceBean {
 
     @EJB
     EjbDataverseEngine engine;
+    
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
     
     final Map<String, WorkflowStepSPI> providers = new HashMap<>();
 
@@ -258,6 +264,12 @@ public class WorkflowServiceBean {
                 rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size()-1);
             }
         }
+        try {
+			engine.submit((Command<Void>) new RemoveLockCommand(dvRequestService.getDataverseRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow));
+		} catch (CommandException e) {
+			logger.severe("Unable to remove lock after successful workflow completion: " + e.getMessage());
+			e.printStackTrace();
+		}
     }
 
     public List<Workflow> listWorkflows() {
