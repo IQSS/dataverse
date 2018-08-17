@@ -129,7 +129,7 @@
         </p:column><!-- end: description column -->
 
         <!-- contributor column -->
-        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.contributors']}" class="col-sm-3">
+        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.contributors']}" class="col-sm-2">
             <ui:fragment rendered="#{!empty(versionTab.contributorNames)}">
                 <h:outputText value="#{versionTab.contributorNames}" />
             </ui:fragment>
@@ -139,6 +139,12 @@
         <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-2">
             <ui:fragment><!-- rendered="#{ !empty(versionTab) and !empty(versionTab.versionDate) }"-->
                 <h:outputText id="versionDate" value="#{versionTab.versionDate}" />
+            </ui:fragment>
+        </p:column><!-- end: date column -->
+                <!-- <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-1"> -->
+                <p:column headerText="Replicated" class="col-sm-1">
+            <ui:fragment>
+                <h:outputText id="replicated" value="#{versionTab.replicaLocation}" />
             </ui:fragment>
         </p:column><!-- end: date column -->
     </p:dataTable>

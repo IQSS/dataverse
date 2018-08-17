@@ -2029,11 +2029,6 @@ public class DatasetPage implements java.io.Serializable {
                 } else {
                     JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
                 }
-                if(dataset.getReleasedVersion().getReplicaLocation()!=null) {
-                	logger.info("Found: " + dataset.getReleasedVersion().getReplicaLocation() );
-                	JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.message.replicateSuccess"));
-                } //else - no replication workflow or an error/rollback if one is configured
-                
             } catch (CommandException ex) {
                 JsfHelper.addErrorMessage(ex.getLocalizedMessage());
                 logger.severe(ex.getMessage());
