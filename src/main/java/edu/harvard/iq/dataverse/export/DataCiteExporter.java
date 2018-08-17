@@ -4,6 +4,7 @@ package edu.harvard.iq.dataverse.export;
 import com.google.auto.service.AutoService;
 
 import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
+import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -44,23 +45,25 @@ public class DataCiteExporter implements Exporter {
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
             throws ExportException {
         try {
+        	DataCitation dc = new DataCitation(version);
             Map<String, String> metadata = new HashMap<>();
             // From AbstractGlobalIdServiceBean
-            String authorString = version.getDataset().getAuthorString();
+            String authorString = dc.getAuthorsString();
 
             if (authorString.isEmpty()) {
                 authorString = ":unav";
             }
             // QDR - use institution name
-            String producerString = ResourceBundle.getBundle("Bundle").getString("institution.name");
+            String producerString = dc.getPublisher();
 
             if (producerString.isEmpty()) {
                 producerString = ":unav";
             }
 
             metadata.put("datacite.creator", authorString);
-            metadata.put("datacite.title", version.getDataset().getDisplayName());
+            metadata.put("datacite.title", dc.getTitle());
             metadata.put("datacite.publisher", producerString);
+            metadata.put("datacite.publicationyear", dc.getYear());
 
             String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(
                     version.getDataset().getGlobalId().asString(), metadata, version.getDataset());
