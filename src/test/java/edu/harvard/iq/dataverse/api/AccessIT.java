@@ -29,6 +29,7 @@ import static org.junit.Assert.assertThat;
  *
  * @author madunlap
  */
+//TODO: have tests in this class confirm file contents, not just size and status code
 public class AccessIT {
     
     public static String username;
@@ -193,14 +194,15 @@ public class AccessIT {
         //Not logged in restricted
         Response anonDownloadOriginalRestricted = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId,tabFile1Id,tabFile3IdRestricted});
         Response anonDownloadConvertedRestricted = UtilIT.downloadFiles(new Integer[]{basicFileId,tabFile1Id,tabFile3IdRestricted});
-        assertEquals(206, anonDownloadOriginalRestricted.getStatusCode()); //partial content, only accessible files
-        assertEquals(206, anonDownloadConvertedRestricted.getStatusCode()); //partial content, only accessible files
+        assertEquals(207, anonDownloadOriginalRestricted.getStatusCode()); //partial content, only accessible files
+        assertEquals(207, anonDownloadConvertedRestricted.getStatusCode()); //partial content, only accessible files
         
         //Not logged in unpublished
         Response anonDownloadOriginalUnpublished = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId,tabFile1Id,tabFile4IdUnpublished});
         Response anonDownloadConvertedUnpublished = UtilIT.downloadFiles(new Integer[]{basicFileId,tabFile1Id,tabFile4IdUnpublished});
-        assertEquals(206, anonDownloadOriginalUnpublished.getStatusCode()); //partial content, only accessible files
-        assertEquals(206, anonDownloadConvertedUnpublished.getStatusCode()); //partial content, only accessible files
+        //These were originally 207, but that means we are divulging info about unpublished files so its now 200
+        assertEquals(200, anonDownloadOriginalUnpublished.getStatusCode()); //partial content, only accessible files
+        assertEquals(200, anonDownloadConvertedUnpublished.getStatusCode()); //partial content, only accessible files
 
         //Logged in non-restricted
         Response authDownloadOriginal = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId,tabFile1Id,tabFile2Id}, apiToken);

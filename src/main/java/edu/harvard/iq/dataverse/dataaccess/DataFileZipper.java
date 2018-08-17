@@ -228,15 +228,21 @@ public class DataFileZipper {
         StorageIO<DataFile> accessObject = DataAccess.getStorageIO(dataFile, daReq);
         
         //MAD: This may not be correctly checking permissions
-        if(getOriginal) {
-            StoredOriginalFile sof = new StoredOriginalFile();
-            accessObject = sof.retreive(accessObject); //switch to add original file instead
-        }
-
+        
         if (accessObject != null) {
-            if(!getOriginal) { //MAD: This may be a hack
+            Boolean gotOriginal = false;
+            if(getOriginal) {
+                StoredOriginalFile sof = new StoredOriginalFile();
+                StorageIO<DataFile> tempAccessObject = sof.retreive(accessObject);
+                if(null != tempAccessObject) { //If there is an original, use it
+                    gotOriginal = true;
+                    accessObject = tempAccessObject; 
+                } 
+            }
+            if(!gotOriginal) { //if we didn't get this from sof.retreive we have to open it
                 accessObject.open();
             }
+
             long byteSize = 0;
 
             String fileName = accessObject.getFileName();

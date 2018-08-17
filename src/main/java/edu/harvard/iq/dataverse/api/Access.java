@@ -46,6 +46,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import javax.inject.Inject;
@@ -481,47 +482,47 @@ public class Access extends AbstractApiBean {
         //There is an open question about how this check differs from the one inside write, see below
         //
         //-MAD 4.9.2
+    //    fileIds = fileIds.split("&")[0]; //to remove original
         String fileIdParams[] = fileIds.split(",");
-        if (fileIdParams != null && fileIdParams.length > 0) {
-            logger.fine(fileIdParams.length + " tokens;");
-            for (int i = 0; i < fileIdParams.length; i++) {
-                logger.fine("token: " + fileIdParams[i]);
-                Long fileId = null;
-                try {
-                    fileId = new Long(fileIdParams[i]);
-                } catch (NumberFormatException nfe) {
-                    fileId = null;
-                }
-                if (fileId != null) {
-                    logger.fine("attempting to look up file id " + fileId);
-                    DataFile file = dataFileService.find(fileId);
-                    if (file != null) {
-                        if (!isAccessAuthorized(file, apiToken)) { 
-                            partialResult = true;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
+//        if (fileIdParams != null && fileIdParams.length > 0) {
+//            logger.fine(fileIdParams.length + " tokens;");
+//            for (int i = 0; i < fileIdParams.length; i++) {
+//                logger.fine("token: " + fileIdParams[i]);
+//                Long fileId = null;
+//                try {
+//                    fileId = new Long(fileIdParams[i]);
+//                } catch (NumberFormatException nfe) {
+//                    fileId = null;
+//                }
+//                if (fileId != null) {
+//                    logger.fine("attempting to look up file id " + fileId);
+//                    DataFile file = dataFileService.find(fileId);
+//                    if (file != null) {
+//                        if (!isAccessAuthorized(file, apiToken)) { 
+//                            partialResult = true;
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
+//        }
                 
         
-        
-        StreamingOutput stream = new StreamingOutput() {
-
-            @Override
-            public void write(OutputStream os) throws IOException,
-                    WebApplicationException {
-                DataFileZipper zipper = null; 
-
-//accessToUnrestrictedFileAuthorized is weird. I guess it stops repeated checks to isAccessAuthorized? 
-//Seems weird though with isAccessAuthorized being a per file check...
-//Maybe this is a performance improvement for the permissions checks?
-//If so my code for partial status should maybe be undone
-//MAD 4.9.2
                 boolean accessToUnrestrictedFileAuthorized = false; 
                 String fileManifest = "";
                 long sizeTotal = 0L;
+                List<DataFile> zipFileList = new ArrayList<>();
+                List<DataFile> beyondLimitFileList = new ArrayList<>();
+                List<DataFile> inaccessibleFileList = new ArrayList<>();
+                
+                Boolean getOrig = false;
+                for (String key : uriInfo.getQueryParameters().keySet()) {
+                    String value = uriInfo.getQueryParameters().getFirst(key);
+                    if("format".equals(key) && "original".equals(value)) {
+                        getOrig = true;
+                    }
+                }
+                final boolean getOriginal = getOrig;
                 
                 if (fileIdParams != null && fileIdParams.length > 0) {
                     logger.fine(fileIdParams.length + " tokens;");
@@ -537,50 +538,43 @@ public class Access extends AbstractApiBean {
                             logger.fine("attempting to look up file id " + fileId);
                             DataFile file = dataFileService.find(fileId);
                             if (file != null) {
-                                
-                                if ((accessToUnrestrictedFileAuthorized && !file.isRestricted()) 
-                                        || isAccessAuthorized(file, apiToken)) { 
+                                //accessToUnrestrictedFileAuthorized is weird. I guess it stops repeated checks to isAccessAuthorized? 
+                                //Maybe this is a performance improvement for the permissions checks?
+                                //This may lead to unexpected results when querying unpublished files or other cases when a file can't be accessed
+                                //I'm leaving it in though because for now we probably want unpublished files to not have a line in the manifest
+                                //
+                                //MAD 4.9.2
+                                if ((accessToUnrestrictedFileAuthorized && !file.isRestricted()) || 
+                                         isAccessAuthorized(file, apiToken)) { 
                                     
                                     if (!file.isRestricted()) {
                                         accessToUnrestrictedFileAuthorized = true;
                                     }
                                     
-                                    Boolean getOriginal = false;
-                                    for (String key : uriInfo.getQueryParameters().keySet()) {
-                                        String value = uriInfo.getQueryParameters().getFirst(key);
-                                        if("format".equals(key) && "original".equals(value)) {
-                                            getOriginal = true;
-                                        }
-                                    }
-
                                     logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                                     //downloadInstance.addDataFile(file);
                                     if (gbrecs == null && file.isReleased()){
                                         GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
                                         guestbookResponseService.save(gbr);
                                     }
-                                    if (zipper == null) {
-                                        // This is the first file we can serve - so we now know that we are going to be able 
-                                        // to produce some output.
-                                        zipper = new DataFileZipper(os);
-                                        zipper.setFileManifest(fileManifest);
-                                        response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
-                                        response.setHeader("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
-                                    }
+
                                     if (sizeTotal + file.getFilesize() < zipDownloadSizeLimit) {
-                                        sizeTotal += zipper.addFileToZipStream(file, getOriginal);
+                                        zipFileList.add(file);
+                                        //MAD: This doesn't take account of the below code getting the correct format
+                                        sizeTotal += file.getFilesize(); 
+                                                //zipper.addFileToZipStream(file, getOriginal);
                                     } else {
-                                        String fileName = file.getFileMetadata().getLabel();
-                                        String mimeType = file.getContentType();
-                                        
-                                        zipper.addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + zipDownloadSizeLimit + " bytes.\r\n");
+                                        partialResult = true;
+                                        beyondLimitFileList.add(file);
                                     }
                                 } else {
-                                    if (zipper == null) {
-                                        fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n";
-                                    } else {
-                                        zipper.addToManifest(file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
-                                    }
+                                    partialResult = true;
+                                    inaccessibleFileList.add(file);
+//                                    if (zipper == null) {
+//                                        fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n";
+//                                    } else {
+//                                        zipper.addToManifest(file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
+//                                    }
                                 } 
 
                             } else {
@@ -593,6 +587,43 @@ public class Access extends AbstractApiBean {
                 } else {
                     throw new BadRequestException();
                 }
+
+        
+        
+        
+        
+        
+        StreamingOutput stream = new StreamingOutput() {
+
+            @Override
+            public void write(OutputStream os) throws IOException,
+                    WebApplicationException {
+                DataFileZipper zipper = null; 
+
+                if (zipper == null) {
+                    // This is the first file we can serve - so we now know that we are going to be able 
+                    // to produce some output.
+                    zipper = new DataFileZipper(os);
+                    zipper.setFileManifest(fileManifest);
+                    response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
+                    response.setHeader("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
+                }
+                for(DataFile file : zipFileList) {
+                    zipper.addFileToZipStream(file, getOriginal);
+                }
+                for(DataFile file : beyondLimitFileList) {
+                    String fileName = file.getFileMetadata().getLabel();
+                    String mimeType = file.getContentType();
+
+                    zipper.addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + zipDownloadSizeLimit + " bytes.\r\n");
+                }
+                for(DataFile file : inaccessibleFileList) {  //MAD: Right now this also isn't adding... wtf...
+                    //The original code had a null check in here that created a manifest file if zipper did not exist
+                    //I'm not sure how that was even useful though...
+                    zipper.addToManifest(file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
+                }
+                
+                //MAD: OLD OLD OLD BELOW DELETE
 
                 if (zipper == null) {
                     // If the DataFileZipper object is still NULL, it means that 
@@ -612,8 +643,12 @@ public class Access extends AbstractApiBean {
             }
         };
 
+/** Disable this if statement if we don't want to return 207s */
         if(partialResult) {
-            return Response.status(Response.Status.PARTIAL_CONTENT).entity(stream).build();
+            //TODO: We should add more details to the 207 response
+            //to inform systems that have connected to us: https://httpstatuses.com/207
+            return Response.status(207).entity(stream).build();
+            
         }
         return Response.ok(stream).build();
         
