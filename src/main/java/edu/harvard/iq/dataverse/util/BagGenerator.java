@@ -233,7 +233,7 @@ public class BagGenerator {
 
 		aggregation = oremap.getAsJsonObject(JsonLDTerm.ore("describes").getLabel());
 
-		bagID = aggregation.get("@id").getAsString();
+		bagID = aggregation.get("@id").getAsString() + aggregation.get(JsonLDTerm.schemaOrg("version").getLabel());
 		try {
 			// Create valid filename from identifier and extend path with
 			// two levels of hash-based subdirs to help distribute files
