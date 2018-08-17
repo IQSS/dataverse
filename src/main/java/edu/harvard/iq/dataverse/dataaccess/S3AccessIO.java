@@ -7,6 +7,7 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -78,13 +79,27 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public S3AccessIO(T dvObject, DataAccessRequest req) {
         super(dvObject, req);
         this.setIsLocalFile(false);
-        try {
-            s3 = AmazonS3ClientBuilder.standard().defaultClient();
-        } catch (Exception e) {
-            throw new AmazonClientException(
-                    "Cannot instantiate a S3 client using; check your AWS credentials and region",
+        String endpoint = System.getProperty("dataverse.files.s3-endpoint");
+        if (endpoint == null) {
+        	try {
+        		s3 = AmazonS3ClientBuilder.standard().defaultClient();
+        	} catch (Exception e) {
+        		throw new AmazonClientException(
+                    "Cannot instantiate a S3 client using AWS SDK defaults for credentials and region",
                     e);
+        	}
+        } else {
+        	try {
+        		s3 = AmazonS3ClientBuilder.standard().enablePathStyleAccess().
+        				withEndpointConfiguration(new EndpointConfiguration(
+        						endpoint, "")).build();
+        	} catch (Exception e) {
+        		throw new AmazonClientException(
+                    "Cannot instantiate a S3 client using specified endpoint configuration",
+                    e);
+        	}
         }
+        	
     }
 
     public static String S3_IDENTIFIER_PREFIX = "s3";
