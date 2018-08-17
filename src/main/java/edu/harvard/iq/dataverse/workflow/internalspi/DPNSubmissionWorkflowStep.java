@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
 import edu.harvard.iq.dataverse.export.BagIt_Exporter;
+import edu.harvard.iq.dataverse.export.DataCiteExporter;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -57,37 +58,55 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
         Credential credential = new Credential(params.get("username"), params.get("password"));
         storeManager.login(credential);
 
-        String name = context.getDataset().getGlobalId().asString().replace(':', '-').replace('/', '-')
+        String spaceName = context.getDataset().getGlobalId().asString().replace(':', '-').replace('/', '-')
                 .replace('.', '-').toLowerCase();
 
         ContentStore store;
         try {
             store = storeManager.getPrimaryContentStore();
 
-            store.createSpace(name);
+            store.createSpace(spaceName);
 
             // Store file
 
-            String contentId = name + ".v" + context.getNextVersionNumber() + "." + context.getNextMinorVersionNumber()
+            String fileName = spaceName + ".v" + context.getNextVersionNumber() + "." + context.getNextMinorVersionNumber()
                     + ".zip";
             try {
+            	
+            	//Add BagIt ZIP file
                 MessageDigest messageDigest = MessageDigest.getInstance("MD5");
 
                 DigestInputStream digestInputStream = new DigestInputStream(
                         ExportService.getInstance(settingsService).getExport(context.getDataset(), BagIt_Exporter.NAME),
                         messageDigest);
 
-                String checksum = store.addContent(name, contentId, digestInputStream, -1l, null, null, null);
-                logger.info("Content: " + name + " added with checksum: " + checksum);
+                String checksum = store.addContent(spaceName, fileName, digestInputStream, -1l, null, null, null);
+                logger.info("Content: " + spaceName + " added with checksum: " + checksum);
                 String localchecksum = new BigInteger(1, digestInputStream.getMessageDigest().digest()).toString(16);
                 if (!checksum.equals(localchecksum)) {
                     logger.severe(checksum + " not equal to " + localchecksum);
-                    return new Failure("Error in transferring file to DPN",
+                    return new Failure("Error in transferring Zip file to DPN",
                             "DPN Submission Failure: incomplete archive transfer");
                 }
 
+                //Add datacite.xml file
+                messageDigest = MessageDigest.getInstance("MD5");
+
+                digestInputStream = new DigestInputStream(
+                        ExportService.getInstance(settingsService).getExport(context.getDataset(), DataCiteExporter.NAME),
+                        messageDigest);
+
+                checksum = store.addContent(spaceName, "datacite.xml", digestInputStream, -1l, null, null, null);
+                logger.info("Content: " + spaceName + " added with checksum: " + checksum);
+                localchecksum = new BigInteger(1, digestInputStream.getMessageDigest().digest()).toString(16);
+                if (!checksum.equals(localchecksum)) {
+                    logger.severe(checksum + " not equal to " + localchecksum);
+                    return new Failure("Error in transferring DataCite.xml file to DPN",
+                            "DPN Submission Failure: incomplete archive transfer");
+                }
+                
                 logger.info("DPN step:");
-                logger.log(Level.FINE, "Submitted {0} to DPN", name);
+                logger.log(Level.FINE, "Submitted {0} to DPN", spaceName);
                 logger.log(Level.FINE, "Dataset id:{0}", context.getDataset().getId());
                 logger.log(Level.FINE, "Trigger Type {0}", context.getType());
                 logger.log(Level.FINE, "Next version:{0}.{1} isMinor:{2}",
@@ -101,7 +120,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
                 }
                 sb.append("/duradmin/spaces/sm/");
                 sb.append(store.getStoreId());
-                sb.append("/" + name + "/" + contentId);
+                sb.append("/" + spaceName + "/" + fileName);
                 context.getDataset().getReleasedVersion().setReplicaLocation(sb.toString());
 
             } catch (ContentStoreException | ExportException | IOException e) {
@@ -121,7 +140,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
             if (!(context.getNextVersionNumber() == 1) || !(context.getNextMinorVersionNumber() == 0)) {
                 mesg = mesg + ": Prior Version archiving not yet complete?";
             }
-            return new Failure("Unable to create DPN space with name: " + name, mesg);
+            return new Failure("Unable to create DPN space with name: " + spaceName, mesg);
         }
 
         return WorkflowStepResult.OK;

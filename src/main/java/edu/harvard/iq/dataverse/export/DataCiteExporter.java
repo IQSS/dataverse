@@ -5,12 +5,8 @@ import com.google.auto.service.AutoService;
 
 import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
@@ -18,9 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import javax.ejb.EJB;
 import javax.json.JsonObject;
-import javax.xml.stream.XMLStreamException;
 
 /**
  *
@@ -33,9 +27,10 @@ public class DataCiteExporter implements Exporter {
     private static String DEFAULT_XML_SCHEMALOCATION = "http://datacite.org/schema/kernel-3 http://schema.datacite.org/meta/kernel-3/metadata.xsd";
     private static String DEFAULT_XML_VERSION = "3.0";
 
+    public static final String NAME = "Datacite";
     @Override
     public String getProviderName() {
-        return "datacite";
+        return NAME;
     }
 
     @Override
