@@ -55,8 +55,8 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         if (authorString.isEmpty()) {
             authorString = ":unav";
         }
-
-        String producerString = dataverseService.findRootDataverse().getName();
+        //QDR - use institution name
+        String producerString = ResourceBundle.getBundle("Bundle").getString("institution.name");
 
         if (producerString.isEmpty()) {
             producerString = ":unav";
