@@ -264,7 +264,7 @@ public class DatasetVersion implements Serializable {
     }
     
     public String getReplicaLocation() {
-        return archiveNote;
+        return replicaLocation;
     }
 
     public void setReplicaLocation(String location) {
