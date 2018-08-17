@@ -264,12 +264,7 @@ public class WorkflowServiceBean {
                 rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size()-1);
             }
         }
-        try {
-			engine.submit((Command<Void>) new RemoveLockCommand(dvRequestService.getDataverseRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow));
-		} catch (CommandException e) {
-			logger.severe("Unable to remove lock after successful workflow completion: " + e.getMessage());
-			e.printStackTrace();
-		}
+        datasets.removeDatasetLocks(ctxt.getDataset(), DatasetLock.Reason.Workflow);
     }
 
     public List<Workflow> listWorkflows() {
