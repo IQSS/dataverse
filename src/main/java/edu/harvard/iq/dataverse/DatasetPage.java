@@ -264,6 +264,8 @@ public class DatasetPage implements java.io.Serializable {
     
     private Boolean hasTabular = false;
     
+    private Boolean downloadOriginalTracker = false;
+    
     List<ExternalTool> configureTools = new ArrayList<>();
     List<ExternalTool> exploreTools = new ArrayList<>();
     Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
@@ -2168,6 +2170,7 @@ public class DatasetPage implements java.io.Serializable {
     
             
     public void validateFilesForDownload(boolean guestbookRequired, boolean downloadOriginal){
+        downloadOriginalTracker = downloadOriginal;
         setSelectedDownloadableFiles(new ArrayList<>());
         setSelectedNonDownloadableFiles(new ArrayList<>());
         
@@ -2188,8 +2191,6 @@ public class DatasetPage implements java.io.Serializable {
             if (guestbookRequired){
                 modifyGuestbookMultipleResponse();
             } else {
-//MAD: Can we also see if we have even checked any files that need the original flag to be original?
-// May help with some load...
                 startMultipleFileDownload(false, downloadOriginal);
             }        
         }
@@ -2205,6 +2206,10 @@ public class DatasetPage implements java.io.Serializable {
             requestContext.execute("PF('downloadMixed').show()");
         }       
 
+    }
+    
+    public boolean getDownloadOriginalTracker() {
+        return downloadOriginalTracker;
     }
 
     private boolean selectAllFiles;

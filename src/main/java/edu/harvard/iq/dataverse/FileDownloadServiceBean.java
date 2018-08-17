@@ -75,7 +75,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse){
-
+//MAD: It looks like what is happening here is that the guestbookResponse is ending up in a weird state and is calling individual download instead of multiple
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
             writeGuestbookResponseRecord(guestbookResponse);
             // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
@@ -93,6 +93,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 }
             }
             
+//MAD: This needs to be aware of the download state, right now it just always passes false
             callDownloadServlet(guestbookResponse.getSelectedFileIds(), true, false);
         }
         
