@@ -34,7 +34,7 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  *
- * @author gdurand
+ * @author gdurand, qqmyers
  */
 public class DataCitation {
 
@@ -70,39 +70,12 @@ public class DataCitation {
 
 	public DataCitation(DatasetVersion dsv, boolean direct) {
 		this.direct = direct;
-		// authors and producers
-		getAuthorsAndProducersFrom(dsv);
-
-		funders = dsv.getUniqueGrantAgencyValues();
-
-		kindsOfData = dsv.getKindOfData();
-		
-		// year
-		date = getDateFrom(dsv);
-		year = new SimpleDateFormat("yyyy").format(date);
-		datesOfCollection = dsv.getDatesOfCollection();
-
-        // title
-        title = dsv.getTitle();
-
-		seriesTitle = dsv.getSeriesTitle();
-
-		description = dsv.getDescription();
-
-		keywords = dsv.getKeywords();
-		languages = dsv.getLanguages();
-		spatialCoverages = dsv.getSpatialCoverages();
+        getCommonValuesFrom(dsv);
 
         // The Global Identifier: 
         // It is always part of the citation for the local datasets; 
         // And for *some* harvested datasets. 
 		persistentId = getPIDFrom(dsv, dsv.getDataset());
-
-		// publisher
-		publisher = getPublisherFrom(dsv);
-
-        // version
-		version = getVersionFrom(dsv);
 
         // UNF
         UNF = dsv.getUNF();
@@ -128,48 +101,41 @@ public class DataCitation {
 		this.direct = direct;
 		DatasetVersion dsv = fm.getDatasetVersion();
 
-		// authors and producers
-		getAuthorsAndProducersFrom(dsv);
-
-		funders = dsv.getUniqueGrantAgencyValues();
-
-		kindsOfData = dsv.getKindOfData();
-		// year
-		date = getDateFrom(dsv);
-		year = new SimpleDateFormat("yyyy").format(date);
-		datesOfCollection = dsv.getDatesOfCollection();
+        getCommonValuesFrom(dsv);
 
 		// file Title for direct File citation
 		fileTitle = fm.getLabel();
 		DataFile df = fm.getDataFile();
-		// title
-		title = dsv.getTitle();
-
-		seriesTitle = dsv.getSeriesTitle();
 
 		// File description
 		description = fm.getDescription();
 
-		keywords = dsv.getKeywords();
-		languages = dsv.getLanguages();
-		spatialCoverages = dsv.getSpatialCoverages();
-
-		// The Global Identifier:
-		// It is always part of the citation for the local datasets;
-		// And for *some* harvested datasets.
+        // The Global Identifier of the Datafile (if published and isDirect==true) or Dataset as appropriate
 		persistentId = getPIDFrom(dsv, df);
-
-		// publisher
-		publisher = getPublisherFrom(dsv);
-
-		// version
-		version = getVersionFrom(dsv);
 
 		// UNF
 		if (df.isTabularData() && df.getUnf() != null && !df.getUnf().isEmpty()) {
 			UNF = df.getUnf();
 		}
+    }
 
+    public void getCommonValuesFrom(DatasetVersion dsv) {
+
+    	getAuthorsAndProducersFrom(dsv);
+        funders = dsv.getUniqueGrantAgencyValues();
+        kindsOfData = dsv.getKindOfData();
+        // publication year
+        date = getDateFrom(dsv);
+        year = new SimpleDateFormat("yyyy").format(date);
+
+        datesOfCollection = dsv.getDatesOfCollection();
+        title = dsv.getTitle();
+        seriesTitle = dsv.getSeriesTitle();
+        keywords = dsv.getKeywords();
+        languages = dsv.getLanguages();
+        spatialCoverages = dsv.getSpatialCoverages();
+        publisher = getPublisherFrom(dsv);
+        version = getVersionFrom(dsv);
 	}
 
 	public String getAuthorsString() {
@@ -669,6 +635,7 @@ public class DataCitation {
 	 * the url in parenthesis after it. Since these operations may create
 	 * multiple line breaks, a final step limits the changes and compacts multiple 
 	 * line breaks into one.  
+     *
 	 * @param html input string
 	 * @return the flattened text output
 	 */
