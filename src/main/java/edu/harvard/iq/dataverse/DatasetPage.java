@@ -1167,7 +1167,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setSelectedTemplate(Template selectedTemplate) {
         this.selectedTemplate = selectedTemplate;
     }
-
+    
     public void updateSelectedTemplate(ValueChangeEvent event) {
         
         selectedTemplate = (Template) event.getNewValue();
@@ -1182,8 +1182,6 @@ public class DatasetPage implements java.io.Serializable {
         resetVersionUI();
     }
 
-    
-    
     /*
     // Original
     private void updateDatasetFieldInputLevels() {
@@ -1545,10 +1543,12 @@ public class DatasetPage implements java.io.Serializable {
                 return permissionsWrapper.notAuthorized(); 
             }
 
-            dataverseTemplates = dataverseService.find(ownerId).getTemplates();
+            dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
             }
+            Collections.sort(dataverseTemplates, (Template t1, Template t2) -> t1.getName().compareToIgnoreCase(t2.getName()));
+
             defaultTemplate = dataverseService.find(ownerId).getDefaultTemplate();
             if (defaultTemplate != null) {
                 selectedTemplate = defaultTemplate;
@@ -2373,10 +2373,10 @@ public class DatasetPage implements java.io.Serializable {
             }
             return "";
         } else {
-            boolean validSelection = false;
+            boolean validSelection = true;
             for (FileMetadata fmd : selectedFiles) {
-                if ((fmd.isRestricted() && !restricted) || (!fmd.isRestricted() && restricted)) {
-                    validSelection = true;
+                if ((fmd.isRestricted() && restricted) || (!fmd.isRestricted() && !restricted)) {
+                    validSelection = false;
                 }
             }
             if (!validSelection) {
@@ -2671,7 +2671,7 @@ public class DatasetPage implements java.io.Serializable {
         
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution: 
-        ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
+        ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) session.getUser());
 
         //After dataset saved, then persist prov json data
         if(systemConfig.isProvCollectionEnabled()) {

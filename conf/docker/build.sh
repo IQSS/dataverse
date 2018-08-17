@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Creates images and pushes them to Docker Hub.
 # The "latest" tag under "iqss" should be relatively stable. Don't push breaking changes there.
 # None of the tags are suitable for production use. See https://github.com/IQSS/dataverse/issues/4040
@@ -50,8 +50,10 @@ echo Images are being built for registry org/username \"$HUBORG\" with the tag \
 #
 # Build dataverse-solr
 #
-# Use "conf" directory as context so we can copy schema.xml into Solr image.
-docker build -t $HUBORG/dataverse-solr:$TAG -f solr/Dockerfile ../../conf
+cp ../solr/7.3.0/schema.xml solr/
+# move solr*.tgz to the solr image
+cp ../../downloads/solr-7.3.0.tgz solr/
+docker build -t $HUBORG/dataverse-solr:$TAG  solr/
 if [ "$1" == 'internal' ]; then
   echo "Skipping docker push because we're using the internal Minishift registry."
 else

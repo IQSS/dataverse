@@ -151,19 +151,13 @@ public class CSVFileReader extends TabularDataFileReader {
                 throw new IOException(BundleUtil.getStringFromBundle("ingest.csv.invalidHeader"));
             }
 
-            DataVariable dv = new DataVariable();
+            DataVariable dv = new DataVariable(i, dataTable);
             dv.setName(varName);
             dv.setLabel(varName);
-            dv.setInvalidRanges(new ArrayList<>());
-            dv.setSummaryStatistics(new ArrayList<>());
-            dv.setUnf("UNF:6:NOTCALCULATED");
-            dv.setCategories(new ArrayList<>());
             variableList.add(dv);
 
             dv.setTypeCharacter();
             dv.setIntervalDiscrete();
-            dv.setFileOrder(i);
-            dv.setDataTable(dataTable);
             i++;
         }
 
