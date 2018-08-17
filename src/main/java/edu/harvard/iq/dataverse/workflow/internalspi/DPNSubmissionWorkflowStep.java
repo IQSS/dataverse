@@ -65,46 +65,54 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
             store = storeManager.getPrimaryContentStore();
 
             store.createSpace(name);
-       
-        // Store file
 
-        String contentId = name + ".v" + context.getNextVersionNumber() + "." + context.getNextMinorVersionNumber()
-                + ".zip";
-        try {
-            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+            // Store file
 
-            DigestInputStream digestInputStream = new DigestInputStream(
-                    ExportService.getInstance(settingsService).getExport(context.getDataset(), BagIt_Exporter.NAME),
-                    messageDigest);
+            String contentId = name + ".v" + context.getNextVersionNumber() + "." + context.getNextMinorVersionNumber()
+                    + ".zip";
+            try {
+                MessageDigest messageDigest = MessageDigest.getInstance("MD5");
 
-            String checksum = store.addContent(name, contentId, digestInputStream, -1l, null, null, null);
-            logger.info("Content: " + name + " added with checksum: " + checksum);
-            String localchecksum = new BigInteger(1, digestInputStream.getMessageDigest().digest()).toString(16);
-            if (!checksum.equals(localchecksum)) {
-            	logger.severe(checksum + " not equal to " + localchecksum);
+                DigestInputStream digestInputStream = new DigestInputStream(
+                        ExportService.getInstance(settingsService).getExport(context.getDataset(), BagIt_Exporter.NAME),
+                        messageDigest);
+
+                String checksum = store.addContent(name, contentId, digestInputStream, -1l, null, null, null);
+                logger.info("Content: " + name + " added with checksum: " + checksum);
+                String localchecksum = new BigInteger(1, digestInputStream.getMessageDigest().digest()).toString(16);
+                if (!checksum.equals(localchecksum)) {
+                    logger.severe(checksum + " not equal to " + localchecksum);
+                    return new Failure("Error in transferring file to DPN",
+                            "DPN Submission Failure: incomplete archive transfer");
+                }
+
+                logger.info("DPN step:");
+                logger.log(Level.FINE, "Submitted {0} to DPN", name);
+                logger.log(Level.FINE, "Dataset id:{0}", context.getDataset().getId());
+                logger.log(Level.FINE, "Trigger Type {0}", context.getType());
+                logger.log(Level.FINE, "Next version:{0}.{1} isMinor:{2}",
+                        new Object[] { context.getNextVersionNumber(), context.getNextMinorVersionNumber(),
+                                context.isMinorRelease() });
+                // Document location of dataset version replica (actually the URL where you can view it as an admin)
+                StringBuffer sb = new StringBuffer("https://");
+                sb.append(params.get("host"));
+                if (!port.equals("443")) {
+                    sb.append(":" + port);
+                }
+                sb.append("/duradmin/spaces/sm/");
+                sb.append(store.getStoreId());
+                sb.append("/" + name + "/" + contentId);
+                context.getDataset().getReleasedVersion().setReplicaLocation(sb.toString());
+
+            } catch (ContentStoreException | ExportException | IOException e) {
+                // TODO Auto-generated catch block
+                logger.warning(e.getMessage());
+                e.printStackTrace();
                 return new Failure("Error in transferring file to DPN",
-                        "DPN Submission Failure: incomplete archive transfer");
+                        "DPN Submission Failure: archive file not transferred");
+            } catch (NoSuchAlgorithmException e) {
+                logger.severe("MD5 MessageDigest not available!");
             }
-
-            logger.info("DPN step:");
-            logger.log(Level.FINE, "Submitted {0} to DPN", name);
-            logger.log(Level.FINE, "Dataset id:{0}", context.getDataset().getId());
-            logger.log(Level.FINE, "Trigger Type {0}", context.getType());
-            logger.log(Level.FINE, "Next version:{0}.{1} isMinor:{2}", new Object[] { context.getNextVersionNumber(),
-                    context.getNextMinorVersionNumber(), context.isMinorRelease() });
-            //Document location of dataset version replica
-            context.getDataset().getReleasedVersion().setReplicaLocation(store.getBaseURL() + "/" + name + "/" + contentId + "?storeId=" + store.getStoreId());
-
-            	
-        } catch (ContentStoreException | ExportException | IOException e) {
-            // TODO Auto-generated catch block
-            logger.warning(e.getMessage());
-            e.printStackTrace();
-            return new Failure("Error in transferring file to DPN",
-                    "DPN Submission Failure: archive file not transferred");
-        } catch (NoSuchAlgorithmException e) {
-            logger.severe("MD5 MessageDigest not available!");
-        }
         } catch (ContentStoreException e) {
             // TODO Auto-generated catch block
             logger.warning(e.getMessage());

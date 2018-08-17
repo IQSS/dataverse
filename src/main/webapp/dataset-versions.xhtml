@@ -144,7 +144,9 @@
                 <!-- <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-1"> -->
                 <p:column headerText="Replicated" class="col-sm-1">
             <ui:fragment>
-                <h:outputText id="replicated" value="#{versionTab.replicaLocation}" />
+                <h:outputLink id="replicated" value="#{versionTab.replicaLocation}">
+                    <h:outputText  value="#{!empty(versionTab.replicaLocation)}" />
+                </h:outputLink>
             </ui:fragment>
         </p:column><!-- end: date column -->
     </p:dataTable>
