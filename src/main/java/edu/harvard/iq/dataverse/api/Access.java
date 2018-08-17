@@ -475,139 +475,104 @@ public class Access extends AbstractApiBean {
         
         User apiTokenUser = findAPITokenUser(apiToken); //for use in adding gb records if necessary
         
-        //This is a repeat of logic that goes on inside the StreamingOutput write inner method
-        //Sadly we can't pass information back out of that inner class
-        //So to return the partial result code we do the check twice. 
-        //
-        //There is an open question about how this check differs from the one inside write, see below
-        //
-        //-MAD 4.9.2
-    //    fileIds = fileIds.split("&")[0]; //to remove original
-        String fileIdParams[] = fileIds.split(",");
-//        if (fileIdParams != null && fileIdParams.length > 0) {
-//            logger.fine(fileIdParams.length + " tokens;");
-//            for (int i = 0; i < fileIdParams.length; i++) {
-//                logger.fine("token: " + fileIdParams[i]);
-//                Long fileId = null;
-//                try {
-//                    fileId = new Long(fileIdParams[i]);
-//                } catch (NumberFormatException nfe) {
-//                    fileId = null;
-//                }
-//                if (fileId != null) {
-//                    logger.fine("attempting to look up file id " + fileId);
-//                    DataFile file = dataFileService.find(fileId);
-//                    if (file != null) {
-//                        if (!isAccessAuthorized(file, apiToken)) { 
-//                            partialResult = true;
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-                
-        
-                boolean accessToUnrestrictedFileAuthorized = false; 
-                String fileManifest = "";
-                long sizeTotal = 0L;
-                List<DataFile> zipFileList = new ArrayList<>();
-                List<DataFile> beyondLimitFileList = new ArrayList<>();
-                List<DataFile> inaccessibleFileList = new ArrayList<>();
-                
-                Boolean getOrig = false;
-                for (String key : uriInfo.getQueryParameters().keySet()) {
-                    String value = uriInfo.getQueryParameters().getFirst(key);
-                    if("format".equals(key) && "original".equals(value)) {
-                        getOrig = true;
-                    }
+        String fileIdParams[] = fileIds.split(","); 
+
+        boolean accessToUnrestrictedFileAuthorized = false; 
+        String fileManifest = "";
+        long sizeTotal = 0L;
+        List<DataFile> zipFileList = new ArrayList<>();
+        List<DataFile> beyondLimitFileList = new ArrayList<>();
+        List<DataFile> inaccessibleFileList = new ArrayList<>();
+
+        Boolean getOrig = false;
+        for (String key : uriInfo.getQueryParameters().keySet()) {
+            String value = uriInfo.getQueryParameters().getFirst(key);
+            if("format".equals(key) && "original".equals(value)) {
+                getOrig = true;
+            }
+        }
+        final boolean getOriginal = getOrig;
+
+        if (fileIdParams != null && fileIdParams.length > 0) {
+            logger.fine(fileIdParams.length + " tokens;");
+            for (int i = 0; i < fileIdParams.length; i++) {
+                logger.fine("token: " + fileIdParams[i]);
+                Long fileId = null;
+                try {
+                    fileId = new Long(fileIdParams[i]);
+                } catch (NumberFormatException nfe) {
+                    fileId = null;
                 }
-                final boolean getOriginal = getOrig;
-                
-                if (fileIdParams != null && fileIdParams.length > 0) {
-                    logger.fine(fileIdParams.length + " tokens;");
-                    for (int i = 0; i < fileIdParams.length; i++) {
-                        logger.fine("token: " + fileIdParams[i]);
-                        Long fileId = null;
-                        try {
-                            fileId = new Long(fileIdParams[i]);
-                        } catch (NumberFormatException nfe) {
-                            fileId = null;
-                        }
-                        if (fileId != null) {
-                            logger.fine("attempting to look up file id " + fileId);
-                            DataFile file = dataFileService.find(fileId);
-                            if (file != null) {
-                                //accessToUnrestrictedFileAuthorized is weird. I guess it stops repeated checks to isAccessAuthorized? 
-                                //Maybe this is a performance improvement for the permissions checks?
-                                //This may lead to unexpected results when querying unpublished files or other cases when a file can't be accessed
-                                //I'm leaving it in though because for now we probably want unpublished files to not have a line in the manifest
-                                //
-                                //MAD 4.9.2
-                                if ((accessToUnrestrictedFileAuthorized && !file.isRestricted()) || 
-                                         isAccessAuthorized(file, apiToken)) { 
-                                    
-                                    if (!file.isRestricted()) {
-                                        accessToUnrestrictedFileAuthorized = true;
-                                    }
-                                    
-                                    logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
-                                    //downloadInstance.addDataFile(file);
-                                    if (gbrecs == null && file.isReleased()){
-                                        GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
-                                        guestbookResponseService.save(gbr);
-                                    }
+                if (fileId != null) {
+                    logger.fine("attempting to look up file id " + fileId);
+                    DataFile file = dataFileService.find(fileId);
+                    if (file != null) {
+                        //accessToUnrestrictedFileAuthorized is weird. I guess it stops repeated checks to isAccessAuthorized? 
+                        //Maybe this is a performance improvement for the permissions checks?
+                        //This may lead to unexpected results when querying unpublished files or other cases when a file can't be accessed
+                        //I'm leaving it in though because for now we probably want unpublished files to not have a line in the manifest
+                        //
+                        //MAD 4.9.2
+                        if ((accessToUnrestrictedFileAuthorized && !file.isRestricted()) || 
+                                 isAccessAuthorized(file, apiToken)) { 
 
-                                    if (sizeTotal + file.getFilesize() < zipDownloadSizeLimit) {
-                                        zipFileList.add(file);
-                                        //MAD: This doesn't take account of the below code getting the correct format
-                                        sizeTotal += file.getFilesize(); 
-                                                //zipper.addFileToZipStream(file, getOriginal);
-                                    } else {
-                                        partialResult = true;
-                                        beyondLimitFileList.add(file);
-                                    }
-                                } else {
-                                    partialResult = true;
-                                    inaccessibleFileList.add(file);
-//                                    if (zipper == null) {
-//                                        fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n";
-//                                    } else {
-//                                        zipper.addToManifest(file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
-//                                    }
-                                } 
-
-                            } else {
-                                // Or should we just drop it and make a note in the Manifest?
-                                String errorMessage = "Datafile " + fileId + ": no such object in the database";
-                                throw new NotFoundException(errorMessage);
+                            if (!file.isRestricted()) {
+                                accessToUnrestrictedFileAuthorized = true;
                             }
-                        }
-                    }
-                } else {
-                    throw new BadRequestException();
-                }
 
-        
-        
-        
-        
-        
+                            logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
+                            //downloadInstance.addDataFile(file);
+                            if (gbrecs == null && file.isReleased()){
+                                GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
+                                guestbookResponseService.save(gbr);
+                            }
+
+                            if (sizeTotal + file.getFilesize() < zipDownloadSizeLimit) {
+                                zipFileList.add(file);
+                                //MAD: This doesn't take account of the below code getting the correct format
+                                sizeTotal += file.getFilesize(); 
+                                        //zipper.addFileToZipStream(file, getOriginal);
+                            } else {
+                                partialResult = true;
+                                beyondLimitFileList.add(file);
+                            }
+                        } else if(file.isRestricted()) {
+                            //I have added an extra check on restricted to ensure the first file read does not get its name exposed
+                            //For example if its unpublished
+                                partialResult = true;
+                                inaccessibleFileList.add(file);
+                        } 
+
+                    } else {
+                        // Or should we just drop it and make a note in the Manifest?
+                        String errorMessage = "Datafile " + fileId + ": no such object in the database";
+                        throw new NotFoundException(errorMessage);
+                    }
+                }
+            }
+        } else {
+            throw new BadRequestException();
+        }
+
         StreamingOutput stream = new StreamingOutput() {
 
             @Override
             public void write(OutputStream os) throws IOException,
                     WebApplicationException {
-                DataFileZipper zipper = null; 
-
-                if (zipper == null) {
-                    // This is the first file we can serve - so we now know that we are going to be able 
-                    // to produce some output.
-                    zipper = new DataFileZipper(os);
-                    zipper.setFileManifest(fileManifest);
-                    response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
-                    response.setHeader("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
+                
+                if (zipFileList.isEmpty()) {
+                    // it means that there were file ids supplied - but none of the corresponding 
+                    // files were accessible for this user. 
+                    // In which case we don't bother generating any output, and 
+                    // just give them a 403:
+                    throw new ForbiddenException();
                 }
+                
+                DataFileZipper zipper = new DataFileZipper(os);
+                zipper.setFileManifest(fileManifest);
+                response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
+                response.setHeader("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
+
                 for(DataFile file : zipFileList) {
                     zipper.addFileToZipStream(file, getOriginal);
                 }
@@ -623,23 +588,10 @@ public class Access extends AbstractApiBean {
                     zipper.addToManifest(file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
                 }
                 
-                //MAD: OLD OLD OLD BELOW DELETE
-
-                if (zipper == null) {
-                    // If the DataFileZipper object is still NULL, it means that 
-                    // there were file ids supplied - but none of the corresponding 
-                    // files were accessible for this user. 
-                    // In which casew we don't bother generating any output, and 
-                    // just give them a 403:
-                    throw new ForbiddenException();
-                }
-
                 // This will add the generated File Manifest to the zipped output, 
                 // then flush and close the stream:
                 zipper.finalizeZipStream();
-                
-                //os.flush();
-                //os.close();
+
             }
         };
 
