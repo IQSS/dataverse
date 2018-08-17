@@ -632,7 +632,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.0</version>
                 <configuration>
-                   <groups>edu.harvard.iq.dataverse.EssentialTests</groups>
+                   <!--<groups>edu.harvard.iq.dataverse.EssentialTests</groups>-->
                    <excludedGroups>edu.harvard.iq.dataverse.NonEssentialTests</excludedGroups>
                    <!-- <includes>
                        <include>${runSuite}</include>
