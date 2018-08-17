@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -214,6 +215,7 @@ public class DataCitation {
 
 	public String toString(boolean html) {
 		// first add comma separated parts
+		// QDRCustom: Use period to join values, not comma
 		String separator = ". ";
 		List<String> citationList = new ArrayList<>();
 		citationList.add(formatString(getAuthorsString(), html));
@@ -225,7 +227,7 @@ public class DataCitation {
 			citationList.add(formatString(title, html, "\""));
 		}
 		// QDRCustom: Use "Qualitative Data Repository" as distributor name
-		citationList.add(formatString("Qualitative Data Repository", html));
+		citationList.add(formatString(ResourceBundle.getBundle("Bundle").getString("institution.name"), html));
 		// QDRCustom: Show persistentID after distributor name
 		if (persistentId != null) {
 			citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html)); // always
@@ -237,7 +239,7 @@ public class DataCitation {
 		citationList.add(version);
 
 		StringBuilder citation = new StringBuilder(citationList.stream().filter(value -> !StringUtils.isEmpty(value))
-				// QDRCustom: Use period to join values, not comma
+				
 				.collect(Collectors.joining(separator)));
 
 		if ((fileTitle != null) && !isDirect()) {
@@ -742,7 +744,8 @@ public class DataCitation {
 
 	private String getPublisherFrom(DatasetVersion dsv) {
 		if (!dsv.getDataset().isHarvested()) {
-			return dsv.getRootDataverseNameforCitation();
+			//QDR use name rather than root Dataverse name
+			return ResourceBundle.getBundle("Bundle").getString("institution.name");
 		} else {
 			return dsv.getDistributorName();
 			// remove += [distributor] SEK 8-18-2016
