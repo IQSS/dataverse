@@ -74,12 +74,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(FileDownloadServiceBean.class.getCanonicalName());   
     
     
-    public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse){
+    public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse, Boolean downloadOriginal){
 //MAD: It looks like what is happening here is that the guestbookResponse is ending up in a weird state and is calling individual download instead of multiple
-        if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
+        if (guestbookResponse != null && guestbookResponse.getDataFile() != null ){
             writeGuestbookResponseRecord(guestbookResponse);
             // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
-            callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), true);
+            callDownloadServletGuestbook(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), true);
         }
         
         if (guestbookResponse != null && guestbookResponse.getSelectedFileIds() != null     ){
@@ -94,7 +94,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             }
             
 //MAD: This needs to be aware of the download state, right now it just always passes false
-            callDownloadServlet(guestbookResponse.getSelectedFileIds(), true, false);
+            callDownloadServlet(guestbookResponse.getSelectedFileIds(), true, downloadOriginal);
         }
         
         
@@ -142,7 +142,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     // But note that this may change - there may be some future situations where it will 
     // become necessary again, to pass the job of creating the access record 
     // to the API!
-    public void callDownloadServlet(String downloadType, Long fileId, boolean doNotWriteGuestBookRecord) {
+    public void callDownloadServletGuestbook(String downloadType, Long fileId, boolean doNotWriteGuestBookRecord) {
         String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, doNotWriteGuestBookRecord);
         logger.fine("Redirecting to file download url: " + fileDownloadUrl);
         try {
@@ -160,7 +160,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             writeGuestbookResponseRecord(guestbookResponse);
         }
         // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
-        callDownloadServlet(format, fileMetadata.getDataFile().getId(), true);
+        callDownloadServletGuestbook(format, fileMetadata.getDataFile().getId(), true);
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
 

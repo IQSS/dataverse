@@ -149,7 +149,7 @@
             <p:commandLink type="button" process="@this" styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat != 'externalTool'
                                                                                and guestbookResponse.fileFormat != 'subset'
                                                                                 and guestbookResponse.fileFormat != 'worldMap'}"
-                           actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse)}"
+                           actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse, downloadOriginal)}"
                            update="guestbookUIFragment"
                            >
                 <f:param name="DO_GB_VALIDATION" value="true"/>

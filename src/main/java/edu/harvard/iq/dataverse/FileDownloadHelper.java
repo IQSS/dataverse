@@ -218,7 +218,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          
      }
     
-     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
+     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse, Boolean downloadOriginal) {
         RequestContext requestContext = RequestContext.getCurrentInstance();
         boolean valid = validateGuestbookResponse(guestbookResponse);
                   
@@ -227,7 +227,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          } else {
              requestContext.execute("PF('downloadPopup').hide()"); 
              guestbookResponse.setDownloadtype("Download");
-             fileDownloadService.writeGuestbookAndStartDownload(guestbookResponse);
+             fileDownloadService.writeGuestbookAndStartDownload(guestbookResponse, downloadOriginal);
          }
 
      }
