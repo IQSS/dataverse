@@ -510,12 +510,6 @@ public class Access extends AbstractApiBean {
                     logger.fine("attempting to look up file id " + fileId);
                     DataFile file = dataFileService.find(fileId);
                     if (file != null) {
-                        //accessToUnrestrictedFileAuthorized is weird. I guess it stops repeated checks to isAccessAuthorized? 
-                        //Maybe this is a performance improvement for the permissions checks?
-                        //This may lead to unexpected results when querying unpublished files or other cases when a file can't be accessed
-                        //I'm leaving it in though because for now we probably want unpublished files to not have a line in the manifest
-                        //
-                        //MAD 4.9.2
                         if ((accessToUnrestrictedFileAuthorized && !file.isRestricted()) || 
                                  isAccessAuthorized(file, apiToken)) { 
 

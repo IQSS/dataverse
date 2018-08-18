@@ -558,8 +558,7 @@ public class UtilIT {
                 //.header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
     }
-    
-//MAD: Add persistentId functions?
+
     static Response downloadFileOriginal(Integer fileId) {
         return given()
                 .get("/api/access/datafile/" + fileId + "?format=original");
@@ -575,7 +574,6 @@ public class UtilIT {
         for(Integer fileId : fileIds) {
             getString += fileId + ",";
         }
-        //System.out.println("Download multiple get string: " + getString);
         return given().get(getString);
     }
     
@@ -584,7 +582,6 @@ public class UtilIT {
         for(Integer fileId : fileIds) {
             getString += fileId + ",";
         }
-        //System.out.println("Download multiple get string: " + getString);
         return given().get(getString + "?key=" + apiToken);
     }
     
@@ -593,7 +590,6 @@ public class UtilIT {
         for(Integer fileId : fileIds) {
             getString += fileId + ",";
         }
-        //System.out.println("Download multiple get string: " + getString);
         return given().get(getString + "?format=original");
     }
     
@@ -602,7 +598,6 @@ public class UtilIT {
         for(Integer fileId : fileIds) {
             getString += fileId + ",";
         }
-        //System.out.println("Download multiple get string: " + getString);
         return given().get(getString + "?format=original&key=" + apiToken);
     }
 

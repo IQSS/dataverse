@@ -2264,9 +2264,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         return downloadIdString;     
     }
-    
-//MAD: This is only called by the tags popup I think
-// Maybe we can tap into this logic on click of the download dropdown
+
     public void updateFileCounts(){
         setSelectedUnrestrictedFiles(new ArrayList<>());
         setSelectedRestrictedFiles(new ArrayList<>());
