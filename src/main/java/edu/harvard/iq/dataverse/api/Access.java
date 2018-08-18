@@ -25,10 +25,13 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataFileZipper;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.StoredOriginalFile;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
@@ -452,7 +455,7 @@ public class Access extends AbstractApiBean {
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
-    public Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException, IOException, Exception /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         
         long setLimit = systemConfig.getZipDownloadLimit();
         if (!(setLimit > 0L)) {
@@ -491,7 +494,7 @@ public class Access extends AbstractApiBean {
                 getOrig = true;
             }
         }
-        final boolean getOriginal = getOrig;
+        final boolean getOriginal = getOrig; //final is needed to be read by write method
 
         if (fileIdParams != null && fileIdParams.length > 0) {
             logger.fine(fileIdParams.length + " tokens;");
@@ -527,15 +530,47 @@ public class Access extends AbstractApiBean {
                                 guestbookResponseService.save(gbr);
                             }
 
-                            if (sizeTotal + file.getFilesize() < zipDownloadSizeLimit) {
-                                zipFileList.add(file);
-                                //MAD: This doesn't take account of the below code getting the correct format
+                            
+                            long size = 0L;
+                            if(getOriginal) {
+                                //This size check is probably fairly inefficient as we have to get all the AccessObjects
+                                //We do this again inside the zipper. I don't think there is a better solution
+                                //without doing a large deal of rewriting or architecture redo.
+                                //The previous size checks for non-original download is still quick.
+                                //-MAD 4.9.2
+                                DataAccessRequest daReq = new DataAccessRequest();
+                                StorageIO<DataFile> accessObject = DataAccess.getStorageIO(file, daReq);
+
+                                if (accessObject != null) {
+                                    Boolean gotOriginal = false;
+                                    StoredOriginalFile sof = new StoredOriginalFile();
+                                    StorageIO<DataFile> tempAccessObject = sof.retreive(accessObject);
+                                    if(null != tempAccessObject) { //If there is an original, use it
+                                        gotOriginal = true;
+                                        accessObject = tempAccessObject; 
+                                    } 
+                                    if(!gotOriginal) { //if we didn't get this from sof.retreive we have to open it
+                                        accessObject.open();
+                                    }
+                                    size = accessObject.getSize(); 
+                                }
+                                if(size == 0L){
+                                    throw new IOException("Invalid file size or accessObject when checking limits of zip file");
+                                }
+
+                                sizeTotal += size;
+
+                            } else {
+                                size = file.getFilesize();
+                            }
+                            if (sizeTotal + size < zipDownloadSizeLimit) {
                                 sizeTotal += file.getFilesize(); 
-                                        //zipper.addFileToZipStream(file, getOriginal);
+                                zipFileList.add(file);
                             } else {
                                 partialResult = true;
                                 beyondLimitFileList.add(file);
                             }
+
                         } else if(file.isRestricted()) {
                             //I have added an extra check on restricted to ensure the first file read does not get its name exposed
                             //For example if its unpublished
@@ -582,9 +617,7 @@ public class Access extends AbstractApiBean {
 
                     zipper.addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + zipDownloadSizeLimit + " bytes.\r\n");
                 }
-                for(DataFile file : inaccessibleFileList) {  //MAD: Right now this also isn't adding... wtf...
-                    //The original code had a null check in here that created a manifest file if zipper did not exist
-                    //I'm not sure how that was even useful though...
+                for(DataFile file : inaccessibleFileList) { 
                     zipper.addToManifest(file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
                 }
                 

@@ -30,6 +30,7 @@ import static org.junit.Assert.assertThat;
  * @author madunlap
  */
 //TODO: have tests in this class confirm file contents, not just size and status code
+//TODO: tests around zip size limits, if feasible
 public class AccessIT {
     
     public static String username;
