@@ -2264,19 +2264,6 @@ public class DatasetPage implements java.io.Serializable {
         }
         return downloadIdString;     
     }
-
-//MAD: This is a duplicate of getSelectedDownloadableFilesIdsString
-    public String getDownloadableFilesIdsString() {        
-        String downloadIdString = "";
-        for (FileMetadata fmd : this.selectedDownloadableFiles){
-            if (!StringUtil.isEmpty(downloadIdString)) {
-                downloadIdString += ",";
-            }
-            downloadIdString += fmd.getDataFile().getId();
-        }
-        return downloadIdString;
-      
-    }
     
 //MAD: This is only called by the tags popup I think
 // Maybe we can tap into this logic on click of the download dropdown
@@ -3076,7 +3063,7 @@ public class DatasetPage implements java.io.Serializable {
     }
         
     public void startMultipleFileDownload (Boolean writeGuestbook, Boolean downloadOriginal){
-        fileDownloadService.callDownloadServlet(getDownloadableFilesIdsString(), writeGuestbook, downloadOriginal);
+        fileDownloadService.callDownloadServlet(getSelectedDownloadableFilesIdsString(), writeGuestbook, downloadOriginal);
     }
  
     private String downloadType = "";
