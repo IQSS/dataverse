@@ -181,7 +181,10 @@ public class SystemConfig {
                             appVersionString = mavenProperties.getProperty("version");                        
                         } catch (IOException ioex) {
                             logger.warning("caught IOException trying to read and parse the pom properties file.");
-                        }
+                        } finally
+			{
+				try{mavenPropertiesInputStream.close();} catch(IOException ec){};
+			}
                     }
                     
                 } else {
