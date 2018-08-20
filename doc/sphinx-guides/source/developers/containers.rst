@@ -215,51 +215,51 @@ To add a persistent volume and persistent volume claim, in conf/docker/openshift
 Here, we are using hostPath for development purposes. Since OpenShift supports many types of cluster storages, 
 if the administrator wishes to use any cluster storage like EBS, Google Cloud Storage, etc, they would have to use a different type of Persistent Storage::
 
-#    {
-#      "kind" : "PersistentVolume",
-#     "apiVersion" : "v1",
-#     "metadata":{
-#       "name" : "solr-index-backup",
-#      "labels":{
-#         "name" : "solr-index-backup",
-#         "type" : "local"
-#         }
-#       },
-#       "spec":{
-#         "capacity":{
-#           "storage" : "8Gi"
-#         },
-#         "accessModes":[
-#           "ReadWriteMany", "ReadWriteOnce",  "ReadOnlyMany"
-#         ],
-#         "hostPath": {
-#           "path" : "/tmp/share"
-#         }
-#       }
-#     },
-#     {
-#      "kind" : "PersistentVolumeClaim",
-#      "apiVersion": "v1",
-#      "metadata": {
-#        "name": "solr-claim"
-#      },
-#     "spec": {
-#        "accessModes": [
-#          "ReadWriteMany", "ReadWriteOnce",  "ReadOnlyMany"
-#        ],
-#        "resources": {
-#          "requests": {
-#            "storage": "3Gi"
-#          }
-#        },
-#        "selector":{
-#          "matchLabels":{
-#            "name" : "solr-index-backup",
-#            "type" : "local"
-#            }
-#          }
-#        }
-#      }
+    {
+      "kind" : "PersistentVolume",
+      "apiVersion" : "v1",
+      "metadata":{
+        "name" : "solr-index-backup",
+        "labels":{
+          "name" : "solr-index-backup",
+          "type" : "local"
+        }
+      },
+      "spec":{
+        "capacity":{
+          "storage" : "8Gi"
+        },
+        "accessModes":[
+          "ReadWriteMany", "ReadWriteOnce",  "ReadOnlyMany"
+        ],
+        "hostPath": {
+          "path" : "/tmp/share"
+        }
+      }
+    },
+    {
+      "kind" : "PersistentVolumeClaim",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "solr-claim"
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteMany", "ReadWriteOnce",  "ReadOnlyMany"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "3Gi"
+          }
+        },
+        "selector":{
+          "matchLabels":{
+            "name" : "solr-index-backup",
+            "type" : "local"
+            }
+          }
+        }
+      }
 
 
 To make solr container mount the hostPath, add the following part under .spec.spec (for Solr StatefulSet):
