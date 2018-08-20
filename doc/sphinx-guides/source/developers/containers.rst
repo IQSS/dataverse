@@ -205,39 +205,39 @@ Solr requires backing up the search index to persistent storage. For our proof o
 To allow containers to use a host's storage, we need to allow access to that directory first. In this example, we expose /tmp/share to the containers::
 
 # mkdir /tmp/share            
-# chcon -R -t svirt_sandbox_file_t ``
-# chgrp root -R /tmp/share ``
-# oc login -u system:admin ``
-# oc edit scc restricted ``    # Update allowHostDirVolumePlugin to true and runAsUser type to RunAsAny
+# chcon -R -t svirt_sandbox_file_t 
+# chgrp root -R /tmp/share 
+# oc login -u system:admin 
+# oc edit scc restricted     # Update allowHostDirVolumePlugin to true and runAsUser type to RunAsAny
 
 
 To add a persistent volume and persistent volume claim, in conf/docker/openshift/openshift.json, add the following to objects in openshift.json.
 Here, we are using hostPath for development purposes. Since OpenShift supports many types of cluster storages, 
 if the administrator wishes to use any cluster storage like EBS, Google Cloud Storage, etc, they would have to use a different type of Persistent Storage::
 
-    {
-      "kind" : "PersistentVolume",
-      "apiVersion" : "v1",
-      "metadata":{
-        "name" : "solr-index-backup",
-        "labels":{
-          "name" : "solr-index-backup",
-          "type" : "local"
-        }
-      },
-      "spec":{
-        "capacity":{
-          "storage" : "8Gi"
-        },
-        "accessModes":[
-          "ReadWriteMany", "ReadWriteOnce",  "ReadOnlyMany"
-        ],
-        "hostPath": {
-          "path" : "/tmp/share"
-        }
-      }
-    },
-    {
+#    {
+#      "kind" : "PersistentVolume",
+#     "apiVersion" : "v1",
+#     "metadata":{
+#       "name" : "solr-index-backup",
+#      "labels":{
+#         "name" : "solr-index-backup",
+#         "type" : "local"
+#         }
+#       },
+#       "spec":{
+#         "capacity":{
+#           "storage" : "8Gi"
+#         },
+#         "accessModes":[
+#           "ReadWriteMany", "ReadWriteOnce",  "ReadOnlyMany"
+#         ],
+#         "hostPath": {
+#           "path" : "/tmp/share"
+#         }
+#       }
+#     },
+#     {
       "kind" : "PersistentVolumeClaim",
       "apiVersion": "v1",
       "metadata": {
