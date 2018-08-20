@@ -232,6 +232,11 @@ public class ExportService {
     // This method runs the selected metadata exporter, caching the output 
     // in a file in the dataset directory / container based on its DOI:
     private void cacheExport(DatasetVersion version, String format, JsonObject datasetAsJson, Exporter exporter) throws ExportException {
+            boolean tempFileRequired = false;
+            File tempFile = null;
+            OutputStream outputStream = null;
+            Dataset dataset = version.getDataset();
+            StorageIO<Dataset> storageIO = null;
         try {
             // With some storage drivers, we can open a WritableChannel, or OutputStream 
             // to directly write the generated metadata export that we want to cache; 
@@ -239,11 +244,6 @@ public class ExportService {
             // "operation not supported" exception. If that's the case, we'll have 
             // to save the output into a temp file, and then copy it over to the 
             // permanent storage using the IO "save" command: 
-            boolean tempFileRequired = false;
-            File tempFile = null;
-            OutputStream outputStream = null;
-            Dataset dataset = version.getDataset();
-            StorageIO<Dataset> storageIO = null;
             try {
                 storageIO = DataAccess.createNewStorageIO(dataset, "placeholder");
                 Channel outputChannel = storageIO.openAuxChannel("export_" + format + ".cached", DataAccessOption.WRITE_ACCESS);
@@ -281,7 +281,13 @@ public class ExportService {
 
         } catch (IOException ioex) {
             throw new ExportException("IO Exception thrown exporting as " + "export_" + format + ".cached");
-        }
+        } finally
+	{
+		if(null!=outputStream)
+		{
+			try{ outputStream.close(); } catch(IOException ic){}
+		}
+	}
 
     }
 
