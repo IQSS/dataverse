@@ -377,14 +377,14 @@ public class FileDownloadHelper implements java.io.Serializable {
 
         if (!isRestrictedFile){
             // Yes, save answer and return true
-            this.fileDownloadPermissionMap.put(fid, true);
+            fileDownloadPermissionMap.put(fid, true);
             return true;
         }
         
         // See if the DataverseRequest, which contains IP Groups, has permission to download the file.
-        if (permissionService.requestOn(dvRequestService.getDataverseRequest(), fileMetadata.getDataFile()).has(Permission.DownloadFile)) {
+        if (permissionService.request(dvRequestService.getDataverseRequest()).on(fileMetadata.getDataFile()).has(Permission.DownloadFile)) {
             logger.fine("The DataverseRequest (User plus IP address) has access to download the file.");
-            this.fileDownloadPermissionMap.put(fid, true);
+            fileDownloadPermissionMap.put(fid, true);
             return true;
         }
 
@@ -409,7 +409,7 @@ public class FileDownloadHelper implements java.io.Serializable {
             return false;
         }
         
-        boolean hasPermission = this.permissionService.requestOn(dvRequestService.getDataverseRequest(), objectToCheck).has(permissionToCheck);
+        boolean hasPermission = permissionService.request(dvRequestService.getDataverseRequest()).on(objectToCheck).has(permissionToCheck);
        
         // return true/false
         return hasPermission;
@@ -474,7 +474,6 @@ public class FileDownloadHelper implements java.io.Serializable {
     }
     
     
-    //todo: potential cleanup - are these methods needed?
     public DataverseSession getSession() {
         return session;
     }

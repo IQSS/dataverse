@@ -113,7 +113,7 @@ public class MapLayerMetadataServiceBean {
             return false;
         }
         
-        if (permissionService.requestOn(req, mapLayerMetadata.getDataFile().getOwner()).has(Permission.EditDataset)) { 
+        if (permissionService.request(req).on(mapLayerMetadata.getDataFile().getOwner()).has(Permission.EditDataset)) { 
 
             // Remove thumbnails associated with the map metadata
             // (this also sets theto set the "preview image" flag to false)

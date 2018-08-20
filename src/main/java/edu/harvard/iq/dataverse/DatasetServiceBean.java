@@ -720,7 +720,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             // dataset as a whole? -- L.A. 4.2.1
             
             if (fileService.isThumbnailAvailable(dataFile) 
-                && permissionService.requestOn(req, dataFile).has(Permission.DownloadFile)) { 
+                && permissionService.request(req).on(dataFile).has(Permission.DownloadFile)) { 
                 return true;
             }
  

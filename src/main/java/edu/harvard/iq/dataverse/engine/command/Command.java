@@ -42,5 +42,13 @@ public interface Command<R> {
 	 */        
     Map<String,Set<Permission>> getRequiredPermissions();
 
+    /**
+     * Creates a string describing the command and what it would do to its
+     * affected objects if {@link #execute(edu.harvard.iq.dataverse.engine.command.CommandContext) }ed.
+     * 
+     * This is useful mostly for logging and debugging purposes.
+     * 
+     * @return A textual description of the command instance.
+     */
     public String describe();
 }

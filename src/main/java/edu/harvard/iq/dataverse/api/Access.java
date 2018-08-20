@@ -988,7 +988,7 @@ public class Access extends AbstractApiBean {
             
             if ( user != null ) {
                 // used in JSF context
-                if (permissionService.requestOn(dvRequestService.getDataverseRequest(), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                if (permissionService.request(dvRequestService.getDataverseRequest()).on(df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
                     // it's not unthinkable, that a null user (i.e., guest user) could be given
                     // the ViewUnpublished permission!
                     logger.log(Level.FINE, "Session-based auth: user {0} has access rights on the non-restricted, unpublished datafile.", user.getIdentifier());
@@ -998,7 +998,7 @@ public class Access extends AbstractApiBean {
             
             if (apiTokenUser != null) {
                 // used in an API context
-                if (permissionService.requestOn( createDataverseRequest(apiTokenUser), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                if (permissionService.request(createDataverseRequest(apiTokenUser)).on(df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
                     logger.log(Level.FINE, "Session-based auth: user {0} has access rights on the non-restricted, unpublished datafile.", apiTokenUser.getIdentifier());
                     return true;
                 }
@@ -1006,7 +1006,7 @@ public class Access extends AbstractApiBean {
             
             // last option - guest user in either contexts
             // Guset user is impled by the code above.
-            if ( permissionService.requestOn(dvRequestService.getDataverseRequest(), df.getOwner()).has(Permission.ViewUnpublishedDataset) ) {
+            if ( permissionService.request(dvRequestService.getDataverseRequest()).on(df.getOwner()).has(Permission.ViewUnpublishedDataset) ) {
                 return true;
             }
                     
@@ -1027,7 +1027,7 @@ public class Access extends AbstractApiBean {
             // User from the Session object, just like in the code fragment 
             // above. That's why it's not passed along as an argument.
                 hasAccessToRestrictedBySession = true; 
-            } else if (apiTokenUser != null && permissionService.requestOn(createDataverseRequest(apiTokenUser), df).has(Permission.DownloadFile)) {
+            } else if (apiTokenUser != null && permissionService.request(createDataverseRequest(apiTokenUser)).on(df).has(Permission.DownloadFile)) {
                 hasAccessToRestrictedByToken = true; 
             }
             
@@ -1060,7 +1060,7 @@ public class Access extends AbstractApiBean {
                             return true;
                         } 
                     } else {
-                        if (apiTokenUser != null && permissionService.requestOn(createDataverseRequest(apiTokenUser), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                        if (apiTokenUser != null && permissionService.request(createDataverseRequest(apiTokenUser)).on(df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
                             logger.log(Level.FINE, "Token-based auth: user {0} is granted access to the restricted, unpublished datafile.", apiTokenUser.getIdentifier());
                             return true;
                         }
@@ -1107,7 +1107,7 @@ public class Access extends AbstractApiBean {
                 return false;
             } 
             
-        if (permissionService.requestOn(createDataverseRequest(user), df).has(Permission.DownloadFile)) { 
+        if (permissionService.request(createDataverseRequest(user)).on(df).has(Permission.DownloadFile)) { 
                 if (published) {
                     logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the datafile.", user.getIdentifier());
                     return true; 
@@ -1115,7 +1115,7 @@ public class Access extends AbstractApiBean {
                     // if the file is NOT published, we will let them download the 
                     // file ONLY if they also have the permission to view 
                     // unpublished versions:
-                    if (permissionService.requestOn(createDataverseRequest(user), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                    if (permissionService.request(createDataverseRequest(user)).on(df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
                         logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the (unpublished) datafile.", user.getIdentifier());
                         return true;
                     } else {

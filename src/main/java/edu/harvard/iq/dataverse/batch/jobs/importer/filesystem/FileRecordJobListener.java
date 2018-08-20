@@ -252,18 +252,13 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
      */
     private boolean canRunJob() {
 
-        boolean canIssueCommand = permissionServiceBean
-                .requestOn(new DataverseRequest(user, (HttpServletRequest) null), dataset)
-                .canIssue(UpdateDatasetVersionCommand.class);
+        boolean canIssueCommand = permissionServiceBean.isPermitted( 
+            new UpdateDatasetVersionCommand(dataset, new DataverseRequest(user, (HttpServletRequest) null)));
+                
         if (!canIssueCommand) {
             getJobLogger().log(Level.SEVERE, "User doesn't have permission to import files into this dataset.");
             return false;
         }
-
-//        if (!permissionServiceBean.userOn(user, dataset.getOwner()).has(Permission.EditDataset)) {
-//            getJobLogger().log(Level.SEVERE, "User doesn't have permission to import files into this dataset.");
-//            return false;
-//        }
 
         if (dataset.getVersions().size() != 1) {
             getJobLogger().log(Level.SEVERE, "File system import is currently only supported for datasets with one version.");

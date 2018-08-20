@@ -906,9 +906,10 @@ public class Datasets extends AbstractApiBean {
             Dataset dataset = findDatasetOrDie(idSupplied);
             boolean canUpdateThumbnail = false;
             try {
-                canUpdateThumbnail = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetThumbnailCommand.class);
+                Command t = new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), dataset, UpdateDatasetThumbnailCommand.UserIntent.removeThumbnail, Long.MIN_VALUE, null);
+                canUpdateThumbnail = permissionSvc.isPermitted(t);
             } catch (WrappedResponse ex) {
-                logger.info("Exception thrown while trying to figure out permissions while getting thumbnail for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
+                logger.info(()->"Exception thrown while trying to figure out permissions while getting thumbnail for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
             }
             if (!canUpdateThumbnail) {
                 return error(Response.Status.FORBIDDEN, "You are not permitted to list dataset thumbnail candidates.");

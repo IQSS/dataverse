@@ -28,6 +28,7 @@ import javax.persistence.PersistenceContext;
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -57,10 +58,10 @@ public class PermissionServiceBean {
     /**
      * A set of permissions that con only be granted to {@link AuthentictedUser}s.
      */
-    private static final Set<Permission> PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY
-            = EnumSet.copyOf(Arrays.asList(Permission.values()).stream()
+    private static final Set<Permission> PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY = 
+        EnumSet.copyOf(Arrays.asList(Permission.values()).stream()
                     .filter(Permission::requiresAuthenticatedUser)
-                    .collect(Collectors.toList()));
+                    .collect(Collectors.toSet()));
 
     @EJB
     BuiltinUserServiceBean userService;
@@ -91,9 +92,40 @@ public class PermissionServiceBean {
 
     @Inject
     DataverseRequestServiceBean dvRequestService;
-
+    
+    
     /**
-     * A request-level permission query (e.g includes IP groups).
+     * This interface is used locally by {@link EjbDataverseEngine} beans to
+     * create detailed reports on which permissions are missing. Probably not
+     * useful beyond that area.
+     */
+    interface InsufficientPermissionCallback {
+        void insufficientPermissions( DvObject dvo, Set<Permission> required, Set<Permission> granted);
+    }
+    
+    /**
+     * A request-level permission query (e.g includes IP groups). These queries
+     * form a DSL for querying permissions, in a way that's hopefully more
+     * pleasant than passing a lot of parameters to a large method.
+     * 
+     * Do not instantiate a query yourself. Rather, use the query-returning methods
+     * of this bean.
+     * 
+     * The example below takes the current request, and checks whether it has 
+     * permission {@code p} over {@link DvObject} {@code dv}:
+     *     * <code>
+     * if ( bean.on(dvObject).has(p) ) {
+     *  ...do the thing you must have p in order to do
+     * }
+     * </code>
+     * 
+     * In case you need to create your own request:
+     * 
+     * <code>
+     * if ( bean.request(req).on(dvObject).has(p) ) {
+     *  ...do the thing you must have p in order to do
+     * }
+     * </code>
      */
     public class RequestPermissionQuery {
 
@@ -121,51 +153,85 @@ public class PermissionServiceBean {
         }
 
         public RequestPermissionQuery on(DvObject dvo) {
+            if (dvo == null) {
+                throw new IllegalArgumentException("Cannot query permissions on a null DvObject");
+            }
+            if (dvo.getId() == null) {
+                throw new IllegalArgumentException("Cannot query permissions on a DvObject with a null id.");
+            }
             return new RequestPermissionQuery(dvo, request);
         }
-
-        /**
-         * Tests whether a command of the passed class can be issued over the
-         * {@link DvObject} in the context of the current request. Note that
-         * since some commands have dynamic permissions, in some cases it's
-         * better to instantiate a command object and pass it to
-         * {@link #canIssue(edu.harvard.iq.dataverse.engine.command.Command)}.
-         *
-         * @param aCmdClass
-         * @return {@code true} iff instances of the command class can be issued
-         * in the context of the current request.
-         */
-        public boolean canIssue(Class<? extends Command> aCmdClass) {
-            Map<String, Set<Permission>> required = CH.permissionsRequired(aCmdClass);
-            if (required.isEmpty() || required.get("") == null) {
-                logger.fine("IsUserAllowedOn: empty-true");
-                return true;
-            } else {
-                Set<Permission> requiredPermissionSet = required.get("");
-                return has(requiredPermissionSet);
-            }
+       
+    }
+    
+    /**
+     * Start querying permissions for {@link DvObject} {@code d}. 
+     * @param d the object on which the permissions will be queried
+     * @return A permission query
+     */
+    public RequestPermissionQuery on(DvObject d) {
+        if (d == null) {
+            throw new IllegalArgumentException("Cannot query permissions on a null DvObject");
         }
-
-        /**
-         * Tests whether the command can be issued over the {@link DvObject} in
-         * the context of the current request.
-         *
-         * @param aCmd
-         * @return {@code true} iff the command can be issued in the context of
-         * the current request.
-         */
-        public boolean canIssue(Command<?> aCmd) {
-            Map<String, Set<Permission>> required = aCmd.getRequiredPermissions();
-            if (required.isEmpty() || required.get("") == null) {
-                logger.fine("IsUserAllowedOn: empty-true");
-                return true;
-            } else {
-                Set<Permission> requiredPermissionSet = required.get("");
-                return has(requiredPermissionSet);
-            }
+        if (d.getId() == null) {
+            throw new IllegalArgumentException("Cannot query permissions on a DvObject with a null id.");
         }
+        return new RequestPermissionQuery(d, null);
     }
 
+    /**
+     * Start querying permissions for {@link DataverseRequest} {@code req}. 
+     * @param req the {@link DataverseRequest} whose permissions will be queried
+     * @return A permission query
+     */
+    public RequestPermissionQuery request(DataverseRequest req) {
+        return new RequestPermissionQuery(null, req);
+    }
+    
+    /**
+     * Checks whether a command has enough permissions to run.
+     * 
+     * Note that the command may fail due to other reasons, such as internal 
+     * errors or making no sense (see {@link IllegalCommandException}).
+     * 
+     * @param aCommand
+     * @return {@code true} iff submitting the command will not cause a {@link PermissionException} to be thrown.
+     */
+    public boolean isPermitted( Command aCommand ) {
+        return isPermitted(aCommand, null);
+    }
+    
+    boolean isPermitted(Command aCommand, InsufficientPermissionCallback ipc) {
+        Map<String, ? extends Set<Permission>> requiredMap = aCommand.getRequiredPermissions();
+        if (requiredMap == null) {
+            throw new IllegalArgumentException("Command " + aCommand + " does not define required permissions.");
+        }
+
+        DataverseRequest dvReq = aCommand.getRequest();
+
+        Map<String, DvObject> affectedDvObjects = aCommand.getAffectedDvObjects();
+        
+        for (Map.Entry<String, ? extends Set<Permission>> pair : requiredMap.entrySet()) {
+            String dvName = pair.getKey();
+            if (!affectedDvObjects.containsKey(dvName)) {
+                throw new IllegalArgumentException("Command instance " + aCommand + " does not have a DvObject named '" + dvName + "'");
+            }
+            DvObject dvo = affectedDvObjects.get(dvName);
+
+            Set<Permission> granted = (dvo != null) ? permissionsFor(dvReq, dvo) : EnumSet.allOf(Permission.class);
+            Set<Permission> required = requiredMap.get(dvName);
+
+            if (!granted.containsAll(required)) {
+                if ( ipc != null ) {
+                    ipc.insufficientPermissions(dvo, required, granted);
+                }
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
     public List<RoleAssignment> assignmentsOn(DvObject d) {
         return em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
                 .setParameter("definitionPointId", d.getId()).getResultList();
@@ -248,6 +314,7 @@ public class PermissionServiceBean {
         return hasGroupPermissionsFor(ras, dvo, required);
     }
 
+    @Deprecated
     public boolean hasPermissionsFor(RoleAssignee ra, DvObject dvo, Set<Permission> required) {
         if (ra instanceof User) {
             User user = (User) ra;
@@ -270,13 +337,6 @@ public class PermissionServiceBean {
         ras.add(ra);
         return hasGroupPermissionsFor(ras, dvo, required);
     }
-    
-    private boolean hasGroupPermissionsFor(Set<RoleAssignee> ras, DvObject dvo, Set<Permission> required) {
-        for (RoleAssignment asmnt : assignmentsFor(ras, dvo)) {
-            required.removeAll(asmnt.getRole().permissions());
-        }
-        return required.isEmpty();
-    }
 
     /**
      * Finds all the permissions the {@link User} in {@code req} has over
@@ -296,7 +356,7 @@ public class PermissionServiceBean {
         // Add permissions gained from groups
         Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(req, dvo));
         ras.add(req.getUser());
-        addGroupPermissionsFor(ras, dvo, permissions);
+        addAllPermissions(ras, dvo, permissions);
 
         if (!req.getUser().isAuthenticated()) {
             permissions.removeAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
@@ -322,7 +382,7 @@ public class PermissionServiceBean {
 
         Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(ra, dvo));
         ras.add(ra);
-        addGroupPermissionsFor(ras, dvo, permissions);
+        addAllPermissions(ras, dvo, permissions);
 
         if ((ra instanceof User) && (!((User) ra).isAuthenticated())) {
             permissions.removeAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
@@ -360,32 +420,9 @@ public class PermissionServiceBean {
         return ancestors;
     }
 
-    /**
-     * For commands with no named dvObjects, this allows a quick check whether a
-     * user can issue the command on the dataverse or not.
-     *
-     * @param u
-     * @param commandClass
-     * @param dvo
-     * @return
-     * @deprecated As commands have dynamic permissions now, it is not enough to
-     * look at the static permissions anymore.
-     * @see
-     * #isUserAllowedOn(edu.harvard.iq.dataverse.authorization.RoleAssignee,
-     * edu.harvard.iq.dataverse.engine.command.Command,
-     * edu.harvard.iq.dataverse.DvObject)
-     */
-    public boolean isUserAllowedOn(RoleAssignee u, Class<? extends Command> commandClass, DvObject dvo) {
-        Map<String, Set<Permission>> required = CH.permissionsRequired(commandClass);
-        return isUserAllowedOn(u, required, dvo);
-    }
-
+    // TODO: remove. Use "is Permitted instead.
     public boolean isUserAllowedOn(RoleAssignee u, Command<?> command, DvObject dvo) {
         Map<String, Set<Permission>> required = command.getRequiredPermissions();
-        return isUserAllowedOn(u, required, dvo);
-    }
-
-    private boolean isUserAllowedOn(RoleAssignee u, Map<String, Set<Permission>> required, DvObject dvo) {
         if (required.isEmpty() || required.get("") == null) {
             logger.fine("IsUserAllowedOn: empty-true");
             return true;
@@ -393,27 +430,6 @@ public class PermissionServiceBean {
             Set<Permission> requiredPermissionSet = required.get("");
             return hasPermissionsFor(u, dvo, requiredPermissionSet);
         }
-    }
-
-    public RequestPermissionQuery on(DvObject d) {
-        if (d == null) {
-            throw new IllegalArgumentException("Cannot query permissions on a null DvObject");
-        }
-        if (d.getId() == null) {
-            throw new IllegalArgumentException("Cannot query permissions on a DvObject with a null id.");
-        }
-        return requestOn(dvRequestService.getDataverseRequest(), d);
-    }
-
-    public RequestPermissionQuery requestOn(DataverseRequest req, DvObject dvo) {
-        if (dvo.getId() == null) {
-            throw new IllegalArgumentException("Cannot query permissions on a DvObject with a null id.");
-        }
-        return new RequestPermissionQuery(dvo, req);
-    }
-
-    public RequestPermissionQuery request(DataverseRequest req) {
-        return new RequestPermissionQuery(null, req);
     }
 
     /**
@@ -447,7 +463,7 @@ public class PermissionServiceBean {
         List<Dataverse> dataversesUserHasPermissionOn = new LinkedList<>();
         for (int dvIdAsInt : dataverseIdsToCheck) {
             Dataverse dataverse = dataverseService.find(Long.valueOf(dvIdAsInt));
-            if (requestOn(fauxRequest, dataverse).has(permission)) {
+            if (request(fauxRequest).on(dataverse).has(permission)) {
                 dataversesUserHasPermissionOn.add(dataverse);
             }
         }
@@ -543,6 +559,7 @@ public class PermissionServiceBean {
         return dataversesUserHasPermissionOn;
     }
 
+    // MBS FIXME: This belongs in a Command (returns void, throws command related exception). Move it somewhere that makes more sense.
     public void checkEditDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         if (dataset.isLocked()) {
             if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
@@ -568,6 +585,7 @@ public class PermissionServiceBean {
         }
     }
 
+    // MBS FIXME: This belongs in a Command (returns void, throws command related exception). Move it somewhere that makes more sense.
     public void checkDownloadFileLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         if (dataset.isLocked()) {
             if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
@@ -594,7 +612,7 @@ public class PermissionServiceBean {
     }
     
     
-    private void addGroupPermissionsFor(Set<RoleAssignee> ras, DvObject dvo, Set<Permission> permissions) {
+    private void addAllPermissions(Set<RoleAssignee> ras, DvObject dvo, Set<Permission> permissions) {
         for (RoleAssignment asmnt : assignmentsFor(ras, dvo)) {
             permissions.addAll(asmnt.getRole().permissions());
         }
@@ -681,6 +699,13 @@ public class PermissionServiceBean {
             typeStringBld.append(") and ");
         }
         return typeStringBld.toString();
+    }
+        
+    private boolean hasGroupPermissionsFor(Set<RoleAssignee> ras, DvObject dvo, Set<Permission> required) {
+        for (RoleAssignment asmnt : assignmentsFor(ras, dvo)) {
+            required.removeAll(asmnt.getRole().permissions());
+        }
+        return required.isEmpty();
     }
 
 }

@@ -915,7 +915,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         // Check the permission
-        boolean hasPermission = permissionService.requestOn(dvRequestService.getDataverseRequest(), dataset).has(permissionToCheck);
+        boolean hasPermission = permissionService.request(dvRequestService.getDataverseRequest()).on(dataset).has(permissionToCheck);
 
         // Save the permission
         datasetPermissionMap.put(permName, hasPermission);

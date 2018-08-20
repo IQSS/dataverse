@@ -61,7 +61,7 @@ public class CollectionListManagerImpl implements CollectionListManager {
                  * will be able to see if the supplied dataverse is published or
                  * not.
                  */
-                if (!permissionService.requestOn(dvReq, dv).has(Permission.AddDataset)) {
+                if (!permissionService.request(dvReq).on(dv).has(Permission.AddDataset)) {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to list datasets in dataverse " + dv.getAlias());
                 }
                 Abdera abdera = new Abdera();

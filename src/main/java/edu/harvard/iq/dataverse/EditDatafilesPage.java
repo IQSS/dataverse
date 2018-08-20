@@ -317,7 +317,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         // Check the permission
         //
-        boolean hasPermission = this.permissionService.requestOn(dvRequestService.getDataverseRequest(), dataset).has(permissionToCheck);
+        boolean hasPermission = permissionService.request(dvRequestService.getDataverseRequest()).on(dataset).has(permissionToCheck);
 
         // Save the permission
         this.datasetPermissionMap.put(permName, hasPermission);
@@ -406,7 +406,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         
         if (!modeToken.equals("CREATE")) {
-            logger.fine("Request to initialize Edit Files page with token " + modeToken + " (aborting).");
+            logger.fine(()->"Request to initialize Edit Files page with token " + modeToken + " (aborting).");
             return null; 
         }
         

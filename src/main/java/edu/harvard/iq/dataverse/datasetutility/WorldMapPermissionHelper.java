@@ -91,7 +91,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         if (user==null){
             return false;
         }
-        if (!this.permissionService.requestOn(user, fm.getDataFile()).has(Permission.DownloadFile)){
+        if (!this.permissionService.request(user).on(fm.getDataFile()).has(Permission.DownloadFile)){
             return false;
         }
 
@@ -373,7 +373,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
             return false;
         }
         
-        if (!this.permissionService.requestOn(req, fm.getDataFile().getOwner()).has(Permission.EditDataset)){
+        if (!this.permissionService.request(req).on(fm.getDataFile().getOwner()).has(Permission.EditDataset)){
             return false;
         }
 
@@ -480,7 +480,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
             return false;
         }
         
-        if (!this.permissionService.requestOn(req, fm.getDataFile().getOwner()).has(Permission.EditDataset)){
+        if (!this.permissionService.request(req).on(fm.getDataFile().getOwner()).has(Permission.EditDataset)){
             return false;
         }
 
@@ -620,7 +620,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         // Check the permission
         //
         
-        boolean hasPermission = this.permissionService.requestOn(requestSvc.getDataverseRequest(), objectToCheck).has(permissionToCheck);
+        boolean hasPermission = this.permissionService.request(requestSvc.getDataverseRequest()).on(objectToCheck).has(permissionToCheck);
 
         // Save the permission
         this.datasetPermissionMap.put(permName, hasPermission);

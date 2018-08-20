@@ -204,7 +204,7 @@ public class WorldMapTokenServiceBean {
             return false;
         }
         DataverseRequest perUserReq = new DataverseRequest(wmToken.getDataverseUser(), requestSvc.getDataverseRequest().getSourceAddress());
-        if (permissionService.requestOn(perUserReq, wmToken.getDatafile()).has(Permission.EditDataset)) { 
+        if (permissionService.request(perUserReq).on(wmToken.getDatafile()).has(Permission.EditDataset)) { 
             logger.info("WorldMap token-based auth: Token's User is still authorized to edit the dataset for the datafile.");
             return true;
         }
@@ -221,7 +221,7 @@ public class WorldMapTokenServiceBean {
             return false;
         }
         DataverseRequest perUserReq = new DataverseRequest(wmToken.getDataverseUser(), requestSvc.getDataverseRequest().getSourceAddress());
-        if (permissionService.requestOn(perUserReq, wmToken.getDatafile()).has(Permission.DownloadFile)) { 
+        if (permissionService.request(perUserReq).on(wmToken.getDatafile()).has(Permission.DownloadFile)) { 
             logger.info("WorldMap token-based auth: Token's User is still authorized to download the datafile.");
             return true;
         }

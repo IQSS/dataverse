@@ -178,59 +178,31 @@ public class EjbDataverseEngine {
     public <R> R submit(Command<R> aCommand) throws CommandException {
         
         final ActionLogRecord logRec = new ActionLogRecord(ActionLogRecord.ActionType.Command, aCommand.getClass().getCanonicalName());
-        
         try {
+            // Log the command attempt
             logRec.setUserIdentifier( aCommand.getRequest().getUser().getIdentifier() );
-            
-            // Check permissions - or throw an exception
-            Map<String, ? extends Set<Permission>> requiredMap = aCommand.getRequiredPermissions();
-            if (requiredMap == null) {
-                throw new RuntimeException("Command " + aCommand + " does not define required permissions.");
-            }
-
-            DataverseRequest dvReq = aCommand.getRequest();
-            
-            Map<String, DvObject> affectedDvObjects = aCommand.getAffectedDvObjects();
             logRec.setInfo(aCommand.describe());
-            for (Map.Entry<String, ? extends Set<Permission>> pair : requiredMap.entrySet()) {
-                String dvName = pair.getKey();
-                if (!affectedDvObjects.containsKey(dvName)) {
-                    throw new RuntimeException("Command instance " + aCommand + " does not have a DvObject named '" + dvName + "'");
-                }
-                DvObject dvo = affectedDvObjects.get(dvName);
-
-                Set<Permission> granted = (dvo != null) ? permissionService.permissionsFor(dvReq, dvo)
-                        : EnumSet.allOf(Permission.class);
-                Set<Permission> required = requiredMap.get(dvName);
-                
-                if (!granted.containsAll(required)) {
-                    required.removeAll(granted);
-                    logRec.setActionResult(ActionLogRecord.Result.PermissionError);
-                    /**
-                     * @todo Is there any harm in showing the "granted" set
-                     * since we already show "required"? It would help people
-                     * reason about the mismatch.
-                     */
-                    throw new PermissionException("Can't execute command " + aCommand
-                            + ", because request " + aCommand.getRequest()
-                            + " is missing permissions " + required
-                            + " on Object " + dvo.accept(DvObject.NamePrinter),
-                            aCommand,
-                            required, dvo);
-                }
+            
+            // permissions ok?
+            InsufficientPermissionsHandler mph = new InsufficientPermissionsHandler(aCommand, logRec);
+            if ( ! permissionService.isPermitted(aCommand, mph)) {
+                throw new PermissionException(mph.message, aCommand, mph.missingPermissions, mph.dvo);
             }
+            
+            // try to run
             try {
                 return aCommand.execute(getContext());
-                
             } catch ( EJBException ejbe ) {
                 throw new CommandException("Command " + aCommand.toString() + " failed: " + ejbe.getMessage(), ejbe.getCausedByException(), aCommand);
             } 
+            
         } catch (CommandException cmdEx) {
             if (!(cmdEx instanceof PermissionException)) {            
                 logRec.setActionResult(ActionLogRecord.Result.InternalError); 
             } 
             logRec.setInfo(logRec.getInfo() + " (" + cmdEx.getMessage() +")");
             throw cmdEx;
+            
         } catch ( RuntimeException re ) {
             logRec.setActionResult(ActionLogRecord.Result.InternalError);
             logRec.setInfo(logRec.getInfo() + " (" + re.getMessage() +")");   
@@ -462,5 +434,32 @@ public class EjbDataverseEngine {
 
         return ctxt;
     }
+    
+    private class InsufficientPermissionsHandler implements PermissionServiceBean.InsufficientPermissionCallback {
+        
+        final Command aCommand;
+        final ActionLogRecord logRec;
+        
+        String message = null;
+        DvObject dvo = null;
+        Set<Permission> missingPermissions = null;
 
+        public InsufficientPermissionsHandler(Command aCommand, ActionLogRecord logRec) {
+            this.aCommand = aCommand;
+            this.logRec = logRec;
+        }
+        
+        @Override
+        public void insufficientPermissions(DvObject dvo, Set<Permission> required, Set<Permission> granted) {
+            logRec.setActionResult(ActionLogRecord.Result.PermissionError);
+            missingPermissions = EnumSet.copyOf(required);
+            missingPermissions.removeAll(granted);
+            message = "Can't execute command " + aCommand
+                            + ", because request " + aCommand.getRequest()
+                            + " is missing permissions " + missingPermissions
+                            + " on Object " + dvo.accept(DvObject.NamePrinter);
+            this.dvo = dvo;
+            
+        }
+    }
 }

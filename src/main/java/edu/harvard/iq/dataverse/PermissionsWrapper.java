@@ -1,24 +1,45 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.CommandHelper;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
+ * <b>PLASE READ BEFOR USING THIS CLASS:</b>
+ * 
+ * This class gives us a great performance boost on the UI/JSF side. This is done,
+ * in some rare edge cases, at the expense of correctness. Specifically, this 
+ * class makes the following false assumptions, that are very very likely 
+ * to be correct:
+ * 
+ * <ol>
+ *  <li>Commands require permissions only over a single object</li>
+ *  <li>The required permissions of said object live under the empty key</li>
+ *  <li>The required permissions can be decided on statically (by using class
+ *        annotations only, without calling {@link Command#getRequiredPermissions()}).</li>
+ * </ol>
+ * 
+ * If any of these assumptions do not hold for your use case, <b>do not use this 
+ * class!</b>
+ * 
+ * We use this class in the UI, and the risk we are running is merely
+ * presentational: Some buttons might not be enabled/disabled as needed. Even
+ * if a button is enabled when it shouldn't be, the command engine will reject 
+ * the command, so no harm do the data could be made. And we get the performance
+ * gains, which are critical to a human interface.
  *
+ * Try to not use this class in APIs, though.
+ * 
  * @author gdurand
  */
 @ViewScoped
@@ -33,15 +54,15 @@ public class PermissionsWrapper implements java.io.Serializable {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
-
-    private final Map<Long, Map<Class<? extends Command<?>>, Boolean>> commandMap = new HashMap<>();
+    
+    private final Map<Long, Map<Class<? extends Command<?>>, Boolean>> isPermittedCache = new HashMap<>();
 
     // Maps for caching permissions lookup results:
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { DvObject.id : Boolean }
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
 
     /**
-     * Check if the current Dataset can Issue Commands
+     * Check if a command can be issued in the current request.
      *
      * @param dvo Target dataverse object.
      * @param command The command to execute
@@ -55,8 +76,8 @@ public class PermissionsWrapper implements java.io.Serializable {
             return false;
         }
 
-        if (commandMap.containsKey(dvo.getId())) {
-            Map<Class<? extends Command<?>>, Boolean> dvoCommandMap = this.commandMap.get(dvo.getId());
+        if (isPermittedCache.containsKey(dvo.getId())) {
+            Map<Class<? extends Command<?>>, Boolean> dvoCommandMap = this.isPermittedCache.get(dvo.getId());
             if (dvoCommandMap.containsKey(command)) {
                 return dvoCommandMap.get(command);
             } else {
@@ -65,22 +86,23 @@ public class PermissionsWrapper implements java.io.Serializable {
 
         } else {
             Map<Class<? extends Command<?>>, Boolean> newDvoCommandMap = new HashMap<>();
-            commandMap.put(dvo.getId(), newDvoCommandMap);
+            isPermittedCache.put(dvo.getId(), newDvoCommandMap);
             return addCommandtoDvoCommandMap(dvo, command, newDvoCommandMap);
         }
     }
 
-    private boolean addCommandtoDvoCommandMap(DvObject dvo, Class<? extends Command<?>> command, Map<Class<? extends Command<?>>, Boolean> dvoCommandMap) {
+    private boolean addCommandtoDvoCommandMap(DvObject dvo, Class<? extends Command<?>> commandClass, Map<Class<? extends Command<?>>, Boolean> dvoCommandMap) {
         if ( dvo==null || (dvo.getId()==null) ){
             return false;
         }
-        if (command==null){
+        if (commandClass==null){
             return false;
         }
         
         boolean canIssueCommand;
-        canIssueCommand = permissionService.requestOn(dvRequestService.getDataverseRequest(), dvo).canIssue(command);
-        dvoCommandMap.put(command, canIssueCommand);
+        Set<Permission> requiredPermissions = CommandHelper.CH.permissionsRequired(commandClass).get("");
+        canIssueCommand = permissionService.hasPermissionsFor(dvRequestService.getDataverseRequest(), dvo, requiredPermissions);
+        dvoCommandMap.put(commandClass, canIssueCommand);
         return canIssueCommand;
     }
 
@@ -121,7 +143,9 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (u==null){            
             return false;
         }
-        return permissionService.requestOn(dvRequestService.getDataverseRequest(), dv).has(Permission.ManageDataversePermissions);
+        return permissionService.request(dvRequestService.getDataverseRequest())
+                                .on(dv)
+                                .has(Permission.ManageDataversePermissions);
     }
     
     public boolean canManageDatasetPermissions(User u, Dataset ds) {
@@ -131,7 +155,9 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (u==null){            
             return false;
         }
-        return permissionService.requestOn(dvRequestService.getDataverseRequest(), ds).has(Permission.ManageDatasetPermissions);
+        return permissionService.request(dvRequestService.getDataverseRequest())
+                                .on(ds)
+                                .has(Permission.ManageDatasetPermissions);
     }
 
     public boolean canViewUnpublishedDataset(DataverseRequest dr, Dataset dataset) {
@@ -170,7 +196,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         }
         
         // Check the permission
-        boolean hasPermission = this.permissionService.requestOn(req, dataset).has(permissionToCheck);
+        boolean hasPermission = this.permissionService.request(req).on(dataset).has(permissionToCheck);
 
         // Save the permission
         this.datasetPermissionMap.put(permName, hasPermission);
