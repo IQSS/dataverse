@@ -251,6 +251,8 @@ In the Terms tab, which can also be found by clicking on the Edit dropdown butto
 CC0 Waiver + Dataset Terms of Use 
 ---------------------------------
 
+`Creative Commons <https://creativecommons.org>`_ is an organization that defines a number of `licences <https://creativecommons.org/licenses/>`_ ("CC BY", "CC BY-SA", etc.) and a waiver called `CC0 <https://creativecommons.org/share-your-work/public-domain/cc0>`_. It is important to understand CC0 because it is the default for Dataverse. The `human-readable summary of CC0 <https://creativecommons.org/publicdomain/zero/1.0/>`_ begins with "The person who associated a work with this deed has dedicated the work to the public domain by waiving all of his or her rights to the work worldwide under copyright law, including all related and neighboring rights, to the extent allowed by law." CC0 is good for long term preservation because future researchers will be able to make use of the dataset without explicit permission. Files can still be restricted when the dataset makes use of the CC0 waiver. If CC0 is not suitable, custom terms can be entered, as explained below.
+
 All new datasets created through the web UI default to a `CC0 public domain dedication 
 <https://creativecommons.org/publicdomain/zero/1.0/>`_ (this default is not applied to datasets created through the native API). CC0 facilitates reuse and extensibility of research data. 
 Our `Community Norms <https://dataverse.org/best-practices/dataverse-community-norms>`_ as well as good scientific
