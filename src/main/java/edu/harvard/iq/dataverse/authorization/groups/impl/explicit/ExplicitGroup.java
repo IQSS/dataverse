@@ -151,6 +151,11 @@ public class ExplicitGroup implements Group, java.io.Serializable {
      */
     protected ExplicitGroup() {}
     
+    /**
+     * Add a user to {@code this} group.
+     * @param u The user
+     * @throws IllegalArgumentException if {@code u} is {@code null}.
+     */
     public void add( User u ) {
         if ( u == null ) throw new IllegalArgumentException("Cannot add a null user to an explicit group.");
         if ( u instanceof AuthenticatedUser ) {
@@ -196,6 +201,11 @@ public class ExplicitGroup implements Group, java.io.Serializable {
         
     }
     
+    /**
+     * Removes a role assignee from {@code this} group.
+     * 
+     * @param roleAssignee The role assignee to be removed from {@code this} group.
+     */
     public void remove(RoleAssignee roleAssignee) {
         removeByRoleAssgineeIdentifier( roleAssignee.getIdentifier() );
     }

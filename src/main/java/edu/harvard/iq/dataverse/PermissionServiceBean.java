@@ -328,7 +328,19 @@ public class PermissionServiceBean {
         
     }
 
+    /**
+     * Checks whether a request has a set of permissions over a {@link DvObject}.
+     * 
+     * @param req The request tested
+     * @param dvo The object tested
+     * @param required The required permissions
+     * @return if the permissions {@code req} has over {@code dvo} is a subset of {@code required}.
+     */
     public boolean hasPermissionsFor(DataverseRequest req, DvObject dvo, Set<Permission> required) {
+        if ( required.isEmpty() ) {
+            return true;
+        }
+        
         User user = req.getUser();
         if (user.isSuperuser()) {
             return true;

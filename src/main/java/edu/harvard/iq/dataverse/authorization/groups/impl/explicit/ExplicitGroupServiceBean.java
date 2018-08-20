@@ -10,7 +10,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.joining;
@@ -43,7 +42,7 @@ public class ExplicitGroupServiceBean {
     
     /**
      * A PostgreSQL-specific query that returns a group and all the groups
-     * that contain it, and their parents too (-> recourse up teh containment
+     * that contain it, and their parents too (-> recourse up the containment
      * hierarchy of the explicit groups). Takes the group id as a parameter.
      */
     private static final String FIND_ALL_PARENTS_QUERY_TEMPLATE = "WITH RECURSIVE\n" +
