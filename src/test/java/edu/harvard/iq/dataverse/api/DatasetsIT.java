@@ -1496,11 +1496,10 @@ public class DatasetsIT {
         
         // Try to lock the dataset with the same type lock, AGAIN 
         // (this should fail, of course!)
-        // Lock the dataset with an ingest lock: 
         lockDatasetResponse = UtilIT.lockDataset(datasetId.longValue(), "Ingest", apiToken);
         lockDatasetResponse.prettyPrint();
         lockDatasetResponse.then().assertThat()
-                .body("data.message", equalTo("dataset already locked with lock type Ingest"))
+                .body("message", equalTo("dataset already locked with lock type Ingest"))
                 .statusCode(FORBIDDEN.getStatusCode());
              
         // And now test deleting the lock:
@@ -1511,7 +1510,7 @@ public class DatasetsIT {
                 .body("data.message", equalTo("lock type Ingest removed"))
                 .statusCode(200);
         
-        // ... and check the lock on the dataset again, this time by name: 
+        // ... and check for the lock on the dataset again, this time by specific lock type: 
         // (should return an empty list, now that we have unlocked it)
         checkDatasetLocks = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
         checkDatasetLocks.prettyPrint();
