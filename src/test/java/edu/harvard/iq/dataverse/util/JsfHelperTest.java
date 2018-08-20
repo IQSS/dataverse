@@ -4,7 +4,7 @@
 
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

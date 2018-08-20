@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.validation;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.util.xml;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import org.junit.experimental.categories.Category;

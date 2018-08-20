@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import java.util.Arrays;
 import org.junit.After;
 import org.junit.Before;

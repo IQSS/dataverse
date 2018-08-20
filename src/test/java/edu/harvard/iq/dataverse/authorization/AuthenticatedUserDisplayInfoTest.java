@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.authorization;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.experimental.categories.Category;

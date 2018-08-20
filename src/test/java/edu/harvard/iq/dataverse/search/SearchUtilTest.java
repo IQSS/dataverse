@@ -6,7 +6,7 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import java.sql.Timestamp;
 import java.util.Arrays;
 import org.apache.solr.common.SolrInputDocument;

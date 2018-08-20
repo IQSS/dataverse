@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.experimental.categories.Category;

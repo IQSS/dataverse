@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.ingest;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

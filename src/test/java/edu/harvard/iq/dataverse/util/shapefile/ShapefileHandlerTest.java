@@ -8,7 +8,7 @@ package edu.harvard.iq.dataverse.util.shapefile;
 
 
 //import edu.harvard.iq.dataverse.util.ZipMaker;
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import static edu.harvard.iq.dataverse.util.ShapefileHandler.SHP_XML_EXTENSION;
 

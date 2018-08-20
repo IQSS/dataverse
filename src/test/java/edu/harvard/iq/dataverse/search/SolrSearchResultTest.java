@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;

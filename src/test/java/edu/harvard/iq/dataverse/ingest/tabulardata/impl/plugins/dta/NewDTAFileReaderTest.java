@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta;
 
 import edu.harvard.iq.dataverse.DataTable;
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;

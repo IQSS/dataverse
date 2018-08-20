@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;

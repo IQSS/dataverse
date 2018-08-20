@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.confirmemail;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import java.sql.Timestamp;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;

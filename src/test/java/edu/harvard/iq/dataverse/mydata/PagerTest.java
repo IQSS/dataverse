@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import java.util.Arrays;
 import org.junit.After;
 import org.junit.AfterClass;

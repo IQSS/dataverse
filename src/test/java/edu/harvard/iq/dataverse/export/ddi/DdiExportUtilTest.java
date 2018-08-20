@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.export.ddi;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.File;
 import java.nio.file.Files;

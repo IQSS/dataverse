@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import edu.harvard.iq.dataverse.UserNotification;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;

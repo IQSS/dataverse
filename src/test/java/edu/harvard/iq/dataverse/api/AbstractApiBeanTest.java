@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import edu.harvard.iq.dataverse.util.MockResponse;
 import java.io.StringReader;
 import java.io.StringWriter;

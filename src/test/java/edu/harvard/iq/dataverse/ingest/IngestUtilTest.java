@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataset;

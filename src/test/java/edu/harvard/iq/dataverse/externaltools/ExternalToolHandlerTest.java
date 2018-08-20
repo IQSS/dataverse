@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import javax.json.Json;
 import static org.junit.Assert.assertEquals;

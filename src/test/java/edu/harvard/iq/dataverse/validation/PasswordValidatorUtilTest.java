@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.validation;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.xml.html.HtmlPrinter;
 import java.util.ArrayList;

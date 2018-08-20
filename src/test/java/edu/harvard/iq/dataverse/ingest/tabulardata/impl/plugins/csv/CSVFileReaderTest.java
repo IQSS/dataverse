@@ -6,7 +6,7 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv;
 
 import edu.harvard.iq.dataverse.DataTable;
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
 import edu.harvard.iq.dataverse.datavariable.DataVariable.VariableInterval;
 import edu.harvard.iq.dataverse.datavariable.DataVariable.VariableType;

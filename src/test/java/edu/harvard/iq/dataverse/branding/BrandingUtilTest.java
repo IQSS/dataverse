@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.branding;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;

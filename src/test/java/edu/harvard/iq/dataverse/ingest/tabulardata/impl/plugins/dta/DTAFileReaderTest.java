@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import java.io.BufferedInputStream;
 import java.io.File;

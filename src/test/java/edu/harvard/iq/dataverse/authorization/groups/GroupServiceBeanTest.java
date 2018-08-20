@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.groups;
 
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsers;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;

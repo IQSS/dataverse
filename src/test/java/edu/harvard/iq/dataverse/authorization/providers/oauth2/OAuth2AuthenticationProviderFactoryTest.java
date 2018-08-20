@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
-import edu.harvard.iq.dataverse.EssentialTests;
+
 import java.util.HashMap;
 import java.util.Map;
 import static org.junit.Assert.assertEquals;
