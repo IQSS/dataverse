@@ -51,6 +51,8 @@ public class BatchServiceBean {
         File dir = new File(fileDir);
         if (dir.isDirectory()) {
             for (File file : dir.listFiles()) {
+		    if (null != file )
+		    {
                 if (!file.isHidden()) {
                     if (file.isDirectory()) {
                         try {
@@ -67,6 +69,7 @@ public class BatchServiceBean {
 
                     }
                 }
+		}
             }
         } else {
             status.add(importService.handleFile(dataverseRequest, owner, dir, importType, validationLog, cleanupLog));
