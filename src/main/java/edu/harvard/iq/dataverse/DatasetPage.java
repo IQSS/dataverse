@@ -3760,7 +3760,13 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
             return null;
-        }
+        } finally
+	{
+		if(null!=output)
+		{
+			try{ output.close(); }catch(IOException ic){}
+		}
+	}
 
         if (labelsFile != null) {
             return labelsFile.getAbsolutePath();
