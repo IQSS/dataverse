@@ -50,12 +50,14 @@ public class CustomizationFilesServlet extends HttpServlet {
         String filePath = getFilePath(customFileType);
 
         Path physicalPath = Paths.get(filePath);
+	FileInputStream inputStream = null;
+	BufferedReader in = null;
         try {
             File fileIn = physicalPath.toFile();
             if (fileIn != null) {
-                FileInputStream inputStream = new FileInputStream(fileIn);
+                inputStream = new FileInputStream(fileIn);
 
-                BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
+                in = new BufferedReader(new InputStreamReader(inputStream));
                 String line;
 
                 StringBuilder responseData = new StringBuilder();
@@ -80,7 +82,17 @@ public class CustomizationFilesServlet extends HttpServlet {
                 /*
                    If the file doesn't exist or it is unreadable we don't care
                 */
-        }
+        } finally
+	{
+		if( null != inputStream )
+		{
+			inputStream.close();
+		}
+		if( null != in )
+		{
+			in.close();
+		}
+	}
 
     }
     
