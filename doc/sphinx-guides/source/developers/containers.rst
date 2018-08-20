@@ -262,8 +262,8 @@ if the administrator wishes to use any cluster storage like EBS, Google Cloud St
       }
 
 
-To make solr container mount the hostPath, add the following part under .spec.spec (for Solr StatefulSet):
-``
+To make solr container mount the hostPath, add the following part under .spec.spec (for Solr StatefulSet)::
+
     {
       "kind": "StatefulSet",
       "apiVersion": "apps/v1beta1",
@@ -294,14 +294,13 @@ To make solr container mount the hostPath, add the following part under .spec.sp
                     "name" : "solr-index-backup"
                   }  
 
-``
 
-Solr is now ready for backup and recovery. In order to backup:
 
-``
-oc rsh dataverse-solr-0
-curl 'http://localhost:8983/solr/collection1/replication?command=backup&location=/var/share'  
-``
+Solr is now ready for backup and recovery. In order to backup::
+
+  oc rsh dataverse-solr-0
+  curl 'http://localhost:8983/solr/collection1/replication?command=backup&location=/var/share'  
+
 
 In solr entrypoint.sh, it's configured so that if dataverse-solr-0 failed, it will get the latest version of the index in the backup and restore. All backups are store in /tmp/share in the host, or /home/share in solr containers
 
