@@ -246,25 +246,26 @@ After successfully replacing a file, a new dataset draft version will be created
 Terms
 =====
 
-In the Terms tab, which can also be found by clicking on the Edit dropdown button of a Dataset, you can set up how users can use your data once they have downloaded it (CC0 waiver or custom Terms of Use), how they can access your data if you have files that are restricted (terms of access), and enable a Guestbook for your dataset so that you can track who is using your data and for what purposes. These are explained in further detail below:
+Dataset terms can be viewed and edited from the Terms tab of the dataset page, or under the Edit dropdown button of a Dataset. There, you can set up how users can use your data once they have downloaded it (CC0 waiver or custom Terms of Use), how they can access your data if you have files that are restricted (terms of access), and enable a Guestbook for your dataset so that you can track who is using your data and for what purposes. These are explained in further detail below:
 
-CC0 Waiver + Dataset Terms of Use 
----------------------------------
+CC0 Public Domain Dedication
+----------------------------
+By default, all new datasets created through Dataverse's web UI are given a `Creative Commons CC0 Public Domain Dedication <https://creativecommons.org/publicdomain/zero/1.0/>`_.
 
-`Creative Commons <https://creativecommons.org>`_ is an organization that defines a number of `licences <https://creativecommons.org/licenses/>`_ ("CC BY", "CC BY-SA", etc.) and a waiver called `CC0 <https://creativecommons.org/share-your-work/public-domain/cc0>`_. It is important to understand CC0 because it is the default for Dataverse. The `human-readable summary of CC0 <https://creativecommons.org/publicdomain/zero/1.0/>`_ begins with "The person who associated a work with this deed has dedicated the work to the public domain by waiving all of his or her rights to the work worldwide under copyright law, including all related and neighboring rights, to the extent allowed by law." CC0 is good for long term preservation because future researchers will be able to make use of the dataset without explicit permission. Files can still be restricted when the dataset makes use of the CC0 waiver. If CC0 is not suitable, custom terms can be entered, as explained below.
+The `Creative Commons <https://creativecommons.org>`_ organization defines a number of copyright `licenses <https://creativecommons.org/licenses/>`_ that allow researchers (and other owners of intellectual property) to release their data (or other IP) more openly, with fewer legal restrictions than standard copyright enforces. Each Creative Commons license typically specifies simple terms for how the data (or other IP) must be used, reused, shared, and attributed. In addition to these licenses, Creative Commons also provides public domain tools that make it easy to dedicate data (and other IP) to the public domain. 
 
-All new datasets created through the web UI default to a `CC0 public domain dedication 
-<https://creativecommons.org/publicdomain/zero/1.0/>`_ (this default is not applied to datasets created through the native API). CC0 facilitates reuse and extensibility of research data. 
-Our `Community Norms <https://dataverse.org/best-practices/dataverse-community-norms>`_ as well as good scientific
-practices expect that proper credit is given via citation. If you are unable to give your datasets a CC0 waiver you may enter 
-your own custom Terms of Use for your Datasets.
+Their `CC0 Public Domain Dedication <https://creativecommons.org/share-your-work/public-domain/cc0>`_ allows you to unambiguously waive all copyright control over your data in all jurisdictions worldwide. Data released with CC0 can be legally copied, modified, and distributed (even for commercial purposes) without permission. In most parts of the world, factual data is exempt from copyright anyway, but applying CC0 removes all ambiguity and makes the legal status of the data as clear as possible. Dataverse applies CC0 to datasets by default because it facilitates reuse, extensibility, and long-term preservation of research data by assuring that the data can be safely handled by anyone without fear of potential copyright pitfalls. 
+
+Though CC0 waives a dataset owner's legal copyright controls over the data, it does not exempt Dataverse users from following ethical norms in scholarly communications. The `Dataverse Community Norms <https://dataverse.org/best-practices/dataverse-community-norms>`_ * as well as scientific best practices expect that proper credit is given via citation. Additionally, users are still expected to respect access restrictions and other terms applied to CC0 files in Dataverse. 
+
+If a data owner feels that CC0 is not suitable for their data, they are able to enter custom Terms of Use, as detailed in the following section.
 
 \* **Legal Disclaimer:** these `Community Norms <https://dataverse.org/best-practices/dataverse-community-norms>`_ are not a substitute for the CC0 waiver or custom terms and licenses applicable to each dataset. Please be advised that the Community Norms are not a binding contractual agreement, and that downloading datasets from Dataverse does not create a legal obligation to follow these policies.  
 
 Custom Terms of Use for Datasets
 --------------------------------
 
-If you are unable to use a CC0 waiver for your datasets you are able to set your own custom terms of use. To do so, select "No, do not apply CC0 - "Public Domain Dedication" and a Terms of Use textbox will show up allowing you to enter your own custom terms of use for your dataset. To add more information about the Terms of Use, we have provided fields like Special Permissions, Restrictions, Citation Requirements, etc.
+If you are unable to use a CC0 waiver for your datasets, you may specify your own custom Terms of Use. To do so, select "No, do not apply CC0 - "Public Domain Dedication", and a Terms of Use text box will show up allowing you to enter your own custom terms of use for your dataset. To add more information about the Terms of Use, we have provided fields like Special Permissions, Restrictions, Citation Requirements, etc.
 
 Here is an `example of a Data Usage Agreement <https://dataverse.org/best-practices/sample-dua>`_ for datasets that have de-identified human subject data.
 
