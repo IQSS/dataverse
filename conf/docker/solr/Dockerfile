@@ -1,7 +1,7 @@
 FROM centos:7
 MAINTAINER Dataverse (support@dataverse.org)
 
-RUN yum install -y unzip java-1.8.0-openjdk-devel postgresql.x86_64 lsof
+RUN yum install -y unzip java-1.8.0-openjdk-devel lsof
 
 # Install Solr 7.3.0
 # The context of the build is the "conf" directory.

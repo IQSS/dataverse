@@ -1,4 +1,6 @@
+================================= 
 Docker, Kubernetes, and OpenShift
+=================================
 
 Dataverse is exploring the use of Docker, Kubernetes, OpenShift and other container-related technologies.
 
@@ -192,7 +194,7 @@ Once you have multiple Glassfish servers you may notice bugs that will require a
 
 Multiple PostgreSQL servers are possible within the OpenShift environment as well and have been set up with some amount of replication. "dataverse-postgresql-0" is the master and non-zero pods are the slaves. We have just scratched the surface of this configuration but replication from master to slave seems to we working. Future work could include failover and making Dataverse smarter about utilizing multiple PostgreSQL servers for reads. Right now we assume Dataverse is only being used with a single PostgreSQL server and that it's the master.
 
-Solr supports index distribution and replication for scaling. For OpenShift use, we choose replication. It's possible to scale up solar using the method method similar to Glassfish, as mentioned aboved
+Solr supports index distribution and replication for scaling. For OpenShift use, we choose replication. It's possible to scale up Solr using the method method similar to Glassfish, as mentioned aboved
 In OpenShift, the first Solr pod, dataverse-solr-0, will be the master node, and the rest will be slave nodes
 
 

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# FIXME: Don't run Solr out of /tmp!
-# Solr is /tmp to avoid AccessDeniedException under Minishift/OpenShift.
 if ! whoami &> /dev/null; then
   if [ -w /etc/passwd ]; then
     echo "${USER_NAME:-default}:x:$(id -u):0:${USER_NAME:-default} user:${HOME}:/sbin/nologin" >> /etc/passwd
