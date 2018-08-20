@@ -201,7 +201,8 @@ In OpenShift, the first Solr pod, dataverse-solr-0, will be the master node, and
 Configuring Persistent Volumes and Solr master node recovery 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Solr requires backing up the search index to persistent storage. For our proof of concept, we configure a hostPath, which allows solr containers to access the hosts' file system, for our Solr containers backups. To read more about OpenShift/Kubernetes' persistent volumes, please visit https://kubernetes.io/docs/concepts/storage/persistent-volumes
+Solr requires backing up the search index to persistent storage. For our proof of concept, we configure a hostPath, which allows Solr containers to access the hosts' file system, for our Solr containers backups. To read more about OpenShift/Kubernetes' persistent volumes, please visit: https://kubernetes.io/docs/concepts/storage/persistent-volumes
+
 To allow containers to use a host's storage, we need to allow access to that directory first. In this example, we expose /tmp/share to the containers::
 
 # mkdir /tmp/share            
@@ -302,7 +303,7 @@ Solr is now ready for backup and recovery. In order to backup::
   curl 'http://localhost:8983/solr/collection1/replication?command=backup&location=/var/share'  
 
 
-In solr entrypoint.sh, it's configured so that if dataverse-solr-0 failed, it will get the latest version of the index in the backup and restore. All backups are store in /tmp/share in the host, or /home/share in solr containers
+In solr entrypoint.sh, it's configured so that if dataverse-solr-0 failed, it will get the latest version of the index in the backup and restore. All backups are stored in /tmp/share in the host, or /home/share in solr containers.
 
 Running Containers to Run as Root in Minishift
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
