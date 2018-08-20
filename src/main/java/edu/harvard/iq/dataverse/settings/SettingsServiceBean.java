@@ -347,7 +347,13 @@ public class SettingsServiceBean {
         /**
          * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
          */
-        PVCustomPasswordResetAlertMessage
+        PVCustomPasswordResetAlertMessage,
+        
+        /**
+         * Whether new dataverses should inherit the set of admins of the parent dataverse (along with the dataverse creator).
+         */
+        InheritParentAdmins
+        
         ;
 
         @Override
