@@ -39,6 +39,7 @@ import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.impl.AddLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
@@ -60,6 +61,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.MoveDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
+import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
@@ -73,6 +75,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.EjbUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
@@ -81,10 +84,12 @@ import java.io.StringReader;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -1297,4 +1302,85 @@ public class Datasets extends AbstractApiBean {
         return dsv;
     }
     
+    @GET
+    @Path("{identifier}/locks")
+    public Response getLocks(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
+
+        Dataset dataset = null;
+        try {
+            dataset = findDatasetOrDie(id);
+            Set<DatasetLock> locks;      
+            if (lockType == null) {
+                locks = dataset.getLocks();
+            } else {
+                // request for a specific type lock:
+                DatasetLock lock = dataset.getLockFor(lockType);
+
+                locks = new HashSet<>(); 
+                if (lock != null) {
+                    locks.add(lock);
+                }
+            }
+            
+            return ok(locks.stream().map(lock -> json(lock)).collect(toJsonArray()));
+
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        } 
+    }   
+    
+    @DELETE
+    @Path("{identifier}/locks")
+    public Response deleteLocks(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
+
+        return response(req -> {
+            try {
+                Dataset dataset = findDatasetOrDie(id);
+                Set<DatasetLock> locks;
+                if (lockType == null) {
+                    locks = dataset.getLocks();
+                    if (!locks.isEmpty()) {
+                        for (DatasetLock lock : locks) {
+                            execCommand(new RemoveLockCommand(req, dataset, lock.getReason()));
+                        }
+                        return ok("locks removed");
+                    }
+                    return ok("dataset not locked");
+                }
+                // request for a specific type lock:
+                DatasetLock lock = dataset.getLockFor(lockType);
+                if (lock != null) {
+                    execCommand(new RemoveLockCommand(req, dataset, lock.getReason()));
+                    return ok("lock type " + lock.getReason() + " removed");
+                }
+                return ok("no lock type " + lockType + " on the dataset");
+            } catch (WrappedResponse wr) {
+                return wr.getResponse();
+            }
+
+        });
+
+    }
+    
+    @POST
+    @Path("{identifier}/lock/{type}")
+    public Response lockDataset(@PathParam("identifier") String id, @PathParam("type") DatasetLock.Reason lockType) {
+        return response(req -> {
+            try {
+                Dataset dataset = findDatasetOrDie(id);
+                DatasetLock lock = dataset.getLockFor(lockType);
+                if (lock != null) {
+                    return error(Response.Status.FORBIDDEN, "dataset already locked with lock type " + lockType);
+                }
+                lock = new DatasetLock(lockType, findAuthenticatedUserOrDie());
+                execCommand(new AddLockCommand(req, dataset, lock));
+                return ok("dataset locked with lock type " + lockType);
+            } catch (WrappedResponse wr) {
+                return wr.getResponse();
+            }
+
+        });
+    }
+    
 }
+
