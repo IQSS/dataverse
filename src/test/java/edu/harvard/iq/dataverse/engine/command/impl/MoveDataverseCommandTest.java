@@ -282,7 +282,7 @@ public class MoveDataverseCommandTest {
      * Moving ChildB to ChildA
      * @throws Exception - should not throw an exception
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testValidMove() throws Exception {
         System.out.println("testValidMove");
@@ -305,7 +305,7 @@ public class MoveDataverseCommandTest {
     /**
      * Moving ChildA to its child (illegal).
      */
-    @Category(EssentialTests.class)
+    
     @Test( expected=IllegalCommandException.class )
     public void testInvalidMove() throws Exception {
         System.out.println("testInvalidMove");
@@ -318,7 +318,7 @@ public class MoveDataverseCommandTest {
     /**
      * Calling API as a non super user (illegal).
      */
-    @Category(EssentialTests.class)
+    
     @Test(expected = PermissionException.class)
     public void testNotSuperUser() throws Exception {
         System.out.println("testNotSuperUser");
@@ -328,7 +328,7 @@ public class MoveDataverseCommandTest {
         fail();
     }
     
-    @Category(EssentialTests.class)
+    
     @Test( expected=IllegalCommandException.class )
     public void testMoveIntoSelf() throws Exception {
         System.out.println("testMoveIntoSelf");
@@ -338,7 +338,7 @@ public class MoveDataverseCommandTest {
         fail();
     }
     
-    @Category(EssentialTests.class)
+    
     @Test( expected=IllegalCommandException.class )
     public void testMoveIntoParent() throws Exception {
         System.out.println("testMoveIntoParent");
@@ -348,7 +348,7 @@ public class MoveDataverseCommandTest {
         fail();
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testKeepGuestbook() throws Exception {
         System.out.println("testKeepGuestbook");
@@ -363,7 +363,7 @@ public class MoveDataverseCommandTest {
         assertEquals( root, childC.getOwner() );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test(expected = IllegalCommandException.class)
     public void testRemoveGuestbookWithoutForce() throws Exception {
         System.out.println("testRemoveGuestbookWithoutForce");
@@ -373,7 +373,7 @@ public class MoveDataverseCommandTest {
         fail();
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testRemoveGuestbook() throws Exception {
         System.out.println("testRemoveGuestbook");
@@ -388,7 +388,7 @@ public class MoveDataverseCommandTest {
         assertEquals( childC, grandchildCC.getOwner() );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testKeepTemplate() throws Exception {
         System.out.println("testKeepTemplate");
@@ -404,7 +404,7 @@ public class MoveDataverseCommandTest {
         
     }
     
-    @Category(EssentialTests.class)
+    
     @Test(expected = IllegalCommandException.class)
     public void testRemoveTemplateWithoutForce() throws Exception {
         System.out.println("testRemoveTemplateWithoutForce");
@@ -414,7 +414,7 @@ public class MoveDataverseCommandTest {
         fail();
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testRemoveTemplate() throws Exception {
         System.out.println("testRemoveTemplate");
@@ -429,7 +429,7 @@ public class MoveDataverseCommandTest {
         assertEquals( childD, grandchildDD.getOwner() );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testKeepMetadataBlock() throws Exception {
         System.out.println("testKeepMetadataBlock");
@@ -444,7 +444,7 @@ public class MoveDataverseCommandTest {
         assertEquals( root, childE.getOwner() );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test(expected = IllegalCommandException.class)
     public void testRemoveMetadataBlockWithoutForce() throws Exception {
         System.out.println("testRemoveMetadataBlockWithoutForce");
@@ -454,7 +454,7 @@ public class MoveDataverseCommandTest {
         fail();
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testRemoveMetadataBlock() throws Exception {
         System.out.println("testRemoveMetadataBlock");

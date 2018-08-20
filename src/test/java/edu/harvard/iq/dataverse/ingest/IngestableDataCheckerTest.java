@@ -112,7 +112,7 @@ public class IngestableDataCheckerTest {
      * Test of testDTAformat method, of class IngestableDataChecker.
      * @throws java.io.IOException
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testTestDTAformat() throws IOException {
         msgt("(1) testDTAformat");
@@ -155,7 +155,7 @@ public class IngestableDataCheckerTest {
     /**
      * Test of testSAVformat method, of class IngestableDataChecker.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testTestSAVformat() throws IOException {
         msgt("(2) testSAVformat");
@@ -189,7 +189,7 @@ public class IngestableDataCheckerTest {
      * Test of testXPTformat method, of class IngestableDataChecker.
      */
     /*  
-    @Category(EssentialTests.class)
+    
     @Test
     public void testTestXPTformat() {
       
@@ -208,7 +208,7 @@ public class IngestableDataCheckerTest {
      * Test of testPORformat method, of class IngestableDataChecker.
      */
         /*
-    @Category(EssentialTests.class)
+    
     @Test
     public void testTestPORformat() {
     
@@ -227,7 +227,7 @@ public class IngestableDataCheckerTest {
      * Test of testRDAformat method, of class IngestableDataChecker.
      */
        /*
-    @Category(EssentialTests.class)
+    
     @Test
     public void testTestRDAformat() {
      
@@ -246,7 +246,7 @@ public class IngestableDataCheckerTest {
      * Test of detectTabularDataFormat method, of class IngestableDataChecker.
      */
     /*
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDetectTabularDataFormat() {
         System.out.println("detectTabularDataFormat");

@@ -75,7 +75,7 @@ public class DeletePrivateUrlCommandTest {
         });
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDatasetNull() {
         dataset = null;
@@ -89,7 +89,7 @@ public class DeletePrivateUrlCommandTest {
         assertEquals(expected, actual);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSuccessfulDelete() {
         dataset = new Dataset();

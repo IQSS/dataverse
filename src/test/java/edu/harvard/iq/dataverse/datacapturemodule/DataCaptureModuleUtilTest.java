@@ -23,7 +23,7 @@ import org.junit.experimental.categories.Category;
 
 public class DataCaptureModuleUtilTest {
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testRsyncSupportEnabled() {
         System.out.println("rsyncSupportEnabled");
@@ -36,7 +36,7 @@ public class DataCaptureModuleUtilTest {
         assertEquals(false, DataCaptureModuleUtil.rsyncSupportEnabled("junk"));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGenerateJsonForUploadRequest() {
         System.out.println("generateJsonForUploadRequest");
@@ -49,7 +49,7 @@ public class DataCaptureModuleUtilTest {
         assertTrue(Integer.MIN_VALUE <= userId && userId <= Integer.MAX_VALUE);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetScriptFromRequestOk() throws UnsupportedEncodingException {
         System.out.println("getScriptFromRequestOk");
@@ -68,7 +68,7 @@ public class DataCaptureModuleUtilTest {
         assertEquals("#!/bin/sh", result.getScript());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetScriptFromRequestNotFound() throws UnsupportedEncodingException {
         System.out.println("getScriptFromRequestNotFound");
@@ -87,7 +87,7 @@ public class DataCaptureModuleUtilTest {
         assertEquals(null, result.getScript());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testMakeUploadRequest() throws UnsupportedEncodingException {
         System.out.println("makeUploadRequest");
@@ -100,7 +100,7 @@ public class DataCaptureModuleUtilTest {
         assertEquals("received", result.getResponse());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetMessageFromException() {
         System.out.println("getMessageFromException");

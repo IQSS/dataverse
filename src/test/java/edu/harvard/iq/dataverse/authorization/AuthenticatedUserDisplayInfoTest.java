@@ -11,7 +11,7 @@ import org.junit.experimental.categories.Category;
  */
 public class AuthenticatedUserDisplayInfoTest {
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testCopyConstructor() {
         AuthenticatedUserDisplayInfo src = new AuthenticatedUserDisplayInfo("fn","ln","email@address.com","Harvard","test");

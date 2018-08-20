@@ -82,7 +82,7 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testOpen() throws IOException {
         assertEquals(false, datasetAccess.canRead());
@@ -106,7 +106,7 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSavePath() throws IOException {
         datasetAccess.savePath(fileSystemPath);
@@ -119,7 +119,7 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testOpenAuxChannel() throws IOException {
         assertNotNull(datasetAccess.openAuxChannel("Dataset", DataAccessOption.READ_ACCESS));
@@ -129,7 +129,7 @@ public class FileAccessIOTest {
      * Test of isAuxObjectCached method, of class FileAccessIO.
      * @throws java.io.IOException if test is broken
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsAuxObjectCached() throws IOException {
         assertEquals(true, datasetAccess.isAuxObjectCached("Dataset"));
@@ -140,7 +140,7 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetAuxObjectSize() throws IOException {
         assertEquals(21, datasetAccess.getAuxObjectSize("Dataset"));
@@ -152,7 +152,7 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetAuxObjectAsPath() throws IOException {
         assertEquals(fileSystemPath, datasetAccess.getAuxObjectAsPath("Dataset"));
@@ -163,7 +163,7 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testBackupAsAux() throws IOException {
         datasetAccess.backupAsAux("Dataset");
@@ -174,7 +174,7 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSavePathAsAux() throws IOException {
         datasetAccess.savePathAsAux(fileSystemPath, "Dataset");
@@ -185,7 +185,7 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSaveInputStreamAsAux() throws IOException {
         InputStream inputStream = new ByteArrayInputStream("Hello".getBytes());;
@@ -197,7 +197,7 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testListAuxObjects() throws IOException {
         List<String> result = dataFileAccess.listAuxObjects();
@@ -209,7 +209,7 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDeleteAuxObject() throws IOException {
         datasetAccess.deleteAuxObject("Dataset");
@@ -243,7 +243,7 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testExists() throws IOException {
         boolean expResult = true;
@@ -256,7 +256,7 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDelete() throws IOException {
         datasetAccess.delete();
@@ -268,7 +268,7 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testOpenLocalFileAsInputStream() throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(datasetAccess.openLocalFileAsInputStream()));
@@ -287,7 +287,7 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetAuxFileAsInputStream() throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(datasetAccess.getAuxFileAsInputStream("Dataset")));

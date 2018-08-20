@@ -144,13 +144,13 @@ public class ReturnDatasetToAuthorCommandTest {
             throw new IllegalCommandException("You must enter a reason for returning a dataset to its author.", this);
         }
      */
-    @Category(EssentialTests.class)
+    
     @Test(expected=IllegalArgumentException.class)
     public void testDatasetNull() throws CommandException {
         new ReturnDatasetToAuthorCommand(dataverseRequest, null, "");
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testReleasedDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
@@ -167,7 +167,7 @@ public class ReturnDatasetToAuthorCommandTest {
 
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testNotInReviewDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -185,7 +185,7 @@ public class ReturnDatasetToAuthorCommandTest {
 
     /*
     FIXME - Empty Comments won't be allowed in future
-    @Category(EssentialTests.class)
+    
     @Test
     public void testEmptyComments(){
                
@@ -208,7 +208,7 @@ public class ReturnDatasetToAuthorCommandTest {
     }
      */
     
-   @Category(EssentialTests.class)
+   
    @Test
     public void testAllGood() {
        dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);

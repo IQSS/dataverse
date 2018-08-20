@@ -55,7 +55,7 @@ public class PersistentIdentifierServiceBeanTest {
     /**
      * Test of getBean method, of class PersistentIdentifierServiceBean.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetBean_String_CommandContext_OK() {
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.DoiProvider, "EZID");
@@ -69,7 +69,7 @@ public class PersistentIdentifierServiceBeanTest {
         assertEquals(hdlServiceBean, 
                      GlobalIdServiceBean.getBean("hdl", ctxt));
     }
-    @Category(EssentialTests.class)
+    
      @Test
     public void testGetBean_String_CommandContext_BAD() {
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.DoiProvider, "non-existent-provider");
@@ -82,7 +82,7 @@ public class PersistentIdentifierServiceBeanTest {
     /**
      * Test of getBean method, of class PersistentIdentifierServiceBean.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetBean_CommandContext() {
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.Protocol, "doi");

@@ -78,7 +78,7 @@ public class RestrictFileCommandTest {
     public void tearDown() {
     }
        
-    @Category(EssentialTests.class)
+    
     @Test
     public void testRestrictUnpublishedFile() throws CommandException{
         file.setOwner(dataset);
@@ -90,7 +90,7 @@ public class RestrictFileCommandTest {
         
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testRestrictPublishedFile() throws Exception{
         file.setOwner(dataset);
@@ -108,7 +108,7 @@ public class RestrictFileCommandTest {
         }
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testRestrictNewFile() throws Exception {
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
@@ -117,7 +117,7 @@ public class RestrictFileCommandTest {
         assertTrue(file.getFileMetadata().isRestricted());
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testRestrictRestrictedFile() throws Exception {
         file.setOwner(dataset);
@@ -136,7 +136,7 @@ public class RestrictFileCommandTest {
         
     }
     
-    @Category(EssentialTests.class)
+    
     @Test 
     public void testPublicInstall() throws CommandException {
         file.setOwner(dataset);

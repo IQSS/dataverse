@@ -28,7 +28,7 @@ public class BriefJsonPrinterTest {
     /**
      * Test of json method, of class BriefJsonPrinter.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testJson_BuiltinUser() {
         BuiltinUser laurenIpsum = new BuiltinUser();
@@ -48,7 +48,7 @@ public class BriefJsonPrinterTest {
     /**
      * Test of json method, of class BriefJsonPrinter.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testJson_DatasetVersion() {
         Dataset ds = MocksFactory.makeDataset();
@@ -74,7 +74,7 @@ public class BriefJsonPrinterTest {
     /**
      * Test of json method, of class BriefJsonPrinter.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testJson_MetadataBlock() {
         MetadataBlock mtb = new MetadataBlock();
@@ -94,7 +94,7 @@ public class BriefJsonPrinterTest {
     /**
      * Test of json method, of class BriefJsonPrinter.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testJson_Workflow() {
         Workflow wf = new Workflow();

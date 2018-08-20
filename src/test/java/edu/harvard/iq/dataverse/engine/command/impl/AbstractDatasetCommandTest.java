@@ -18,14 +18,14 @@ import org.junit.experimental.categories.Category;
  */
 public class AbstractDatasetCommandTest {
     
-    @Category(EssentialTests.class)
+    
     @Test(expected=IllegalArgumentException.class)
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testNullDataset() {
         new AbstractDatasetCommandImpl(makeRequest(), null);
     }
     
-    @Category(EssentialTests.class)
+    
     @Test(expected=IllegalArgumentException.class)
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testNullDatasetNonNullParent() {
@@ -35,7 +35,7 @@ public class AbstractDatasetCommandTest {
     /**
      * Test of getDataset method, of class AbstractDatasetCommand.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetDataset() {
         Dataset ds = MocksFactory.makeDataset();
@@ -46,7 +46,7 @@ public class AbstractDatasetCommandTest {
     /**
      * Test of getTimestamp method, of class AbstractDatasetCommand.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetTimestamp() {
         Dataset ds = MocksFactory.makeDataset();

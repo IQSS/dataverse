@@ -44,7 +44,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
 	    return txt;
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testParseUserResponse() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
@@ -60,7 +60,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         assertEquals(Arrays.asList("bdoc@mailinator.com", "bdoc2@mailinator.com"), actual.emails);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testParseUserResponse_noEmails() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
@@ -76,7 +76,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         assertEquals(Arrays.asList("").toString(), actual.emails.toString());
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testExtractOrcid() throws OAuth2Exception {
         // sample response from https://members.orcid.org/api/tutorial/read-orcid-records
@@ -87,7 +87,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         assertEquals("0000-0001-2345-6789", sut.extractOrcidNumber(response));
     }
     
-    @Category(EssentialTests.class)
+    
     @Test( expected=OAuth2Exception.class )
     public void testExtractOrcidBad() throws OAuth2Exception {
         // sample response from https://members.orcid.org/api/tutorial/read-orcid-records
@@ -98,7 +98,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         sut.extractOrcidNumber(response);
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testParseActivitiesResponse() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
@@ -109,7 +109,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         assertEquals("role, department", actual.getPosition());
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testParseActivitiesResponseNoOrgName() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
@@ -123,7 +123,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         assertEquals("role, department", actual.getPosition());
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testParseActivitiesResponseNoRole() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");

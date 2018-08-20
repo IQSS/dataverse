@@ -57,7 +57,7 @@ public class DatasetFieldTypeTest {
     /**
      * Test of isSanitizeHtml method, of class DatasetFieldType.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsSanitizeHtml() {
         System.out.println("isSanitizeHtml");
@@ -81,7 +81,7 @@ public class DatasetFieldTypeTest {
         result = instance.isSanitizeHtml();
         assertEquals(true, result);
     }
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsEscapeOutputText(){
                 System.out.println("testIsEscapeOutputText");
@@ -111,7 +111,7 @@ public class DatasetFieldTypeTest {
         assertEquals(false, result);
         
     }
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetSolrField(){
         

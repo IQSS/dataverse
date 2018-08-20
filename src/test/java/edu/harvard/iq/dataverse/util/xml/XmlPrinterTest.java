@@ -7,7 +7,7 @@ import org.junit.experimental.categories.Category;
 
 public class XmlPrinterTest {
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testPrettyPrintXmlShort() {
         String xml = "<foo><bar>baz</bar></foo>";
@@ -19,7 +19,7 @@ public class XmlPrinterTest {
         assertEquals(expResult, result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testPrettyPrintXmlNonXML() {
         assertEquals("THIS IS NOT XML", XmlPrinter.prettyPrintXml("THIS IS NOT XML"));

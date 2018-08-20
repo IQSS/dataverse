@@ -14,7 +14,7 @@ public class DdiExportUtilTest {
 
     private static final Logger logger = Logger.getLogger(DdiExportUtilTest.class.getCanonicalName());
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testJson2DdiNoFiles() throws Exception {
         File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.json");
@@ -27,7 +27,7 @@ public class DdiExportUtilTest {
         assertEquals(datasetAsDdi, result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testJson2ddiHasFiles() throws Exception {
         /**

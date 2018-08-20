@@ -48,7 +48,7 @@ public class DatasetVersionTest {
     public void tearDown() {
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testComparator() {
         DatasetVersion ds1_0 = new DatasetVersion();
@@ -79,7 +79,7 @@ public class DatasetVersionTest {
         assertEquals( expected, actual );
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsInReview() {
         Dataset ds = MocksFactory.makeDataset();
@@ -97,7 +97,7 @@ public class DatasetVersionTest {
         assertFalse(nonDraft.isInReview());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetJsonLd() throws ParseException {
         Dataset dataset = new Dataset();

@@ -72,7 +72,7 @@ public class RequestRsyncScriptCommandTest {
     public void tearDown() {
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testHappyPath() throws Exception {
         dataset = new Dataset();

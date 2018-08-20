@@ -7,7 +7,7 @@ import org.junit.experimental.categories.Category;
 
 public class JsonUtilTest {
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testPrettyPrint() {
         JsonUtil jsonUtil = new JsonUtil();

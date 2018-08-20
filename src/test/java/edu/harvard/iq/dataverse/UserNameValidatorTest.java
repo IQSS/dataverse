@@ -15,7 +15,7 @@ import org.junit.experimental.categories.Category;
  */
 public class UserNameValidatorTest {
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsUserNameValid() {
         //good usernames

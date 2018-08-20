@@ -92,7 +92,7 @@ public class UpdateDatasetThumbnailCommandTest {
     public void tearDown() {
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDatasetNull() {
         dataset = null;
@@ -108,7 +108,7 @@ public class UpdateDatasetThumbnailCommandTest {
         assertNull(datasetThumbnail);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIntentNull() {
         String expected = "No changes to save.";
@@ -123,7 +123,7 @@ public class UpdateDatasetThumbnailCommandTest {
         assertNull(datasetThumbnail);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetDatasetFileAsThumbnailFileNull() {
         String expected = "A file was not selected to be the new dataset thumbnail.";
@@ -138,7 +138,7 @@ public class UpdateDatasetThumbnailCommandTest {
         assertNull(datasetThumbnail);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetDatasetFileAsThumbnailFileNotFound() {
         String expected = "Could not find file based on id supplied: 1.";
@@ -153,7 +153,7 @@ public class UpdateDatasetThumbnailCommandTest {
         assertNull(datasetThumbnail);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetDatasetFileAsThumbnailFileThumbnailUnexpectedlyAbsent() {
         String expected = "Dataset thumbnail is unexpectedly absent.";

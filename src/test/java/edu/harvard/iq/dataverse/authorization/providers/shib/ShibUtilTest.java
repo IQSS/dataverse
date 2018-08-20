@@ -44,7 +44,7 @@ public class ShibUtilTest {
     /**
      * Test of getDisplayNameFromDiscoFeed method, of class ShibUtil.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetDisplayNameFromDiscoFeed() {
 //        System.out.println("getDisplayNameFromDiscoFeed");
@@ -84,7 +84,7 @@ public class ShibUtilTest {
 //        assertEquals(null, unparseAbleDiscoFeed);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testFindBestFirstAndLastName() {
 
@@ -149,7 +149,7 @@ public class ShibUtilTest {
 
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testFindSingleValue() {
         assertEquals(null, ShibUtil.findSingleValue(null));
@@ -157,7 +157,7 @@ public class ShibUtilTest {
         assertEquals("bar", ShibUtil.findSingleValue("foo;bar"));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGenerateFriendlyLookingUserIdentifer() {
         int lengthOfUuid = UUID.randomUUID().toString().length();
@@ -171,7 +171,7 @@ public class ShibUtilTest {
         assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer(null, "junkEmailAddress").length());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDevMutations() {
         ShibUtil.mutateRequestForDevConstantHarvard1(request);
@@ -184,7 +184,7 @@ public class ShibUtilTest {
         ShibUtil.printAttributes(null);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetRandomUserStatic() {
         Map<String, String> randomUser = ShibUtil.getRandomUserStatic();

@@ -20,7 +20,7 @@ public class LazyRefTest {
     /**
      * Test of get method, of class LazyRef.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGet() {
     }

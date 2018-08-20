@@ -46,7 +46,7 @@ public class MarkupCheckerTest {
     /**
      * Test of sanitizeBasicHTML method, of class MarkupChecker.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSanitizeBasicHTML() {
         System.out.println("sanitizeBasicHTML");
@@ -113,7 +113,7 @@ public class MarkupCheckerTest {
     /**
      * Test of stripAllTags method, of class MarkupChecker.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testStripAllTags() {
 
@@ -131,7 +131,7 @@ public class MarkupCheckerTest {
         
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testEscapeHtml() {
         assertEquals("foo&lt;br&gt;bar", MarkupChecker.escapeHtml("foo<br>bar"));

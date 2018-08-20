@@ -40,7 +40,7 @@ public class LruCacheTest {
     /**
      * Test of get method, of class LruCache.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetSet() {
         sut.put(1l, "hello");
@@ -53,7 +53,7 @@ public class LruCacheTest {
     /**
      * Test of setMaxSize method, of class LruCache.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testLRU() {
         int maxSize = 10;

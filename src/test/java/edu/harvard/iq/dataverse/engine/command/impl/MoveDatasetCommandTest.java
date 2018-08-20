@@ -206,7 +206,7 @@ public class MoveDatasetCommandTest {
 	 * Moving ChildB to ChildA
 	 * @throws Exception - should not throw an exception
 	 */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testValidMove() throws Exception {
 
@@ -221,7 +221,7 @@ public class MoveDatasetCommandTest {
 	 * Moving  grandchildAA
 	 * Guestbook is not null because target includes it.
 	 */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testKeepGuestbook() throws Exception {
 
@@ -236,7 +236,7 @@ public class MoveDatasetCommandTest {
 	 * Moving to grandchildBB
 	 * Guestbook is not null because target inherits it.
 	 */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testKeepGuestbookInherit() throws Exception {
 
@@ -252,7 +252,7 @@ public class MoveDatasetCommandTest {
 	 * Moving to ChildB
 	 * Guestbook is null because target does not include it
 	 */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testRemoveGuestbook() throws Exception {
 
@@ -267,7 +267,7 @@ public class MoveDatasetCommandTest {
 	 * Moving DS to its owning DV 
         * @throws IllegalCommandException
 	 */
-    @Category(EssentialTests.class)
+    
     @Test(expected = IllegalCommandException.class)
     public void testInvalidMove() throws Exception {
 
@@ -282,7 +282,7 @@ public class MoveDatasetCommandTest {
          * Fails due to Permission Exception
         * @throws java.lang.Exception
 	 */
-    @Category(EssentialTests.class)
+    
     @Test(expected = PermissionException.class)
     public void testNotSuperUser() throws Exception {
 
@@ -296,7 +296,7 @@ public class MoveDatasetCommandTest {
 	 * Moving published  DS to unpublished DV
         * @throws IllegalCommandException
 	 */
-    @Category(EssentialTests.class)
+    
     @Test(expected = IllegalCommandException.class)
     public void testInvalidMovePublishedToUnpublished() throws Exception {
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);

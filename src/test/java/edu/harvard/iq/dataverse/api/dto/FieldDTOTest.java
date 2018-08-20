@@ -58,7 +58,7 @@ public class FieldDTOTest {
     /**
      * Test of setSinglePrimitive method, of class FieldDTO.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSinglePrimitive() {
         FieldDTO affil = FieldDTO.createPrimitiveFieldDTO("authorAffiliation", "Top");
@@ -70,7 +70,7 @@ public class FieldDTOTest {
     /**
      * Test of getMultiplePrimitive method, of class FieldDTO.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testMultipleVocab() {
         Gson gson = new Gson();
@@ -92,7 +92,7 @@ public class FieldDTOTest {
     /**
      * Test of setMultiplePrimitive method, of class FieldDTO.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetMultipleValue() {
     }
@@ -100,7 +100,7 @@ public class FieldDTOTest {
     /**
      * Test of getSingleCompound method, of class FieldDTO.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetMultipleCompound() {
          HashSet<FieldDTO> author1Fields = new HashSet<>();
@@ -128,7 +128,7 @@ public class FieldDTOTest {
     /**
      * Test of setSingleCompound method, of class FieldDTO.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetSingleCompound() {
         Set<FieldDTO> authorFields = new HashSet<>();
@@ -147,7 +147,7 @@ public class FieldDTOTest {
     /**
      * Test of setMultipleCompound method, of class FieldDTO.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testJsonTree() {
        
@@ -165,7 +165,7 @@ public class FieldDTOTest {
     /**
      * Test of getMultipleCompound method, of class FieldDTO.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetMultipleCompound() {
        
@@ -174,7 +174,7 @@ public class FieldDTOTest {
     /**
      * Test of getConvertedValue method, of class FieldDTO.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetConvertedValue() {
     }
@@ -182,7 +182,7 @@ public class FieldDTOTest {
     /**
      * Test of toString method, of class FieldDTO.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testToString() {
     }

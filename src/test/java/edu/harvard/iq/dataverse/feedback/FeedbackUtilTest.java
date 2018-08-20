@@ -165,7 +165,7 @@ public class FeedbackUtilTest {
         FeedbackUtil justForCodeCoverage = new FeedbackUtil();
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGatherFeedbackOnDataverse() {
         Dataverse dataverse = new Dataverse();
@@ -212,7 +212,7 @@ public class FeedbackUtilTest {
         assertTrue(feedback.getBody().startsWith("There is no contact address on file for this dataverse so this message is being sent to the system address."));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGatherFeedbackOnDataset() {
         Dataset dataset = new Dataset();
@@ -262,7 +262,7 @@ public class FeedbackUtilTest {
         assertEquals(expected, feedback.getBody());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGatherFeedbackOnDatasetNoContacts() {
         Dataset dataset = new Dataset();
@@ -312,7 +312,7 @@ public class FeedbackUtilTest {
         assertEquals(expected, feedback.getBody());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGatherFeedbackOnFile() {
 
@@ -382,7 +382,7 @@ public class FeedbackUtilTest {
 
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGatherFeedbackOnFileNoContacts() {
 
@@ -438,7 +438,7 @@ public class FeedbackUtilTest {
         assertTrue(feedback.getBody().startsWith("There is no contact address on file for this dataset so this message is being sent to the system address."));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGatherFeedbackFromSupportButtonNullSession() {
         String messageSubject = "I'm clicking the support button.";
@@ -472,7 +472,7 @@ public class FeedbackUtilTest {
         assertEquals(null, feedback.getToEmail());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGatherFeedbackFromSupportButtonLoggedIn() {
         if (!weKnowHowToCreateMockAuthenticatedUsers) {

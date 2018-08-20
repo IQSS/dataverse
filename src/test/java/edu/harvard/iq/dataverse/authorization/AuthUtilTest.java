@@ -18,7 +18,7 @@ public class AuthUtilTest {
     /**
      * Test of isNonLocalLoginEnabled method, of class AuthUtil.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsNonLocalLoginEnabled() {
         System.out.println("isNonLocalLoginEnabled");
@@ -44,7 +44,7 @@ public class AuthUtilTest {
         assertEquals(false, AuthUtil.isNonLocalLoginEnabled(onlyBuiltin));
 
     }
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetDisplayName() {
         AuthUtil authUtil = new AuthUtil();

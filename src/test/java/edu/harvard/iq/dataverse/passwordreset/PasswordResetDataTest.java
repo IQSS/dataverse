@@ -35,7 +35,7 @@ public class PasswordResetDataTest {
     public void tearDown() {
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testNewTokenNotExpired() {
         System.out.println("newTokenNotExpired");

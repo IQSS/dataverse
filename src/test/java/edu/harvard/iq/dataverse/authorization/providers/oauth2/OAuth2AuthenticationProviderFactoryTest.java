@@ -16,7 +16,7 @@ public class OAuth2AuthenticationProviderFactoryTest extends OAuth2Authenticatio
     public OAuth2AuthenticationProviderFactoryTest() {
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDictionaryParting() {
         Map<String,String> expected = new HashMap<>();

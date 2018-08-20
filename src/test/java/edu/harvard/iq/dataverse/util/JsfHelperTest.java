@@ -44,7 +44,7 @@ public class JsfHelperTest {
 	/**
 	 * Test of enumValue method, of class JsfHelper.
 	 */
-        @Category(EssentialTests.class)
+        
 	@Test
 	public void testEnumValue() {
 		System.out.println("enumValue");

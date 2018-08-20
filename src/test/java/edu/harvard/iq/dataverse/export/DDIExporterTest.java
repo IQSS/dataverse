@@ -103,7 +103,7 @@ public class DDIExporterTest {
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testExportDataset() throws Exception {
         System.out.println("exportDataset");
@@ -129,7 +129,7 @@ public class DDIExporterTest {
 
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testExportDatasetContactEmailPresent() throws Exception {
         File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/datasetContactEmailPresent.json");
@@ -148,7 +148,7 @@ public class DDIExporterTest {
 
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testExportDatasetContactEmailAbsent() throws Exception {
         File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/datasetContactEmailAbsent.json");

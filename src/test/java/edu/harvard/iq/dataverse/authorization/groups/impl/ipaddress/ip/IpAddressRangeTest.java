@@ -11,7 +11,7 @@ import org.junit.experimental.categories.Category;
  */
 public class IpAddressRangeTest {
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIPv6In() {
         IPv6Range sut = new IPv6Range( IPv6Address.valueOf("::10"), IPv6Address.valueOf("::1:1") );
@@ -24,7 +24,7 @@ public class IpAddressRangeTest {
                         IPv6Address.valueOf("::1:1") );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIPv6Out() {
         IPv6Range sut = new IPv6Range( IPv6Address.valueOf("::10"), IPv6Address.valueOf("::1:1") );
@@ -36,7 +36,7 @@ public class IpAddressRangeTest {
                         IPv6Address.valueOf("::1:2") );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIPv6NotApplicable() {
         IPv6Range sut = new IPv6Range( IPv6Address.valueOf("::10"), IPv6Address.valueOf("::1:1") );
@@ -44,7 +44,7 @@ public class IpAddressRangeTest {
                         IPv4Address.valueOf("1.2.3.4"));
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIPv4In() {
         IPv4Range sut = new IPv4Range( IPv4Address.valueOf("127.0.0.2"), IPv4Address.valueOf("127.0.1.10"));
@@ -58,7 +58,7 @@ public class IpAddressRangeTest {
                 );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIPv4Out() {
         IPv4Range sut = new IPv4Range( IPv4Address.valueOf("127.0.0.2"), IPv4Address.valueOf("127.0.1.10"));
@@ -71,7 +71,7 @@ public class IpAddressRangeTest {
                 );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIPv4NotApplicable() {
         IPv4Range sut = new IPv4Range( IPv4Address.valueOf("127.0.0.2"), IPv4Address.valueOf("127.0.1.10"));
@@ -80,7 +80,7 @@ public class IpAddressRangeTest {
                 );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSingleAddress() {
         assertTrue( new IPv4Range( IPv4Address.valueOf("127.5.5.5"), IPv4Address.valueOf("127.5.5.5")).isSingleAddress() );

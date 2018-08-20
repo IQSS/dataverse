@@ -139,13 +139,13 @@ public class SubmitDatasetForReviewCommandTest {
         );
     }
 
-    @Category(EssentialTests.class)
+    
     @Test( expected=IllegalArgumentException.class )
     public void testDatasetNull() {
         new SubmitDatasetForReviewCommand(dataverseRequest, null);
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testReleasedDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
@@ -159,7 +159,7 @@ public class SubmitDatasetForReviewCommandTest {
         assertEquals(expected, actual);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDraftDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);

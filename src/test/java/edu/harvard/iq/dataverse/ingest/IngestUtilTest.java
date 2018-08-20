@@ -30,7 +30,7 @@ public class IngestUtilTest {
 
     String logFile = "/tmp/testLogFile";
 
-    @Category(EssentialTests.class)
+    
     @Test
     /**
      * Test adding duplicate file name labels to a dataset version with no
@@ -134,7 +134,7 @@ public class IngestUtilTest {
         assertEquals(file2NameAltered, true);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     /**
      * Test adding duplicate file name labels to a dataset version with empty
@@ -241,7 +241,7 @@ public class IngestUtilTest {
         assertEquals(file2NameAltered, true);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     /**
      * Test adding duplicate file name labels with directories, including a
@@ -380,7 +380,7 @@ public class IngestUtilTest {
         assertEquals(file3NameAltered, true);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     /**
      * Test tabular files (e.g., .dta) are changed when .tab files with the same
@@ -465,7 +465,7 @@ public class IngestUtilTest {
         assertEquals(file2NameAltered, true);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDirectoryLabels() {
 
@@ -544,7 +544,7 @@ public class IngestUtilTest {
 
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testRecalculateDatasetVersionUNF() {
         IngestUtil.recalculateDatasetVersionUNF(null);
@@ -587,7 +587,7 @@ public class IngestUtilTest {
 
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testShouldHaveUnf() {
         DatasetVersion dsv1 = new DatasetVersion();
@@ -595,7 +595,7 @@ public class IngestUtilTest {
         assertEquals(null, dsv1.getUNF());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetUnfValuesOfFiles() {
         List<String> emptyList = new ArrayList<>();
@@ -603,13 +603,13 @@ public class IngestUtilTest {
 
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testshouldHaveUnf() {
         assertEquals(false, IngestUtil.shouldHaveUnf(null));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testUnfUtil() {
         String[] unfValues = {"a", "b", "c"};

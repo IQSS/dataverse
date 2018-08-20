@@ -33,7 +33,7 @@ public class AbstractApiBeanTest {
         sut = new AbstractApiBeanImpl();
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testParseBooleanOrDie_ok() throws Exception {
         assertTrue(sut.parseBooleanOrDie("1"));
@@ -44,26 +44,26 @@ public class AbstractApiBeanTest {
         assertFalse(sut.parseBooleanOrDie("no"));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test(expected = Exception.class)
     public void testParseBooleanOrDie_invalid() throws Exception {
         sut.parseBooleanOrDie("I'm not a boolean value!");
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testFailIfNull_ok() throws Exception {
         sut.failIfNull(sut, "");
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testAllowCors() {
         Response r = sut.allowCors(new MockResponse(200));
         assertEquals("*", r.getHeaderString("Access-Control-Allow-Origin"));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testMessagesNoJsonObject() {
         String message = "myMessage";

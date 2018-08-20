@@ -27,7 +27,6 @@ import org.junit.experimental.categories.Category;
  */
 
 //Fix this ignore when we classify our tests, these tests are slow and unimportant
-@Ignore
 public class ProvInvestigatorTest {
     
     private ProvInvestigator provUtilBean;
@@ -282,7 +281,6 @@ public class ProvInvestigatorTest {
         assertTrue(entities.size() == 3); //ex:report2 & ex:report1 are repeated
     }
    
-    @Ignore
     @Category(NonEssentialTests.class)
     @Test
     public void testProvLongJsonWithEntities() throws IOException {

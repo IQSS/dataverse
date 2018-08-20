@@ -46,7 +46,7 @@ public class GitHubOAuth2APTest extends GitHubOAuth2AP {
         super("clientId", "clientSecret");
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testParseUserResponse() {
         AbstractOAuth2AuthenticationProvider.ParsedUserResponse expResult = new AbstractOAuth2AuthenticationProvider.ParsedUserResponse(

@@ -39,7 +39,7 @@ public class AuthenticatedUserTest {
         expResult = testUser.getCreatedTime();
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetIdentifier() {
         System.out.println("getIdentifier for testUser");
@@ -47,7 +47,7 @@ public class AuthenticatedUserTest {
         assertEquals(testUser.getIdentifier(), result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testApplyDisplayInfo() {
         System.out.println("applyDisplayInfo");
@@ -56,7 +56,7 @@ public class AuthenticatedUserTest {
         assertEquals(inf, testUser.getDisplayInfo());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetDisplayInfo() {
         System.out.println("getDisplayInfo");
@@ -66,7 +66,7 @@ public class AuthenticatedUserTest {
 
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsAuthenticated() {
         System.out.println("isAuthenticated");
@@ -75,7 +75,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetId() {
         System.out.println("getId");
@@ -83,7 +83,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getId());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetId() {
         System.out.println("setId");
@@ -92,7 +92,7 @@ public class AuthenticatedUserTest {
         assertEquals(id, testUser.getId());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetUserIdentifier() {
         System.out.println("getUserIdentifier");
@@ -100,7 +100,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getUserIdentifier());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetUserIdentifier() {
         System.out.println("setUserIdentifier");
@@ -109,7 +109,7 @@ public class AuthenticatedUserTest {
         assertEquals(testUser.getUserIdentifier(), userIdentifier);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetName() {
         System.out.println("getName");
@@ -118,7 +118,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetEmail() {
         System.out.println("getEmail");
@@ -126,7 +126,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getEmail());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetEmail() {
         System.out.println("setEmail");
@@ -135,7 +135,7 @@ public class AuthenticatedUserTest {
         assertEquals(testUser.getEmail(), email);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetAffiliation() {
         System.out.println("getAffiliation");
@@ -144,7 +144,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetAffiliation() {
         System.out.println("setAffiliation");
@@ -153,7 +153,7 @@ public class AuthenticatedUserTest {
         assertEquals(affiliation, testUser.getAffiliation());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetPosition() {
         System.out.println("getPosition");
@@ -161,7 +161,7 @@ public class AuthenticatedUserTest {
         assertEquals("In-Memory user", result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetPosition() {
         System.out.println("setPosition");
@@ -169,7 +169,7 @@ public class AuthenticatedUserTest {
         testUser.setPosition(position);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetLastName() {
         System.out.println("getLastName");
@@ -178,7 +178,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetLastName() {
         System.out.println("setLastName");
@@ -186,7 +186,7 @@ public class AuthenticatedUserTest {
         testUser.setLastName(lastName);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetFirstName() {
         System.out.println("getFirstName");
@@ -194,7 +194,7 @@ public class AuthenticatedUserTest {
         assertEquals("Homer", result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetFirstName() {
         System.out.println("setFirstName");
@@ -202,7 +202,7 @@ public class AuthenticatedUserTest {
         testUser.setFirstName(firstName);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetEmailConfirmed() {
         System.out.println("getEmailConfirmed");
@@ -211,7 +211,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetEmailConfirmed() {
         System.out.println("setEmailConfirmed");
@@ -219,7 +219,7 @@ public class AuthenticatedUserTest {
         testUser.setEmailConfirmed(emailConfirmed);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetShibIdentityProvider() {
         System.out.println("getShibIdentityProvider");
@@ -227,7 +227,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getShibIdentityProvider());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetShibIdentityProvider() {
         System.out.println("setShibIdentityProvider");
@@ -237,7 +237,7 @@ public class AuthenticatedUserTest {
         assertEquals("Davis", result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testToString() {
         System.out.println("toString");
@@ -246,7 +246,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetSortByString() {
         System.out.println("getSortByString");
@@ -255,7 +255,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetLastLoginTime() {
         System.out.println("setLastLogin");
@@ -264,7 +264,7 @@ public class AuthenticatedUserTest {
         assertEquals(loginTime, lastLogin);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetLastLoginTime() {
         System.out.println("getLastLoginTime");
@@ -272,7 +272,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getLastLoginTime());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetCreatedTime() {
         System.out.println("getCreatedTime");
@@ -280,7 +280,7 @@ public class AuthenticatedUserTest {
         assertEquals(testUser.getCreatedTime(), result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetCreatedTime() {
         System.out.println("setCreatedTime");
@@ -289,7 +289,7 @@ public class AuthenticatedUserTest {
         assertEquals(testUser.getCreatedTime(), createdTime);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetLastApiUseTime() {
         System.out.println("getLastApiUseTime");
@@ -297,7 +297,7 @@ public class AuthenticatedUserTest {
         assertEquals(testUser.getLastApiUseTime(), result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetLastApiUseTime() {
         System.out.println("setLastApiUseTime");
@@ -306,7 +306,7 @@ public class AuthenticatedUserTest {
         assertEquals(testUser.getLastApiUseTime(), lastApiUseTime);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetLastApiUseToCurrentTime() {
         System.out.println("setLastApiUseToCurrentTime");
@@ -315,7 +315,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, testUser.getLastApiUseTime());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsSuperuser() {
         System.out.println("isSuperuser");
@@ -324,7 +324,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetSuperuser() {
         System.out.println("setSuperuser");
@@ -333,7 +333,7 @@ public class AuthenticatedUserTest {
         assertEquals(testUser.isSuperuser(), true);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetAuthenticatedUserLookup() {
         System.out.println("getAuthenticatedUserLookup");
@@ -341,7 +341,7 @@ public class AuthenticatedUserTest {
         assertEquals(testUser.getAuthenticatedUserLookup(), result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetAuthenticatedUserLookup() {
         System.out.println("setAuthenticatedUserLookup");
@@ -350,7 +350,7 @@ public class AuthenticatedUserTest {
         assertEquals(authenticatedUserLookup, testUser.getAuthenticatedUserLookup());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testHashCode() {
         System.out.println("hashCode");
@@ -365,7 +365,7 @@ public class AuthenticatedUserTest {
      * constraints on this issue these 1+1=2 type tests weren't all done.
      */
 
-//    @Category(EssentialTests.class)
+//    
 //    @Test
 //    public void testEquals() {
 //        System.out.println("equals");

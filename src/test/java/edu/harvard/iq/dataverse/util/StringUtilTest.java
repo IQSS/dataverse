@@ -40,7 +40,7 @@ public class StringUtilTest {
     /**
      * Test of isEmpty method, of class StringUtil.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsEmpty() {
         assertTrue( StringUtil.isEmpty(null) );
@@ -54,7 +54,7 @@ public class StringUtilTest {
     /**
      * Test of isAlphaNumeric method, of class StringUtil.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsAlphaNumeric() {
         assertTrue( StringUtil.isAlphaNumeric("abc") );
@@ -67,7 +67,7 @@ public class StringUtilTest {
     /**
      * Test of isAlphaNumericChar method, of class StringUtil.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsAlphaNumericChar() {
         assertTrue( StringUtil.isAlphaNumericChar('a') );
@@ -82,7 +82,7 @@ public class StringUtilTest {
         assertFalse( StringUtil.isAlphaNumericChar('@') );
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testHtml2Text() {
         assertEquals(StringUtil.html2text("be <b>bold</b>!"), "be bold!");
@@ -118,14 +118,14 @@ public class StringUtilTest {
         assertEquals(StringUtil.htmlArray2textArray(null), Collections.emptyList());
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testNullToEmpty() {
         assertEquals( "hello", StringUtil.nullToEmpty("hello") );
         assertEquals( "", StringUtil.nullToEmpty(null) );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSymmetricEncryption() {
         String source = "Hello, world! This is an encryption test";
@@ -136,7 +136,7 @@ public class StringUtilTest {
         assertEquals(source, decrypted);
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsTrue() {
         Stream.of("yes", "Yes", "  yes  ", "1", "allow", "tRuE")

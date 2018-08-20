@@ -64,7 +64,7 @@ public class AuthenticationProviderTest {
     /**
      * Test of getFriendlyName method, of class AuthenticationProvider.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetFriendlyName() {
         System.out.println("getFriendlyName");

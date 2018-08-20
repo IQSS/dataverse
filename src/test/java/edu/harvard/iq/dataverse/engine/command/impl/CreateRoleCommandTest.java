@@ -45,7 +45,7 @@ public class CreateRoleCommandTest {
         saveCalled = false;
     }
     
-    @Category(EssentialTests.class)
+    
     @Test( expected = IllegalCommandException.class )
     public void testNonSuperUsersCantAddRoles() throws CommandException {
         DataverseRole dvr = new DataverseRole();
@@ -64,7 +64,7 @@ public class CreateRoleCommandTest {
     
     }
    
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSuperUsersAddRoles() throws CommandException {
         DataverseRole dvr = new DataverseRole();
@@ -84,7 +84,7 @@ public class CreateRoleCommandTest {
     
     }
     
-    @Category(EssentialTests.class)
+    
     @Test( expected = IllegalCommandException.class )
     public void testGuestUsersCantAddRoles() throws CommandException {
         DataverseRole dvr = new DataverseRole();

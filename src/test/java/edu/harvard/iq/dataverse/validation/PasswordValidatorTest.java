@@ -149,7 +149,7 @@ public class PasswordValidatorTest {
     }
 
     @SuppressWarnings("unchecked")
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDifferentPasswordsAndSettings() {
 

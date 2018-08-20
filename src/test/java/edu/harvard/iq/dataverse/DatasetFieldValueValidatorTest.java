@@ -46,7 +46,7 @@ public class DatasetFieldValueValidatorTest {
      * Test of isValid method, of class DatasetFieldValueValidator.
      */
     @Test
-    @Category(EssentialTests.class)
+    
     public void testIsValid() {
         System.out.println("isValid");
         DatasetFieldValue value = new DatasetFieldValue();

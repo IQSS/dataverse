@@ -11,7 +11,7 @@ import org.junit.experimental.categories.Category;
 
 public class StorageSiteUtilTest {
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testParse() throws Exception {
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -25,7 +25,7 @@ public class StorageSiteUtilTest {
         System.out.println("output: " + output);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test(expected = IllegalArgumentException.class)
     public void testMissingHostname() throws Exception {
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -35,7 +35,7 @@ public class StorageSiteUtilTest {
         StorageSiteUtil.parse(job.build());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test(expected = IllegalArgumentException.class)
     public void testBadProtocol() throws Exception {
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -46,7 +46,7 @@ public class StorageSiteUtilTest {
         StorageSiteUtil.parse(job.build());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test(expected = IllegalArgumentException.class)
     public void testNonBoolean() throws Exception {
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -57,7 +57,7 @@ public class StorageSiteUtilTest {
         StorageSiteUtil.parse(job.build());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test(expected = Exception.class)
     public void testSecondPrimaryNotAllowed() throws Exception {
         StorageSite newStorageSite = new StorageSite();
@@ -69,7 +69,7 @@ public class StorageSiteUtilTest {
         StorageSiteUtil.ensureOnlyOnePrimary(newStorageSite, exitingSites);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSecondNonPrimaryIsAllowed() throws Exception {
         StorageSite newStorageSite = new StorageSite();
@@ -80,7 +80,7 @@ public class StorageSiteUtilTest {
         StorageSiteUtil.ensureOnlyOnePrimary(newStorageSite, exitingSites);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testCanAddPrimaryWhenNoExistingPrimary() throws Exception {
         StorageSite newStorageSite = new StorageSite();
@@ -91,7 +91,7 @@ public class StorageSiteUtilTest {
         StorageSiteUtil.ensureOnlyOnePrimary(newStorageSite, exitingSites);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testJustForCodeCoverage() {
         new StorageSiteUtil();

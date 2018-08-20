@@ -54,7 +54,7 @@ public class GetPrivateUrlCommandTest {
     public void tearDown() {
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDatasetWithoutAnId() throws Exception {
         dataset = new Dataset();
@@ -62,7 +62,7 @@ public class GetPrivateUrlCommandTest {
         assertNull(privateUrl);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDatasetWithAnId() throws Exception {
         dataset = new Dataset();

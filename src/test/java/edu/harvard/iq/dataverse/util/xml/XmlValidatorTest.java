@@ -17,7 +17,7 @@ public class XmlValidatorTest {
 
     private static final Logger logger = Logger.getLogger(XmlValidatorTest.class.getCanonicalName());
 
-    @Ignore
+    
     @Category(NonEssentialTests.class)
     @Test
     public void testValidateXml() throws IOException, SAXException, ParserConfigurationException {
@@ -26,7 +26,7 @@ public class XmlValidatorTest {
 //        assertTrue(XmlValidator.validateXml("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml", new URL("http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd")));
     }
 
-    @Ignore
+    
     @Category(NonEssentialTests.class)
     @Test
     public void testWellFormedXml() {

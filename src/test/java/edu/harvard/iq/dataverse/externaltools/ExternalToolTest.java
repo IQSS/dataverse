@@ -8,7 +8,7 @@ import org.junit.experimental.categories.Category;
 
 public class ExternalToolTest {
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testToJson() {
         System.out.println("toJson");

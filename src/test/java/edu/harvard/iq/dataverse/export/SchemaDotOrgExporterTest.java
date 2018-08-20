@@ -126,7 +126,7 @@ public class SchemaDotOrgExporterTest {
     /**
      * Test of exportDataset method, of class SchemaDotOrgExporter.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testExportDataset() throws Exception {
         System.out.println("exportDataset");
@@ -181,7 +181,7 @@ public class SchemaDotOrgExporterTest {
     /**
      * Test of getProviderName method, of class SchemaDotOrgExporter.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetProviderName() {
         System.out.println("getProviderName");
@@ -191,7 +191,7 @@ public class SchemaDotOrgExporterTest {
     /**
      * Test of getDisplayName method, of class SchemaDotOrgExporter.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetDisplayName() {
         System.out.println("getDisplayName");
@@ -211,7 +211,7 @@ public class SchemaDotOrgExporterTest {
     /**
      * Test of isHarvestable method, of class SchemaDotOrgExporter.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsHarvestable() {
         System.out.println("isHarvestable");
@@ -221,7 +221,7 @@ public class SchemaDotOrgExporterTest {
     /**
      * Test of isAvailableToUsers method, of class SchemaDotOrgExporter.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsAvailableToUsers() {
         System.out.println("isAvailableToUsers");
@@ -231,7 +231,7 @@ public class SchemaDotOrgExporterTest {
     /**
      * Test of getXMLNameSpace method, of class SchemaDotOrgExporter.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetXMLNameSpace() throws Exception {
         System.out.println("getXMLNameSpace");
@@ -247,7 +247,7 @@ public class SchemaDotOrgExporterTest {
     /**
      * Test of getXMLSchemaLocation method, of class SchemaDotOrgExporter.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetXMLSchemaLocation() throws Exception {
         System.out.println("getXMLSchemaLocation");
@@ -263,7 +263,7 @@ public class SchemaDotOrgExporterTest {
     /**
      * Test of getXMLSchemaVersion method, of class SchemaDotOrgExporter.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetXMLSchemaVersion() throws Exception {
         System.out.println("getXMLSchemaVersion");
@@ -279,7 +279,7 @@ public class SchemaDotOrgExporterTest {
     /**
      * Test of setParam method, of class SchemaDotOrgExporter.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSetParam() {
         System.out.println("setParam");

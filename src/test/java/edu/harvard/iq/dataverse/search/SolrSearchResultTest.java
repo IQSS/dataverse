@@ -10,7 +10,7 @@ import org.junit.experimental.categories.Category;
 
 public class SolrSearchResultTest {
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testJson() {
 

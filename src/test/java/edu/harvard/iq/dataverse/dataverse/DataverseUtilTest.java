@@ -8,7 +8,7 @@ import org.junit.experimental.categories.Category;
 
 public class DataverseUtilTest {
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetSuggestedDataverseNameOnCreate() {
         System.out.println("getSuggestedDataverseNameOnCreate");

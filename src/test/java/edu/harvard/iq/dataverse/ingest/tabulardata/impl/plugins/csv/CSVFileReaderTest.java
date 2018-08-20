@@ -39,7 +39,7 @@ public class CSVFileReaderTest {
      * Test CSVFileReader with a hellish CSV containing everything nasty I could
      * think of to throw at it.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testRead() {
         String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/IngestCSV.csv";
@@ -81,7 +81,7 @@ public class CSVFileReaderTest {
      * the DataTable object produced by the plugin, and verify that the
      * individual DataVariables have been properly typed.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testVariables() {
         String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/IngestCSV.csv";
@@ -142,7 +142,7 @@ public class CSVFileReaderTest {
      * the resulting tab-delimited file and verify that the individual variable vectors
      * are legit.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSubset() {
         String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/election_precincts.csv";
@@ -272,7 +272,7 @@ public class CSVFileReaderTest {
      * for this. But checking it in with this simple file, for now.
      * (thinking about it, the "csv file from hell" may be a better test case for the UNF test)
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testVariableUNFs() {
         String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/election_precincts.csv";
@@ -402,7 +402,7 @@ public class CSVFileReaderTest {
      * Tests CSVFileReader with a CSV with one more column than header. Tests
      * CSVFileReader with a null CSV.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testBrokenCSV() {
         String brokenFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/BrokenCSV.csv";

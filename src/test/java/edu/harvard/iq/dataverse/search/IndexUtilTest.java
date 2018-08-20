@@ -35,7 +35,7 @@ public class IndexUtilTest {
     /**
      * Test of findDvObjectIdsToProcess method, of class IndexUtil.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testFindDvObjectIdsToProcess() {
 //        System.out.println("findDvObjectIdsToProcess");

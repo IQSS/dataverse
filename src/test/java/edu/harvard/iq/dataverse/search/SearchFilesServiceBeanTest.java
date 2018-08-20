@@ -7,7 +7,7 @@ import org.junit.experimental.categories.Category;
 
 public class SearchFilesServiceBeanTest {
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetSortBy() {
         assertEquals(new SortBy(SearchFields.RELEVANCE, SortBy.DESCENDING), SearchFilesServiceBean.getSortBy(null));

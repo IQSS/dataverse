@@ -28,7 +28,7 @@ public class GroupServiceBeanTest {
     public GroupServiceBeanTest() {
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testFlattenGroupsCollection() throws GroupException {
         // Setup
@@ -73,7 +73,7 @@ public class GroupServiceBeanTest {
         
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testCollectAncestors() throws GroupException {
         // Setup

@@ -16,7 +16,7 @@ public class MetricsUtilTest {
 
     private static final long COUNT = 42l;
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testCountToJson() {
         // This constructor is just here for code coverage. :)
@@ -26,7 +26,7 @@ public class MetricsUtilTest {
         assertEquals(COUNT, jsonObject.getJsonNumber("count").longValue());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDataversesByCategoryToJson() {
         List<Object[]> list = new ArrayList<>();
@@ -56,7 +56,7 @@ public class MetricsUtilTest {
         assertEquals(7, jsonObject.getInt("count"));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDatasetsBySubjectToJson() {
         List<Object[]> list = new ArrayList<>();
@@ -96,26 +96,26 @@ public class MetricsUtilTest {
         assertEquals(98, jsonObject.getInt("count"));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSanitizeHappyPath() throws Exception {
         assertEquals("2018-04", MetricsUtil.sanitizeYearMonthUserInput("2018-04"));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test(expected = Exception.class)
     public void testSanitizeJunk() throws Exception {
         MetricsUtil.sanitizeYearMonthUserInput("junk");
     }
 
-    @Category(EssentialTests.class)
+    
     @Test(expected = Exception.class)
     public void testSanitizeFullIso() throws Exception {
         MetricsUtil.sanitizeYearMonthUserInput("2018-01-01");
     }
 
     //Create JsonArray, turn into string and back into array to confirm data integrity
-    @Category(EssentialTests.class)
+    
     @Test
     public void testStringToJsonArrayBuilder() {
         System.out.println("testStringToJsonArrayBuilder");
@@ -136,7 +136,7 @@ public class MetricsUtilTest {
     }
 
     //Create JsonObject, turn into string and back into array to confirm data integrity
-    @Category(EssentialTests.class)
+    
     @Test
     public void testStringToJsonObjectBuilder() {
         System.out.println("testStringToJsonObjectBuilder");

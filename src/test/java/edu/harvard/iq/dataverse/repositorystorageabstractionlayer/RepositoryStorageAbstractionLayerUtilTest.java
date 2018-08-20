@@ -13,7 +13,7 @@ import org.junit.experimental.categories.Category;
 
 public class RepositoryStorageAbstractionLayerUtilTest {
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetRsalSites_3args() {
         System.out.println("getRsalSites");
@@ -34,7 +34,7 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         assertEquals("rsync -av rsync://dv.sbgrid.org/10.5072/FK2/identifierPartOfPersistentID", result.get(0).getRsyncDownloadcommand());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetRsalSites_String() {
         System.out.println("getRsalSites");
@@ -50,7 +50,7 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         assertEquals("Harvard Medical School, USA", first.getString("name"));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetLocalDataAccessDirectory() {
         System.out.println("getLocalDataAccessDirectory");
@@ -62,7 +62,7 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         assertEquals("/opt/data/10.5072/FK2/identifierPartOfPersistentID", result);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetVerifyDataCommand() {
         System.out.println("getVerifyDataCommand");

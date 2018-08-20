@@ -19,7 +19,7 @@ import org.junit.experimental.categories.Category;
 
 public class FileUtilTest {
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetCiteDataFileFilename() {
 
@@ -39,13 +39,13 @@ public class FileUtilTest {
         assertEquals("50by1000.bib", FileUtil.getCiteDataFileFilename(tabular, FileUtil.FileCitationExtension.BIBTEX));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsDownloadPopupRequiredNull() {
         assertEquals(false, FileUtil.isDownloadPopupRequired(null));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsDownloadPopupRequiredDraft() {
         Dataset dataset = new Dataset();
@@ -54,7 +54,7 @@ public class FileUtilTest {
         assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsDownloadPopupRequiredLicenseCC0() {
         DatasetVersion dsv1 = new DatasetVersion();
@@ -65,7 +65,7 @@ public class FileUtilTest {
         assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsDownloadPopupRequiredHasTermsOfUseAndCc0License() {
         DatasetVersion dsv1 = new DatasetVersion();
@@ -82,7 +82,7 @@ public class FileUtilTest {
         assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsDownloadPopupRequiredHasTermsOfUseAndNoneLicense() {
         DatasetVersion dsv1 = new DatasetVersion();
@@ -94,7 +94,7 @@ public class FileUtilTest {
         assertEquals(true, FileUtil.isDownloadPopupRequired(dsv1));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsDownloadPopupRequiredHasTermsOfAccess() {
         DatasetVersion dsv1 = new DatasetVersion();
@@ -105,7 +105,7 @@ public class FileUtilTest {
         assertEquals(true, FileUtil.isDownloadPopupRequired(dsv1));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsDownloadPopupRequiredHasGuestBook() {
         DatasetVersion datasetVersion = new DatasetVersion();
@@ -120,7 +120,7 @@ public class FileUtilTest {
         assertEquals(true, FileUtil.isDownloadPopupRequired(datasetVersion));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsPubliclyDownloadable() {
         assertEquals(false, FileUtil.isPubliclyDownloadable(null));
@@ -139,7 +139,7 @@ public class FileUtilTest {
         assertEquals(true, FileUtil.isPubliclyDownloadable(nonRestrictedFileMetadata));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsPubliclyDownloadable2() {
 
@@ -156,7 +156,7 @@ public class FileUtilTest {
         assertEquals(false, FileUtil.isPubliclyDownloadable(nonRestrictedFileMetadata));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testgetFileDownloadUrl() {
         Long fileId = 42l;
@@ -171,14 +171,14 @@ public class FileUtilTest {
         assertEquals("/api/access/datafile/42?gbrecs=true", FileUtil.getFileDownloadUrlPath(null, fileId, true));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetPublicDownloadUrl() {
         assertEquals("null/api/access/datafile/:persistentId?persistentId=null", FileUtil.getPublicDownloadUrl(null, null));
         assertEquals("https://demo.dataverse.org/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/TLU3EP", FileUtil.getPublicDownloadUrl("https://demo.dataverse.org", "doi:10.5072/FK2/TLU3EP"));
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGenerateOriginalExtension() {
         assertEquals("", FileUtil.generateOriginalExtension("foo"));
@@ -194,7 +194,7 @@ public class FileUtilTest {
 
     /* 
      * The method below has been removed from FileUtil
-    @Category(EssentialTests.class)
+    
     @Test
     public void testRescaleImage() throws IOException {
         assertEquals(null, FileUtil.rescaleImage(null));
@@ -204,7 +204,7 @@ public class FileUtilTest {
         assertEquals(imageAsBase64expected, imageAsBase64actual);
     }*/
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDetermineFileType() {
         File file = new File("src/main/webapp/resources/images/cc0.png");
@@ -222,7 +222,7 @@ public class FileUtilTest {
      * with bogus content type are not files that thumbnails can be created for.
      * @throws Exception when the test is in error.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsThumbnailSupported() throws Exception {
         // null file:

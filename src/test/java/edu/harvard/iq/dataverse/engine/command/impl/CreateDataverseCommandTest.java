@@ -194,7 +194,7 @@ public class CreateDataverseCommandTest {
         } );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDefaultOptions() throws CommandException {
         Dataverse dv = makeDataverse();
@@ -231,7 +231,7 @@ public class CreateDataverseCommandTest {
         assertTrue( indexCalled );
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testCustomOptions() throws CommandException {
         Dataverse dv = makeDataverse();
@@ -290,13 +290,13 @@ public class CreateDataverseCommandTest {
         }
     }
     
-    @Category(EssentialTests.class)
+    
     @Test( expected=IllegalCommandException.class )
     public void testCantCreateAdditionalRoot() throws Exception {
         engine.submit( new CreateDataverseCommand(makeDataverse(), makeRequest(), null, null) );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test( expected=IllegalCommandException.class )
     public void testGuestCantCreateDataverse() throws Exception {
         final DataverseRequest request = new DataverseRequest( GuestUser.get(), IpAddress.valueOf("::") );
@@ -304,7 +304,7 @@ public class CreateDataverseCommandTest {
         engine.submit(new CreateDataverseCommand(makeDataverse(), request, null, null) );
     }
 
-    @Category(EssentialTests.class)
+    
     @Test( expected=IllegalCommandException.class )
     public void testCantCreateAnotherWithSameAlias() throws Exception {
         

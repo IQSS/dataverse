@@ -12,7 +12,7 @@ import org.junit.experimental.categories.Category;
  */
 public class IpAddressTest {
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testValueOfIPv4() {
         assertEquals( new IPv4Address(127,0,0,1),
@@ -21,7 +21,7 @@ public class IpAddressTest {
                     IpAddress.valueOf("149.78.247.173") );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testValueOfIPv6() {
         assertEquals( new IPv6Address(0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x0, 0x0),
@@ -32,7 +32,7 @@ public class IpAddressTest {
         return new String[]{a,b};
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testMappedIPv6() {
         for ( String[] tp : Arrays.asList(

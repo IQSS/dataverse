@@ -8,7 +8,7 @@ import org.junit.experimental.categories.Category;
 
 public class FileSortFieldAndOrderTest {
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSortFiles() {
 

@@ -15,7 +15,7 @@ public class DTAFileReaderTest {
     DTAFileReader instance = new DTAFileReader(null);
     File nullDataFile = null;
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testOs() throws IOException {
         TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("scripts/search/data/tabular/50by1000.dta"))), nullDataFile);

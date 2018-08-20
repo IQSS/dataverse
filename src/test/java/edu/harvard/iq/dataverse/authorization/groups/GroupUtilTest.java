@@ -12,7 +12,7 @@ import org.junit.experimental.categories.Category;
 
 public class GroupUtilTest {
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetAllIdentifiersForUserWithGroups() {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
@@ -25,7 +25,7 @@ public class GroupUtilTest {
         assertEquals(expected, actual);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetAllIdentifiersForUserWithNoGroups() {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
@@ -36,7 +36,7 @@ public class GroupUtilTest {
         assertEquals(expected, actual);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetAllIdentifiersForUserNulls() {
         new GroupUtil(); // just boosting our coverage :)

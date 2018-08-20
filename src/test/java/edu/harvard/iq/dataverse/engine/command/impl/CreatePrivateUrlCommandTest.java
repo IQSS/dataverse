@@ -92,7 +92,7 @@ public class CreatePrivateUrlCommandTest {
         );
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDatasetNull() {
         dataset = null;
@@ -108,7 +108,7 @@ public class CreatePrivateUrlCommandTest {
         assertNull(privateUrl);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testAlreadyExists() {
         dataset.setId(privateUrlAlreadyExists);
@@ -124,7 +124,7 @@ public class CreatePrivateUrlCommandTest {
         assertNull(privateUrl);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testAttemptCreatePrivateUrlOnNonDraft() {
         dataset = new Dataset();
@@ -146,7 +146,7 @@ public class CreatePrivateUrlCommandTest {
         assertNull(privateUrl);
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testCreatePrivateUrlSuccessfully() throws CommandException {
         dataset = new Dataset();

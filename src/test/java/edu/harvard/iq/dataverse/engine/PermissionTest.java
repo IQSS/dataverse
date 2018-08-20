@@ -19,7 +19,7 @@ public class PermissionTest {
     /**
      * Test of appliesTo method, of class Permission.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testAppliesTo() {
         assertFalse( Permission.EditDataverse.appliesTo(DvObject.class) );

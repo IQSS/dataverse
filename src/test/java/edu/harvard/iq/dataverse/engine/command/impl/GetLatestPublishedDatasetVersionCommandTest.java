@@ -23,7 +23,7 @@ public class GetLatestPublishedDatasetVersionCommandTest {
     
     TestDataverseEngine engine = new TestDataverseEngine( new TestCommandContext() );
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testLatestPublishedNoDraft() throws CommandException {
         
@@ -36,7 +36,7 @@ public class GetLatestPublishedDatasetVersionCommandTest {
                         engine.getReqiredPermissionsForObjects().get(ds).isEmpty() );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testLatestPublishedWithDraft() throws CommandException {
         
@@ -50,7 +50,7 @@ public class GetLatestPublishedDatasetVersionCommandTest {
                         engine.getReqiredPermissionsForObjects().get(ds).isEmpty() );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testLatestNonePublished() throws CommandException {
         

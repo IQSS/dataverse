@@ -21,7 +21,7 @@ import org.junit.experimental.categories.Category;
  */
 public class FileSizeCheckerTest {
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testBytesToHumanReadable() {
         long[] sizes = {1L, 1023L, 1986L, 125707L, 2759516000L, 12039650000000L};

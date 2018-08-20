@@ -22,7 +22,7 @@ public class IpGroupTest {
     /**
      * Test of contains method, of class IpGroup.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testContains() {
         IpGroup sut = new IpGroup();
@@ -56,7 +56,7 @@ public class IpGroupTest {
     /**
      * Test of isEditable method, of class IpGroup.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsEditable() {
         IpGroup instance = new IpGroup();
@@ -66,7 +66,7 @@ public class IpGroupTest {
     /**
      * Test of equals method, of class IpGroup.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testEquals() {
         IpGroup a = new IpGroup();

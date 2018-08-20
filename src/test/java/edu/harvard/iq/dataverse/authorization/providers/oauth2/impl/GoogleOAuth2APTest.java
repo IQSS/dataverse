@@ -27,7 +27,7 @@ public class GoogleOAuth2APTest extends GoogleOAuth2AP {
         super("clientId", "clientSecret");
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testParseUserResponseRealData() {
 
@@ -46,7 +46,7 @@ public class GoogleOAuth2APTest extends GoogleOAuth2AP {
 
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testParseUserResponse() {
         AbstractOAuth2AuthenticationProvider.ParsedUserResponse result

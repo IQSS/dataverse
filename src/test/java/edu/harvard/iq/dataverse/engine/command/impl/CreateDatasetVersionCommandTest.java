@@ -28,7 +28,7 @@ import org.junit.experimental.categories.Category;
  */
 public class CreateDatasetVersionCommandTest {
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testSimpleVersionAddition() throws Exception {
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
@@ -71,7 +71,7 @@ public class CreateDatasetVersionCommandTest {
         assertEquals(expected, testEngine.getReqiredPermissionsForObjects() );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test(expected=IllegalCommandException.class)
     public void testCantCreateTwoDraftVersions() throws Exception {
         DatasetVersion dsvNew = new DatasetVersion();

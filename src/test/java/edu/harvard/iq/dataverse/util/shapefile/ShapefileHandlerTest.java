@@ -137,7 +137,7 @@ public class ShapefileHandlerTest {
         
     } // end createAndZipFiles
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testCreateZippedNonShapefile() throws IOException{
         msgt("(1) testCreateZippedNonShapefile");
@@ -175,7 +175,7 @@ public class ShapefileHandlerTest {
     }
     
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testZippedTwoShapefiles() throws IOException{
         msgt("(2) testZippedTwoShapefiles");
@@ -237,7 +237,7 @@ public class ShapefileHandlerTest {
         msg("Passed!");
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testZippedShapefileWithExtraFiles() throws IOException{
         msgt("(3) testZippedShapefileWithExtraFiles");

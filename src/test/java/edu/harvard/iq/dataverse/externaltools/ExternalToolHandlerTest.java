@@ -12,7 +12,7 @@ import org.junit.experimental.categories.Category;
 public class ExternalToolHandlerTest {
 
     // TODO: It would probably be better to split these into individual tests.
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetToolUrlWithOptionalQueryParameters() {
         ExternalTool.Type type = ExternalTool.Type.EXPLORE;

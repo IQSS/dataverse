@@ -49,7 +49,7 @@ public class PasswordValidatorUtilTest {
     /**
      * Test of getPasswordRequirements method, of class PasswordValidatorUtil.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetPasswordRequirements() {
         System.out.println("getPasswordRequirements");
@@ -78,7 +78,7 @@ public class PasswordValidatorUtilTest {
     /**
      * Test of parseConfigString method, of class PasswordValidatorUtil.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testParseConfigString() {
         String configString = "UpperCase:1,LowerCase:4,Digit:1,Special:1";
@@ -95,7 +95,7 @@ public class PasswordValidatorUtilTest {
         assertEquals(EnglishCharacterData.Special.getCharacters(), rules.get(3).getValidCharacters());
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGetRequiredCharacters() {
         int numberOfCharacteristics = 2; //influences use of # or "each" in text generation

@@ -42,7 +42,7 @@ public class UpdatePermissionRootCommandTest {
         serviceBeanCalled = false;
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testNoChange() throws CommandException {
         Dataverse dv = MocksFactory.makeDataverse();
@@ -64,7 +64,7 @@ public class UpdatePermissionRootCommandTest {
         assertFalse( serviceBeanCalled );
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testChange() throws CommandException {
         Dataverse dv = MocksFactory.makeDataverse();

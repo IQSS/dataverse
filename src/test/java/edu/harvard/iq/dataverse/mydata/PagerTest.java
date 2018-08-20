@@ -54,7 +54,7 @@ public class PagerTest {
     /**
      * Test of getNumResults method, of class Pager.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testBasics() {
         System.out.println("getNumResults");
@@ -117,7 +117,7 @@ public class PagerTest {
 */
     } 
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testNoResults() {
         

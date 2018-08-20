@@ -44,7 +44,7 @@ public class DatasetFieldValidatorTest {
     /**
      * Test of isValid method, of class DatasetFieldValidator.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testIsValid() {
         System.out.println("isValid");

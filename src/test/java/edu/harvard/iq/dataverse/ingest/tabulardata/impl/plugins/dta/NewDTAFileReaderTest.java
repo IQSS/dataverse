@@ -25,7 +25,7 @@ public class NewDTAFileReaderTest {
     File nullDataFile = null;
     private final String base = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/dta/";
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testAuto() throws IOException {
         instance = new NewDTAFileReader(null, 117);
@@ -42,7 +42,7 @@ public class NewDTAFileReaderTest {
         assertEquals("Foreign", origins.get(1).getLabel());
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testStrl() throws IOException {
         instance = new NewDTAFileReader(null, 118);
@@ -62,7 +62,7 @@ public class NewDTAFileReaderTest {
         assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
     }
     
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDates() throws IOException {
         instance = new NewDTAFileReader(null, 118);
@@ -82,7 +82,7 @@ public class NewDTAFileReaderTest {
         assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
     }
     
-    @Category(EssentialTests.class)
+    
     @Test(expected = IOException.class)
     public void testNull() throws IOException {
         instance = new NewDTAFileReader(null, 117);
@@ -91,7 +91,7 @@ public class NewDTAFileReaderTest {
 
     // TODO: Can we create a small file to check into the code base that exercises the value-label names non-zero offset issue?
     @Ignore
-    @Category(EssentialTests.class)
+    
     @Test
     public void testFirstCategoryNonZeroOffset() throws IOException {
         instance = new NewDTAFileReader(null, 117);
@@ -113,7 +113,7 @@ public class NewDTAFileReaderTest {
 
     // TODO: Can we create a small file to check into the code base that exercises the value-label names non-zero offset issue?
     @Ignore
-    @Category(EssentialTests.class)
+    
     @Test
     public void testFirstCategoryNonZeroOffset1() throws IOException {
         instance = new NewDTAFileReader(null, 118);
@@ -134,7 +134,7 @@ public class NewDTAFileReaderTest {
     
     // TODO: Is there a way to exersise this code with a smaller file? 33k.dta is 21MB.
     @Ignore
-    @Category(EssentialTests.class)
+    
     @Test
     public void test33k() throws IOException {
         instance = new NewDTAFileReader(null, 119);
@@ -145,7 +145,7 @@ public class NewDTAFileReaderTest {
     // TODO: Can we create a small file to check into the code base that exercises the characteristics issue?
     // FIXME: testCharacteristics is passing in DTA117FileReaderTest but not here.
     @Ignore
-    @Category(EssentialTests.class)
+    
     @Test
     public void testCharacteristics() throws IOException {
         instance = new NewDTAFileReader(null, 117);

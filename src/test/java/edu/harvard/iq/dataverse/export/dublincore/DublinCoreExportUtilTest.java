@@ -59,7 +59,7 @@ public class DublinCoreExportUtilTest {
     /**
      * Test of datasetJson2dublincore method, of class DublinCoreExportUtil.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testDatasetJson2dublincore() throws Exception {
 

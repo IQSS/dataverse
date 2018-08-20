@@ -8,7 +8,7 @@ import org.junit.experimental.categories.Category;
 
 public class ConfirmEmailUtilTest {
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testFriendlyExpirationTime() {
         System.out.println("Friendly expiration timestamp / measurement test");
@@ -31,7 +31,7 @@ public class ConfirmEmailUtilTest {
         System.out.println();
     }
 
-    @Category(EssentialTests.class)
+    
     @Test
     public void testGrandfatheredTime() {
         System.out.println();

@@ -69,7 +69,7 @@ public class SolrQueryFormatterTest {
     /**
      * Test of buildIdQuery method, of class SolrQueryFormatter.
      */
-    @Category(EssentialTests.class)
+    
     @Test
     public void testBasics() {
         msgt("Set group size to 10--it's usually, 1,000");
