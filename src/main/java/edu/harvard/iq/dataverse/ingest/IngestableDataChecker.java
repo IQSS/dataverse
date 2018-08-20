@@ -569,7 +569,8 @@ public class IngestableDataChecker implements java.io.Serializable {
                 byte[] hdr = new byte[gzip_buffer_size];
                 buff.get(hdr, 0, gzip_buffer_size);
 
-                GZIPInputStream gzin = new GZIPInputStream(new ByteArrayInputStream(hdr));
+                try(GZIPInputStream gzin = new GZIPInputStream(new ByteArrayInputStream(hdr)))
+		{
 
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < RDA_HEADER_SIZE; i++) {
@@ -578,6 +579,7 @@ public class IngestableDataChecker implements java.io.Serializable {
                 String fisrt5bytes = sb.toString();
 
                 result = this.checkUncompressedFirst5bytes(fisrt5bytes);
+		}
             // end of compressed case
             } else {
                 // uncompressed case?
