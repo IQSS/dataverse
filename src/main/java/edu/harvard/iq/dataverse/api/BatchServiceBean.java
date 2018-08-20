@@ -98,6 +98,8 @@ public class BatchServiceBean {
             }
         }
         for (File file : dir.listFiles()) {
+		if(null!=file)
+		{
             if (!file.isHidden()) {
                 try {
                     JsonObjectBuilder fileStatus = importService.handleFile(dataverseRequest, owner, file, importType, validationLog, cleanupLog);
@@ -106,6 +108,7 @@ public class BatchServiceBean {
                     status.add(Json.createObjectBuilder().add("importStatus", "Exception importing " + file.getName() + ", message = " + e.getMessage()));
                 }
             }
+	    }
         }
         return status;
     }
