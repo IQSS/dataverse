@@ -45,7 +45,6 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Categories.IncludeCategory(NonEssentialTests.class)
-@Categories.ExcludeCategory(EssentialTests.class)
 @Suite.SuiteClasses({
 
     //Test Package: edu.harvard.iq.dataverse.worldmapauth
