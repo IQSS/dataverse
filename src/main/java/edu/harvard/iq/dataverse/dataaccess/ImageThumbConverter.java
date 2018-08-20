@@ -673,7 +673,10 @@ public class ImageThumbConverter {
         } catch (Exception ioex) {
             logger.warning("caught Exceptiopn trying to create rescaled image " + outputLocation);
             return null;
-        }
+        } finally
+	{
+		try{outputFileStream.close();}catch(IOException ic){}
+	}
 
         return outputLocation;
     }
