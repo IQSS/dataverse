@@ -73,19 +73,18 @@ public class ContainerManagerImpl implements ContainerManager {
     public DepositReceipt getEntry(String uri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordError, SwordAuthException {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvReq = new DataverseRequest(user, httpRequest);
-        logger.fine("getEntry called with url: " + uri);
+        logger.fine(()->"getEntry called with url: " + uri);
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
-            logger.fine("operating on target type: " + urlManager.getTargetType());
+            logger.fine(()->"operating on target type: " + urlManager.getTargetType());
             if ("study".equals(targetType)) {
                 String globalId = urlManager.getTargetIdentifier();
                 Dataset dataset = datasetService.findByGlobalId(globalId);
                 if (dataset != null) {
-                    if (!permissionService.isUserAllowedOn(user, new GetDraftDatasetVersionCommand(dvReq, dataset), dataset)) {
+                    if (!permissionService.isPermitted(new GetDraftDatasetVersionCommand(dvReq, dataset))) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to retrieve entry for " + dataset.getGlobalIdString());
                     }
-                    Dataverse dvThatOwnsDataset = dataset.getOwner();
                     ReceiptGenerator receiptGenerator = new ReceiptGenerator();
                     String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
                     DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
@@ -131,7 +130,7 @@ public class ContainerManagerImpl implements ContainerManager {
                 if (dataset != null) {
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
                     UpdateDatasetVersionCommand updateDatasetCommand = new UpdateDatasetVersionCommand(dataset, dvReq);
-                    if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
+                    if (!permissionService.isPermitted(updateDatasetCommand)) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
                     }
                     DatasetVersion datasetVersion = dataset.getEditVersion();
@@ -218,7 +217,7 @@ public class ContainerManagerImpl implements ContainerManager {
                          * equivalent in terms of a permission check.
                          */
                         DeleteDatasetVersionCommand deleteDatasetVersionCommand = new DeleteDatasetVersionCommand(dvRequest, dataset);
-                        if (!permissionService.isUserAllowedOn(user, deleteDatasetVersionCommand, dataset)) {
+                        if (!permissionService.isPermitted(deleteDatasetVersionCommand)) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dvThatOwnsDataset.getAlias());
                         }
                         DatasetVersion.VersionState datasetVersionState = dataset.getLatestVersion().getVersionState();
@@ -303,7 +302,7 @@ public class ContainerManagerImpl implements ContainerManager {
                             doMinorVersionBump = true;
                         }
                         PublishDatasetCommand publishDatasetCommand = new PublishDatasetCommand(dataset, dvRequest, doMinorVersionBump);
-                        if (!permissionService.isUserAllowedOn(user, publishDatasetCommand, dataset)) {
+                        if (!permissionService.isPermitted(publishDatasetCommand)) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
                         }
                         if (!deposit.isInProgress()) {
@@ -356,7 +355,7 @@ public class ContainerManagerImpl implements ContainerManager {
                     Dataverse dvToRelease = dataverseService.findByAlias(dvAlias);
                     if (dvToRelease != null) {
                         PublishDataverseCommand publishDataverseCommand = new PublishDataverseCommand(dvRequest, dvToRelease);
-                        if (!permissionService.isUserAllowedOn(user, publishDataverseCommand, dvToRelease)) {
+                        if (!permissionService.isPermitted(publishDataverseCommand)) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvAlias);
                         }
                         if (deposit.isInProgress()) {

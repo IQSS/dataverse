@@ -58,14 +58,13 @@ public class StatementManagerImpl implements StatementManager {
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
 
-            logger.fine("request for sword statement by user " + user.getDisplayInfo().getTitle());
+            logger.fine(()->"request for sword statement by user " + user.getDisplayInfo().getTitle());
             Dataset dataset = datasetService.findByGlobalId(globalId);
             if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "couldn't find dataset with global ID of " + globalId);
             }
 
-            Dataverse dvThatOwnsDataset = dataset.getOwner();
-            if (!permissionService.isUserAllowedOn(user, new GetDraftDatasetVersionCommand(dvReq, dataset), dataset)) {
+            if (!permissionService.isPermitted(new GetDraftDatasetVersionCommand(dvReq, dataset))) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to view dataset with global ID " + globalId);
             }
             String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + dataset.getGlobalIdString();

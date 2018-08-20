@@ -105,7 +105,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                     logger.log(Level.FINE, "DS Deposit identifier: {0}", dataset.getIdentifier());
 
                     AbstractCreateDatasetCommand createDatasetCommand = new CreateNewDatasetCommand(dataset, dvReq);
-                    if (!permissionService.isUserAllowedOn(user, createDatasetCommand, dataset)) {
+                    if (!permissionService.isPermitted(createDatasetCommand)) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to create a dataset in this dataverse.");
                     }
 

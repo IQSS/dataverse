@@ -75,7 +75,7 @@ public class CollectionListManagerImpl implements CollectionListManager {
                      * data, say in the root dataverse? Remove this todo if
                      * there are no complaints. :)
                      */
-                    if (!permissionService.isUserAllowedOn(user, new UpdateDatasetVersionCommand(dataset, dvReq), dataset)) {
+                    if (!permissionService.isPermitted(new UpdateDatasetVersionCommand(dataset, dvReq))) {
                         continue;
                     }
                     String editUri = baseUrl + "/edit/study/" + dataset.getGlobalIdString();

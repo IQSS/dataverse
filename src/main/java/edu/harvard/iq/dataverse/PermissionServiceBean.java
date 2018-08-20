@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
@@ -132,24 +131,40 @@ public class PermissionServiceBean {
         final DvObject subject;
         final DataverseRequest request;
 
-        public RequestPermissionQuery(DvObject subject, DataverseRequest request) {
+        private RequestPermissionQuery(DvObject subject, DataverseRequest request) {
             this.subject = subject;
             this.request = request;
         }
-
+        
+        /**
+         * Executes the query returning the require permissions.
+         * @return permission required to run the specified command over the object.
+         */
         public Set<Permission> get() {
             return permissionsFor(request, subject);
         }
 
+        /**
+         * Tests whether the request has permission {@code p} over the DvObject.
+         * @param p The permission tested for.
+         * @return {@code true} iff {@link #request} has permission {@code p}
+         *           over object {@link #subject}.
+         */
         public boolean has(Permission p) {
             return hasPermissionsFor(request, subject, EnumSet.of(p));
         }
-
-        public boolean has(Set<Permission> p) {
-            if (p.isEmpty()) {
+        
+        /**
+         * Tests whether the request has all permissions {@code ps} over the DvObject.
+         * @param ps The permissions tested for.
+         * @return {@code true} iff {@link #request} has all the permissions
+         *           in  {@code ps} over object {@link #subject}.
+         */
+        public boolean has(Set<Permission> ps) {
+            if (ps.isEmpty()) {
                 return true;
             }
-            return hasPermissionsFor(request, subject, p);
+            return hasPermissionsFor(request, subject, ps);
         }
 
         public RequestPermissionQuery on(DvObject dvo) {
@@ -201,6 +216,14 @@ public class PermissionServiceBean {
         return isPermitted(aCommand, null);
     }
     
+    /**
+     * Internal call; checks permissions, allows a callback for fine-grained
+     * response if case there are not enough permissions.
+     * 
+     * @param aCommand The command to be tested/
+     * @param ipc Callback, called if there are insufficient permissions for the passed command.
+     * @return {@code true} iff the command will not be blocked due to permission issues.
+     */
     boolean isPermitted(Command aCommand, InsufficientPermissionCallback ipc) {
         Map<String, ? extends Set<Permission>> requiredMap = aCommand.getRequiredPermissions();
         if (requiredMap == null) {
@@ -232,6 +255,14 @@ public class PermissionServiceBean {
         return true;
     }
     
+    /**
+     * Lists all the direct assignments on object {@code d}. Not that containment hierarchies
+     * are not traversed here; assignments on {@link DvObject#getOwner()} are not
+     * tested for.
+     * 
+     * @param d the object whose assignments are queried.
+     * @return All direct assignments on {@code d}.
+     */
     public List<RoleAssignment> assignmentsOn(DvObject d) {
         return em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
                 .setParameter("definitionPointId", d.getId()).getResultList();
@@ -314,30 +345,6 @@ public class PermissionServiceBean {
         return hasGroupPermissionsFor(ras, dvo, required);
     }
 
-    @Deprecated
-    public boolean hasPermissionsFor(RoleAssignee ra, DvObject dvo, Set<Permission> required) {
-        if (ra instanceof User) {
-            User user = (User) ra;
-            if (user.isSuperuser()) {
-                return true;
-            } else if (!user.isAuthenticated()) {
-                Set<Permission> requiredCopy = EnumSet.copyOf(required);
-                requiredCopy.retainAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
-                if (!requiredCopy.isEmpty()) {
-                    return false;
-                }
-            }
-        }
-        required.removeAll(getInferredPermissions(dvo));
-        if (required.isEmpty()) {
-            return true;
-        }
-        
-        Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(ra, dvo));
-        ras.add(ra);
-        return hasGroupPermissionsFor(ras, dvo, required);
-    }
-
     /**
      * Finds all the permissions the {@link User} in {@code req} has over
      * {@code dvo}, in the context of {@code req}.
@@ -365,32 +372,6 @@ public class PermissionServiceBean {
     }
 
     /**
-     * Returns the set of permission a user/group has over a dataverse object.
-     * This method takes into consideration group memberships as well, but does
-     * not look into request-level groups.
-     *
-     * @param ra The role assignee.
-     * @param dvo The {@link DvObject} on which the user wants to operate
-     * @return the set of permissions {@code ra} has over {@code dvo}.
-     */
-    public Set<Permission> permissionsFor(RoleAssignee ra, DvObject dvo) {
-        if (ra instanceof AuthenticatedUser && ((AuthenticatedUser) ra).isSuperuser()) {
-            return EnumSet.allOf(Permission.class);
-        }
-
-        Set<Permission> permissions = getInferredPermissions(dvo);
-
-        Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(ra, dvo));
-        ras.add(ra);
-        addAllPermissions(ras, dvo, permissions);
-
-        if ((ra instanceof User) && (!((User) ra).isAuthenticated())) {
-            permissions.removeAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
-        }
-        return permissions;
-    }
-   
-    /**
      * Returns all the role assignments that are effective for {@code ra} over
      * {@code d}. Traverses the containment hierarchy of the {@code d}.
      *
@@ -407,6 +388,14 @@ public class PermissionServiceBean {
         return new HashSet<>(roleService.directRoleAssignments(ras, permAncestors));
     }
 
+    /**
+     * Gets all the ancestors of {@code d} where role assignments might affect
+     * the permissions at {@code d}.
+     * @param d
+     * @return Ancestors of {@code d} up to the nearest permission root.
+     * @see DvObjectContainer#isPermissionRoot()
+     * @see DvObjectContainer#isEffectivelyPermissionRoot()
+     */
     public Set<DvObject> getPermissionAncestors(DvObject d) {
         Set<DvObject> ancestors = new HashSet<>();
         while (d != null) {
@@ -420,18 +409,6 @@ public class PermissionServiceBean {
         return ancestors;
     }
 
-    // TODO: remove. Use "is Permitted instead.
-    public boolean isUserAllowedOn(RoleAssignee u, Command<?> command, DvObject dvo) {
-        Map<String, Set<Permission>> required = command.getRequiredPermissions();
-        if (required.isEmpty() || required.get("") == null) {
-            logger.fine("IsUserAllowedOn: empty-true");
-            return true;
-        } else {
-            Set<Permission> requiredPermissionSet = required.get("");
-            return hasPermissionsFor(u, dvo, requiredPermissionSet);
-        }
-    }
-
     /**
      * Go from (User, Permission) to a list of Dataverse objects that the user
      * has the permission on.
@@ -442,7 +419,6 @@ public class PermissionServiceBean {
      *  <li>Ignores containment hierarchy, which does not matter at the moment since
      *       all dataverses are permission roots.</li>
      * </ul>
-     * 
      * 
      * @param user
      * @param permission
@@ -492,14 +468,6 @@ public class PermissionServiceBean {
         });
 
         return distinctUsers;
-    }
-
-    public List<Long> getDvObjectsUserHasRoleOn(User user) {
-        return getDvObjectIdsUserHasRoleOn(user, null, null, false);
-    }
-
-    public List<Long> getDvObjectIdsUserHasRoleOn(User user, List<DataverseRole> roles) {
-        return getDvObjectIdsUserHasRoleOn(user, roles, null, false);
     }
 
     public List<Long> getDvObjectIdsUserHasRoleOn(User user, List<DataverseRole> roles, List<String> types, boolean indirect) {
@@ -564,7 +532,7 @@ public class PermissionServiceBean {
         if (dataset.isLocked()) {
             if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
                 // The "InReview" lock is not really a lock for curators. They can still make edits.
-                if (!isUserAllowedOn(dataverseRequest.getUser(), new PublishDatasetCommand(dataset, dataverseRequest, true), dataset)) {
+                if (!isPermitted(new PublishDatasetCommand(dataset, dataverseRequest, true))) {
                     throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowedInReview"), command);
                 }
             }
@@ -590,7 +558,7 @@ public class PermissionServiceBean {
         if (dataset.isLocked()) {
             if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
                 // The "InReview" lock is not really a lock for curators or contributors. They can still download.                
-                if (!isUserAllowedOn(dataverseRequest.getUser(), new UpdateDatasetVersionCommand(dataset, dataverseRequest), dataset)) {
+                if (!isPermitted(new UpdateDatasetVersionCommand(dataset, dataverseRequest))) {
                     throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowedInReview"), command);
                 }
             }

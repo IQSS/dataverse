@@ -901,7 +901,7 @@ public class AddReplaceFileHelper{
         
         // Can this user run the command?
         //
-        if (!permissionService.isUserAllowedOn(dvRequest.getUser(), createDatasetCommand, datasetToCheck)) {
+        if (!permissionService.isPermitted(createDatasetCommand)) {
             addError(Response.Status.FORBIDDEN,getBundleErr("no_edit_dataset_permission"));
            return false;
         }

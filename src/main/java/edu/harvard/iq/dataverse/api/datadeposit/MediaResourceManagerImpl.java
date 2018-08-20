@@ -168,7 +168,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                              * "dataset" to "fileToDelete"?
                              */
                             UpdateDatasetVersionCommand updateDatasetCommand = new UpdateDatasetVersionCommand(dataset, dvReq, fileToDelete);
-                            if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
+                            if (!permissionService.isPermitted(updateDatasetCommand)) {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dataverseThatOwnsFile.getAlias());
                             }
                             try {
@@ -206,13 +206,13 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
         urlManager.processUrl(uri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
-            logger.fine("looking up dataset with globalId " + globalId);
+            logger.fine(()->"looking up dataset with globalId " + globalId);
             Dataset dataset = datasetService.findByGlobalId(globalId);
             if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset with global ID of " + globalId);
             }
             UpdateDatasetVersionCommand updateDatasetCommand = new UpdateDatasetVersionCommand(dataset, dvReq);
-            if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
+            if (!permissionService.isPermitted(updateDatasetCommand)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalIdString());
             }
             

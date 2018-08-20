@@ -19,8 +19,8 @@ public class GroupUtil {
         }
         StringBuilder sb = new StringBuilder();
         sb.append("'").append(authenticatedUser.getIdentifier()).append("'");
-        if (groups != null) {
-            sb.append(groups.stream().map(Group::getIdentifier).collect(joining("','", ", '", "'")));
+        if (groups != null && !groups.isEmpty() ) {
+            sb.append(groups.stream().map(Group::getIdentifier).collect(joining("','", ",'", "'")));
         }
         return sb.toString();
     }

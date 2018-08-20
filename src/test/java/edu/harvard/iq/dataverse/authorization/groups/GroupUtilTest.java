@@ -14,10 +14,10 @@ public class GroupUtilTest {
     public void testGetAllIdentifiersForUserWithGroups() {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
         authenticatedUser.setUserIdentifier("pete");
-        Set<Group> groups = new LinkedHashSet<>();
+        Set<Group> groups = new LinkedHashSet<>(); // Needs the linked hash to keep the order.
         groups.add(AuthenticatedUsers.get());
         groups.add(AllUsers.get());
-        String expected = "'@pete', ':authenticated-users', ':AllUsers'";
+        String expected = "'@pete',':authenticated-users',':AllUsers'";
         String actual = GroupUtil.getAllIdentifiersForUser(authenticatedUser, groups);
         assertEquals(expected, actual);
     }
@@ -34,7 +34,6 @@ public class GroupUtilTest {
 
     @Test
     public void testGetAllIdentifiersForUserNulls() {
-        new GroupUtil(); // just boosting our coverage :)
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
         authenticatedUser.setUserIdentifier("pete");
         assertEquals(null, GroupUtil.getAllIdentifiersForUser(null, null));
