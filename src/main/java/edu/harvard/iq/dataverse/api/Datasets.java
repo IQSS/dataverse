@@ -1335,6 +1335,10 @@ public class Datasets extends AbstractApiBean {
 
         return response(req -> {
             try {
+                AuthenticatedUser user = findAuthenticatedUserOrDie();
+                if (!user.isSuperuser()) {
+                    return error(Response.Status.FORBIDDEN, "This API end point can be used by superusers only.");
+                }
                 Dataset dataset = findDatasetOrDie(id);
                 Set<DatasetLock> locks;
                 if (lockType == null) {
@@ -1367,12 +1371,16 @@ public class Datasets extends AbstractApiBean {
     public Response lockDataset(@PathParam("identifier") String id, @PathParam("type") DatasetLock.Reason lockType) {
         return response(req -> {
             try {
+                AuthenticatedUser user = findAuthenticatedUserOrDie();
+                if (!user.isSuperuser()) {
+                    return error(Response.Status.FORBIDDEN, "This API end point can be used by superusers only.");
+                }   
                 Dataset dataset = findDatasetOrDie(id);
                 DatasetLock lock = dataset.getLockFor(lockType);
                 if (lock != null) {
                     return error(Response.Status.FORBIDDEN, "dataset already locked with lock type " + lockType);
                 }
-                lock = new DatasetLock(lockType, findAuthenticatedUserOrDie());
+                lock = new DatasetLock(lockType, user);
                 execCommand(new AddLockCommand(req, dataset, lock));
                 return ok("dataset locked with lock type " + lockType);
             } catch (WrappedResponse wr) {
