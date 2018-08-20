@@ -238,29 +238,29 @@ if the administrator wishes to use any cluster storage like EBS, Google Cloud St
 #       }
 #     },
 #     {
-      "kind" : "PersistentVolumeClaim",
-      "apiVersion": "v1",
-      "metadata": {
-        "name": "solr-claim"
-      },
-      "spec": {
-        "accessModes": [
-          "ReadWriteMany", "ReadWriteOnce",  "ReadOnlyMany"
-        ],
-        "resources": {
-          "requests": {
-            "storage": "3Gi"
-          }
-        },
-        "selector":{
-          "matchLabels":{
-            "name" : "solr-index-backup",
-            "type" : "local"
-            }
-          }
-        }
-      }
-``
+#      "kind" : "PersistentVolumeClaim",
+#      "apiVersion": "v1",
+#      "metadata": {
+#        "name": "solr-claim"
+#      },
+#     "spec": {
+#        "accessModes": [
+#          "ReadWriteMany", "ReadWriteOnce",  "ReadOnlyMany"
+#        ],
+#        "resources": {
+#          "requests": {
+#            "storage": "3Gi"
+#          }
+#        },
+#        "selector":{
+#          "matchLabels":{
+#            "name" : "solr-index-backup",
+#            "type" : "local"
+#            }
+#          }
+#        }
+#      }
+
 
 To make solr container mount the hostPath, add the following part under .spec.spec (for Solr StatefulSet):
 ``
