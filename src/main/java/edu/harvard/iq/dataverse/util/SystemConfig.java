@@ -980,6 +980,22 @@ public class SystemConfig {
         return getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());       
     }
     
+    public boolean isRsyncOnly(){       
+        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
+        if(downloadMethods == null){
+            return false;
+        }
+        if (!downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString())){
+            return false;
+        }
+        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
+        if (uploadMethods==null){
+            return false;
+        } else {
+           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+        }        
+    }
+    
     public boolean isRsyncDownload()
     {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);

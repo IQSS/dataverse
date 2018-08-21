@@ -150,6 +150,10 @@ public class SettingsWrapper implements java.io.Serializable {
         return systemConfig.isRsyncDownload();
     }
     
+    public boolean isRsyncOnly() {
+        return systemConfig.isRsyncOnly();
+    }
+    
     public boolean isHTTPUpload(){
         return systemConfig.isHTTPUpload();
     }
