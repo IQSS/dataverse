@@ -112,8 +112,9 @@ public class ExportService {
     }
 
     public String getExportAsString(Dataset dataset, String formatName) {
+	    InputStream inputStream = null;
         try {
-            InputStream inputStream = getExport(dataset, formatName);
+            inputStream = getExport(dataset, formatName);
             if (inputStream != null) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF8"));
                 StringBuilder sb = new StringBuilder();
@@ -128,7 +129,10 @@ public class ExportService {
         } catch (ExportException | IOException ex) {
             //ex.printStackTrace();
             return null;
-        }
+        } finally
+	{
+		try{inputStream.close();} catch(IOException ic){}
+	}
         return null;
 
     }
