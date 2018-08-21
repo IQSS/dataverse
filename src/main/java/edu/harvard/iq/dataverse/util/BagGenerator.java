@@ -233,7 +233,7 @@ public class BagGenerator {
 
 		aggregation = oremap.getAsJsonObject(JsonLDTerm.ore("describes").getLabel());
 
-		bagID = aggregation.get("@id").getAsString() + aggregation.get(JsonLDTerm.schemaOrg("version").getLabel());
+		bagID = aggregation.get("@id").getAsString() + "v." + aggregation.get(JsonLDTerm.schemaOrg("version").getLabel()).getAsString();
 		try {
 			// Create valid filename from identifier and extend path with
 			// two levels of hash-based subdirs to help distribute files
@@ -538,7 +538,7 @@ public class BagGenerator {
 
 	public static String getValidName(String bagName) {
 		// Create known-good filename - no spaces, no file-system separators.
-		return bagName.replaceAll("\\W", "_");
+		return bagName.replaceAll("\\W", "-");
 	}
 
 	private void processContainer(JsonObject item, String currentPath) {
