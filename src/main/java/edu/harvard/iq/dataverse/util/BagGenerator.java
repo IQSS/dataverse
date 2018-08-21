@@ -252,7 +252,7 @@ public class BagGenerator {
 			// Add container and data entries
 			// Setup global index of the aggregation and all aggregated
 			// resources by Identifier
-			resourceIndex = indexResources(bagID, aggregates);
+			resourceIndex = indexResources(aggregation.get("@id").getAsString(), aggregates);
 			// Setup global list of succeed(true), fail(false), notused
 			// (null) flags
 			resourceUsed = new Boolean[aggregates.size() + 1];
