@@ -1120,7 +1120,7 @@ public class IndexServiceBean {
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(dataverse.getPublicationDate().getTime());
             int YYYY = calendar.get(Calendar.YEAR);
-            solrInputDocument.addField(SearchFields.PUBLICATION_DATE, YYYY);
+            solrInputDocument.addField(SearchFields.PUBLICATION_YEAR, YYYY);
         }
     }
 
@@ -1129,7 +1129,7 @@ public class IndexServiceBean {
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(dataset.getPublicationDate().getTime());
             int YYYY = calendar.get(Calendar.YEAR);
-            solrInputDocument.addField(SearchFields.PUBLICATION_DATE, YYYY);
+            solrInputDocument.addField(SearchFields.PUBLICATION_YEAR, YYYY);
             solrInputDocument.addField(SearchFields.DATASET_PUBLICATION_DATE, YYYY);
         }
     }
