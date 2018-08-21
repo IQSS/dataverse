@@ -124,6 +124,7 @@ public class ExportService {
                     sb.append('\n');
                 }
                 br.close();
+		inputStream.close();//possibly will intersect w\ finally block, clear if so
                 return sb.toString();
             }
         } catch (ExportException | IOException ex) {
