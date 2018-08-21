@@ -104,7 +104,6 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             } else {
                 // Synchronous publishing (no workflow involved)
                 theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(ctxt.em().merge(theDataset), doiProvider, getRequest()));
-                logger.severe("Reporting: " + theDataset.getReleasedVersion().getReplicaLocation());
                 return new PublishDatasetResult(theDataset, true);
             }
         }
