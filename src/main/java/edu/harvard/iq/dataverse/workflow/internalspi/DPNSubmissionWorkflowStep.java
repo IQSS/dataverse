@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
-import edu.harvard.iq.dataverse.export.BagIt_Exporter;
+import edu.harvard.iq.dataverse.export.BagIt_Export;
 import edu.harvard.iq.dataverse.export.DataCiteExporter;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
@@ -11,6 +11,9 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.math.BigInteger;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
@@ -22,6 +25,7 @@ import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 
+import org.apache.commons.io.IOUtils;
 import org.duracloud.client.ContentStore;
 import org.duracloud.client.ContentStoreManager;
 import org.duracloud.client.ContentStoreManagerImpl;
@@ -76,10 +80,33 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
             	//Add BagIt ZIP file
                 MessageDigest messageDigest = MessageDigest.getInstance("MD5");
 
+               
+                
+                
+                
+            
+                PipedInputStream in = new PipedInputStream();
+                PipedOutputStream out = new PipedOutputStream(in);
+                new Thread(
+                  new Runnable(){
+                    public void run(){
+                    	try {
+							BagIt_Export.exportDatasetVersionAsBag(context.getDataset().getReleasedVersion(), settingsService, out);
+						} catch (Exception e) {
+							logger.severe("Error creating bag: " + e.getMessage());
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+							IOUtils.closeQuietly(in);
+							IOUtils.closeQuietly(out);
+						}
+                    }
+                  }
+                ).start();
+                
                 DigestInputStream digestInputStream = new DigestInputStream(
-                        ExportService.getInstance(settingsService).getExport(context.getDataset(), BagIt_Exporter.NAME),
+                        in,
                         messageDigest);
-
+                
                 String checksum = store.addContent(spaceName, fileName, digestInputStream, -1l, null, null, null);
                 logger.info("Content: " + fileName + " added with checksum: " + checksum);
                 String localchecksum = new BigInteger(1, digestInputStream.getMessageDigest().digest()).toString(16);
