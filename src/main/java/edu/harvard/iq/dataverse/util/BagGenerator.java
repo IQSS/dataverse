@@ -560,9 +560,14 @@ public class BagGenerator {
 			containerIndex = getUnusedIndexOf(item.get("@id").getAsString());
 			resourceUsed[containerIndex] = true;
 			pidMap.put(item.get("@id").getAsString(), currentPath);
-		} catch (Exception e) {
-			resourceUsed[containerIndex] = false;
+			
+		} catch (InterruptedException | IOException | ExecutionException e) {
 			e.printStackTrace();
+			log.error(e.getMessage());
+			if(containerIndex != -1) {
+			  resourceUsed[containerIndex] = false;
+			}
+			
 		}
 		for (int i = 0; i < children.size(); i++) {
 
