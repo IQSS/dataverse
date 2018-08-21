@@ -4387,7 +4387,7 @@ public class DatasetPage implements java.io.Serializable {
         
         
         
-        guestbookResponse.setSelectedFileIds(getSelectedFilesIdsString());
+        //guestbookResponse.setSelectedFileIds(getSelectedFilesIdsString());
     }
     
     public void fileListingPaginatorListener(PageEvent event) {       
