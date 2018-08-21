@@ -980,41 +980,50 @@
          finally applies Porter's stemming.  The query time analyzer also applies synonyms from synonyms.txt. -->
     <dynamicField name="*_txt_en" type="text_en"  indexed="true"  stored="true"/>
     <fieldType name="text_en" class="solr.TextField" positionIncrementGap="100">
-      <analyzer type="index">
-        <tokenizer class="solr.StandardTokenizerFactory"/>
-        <!-- in this example, we will only use synonyms at query time
-        <filter class="solr.SynonymGraphFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="false"/>
-        <filter class="solr.FlattenGraphFilterFactory"/>
-        -->
-        <!-- Case insensitive stop word removal.
-        -->
-        <filter class="solr.StopFilterFactory"
-                ignoreCase="true"
-                words="lang/stopwords_en.txt"
-            />
-        <filter class="solr.LowerCaseFilterFactory"/>
-        <filter class="solr.EnglishPossessiveFilterFactory"/>
-        <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
-        <!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
-        <filter class="solr.EnglishMinimalStemFilterFactory"/>
-	      -->
-        <filter class="solr.PorterStemFilterFactory"/>
-      </analyzer>
-      <analyzer type="query">
-        <tokenizer class="solr.StandardTokenizerFactory"/>
-        <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
-        <filter class="solr.StopFilterFactory"
-                ignoreCase="true"
-                words="lang/stopwords_en.txt"
-        />
-        <filter class="solr.LowerCaseFilterFactory"/>
-        <filter class="solr.EnglishPossessiveFilterFactory"/>
-        <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
-        <!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
-        <filter class="solr.EnglishMinimalStemFilterFactory"/>
-	      -->
-        <filter class="solr.PorterStemFilterFactory"/>
-      </analyzer>
+        <analyzer type="index">
+            <tokenizer class="solr.StandardTokenizerFactory"/>
+                        <!-- in this example, we will only use synonyms at query time
+                        <filter class="solr.SynonymGraphFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="false"/>
+                        <filter class="solr.FlattenGraphFilterFactory"/>
+                        -->
+                        <!-- Case insensitive stop word removal.
+                        -->
+            <filter class="solr.StopFilterFactory"
+                    ignoreCase="true"
+                    words="lang/stopwords_en.txt"
+                />
+            
+            <filter class="solr.LowerCaseFilterFactory"/>
+            <filter class="solr.EnglishPossessiveFilterFactory"/>
+            <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+            
+            <!-- Solved highlighting breaking after upgrade #4836. Applied to query analyzer below too: 
+                https://stackoverflow.com/questions/26287321/solr-stemming-breaks-highlighting 
+                Solution was to ensure original word is kept by stemmer -MAD 4.9.2 -->
+            <filter class="solr.KeywordRepeatFilterFactory" />
+            <filter class="solr.PorterStemFilterFactory"/>
+            <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+        </analyzer>
+        <analyzer type="query">
+            <tokenizer class="solr.StandardTokenizerFactory"/>
+            
+            <!-- MAD 4.9.2: Solr recommends doing synonym expansion at index not query, why do we do it here tho? 
+                    https://stackoverflow.com/questions/10185079/ 
+                    To me it looks like we we copied something that works-->
+            <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+            <filter class="solr.StopFilterFactory"
+                    ignoreCase="true"
+                    words="lang/stopwords_en.txt"
+                />
+            
+            <filter class="solr.LowerCaseFilterFactory"/>
+            <filter class="solr.EnglishPossessiveFilterFactory"/>
+            <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+
+            <filter class="solr.KeywordRepeatFilterFactory" />
+            <filter class="solr.PorterStemFilterFactory"/>
+            <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+        </analyzer>
     </fieldType>
 
     <!-- A text field with defaults appropriate for English, plus

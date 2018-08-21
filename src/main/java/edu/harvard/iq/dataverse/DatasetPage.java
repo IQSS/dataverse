@@ -2373,10 +2373,10 @@ public class DatasetPage implements java.io.Serializable {
             }
             return "";
         } else {
-            boolean validSelection = false;
+            boolean validSelection = true;
             for (FileMetadata fmd : selectedFiles) {
-                if ((fmd.isRestricted() && !restricted) || (!fmd.isRestricted() && restricted)) {
-                    validSelection = true;
+                if ((fmd.isRestricted() && restricted) || (!fmd.isRestricted() && !restricted)) {
+                    validSelection = false;
                 }
             }
             if (!validSelection) {
@@ -2671,7 +2671,7 @@ public class DatasetPage implements java.io.Serializable {
         
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution: 
-        ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
+        ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) session.getUser());
 
         //After dataset saved, then persist prov json data
         if(systemConfig.isProvCollectionEnabled()) {
