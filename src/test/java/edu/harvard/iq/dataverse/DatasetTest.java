@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -13,6 +14,7 @@ public class DatasetTest {
     /**
      * Test of isLockedFor method, of class Dataset.
      */
+    
     @Test
     public void testIsLockedFor() {
         Dataset sut = new Dataset();
@@ -22,6 +24,7 @@ public class DatasetTest {
         assertTrue( sut.isLockedFor(DatasetLock.Reason.Ingest) );
         assertFalse( sut.isLockedFor(DatasetLock.Reason.Workflow) );
     }
+    
     
     @Test
     public void testLocksManagement() {

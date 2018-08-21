@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.provenance.ProvEntityFileData;
 import edu.harvard.iq.dataverse.provenance.ProvInvestigator;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonObject;
+import edu.harvard.iq.dataverse.NonEssentialTests;
 import edu.harvard.iq.dataverse.api.AbstractApiBeanTest;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -25,7 +27,6 @@ import org.junit.Test;
  */
 
 //Fix this ignore when we classify our tests, these tests are slow and unimportant
-@Ignore
 public class ProvInvestigatorTest {
     
     private ProvInvestigator provUtilBean;
@@ -38,6 +39,7 @@ public class ProvInvestigatorTest {
         jsonParser = new JsonParser();
     }
     
+    @Category(NonEssentialTests.class)
     @Test
     public void testProvValidator() {   
         String validJsonString = "{\n" +
@@ -109,6 +111,7 @@ public class ProvInvestigatorTest {
 
     }
     
+    @Category(NonEssentialTests.class)
     @Test
     public void testProvNamesNotInsideEntity() throws IOException {
         //name and type on their own
@@ -126,7 +129,7 @@ public class ProvInvestigatorTest {
     //MAD: write a simple entity test as well, also ensure logging works after getting a real tostring together
     //also write a test of parsing different cases, we don't want to catch "fakename" but we do want to catch "rdt:name" and "name"
     
-
+    @Category(NonEssentialTests.class)
     @Test
     public void testProvNameJsonParserEmptyEntities() throws IOException {
         String jsonString = "{\n" +
@@ -166,6 +169,7 @@ public class ProvInvestigatorTest {
     //Note: this test has entity tags in multiple places, all with unique names
     //Only one entity is added to our list per unique name.
 
+    @Category(NonEssentialTests.class)
     @Test
     public void testProvJsonWithEntitiesInMultiplePlaces() throws IOException {
         String jsonString = "{\n" +
@@ -238,6 +242,7 @@ public class ProvInvestigatorTest {
         assertTrue(entities.size() == 7);
     }
     
+    @Category(NonEssentialTests.class)
     @Test
     public void testProvJsonWithEntitiesInMultiplePlacesWithSameNames() throws IOException {
         String jsonString = "{\n" +
@@ -276,7 +281,7 @@ public class ProvInvestigatorTest {
         assertTrue(entities.size() == 3); //ex:report2 & ex:report1 are repeated
     }
    
-    @Ignore
+    @Category(NonEssentialTests.class)
     @Test
     public void testProvLongJsonWithEntities() throws IOException {
         String jsonString = "{\n" +

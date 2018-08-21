@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
+
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayOutputStream;
@@ -24,6 +25,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class DDIExporterTest {
 
@@ -101,6 +103,7 @@ public class DDIExporterTest {
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
     }
 
+    
     @Test
     public void testExportDataset() throws Exception {
         System.out.println("exportDataset");
@@ -126,6 +129,7 @@ public class DDIExporterTest {
 
     }
 
+    
     @Test
     public void testExportDatasetContactEmailPresent() throws Exception {
         File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/datasetContactEmailPresent.json");
@@ -144,6 +148,7 @@ public class DDIExporterTest {
 
     }
 
+    
     @Test
     public void testExportDatasetContactEmailAbsent() throws Exception {
         File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/datasetContactEmailAbsent.json");

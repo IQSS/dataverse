@@ -1,11 +1,14 @@
 package edu.harvard.iq.dataverse.dataverse;
 
+
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class DataverseUtilTest {
 
+    
     @Test
     public void testGetSuggestedDataverseNameOnCreate() {
         System.out.println("getSuggestedDataverseNameOnCreate");

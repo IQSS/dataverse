@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevelServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
+
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
@@ -34,6 +35,7 @@ import java.util.concurrent.Future;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -192,7 +194,7 @@ public class CreateDataverseCommandTest {
         } );
     }
     
-
+    
     @Test
     public void testDefaultOptions() throws CommandException {
         Dataverse dv = makeDataverse();
@@ -229,6 +231,7 @@ public class CreateDataverseCommandTest {
         assertTrue( indexCalled );
     }
 
+    
     @Test
     public void testCustomOptions() throws CommandException {
         Dataverse dv = makeDataverse();
@@ -287,10 +290,12 @@ public class CreateDataverseCommandTest {
         }
     }
     
+    
     @Test( expected=IllegalCommandException.class )
     public void testCantCreateAdditionalRoot() throws Exception {
         engine.submit( new CreateDataverseCommand(makeDataverse(), makeRequest(), null, null) );
     }
+    
     
     @Test( expected=IllegalCommandException.class )
     public void testGuestCantCreateDataverse() throws Exception {
@@ -299,6 +304,7 @@ public class CreateDataverseCommandTest {
         engine.submit(new CreateDataverseCommand(makeDataverse(), request, null, null) );
     }
 
+    
     @Test( expected=IllegalCommandException.class )
     public void testCantCreateAnotherWithSameAlias() throws Exception {
         

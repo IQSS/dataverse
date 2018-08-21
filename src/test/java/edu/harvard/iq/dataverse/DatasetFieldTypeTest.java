@@ -16,11 +16,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
  * @author skraffmi
  */
+
 public class DatasetFieldTypeTest {
     
     public DatasetFieldTypeTest() {
@@ -55,6 +57,7 @@ public class DatasetFieldTypeTest {
     /**
      * Test of isSanitizeHtml method, of class DatasetFieldType.
      */
+    
     @Test
     public void testIsSanitizeHtml() {
         System.out.println("isSanitizeHtml");

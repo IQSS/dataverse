@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.shib;
 
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -14,6 +15,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import static org.mockito.Mockito.mock;
 
 public class ShibUtilTest {
@@ -42,6 +44,7 @@ public class ShibUtilTest {
     /**
      * Test of getDisplayNameFromDiscoFeed method, of class ShibUtil.
      */
+    
     @Test
     public void testGetDisplayNameFromDiscoFeed() {
 //        System.out.println("getDisplayNameFromDiscoFeed");
@@ -81,6 +84,7 @@ public class ShibUtilTest {
 //        assertEquals(null, unparseAbleDiscoFeed);
     }
 
+    
     @Test
     public void testFindBestFirstAndLastName() {
 
@@ -145,6 +149,7 @@ public class ShibUtilTest {
 
     }
 
+    
     @Test
     public void testFindSingleValue() {
         assertEquals(null, ShibUtil.findSingleValue(null));
@@ -152,6 +157,7 @@ public class ShibUtilTest {
         assertEquals("bar", ShibUtil.findSingleValue("foo;bar"));
     }
 
+    
     @Test
     public void testGenerateFriendlyLookingUserIdentifer() {
         int lengthOfUuid = UUID.randomUUID().toString().length();
@@ -165,6 +171,7 @@ public class ShibUtilTest {
         assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer(null, "junkEmailAddress").length());
     }
 
+    
     @Test
     public void testDevMutations() {
         ShibUtil.mutateRequestForDevConstantHarvard1(request);
@@ -177,6 +184,7 @@ public class ShibUtilTest {
         ShibUtil.printAttributes(null);
     }
 
+    
     @Test
     public void testGetRandomUserStatic() {
         Map<String, String> randomUser = ShibUtil.getRandomUserStatic();

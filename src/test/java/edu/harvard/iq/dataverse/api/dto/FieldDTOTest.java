@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.api.dto;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -56,6 +58,7 @@ public class FieldDTOTest {
     /**
      * Test of setSinglePrimitive method, of class FieldDTO.
      */
+    
     @Test
     public void testSinglePrimitive() {
         FieldDTO affil = FieldDTO.createPrimitiveFieldDTO("authorAffiliation", "Top");
@@ -67,6 +70,7 @@ public class FieldDTOTest {
     /**
      * Test of getMultiplePrimitive method, of class FieldDTO.
      */
+    
     @Test
     public void testMultipleVocab() {
         Gson gson = new Gson();
@@ -88,6 +92,7 @@ public class FieldDTOTest {
     /**
      * Test of setMultiplePrimitive method, of class FieldDTO.
      */
+    
     @Test
     public void testSetMultipleValue() {
     }
@@ -95,6 +100,7 @@ public class FieldDTOTest {
     /**
      * Test of getSingleCompound method, of class FieldDTO.
      */
+    
     @Test
     public void testSetMultipleCompound() {
          HashSet<FieldDTO> author1Fields = new HashSet<>();
@@ -122,6 +128,7 @@ public class FieldDTOTest {
     /**
      * Test of setSingleCompound method, of class FieldDTO.
      */
+    
     @Test
     public void testSetSingleCompound() {
         Set<FieldDTO> authorFields = new HashSet<>();
@@ -140,6 +147,7 @@ public class FieldDTOTest {
     /**
      * Test of setMultipleCompound method, of class FieldDTO.
      */
+    
     @Test
     public void testJsonTree() {
        
@@ -157,6 +165,7 @@ public class FieldDTOTest {
     /**
      * Test of getMultipleCompound method, of class FieldDTO.
      */
+    
     @Test
     public void testGetMultipleCompound() {
        
@@ -165,6 +174,7 @@ public class FieldDTOTest {
     /**
      * Test of getConvertedValue method, of class FieldDTO.
      */
+    
     @Test
     public void testGetConvertedValue() {
     }
@@ -172,6 +182,7 @@ public class FieldDTOTest {
     /**
      * Test of toString method, of class FieldDTO.
      */
+    
     @Test
     public void testToString() {
     }

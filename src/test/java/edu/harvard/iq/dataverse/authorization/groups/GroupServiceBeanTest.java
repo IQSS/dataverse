@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.groups;
 
 import edu.harvard.iq.dataverse.Dataverse;
+
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsers;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
@@ -16,6 +17,7 @@ import java.util.stream.Stream;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import static edu.harvard.iq.dataverse.util.CollectionLiterals.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -26,6 +28,7 @@ public class GroupServiceBeanTest {
     public GroupServiceBeanTest() {
     }
 
+    
     @Test
     public void testFlattenGroupsCollection() throws GroupException {
         // Setup
@@ -69,6 +72,7 @@ public class GroupServiceBeanTest {
         assertEquals( "All groups should appear", grps, new HashSet<>(result) );
         
     }
+    
     
     @Test
     public void testCollectAncestors() throws GroupException {

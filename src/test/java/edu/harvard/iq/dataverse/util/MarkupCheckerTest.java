@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.util;
 
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -44,6 +46,7 @@ public class MarkupCheckerTest {
     /**
      * Test of sanitizeBasicHTML method, of class MarkupChecker.
      */
+    
     @Test
     public void testSanitizeBasicHTML() {
         System.out.println("sanitizeBasicHTML");
@@ -110,6 +113,7 @@ public class MarkupCheckerTest {
     /**
      * Test of stripAllTags method, of class MarkupChecker.
      */
+    
     @Test
     public void testStripAllTags() {
 
@@ -127,6 +131,7 @@ public class MarkupCheckerTest {
         
     }
 
+    
     @Test
     public void testEscapeHtml() {
         assertEquals("foo&lt;br&gt;bar", MarkupChecker.escapeHtml("foo<br>bar"));

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  * Test that the DataFileServiceBean classifies DataFiles correctly.
@@ -39,6 +40,7 @@ public class DataFileServiceBeanTest {
      * with bogus content type are not astro files.
      * @throws Exception when the test is in error.
      */
+    
     @Test
     public void testIsFileClassAstro() throws Exception {
         assertFalse(dataFileServiceBean.isFileClassAstro(null));
@@ -51,6 +53,7 @@ public class DataFileServiceBeanTest {
      * with bogus content type are not audio files.
      * @throws Exception when the test is in error.
      */
+    
     @Test
     public void testIsFileClassAudio() throws Exception {
         assertFalse(dataFileServiceBean.isFileClassAudio(null));
@@ -63,6 +66,7 @@ public class DataFileServiceBeanTest {
      * with bogus content type are not code files.
      * @throws Exception when the test is in error.
      */
+    
     @Test
     public void testIsFileClassCode() throws Exception {
         assertFalse(dataFileServiceBean.isFileClassCode(null));
@@ -75,6 +79,7 @@ public class DataFileServiceBeanTest {
      * with bogus content type are not document files.
      * @throws Exception when the test is in error.
      */
+    
     @Test
     public void testIsFileClassDocument() throws Exception {
         assertFalse(dataFileServiceBean.isFileClassDocument(null));
@@ -87,6 +92,7 @@ public class DataFileServiceBeanTest {
      * with bogus content type are not geo files.
      * @throws Exception when the test is in error.
      */
+    
     @Test
     public void testIsFileClassGeo() throws Exception {
         assertFalse(dataFileServiceBean.isFileClassGeo(null));
@@ -99,6 +105,7 @@ public class DataFileServiceBeanTest {
      * with bogus content type are not image files.
      * @throws Exception when the test is in error.
      */
+    
     @Test
     public void testIsFileClassImage() throws Exception {
         assertFalse(dataFileServiceBean.isFileClassImage(null));
@@ -111,6 +118,7 @@ public class DataFileServiceBeanTest {
      * with bogus content type are not network files.
      * @throws Exception when the test is in error.
      */
+    
     @Test
     public void testIsFileClassNetwork() throws Exception {
         assertFalse(dataFileServiceBean.isFileClassNetwork(null));
@@ -123,6 +131,7 @@ public class DataFileServiceBeanTest {
      * with bogus content type are not tabular files.
      * @throws Exception when the test is in error.
      */
+    
     @Test
     public void testIsFileClassTabularData() throws Exception {
         assertFalse(dataFileServiceBean.isFileClassTabularData(null));
@@ -135,6 +144,7 @@ public class DataFileServiceBeanTest {
      * with bogus content type are not video files.
      * @throws Exception when the test is in error.
      */
+    
     @Test
     public void testIsFileClassVideo() throws Exception {
         assertFalse(dataFileServiceBean.isFileClassVideo(null));
@@ -147,6 +157,7 @@ public class DataFileServiceBeanTest {
      * with bogus content type are not SPSS portable files.
      * @throws Exception when the test is in error.
      */
+    
     @Test
     public void testIsSpssPorFile() throws Exception {
         assertFalse(dataFileServiceBean.isSpssPorFile(null));
@@ -159,6 +170,7 @@ public class DataFileServiceBeanTest {
      * with bogus content type are not SPSS .sav files.
      * @throws Exception when the test is in error.
      */
+    
     @Test
     public void testIsSpssSavFile() throws Exception {
         assertFalse(dataFileServiceBean.isSpssSavFile(null));
@@ -171,6 +183,7 @@ public class DataFileServiceBeanTest {
      * with bogus content type are not files that thumbnails can be created for.
      * @throws Exception when the test is in error.
      (this method has been removed from datafileservicebean)
+     * 
     @Test
     public void testIsThumbnailSupportedForSize() throws Exception {
         assertFalse(dataFileServiceBean.isThumbnailAvailableForSize(null));
@@ -184,6 +197,7 @@ public class DataFileServiceBeanTest {
      * classed as "other". Note that the file classes are not coded as constants!
      * @throws Exception when the test is in error.
      */
+    
     @Test
     public void testGetFileClass() throws Exception {
         assertEquals("other", dataFileServiceBean.getFileClass(fileWoContentType));
@@ -216,6 +230,7 @@ public class DataFileServiceBeanTest {
         return createDataFile(contentType, "");
     }
 
+    
     @Test
     public void testfindMostRecentVersionFileIsIn() {
         assertEquals(null, dataFileServiceBean.findMostRecentVersionFileIsIn(null));

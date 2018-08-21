@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.export.ddi;
 
+
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.File;
 import java.nio.file.Files;
@@ -7,11 +8,13 @@ import java.nio.file.Paths;
 import java.util.logging.Logger;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import org.junit.experimental.categories.Category;
 
 public class DdiExportUtilTest {
 
     private static final Logger logger = Logger.getLogger(DdiExportUtilTest.class.getCanonicalName());
 
+    
     @Test
     public void testJson2DdiNoFiles() throws Exception {
         File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.json");
@@ -24,6 +27,7 @@ public class DdiExportUtilTest {
         assertEquals(datasetAsDdi, result);
     }
 
+    
     @Test
     public void testJson2ddiHasFiles() throws Exception {
         /**

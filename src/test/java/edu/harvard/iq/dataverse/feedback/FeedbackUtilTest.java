@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
+
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
@@ -39,6 +40,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
+import org.junit.experimental.categories.Category;
 
 public class FeedbackUtilTest {
 
@@ -163,6 +165,7 @@ public class FeedbackUtilTest {
         FeedbackUtil justForCodeCoverage = new FeedbackUtil();
     }
 
+    
     @Test
     public void testGatherFeedbackOnDataverse() {
         Dataverse dataverse = new Dataverse();
@@ -209,6 +212,7 @@ public class FeedbackUtilTest {
         assertTrue(feedback.getBody().startsWith("There is no contact address on file for this dataverse so this message is being sent to the system address."));
     }
 
+    
     @Test
     public void testGatherFeedbackOnDataset() {
         Dataset dataset = new Dataset();
@@ -258,6 +262,7 @@ public class FeedbackUtilTest {
         assertEquals(expected, feedback.getBody());
     }
 
+    
     @Test
     public void testGatherFeedbackOnDatasetNoContacts() {
         Dataset dataset = new Dataset();
@@ -307,6 +312,7 @@ public class FeedbackUtilTest {
         assertEquals(expected, feedback.getBody());
     }
 
+    
     @Test
     public void testGatherFeedbackOnFile() {
 
@@ -376,6 +382,7 @@ public class FeedbackUtilTest {
 
     }
 
+    
     @Test
     public void testGatherFeedbackOnFileNoContacts() {
 
@@ -431,6 +438,7 @@ public class FeedbackUtilTest {
         assertTrue(feedback.getBody().startsWith("There is no contact address on file for this dataset so this message is being sent to the system address."));
     }
 
+    
     @Test
     public void testGatherFeedbackFromSupportButtonNullSession() {
         String messageSubject = "I'm clicking the support button.";
@@ -464,6 +472,7 @@ public class FeedbackUtilTest {
         assertEquals(null, feedback.getToEmail());
     }
 
+    
     @Test
     public void testGatherFeedbackFromSupportButtonLoggedIn() {
         if (!weKnowHowToCreateMockAuthenticatedUsers) {

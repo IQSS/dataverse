@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -16,16 +18,19 @@ public class IPv4AddressTest {
     /**
      * Test of valueOf method, of class IpAddress.
      */
+    
     @Test
     public void testValueOf() {
         assertEquals( new IPv4Address(1,2,3,4), IPv4Address.valueOf("1.2.3.4") );
         assertEquals( new IPv4Address(127,0,0,1), IPv4Address.valueOf("127.0.0.1") );
     }
     
+    
     @Test( expected=IllegalArgumentException.class )
     public void testValueOf_bad() {
         IPv4Address.valueOf("1.2.3");
     }
+    
     
     @Test
     public void testLocalhostness() {
@@ -36,6 +41,7 @@ public class IPv4AddressTest {
     /**
      * Test of toString method, of class IpAddress.
      */
+    
     @Test
     public void testToString() {
         assertEquals( "127.0.0.1", new IPv4Address( 127,0,0,1).toString() );
@@ -56,6 +62,7 @@ public class IPv4AddressTest {
         assertArrayEquals( expected, scrambled );
     }
     
+    
     @Test
     public void testLongRoundtrip() {
         Arrays.asList(
@@ -71,6 +78,7 @@ public class IPv4AddressTest {
                 new IPv4Address(255,0,34,1)
         ).forEach( addr -> assertEquals( addr, new IPv4Address(addr.toLong())) );
     }
+    
     
     @Test
     public void testBigIntegerRoundtrip() {
@@ -92,6 +100,7 @@ public class IPv4AddressTest {
                 new IPv4Address(255,0,34,1)
         ).forEach( addr -> assertEquals( addr, new IPv4Address(addr.toBigInteger())) );
     }
+    
     
     @Test
     public void toBigInteger() {

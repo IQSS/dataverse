@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.ingest;
 
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 /**
@@ -110,6 +112,7 @@ public class IngestableDataCheckerTest {
      * Test of testDTAformat method, of class IngestableDataChecker.
      * @throws java.io.IOException
      */
+    
     @Test
     public void testTestDTAformat() throws IOException {
         msgt("(1) testDTAformat");
@@ -152,6 +155,7 @@ public class IngestableDataCheckerTest {
     /**
      * Test of testSAVformat method, of class IngestableDataChecker.
      */
+    
     @Test
     public void testTestSAVformat() throws IOException {
         msgt("(2) testSAVformat");
@@ -184,7 +188,9 @@ public class IngestableDataCheckerTest {
     /**
      * Test of testXPTformat method, of class IngestableDataChecker.
      */
-    /*  @Test
+    /*  
+    
+    @Test
     public void testTestXPTformat() {
       
         System.out.println("testXPTformat");
@@ -201,7 +207,9 @@ public class IngestableDataCheckerTest {
     /**
      * Test of testPORformat method, of class IngestableDataChecker.
      */
-        /*@Test
+        /*
+    
+    @Test
     public void testTestPORformat() {
     
         System.out.println("testPORformat");
@@ -218,7 +226,9 @@ public class IngestableDataCheckerTest {
     /**
      * Test of testRDAformat method, of class IngestableDataChecker.
      */
-       /*@Test
+       /*
+    
+    @Test
     public void testTestRDAformat() {
      
         System.out.println("testRDAformat");
@@ -236,6 +246,7 @@ public class IngestableDataCheckerTest {
      * Test of detectTabularDataFormat method, of class IngestableDataChecker.
      */
     /*
+    
     @Test
     public void testDetectTabularDataFormat() {
         System.out.println("detectTabularDataFormat");

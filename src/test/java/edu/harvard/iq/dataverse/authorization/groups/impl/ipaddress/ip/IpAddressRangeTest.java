@@ -1,13 +1,16 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
+
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
  * @author michael
  */
 public class IpAddressRangeTest {
+    
     
     @Test
     public void testIPv6In() {
@@ -21,6 +24,7 @@ public class IpAddressRangeTest {
                         IPv6Address.valueOf("::1:1") );
     }
     
+    
     @Test
     public void testIPv6Out() {
         IPv6Range sut = new IPv6Range( IPv6Address.valueOf("::10"), IPv6Address.valueOf("::1:1") );
@@ -32,12 +36,14 @@ public class IpAddressRangeTest {
                         IPv6Address.valueOf("::1:2") );
     }
     
+    
     @Test
     public void testIPv6NotApplicable() {
         IPv6Range sut = new IPv6Range( IPv6Address.valueOf("::10"), IPv6Address.valueOf("::1:1") );
         testRange( null, sut, 
                         IPv4Address.valueOf("1.2.3.4"));
     }
+    
     
     @Test
     public void testIPv4In() {
@@ -52,6 +58,7 @@ public class IpAddressRangeTest {
                 );
     }
     
+    
     @Test
     public void testIPv4Out() {
         IPv4Range sut = new IPv4Range( IPv4Address.valueOf("127.0.0.2"), IPv4Address.valueOf("127.0.1.10"));
@@ -64,6 +71,7 @@ public class IpAddressRangeTest {
                 );
     }
     
+    
     @Test
     public void testIPv4NotApplicable() {
         IPv4Range sut = new IPv4Range( IPv4Address.valueOf("127.0.0.2"), IPv4Address.valueOf("127.0.1.10"));
@@ -71,6 +79,7 @@ public class IpAddressRangeTest {
                     IPv6Address.valueOf("::1")
                 );
     }
+    
     
     @Test
     public void testSingleAddress() {

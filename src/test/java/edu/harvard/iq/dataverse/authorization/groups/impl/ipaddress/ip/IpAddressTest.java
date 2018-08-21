@@ -1,14 +1,17 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
+
 import java.util.Arrays;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
  * @author michael
  */
 public class IpAddressTest {
+    
     
     @Test
     public void testValueOfIPv4() {
@@ -17,6 +20,7 @@ public class IpAddressTest {
         assertEquals( new IPv4Address(149,78,247,173),
                     IpAddress.valueOf("149.78.247.173") );
     }
+    
     
     @Test
     public void testValueOfIPv6() {
@@ -27,6 +31,7 @@ public class IpAddressTest {
     private String[] p(String a, String b ) {
         return new String[]{a,b};
     }
+    
     
     @Test
     public void testMappedIPv6() {

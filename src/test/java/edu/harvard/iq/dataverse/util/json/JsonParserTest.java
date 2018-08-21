@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvi
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
+
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -56,6 +57,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -119,6 +121,7 @@ public class JsonParserTest {
         sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc);
     }
     
+    
     @Test 
     public void testCompoundRepeatsRoundtrip() throws JsonParseException {
         DatasetField expected = new DatasetField();
@@ -148,6 +151,7 @@ public class JsonParserTest {
         return retVal;
     }
     
+    
     @Test 
     public void testControlledVocalNoRepeatsRoundTrip() throws JsonParseException {
         DatasetField expected = new DatasetField();
@@ -160,6 +164,7 @@ public class JsonParserTest {
         assertFieldsEqual(expected, actual);
         
     }
+    
     
     @Test 
     public void testControlledVocalRepeatsRoundTrip() throws JsonParseException {
@@ -219,6 +224,7 @@ public class JsonParserTest {
         assertFieldsEqual(actual, expected);
     }
     
+    
     @Test
     public void testPrimitiveRepeatesFieldRoundTrip() throws JsonParseException {
         DatasetField expected = new DatasetField();
@@ -239,6 +245,7 @@ public class JsonParserTest {
      * dataverse properties.
      * @throws JsonParseException when this test is broken.
      */
+    
     @Test
     public void testParseCompleteDataverse() throws JsonParseException {
         
@@ -266,6 +273,7 @@ public class JsonParserTest {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
     }
+    
     
     @Test
     public void testParseThemeDataverse() throws JsonParseException {
@@ -301,6 +309,7 @@ public class JsonParserTest {
      * values.
      * @throws JsonParseException when this test is broken.
      */
+    
     @Test
     public void testParseMinimalDataverse() throws JsonParseException {
         
@@ -326,6 +335,7 @@ public class JsonParserTest {
      * @throws JsonParseException if all goes well - this is expected.
      * @throws IOException when test file IO goes wrong - this is bad.
      */
+    
     @Test(expected = JsonParseException.class)
     public void testParseNoAliasDataverse() throws JsonParseException, IOException {
         JsonObject dvJson;
@@ -340,6 +350,7 @@ public class JsonParserTest {
      * @throws JsonParseException if all goes well - this is expected.
      * @throws IOException when test file IO goes wrong - this is bad.
      */
+    
     @Test(expected = JsonParseException.class)
     public void testParseNoNameDataverse() throws JsonParseException, IOException {
         JsonObject dvJson;
@@ -355,6 +366,7 @@ public class JsonParserTest {
      * @throws JsonParseException if all goes well - this is expected.
      * @throws IOException when test file IO goes wrong - this is bad.
      */
+    
     @Test(expected = JsonParseException.class)
     public void testParseNoContactEmailsDataverse() throws JsonParseException, IOException {
         JsonObject dvJson;
@@ -373,6 +385,7 @@ public class JsonParserTest {
      * @throws ParseException if Dataverse outputs date strings that it cannot
      * parse.
      */
+    
     @Test
     public void testDateRoundtrip() throws ParseException {
         Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
@@ -397,6 +410,7 @@ public class JsonParserTest {
      * @throws ParseException when JsonPrinter outputs a string that JsonParse
      * cannot read.
      */
+    
     @Test
     public void testDateTimeRoundtrip() throws ParseException {
         Calendar c = Calendar.getInstance(TimeZone.getTimeZone("Europe/Amsterdam"));
@@ -413,6 +427,7 @@ public class JsonParserTest {
      * Expect an exception when the dataset JSON is empty.
      * @throws JsonParseException when the test is broken
      */
+    
     @Test(expected = NullPointerException.class)
     public void testParseEmptyDataset() throws JsonParseException {
         JsonObject dsJson;
@@ -435,6 +450,7 @@ public class JsonParserTest {
      * @throws JsonParseException as expected
      * @throws IOException when test file IO goes wrong - this is bad.
      */
+    
     @Test(expected = JsonParseException.class)
     public void testParseOvercompleteDatasetVersion() throws JsonParseException, IOException {
         JsonObject dsJson;
@@ -445,6 +461,7 @@ public class JsonParserTest {
             DatasetVersion actual = sut.parseDatasetVersion(dsJson);
         }
     }
+    
     
     @Test
     public void testIpGroupRoundTrip() {
@@ -470,6 +487,7 @@ public class JsonParserTest {
         assertEquals( original, parsed );
         
     }
+    
     
     @Test
     public void testIpGroupRoundTrip_singleIpv4Address() {
@@ -501,6 +519,7 @@ public class JsonParserTest {
         
     }
     
+    
     @Test
     public void testIpGroupRoundTrip_singleIpv6Address() {
         
@@ -531,6 +550,7 @@ public class JsonParserTest {
         
     }
 
+    
     @Test
     public void testparseFiles() throws JsonParseException {
         JsonArrayBuilder metadatasJsonBuilder = Json.createArrayBuilder();

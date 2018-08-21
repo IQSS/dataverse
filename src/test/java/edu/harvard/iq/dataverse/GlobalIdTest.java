@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
 /**
@@ -14,6 +15,7 @@ public class GlobalIdTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
+    
     @Test
     public void testValidDOI() {
         System.out.println("testValidDOI");
@@ -24,7 +26,7 @@ public class GlobalIdTest {
         assertEquals("FK2/BYM3IW", instance.getIdentifier());
         // TODO review the generated test code and remove the default call to fail.
     }
-
+    
     @Test
     public void testValidHandle() {
         System.out.println("testValidDOI");
@@ -34,7 +36,7 @@ public class GlobalIdTest {
         assertEquals("1902.1", instance.getAuthority());
         assertEquals("111012", instance.getIdentifier());
     }
-
+    
     @Test
     public void testContructFromDataset() {
         Dataset testDS = new Dataset();
@@ -49,7 +51,7 @@ public class GlobalIdTest {
         assertEquals("10.5072", instance.getAuthority());
         assertEquals("FK2/BYM3IW", instance.getIdentifier());
     }
-
+    
     @Test
     public void testInject() {
         System.out.println("testInject (weak test)");
@@ -65,7 +67,7 @@ public class GlobalIdTest {
         //exception.expectMessage("Failed to parse identifier: " + badProtocol);
         //new GlobalId(badProtocol);
     }
-
+    
     @Test
     public void testUnknownProtocol() {
         System.out.println("testUnknownProtocol");
@@ -76,7 +78,7 @@ public class GlobalIdTest {
         exception.expectMessage("Failed to parse identifier: " + badProtocol);
         new GlobalId(badProtocol);
     }
-
+    
     @Test
     public void testBadIdentifierOnePart() {
         System.out.println("testBadIdentifierOnePart");
@@ -85,7 +87,7 @@ public class GlobalIdTest {
         exception.expectMessage("Failed to parse identifier: 1part");
         new GlobalId("1part");
     }
-
+    
     @Test
     public void testBadIdentifierTwoParts() {
         System.out.println("testBadIdentifierTwoParts");
@@ -94,7 +96,7 @@ public class GlobalIdTest {
         exception.expectMessage("Failed to parse identifier: doi:2part/blah");
         new GlobalId("doi:2part/blah");
     }
-
+    
     @Test
     public void testIsComplete() {
         assertFalse(new GlobalId("doi", "10.123", null).isComplete());
@@ -102,7 +104,7 @@ public class GlobalIdTest {
         assertFalse(new GlobalId(null, "10.123", "123").isComplete());
         assertTrue(new GlobalId("doi", "10.123", "123").isComplete());
     }
-
+    
     @Test
     public void testVerifyImportCharacters() {
         assertTrue(GlobalId.verifyImportCharacters("-"));

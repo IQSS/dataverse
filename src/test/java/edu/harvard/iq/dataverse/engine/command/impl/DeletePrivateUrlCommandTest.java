@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
+
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
@@ -17,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import org.junit.experimental.categories.Category;
 
 public class DeletePrivateUrlCommandTest {
 
@@ -73,6 +75,7 @@ public class DeletePrivateUrlCommandTest {
         });
     }
 
+    
     @Test
     public void testDatasetNull() {
         dataset = null;
@@ -86,6 +89,7 @@ public class DeletePrivateUrlCommandTest {
         assertEquals(expected, actual);
     }
 
+    
     @Test
     public void testSuccessfulDelete() {
         dataset = new Dataset();

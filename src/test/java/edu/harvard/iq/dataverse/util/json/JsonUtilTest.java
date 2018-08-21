@@ -1,10 +1,13 @@
 package edu.harvard.iq.dataverse.util.json;
 
+
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class JsonUtilTest {
 
+    
     @Test
     public void testPrettyPrint() {
         JsonUtil jsonUtil = new JsonUtil();

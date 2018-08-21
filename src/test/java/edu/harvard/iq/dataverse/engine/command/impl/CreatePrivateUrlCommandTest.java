@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
+
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
@@ -19,6 +20,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import org.junit.experimental.categories.Category;
 
 public class CreatePrivateUrlCommandTest {
 
@@ -90,6 +92,7 @@ public class CreatePrivateUrlCommandTest {
         );
     }
 
+    
     @Test
     public void testDatasetNull() {
         dataset = null;
@@ -105,6 +108,7 @@ public class CreatePrivateUrlCommandTest {
         assertNull(privateUrl);
     }
 
+    
     @Test
     public void testAlreadyExists() {
         dataset.setId(privateUrlAlreadyExists);
@@ -120,6 +124,7 @@ public class CreatePrivateUrlCommandTest {
         assertNull(privateUrl);
     }
 
+    
     @Test
     public void testAttemptCreatePrivateUrlOnNonDraft() {
         dataset = new Dataset();
@@ -141,6 +146,7 @@ public class CreatePrivateUrlCommandTest {
         assertNull(privateUrl);
     }
 
+    
     @Test
     public void testCreatePrivateUrlSuccessfully() throws CommandException {
         dataset = new Dataset();

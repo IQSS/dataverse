@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
+
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class GitHubOAuth2APTest extends GitHubOAuth2AP {
 
@@ -44,6 +46,7 @@ public class GitHubOAuth2APTest extends GitHubOAuth2AP {
         super("clientId", "clientSecret");
     }
 
+    
     @Test
     public void testParseUserResponse() {
         AbstractOAuth2AuthenticationProvider.ParsedUserResponse expResult = new AbstractOAuth2AuthenticationProvider.ParsedUserResponse(

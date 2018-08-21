@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.metrics;
 
+
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,11 +10,13 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class MetricsUtilTest {
 
     private static final long COUNT = 42l;
 
+    
     @Test
     public void testCountToJson() {
         // This constructor is just here for code coverage. :)
@@ -23,6 +26,7 @@ public class MetricsUtilTest {
         assertEquals(COUNT, jsonObject.getJsonNumber("count").longValue());
     }
 
+    
     @Test
     public void testDataversesByCategoryToJson() {
         List<Object[]> list = new ArrayList<>();
@@ -52,6 +56,7 @@ public class MetricsUtilTest {
         assertEquals(7, jsonObject.getInt("count"));
     }
 
+    
     @Test
     public void testDatasetsBySubjectToJson() {
         List<Object[]> list = new ArrayList<>();
@@ -91,22 +96,26 @@ public class MetricsUtilTest {
         assertEquals(98, jsonObject.getInt("count"));
     }
 
+    
     @Test
     public void testSanitizeHappyPath() throws Exception {
         assertEquals("2018-04", MetricsUtil.sanitizeYearMonthUserInput("2018-04"));
     }
 
+    
     @Test(expected = Exception.class)
     public void testSanitizeJunk() throws Exception {
         MetricsUtil.sanitizeYearMonthUserInput("junk");
     }
 
+    
     @Test(expected = Exception.class)
     public void testSanitizeFullIso() throws Exception {
         MetricsUtil.sanitizeYearMonthUserInput("2018-01-01");
     }
 
     //Create JsonArray, turn into string and back into array to confirm data integrity
+    
     @Test
     public void testStringToJsonArrayBuilder() {
         System.out.println("testStringToJsonArrayBuilder");
@@ -127,6 +136,7 @@ public class MetricsUtilTest {
     }
 
     //Create JsonObject, turn into string and back into array to confirm data integrity
+    
     @Test
     public void testStringToJsonObjectBuilder() {
         System.out.println("testStringToJsonObjectBuilder");

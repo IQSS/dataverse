@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization;
 
+
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GoogleOAuth2AP;
@@ -10,12 +11,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 public class AuthUtilTest {
 
     /**
      * Test of isNonLocalLoginEnabled method, of class AuthUtil.
      */
+    
     @Test
     public void testIsNonLocalLoginEnabled() {
         System.out.println("isNonLocalLoginEnabled");
@@ -41,7 +44,7 @@ public class AuthUtilTest {
         assertEquals(false, AuthUtil.isNonLocalLoginEnabled(onlyBuiltin));
 
     }
-
+    
     @Test
     public void testGetDisplayName() {
         AuthUtil authUtil = new AuthUtil();

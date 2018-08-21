@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups;
 
+
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsers;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -7,9 +8,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class GroupUtilTest {
 
+    
     @Test
     public void testGetAllIdentifiersForUserWithGroups() {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
@@ -22,6 +25,7 @@ public class GroupUtilTest {
         assertEquals(expected, actual);
     }
 
+    
     @Test
     public void testGetAllIdentifiersForUserWithNoGroups() {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
@@ -32,6 +36,7 @@ public class GroupUtilTest {
         assertEquals(expected, actual);
     }
 
+    
     @Test
     public void testGetAllIdentifiersForUserNulls() {
         new GroupUtil(); // just boosting our coverage :)

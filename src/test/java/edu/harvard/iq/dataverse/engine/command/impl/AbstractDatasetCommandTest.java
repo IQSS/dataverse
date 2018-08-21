@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -9,6 +10,7 @@ import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -16,12 +18,13 @@ import static org.junit.Assert.*;
  */
 public class AbstractDatasetCommandTest {
     
-   
+    
     @Test(expected=IllegalArgumentException.class)
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testNullDataset() {
         new AbstractDatasetCommandImpl(makeRequest(), null);
     }
+    
     
     @Test(expected=IllegalArgumentException.class)
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
@@ -32,6 +35,7 @@ public class AbstractDatasetCommandTest {
     /**
      * Test of getDataset method, of class AbstractDatasetCommand.
      */
+    
     @Test
     public void testGetDataset() {
         Dataset ds = MocksFactory.makeDataset();
@@ -42,6 +46,7 @@ public class AbstractDatasetCommandTest {
     /**
      * Test of getTimestamp method, of class AbstractDatasetCommand.
      */
+    
     @Test
     public void testGetTimestamp() {
         Dataset ds = MocksFactory.makeDataset();

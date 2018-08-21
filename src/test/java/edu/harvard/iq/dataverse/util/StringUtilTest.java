@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Stream;
@@ -9,6 +10,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -38,6 +40,7 @@ public class StringUtilTest {
     /**
      * Test of isEmpty method, of class StringUtil.
      */
+    
     @Test
     public void testIsEmpty() {
         assertTrue( StringUtil.isEmpty(null) );
@@ -51,6 +54,7 @@ public class StringUtilTest {
     /**
      * Test of isAlphaNumeric method, of class StringUtil.
      */
+    
     @Test
     public void testIsAlphaNumeric() {
         assertTrue( StringUtil.isAlphaNumeric("abc") );
@@ -63,6 +67,7 @@ public class StringUtilTest {
     /**
      * Test of isAlphaNumericChar method, of class StringUtil.
      */
+    
     @Test
     public void testIsAlphaNumericChar() {
         assertTrue( StringUtil.isAlphaNumericChar('a') );
@@ -77,6 +82,7 @@ public class StringUtilTest {
         assertFalse( StringUtil.isAlphaNumericChar('@') );
     }
 
+    
     @Test
     public void testHtml2Text() {
         assertEquals(StringUtil.html2text("be <b>bold</b>!"), "be bold!");
@@ -112,11 +118,13 @@ public class StringUtilTest {
         assertEquals(StringUtil.htmlArray2textArray(null), Collections.emptyList());
     }
     
+    
     @Test
     public void testNullToEmpty() {
         assertEquals( "hello", StringUtil.nullToEmpty("hello") );
         assertEquals( "", StringUtil.nullToEmpty(null) );
     }
+    
     
     @Test
     public void testSymmetricEncryption() {
@@ -127,6 +135,7 @@ public class StringUtilTest {
         
         assertEquals(source, decrypted);
     }
+    
     
     @Test
     public void testIsTrue() {

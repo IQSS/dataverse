@@ -1,11 +1,14 @@
 package edu.harvard.iq.dataverse.confirmemail;
 
+
 import java.sql.Timestamp;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class ConfirmEmailUtilTest {
 
+    
     @Test
     public void testFriendlyExpirationTime() {
         System.out.println("Friendly expiration timestamp / measurement test");
@@ -28,6 +31,7 @@ public class ConfirmEmailUtilTest {
         System.out.println();
     }
 
+    
     @Test
     public void testGrandfatheredTime() {
         System.out.println();

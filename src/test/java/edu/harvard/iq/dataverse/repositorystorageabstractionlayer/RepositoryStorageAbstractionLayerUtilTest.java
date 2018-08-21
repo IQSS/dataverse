@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.repositorystorageabstractionlayer;
 
 import edu.harvard.iq.dataverse.Dataset;
+
 import edu.harvard.iq.dataverse.locality.StorageSite;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,9 +9,11 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class RepositoryStorageAbstractionLayerUtilTest {
 
+    
     @Test
     public void testGetRsalSites_3args() {
         System.out.println("getRsalSites");
@@ -31,6 +34,7 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         assertEquals("rsync -av rsync://dv.sbgrid.org/10.5072/FK2/identifierPartOfPersistentID", result.get(0).getRsyncDownloadcommand());
     }
 
+    
     @Test
     public void testGetRsalSites_String() {
         System.out.println("getRsalSites");
@@ -46,6 +50,7 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         assertEquals("Harvard Medical School, USA", first.getString("name"));
     }
 
+    
     @Test
     public void testGetLocalDataAccessDirectory() {
         System.out.println("getLocalDataAccessDirectory");
@@ -57,6 +62,7 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         assertEquals("/opt/data/10.5072/FK2/identifierPartOfPersistentID", result);
     }
 
+    
     @Test
     public void testGetVerifyDataCommand() {
         System.out.println("getVerifyDataCommand");

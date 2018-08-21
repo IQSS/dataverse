@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
@@ -15,6 +16,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 public class UpdateDatasetThumbnailCommandTest {
 
@@ -90,6 +92,7 @@ public class UpdateDatasetThumbnailCommandTest {
     public void tearDown() {
     }
 
+    
     @Test
     public void testDatasetNull() {
         dataset = null;
@@ -105,6 +108,7 @@ public class UpdateDatasetThumbnailCommandTest {
         assertNull(datasetThumbnail);
     }
 
+    
     @Test
     public void testIntentNull() {
         String expected = "No changes to save.";
@@ -119,6 +123,7 @@ public class UpdateDatasetThumbnailCommandTest {
         assertNull(datasetThumbnail);
     }
 
+    
     @Test
     public void testSetDatasetFileAsThumbnailFileNull() {
         String expected = "A file was not selected to be the new dataset thumbnail.";
@@ -133,6 +138,7 @@ public class UpdateDatasetThumbnailCommandTest {
         assertNull(datasetThumbnail);
     }
 
+    
     @Test
     public void testSetDatasetFileAsThumbnailFileNotFound() {
         String expected = "Could not find file based on id supplied: 1.";
@@ -147,6 +153,7 @@ public class UpdateDatasetThumbnailCommandTest {
         assertNull(datasetThumbnail);
     }
 
+    
     @Test
     public void testSetDatasetFileAsThumbnailFileThumbnailUnexpectedlyAbsent() {
         String expected = "Dataset thumbnail is unexpectedly absent.";

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.validation;
 
 import edu.emory.mathcs.backport.java.util.Arrays;
+
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
+import org.junit.experimental.categories.Category;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
 
@@ -147,6 +149,7 @@ public class PasswordValidatorTest {
     }
 
     @SuppressWarnings("unchecked")
+    
     @Test
     public void testDifferentPasswordsAndSettings() {
 

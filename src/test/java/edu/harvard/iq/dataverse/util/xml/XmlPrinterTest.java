@@ -1,10 +1,13 @@
 package edu.harvard.iq.dataverse.util.xml;
 
+
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import org.junit.experimental.categories.Category;
 
 public class XmlPrinterTest {
 
+    
     @Test
     public void testPrettyPrintXmlShort() {
         String xml = "<foo><bar>baz</bar></foo>";
@@ -16,6 +19,7 @@ public class XmlPrinterTest {
         assertEquals(expResult, result);
     }
 
+    
     @Test
     public void testPrettyPrintXmlNonXML() {
         assertEquals("THIS IS NOT XML", XmlPrinter.prettyPrintXml("THIS IS NOT XML"));

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
@@ -11,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -40,6 +42,7 @@ public class UpdatePermissionRootCommandTest {
         serviceBeanCalled = false;
     }
     
+    
     @Test
     public void testNoChange() throws CommandException {
         Dataverse dv = MocksFactory.makeDataverse();
@@ -60,6 +63,7 @@ public class UpdatePermissionRootCommandTest {
         assertTrue( result.isPermissionRoot() );
         assertFalse( serviceBeanCalled );
     }
+    
     
     @Test
     public void testChange() throws CommandException {

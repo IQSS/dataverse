@@ -9,6 +9,7 @@ import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,6 +24,7 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -31,6 +33,7 @@ import static org.junit.Assert.*;
 public class StorageIOTest {
     StorageIO<Dataset> instance = new FileAccessIO<>();
 
+    
     @Test
     public void testGetChannel() throws FileNotFoundException {
         assertEquals(null, instance.getChannel());
@@ -39,6 +42,7 @@ public class StorageIOTest {
         assertEquals(c, instance.getChannel());
     }
 
+    
     @Test
     public void testGetWriteChannel() throws Exception {
         try {
@@ -49,6 +53,7 @@ public class StorageIOTest {
         }
     }
 
+    
     @Test
     public void testGetReadChannel() throws Exception {
         try {
@@ -59,6 +64,7 @@ public class StorageIOTest {
         }
     }
 
+    
     @Test
     public void testGetDvObject() {
         assertEquals(null, instance.getDvObject());
@@ -81,6 +87,7 @@ public class StorageIOTest {
         assertEquals(new Dataverse(), new FileAccessIO<>(new Dataverse()).getDataverse());
     }
 
+    
     @Test
     public void testRequest() {
         assertNotNull(instance.getRequest());
@@ -89,6 +96,7 @@ public class StorageIOTest {
         assertEquals(req, instance.getRequest());
     }
 
+    
     @Test
     public void testStatus() {
         assertEquals(0, instance.getStatus());
@@ -96,6 +104,7 @@ public class StorageIOTest {
         assertEquals(1, instance.getStatus());
     }
 
+    
     @Test
     public void testSize() {
         assertEquals(0, instance.getSize());
@@ -103,6 +112,7 @@ public class StorageIOTest {
         assertEquals(1, instance.getSize());
     }
 
+    
     @Test
     public void testInputStream() {
         assertEquals(null, instance.getInputStream());
@@ -113,6 +123,7 @@ public class StorageIOTest {
         assertEquals(null, instance.getErrorMessage());
     }
 
+    
     @Test
     public void testOutputStream() throws Exception {
         assertEquals(null, instance.getOutputStream());
@@ -121,6 +132,7 @@ public class StorageIOTest {
         assertEquals(os, instance.getOutputStream());
     }
 
+    
     @Test
     public void testMimeType() {
         assertEquals(null, instance.getMimeType());
@@ -128,6 +140,7 @@ public class StorageIOTest {
         assertEquals("Test", instance.getMimeType());
     }
 
+    
     @Test
     public void testFileName() {
         assertEquals(null, instance.getFileName());
@@ -135,6 +148,7 @@ public class StorageIOTest {
         assertEquals("Test", instance.getFileName());
     }
 
+    
     @Test
     public void testVarHeader() {
         assertEquals(null, instance.getVarHeader());
@@ -142,6 +156,7 @@ public class StorageIOTest {
         assertEquals("Test", instance.getVarHeader());
     }
 
+    
     @Test
     public void testErrorMessage() {
         assertEquals(null, instance.getErrorMessage());
@@ -149,6 +164,7 @@ public class StorageIOTest {
         assertEquals("Test", instance.getErrorMessage());
     }
 
+    
     @Test
     public void testRemoteUrl() {
         assertEquals(null, instance.getRemoteUrl());
@@ -156,6 +172,7 @@ public class StorageIOTest {
         assertEquals("Test", instance.getRemoteUrl());
     }
 
+    
     @Test
     public void testSwiftContainerName() {
         assertEquals(null, instance.getSwiftContainerName());
@@ -163,6 +180,7 @@ public class StorageIOTest {
         assertEquals("Swift", instance.getSwiftContainerName());
     }
 
+    
     @Test
     public void testHTTPMethod() {
         assertEquals(null, instance.getHTTPMethod());
@@ -172,6 +190,7 @@ public class StorageIOTest {
         instance.releaseConnection();
     }
 
+    
     @Test
     public void testResponseHeaders() {
         assertArrayEquals(null, instance.getResponseHeaders());
@@ -180,6 +199,7 @@ public class StorageIOTest {
         assertArrayEquals(headers, instance.getResponseHeaders());
     }
 
+    
     @Test
     public void testFileLocation() {
         assertEquals(true, instance.isLocalFile());
@@ -191,6 +211,7 @@ public class StorageIOTest {
         assertEquals(true, instance.isRemoteAccess());
     }
 
+    
     @Test
     public void testHttpAccess() {
         assertEquals(false, instance.isHttpAccess());
@@ -198,6 +219,7 @@ public class StorageIOTest {
         assertEquals(true, instance.isHttpAccess());
     }
 
+    
     @Test
     public void testDownloadSupported() {
         assertEquals(true, instance.isDownloadSupported());
@@ -205,6 +227,7 @@ public class StorageIOTest {
         assertEquals(false, instance.isDownloadSupported());
     }
 
+    
     @Test
     public void testSubsetSupported() {
         assertEquals(false, instance.isSubsetSupported());
@@ -212,6 +235,7 @@ public class StorageIOTest {
         assertEquals(true, instance.isSubsetSupported());
     }
 
+    
     @Test
     public void testZippedStream() {
         assertEquals(false, instance.isZippedStream());
@@ -219,6 +243,7 @@ public class StorageIOTest {
         assertEquals(true, instance.isZippedStream());
     }
 
+    
     @Test
     public void testNoVarHeader() {
         assertEquals(false, instance.noVarHeader());
@@ -226,6 +251,7 @@ public class StorageIOTest {
         assertEquals(true, instance.noVarHeader());
     }
 
+    
     @Test
     public void testGenerateVariableHeader() {
         DataVariable var = new DataVariable(0,null);

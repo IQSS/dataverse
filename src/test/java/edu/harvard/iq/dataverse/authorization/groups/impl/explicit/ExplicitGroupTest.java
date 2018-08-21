@@ -4,6 +4,7 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.explicit;
 
 import edu.harvard.iq.dataverse.Dataverse;
+
 import edu.harvard.iq.dataverse.authorization.groups.GroupException;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsers;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
@@ -20,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -34,6 +36,7 @@ public class ExplicitGroupTest {
     public ExplicitGroupTest() {
     }
     
+    
     @Test( expected=GroupException.class )
     public void addGroupToSelf() throws Exception {
         ExplicitGroup sut = new ExplicitGroup();
@@ -41,6 +44,7 @@ public class ExplicitGroupTest {
         sut.add( sut );
         fail("A group cannot be added to itself.");
     }
+    
     
     @Test( expected=GroupException.class )
     public void addGroupToDescendant() throws GroupException{
@@ -64,6 +68,7 @@ public class ExplicitGroupTest {
         fail("A group cannot contain its parent");
     }
     
+    
     @Test( expected=GroupException.class )
     public void addGroupToUnrealtedGroup() throws GroupException {
         Dataverse dv1 = makeDataverse();
@@ -79,6 +84,7 @@ public class ExplicitGroupTest {
         
     }
     
+    
     @Test
     public void addGroup() throws GroupException {
         Dataverse dvParent = makeDataverse();
@@ -93,6 +99,7 @@ public class ExplicitGroupTest {
         g1.add(g2);
         assertTrue( g1.structuralContains(g2) );
     }
+    
     
     @Test
     public void adds() throws GroupException {
@@ -156,6 +163,7 @@ public class ExplicitGroupTest {
         assertTrue( childGroup.structuralContains(ipGroup) );
         assertTrue( parentGroup.structuralContains(ipGroup) );
     }
+    
     
     @Test
     public void recursiveLogicalContainment() throws GroupException {

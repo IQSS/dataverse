@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
+
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
@@ -7,6 +8,7 @@ import java.util.Arrays;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -42,6 +44,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
 	    return txt;
     }
 
+    
     @Test
     public void testParseUserResponse() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
@@ -57,6 +60,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         assertEquals(Arrays.asList("bdoc@mailinator.com", "bdoc2@mailinator.com"), actual.emails);
     }
 
+    
     @Test
     public void testParseUserResponse_noEmails() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
@@ -72,6 +76,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         assertEquals(Arrays.asList("").toString(), actual.emails.toString());
     }
     
+    
     @Test
     public void testExtractOrcid() throws OAuth2Exception {
         // sample response from https://members.orcid.org/api/tutorial/read-orcid-records
@@ -81,6 +86,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
         assertEquals("0000-0001-2345-6789", sut.extractOrcidNumber(response));
     }
+    
     
     @Test( expected=OAuth2Exception.class )
     public void testExtractOrcidBad() throws OAuth2Exception {
@@ -92,6 +98,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         sut.extractOrcidNumber(response);
     }
     
+    
     @Test
     public void testParseActivitiesResponse() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
@@ -101,6 +108,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         assertEquals("My Organization Name", actual.getAffiliation());
         assertEquals("role, department", actual.getPosition());
     }
+    
     
     @Test
     public void testParseActivitiesResponseNoOrgName() {
@@ -114,6 +122,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         assertEquals(null, actual.getAffiliation());
         assertEquals("role, department", actual.getPosition());
     }
+    
     
     @Test
     public void testParseActivitiesResponseNoRole() {

@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -54,6 +55,7 @@ public class PersistentIdentifierServiceBeanTest {
     /**
      * Test of getBean method, of class PersistentIdentifierServiceBean.
      */
+    
     @Test
     public void testGetBean_String_CommandContext_OK() {
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.DoiProvider, "EZID");
@@ -80,6 +82,7 @@ public class PersistentIdentifierServiceBeanTest {
     /**
      * Test of getBean method, of class PersistentIdentifierServiceBean.
      */
+    
     @Test
     public void testGetBean_CommandContext() {
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.Protocol, "doi");

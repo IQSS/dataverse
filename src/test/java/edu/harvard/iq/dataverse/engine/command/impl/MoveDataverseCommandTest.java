@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+
 import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.Template;
@@ -33,6 +34,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -280,6 +282,7 @@ public class MoveDataverseCommandTest {
      * Moving ChildB to ChildA
      * @throws Exception - should not throw an exception
      */
+    
     @Test
     public void testValidMove() throws Exception {
         System.out.println("testValidMove");
@@ -302,6 +305,7 @@ public class MoveDataverseCommandTest {
     /**
      * Moving ChildA to its child (illegal).
      */
+    
     @Test( expected=IllegalCommandException.class )
     public void testInvalidMove() throws Exception {
         System.out.println("testInvalidMove");
@@ -314,6 +318,7 @@ public class MoveDataverseCommandTest {
     /**
      * Calling API as a non super user (illegal).
      */
+    
     @Test(expected = PermissionException.class)
     public void testNotSuperUser() throws Exception {
         System.out.println("testNotSuperUser");
@@ -322,6 +327,7 @@ public class MoveDataverseCommandTest {
                         new MoveDataverseCommand(aRequest, childB, childA, null));
         fail();
     }
+    
     
     @Test( expected=IllegalCommandException.class )
     public void testMoveIntoSelf() throws Exception {
@@ -332,6 +338,7 @@ public class MoveDataverseCommandTest {
         fail();
     }
     
+    
     @Test( expected=IllegalCommandException.class )
     public void testMoveIntoParent() throws Exception {
         System.out.println("testMoveIntoParent");
@@ -340,6 +347,7 @@ public class MoveDataverseCommandTest {
                         new MoveDataverseCommand(aRequest, grandchildAA, childA, null));
         fail();
     }
+    
     
     @Test
     public void testKeepGuestbook() throws Exception {
@@ -355,6 +363,7 @@ public class MoveDataverseCommandTest {
         assertEquals( root, childC.getOwner() );
     }
     
+    
     @Test(expected = IllegalCommandException.class)
     public void testRemoveGuestbookWithoutForce() throws Exception {
         System.out.println("testRemoveGuestbookWithoutForce");
@@ -363,6 +372,7 @@ public class MoveDataverseCommandTest {
                         new MoveDataverseCommand(aRequest, grandchildCC, root, null));
         fail();
     }
+    
     
     @Test
     public void testRemoveGuestbook() throws Exception {
@@ -377,6 +387,7 @@ public class MoveDataverseCommandTest {
                         new MoveDataverseCommand(aRequest, grandchildCC, childC, true));
         assertEquals( childC, grandchildCC.getOwner() );
     }
+    
     
     @Test
     public void testKeepTemplate() throws Exception {
@@ -393,6 +404,7 @@ public class MoveDataverseCommandTest {
         
     }
     
+    
     @Test(expected = IllegalCommandException.class)
     public void testRemoveTemplateWithoutForce() throws Exception {
         System.out.println("testRemoveTemplateWithoutForce");
@@ -401,6 +413,7 @@ public class MoveDataverseCommandTest {
                         new MoveDataverseCommand(aRequest, grandchildDD, root, null));
         fail();
     }
+    
     
     @Test
     public void testRemoveTemplate() throws Exception {
@@ -416,6 +429,7 @@ public class MoveDataverseCommandTest {
         assertEquals( childD, grandchildDD.getOwner() );
     }
     
+    
     @Test
     public void testKeepMetadataBlock() throws Exception {
         System.out.println("testKeepMetadataBlock");
@@ -430,6 +444,7 @@ public class MoveDataverseCommandTest {
         assertEquals( root, childE.getOwner() );
     }
     
+    
     @Test(expected = IllegalCommandException.class)
     public void testRemoveMetadataBlockWithoutForce() throws Exception {
         System.out.println("testRemoveMetadataBlockWithoutForce");
@@ -438,6 +453,7 @@ public class MoveDataverseCommandTest {
                         new MoveDataverseCommand(aRequest, grandchildEE, root, null));
         fail();
     }
+    
     
     @Test
     public void testRemoveMetadataBlock() throws Exception {

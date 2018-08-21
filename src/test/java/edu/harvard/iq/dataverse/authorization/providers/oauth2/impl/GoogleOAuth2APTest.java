@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
+
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import javax.json.Json;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class GoogleOAuth2APTest extends GoogleOAuth2AP {
 
@@ -25,6 +27,7 @@ public class GoogleOAuth2APTest extends GoogleOAuth2AP {
         super("clientId", "clientSecret");
     }
 
+    
     @Test
     public void testParseUserResponseRealData() {
 
@@ -43,6 +46,7 @@ public class GoogleOAuth2APTest extends GoogleOAuth2AP {
 
     }
 
+    
     @Test
     public void testParseUserResponse() {
         AbstractOAuth2AuthenticationProvider.ParsedUserResponse result

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta;
 
 import edu.harvard.iq.dataverse.DataTable;
+
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
@@ -17,12 +18,14 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Assert;
+import org.junit.experimental.categories.Category;
 
 public class NewDTAFileReaderTest {
     NewDTAFileReader instance;
     File nullDataFile = null;
     private final String base = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/dta/";
 
+    
     @Test
     public void testAuto() throws IOException {
         instance = new NewDTAFileReader(null, 117);
@@ -38,6 +41,7 @@ public class NewDTAFileReaderTest {
         assertEquals("Domestic", origins.get(0).getLabel());
         assertEquals("Foreign", origins.get(1).getLabel());
     }
+    
     
     @Test
     public void testStrl() throws IOException {
@@ -58,6 +62,7 @@ public class NewDTAFileReaderTest {
         assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
     }
     
+    
     @Test
     public void testDates() throws IOException {
         instance = new NewDTAFileReader(null, 118);
@@ -77,6 +82,7 @@ public class NewDTAFileReaderTest {
         assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
     }
     
+    
     @Test(expected = IOException.class)
     public void testNull() throws IOException {
         instance = new NewDTAFileReader(null, 117);
@@ -85,6 +91,7 @@ public class NewDTAFileReaderTest {
 
     // TODO: Can we create a small file to check into the code base that exercises the value-label names non-zero offset issue?
     @Ignore
+    
     @Test
     public void testFirstCategoryNonZeroOffset() throws IOException {
         instance = new NewDTAFileReader(null, 117);
@@ -106,6 +113,7 @@ public class NewDTAFileReaderTest {
 
     // TODO: Can we create a small file to check into the code base that exercises the value-label names non-zero offset issue?
     @Ignore
+    
     @Test
     public void testFirstCategoryNonZeroOffset1() throws IOException {
         instance = new NewDTAFileReader(null, 118);
@@ -126,6 +134,7 @@ public class NewDTAFileReaderTest {
     
     // TODO: Is there a way to exersise this code with a smaller file? 33k.dta is 21MB.
     @Ignore
+    
     @Test
     public void test33k() throws IOException {
         instance = new NewDTAFileReader(null, 119);
@@ -136,6 +145,7 @@ public class NewDTAFileReaderTest {
     // TODO: Can we create a small file to check into the code base that exercises the characteristics issue?
     // FIXME: testCharacteristics is passing in DTA117FileReaderTest but not here.
     @Ignore
+    
     @Test
     public void testCharacteristics() throws IOException {
         instance = new NewDTAFileReader(null, 117);

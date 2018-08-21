@@ -1,15 +1,18 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
+
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import javax.json.Json;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class ExternalToolHandlerTest {
 
     // TODO: It would probably be better to split these into individual tests.
+    
     @Test
     public void testGetToolUrlWithOptionalQueryParameters() {
         ExternalTool.Type type = ExternalTool.Type.EXPLORE;

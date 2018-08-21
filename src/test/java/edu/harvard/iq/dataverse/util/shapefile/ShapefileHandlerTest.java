@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.util.shapefile;
 
 
 //import edu.harvard.iq.dataverse.util.ZipMaker;
+
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import static edu.harvard.iq.dataverse.util.ShapefileHandler.SHP_XML_EXTENSION;
 
@@ -31,6 +32,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.junit.experimental.categories.Category;
 
 
 // Dataverse/4.0/QA/4.0_files/ingest_4.0/dta/date_new_stata.dta
@@ -173,7 +175,7 @@ public class ShapefileHandlerTest {
     }
     
     
-        
+    
     @Test
     public void testZippedTwoShapefiles() throws IOException{
         msgt("(2) testZippedTwoShapefiles");

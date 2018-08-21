@@ -7,12 +7,14 @@ package edu.harvard.iq.dataverse;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  *
  * @author sarahferry
  */
 public class UserNameValidatorTest {
+    
     
     @Test
     public void testIsUserNameValid() {

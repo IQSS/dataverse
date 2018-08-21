@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
+
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
@@ -9,6 +10,7 @@ import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -30,6 +32,7 @@ public class BuiltinAuthenticationProviderTest {
     /**
      * Test of getId method, of class BuiltinAuthenticationProvider.
      */
+    
     @Test
     public void testGetId() {
         assertEquals("builtin", sut.getId());
@@ -38,6 +41,7 @@ public class BuiltinAuthenticationProviderTest {
     /**
      * Test of getInfo method, of class BuiltinAuthenticationProvider.
      */
+    
     @Test
     public void testGetInfo() {
         String expResult = "builtin";
@@ -48,6 +52,7 @@ public class BuiltinAuthenticationProviderTest {
     /**
      * Test of isPasswordUpdateAllowed method, of class BuiltinAuthenticationProvider.
      */
+    
     @Test
     public void testIsPasswordUpdateAllowed() {
         assertTrue( sut.isPasswordUpdateAllowed() );
@@ -56,6 +61,7 @@ public class BuiltinAuthenticationProviderTest {
     /**
      * Test of isUserInfoUpdateAllowed method, of class BuiltinAuthenticationProvider.
      */
+    
     @Test
     public void testIsUserInfoUpdateAllowed() {
         assertTrue( sut.isUserInfoUpdateAllowed() );
@@ -64,6 +70,7 @@ public class BuiltinAuthenticationProviderTest {
     /**
      * Test of isUserDeletionAllowed method, of class BuiltinAuthenticationProvider.
      */
+    
     @Test
     public void testIsUserDeletionAllowed() {
         assertTrue( sut.isUserDeletionAllowed() );
@@ -72,6 +79,7 @@ public class BuiltinAuthenticationProviderTest {
     /**
      * Test of deleteUser method, of class BuiltinAuthenticationProvider.
      */
+    
     @Test
     public void testDeleteUser() {
         BuiltinUser u = makeBuiltInUser();
@@ -87,6 +95,7 @@ public class BuiltinAuthenticationProviderTest {
     /**
      * Test of updatePassword method, of class BuiltinAuthenticationProvider.
      */
+    
     @Test
     public void testUpdatePassword() {
         BuiltinUser user = bean.save(makeBuiltInUser());
@@ -99,6 +108,7 @@ public class BuiltinAuthenticationProviderTest {
     /**
      * Test of updateUserInfo method, of class BuiltinAuthenticationProvider.
      */
+    
     @Test
     public void testUpdateUserInfo() {
         BuiltinUser user = bean.save(makeBuiltInUser());
@@ -122,6 +132,7 @@ public class BuiltinAuthenticationProviderTest {
     /**
      * Test of verifyPassword method, of class BuiltinAuthenticationProvider.
      */
+    
     @Test
     public void testVerifyPassword() {
         bean.save(makeBuiltInUser());
@@ -133,6 +144,7 @@ public class BuiltinAuthenticationProviderTest {
     /**
      * Test of authenticate method, of class BuiltinAuthenticationProvider.
      */
+    
     @Test
     public void testAuthenticate() {
         bean.save(makeBuiltInUser());

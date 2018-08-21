@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv;
 
 import edu.harvard.iq.dataverse.DataTable;
+
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
 import edu.harvard.iq.dataverse.datavariable.DataVariable.VariableInterval;
 import edu.harvard.iq.dataverse.datavariable.DataVariable.VariableType;
@@ -24,6 +25,7 @@ import org.dataverse.unf.UNFUtil;
 import org.dataverse.unf.UnfException;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -37,6 +39,7 @@ public class CSVFileReaderTest {
      * Test CSVFileReader with a hellish CSV containing everything nasty I could
      * think of to throw at it.
      */
+    
     @Test
     public void testRead() {
         String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/IngestCSV.csv";
@@ -78,6 +81,7 @@ public class CSVFileReaderTest {
      * the DataTable object produced by the plugin, and verify that the
      * individual DataVariables have been properly typed.
      */
+    
     @Test
     public void testVariables() {
         String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/IngestCSV.csv";
@@ -138,6 +142,7 @@ public class CSVFileReaderTest {
      * the resulting tab-delimited file and verify that the individual variable vectors
      * are legit.
      */
+    
     @Test
     public void testSubset() {
         String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/election_precincts.csv";
@@ -267,6 +272,7 @@ public class CSVFileReaderTest {
      * for this. But checking it in with this simple file, for now.
      * (thinking about it, the "csv file from hell" may be a better test case for the UNF test)
      */
+    
     @Test
     public void testVariableUNFs() {
         String testFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/election_precincts.csv";
@@ -396,6 +402,7 @@ public class CSVFileReaderTest {
      * Tests CSVFileReader with a CSV with one more column than header. Tests
      * CSVFileReader with a null CSV.
      */
+    
     @Test
     public void testBrokenCSV() {
         String brokenFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/BrokenCSV.csv";

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.datacapturemodule;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import edu.harvard.iq.dataverse.Dataset;
+
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
 import java.io.UnsupportedEncodingException;
@@ -18,9 +19,11 @@ import org.apache.http.message.BasicStatusLine;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class DataCaptureModuleUtilTest {
 
+    
     @Test
     public void testRsyncSupportEnabled() {
         System.out.println("rsyncSupportEnabled");
@@ -33,6 +36,7 @@ public class DataCaptureModuleUtilTest {
         assertEquals(false, DataCaptureModuleUtil.rsyncSupportEnabled("junk"));
     }
 
+    
     @Test
     public void testGenerateJsonForUploadRequest() {
         System.out.println("generateJsonForUploadRequest");
@@ -45,6 +49,7 @@ public class DataCaptureModuleUtilTest {
         assertTrue(Integer.MIN_VALUE <= userId && userId <= Integer.MAX_VALUE);
     }
 
+    
     @Test
     public void testGetScriptFromRequestOk() throws UnsupportedEncodingException {
         System.out.println("getScriptFromRequestOk");
@@ -63,6 +68,7 @@ public class DataCaptureModuleUtilTest {
         assertEquals("#!/bin/sh", result.getScript());
     }
 
+    
     @Test
     public void testGetScriptFromRequestNotFound() throws UnsupportedEncodingException {
         System.out.println("getScriptFromRequestNotFound");
@@ -81,6 +87,7 @@ public class DataCaptureModuleUtilTest {
         assertEquals(null, result.getScript());
     }
 
+    
     @Test
     public void testMakeUploadRequest() throws UnsupportedEncodingException {
         System.out.println("makeUploadRequest");
@@ -93,6 +100,7 @@ public class DataCaptureModuleUtilTest {
         assertEquals("received", result.getResponse());
     }
 
+    
     @Test
     public void testGetMessageFromException() {
         System.out.println("getMessageFromException");

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
+
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -7,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -20,6 +22,7 @@ public class IpGroupTest {
     /**
      * Test of contains method, of class IpGroup.
      */
+    
     @Test
     public void testContains() {
         IpGroup sut = new IpGroup();
@@ -53,6 +56,7 @@ public class IpGroupTest {
     /**
      * Test of isEditable method, of class IpGroup.
      */
+    
     @Test
     public void testIsEditable() {
         IpGroup instance = new IpGroup();
@@ -62,6 +66,7 @@ public class IpGroupTest {
     /**
      * Test of equals method, of class IpGroup.
      */
+    
     @Test
     public void testEquals() {
         IpGroup a = new IpGroup();

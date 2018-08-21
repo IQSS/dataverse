@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -67,6 +69,7 @@ public class SolrQueryFormatterTest {
     /**
      * Test of buildIdQuery method, of class SolrQueryFormatter.
      */
+    
     @Test
     public void testBasics() {
         msgt("Set group size to 10--it's usually, 1,000");

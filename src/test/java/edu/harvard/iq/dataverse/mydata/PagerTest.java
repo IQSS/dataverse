@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
+
 import java.util.Arrays;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -12,6 +13,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -52,6 +54,7 @@ public class PagerTest {
     /**
      * Test of getNumResults method, of class Pager.
      */
+    
     @Test
     public void testBasics() {
         System.out.println("getNumResults");
@@ -114,6 +117,7 @@ public class PagerTest {
 */
     } 
 
+    
     @Test
     public void testNoResults() {
         

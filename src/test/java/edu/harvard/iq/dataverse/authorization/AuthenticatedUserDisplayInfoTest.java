@@ -1,13 +1,16 @@
 package edu.harvard.iq.dataverse.authorization;
 
+
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
  * @author michael
  */
 public class AuthenticatedUserDisplayInfoTest {
+    
     
     @Test
     public void testCopyConstructor() {

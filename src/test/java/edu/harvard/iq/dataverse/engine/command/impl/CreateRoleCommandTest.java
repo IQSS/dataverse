@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
+
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
@@ -16,6 +17,7 @@ import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -43,6 +45,7 @@ public class CreateRoleCommandTest {
         saveCalled = false;
     }
     
+    
     @Test( expected = IllegalCommandException.class )
     public void testNonSuperUsersCantAddRoles() throws CommandException {
         DataverseRole dvr = new DataverseRole();
@@ -61,6 +64,7 @@ public class CreateRoleCommandTest {
     
     }
    
+    
     @Test
     public void testSuperUsersAddRoles() throws CommandException {
         DataverseRole dvr = new DataverseRole();
@@ -79,6 +83,7 @@ public class CreateRoleCommandTest {
         assertTrue( "CreateRoleCommand did not call save on the created role.", saveCalled );
     
     }
+    
     
     @Test( expected = IllegalCommandException.class )
     public void testGuestUsersCantAddRoles() throws CommandException {
