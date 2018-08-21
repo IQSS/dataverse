@@ -113,10 +113,13 @@ public class ExportService {
 
     public String getExportAsString(Dataset dataset, String formatName) {
 	    InputStream inputStream = null;
+	    InputStreamReader inp = null;
         try {
             inputStream = getExport(dataset, formatName);
             if (inputStream != null) {
-                BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF8"));
+		    inp = new InputStreamReader(inputStream,"UTF8");
+                //BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF8"));
+                BufferedReader br = new BufferedReader(inp);
                 StringBuilder sb = new StringBuilder();
                 String line;
                 while ((line = br.readLine()) != null) {
@@ -124,6 +127,7 @@ public class ExportService {
                     sb.append('\n');
                 }
                 br.close();
+		inp.close();
 		inputStream.close();//possibly will intersect w\ finally block, clear if so
                 return sb.toString();
             }
@@ -132,6 +136,7 @@ public class ExportService {
             return null;
         } finally
 	{
+		try{inp.close();} catch(IOException ic){}
 		try{inputStream.close();} catch(IOException ic){}
 	}
         return null;
