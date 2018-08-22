@@ -118,7 +118,6 @@ public class ExportService {
             inputStream = getExport(dataset, formatName);
             if (inputStream != null) {
 		    inp = new InputStreamReader(inputStream,"UTF8");
-                //BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF8"));
                 BufferedReader br = new BufferedReader(inp);
                 StringBuilder sb = new StringBuilder();
                 String line;
@@ -128,7 +127,7 @@ public class ExportService {
                 }
                 br.close();
 		inp.close();
-		inputStream.close();//possibly will intersect w\ finally block, clear if so
+		inputStream.close();
                 return sb.toString();
             }
         } catch (ExportException | IOException ex) {
@@ -136,8 +135,8 @@ public class ExportService {
             return null;
         } finally
 	{
-		try{inp.close();} catch(IOException ic){}
-		try{inputStream.close();} catch(IOException ic){}
+		if(null!=inp){ try{inp.close();} catch(IOException ic){} }
+		if(null!=inp){ try{inputStream.close();} catch(IOException ic){} }
 	}
         return null;
 
