@@ -124,14 +124,14 @@
                                                 </h:outputLink>
                                             </li>
                                             <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
-                                                <ui:fragment rendered="#{!FilePage.fileMetadata.restricted}">
+                                                <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.filePackage and !FilePage.fileMetadata.restricted}">
                                                     <li>
                                                         <p:commandLink onclick="PF('accessPopup').show()">
                                                             <h:outputText value="#{bundle['file.restrict']}"/>
                                                         </p:commandLink>
                                                     </li>
                                                 </ui:fragment>
-                                                <ui:fragment rendered="#{FilePage.fileMetadata.restricted}">
+                                                <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.filePackage and FilePage.fileMetadata.restricted}">
                                                     <li>
                                                         <p:commandLink update="@form" actionListener="#{FilePage.restrictFile(false)}">
                                                             <h:outputText value="#{bundle['file.unrestrict']}"/>
@@ -139,26 +139,27 @@
                                                     </li>
                                                 </ui:fragment>     
                                             </ui:fragment>
-                                            <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == false and !settingsWrapper.rsyncUpload}">                                        
+                                            <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == false and !FilePage.fileMetadata.dataFile.filePackage}">                                        
                                             <li><!-- start: replace file link -->
                                                 <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;fid=#{FilePage.fileMetadata.dataFile.id}&#38;version=#{FilePage.version}">
                                                      <h:outputText value="#{bundle['file.replace']}"/>
                                                 </h:outputLink>
                                             <!-- end replace file link --></li>
                                             </ui:fragment>
-                                            <ui:fragment rendered="#{ !settingsWrapper.rsyncUpload and ((FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == true) or (!FilePage.fileMetadata.dataFile.released and FilePage.fileMetadata.datasetVersion.dataset.released)) }">                                        
+                                            <ui:fragment rendered="#{ !FilePage.fileMetadata.dataFile.filePackage and ((FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == true) or (!FilePage.fileMetadata.dataFile.released and FilePage.fileMetadata.datasetVersion.dataset.released)) }">                                        
                                             <li><!-- start: already replaced replace file link -->
                                                 <p:commandLink title="#{bundle['file.delete']}" onclick="PF('fileAlreadyReplacedDraft').show();">
                                                     <h:outputText value="#{bundle['file.replace']}"/>
                                                 </p:commandLink>
                                             <!-- end replace file link --></li>
-                                            </ui:fragment>                                      
-                                            <li>
-                                                <p:commandLink title="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').show();">
-                                                    <h:outputText value= "#{bundle['file.delete']}"/>
-                                                </p:commandLink>
-                                            </li>
-
+                                            </ui:fragment>  
+                                            <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.released or !FilePage.fileMetadata.dataFile.filePackage}"> 
+                                                <li>
+                                                    <p:commandLink title="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').show();">
+                                                        <h:outputText value= "#{bundle['file.delete']}"/>
+                                                    </p:commandLink>
+                                                </li>
+                                            </ui:fragment>
                                             <ui:fragment rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">
                                             <li>
                                             </li>

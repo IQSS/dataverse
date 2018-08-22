@@ -21,15 +21,24 @@
         <div class="ui-tabs-panels">
             <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
                 <!-- Create dataset workflow info msg + user guide link -->
-                <div jsf:rendered="#{createDataset}">
+                <ui:fragment rendered="#{createDataset and settingsWrapper.uploadMethodsCount == 1}">
+                <div >
                     <p class="help-block">
-                        <h:outputFormat value="#{bundle['dataset.message.uploadFiles.message']}" escape="false">
+                        <h:outputFormat value="#{bundle['dataset.message.uploadFilesSingle.message']}" escape="false">
                             <f:param value="#{systemConfig.guidesBaseUrl}"/>
                             <f:param value="#{systemConfig.guidesVersion}"/>
                         </h:outputFormat>
                     </p>
                 </div>
-                
+                </ui:fragment>
+                 <ui:fragment rendered="#{createDataset and settingsWrapper.uploadMethodsCount > 1}">
+                <div >
+                    <p class="help-block">
+                        <h:outputFormat value="#{bundle['dataset.message.uploadFilesMultiple.message']}" escape="false">
+                        </h:outputFormat>
+                    </p>
+                </div>
+                </ui:fragment>
                 <!-- Upload -->
                 <div class="panel-group" role="tablist" aria-multiselectable="true"
                       id="fileUploadFragment" jsf:rendered="#{datasetPage || EditDatafilesPage.showFileUploadFragment()}">
@@ -299,14 +308,22 @@
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-warning-sign text-danger"></span>
                                             <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.filesExist']}">
+                                                <f:param value="#{settingsWrapper.supportTeamEmail}"/>
+                                            </h:outputFormat>
+                                        </p>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{EditDatafilesPage.workingVersion.hasNonPackageFile and !EditDatafilesPage.workingVersion.dataset.released}">
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+                                            <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.rsyncUploadDisabledDueFileUploadedViaHttp']}">
                                                 <f:param value="#{settingsWrapper.supportTeamName}"/>
                                             </h:outputFormat>
                                         </p>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{EditDatafilesPage.workingVersion.hasNonPackageFile}">
+                                    <ui:fragment rendered="#{EditDatafilesPage.workingVersion.hasNonPackageFile and EditDatafilesPage.workingVersion.dataset.released}">
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-warning-sign text-danger"></span>
-                                            <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.rsyncUploadDisabledDueFileUploadedViaHttp']}">
+                                            <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.rsyncUploadDisabledDueFileUploadedViaHttpAndPublished']}">
                                                 <f:param value="#{settingsWrapper.supportTeamName}"/>
                                             </h:outputFormat>
                                         </p>
@@ -463,7 +480,7 @@
                     </p:column>
                     <p:column class="col-file-action text-right">
                         <f:facet name="header" class="col-file-action text-right">
-                            <div jsf:id="editFilesRestrictDeletePanel" style="margin-right:14px;" class="btn-group" jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                            <div jsf:id="editFilesRestrictDeletePanel" style="margin-right:14px;" class="btn-group" jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas and !EditDatafilesPage.workingVersion.hasPackageFile}">
                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                     <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFilesSelected']} <span class="caret"></span>
                                 </button>

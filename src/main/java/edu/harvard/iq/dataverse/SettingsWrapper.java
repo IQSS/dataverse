@@ -167,6 +167,16 @@ public class SettingsWrapper implements java.io.Serializable {
         InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
         return BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
     }
+    
+    public String getSupportTeamEmail() {
+        String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
+        InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
+        return BrandingUtil.getSupportTeamEmailAddress(systemAddress);
+    }
+    
+    public Integer getUploadMethodsCount() {
+        return systemConfig.getUploadMethodCount();
+    }
 
     public boolean isRootDataverseThemeDisabled() {
         return isTrueForKey(Key.DisableRootDataverseTheme, false);
