@@ -74,8 +74,7 @@ public class BatchServiceBean {
                     }
                 }
             } else {
-                status.add(
-                        importService.handleFile(dataverseRequest, owner, dir, importType, validationLog, cleanupLog));
+                status.add(importService.handleFile(dataverseRequest, owner, dir, importType, validationLog, cleanupLog));
 
             }
         } catch (Exception e) {
@@ -88,12 +87,10 @@ public class BatchServiceBean {
 
     }
 
-    public JsonArrayBuilder handleDirectory(DataverseRequest dataverseRequest, File dir,
-            ImportUtil.ImportType importType, PrintWriter validationLog, PrintWriter cleanupLog, Boolean createDV)
-            throws ImportException {
+    public JsonArrayBuilder handleDirectory(DataverseRequest dataverseRequest, File dir, ImportUtil.ImportType importType, PrintWriter validationLog, PrintWriter cleanupLog, Boolean createDV) throws ImportException{
         JsonArrayBuilder status = Json.createArrayBuilder();
         Dataverse owner = dataverseService.findByAlias(dir.getName());
-        if (owner == null) {
+        if (owner == null ) {
             if (createDV) {
                 System.out.println("creating new dataverse: " + dir.getName());
                 owner = importService.createDataverse(dir.getName(), dataverseRequest);
