@@ -20,20 +20,22 @@ public class SchemaDotOrgExporter implements Exporter {
     public static final String NAME = "schema.org";
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
+    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
+            throws ExportException {
         String jsonLdAsString = version.getJsonLd();
-        StringReader stringReader = new StringReader(jsonLdAsString);
-        JsonReader jsonReader = Json.createReader(stringReader);
-        JsonObject jsonLdJsonObject = jsonReader.readObject();
-        try {
-            outputStream.write(jsonLdJsonObject.toString().getBytes("UTF8"));
-        } catch (IOException ex) {
-            logger.info("IOException calling outputStream.write: " + ex);
-        }
-        try {
-            outputStream.flush();
-        } catch (IOException ex) {
-            logger.info("IOException calling outputStream.flush: " + ex);
+        try (StringReader stringReader = new StringReader(jsonLdAsString);) {
+            JsonReader jsonReader = Json.createReader(stringReader);
+            JsonObject jsonLdJsonObject = jsonReader.readObject();
+            try {
+                outputStream.write(jsonLdJsonObject.toString().getBytes("UTF8"));
+            } catch (IOException ex) {
+                logger.info("IOException calling outputStream.write: " + ex);
+            }
+            try {
+                outputStream.flush();
+            } catch (IOException ex) {
+                logger.info("IOException calling outputStream.flush: " + ex);
+            }
         }
     }
 
@@ -54,7 +56,8 @@ public class SchemaDotOrgExporter implements Exporter {
 
     @Override
     public Boolean isHarvestable() {
-        // Defer harvesting because the current effort was estimated as a "2": https://github.com/IQSS/dataverse/issues/3700
+        // Defer harvesting because the current effort was estimated as a "2":
+        // https://github.com/IQSS/dataverse/issues/3700
         return false;
     }
 
