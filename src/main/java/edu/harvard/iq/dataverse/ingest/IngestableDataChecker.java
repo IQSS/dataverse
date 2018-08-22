@@ -30,6 +30,7 @@ import java.util.regex.*;
 import java.util.zip.*;
 import java.util.logging.*;
 import org.apache.commons.lang.builder.*;
+import org.apache.poi.util.IOUtils;
 
 /**
  * This is a virtually unchanged DVN v2-3 implementation by 
@@ -325,8 +326,8 @@ public class IngestableDataChecker implements java.io.Serializable {
         }
 
         // size test
-	int bufferCapacity = buff.capacity();
-	dbgLog.fine("Subsettable Checker: buffer capacity: "+bufferCapacity);
+    int bufferCapacity = buff.capacity();
+    dbgLog.fine("Subsettable Checker: buffer capacity: "+bufferCapacity);
 
         if (bufferCapacity < 491) {
             if (DEBUG) {
@@ -361,10 +362,10 @@ public class IngestableDataChecker implements java.io.Serializable {
             // 1-char case
             pos1 = baseBias + i;
 
-	    if ( pos1 > bufferCapacity - 1 ) {
-		dbgLog.fine("Subsettable Checker: request to go beyond buffer capacity ("+pos1+")");
-		return result; 
-	    }
+        if ( pos1 > bufferCapacity - 1 ) {
+        dbgLog.fine("Subsettable Checker: request to go beyond buffer capacity ("+pos1+")");
+        return result; 
+        }
 
             buff.position(pos1);
             if (DEBUG) {
@@ -382,10 +383,10 @@ public class IngestableDataChecker implements java.io.Serializable {
             // 2-char case
             pos2 = baseBias + 2 * i;
 
-	    if ( pos2 > bufferCapacity - 2 ) {
-		dbgLog.fine("Subsettable Checker: request to read 2 bytes beyond buffer capacity ("+pos2+")");
-		return result; 
-	    }
+        if ( pos2 > bufferCapacity - 2 ) {
+        dbgLog.fine("Subsettable Checker: request to read 2 bytes beyond buffer capacity ("+pos2+")");
+        return result; 
+        }
 
 
             buff.position(pos2);
@@ -398,10 +399,10 @@ public class IngestableDataChecker implements java.io.Serializable {
             // 3-char case
             pos3 = baseBias + 3 * i;
 
-	    if ( pos3 > bufferCapacity - 3 ) {
-		dbgLog.fine("Subsettable Checker: request to read 3 bytes beyond buffer capacity ("+pos3+")");
-		return result; 
-	    }
+        if ( pos3 > bufferCapacity - 3 ) {
+        dbgLog.fine("Subsettable Checker: request to read 3 bytes beyond buffer capacity ("+pos3+")");
+        return result; 
+        }
 
 
             buff.position(pos3);
@@ -527,16 +528,17 @@ public class IngestableDataChecker implements java.io.Serializable {
                 byte[] hdr = new byte[gzip_buffer_size];
                 buff.get(hdr, 0, gzip_buffer_size);
 
-                GZIPInputStream gzin = new GZIPInputStream(new ByteArrayInputStream(hdr));
+                try (GZIPInputStream gzin = new GZIPInputStream(new ByteArrayInputStream(hdr));) {
 
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < RDA_HEADER_SIZE; i++) {
-                    sb.append(String.format("%02X", gzin.read()));
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < RDA_HEADER_SIZE; i++) {
+                        sb.append(String.format("%02X", gzin.read()));
+                    }
+                    String fisrt5bytes = sb.toString();
+
+                    result = this.checkUncompressedFirst5bytes(fisrt5bytes);
                 }
-                String fisrt5bytes = sb.toString();
-
-                result = this.checkUncompressedFirst5bytes(fisrt5bytes);
-            // end of compressed case
+                // end of compressed case
             } else {
                 // uncompressed case?
                 if (DEBUG) {
@@ -566,12 +568,14 @@ public class IngestableDataChecker implements java.io.Serializable {
     public String detectTabularDataFormat(File fh) {
         boolean DEBUG = false;
         String readableFormatType = null;
+        FileInputStream fis = null;
         try {
             int buffer_size = this.getBufferSize(fh);
             dbgLog.fine("buffer_size: " + buffer_size);
         
             // set-up a FileChannel instance for a given file object
-            FileChannel srcChannel = new FileInputStream(fh).getChannel();
+            fis = new FileInputStream(fh);
+            FileChannel srcChannel = fis.getChannel();
 
             // create a read-only MappedByteBuffer
             MappedByteBuffer buff = srcChannel.map(FileChannel.MapMode.READ_ONLY, 0, buffer_size);
@@ -634,6 +638,8 @@ public class IngestableDataChecker implements java.io.Serializable {
         } catch (IOException ie) {
             dbgLog.fine("other io exception detected");
             ie.printStackTrace();
+        } finally {
+            IOUtils.closeQuietly(fis);
         }
         return readableFormatType;
     }
