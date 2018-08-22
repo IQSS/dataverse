@@ -327,18 +327,11 @@ public class ExportService {
         InputStream cachedExportInputStream = null;
 
         try {
-		/*
-            if (dataAccess.getAuxFileAsInputStream("export_" + formatName + ".cached") != null) {
-                cachedExportInputStream = dataAccess.getAuxFileAsInputStream("export_" + formatName + ".cached");
-                return cachedExportInputStream;
-            }
-	    */
 		cachedExportInputStream = dataAccess.getAuxFileAsInputStream("export_" + formatName + ".cached");
-		return cachedExportInputStream; //unclear why this was checking for null before return, if the failure condition is returning null
+		return cachedExportInputStream;
         } catch (IOException ioex) {
             throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached");
         }
-        //return null;
 
     }
 
