@@ -19,6 +19,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.poi.util.IOUtils;
+
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import javax.ejb.EJB;
 
@@ -50,12 +53,14 @@ public class CustomizationFilesServlet extends HttpServlet {
         String filePath = getFilePath(customFileType);
 
         Path physicalPath = Paths.get(filePath);
+        FileInputStream inputStream = null;
+        BufferedReader in = null;
         try {
             File fileIn = physicalPath.toFile();
             if (fileIn != null) {
-                FileInputStream inputStream = new FileInputStream(fileIn);
+                inputStream = new FileInputStream(fileIn);
 
-                BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
+                in = new BufferedReader(new InputStreamReader(inputStream));
                 String line;
 
                 StringBuilder responseData = new StringBuilder();
@@ -80,6 +85,9 @@ public class CustomizationFilesServlet extends HttpServlet {
                 /*
                    If the file doesn't exist or it is unreadable we don't care
                 */
+        } finally {
+        	IOUtils.closeQuietly(inputStream);
+        	IOUtils.closeQuietly(in);
         }
 
     }

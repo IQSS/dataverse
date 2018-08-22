@@ -50,32 +50,35 @@ public class BatchServiceBean {
         validationLog = new PrintWriter(new FileWriter( "../logs/validationLog"+  formatter.format(timestamp)+".txt"));
         cleanupLog = new PrintWriter(new FileWriter( "../logs/cleanupLog"+  formatter.format(timestamp)+".txt"));
         File dir = new File(fileDir);
-        if (dir.isDirectory()) {
-            for (File file : dir.listFiles()) {
-                if (!file.isHidden()) {
-                    if (file.isDirectory()) {
-                        try {
-                            status.add(handleDirectory(dataverseRequest, file, importType, validationLog, cleanupLog, createDV));
-                        } catch (ImportException e) {
-                            logger.log(Level.SEVERE, "Exception in handleDirectory() for "+ file.getName(),e);
-                        }
-                    } else {
-                        try {
-                            status.add(importService.handleFile(dataverseRequest, owner, file, importType, validationLog, cleanupLog));
-                        } catch(ImportException e) {
-                             logger.log(Level.SEVERE, "Exception in handleFile() for "+ file.getName(),e);
-                        }
+            if (dir.isDirectory()) {
+                for (File file : dir.listFiles()) {
+                    if (null != file) {
+                        if (!file.isHidden()) {
+                            if (file.isDirectory()) {
+                                try {
+                                    status.add(handleDirectory(dataverseRequest, file, importType, validationLog,
+                                            cleanupLog, createDV));
+                                } catch (ImportException e) {
+                                    logger.log(Level.SEVERE, "Exception in handleDirectory() for " + file.getName(), e);
+                                }
+                            } else {
+                                try {
+                                    status.add(importService.handleFile(dataverseRequest, owner, file, importType,
+                                            validationLog, cleanupLog));
+                                } catch (ImportException e) {
+                                    logger.log(Level.SEVERE, "Exception in handleFile() for " + file.getName(), e);
+                                }
 
+                            }
+                        }
                     }
                 }
-            }
-        } else {
-            status.add(importService.handleFile(dataverseRequest, owner, dir, importType, validationLog, cleanupLog));
+            } else {
+                status.add(importService.handleFile(dataverseRequest, owner, dir, importType, validationLog, cleanupLog));
 
-        }
-        }
-        catch(Exception e) {
-                logger.log(Level.SEVERE, "Exception in processFilePath()", e);
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Exception in processFilePath()", e);
         } finally {
             validationLog.close();
             cleanupLog.close();
@@ -96,12 +99,16 @@ public class BatchServiceBean {
             }
         }
         for (File file : dir.listFiles()) {
-            if (!file.isHidden()) {
-                try {
-                    JsonObjectBuilder fileStatus = importService.handleFile(dataverseRequest, owner, file, importType, validationLog, cleanupLog);
-                    status.add(fileStatus);
-                } catch (ImportException | IOException e) {
-                    status.add(Json.createObjectBuilder().add("importStatus", "Exception importing " + file.getName() + ", message = " + e.getMessage()));
+            if (null != file) {
+                if (!file.isHidden()) {
+                    try {
+                        JsonObjectBuilder fileStatus = importService.handleFile(dataverseRequest, owner, file,
+                                importType, validationLog, cleanupLog);
+                        status.add(fileStatus);
+                    } catch (ImportException | IOException e) {
+                        status.add(Json.createObjectBuilder().add("importStatus",
+                                "Exception importing " + file.getName() + ", message = " + e.getMessage()));
+                    }
                 }
             }
         }
