@@ -14,6 +14,7 @@ Developer Guide
    dev-environment
    windows
    tips
+   permissions
    troubleshooting
    version-control
    testing
