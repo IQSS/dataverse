@@ -48,6 +48,7 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
 import org.primefaces.util.Base64;
 
 /**
@@ -673,10 +674,9 @@ public class ImageThumbConverter {
         } catch (Exception ioex) {
             logger.warning("caught Exceptiopn trying to create rescaled image " + outputLocation);
             return null;
-        } finally
-	{
-		try{outputFileStream.close();}catch(IOException ic){}
-	}
+        } finally {
+            IOUtils.closeQuietly(outputFileStream);
+        }
 
         return outputLocation;
     }
