@@ -3054,7 +3054,7 @@ public class DatasetPage implements java.io.Serializable {
         if(getSelectedDownloadableFilesIdsString().split(",").length ==1) {
             fileDownloadService.callDownloadServletGuestbook("Download", Long.parseLong(getSelectedDownloadableFilesIdsString()), writeGuestbook);
         } else {
-          fileDownloadService.callDownloadServlet(getSelectedDownloadableFilesIdsString(), writeGuestbook, downloadOriginal);
+            fileDownloadService.callDownloadServlet(getSelectedDownloadableFilesIdsString(), writeGuestbook, downloadOriginal);
         }
     }
  
