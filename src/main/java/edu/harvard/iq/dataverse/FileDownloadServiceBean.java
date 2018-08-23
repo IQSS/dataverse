@@ -76,13 +76,21 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse, Boolean downloadOriginal){
 //MAD: It looks like what is happening here is that the guestbookResponse is ending up in a weird state and is calling individual download instead of multiple
-        if (guestbookResponse != null && guestbookResponse.getDataFile() != null ){
+       
+        if (guestbookResponse.getSelectedFileIds() != null) {
+            String[] fileIds = guestbookResponse.getSelectedFileIds().split(",");
+            if (fileIds.length == 1) {
+                DataFile df = datafileService.findCheapAndEasy(Long.parseLong(fileIds[0]));
+                guestbookResponse.setDataFile(df);
+            }
+        }
+        if (guestbookResponse != null && guestbookResponse.getDataFile() != null){
             writeGuestbookResponseRecord(guestbookResponse);
             // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
             callDownloadServletGuestbook(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), true);
         }
         
-        if (guestbookResponse != null && guestbookResponse.getSelectedFileIds() != null     ){
+        if (guestbookResponse != null && guestbookResponse.getDataFile() == null && guestbookResponse.getSelectedFileIds() != null     ){
             List<String> list = new ArrayList<>(Arrays.asList(guestbookResponse.getSelectedFileIds().split(",")));
 
             for (String idAsString : list) {
@@ -96,8 +104,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 //MAD: This needs to be aware of the download state, right now it just always passes false
             callDownloadServlet(guestbookResponse.getSelectedFileIds(), true, downloadOriginal);
         }
-        
-        
     }
     
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {

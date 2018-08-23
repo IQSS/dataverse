@@ -2241,7 +2241,7 @@ public class DatasetPage implements java.io.Serializable {
         return downloadIdString;     
     }
     
-        // helper Method
+    // helper Method
     public String getSelectedDownloadableFilesIdsString() {        
         String downloadIdString = "";
         for (FileMetadata fmd : this.selectedDownloadableFiles){
@@ -2253,18 +2253,7 @@ public class DatasetPage implements java.io.Serializable {
         return downloadIdString;     
     }
     
-        // helper Method
-    public String getSelectedFilesIdsStringForDownload() {        
-        String downloadIdString = "";
-        for (FileMetadata fmd : this.selectedFiles){
-            if (!StringUtil.isEmpty(downloadIdString)) {
-                downloadIdString += ",";
-            }
-            downloadIdString += fmd.getDataFile().getId();
-        }
-        return downloadIdString;     
-    }
-
+    
     public void updateFileCounts(){
         setSelectedUnrestrictedFiles(new ArrayList<>());
         setSelectedRestrictedFiles(new ArrayList<>());
@@ -2382,10 +2371,10 @@ public class DatasetPage implements java.io.Serializable {
             }
             return "";
         } else {
-            boolean validSelection = false;
+            boolean validSelection = true;
             for (FileMetadata fmd : selectedFiles) {
-                if ((fmd.isRestricted() && !restricted) || (!fmd.isRestricted() && restricted)) {
-                    validSelection = true;
+                if ((fmd.isRestricted() && restricted) || (!fmd.isRestricted() && !restricted)) {
+                    validSelection = false;
                 }
             }
             if (!validSelection) {
@@ -3060,8 +3049,13 @@ public class DatasetPage implements java.io.Serializable {
         this.datasetVersionDifference = datasetVersionDifference;
     }
         
+
     public void startMultipleFileDownload (Boolean writeGuestbook, Boolean downloadOriginal){
-        fileDownloadService.callDownloadServlet(getSelectedDownloadableFilesIdsString(), writeGuestbook, downloadOriginal);
+        if(getSelectedDownloadableFilesIdsString().split(",").length ==1) {
+            fileDownloadService.callDownloadServletGuestbook("Download", Long.parseLong(getSelectedDownloadableFilesIdsString()), writeGuestbook);
+        } else {
+          fileDownloadService.callDownloadServlet(getSelectedDownloadableFilesIdsString(), writeGuestbook, downloadOriginal);
+        }
     }
  
     private String downloadType = "";
@@ -3083,6 +3077,15 @@ public class DatasetPage implements java.io.Serializable {
         }
         
          this.guestbookResponse = this.guestbookResponseService.modifySelectedFileIds(guestbookResponse, getSelectedDownloadableFilesIdsString());
+         if(this.selectedDownloadableFiles.size()<2) {
+             if(this.selectedDownloadableFiles.size()==1) {
+             Long id = selectedDownloadableFiles.get(0).getId();
+             DataFile df = datafileService.findCheapAndEasy(id);
+             guestbookResponse.setDataFile(df);
+             }
+         } else {
+             guestbookResponse.setDataFile(null);
+         }
          this.guestbookResponse.setDownloadtype("Download");
          this.guestbookResponse.setFileFormat("Download");
         RequestContext requestContext = RequestContext.getCurrentInstance();
