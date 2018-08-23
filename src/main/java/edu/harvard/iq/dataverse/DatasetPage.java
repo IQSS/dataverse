@@ -2191,6 +2191,9 @@ public class DatasetPage implements java.io.Serializable {
             if (guestbookRequired){
                 modifyGuestbookMultipleResponse();
             } else {
+                // Note that the "false" parameter below means "skip writing the 
+                // GuestBookResponse record *on the Dataverse side*; so that it will 
+                // be written on the API side. --L.A. 
                 startMultipleFileDownload(false, downloadOriginal);
             }        
         }
@@ -3050,11 +3053,14 @@ public class DatasetPage implements java.io.Serializable {
     }
         
 
-    public void startMultipleFileDownload (Boolean writeGuestbook, Boolean downloadOriginal){
+    // The "writeGuestbookOnDataverseSide" parameter means that if set to false, 
+    // it will be the download API's job to create the guestbook response record.
+    public void startMultipleFileDownload (Boolean writeGuestbookOnDataverseSide, Boolean downloadOriginal){
         if(getSelectedDownloadableFilesIdsString().split(",").length ==1) {
-            fileDownloadService.callDownloadServletGuestbook("Download", Long.parseLong(getSelectedDownloadableFilesIdsString()), writeGuestbook);
+            String downloadType = downloadOriginal ? "original" : "Download";
+            fileDownloadService.redirectToDownloadAPI(downloadType, Long.parseLong(getSelectedDownloadableFilesIdsString()), writeGuestbookOnDataverseSide);
         } else {
-            fileDownloadService.callDownloadServlet(getSelectedDownloadableFilesIdsString(), writeGuestbook, downloadOriginal);
+            fileDownloadService.redirectToBatchDownloadAPI(getSelectedDownloadableFilesIdsString(), writeGuestbookOnDataverseSide, downloadOriginal);
         }
     }
  

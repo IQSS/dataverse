@@ -86,8 +86,11 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
         if (guestbookResponse != null && guestbookResponse.getDataFile() != null){
             writeGuestbookResponseRecord(guestbookResponse);
+            if (downloadOriginal) {
+                guestbookResponse.setFileFormat("original");
+            }
             // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
-            callDownloadServletGuestbook(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), true);
+            redirectToDownloadAPI(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), true);
         }
         
         if (guestbookResponse != null && guestbookResponse.getDataFile() == null && guestbookResponse.getSelectedFileIds() != null     ){
@@ -102,7 +105,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             }
             
 //MAD: This needs to be aware of the download state, right now it just always passes false
-            callDownloadServlet(guestbookResponse.getSelectedFileIds(), true, downloadOriginal);
+// ? 
+// Is this about the gbRecordsWritten parameter, below? (which we set to true here, 
+// since the guestbook response records have already been written, above) -- L.A.
+            redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(), true, downloadOriginal);
         }
     }
     
@@ -117,15 +123,37 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
     
-    public void callDownloadServlet(String multiFileString, Boolean gbRecordsWritten, Boolean downloadOriginal){
+    // The "guestBookRecord(s)AlreadyWritten" parameter in the 2 methods 
+    // below (redirectToBatchDownloadAPI() and redirectToDownloadAPI(), for the 
+    // multiple- and single-file downloads respectively) are passed to the 
+    // Download API, where it is treated as a "SKIP writing the GuestbookResponse 
+    // record for this download on the API side" flag. In other words, we want 
+    // to create and save this record *either* on the UI, or the API side - but 
+    // not both. 
+    // As of now (May 2018) we always set this flag to true when redirecting the 
+    // user to the Access API. That's because we have either just created the 
+    // record ourselves, on the UI side; or we have skipped creating one, 
+    // because this was a draft file and we don't want to count the download. 
+    // But either way, it is NEVER the API side's job to count the download that 
+    // was initiated in the GUI. 
+    // But note that this may change - there may be some future situations where it will 
+    // become necessary again, to pass the job of creating the access record 
+    // to the API!
+    // Update: as of Aug 2018, the above is NOT always true. For batch file downloads 
+    // that do not require a guestbook/terms popup, the download call is initiated 
+    // in the startMultipleFileDownload() method in the DatasetPage.java, and relies
+    // on the API side to create and save the GuestBookResponse records; so it 
+    // sets the guestBookRecordAlreadyWritten(on the API side) parameter to false. -- L.A.
+    // hmmmmmmm. which actually appears to be a problem... will discuss tomorrow. 
+    public void redirectToBatchDownloadAPI(String multiFileString, Boolean guestbookRecordsAlreadyWritten, Boolean downloadOriginal){
 //MAD: Add original if flagged
         
         String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
-        if (gbRecordsWritten && !downloadOriginal){
+        if (guestbookRecordsAlreadyWritten && !downloadOriginal){
             fileDownloadUrl += "?gbrecs=true";
-        } else if (gbRecordsWritten && downloadOriginal){
+        } else if (guestbookRecordsAlreadyWritten && downloadOriginal){
             fileDownloadUrl += "?gbrecs=true&format=original";
-        } else if (!gbRecordsWritten && downloadOriginal){
+        } else if (!guestbookRecordsAlreadyWritten && downloadOriginal){
             fileDownloadUrl += "?format=original";
         }
         
@@ -135,21 +163,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             logger.info("Failed to issue a redirect to file download url.");
         }
 
-        //return fileDownloadUrl;
     }
 
-    // The "doNotWriteGuestBookRecord" parameter is passed to the API. 
-    // As of now (May 2018) we always set this flag to true when redirecting the 
-    // user to the Access API. That's because we have either just created the 
-    // record ourselves, on the application side; or we have skipped creating one, 
-    // because this was a draft file and we don't want to count the download. 
-    // But either way, it is NEVER the API side's job to count the download that 
-    // was initiated in the GUI. 
-    // But note that this may change - there may be some future situations where it will 
-    // become necessary again, to pass the job of creating the access record 
-    // to the API!
-    public void callDownloadServletGuestbook(String downloadType, Long fileId, boolean doNotWriteGuestBookRecord) {
-        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, doNotWriteGuestBookRecord);
+    public void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten) {
+        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten);
         logger.fine("Redirecting to file download url: " + fileDownloadUrl);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
@@ -159,14 +176,13 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     
-    //public String startFileDownload(FileMetadata fileMetadata, String format) {
     public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         if(!fileMetadata.getDatasetVersion().isDraft()){
             guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
             writeGuestbookResponseRecord(guestbookResponse);
         }
         // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
-        callDownloadServletGuestbook(format, fileMetadata.getDataFile().getId(), true);
+        redirectToDownloadAPI(format, fileMetadata.getDataFile().getId(), true);
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
 
