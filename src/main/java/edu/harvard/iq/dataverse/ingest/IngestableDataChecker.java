@@ -612,12 +612,14 @@ public class IngestableDataChecker implements java.io.Serializable {
         boolean DEBUG = false;
         String readableFormatType = null;
 	FileChannel srcChannel = null;
+	FileInputStream inp = null;
         try {
             int buffer_size = this.getBufferSize(fh);
             dbgLog.fine("buffer_size: " + buffer_size);
         
             // set-up a FileChannel instance for a given file object
-            srcChannel = new FileInputStream(fh).getChannel();
+	    inp = new FileInputStream(fh);
+            srcChannel = inp.getChannel();
 
             // create a read-only MappedByteBuffer
             MappedByteBuffer buff = srcChannel.map(FileChannel.MapMode.READ_ONLY, 0, buffer_size);
@@ -684,6 +686,7 @@ public class IngestableDataChecker implements java.io.Serializable {
 	finally
 	{
 		IOUtils.closeQuietly(srcChannel);
+		IOUtils.closeQuietly(inp);
 	}
         return readableFormatType;
     }
