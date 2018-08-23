@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.export.BagIt_Export;
 import edu.harvard.iq.dataverse.export.DataCiteExporter;
 import edu.harvard.iq.dataverse.export.ExportException;
@@ -11,13 +14,13 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.math.BigInteger;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -42,6 +45,10 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 
     @EJB
     SettingsServiceBean settingsService;
+    
+    @EJB
+    AuthenticationServiceBean authService;
+    
 
     private static final Logger logger = Logger.getLogger(DPNSubmissionWorkflowStep.class.getName());
     private static final String DEFAULT_PORT = "443";
@@ -76,13 +83,17 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
             String fileName = spaceName + ".v" + context.getNextVersionNumber() + "." + context.getNextMinorVersionNumber()
                     + ".zip";
             try {
-            	
-            	//Add BagIt ZIP file
+                
+                //Add BagIt ZIP file
                 MessageDigest messageDigest = MessageDigest.getInstance("MD5");
 
                
-                
-                
+                AuthenticatedUser user = context.getRequest().getAuthenticatedUser();
+                ApiToken token = authService.findApiTokenByUser(user);
+                if((token == null)|| (token.getExpireTime().before(new Date()))){
+                    token = authService.generateApiTokenForUser(user);
+                }
+                final ApiToken finalToken = token;
                 
             
                 PipedInputStream in = new PipedInputStream();
@@ -90,15 +101,15 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
                 new Thread(
                   new Runnable(){
                     public void run(){
-                    	try {
-							BagIt_Export.exportDatasetVersionAsBag(context.getDataset().getReleasedVersion(), settingsService, out);
-						} catch (Exception e) {
-							logger.severe("Error creating bag: " + e.getMessage());
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-							IOUtils.closeQuietly(in);
-							IOUtils.closeQuietly(out);
-						}
+                        try {
+                            BagIt_Export.exportDatasetVersionAsBag(context.getDataset().getReleasedVersion(), finalToken, settingsService, out);
+                        } catch (Exception e) {
+                            logger.severe("Error creating bag: " + e.getMessage());
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                            IOUtils.closeQuietly(in);
+                            IOUtils.closeQuietly(out);
+                        }
                     }
                   }
                 ).start();
