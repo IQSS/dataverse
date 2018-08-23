@@ -542,7 +542,7 @@ public class BagGenerator {
         return bagName.replaceAll("\\W", "-");
     }
 
-    private void processContainer(JsonObject item, String currentPath) {
+    private void processContainer(JsonObject item, String currentPath) throws IOException {
         JsonArray children = getChildren(item);
         HashSet<String> titles = new HashSet<String>();
         String title = null;
@@ -568,6 +568,7 @@ public class BagGenerator {
             if (containerIndex != -1) {
                 resourceUsed[containerIndex] = false;
             }
+            throw new IOException("Unable to create bag");
 
         }
         for (int i = 0; i < children.size(); i++) {
@@ -680,6 +681,7 @@ public class BagGenerator {
                 } catch (Exception e) {
                     resourceUsed[index] = false;
                     e.printStackTrace();
+                    throw new IOException("Unable to create bag");
                 }
 
                 // Check for nulls!
