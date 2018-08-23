@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.util;
+package edu.harvard.iq.dataverse.util.bagit;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;

@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.util;
+package edu.harvard.iq.dataverse.util.bagit;
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.log4j.Logger;
-
 import org.apache.commons.compress.utils.IOUtils;
 
 /**

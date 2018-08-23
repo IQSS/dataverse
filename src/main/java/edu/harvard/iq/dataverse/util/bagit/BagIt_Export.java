@@ -1,11 +1,12 @@
-package edu.harvard.iq.dataverse.export;
+package edu.harvard.iq.dataverse.util.bagit;
 
 import com.google.gson.JsonParser;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.OAI_OREExporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BagGenerator;
 import edu.harvard.iq.dataverse.Dataset;
 
 import java.io.InputStream;
