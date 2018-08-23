@@ -25,6 +25,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import org.passay.CharacterRule;
+import org.apache.commons.io.IOUtils;
 
 /**
  * System-wide configuration
@@ -183,7 +184,7 @@ public class SystemConfig {
                             logger.warning("caught IOException trying to read and parse the pom properties file.");
                         } finally
 			{
-				try{mavenPropertiesInputStream.close();} catch(IOException ec){};
+				IOUtils.closeQuietly(mavenPropertiesInputStream);
 			}
                     }
                     

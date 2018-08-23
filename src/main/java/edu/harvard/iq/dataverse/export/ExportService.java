@@ -293,10 +293,7 @@ public class ExportService {
             throw new ExportException("IO Exception thrown exporting as " + "export_" + format + ".cached");
         } finally
 	{
-		if(null!=outputStream)
-		{
-			try{ outputStream.close(); } catch(IOException ic){}
-		}
+		IOUtils.closeQuietly(outputStream);
 	}
 
     }

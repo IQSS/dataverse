@@ -71,6 +71,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.batch.operations.JobSecurityException;
 import javax.batch.operations.NoSuchJobExecutionException;
+import org.apache.commons.io.IOUtils;
 
 @Named
 @Dependent
@@ -454,7 +455,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             jobContext.setExitStatus("FAILED");
         } finally
 	{
-		if(null!=scanner){scanner.close();}
+		IOUtils.closeQuietly(scanner);
 	}
 
     }

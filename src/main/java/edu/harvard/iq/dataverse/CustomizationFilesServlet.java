@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import javax.ejb.EJB;
+import org.apache.commons.io.IOUtils;
 
 /**
  *
@@ -84,14 +85,8 @@ public class CustomizationFilesServlet extends HttpServlet {
                 */
         } finally
 	{
-		if( null != inputStream )
-		{
-			inputStream.close();
-		}
-		if( null != in )
-		{
-			in.close();
-		}
+		IOUtils.closeQuietly(inputStream);
+		IOUtils.closeQuietly(in);
 	}
 
     }
