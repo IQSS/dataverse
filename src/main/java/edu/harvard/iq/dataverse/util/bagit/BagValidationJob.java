@@ -15,7 +15,6 @@ package edu.harvard.iq.dataverse.util.bagit;
  * @author qqmyers@hotmail.com
  */
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipException;
@@ -24,6 +23,9 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.log4j.Logger;
+
+import edu.harvard.iq.dataverse.DataFile;
+
 import org.apache.commons.compress.utils.IOUtils;
 
 /**
@@ -39,6 +41,7 @@ public class BagValidationJob implements Runnable {
 
     private String hash;
     private String name;
+    private static String hashtype;
 
     public BagValidationJob(String value, String key) throws IllegalStateException {
         if (zf == null || bagGenerator == null) {
@@ -77,13 +80,16 @@ public class BagValidationJob implements Runnable {
         String realHash = null;
         try {
             inputStream = zf.getInputStream(archiveEntry1);
-            String hashtype = bagGenerator.getHashtype();
-            if (hashtype != null) {
-                if (hashtype.equals("SHA1 Hash")) {
-                    realHash = DigestUtils.sha1Hex(inputStream);
-                } else if (hashtype.equals("SHA512 Hash")) {
-                    realHash = DigestUtils.sha512Hex(inputStream);
-                }
+            if (hashtype.equals(DataFile.ChecksumType.SHA1)) {
+                realHash = DigestUtils.sha1Hex(inputStream);
+            } else if (hashtype.equals(DataFile.ChecksumType.SHA256)) {
+                realHash = DigestUtils.sha256Hex(inputStream);
+            } else if (hashtype.equals(DataFile.ChecksumType.SHA512)) {
+                realHash = DigestUtils.sha512Hex(inputStream);
+            } else if (hashtype.equals(DataFile.ChecksumType.MD5)) {
+                realHash = DigestUtils.md5Hex(inputStream);
+            } else {
+                log.warn("Unknown hash type: " + hashtype);
             }
 
         } catch (ZipException e) {
@@ -95,8 +101,7 @@ public class BagValidationJob implements Runnable {
         } finally {
             IOUtils.closeQuietly(inputStream);
         }
-        log.debug("Retrieve/compute time = "
-                + (System.currentTimeMillis() - start) + " ms");
+        log.debug("Retrieve/compute time = " + (System.currentTimeMillis() - start) + " ms");
         // Error check - add file sizes to compare against supplied stats
         bagGenerator.incrementTotalDataSize(archiveEntry1.getSize());
         return realHash;
@@ -108,6 +113,11 @@ public class BagValidationJob implements Runnable {
 
     public static void setBagGenerator(BagGenerator bg) {
         bagGenerator = bg;
+        hashtype = bagGenerator.getHashtype();
+        if (hashtype == null) {
+            log.warn("Null hashtype. Validation will not occur");
+        }
+
     }
 
 }
