@@ -38,6 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import org.apache.commons.io.IOUtils;
 
 /**
  *
@@ -135,8 +136,8 @@ public class ExportService {
             return null;
         } finally
 	{
-		if(null!=inp){ try{inp.close();} catch(IOException ic){} }
-		if(null!=inp){ try{inputStream.close();} catch(IOException ic){} }
+		IOUtils.closeQuietly(inp);
+		IOUtils.closeQuietly(inputStream);
 	}
         return null;
 

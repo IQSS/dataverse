@@ -30,6 +30,7 @@ import java.util.regex.*;
 import java.util.zip.*;
 import java.util.logging.Logger;
 import org.apache.commons.lang.builder.*;
+import org.apache.commons.io.IOUtils;
 
 /**
  * This is a virtually unchanged DVN v2-3 implementation by 
@@ -610,12 +611,13 @@ public class IngestableDataChecker implements java.io.Serializable {
     public String detectTabularDataFormat(File fh) {
         boolean DEBUG = false;
         String readableFormatType = null;
+	FileChannel srcChannel = null;
         try {
             int buffer_size = this.getBufferSize(fh);
             dbgLog.fine("buffer_size: " + buffer_size);
         
             // set-up a FileChannel instance for a given file object
-            FileChannel srcChannel = new FileInputStream(fh).getChannel();
+            srcChannel = new FileInputStream(fh).getChannel();
 
             // create a read-only MappedByteBuffer
             MappedByteBuffer buff = srcChannel.map(FileChannel.MapMode.READ_ONLY, 0, buffer_size);
@@ -679,6 +681,10 @@ public class IngestableDataChecker implements java.io.Serializable {
             dbgLog.fine("other io exception detected");
             ie.printStackTrace();
         }
+	finally
+	{
+		IOUtils.closeQuietly(srcChannel);
+	}
         return readableFormatType;
     }
 
