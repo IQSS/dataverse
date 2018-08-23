@@ -51,8 +51,8 @@ public class CustomizationFilesServlet extends HttpServlet {
         String filePath = getFilePath(customFileType);
 
         Path physicalPath = Paths.get(filePath);
-	FileInputStream inputStream = null;
-	BufferedReader in = null;
+        FileInputStream inputStream = null;
+        BufferedReader in = null;
         try {
             File fileIn = physicalPath.toFile();
             if (fileIn != null) {
@@ -83,11 +83,10 @@ public class CustomizationFilesServlet extends HttpServlet {
                 /*
                    If the file doesn't exist or it is unreadable we don't care
                 */
-        } finally
-	{
-		IOUtils.closeQuietly(inputStream);
-		IOUtils.closeQuietly(in);
-	}
+        } finally {
+            IOUtils.closeQuietly(inputStream);
+            IOUtils.closeQuietly(in);
+        }
 
     }
     

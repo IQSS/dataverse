@@ -113,12 +113,12 @@ public class ExportService {
     }
 
     public String getExportAsString(Dataset dataset, String formatName) {
-	    InputStream inputStream = null;
-	    InputStreamReader inp = null;
+        InputStream inputStream = null;
+        InputStreamReader inp = null;
         try {
             inputStream = getExport(dataset, formatName);
             if (inputStream != null) {
-		    inp = new InputStreamReader(inputStream,"UTF8");
+                inp = new InputStreamReader(inputStream, "UTF8");
                 BufferedReader br = new BufferedReader(inp);
                 StringBuilder sb = new StringBuilder();
                 String line;
@@ -127,18 +127,17 @@ public class ExportService {
                     sb.append('\n');
                 }
                 br.close();
-		inp.close();
-		inputStream.close();
+                inp.close();
+                inputStream.close();
                 return sb.toString();
             }
         } catch (ExportException | IOException ex) {
             //ex.printStackTrace();
             return null;
-        } finally
-	{
-		IOUtils.closeQuietly(inp);
-		IOUtils.closeQuietly(inputStream);
-	}
+        } finally {
+            IOUtils.closeQuietly(inp);
+            IOUtils.closeQuietly(inputStream);
+        }
         return null;
 
     }
@@ -242,11 +241,11 @@ public class ExportService {
     // This method runs the selected metadata exporter, caching the output 
     // in a file in the dataset directory / container based on its DOI:
     private void cacheExport(DatasetVersion version, String format, JsonObject datasetAsJson, Exporter exporter) throws ExportException {
-            boolean tempFileRequired = false;
-            File tempFile = null;
-            OutputStream outputStream = null;
-            Dataset dataset = version.getDataset();
-            StorageIO<Dataset> storageIO = null;
+        boolean tempFileRequired = false;
+        File tempFile = null;
+        OutputStream outputStream = null;
+        Dataset dataset = version.getDataset();
+        StorageIO<Dataset> storageIO = null;
         try {
             // With some storage drivers, we can open a WritableChannel, or OutputStream 
             // to directly write the generated metadata export that we want to cache; 
@@ -291,10 +290,9 @@ public class ExportService {
 
         } catch (IOException ioex) {
             throw new ExportException("IO Exception thrown exporting as " + "export_" + format + ".cached");
-        } finally
-	{
-		IOUtils.closeQuietly(outputStream);
-	}
+        } finally {
+            IOUtils.closeQuietly(outputStream);
+        }
 
     }
 
@@ -325,8 +323,8 @@ public class ExportService {
         InputStream cachedExportInputStream = null;
 
         try {
-		cachedExportInputStream = dataAccess.getAuxFileAsInputStream("export_" + formatName + ".cached");
-		return cachedExportInputStream;
+            cachedExportInputStream = dataAccess.getAuxFileAsInputStream("export_" + formatName + ".cached");
+            return cachedExportInputStream;
         } catch (IOException ioex) {
             throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached");
         }

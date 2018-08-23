@@ -570,17 +570,14 @@ public class IngestableDataChecker implements java.io.Serializable {
                 byte[] hdr = new byte[gzip_buffer_size];
                 buff.get(hdr, 0, gzip_buffer_size);
 
-                try(GZIPInputStream gzin = new GZIPInputStream(new ByteArrayInputStream(hdr)))
-		{
-
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < RDA_HEADER_SIZE; i++) {
-                    sb.append(String.format("%02X", gzin.read()));
+                try (GZIPInputStream gzin = new GZIPInputStream(new ByteArrayInputStream(hdr))) {
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < RDA_HEADER_SIZE; i++) {
+                        sb.append(String.format("%02X", gzin.read()));
+                    }
+                    String fisrt5bytes = sb.toString();
+                    result = this.checkUncompressedFirst5bytes(fisrt5bytes);
                 }
-                String fisrt5bytes = sb.toString();
-
-                result = this.checkUncompressedFirst5bytes(fisrt5bytes);
-		}
             // end of compressed case
             } else {
                 // uncompressed case?
@@ -611,14 +608,14 @@ public class IngestableDataChecker implements java.io.Serializable {
     public String detectTabularDataFormat(File fh) {
         boolean DEBUG = false;
         String readableFormatType = null;
-	FileChannel srcChannel = null;
-	FileInputStream inp = null;
+        FileChannel srcChannel = null;
+        FileInputStream inp = null;
         try {
             int buffer_size = this.getBufferSize(fh);
             dbgLog.fine("buffer_size: " + buffer_size);
         
             // set-up a FileChannel instance for a given file object
-	    inp = new FileInputStream(fh);
+            inp = new FileInputStream(fh);
             srcChannel = inp.getChannel();
 
             // create a read-only MappedByteBuffer
@@ -682,12 +679,10 @@ public class IngestableDataChecker implements java.io.Serializable {
         } catch (IOException ie) {
             dbgLog.fine("other io exception detected");
             ie.printStackTrace();
+        } finally {
+            IOUtils.closeQuietly(srcChannel);
+            IOUtils.closeQuietly(inp);
         }
-	finally
-	{
-		IOUtils.closeQuietly(srcChannel);
-		IOUtils.closeQuietly(inp);
-	}
         return readableFormatType;
     }
 

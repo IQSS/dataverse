@@ -2638,11 +2638,10 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         } catch (IOException ioex) {
             return null;
-        } finally
-	{
-		IOUtils.closeQuietly(input);
-		IOUtils.closeQuietly(output);
-	}
+        } finally {
+            IOUtils.closeQuietly(input);
+            IOUtils.closeQuietly(output);
+        }
         if (labelsFile != null) {
             return labelsFile.getAbsolutePath();
         }

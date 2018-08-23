@@ -3749,11 +3749,10 @@ public class DatasetPage implements java.io.Serializable {
             }
         } catch (IOException ioex) {
             return null;//leaving this purely in the spirit of minimizing changes.
-        } finally
-	{
-		IOUtils.closeQuietly(input);
-		IOUtils.closeQuietly(output);
-	}
+        } finally {
+            IOUtils.closeQuietly(input);
+            IOUtils.closeQuietly(output);
+        }
         if (labelsFile != null) {
             return labelsFile.getAbsolutePath();
         }
