@@ -90,15 +90,12 @@ The custom file type icons were created with the help of `FontCustom <https://gi
 
 Here is a vector-based SVG file to start with as a template: :download:`icon-template.svg <../_static/icon-template.svg>`
 
-Static Analysis
-+++++++++++++++
+SonarQube
++++++++++
 
-It can be helpful to use tools to identify possible problems in the codebase, or with new code.
-These tools may produce false positives or false negatives, but can help identify potential problems before they are reported in prodution or to identify potential causes of problems reported in production.
+SonarQube is a static analysis tool that can be used to identify possible problems in the codebase, or with new code. It may report false positives or false negatives, but can help identify potential problems before they are reported in prodution or to identify potential causes of problems reported in production.
 
-Two that may be useful are `SonarQube <https://www.sonarqube.org/>`_ (e.g. the "Resources should be closed" tag) and `infer <https://github.com/facebook/infer>`_ (e.g. "RESOURCE_LEAK"):
-
-Example script to run sonar:
+Download SonarQube from https://www.sonarqube.org and start look in the `bin` directory for a `sonar.sh` script for your architecture. Once the tool is running on http://localhost:9000 you can use it as the URL in this example script to run sonar:
 
 .. code-block:: bash
 
@@ -112,11 +109,20 @@ Example script to run sonar:
     -Dsonar.issuesReport.html.location='sonar-issues-report.html' \
     -Dsonar.jacoco.reportPath=target/jacoco.exec
 
+Once the analysis is complete, you should be able to access http://localhost:9000/dashboard?id=edu.harvard.iq%3Adataverse to see the report. To learn about resource leaks, for example, click on "Bugs", the "Tag", then "leak" or "Rule", then "Resources should be closed".
+
+Infer
++++++
+
+Infer is another static analysis tool that can be downloaded from https://github.com/facebook/infer
+
 Example command to run infer:
 
 .. code-block:: bash
 
     $  infer -- mvn package
+
+Look for "RESOURCE_LEAK", for example.
 
 lsof
 ++++
