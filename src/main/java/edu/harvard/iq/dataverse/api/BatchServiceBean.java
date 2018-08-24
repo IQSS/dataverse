@@ -51,8 +51,6 @@ public class BatchServiceBean {
         File dir = new File(fileDir);
         if (dir.isDirectory()) {
             for (File file : dir.listFiles()) {
-		    if (null != file )
-		    {
                 if (!file.isHidden()) {
                     if (file.isDirectory()) {
                         try {
@@ -69,7 +67,6 @@ public class BatchServiceBean {
 
                     }
                 }
-		}
             }
         } else {
             status.add(importService.handleFile(dataverseRequest, owner, dir, importType, validationLog, cleanupLog));
@@ -98,8 +95,6 @@ public class BatchServiceBean {
             }
         }
         for (File file : dir.listFiles()) {
-		if(null!=file)
-		{
             if (!file.isHidden()) {
                 try {
                     JsonObjectBuilder fileStatus = importService.handleFile(dataverseRequest, owner, file, importType, validationLog, cleanupLog);
@@ -108,7 +103,6 @@ public class BatchServiceBean {
                     status.add(Json.createObjectBuilder().add("importStatus", "Exception importing " + file.getName() + ", message = " + e.getMessage()));
                 }
             }
-	    }
         }
         return status;
     }

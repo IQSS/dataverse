@@ -71,7 +71,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.batch.operations.JobSecurityException;
 import javax.batch.operations.NoSuchJobExecutionException;
-import org.apache.commons.io.IOUtils;
 
 @Named
 @Dependent
@@ -438,9 +437,8 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                 + SEP + uploadFolder
                 + SEP + manifest;
         getJobLogger().log(Level.INFO, "Reading checksum manifest: " + manifestAbsolutePath);
-	Scanner scanner = null;
         try {
-            scanner = new Scanner(new FileReader(manifestAbsolutePath));
+            Scanner scanner = new Scanner(new FileReader(manifestAbsolutePath));
             HashMap<String, String> map = new HashMap<>();
             while (scanner.hasNextLine()) {
                 String[] parts = scanner.nextLine().split("\\s+"); // split on any empty space between path and checksum
@@ -453,10 +451,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         } catch (IOException ioe) {
             getJobLogger().log(Level.SEVERE, "Unable to load checksum manifest file: " + ioe.getMessage());
             jobContext.setExitStatus("FAILED");
-        } finally
-	{
-		IOUtils.closeQuietly(scanner);
-	}
+        }
 
     }
     
