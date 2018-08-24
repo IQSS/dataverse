@@ -79,9 +79,8 @@ import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 public class BagGenerator {
 
 	private static final Logger log = Logger.getLogger(BagGenerator.class);
-	// ToDo - make #threads configurable
-	private ParallelScatterZipCreator scatterZipCreator = new ParallelScatterZipCreator(
-			Executors.newFixedThreadPool(4));
+
+	private ParallelScatterZipCreator scatterZipCreator = null;
 	private ScatterZipOutputStream dirs = null;
 
 	private JsonArray aggregates = null;
@@ -144,9 +143,12 @@ public class BagGenerator {
 			cm = new PoolingHttpClientConnectionManager(registry);
 
 			cm.setDefaultMaxPerRoute(numConnections);
-			cm.setMaxTotal(numConnections > 20 ? numConnections : 20);
+			cm.setMaxTotal(numConnections > 24 ? numConnections : 24);
 
 			client = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(config).build();
+			
+			scatterZipCreator =  new ParallelScatterZipCreator(
+					Executors.newFixedThreadPool(numConnections));
 		} catch (NoSuchAlgorithmException | KeyManagementException e) {
 			// TODO Auto-generated catch block
 			log.warn("Aint gonna work");
@@ -1038,6 +1040,7 @@ public class BagGenerator {
 				int tries = 0;
 				while (tries < 5) {
 					try {
+						log.info("Get # " + tries + " for " + uri);
 						HttpGet getMap = createNewGetRequest(new URI(uri), null);
 						log.trace("Retrieving " + tries + ": " + uri);
 						CloseableHttpResponse response;
