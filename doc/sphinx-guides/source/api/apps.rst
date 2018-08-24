@@ -43,6 +43,13 @@ GeoConnect allows Dataverse files to be visualized on http://worldmap.harvard.ed
 
 https://github.com/IQSS/geoconnect
 
+metrics.dataverse.org
+~~~~~~~~~~~~~~~~~~~~~
+
+metrics.dataverse.org_ aggregates metrics across multiple Dataverse installations: https://github.com/IQSS/metrics.dataverse.org
+
+.. _metrics.dataverse.org: http://metrics.dataverse.org
+
 Java
 ----
 
