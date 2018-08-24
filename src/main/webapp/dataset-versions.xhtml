@@ -144,9 +144,13 @@
                 <!-- <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-1"> -->
                 <p:column headerText="Replicated" class="col-sm-1"  rendered="#{DatasetPage.isSuperUser()}">
             <ui:fragment>
-                <h:outputLink id="replicated" value="#{versionTab.replicaLocation}" target="_blank">
-                    <h:outputText  value="#{!empty(versionTab.replicaLocation)}" />
+                <h:outputLink id="replicated" value="#{versionTab.replicaLocation}" target="_blank" rendered="#{!empty(versionTab.replicaLocation)}">
+                    <h:outputText  value="Complete" />
                 </h:outputLink>
+                <h:outputLink id="replicated" value="#{!empty(versionTab.replicaLocation)}" target="_blank" rendered="#{empty(versionTab.replicaLocation)}">
+                    <h:outputText  value="Submit" />
+                </h:outputLink>
+                
             </ui:fragment>
         </p:column><!-- end: date column -->
     </p:dataTable>

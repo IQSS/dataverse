@@ -5,9 +5,6 @@
             "provider":":internal",
             "stepType":"dpn",
             "parameters": {
-                "host":"qdr.duracloud.org",
-                "username":"",
-                "password":"",
                 "stepName":"dpn submission"
             }
         }

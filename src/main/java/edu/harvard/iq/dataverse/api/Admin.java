@@ -4,6 +4,8 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
@@ -13,6 +15,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
@@ -30,6 +33,8 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -70,6 +75,9 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.workflow.internalspi.DPNSubmissionWorkflowStep;
+import edu.harvard.iq.dataverse.workflow.step.Failure;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
 import java.util.Date;
 import java.util.ResourceBundle;
@@ -102,6 +110,12 @@ public class Admin extends AbstractApiBean {
 	DataFileServiceBean fileService;
 	@EJB
 	DatasetServiceBean datasetService;
+	@EJB
+	DatasetVersionServiceBean datasetversionService;
+	@EJB
+	SettingsServiceBean settingsService;
+	@EJB
+	AuthenticationServiceBean authService;
 
 	// Make the session available
 	@Inject
@@ -1065,7 +1079,8 @@ public class Admin extends AbstractApiBean {
 		logger.info("Starting to register: analyzing " + count + " files. " + new Date());
 		logger.info("Only unregistered, published files will be registered.");
 		for (DataFile df : fileService.findAll()) {
-			if(released.intValue() > num) break;
+			if (released.intValue() > num)
+				break;
 			try {
 				if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
 					if (df.isReleased()) {
@@ -1102,7 +1117,7 @@ public class Admin extends AbstractApiBean {
 		return ok("Datafile registration complete." + successes + " of  " + released
 				+ " unregistered, published files registered successfully.");
 	}
-	
+
 	@GET
 	@Path("/updateHashValues/{alg}")
 	public Response updateHashValues(@PathParam("alg") String alg, @QueryParam("num") int num) {
@@ -1111,73 +1126,104 @@ public class Admin extends AbstractApiBean {
 		Integer alreadyUpdated = 0;
 		Integer rehashed = 0;
 		logger.info("Num = " + num);
-		if(num<=0) num = Integer.MAX_VALUE;
+		if (num <= 0)
+			num = Integer.MAX_VALUE;
 		DataFile.ChecksumType cType = null;
 		try {
-		  cType = DataFile.ChecksumType.fromString(alg);
+			cType = DataFile.ChecksumType.fromString(alg);
 		} catch (IllegalArgumentException iae) {
 			return error(Status.BAD_REQUEST, "Unknown algorithm");
 		}
 		logger.info("Starting to rehash: analyzing " + count + " files. " + new Date());
-		logger.info("Hashes not created with " + alg + " will be verified, and, if valid, replaced with a hash using " + alg);
+		logger.info("Hashes not created with " + alg + " will be verified, and, if valid, replaced with a hash using "
+				+ alg);
 		try {
 			User u = findAuthenticatedUserOrDie();
-			if(!u.isSuperuser()) return error(Status.UNAUTHORIZED, "must be superuser");
+			if (!u.isSuperuser())
+				return error(Status.UNAUTHORIZED, "must be superuser");
 		} catch (WrappedResponse e1) {
 			return error(Status.UNAUTHORIZED, "api key required");
 		}
-		
+
 		for (DataFile df : fileService.findAll()) {
-			if(rehashed.intValue() >= num) break;
+			if (rehashed.intValue() >= num)
+				break;
 			try {
 				if (!df.getChecksumType().equals(cType)) {
 					rehashed++;
-					logger.info(rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", " + df.getIdentifier());
-					//verify hash and calc new one to replace it
-					StorageIO<DataFile> storage =df.getStorageIO(); 
+					logger.info(
+							rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", " + df.getIdentifier());
+					// verify hash and calc new one to replace it
+					StorageIO<DataFile> storage = df.getStorageIO();
 					storage.open(DataAccessOption.READ_ACCESS);
 					InputStream in = storage.getInputStream();
-					if(in == null) logger.warning("Null stream");
+					if (in == null)
+						logger.warning("Null stream");
 					String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
-					if(currentChecksum.equals(df.getChecksumValue())) {
-						logger.info("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", " + df.getIdentifier() + " is valid");
+					if (currentChecksum.equals(df.getChecksumValue())) {
+						logger.info("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
+								+ df.getIdentifier() + " is valid");
 						storage.open(DataAccessOption.READ_ACCESS);
 						InputStream in2 = storage.getInputStream();
-						if(in2 == null) logger.warning("Null stream");
+						if (in2 == null)
+							logger.warning("Null stream");
 						String newChecksum = FileUtil.CalculateChecksum(in2, cType);
 
 						df.setChecksumType(cType);
 						df.setChecksumValue(newChecksum);
 						successes++;
 					} else {
-						logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", " + df.getIdentifier() + " is INVALID");
+						logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
+								+ ", " + df.getIdentifier() + " is INVALID");
 					}
 				} else {
 					alreadyUpdated++;
 					if (alreadyUpdated % 100 == 0) {
-					logger.info(alreadyUpdated + " of  " + count + " files are already have hashes with the new algorithm. " + new Date());
+						logger.info(alreadyUpdated + " of  " + count
+								+ " files are already have hashes with the new algorithm. " + new Date());
 					}
-				}		
+				}
 				if (successes % 100 == 0) {
-							logger.info(successes + " of  " + count + " files rehashed successfully. " + new Date());
-						}
-				
+					logger.info(successes + " of  " + count + " files rehashed successfully. " + new Date());
+				}
+
 			} catch (Exception e) {
 				logger.info("Unexpected Exception: " + e.getMessage());
-				
+
 			}
 		}
 		logger.info("Final Results:");
-		logger.info(alreadyUpdated + " of  " + count + " files already had hashes with the new algorithm. " + new Date());
+		logger.info(
+				alreadyUpdated + " of  " + count + " files already had hashes with the new algorithm. " + new Date());
 		logger.info(rehashed + " of  " + count + " files to rehash. " + new Date());
-		logger.info(successes + " of  " + rehashed + " files successfully rehashed with the new algorithm. "
-				+ new Date());
-		
-		return ok("Datafile rehashing complete." + successes + " of  " + rehashed
-				+ " files successfully rehashed.");
+		logger.info(
+				successes + " of  " + rehashed + " files successfully rehashed with the new algorithm. " + new Date());
+
+		return ok("Datafile rehashing complete." + successes + " of  " + rehashed + " files successfully rehashed.");
 	}
 
-	
+	@GET
+	@Path("/submitDataVersionToDPN/{dvid}")
+	public Response submitDatasetVersionToDPN(@PathParam("dvid") long dvid) {
+
+		try {
+			AuthenticatedUser au = findAuthenticatedUserOrDie();
+			if (!au.isSuperuser())
+				return error(Status.UNAUTHORIZED, "must be superuser");
+
+			DatasetVersion dv = datasetversionService.retrieveDatasetVersionByVersionId(dvid).getDatasetVersion();
+
+			WorkflowStepResult wfsr = DPNSubmissionWorkflowStep.performDPNSubmission(dv, au, settingsService,
+					authService);
+			if (wfsr.equals(WorkflowStepResult.OK)) {
+				return ok("DatasetVersion id=" + dvid + " submitted to Duracloud");
+			} else {
+				return error(Response.Status.INTERNAL_SERVER_ERROR, ((Failure) wfsr).getMessage());
+			}
+		} catch (WrappedResponse e1) {
+			return error(Status.UNAUTHORIZED, "api key required");
+		}
+	}
 
 	@DELETE
 	@Path("/clearMetricsCache")

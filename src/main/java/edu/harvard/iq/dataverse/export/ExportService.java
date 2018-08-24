@@ -211,6 +211,26 @@ public class ExportService {
             throw new ExportException("No published version found during export. " + dataset.getGlobalIdString());
         }
     }
+    
+    // This method finds the exporter for the format requested, 
+    // then produces the datasetversion metadata as a JsonObject, then writes the exported metadata to the supplied stream. 
+    public void exportFormatToStream(DatasetVersion dv, String formatName, OutputStream out) throws ExportException {
+        try {
+            Iterator<Exporter> exporters = loader.iterator();
+            while (exporters.hasNext()) {
+                Exporter e = exporters.next();
+                if (e.getProviderName().equals(formatName)) {
+                    JsonPrinter jsonPrinter = new JsonPrinter(settingsService);
+                    final JsonObjectBuilder datasetAsJsonBuilder = jsonPrinter.jsonAsDatasetDto(dv);
+                    getExporter(formatName).exportDataset(dv, datasetAsJsonBuilder.build(), out);
+                }
+            }
+        } catch (ServiceConfigurationError serviceError) {
+            throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
+        } catch (IllegalStateException e) {
+            throw new ExportException("No published version found during export. " + dv.getDataset().getGlobalId().asString());
+        }
+    }
 
     public Exporter getExporter(String formatName) throws ExportException {
         try {

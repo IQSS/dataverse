@@ -273,6 +273,15 @@ public class Dataset extends DvObjectContainer {
         return versions;
     }
 
+    public DatasetVersion getVersion(long majorVersion, long minorVersion) {
+        for(DatasetVersion version: versions) {
+            if((majorVersion == version.getVersionNumber())&&(minorVersion == version.getMinorVersionNumber())) {
+                return version;
+            }
+        }
+        return null;
+    }
+    
     public void setVersions(List<DatasetVersion> versions) {
         this.versions = versions;
     }
