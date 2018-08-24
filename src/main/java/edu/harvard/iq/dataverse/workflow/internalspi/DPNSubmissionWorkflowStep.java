@@ -152,7 +152,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 							}
 						}).start();
 
-						digestInputStream = new DigestInputStream(in, messageDigest);
+						digestInputStream = new DigestInputStream(dataciteIn, messageDigest);
 
 						checksum = store.addContent(spaceName, "datacite.xml", digestInputStream, -1l, null, null,
 								null);
