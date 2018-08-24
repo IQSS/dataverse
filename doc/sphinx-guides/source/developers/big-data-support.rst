@@ -18,7 +18,9 @@ Install a DCM
 
 Installation instructions can be found at https://github.com/sbgrid/data-capture-module . Note that a shared filesystem (posix or AWS S3) between Dataverse and your DCM is required. You cannot use a DCM with Swift at this point in time.
 
-Please note that S3 support for DCM is highly experimental. Files can be uploaded to S3 but they cannot be downloaded until https://github.com/IQSS/dataverse/issues/4949 is worked on. If you want to play around with S3 support for DCM, you must configure a JVM option called ``dataverse.files.dcm-s3-bucket-name``. FIXME: Explain what ``dataverse.files.dcm-s3-bucket-name`` is for and what it has to do with ``dataverse.files.s3-bucket-name``.
+Please note that S3 support for DCM is highly experimental. Files can be uploaded to S3 but they cannot be downloaded until https://github.com/IQSS/dataverse/issues/4949 is worked on. If you want to play around with S3 support for DCM, you must configure a JVM option called ``dataverse.files.dcm-s3-bucket-name`` which is a holding area for uploaded files that have not yet passed checksum validation. Search for that JVM option at https://github.com/IQSS/dataverse/issues/4703 for commands on setting that JVM option and related setup. Note that because that GitHub issue has so many comments you will need to click "Load more" where it says "hidden items". FIXME: Document all of this properly.
+
+. FIXME: Explain what ``dataverse.files.dcm-s3-bucket-name`` is for and what it has to do with ``dataverse.files.s3-bucket-name``.
 
 Once you have installed a DCM, you will need to configure two database settings on the Dataverse side. These settings are documented in the :doc:`/installation/config` section of the Installation Guide:
 
