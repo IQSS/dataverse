@@ -112,7 +112,7 @@ public class PermissionServiceBean {
      * 
      * The example below takes the current request, and checks whether it has 
      * permission {@code p} over {@link DvObject} {@code dv}:
-     *     * <code>
+     * <code>
      * if ( bean.on(dvObject).has(p) ) {
      *  ...do the thing you must have p in order to do
      * }
