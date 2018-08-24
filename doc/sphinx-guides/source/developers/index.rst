@@ -18,6 +18,7 @@ Developer Guide
    troubleshooting
    version-control
    testing
+   testable-command
    documentation
    debugging
    coding-style

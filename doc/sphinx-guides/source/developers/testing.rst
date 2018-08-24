@@ -23,7 +23,7 @@ Testing in Depth
 
 `Security in depth <https://en.wikipedia.org/wiki/Defense_in_depth_(computing)>`_ might mean that your castle has a moat as well as high walls. Likewise, when testing, you should consider testing a various layers of the stack using both unit tests and integration tests.
 
-When writing tests, you may find it helpful to first map out which functions of your code you want to test, and then write a functional unit test for each which can later comprise a larger integration test. 
+When writing tests, you may find it helpful to first map out which functions of your code you want to test, and then write a functional unit test for each which can later comprise a larger integration test.
 
 Unit Tests
 ----------
@@ -32,7 +32,7 @@ Creating unit tests for your code is a helpful way to test what you've built pie
 
 Unit tests can be executed without runtime dependencies on PostgreSQL, Solr, or any other external system. They are the lowest level of testing and are executed constantly on developers' laptops as part of the build process and via continous integration services in the cloud.
 
-A unit test should execute an operation of your code in a controlled fashion. You must make an assertion of what the expected response gives back. It's important to test optimistic output and assertions (the "happy path"), as well as unexpected input that leads to failure conditions. Know how your program should handle anticipated errors/exceptions and confirm with your test(s) that it does so properly. 
+A unit test should execute an operation of your code in a controlled fashion. You must make an assertion of what the expected response gives back. It's important to test optimistic output and assertions (the "happy path"), as well as unexpected input that leads to failure conditions. Know how your program should handle anticipated errors/exceptions and confirm with your test(s) that it does so properly.
 
 Unit Test Automation Overview
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -67,13 +67,12 @@ In addition to seeing code coverage in Netbeans, you can also see code coverage 
 Testing Commands
 ^^^^^^^^^^^^^^^^
 
-You might find studying the following test classes helpful in writing tests for commands:
+Read :doc:`testable-command`.
+Additionally, you might find studying the following test classes helpful in writing tests for commands:
 
 - CreatePrivateUrlCommandTest.java
 - DeletePrivateUrlCommandTest.java
 - GetPrivateUrlCommandTest.java
-
-In addition, there is a writeup on "The Testable Command" at https://github.com/IQSS/dataverse/blob/develop/doc/theTestableCommand/TheTestableCommand.md .
 
 Integration Tests
 -----------------
@@ -115,7 +114,7 @@ Without this "burrito" key in place, REST Assured will not be able to create use
 Root Dataverse Permissions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In your browser, log in as dataverseAdmin (password: admin) and click the "Edit" button for your root dataverse. Navigate to Permissions, then the Edit Access button. Under "Who can add to this dataverse?" choose "Anyone with a dataverse account can add sub dataverses" if it isn't set to this already. 
+In your browser, log in as dataverseAdmin (password: admin) and click the "Edit" button for your root dataverse. Navigate to Permissions, then the Edit Access button. Under "Who can add to this dataverse?" choose "Anyone with a dataverse account can add sub dataverses" if it isn't set to this already.
 
 Alternatively, this same step can be done with this script: ``scripts/search/tests/grant-authusers-add-on-root``
 
@@ -133,9 +132,9 @@ When run locally (as opposed to a remote server), some of the REST Assured tests
 
 If ``dataverse.siteUrl`` is absent, you can add it with:
 
-``./asadmin create-jvm-options "-Ddataverse.siteUrl=http\://localhost\:8080"`` 
+``./asadmin create-jvm-options "-Ddataverse.siteUrl=http\://localhost\:8080"``
 
-Identifier Generation 
+Identifier Generation
 ^^^^^^^^^^^^^^^^^^^^^
 
 ``DatasetsIT.java`` exercises the feature where the "identifier" of a DOI can be a digit and requires a sequence to be added to your database.  See ``:IdentifierGenerationStyle`` under the :doc:`/installation/config` section for adding this sequence to your installation of PostgreSQL.
@@ -144,13 +143,13 @@ Identifier Generation
 Writing Integration Tests with REST Assured
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Before writing any new REST Assured tests, you should get the tests to pass in an existing REST Assured test file. ``BuiltinUsersIT.java`` is relatively small and requires less setup than other test files. 
+Before writing any new REST Assured tests, you should get the tests to pass in an existing REST Assured test file. ``BuiltinUsersIT.java`` is relatively small and requires less setup than other test files.
 
 You do not have to reinvent the wheel. There are many useful methods you can call in your own tests -- especially within UtilIT.java -- when you need your test to create and/or interact with generated accounts, files, datasets, etc. Similar methods can subsequently delete them to get them out of your way as desired before the test has concluded.
 
 For example, if you’re testing your code’s operations with user accounts, the method ``UtilIT.createRandomUser();`` can generate an account for your test to work with. The same account can then be deleted by your program by calling the ``UtilIT.deleteUser();`` method on the imaginary friend your test generated.
 
-Remember, it’s only a test (and it's not graded)! Some guidelines to bear in mind: 
+Remember, it’s only a test (and it's not graded)! Some guidelines to bear in mind:
 
 - Map out which logical functions you want to test
 - Understand what’s being tested and ensure it’s repeatable
@@ -159,9 +158,9 @@ Remember, it’s only a test (and it's not graded)! Some guidelines to bear in m
 - Let the code do the labor; automate everything that happens when you run your test file.
 - Just as with any development, if you’re stuck: ask for help!
 
-To execute existing integration tests on your local Dataverse, a helpful command line tool to use is `Maven <http://maven.apache.org/ref/3.1.0/maven-embedder/cli.html>`_. You should have Maven installed as per the `Development Environment <http://guides.dataverse.org/en/latest/developers/dev-environment.html>`_ guide, but if not it’s easily done via Homebrew: ``brew install maven``. 
+To execute existing integration tests on your local Dataverse, a helpful command line tool to use is `Maven <http://maven.apache.org/ref/3.1.0/maven-embedder/cli.html>`_. You should have Maven installed as per the `Development Environment <http://guides.dataverse.org/en/latest/developers/dev-environment.html>`_ guide, but if not it’s easily done via Homebrew: ``brew install maven``.
 
-Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)>]``. 
+Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)>]``.
 
 + If you want to run just one particular API test, it’s as easy as you think:
 
@@ -223,7 +222,7 @@ We haven't thought much about a good way to publicly list the "IT" classes that 
 Future Work
 -----------
 
-We'd like to make improvements to our automated testing. See also 'this thread from our mailing list <https://groups.google.com/forum/#!topic/dataverse-community/X8OrRWbPimA>'_ asking for ideas from the community, and discussion at 'this GitHub issue. <https://github.com/IQSS/dataverse/issues/2746>'_ 
+We'd like to make improvements to our automated testing. See also 'this thread from our mailing list <https://groups.google.com/forum/#!topic/dataverse-community/X8OrRWbPimA>'_ asking for ideas from the community, and discussion at 'this GitHub issue. <https://github.com/IQSS/dataverse/issues/2746>'_
 
 Future Work on Unit Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~
