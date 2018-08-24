@@ -143,7 +143,7 @@ public class BagGenerator {
 			cm = new PoolingHttpClientConnectionManager(registry);
 
 			cm.setDefaultMaxPerRoute(numConnections);
-			cm.setMaxTotal(numConnections > 24 ? numConnections : 24);
+			cm.setMaxTotal(numConnections > 20 ? numConnections : 20);
 
 			client = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(config).build();
 			
@@ -373,7 +373,7 @@ public class BagGenerator {
 		// JsonObject aggStats = ((JsonObject) pubRequest.get("Aggregation
 		// Statistics"));
 		// aggregation.put("Aggregation Statistics", aggStats);
-
+		client.close();
 		return true;
 
 	}
