@@ -147,9 +147,10 @@
                 <h:outputLink id="replicated" value="#{versionTab.replicaLocation}" target="_blank" rendered="#{!empty(versionTab.replicaLocation)}">
                     <h:outputText  value="Complete" />
                 </h:outputLink>
-                <h:outputLink id="replicated" value="#{!empty(versionTab.replicaLocation)}" target="_blank" rendered="#{empty(versionTab.replicaLocation)}">
-                    <h:outputText  value="Submit" />
-                </h:outputLink>
+         <p:commandLink rendered="#{empty(versionTab.replicaLocation)}" update=":datasetForm,,:messagePanel" oncomplete="toggle_dropdown();" 
+                                                   action="#{DatasetPage.archiveVersion(versionTab.id)}">
+                                        <h:outputText value="Submit"/>
+                                    </p:commandLink>
                 
             </ui:fragment>
         </p:column><!-- end: date column -->
