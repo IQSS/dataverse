@@ -587,18 +587,9 @@ public class AuthenticationServiceBean {
     
     public AuthenticatedUser updateAuthenticatedUser(AuthenticatedUser user, AuthenticatedUserDisplayInfo userDisplayInfo) {
         user.applyDisplayInfo(userDisplayInfo);
-        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "updateUser")
-                .setInfo(user.getIdentifier()));
-        
-        updateBuiltinUser(user, userDisplayInfo);
-        
+        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "updateUser")
+            .setInfo(user.getIdentifier()));
         return update(user);
-    }
-    
-    public void updateBuiltinUser(AuthenticatedUser user, AuthenticatedUserDisplayInfo userDisplayInfo) {
-        BuiltinUser builtinUser = builtinUserServiceBean.findByEmail(user.getEmail());
-        
-        builtinUser.applyDisplayInfo(userDisplayInfo);
     }
     
     public List<AuthenticatedUser> findAllAuthenticatedUsers() {
