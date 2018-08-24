@@ -219,15 +219,28 @@ public class FileDownloadHelper implements java.io.Serializable {
      }
     
      public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse, Boolean downloadOriginal) {
-        RequestContext requestContext = RequestContext.getCurrentInstance();
-        boolean valid = validateGuestbookResponse(guestbookResponse);
-                  
+         RequestContext requestContext = RequestContext.getCurrentInstance();
+         boolean valid = validateGuestbookResponse(guestbookResponse);
+
          if (!valid) {
              JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));
          } else {
-             requestContext.execute("PF('downloadPopup').hide()"); 
+             requestContext.execute("PF('downloadPopup').hide()");
              guestbookResponse.setDownloadtype("Download");
-             fileDownloadService.writeGuestbookAndStartDownload(guestbookResponse, downloadOriginal);
+
+             // Note that this method is only ever called from the file-download-popup - 
+             // meaning we know for the fact that we DO want to save this 
+             // guestbookResponse permanently in the database.
+             if (guestbookResponse.getDataFile() != null) {
+                 // this a single file download:
+                 fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse);
+             } else if (guestbookResponse.getSessionId() != null) {
+                 // this is a batch (multiple file) download:
+                 if (downloadOriginal) {
+                     guestbookResponse.setFileFormat("original");
+                 }
+                 fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse);
+             }
          }
 
      }

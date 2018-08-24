@@ -3055,13 +3055,14 @@ public class DatasetPage implements java.io.Serializable {
 
     // The "writeGuestbookOnDataverseSide" parameter means that if set to false, 
     // it will be the download API's job to create the guestbook response record.
-    public void startMultipleFileDownload (Boolean writeGuestbookOnDataverseSide, Boolean downloadOriginal){
-        if(getSelectedDownloadableFilesIdsString().split(",").length ==1) {
-            String downloadType = downloadOriginal ? "original" : "Download";
-            fileDownloadService.redirectToDownloadAPI(downloadType, Long.parseLong(getSelectedDownloadableFilesIdsString()), writeGuestbookOnDataverseSide);
-        } else {
-            fileDownloadService.redirectToBatchDownloadAPI(getSelectedDownloadableFilesIdsString(), writeGuestbookOnDataverseSide, downloadOriginal);
+    public void startMultipleFileDownload (Boolean writeGuestbookOnUiSide, Boolean downloadOriginal){
+        
+        this.guestbookResponse = this.guestbookResponseService.modifySelectedFileIds(guestbookResponse, getSelectedDownloadableFilesIdsString());
+        if (downloadOriginal) {
+            guestbookResponse.setFileFormat("original");
         }
+        boolean doNotSaveGuestbookResponse = workingVersion.isDraft();
+        fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse, doNotSaveGuestbookResponse);
     }
  
     private String downloadType = "";
