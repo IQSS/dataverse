@@ -3048,8 +3048,11 @@ public class DatasetPage implements java.io.Serializable {
     }
         
     public void startMultipleFileDownload (Boolean writeGuestbook){
-
-        fileDownloadService.callDownloadServlet(getDownloadableFilesIdsString(), writeGuestbook);
+        if(getDownloadableFilesIdsString().split(",").length ==1) {
+            fileDownloadService.callDownloadServlet("Download", Long.parseLong(getDownloadableFilesIdsString()), writeGuestbook);
+        } else {
+          fileDownloadService.callDownloadServlet(getDownloadableFilesIdsString(), writeGuestbook);
+        }
 
     }
  
@@ -3072,6 +3075,15 @@ public class DatasetPage implements java.io.Serializable {
         }
         
          this.guestbookResponse = this.guestbookResponseService.modifySelectedFileIds(guestbookResponse, getSelectedDownloadableFilesIdsString());
+         if(this.selectedDownloadableFiles.size()<2) {
+             if(this.selectedDownloadableFiles.size()==1) {
+             Long id = selectedDownloadableFiles.get(0).getId();
+             DataFile df = datafileService.findCheapAndEasy(id);
+             guestbookResponse.setDataFile(df);
+             }
+         } else {
+             guestbookResponse.setDataFile(null);
+         }
          this.guestbookResponse.setDownloadtype("Download");
          this.guestbookResponse.setFileFormat("Download");
         RequestContext requestContext = RequestContext.getCurrentInstance();

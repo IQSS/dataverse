@@ -18,10 +18,49 @@ Tabs vs. Spaces
 
 Don't use tabs. Use spaces.
 
+Braces Placement
+^^^^^^^^^^^^^^^^
+
+Place curly braces according to the style below, which is an example you can see from Netbeans.
+
+.. code-block:: java
+
+    public class ClassA {
+
+        private String letters[] = new String[]{"A", "B"};
+
+        public int meth(String text, int number) {
+            BinaryOperator plus = (a, b) -> {
+                return a + b;
+            };
+            if (text != null) {
+                try {
+                    meth("Some text", text.length());
+                } catch (Throwable t) {
+                } finally {
+                }
+            } else if (number >= 0) {
+                text = number == 0 ? "empty" : "nonempty";
+            }
+            do {
+                number = number + 1;
+            } while (number < 2);
+            for (int i = 1; i < 100; i++) {
+                number = number + i;
+            }
+            while (number > 0) {
+                number--;
+            }
+        }
+    }
+
 Format Code You Changed with Netbeans
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 As you probably gathered from the :doc:`dev-environment` section, IQSS has standardized on Netbeans. It is much appreciated when you format your code (but only the code you touched!) using the out-of-the-box Netbeans configuration. If you have created an entirely new Java class, you can just click Source -> Format. If you are adjusting code in an existing class, highlight the code you changed and then click Source -> Format. Keeping the "diff" in your pull requests small makes them easier to code review.
+
+The Netbeans formatting syntax appears not to be documented anywhere, however from an initial approximation `astyle --mode=java --style=attach --add-braces ${source_file}` is reasonably close.
+If `astyle` is not installed on your system, it is available from `<http://astyle.sourceforge.net>`_.
 
 We would like to someday automate the detection and possibly correction of code that hasn't been formatted using our house style (the default Netbeans style). We've heard that https://maven.apache.org/plugins/maven-checkstyle-plugin/ can do this but we would be happy to see a pull request in this area, especially if it also hooks up to our builds at https://travis-ci.org/IQSS/dataverse .
 
