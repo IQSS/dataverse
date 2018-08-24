@@ -1011,7 +1011,10 @@ public class BagGenerator {
 
 		if (apiKey != null) {
 			try {
-				request = new HttpGet(new URI(url.toURL().toString() + "?key=" + apiKey));
+				String urlString = url.toURL().toString();
+				//Add key as param - check whether it is the only param or not
+				urlString = urlString + ((urlString.indexOf('?')!=-1) ? "&key=" : "?key=") + apiKey;
+				request = new HttpGet(new URI(urlString));
 			} catch (MalformedURLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
