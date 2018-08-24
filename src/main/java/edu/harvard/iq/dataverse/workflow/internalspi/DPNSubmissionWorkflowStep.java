@@ -109,6 +109,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 							public void run() {
 								try {
 									BagIt_Export.exportDatasetVersionAsBag(dv, finalToken, settingsService, out);
+									out.close();
 								} catch (Exception e) {
 									logger.severe("Error creating bag: " + e.getMessage());
 									// TODO Auto-generated catch block
@@ -131,7 +132,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 							return new Failure("Error in transferring Zip file to DPN",
 									"DPN Submission Failure: incomplete archive transfer");
 						}
-
+						IOUtils.closeQuietly(digestInputStream);
 						// Add datacite.xml file
 						messageDigest = MessageDigest.getInstance("MD5");
 
@@ -142,12 +143,13 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 								try {
 									ExportService.getInstance(settingsService).exportFormatToStream(dv,
 											DataCiteExporter.NAME, dataciteOut);
+									dataciteOut.close();
 								} catch (Exception e) {
 									logger.severe("Error creating datacite.xml: " + e.getMessage());
 									// TODO Auto-generated catch block
 									e.printStackTrace();
-									IOUtils.closeQuietly(in);
-									IOUtils.closeQuietly(out);
+									IOUtils.closeQuietly(dataciteIn);
+									IOUtils.closeQuietly(dataciteOut);
 								}
 							}
 						}).start();
@@ -163,7 +165,8 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 							return new Failure("Error in transferring DataCite.xml file to DPN",
 									"DPN Submission Failure: incomplete metadata transfer");
 						}
-
+						IOUtils.closeQuietly(digestInputStream);
+						
 						logger.info("DPN Submission step: Content Transferred");
 						// Document location of dataset version replica (actually the URL where you can
 						// view it as an admin)
