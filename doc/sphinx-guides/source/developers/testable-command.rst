@@ -137,7 +137,7 @@ work and defects the object of creating lots of small tests.
    commands to directly access a JPA entity manager. The idea behind adding this method was to try
    and remove all service beans, and replace them with commands. That
    worked, but it made the commands too detailed, and non-testable. So
-   in hind sight, not the best move. If all goes well, ``em()`` will be
+   in hind sight, not the best move [*]_. If all goes well, ``em()`` will be
    removed after we migrate all commands that use it to use service bean
    methods instead.
 
@@ -246,3 +246,6 @@ relevant to the context of Dataverse and its commands.
    `here </src/test/java/edu/harvard/iq/dataverse/engine/command/impl>`__.
 
 Happy Testing!
+
+
+.. [*] It was Michael's mistake and he's sorry for it.
