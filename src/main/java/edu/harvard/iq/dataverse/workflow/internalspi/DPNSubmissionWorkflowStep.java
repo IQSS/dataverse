@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
+import javax.ejb.Stateless;
 
 /**
  * A step that submits a BagIT bag of the newly published dataset version to DPN
@@ -20,6 +21,7 @@ import javax.ejb.EJB;
  * 
  * @author jimmyers
  */
+@Stateless
 public class DPNSubmissionWorkflowStep implements WorkflowStep {
 
     @EJB
