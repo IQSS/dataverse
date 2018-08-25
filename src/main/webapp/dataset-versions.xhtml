@@ -147,7 +147,7 @@
                 <h:outputLink id="replicated" value="#{versionTab.replicaLocation}" target="_blank" rendered="#{!empty(versionTab.replicaLocation)}">
                     <h:outputText  value="Complete" />
                 </h:outputLink>
-         <p:commandLink rendered="#{empty(versionTab.replicaLocation)}" update="#{p:resolveClientId('datasetForm:tabView:versionsTable', view)},:messagePanel" oncomplete="toggle_dropdown();" 
+         <p:commandLink rendered="#{empty(versionTab.replicaLocation)}" 
                                                    action="#{DatasetPage.archiveVersion(versionTab.id)}">
                                         <h:outputText value="Submit"/>
                                     </p:commandLink>

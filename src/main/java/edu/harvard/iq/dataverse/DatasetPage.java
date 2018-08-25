@@ -4404,7 +4404,7 @@ public class DatasetPage implements java.io.Serializable {
         setRowsPerPage(dt.getRowsToRender());
     }  
     
-    public void archiveVersion(Long id) {
+    public String archiveVersion(Long id) {
         if (session.getUser() instanceof AuthenticatedUser) {
             AuthenticatedUser au = ((AuthenticatedUser) session.getUser());
             if (au.isSuperuser()) {
@@ -4413,9 +4413,11 @@ public class DatasetPage implements java.io.Serializable {
                 try {
                     DatasetVersion version = commandEngine.submit(cmd);
                     logger.info("Archived to " + version.getReplicaLocation());
-                    
+                    if(version.getReplicaLocation()!=null) {
                     JsfHelper.addSuccessMessage(JH.localize("datasetversion.archive.success"));
-
+                    } else {
+                        JsfHelper.addErrorMessage(JH.localize("datasetversion.archive.failure"));
+                    }
                 } catch (CommandException ex) {
                     logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
                     JsfHelper.addErrorMessage(JH.localize("datasetversion.archive.failure"));
@@ -4429,5 +4431,6 @@ public class DatasetPage implements java.io.Serializable {
                     "Contact an administrator");
             FacesContext.getCurrentInstance().addMessage(null, message);
         }
+        return "";
     }
 }
