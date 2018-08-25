@@ -30,6 +30,7 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -46,6 +47,7 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
 
     private final DatasetVersion version;
     private final DataverseRequest request;
+    private final Map<String, DvObject> affectedDvObjects;
     private static final Logger logger = Logger.getLogger(SubmitArchiveCommand.class.getName());
 	private static final String DEFAULT_PORT = "443";
 	private static final String DEFAULT_CONTEXT = "durastore";
@@ -53,6 +55,8 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
     public SubmitArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
     	this.request=aRequest;
         this.version = version;
+        affectedDvObjects = new HashMap<>();
+        affectedDvObjects.put("", version.getDataset());
     }
 
     @Override
@@ -67,7 +71,8 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
 
 	@Override
 	public Map<String, DvObject> getAffectedDvObjects() {
-		return null;
+		
+		return affectedDvObjects;
 	}
 
 	@Override
