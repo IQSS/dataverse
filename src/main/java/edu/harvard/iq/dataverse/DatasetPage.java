@@ -96,6 +96,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SubmitArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
@@ -4389,13 +4390,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public void clearSelection() {
         logger.info("clearSelection called");
-        selectedFiles = Collections.EMPTY_LIST;
-        
-        
-        
-        
-        
-        //guestbookResponse.setSelectedFileIds(getSelectedFilesIdsString());
+        selectedFiles = Collections.emptyList();
     }
     
     public void fileListingPaginatorListener(PageEvent event) {       
@@ -4410,13 +4405,27 @@ public class DatasetPage implements java.io.Serializable {
     }  
     
     public void archiveVersion(Long id) {
-
         if (session.getUser() instanceof AuthenticatedUser) {
             AuthenticatedUser au = ((AuthenticatedUser) session.getUser());
             if (au.isSuperuser()) {
                 DatasetVersion dv = datasetVersionService.retrieveDatasetVersionByVersionId(id).getDatasetVersion();
-                DPNSubmissionWorkflowStep.performDPNSubmission(dv, au, settingsService, authService);
+                SubmitArchiveCommand cmd = new SubmitArchiveCommand(dvRequestService.getDataverseRequest(), dv);
+                try {
+                    commandEngine.submit(cmd);
+                    JsfHelper.addSuccessMessage(JH.localize("dataverse.archive.success"));
+
+                } catch (CommandException ex) {
+                    logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
+                    JsfHelper.addErrorMessage(JH.localize("dataverse.archive.failure"));
+
+                }
             }
+        } else {
+            logger.warning("Non-superuser calling archiveVersion()");
+            // Shouldn't happen - remove after debugging?
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Authentication error",
+                    "Contact an administrator");
+            FacesContext.getCurrentInstance().addMessage(null, message);
         }
     }
 }

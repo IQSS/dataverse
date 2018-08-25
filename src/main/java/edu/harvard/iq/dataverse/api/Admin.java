@@ -7,9 +7,11 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -46,6 +48,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 
 import java.io.InputStream;
@@ -70,11 +73,14 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SubmitArchiveCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.workflow.internalspi.DPNSubmissionWorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
@@ -116,6 +122,10 @@ public class Admin extends AbstractApiBean {
 	SettingsServiceBean settingsService;
 	@EJB
 	AuthenticationServiceBean authService;
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
+    @EJB
+    EjbDataverseEngine commandEngine;
 
 	// Make the session available
 	@Inject
@@ -1208,17 +1218,18 @@ public class Admin extends AbstractApiBean {
 
 		try {
 			AuthenticatedUser au = findAuthenticatedUserOrDie();
-			if (!au.isSuperuser())
-				return error(Status.UNAUTHORIZED, "must be superuser");
-
-			DatasetVersion dv = datasetversionService.retrieveDatasetVersionByVersionId(dvid).getDatasetVersion();
-
-			WorkflowStepResult wfsr = DPNSubmissionWorkflowStep.performDPNSubmission(dv, au, settingsService,
-					authService);
-			if (wfsr.equals(WorkflowStepResult.OK)) {
-				return ok("DatasetVersion id=" + dvid + " submitted to Duracloud");
+			if (au.isSuperuser()) {
+				DatasetVersion dv = datasetversionService.retrieveDatasetVersionByVersionId(dvid).getDatasetVersion();
+				SubmitArchiveCommand cmd = new SubmitArchiveCommand(dvRequestService.getDataverseRequest(), dv);
+				try {
+					commandEngine.submit(cmd);
+					return ok("DatasetVersion id=" + dvid + " submitted to Duracloud");
+				} catch (CommandException ex) {
+					logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
+					return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
+				}
 			} else {
-				return error(Response.Status.INTERNAL_SERVER_ERROR, ((Failure) wfsr).getMessage());
+				return error(Status.UNAUTHORIZED, "must be superuser");
 			}
 		} catch (WrappedResponse e1) {
 			return error(Status.UNAUTHORIZED, "api key required");
