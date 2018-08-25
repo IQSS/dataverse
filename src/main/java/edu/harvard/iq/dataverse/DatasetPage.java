@@ -4411,7 +4411,9 @@ public class DatasetPage implements java.io.Serializable {
                 DatasetVersion dv = datasetVersionService.retrieveDatasetVersionByVersionId(id).getDatasetVersion();
                 SubmitArchiveCommand cmd = new SubmitArchiveCommand(dvRequestService.getDataverseRequest(), dv);
                 try {
-                    commandEngine.submit(cmd);
+                    DatasetVersion version = commandEngine.submit(cmd);
+                    logger.info("Archived to " + version.getReplicaLocation());
+                    
                     JsfHelper.addSuccessMessage(JH.localize("datasetversion.archive.success"));
 
                 } catch (CommandException ex) {
