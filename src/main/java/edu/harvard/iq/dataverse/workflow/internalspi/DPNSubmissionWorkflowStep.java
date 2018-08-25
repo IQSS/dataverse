@@ -1,12 +1,15 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitArchiveCommand;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,9 +37,17 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
     @Override
     public WorkflowStepResult run(WorkflowContext context) {
         String host="qdr.duracloud.org"; //RETRIEVE FROM PARAMS
+        if(authService==null) {
+        	logger.severe("No auth service");
+        }
+        AuthenticatedUser user = context.getRequest().getAuthenticatedUser();
+        ApiToken token = authService.findApiTokenByUser(user);
+        if ((token == null) || (token.getExpireTime().before(new Date()))) {
+            token = authService.generateApiTokenForUser(user);
+        }
         return SubmitArchiveCommand.performDPNSubmission(
                 context.getDataset().getVersion(context.getNextVersionNumber(), context.getNextMinorVersionNumber()),
-                context.getRequest().getAuthenticatedUser(), host, null, null, authService);
+                context.getRequest().getAuthenticatedUser(), host, null, null, token);
     }
 
 

@@ -67,8 +67,12 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
         String host = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DuraCloudHost);
         String port = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DuraCloudPort);
         String dpnContext = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DuraCloudContext);
-
-        performDPNSubmission(version, request.getAuthenticatedUser(), host, port, dpnContext, ctxt.authentication());
+        AuthenticatedUser user = request.getAuthenticatedUser();
+        ApiToken token = ctxt.authentication().findApiTokenByUser(user);
+        if ((token == null) || (token.getExpireTime().before(new Date()))) {
+            token = ctxt.authentication().generateApiTokenForUser(user);
+        }
+        performDPNSubmission(version, user, host, port, dpnContext, token);
         return ctxt.em().merge(version);
     }
 
@@ -96,10 +100,8 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
     }
 
     public static WorkflowStepResult performDPNSubmission(DatasetVersion dv, AuthenticatedUser user, String host,
-            String aPort, String aDpnContext, AuthenticationServiceBean authService) {
-    	if(authService==null) {
-    		logger.severe("No authService");
-    	}
+            String aPort, String aDpnContext, ApiToken token) {
+
         String port = aPort != null ? aPort : DEFAULT_PORT;
         String dpnContext = aDpnContext != null ? aDpnContext : DEFAULT_CONTEXT;
         if (host != null) {
@@ -128,18 +130,13 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
                         // Add BagIt ZIP file
                         MessageDigest messageDigest = MessageDigest.getInstance("MD5");
 
-                        ApiToken token = authService.findApiTokenByUser(user);
-                        if ((token == null) || (token.getExpireTime().before(new Date()))) {
-                            token = authService.generateApiTokenForUser(user);
-                        }
-                        final ApiToken finalToken = token;
 
                         PipedInputStream in = new PipedInputStream();
                         PipedOutputStream out = new PipedOutputStream(in);
                         new Thread(new Runnable() {
                             public void run() {
                                 try {
-                                    BagIt_Export.exportDatasetVersionAsBag(dv, finalToken, out);
+                                    BagIt_Export.exportDatasetVersionAsBag(dv, token, out);
                                     out.close();
                                 } catch (Exception e) {
                                     logger.severe("Error creating bag: " + e.getMessage());
