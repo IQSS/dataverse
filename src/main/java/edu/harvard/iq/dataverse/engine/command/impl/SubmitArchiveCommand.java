@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.duracloud.client.ContentStore;
 import org.duracloud.client.ContentStoreManager;
@@ -147,8 +148,7 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
 						String checksum = store.addContent(spaceName, fileName, digestInputStream, -1l, null, null,
 								null);
 						logger.info("Content: " + fileName + " added with checksum: " + checksum);
-						String localchecksum = new BigInteger(1, digestInputStream.getMessageDigest().digest())
-								.toString(16);
+						String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
 						if (!checksum.equals(localchecksum)) {
 							logger.severe(checksum + " not equal to " + localchecksum);
 							return new Failure("Error in transferring Zip file to DPN",
@@ -181,8 +181,7 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
 						checksum = store.addContent(spaceName, "datacite.xml", digestInputStream, -1l, null, null,
 								null);
 						logger.info("Content: datacite.xml added with checksum: " + checksum);
-						byte[] bytes = digestInputStream.getMessageDigest().digest();
-						localchecksum = String.format("%0" + (bytes.length << 1) + "X", new BigInteger(1, bytes));
+						localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
 						if (!checksum.equals(localchecksum)) {
 							logger.severe(checksum + " not equal to " + localchecksum);
 							return new Failure("Error in transferring DataCite.xml file to DPN",
