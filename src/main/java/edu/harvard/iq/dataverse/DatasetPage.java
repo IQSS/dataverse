@@ -4412,11 +4412,11 @@ public class DatasetPage implements java.io.Serializable {
                 SubmitArchiveCommand cmd = new SubmitArchiveCommand(dvRequestService.getDataverseRequest(), dv);
                 try {
                     commandEngine.submit(cmd);
-                    JsfHelper.addSuccessMessage(JH.localize("dataverse.archive.success"));
+                    JsfHelper.addSuccessMessage(JH.localize("datasetversion.archive.success"));
 
                 } catch (CommandException ex) {
                     logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
-                    JsfHelper.addErrorMessage(JH.localize("dataverse.archive.failure"));
+                    JsfHelper.addErrorMessage(JH.localize("datasetversion.archive.failure"));
 
                 }
             }
