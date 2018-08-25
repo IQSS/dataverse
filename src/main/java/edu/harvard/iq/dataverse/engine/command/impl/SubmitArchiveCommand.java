@@ -91,7 +91,9 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
     }
     
 	public static WorkflowStepResult performDPNSubmission(DatasetVersion dv, AuthenticatedUser user, SettingsServiceBean settingsService, AuthenticationServiceBean authService) {
-
+if(settingsService == null) {
+	logger.severe("Nul SS bean");
+}
 		String host = settingsService.getValueForKey(SettingsServiceBean.Key.DuraCloudHost);
 		if (host != null) {
 			Dataset dataset = dv.getDataset();
