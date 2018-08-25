@@ -21,7 +21,7 @@ import javax.ejb.Stateless;
  * 
  * @author jimmyers
  */
-@Stateless
+
 public class DPNSubmissionWorkflowStep implements WorkflowStep {
 
     @EJB

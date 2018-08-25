@@ -46,25 +46,8 @@ public class DataCiteExporter implements Exporter {
             throws ExportException {
         try {
         	DataCitation dc = new DataCitation(version);
-            Map<String, String> metadata = new HashMap<>();
-            // From AbstractGlobalIdServiceBean
-            String authorString = dc.getAuthorsString();
-
-            if (authorString.isEmpty()) {
-                authorString = ":unav";
-            }
-            // QDR - use institution name
-            String producerString = dc.getPublisher();
-
-            if (producerString.isEmpty()) {
-                producerString = ":unav";
-            }
-
-            metadata.put("datacite.creator", authorString);
-            metadata.put("datacite.title", dc.getTitle());
-            metadata.put("datacite.publisher", producerString);
-            metadata.put("datacite.publicationyear", dc.getYear());
-
+        	
+            Map<String, String> metadata = dc.getDataCiteMetadata();
             String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(
                     version.getDataset().getGlobalId().asString(), metadata, version.getDataset());
             outputStream.write(xml.getBytes(Charset.forName("utf-8")));

@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
+import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
@@ -25,7 +27,7 @@ import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -165,8 +167,11 @@ if(settingsService == null) {
 						new Thread(new Runnable() {
 							public void run() {
 								try {
-									ExportService.getInstance(settingsService).exportFormatToStream(dv,
-											DataCiteExporter.NAME, dataciteOut);
+							       	DataCitation dc = new DataCitation(dv);
+						            Map<String, String> metadata = dc.getDataCiteMetadata();
+						            String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(
+						                    dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
+						            dataciteOut.write(xml.getBytes(Charset.forName("utf-8")));
 									dataciteOut.close();
 								} catch (Exception e) {
 									logger.severe("Error creating datacite.xml: " + e.getMessage());
