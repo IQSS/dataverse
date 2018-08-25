@@ -63,9 +63,7 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
     	
     	performDPNSubmission(version, request.getAuthenticatedUser(), ctxt.settings(), ctxt.authentication());
-        ctxt.em().merge(version);
-        return version;
-
+        return ctxt.em().merge(version);
     }
 
 
@@ -183,7 +181,8 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
 						checksum = store.addContent(spaceName, "datacite.xml", digestInputStream, -1l, null, null,
 								null);
 						logger.info("Content: datacite.xml added with checksum: " + checksum);
-						localchecksum = new BigInteger(1, digestInputStream.getMessageDigest().digest()).toString(16);
+						byte[] bytes = digestInputStream.getMessageDigest().digest();
+						localchecksum = String.format("%0" + (bytes.length << 1) + "X", new BigInteger(1, bytes));
 						if (!checksum.equals(localchecksum)) {
 							logger.severe(checksum + " not equal to " + localchecksum);
 							return new Failure("Error in transferring DataCite.xml file to DPN",
