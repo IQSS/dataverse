@@ -52,11 +52,11 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
     private final DataverseRequest request;
     private final Map<String, DvObject> affectedDvObjects;
     private static final Logger logger = Logger.getLogger(SubmitArchiveCommand.class.getName());
-	private static final String DEFAULT_PORT = "443";
-	private static final String DEFAULT_CONTEXT = "durastore";
+    private static final String DEFAULT_PORT = "443";
+    private static final String DEFAULT_CONTEXT = "durastore";
 
     public SubmitArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
-    	this.request=aRequest;
+        this.request = aRequest;
         this.version = version;
         affectedDvObjects = new HashMap<>();
         affectedDvObjects.put("", version.getDataset());
@@ -64,22 +64,24 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-    	
-    	performDPNSubmission(version, request.getAuthenticatedUser(), ctxt.settings(), ctxt.authentication());
+        String host = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DuraCloudHost);
+        String port = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DuraCloudPort);
+        String dpnContext = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DuraCloudContext);
+
+        performDPNSubmission(version, request.getAuthenticatedUser(), host, port, dpnContext, ctxt.authentication());
         return ctxt.em().merge(version);
     }
 
+    @Override
+    public Map<String, DvObject> getAffectedDvObjects() {
 
-	@Override
-	public Map<String, DvObject> getAffectedDvObjects() {
-		
-		return affectedDvObjects;
-	}
+        return affectedDvObjects;
+    }
 
-	@Override
-	public DataverseRequest getRequest() {
-		return request;
-	}
+    @Override
+    public DataverseRequest getRequest() {
+        return request;
+    }
 
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
@@ -88,154 +90,156 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
 
     @Override
     public String describe() {
-    	//Is this ever used?
-        return "DatasetVersion: " + version.getId() + " " + version.getDataset().getDisplayName() + ".v" + version.getFriendlyVersionNumber();
+        // Is this ever used?
+        return "DatasetVersion: " + version.getId() + " " + version.getDataset().getDisplayName() + ".v"
+                + version.getFriendlyVersionNumber();
     }
-    
-	public static WorkflowStepResult performDPNSubmission(DatasetVersion dv, AuthenticatedUser user, SettingsServiceBean settingsService, AuthenticationServiceBean authService) {
-if(settingsService == null) {
-	logger.severe("Nul SS bean");
-}
-		String host = settingsService.getValueForKey(SettingsServiceBean.Key.DuraCloudHost);
-		if (host != null) {
-			Dataset dataset = dv.getDataset();
-			if (dataset.getLockFor(Reason.pidRegister) == null) {
-				String port = settingsService.getValueForKey(SettingsServiceBean.Key.DuraCloudPort, DEFAULT_PORT);
-				String dpnContext = settingsService.getValueForKey(SettingsServiceBean.Key.DuraCloudContext, DEFAULT_CONTEXT);
 
-				ContentStoreManager storeManager = new ContentStoreManagerImpl(host, port, dpnContext);
-				Credential credential = new Credential(System.getProperty("duracloud.username"), System.getProperty("duracloud.password"));
-				storeManager.login(credential);
+    public static WorkflowStepResult performDPNSubmission(DatasetVersion dv, AuthenticatedUser user, String host,
+            String aPort, String aDpnContext, AuthenticationServiceBean authService) {
+    	if(authService==null) {
+    		logger.severe("No authService");
+    	}
+        String port = aPort != null ? aPort : DEFAULT_PORT;
+        String dpnContext = aDpnContext != null ? aDpnContext : DEFAULT_CONTEXT;
+        if (host != null) {
+            Dataset dataset = dv.getDataset();
+            if (dataset.getLockFor(Reason.pidRegister) == null) {
 
-				String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
-						.replace('.', '-').toLowerCase();
+                ContentStoreManager storeManager = new ContentStoreManagerImpl(host, port, dpnContext);
+                Credential credential = new Credential(System.getProperty("duracloud.username"),
+                        System.getProperty("duracloud.password"));
+                storeManager.login(credential);
 
-				ContentStore store;
-				try {
-					store = storeManager.getPrimaryContentStore();
+                String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
+                        .replace('.', '-').toLowerCase();
 
-					store.createSpace(spaceName);
+                ContentStore store;
+                try {
+                    store = storeManager.getPrimaryContentStore();
 
-					// Store file
+                    store.createSpace(spaceName);
 
-					String fileName = spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip";
-					try {
+                    // Store file
 
-						// Add BagIt ZIP file
-						MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+                    String fileName = spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip";
+                    try {
 
-						ApiToken token = authService.findApiTokenByUser(user);
-						if ((token == null) || (token.getExpireTime().before(new Date()))) {
-							token = authService.generateApiTokenForUser(user);
-						}
-						final ApiToken finalToken = token;
+                        // Add BagIt ZIP file
+                        MessageDigest messageDigest = MessageDigest.getInstance("MD5");
 
-						PipedInputStream in = new PipedInputStream();
-						PipedOutputStream out = new PipedOutputStream(in);
-						new Thread(new Runnable() {
-							public void run() {
-								try {
-									BagIt_Export.exportDatasetVersionAsBag(dv, finalToken, settingsService, out);
-									out.close();
-								} catch (Exception e) {
-									logger.severe("Error creating bag: " + e.getMessage());
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-									IOUtils.closeQuietly(in);
-									IOUtils.closeQuietly(out);
-								}
-							}
-						}).start();
+                        ApiToken token = authService.findApiTokenByUser(user);
+                        if ((token == null) || (token.getExpireTime().before(new Date()))) {
+                            token = authService.generateApiTokenForUser(user);
+                        }
+                        final ApiToken finalToken = token;
 
-						DigestInputStream digestInputStream = new DigestInputStream(in, messageDigest);
+                        PipedInputStream in = new PipedInputStream();
+                        PipedOutputStream out = new PipedOutputStream(in);
+                        new Thread(new Runnable() {
+                            public void run() {
+                                try {
+                                    BagIt_Export.exportDatasetVersionAsBag(dv, finalToken, out);
+                                    out.close();
+                                } catch (Exception e) {
+                                    logger.severe("Error creating bag: " + e.getMessage());
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                    IOUtils.closeQuietly(in);
+                                    IOUtils.closeQuietly(out);
+                                }
+                            }
+                        }).start();
 
-						String checksum = store.addContent(spaceName, fileName, digestInputStream, -1l, null, null,
-								null);
-						logger.info("Content: " + fileName + " added with checksum: " + checksum);
-						String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
-						if (!checksum.equals(localchecksum)) {
-							logger.severe(checksum + " not equal to " + localchecksum);
-							return new Failure("Error in transferring Zip file to DPN",
-									"DPN Submission Failure: incomplete archive transfer");
-						}
-						IOUtils.closeQuietly(digestInputStream);
-						// Add datacite.xml file
-						messageDigest = MessageDigest.getInstance("MD5");
+                        DigestInputStream digestInputStream = new DigestInputStream(in, messageDigest);
 
-						PipedInputStream dataciteIn = new PipedInputStream();
-						PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn);
-						new Thread(new Runnable() {
-							public void run() {
-								try {
-							       	DataCitation dc = new DataCitation(dv);
-						            Map<String, String> metadata = dc.getDataCiteMetadata();
-						            String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(
-						                    dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
-						            dataciteOut.write(xml.getBytes(Charset.forName("utf-8")));
-									dataciteOut.close();
-								} catch (Exception e) {
-									logger.severe("Error creating datacite.xml: " + e.getMessage());
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-									IOUtils.closeQuietly(dataciteIn);
-									IOUtils.closeQuietly(dataciteOut);
-								}
-							}
-						}).start();
+                        String checksum = store.addContent(spaceName, fileName, digestInputStream, -1l, null, null,
+                                null);
+                        logger.info("Content: " + fileName + " added with checksum: " + checksum);
+                        String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
+                        if (!checksum.equals(localchecksum)) {
+                            logger.severe(checksum + " not equal to " + localchecksum);
+                            return new Failure("Error in transferring Zip file to DPN",
+                                    "DPN Submission Failure: incomplete archive transfer");
+                        }
+                        IOUtils.closeQuietly(digestInputStream);
+                        // Add datacite.xml file
+                        messageDigest = MessageDigest.getInstance("MD5");
 
-						digestInputStream = new DigestInputStream(dataciteIn, messageDigest);
+                        PipedInputStream dataciteIn = new PipedInputStream();
+                        PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn);
+                        new Thread(new Runnable() {
+                            public void run() {
+                                try {
+                                    DataCitation dc = new DataCitation(dv);
+                                    Map<String, String> metadata = dc.getDataCiteMetadata();
+                                    String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(
+                                            dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
+                                    dataciteOut.write(xml.getBytes(Charset.forName("utf-8")));
+                                    dataciteOut.close();
+                                } catch (Exception e) {
+                                    logger.severe("Error creating datacite.xml: " + e.getMessage());
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                    IOUtils.closeQuietly(dataciteIn);
+                                    IOUtils.closeQuietly(dataciteOut);
+                                }
+                            }
+                        }).start();
 
-						checksum = store.addContent(spaceName, "datacite.xml", digestInputStream, -1l, null, null,
-								null);
-						logger.info("Content: datacite.xml added with checksum: " + checksum);
-						localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
-						if (!checksum.equals(localchecksum)) {
-							logger.severe(checksum + " not equal to " + localchecksum);
-							return new Failure("Error in transferring DataCite.xml file to DPN",
-									"DPN Submission Failure: incomplete metadata transfer");
-						}
-						IOUtils.closeQuietly(digestInputStream);
-						
-						logger.info("DPN Submission step: Content Transferred");
-						// Document location of dataset version replica (actually the URL where you can
-						// view it as an admin)
-						StringBuffer sb = new StringBuffer("https://");
-						sb.append(host);
-						if (!port.equals("443")) {
-							sb.append(":" + port);
-						}
-						sb.append("/duradmin/spaces/sm/");
-						sb.append(store.getStoreId());
-						sb.append("/" + spaceName + "/" + fileName);
-						dv.setReplicaLocation(sb.toString());
-						logger.info("DPN Submission step complete: " + sb.toString());
-					} catch (ContentStoreException | IOException e) {
-						// TODO Auto-generated catch block
-						logger.warning(e.getMessage());
-						e.printStackTrace();
-						return new Failure("Error in transferring file to DPN",
-								"DPN Submission Failure: archive file not transferred");
-					} catch (NoSuchAlgorithmException e) {
-						logger.severe("MD5 MessageDigest not available!");
-					}
-				} catch (ContentStoreException e) {
-					// TODO Auto-generated catch block
-					logger.warning(e.getMessage());
-					e.printStackTrace();
-					String mesg = "DPN Submission Failure";
-					if (!(1 == dv.getVersion()) || !(0 == dv.getMinorVersionNumber())) {
-						mesg = mesg + ": Prior Version archiving not yet complete?";
-					}
-					return new Failure("Unable to create DPN space with name: " + spaceName, mesg);
-				}
-			} else {
-				logger.warning("DPN Submision Workflow aborted: Dataset locked for pidRegister");
-				return new Failure("Dataset locked");
-			}
-			return WorkflowStepResult.OK;
-		} else {
-			return new Failure("DPN Submission not configured.");
-		}
-	}
+                        digestInputStream = new DigestInputStream(dataciteIn, messageDigest);
+
+                        checksum = store.addContent(spaceName, "datacite.xml", digestInputStream, -1l, null, null,
+                                null);
+                        logger.info("Content: datacite.xml added with checksum: " + checksum);
+                        localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
+                        if (!checksum.equals(localchecksum)) {
+                            logger.severe(checksum + " not equal to " + localchecksum);
+                            return new Failure("Error in transferring DataCite.xml file to DPN",
+                                    "DPN Submission Failure: incomplete metadata transfer");
+                        }
+                        IOUtils.closeQuietly(digestInputStream);
+
+                        logger.info("DPN Submission step: Content Transferred");
+                        // Document location of dataset version replica (actually the URL where you can
+                        // view it as an admin)
+                        StringBuffer sb = new StringBuffer("https://");
+                        sb.append(host);
+                        if (!port.equals("443")) {
+                            sb.append(":" + port);
+                        }
+                        sb.append("/duradmin/spaces/sm/");
+                        sb.append(store.getStoreId());
+                        sb.append("/" + spaceName + "/" + fileName);
+                        dv.setReplicaLocation(sb.toString());
+                        logger.info("DPN Submission step complete: " + sb.toString());
+                    } catch (ContentStoreException | IOException e) {
+                        // TODO Auto-generated catch block
+                        logger.warning(e.getMessage());
+                        e.printStackTrace();
+                        return new Failure("Error in transferring file to DPN",
+                                "DPN Submission Failure: archive file not transferred");
+                    } catch (NoSuchAlgorithmException e) {
+                        logger.severe("MD5 MessageDigest not available!");
+                    }
+                } catch (ContentStoreException e) {
+                    // TODO Auto-generated catch block
+                    logger.warning(e.getMessage());
+                    e.printStackTrace();
+                    String mesg = "DPN Submission Failure";
+                    if (!(1 == dv.getVersion()) || !(0 == dv.getMinorVersionNumber())) {
+                        mesg = mesg + ": Prior Version archiving not yet complete?";
+                    }
+                    return new Failure("Unable to create DPN space with name: " + spaceName, mesg);
+                }
+            } else {
+                logger.warning("DPN Submision Workflow aborted: Dataset locked for pidRegister");
+                return new Failure("Dataset locked");
+            }
+            return WorkflowStepResult.OK;
+        } else {
+            return new Failure("DPN Submission not configured.");
+        }
+    }
 
 }

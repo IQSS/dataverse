@@ -25,9 +25,6 @@ import javax.ejb.Stateless;
 public class DPNSubmissionWorkflowStep implements WorkflowStep {
 
     @EJB
-    SettingsServiceBean settingsService;
-
-    @EJB
     AuthenticationServiceBean authService;
 
     private static final Logger logger = Logger.getLogger(DPNSubmissionWorkflowStep.class.getName());
@@ -38,10 +35,10 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 
     @Override
     public WorkflowStepResult run(WorkflowContext context) {
-
+        String host="qdr.duracloud.org"; //RETRIEVE FROM PARAMS
         return SubmitArchiveCommand.performDPNSubmission(
                 context.getDataset().getVersion(context.getNextVersionNumber(), context.getNextMinorVersionNumber()),
-                context.getRequest().getAuthenticatedUser(), settingsService, authService);
+                context.getRequest().getAuthenticatedUser(), host, null, null, authService);
     }
 
 
