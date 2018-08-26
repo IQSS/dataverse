@@ -52,23 +52,20 @@ public class BatchServiceBean {
         File dir = new File(fileDir);
             if (dir.isDirectory()) {
                 for (File file : dir.listFiles()) {
-                    if (null != file) {
-                        if (!file.isHidden()) {
-                            if (file.isDirectory()) {
-                                try {
-                                    status.add(handleDirectory(dataverseRequest, file, importType, validationLog,
-                                            cleanupLog, createDV));
-                                } catch (ImportException e) {
-                                    logger.log(Level.SEVERE, "Exception in handleDirectory() for " + file.getName(), e);
-                                }
-                            } else {
-                                try {
-                                    status.add(importService.handleFile(dataverseRequest, owner, file, importType,
-                                            validationLog, cleanupLog));
-                                } catch (ImportException e) {
-                                    logger.log(Level.SEVERE, "Exception in handleFile() for " + file.getName(), e);
-                                }
-
+                    if (!file.isHidden()) {
+                        if (file.isDirectory()) {
+                            try {
+                                status.add(handleDirectory(dataverseRequest, file, importType, validationLog,
+                                        cleanupLog, createDV));
+                            } catch (ImportException e) {
+                                logger.log(Level.SEVERE, "Exception in handleDirectory() for " + file.getName(), e);
+                            }
+                        } else {
+                            try {
+                                status.add(importService.handleFile(dataverseRequest, owner, file, importType,
+                                        validationLog, cleanupLog));
+                            } catch (ImportException e) {
+                                logger.log(Level.SEVERE, "Exception in handleFile() for " + file.getName(), e);
                             }
                         }
                     }
@@ -99,16 +96,14 @@ public class BatchServiceBean {
             }
         }
         for (File file : dir.listFiles()) {
-            if (null != file) {
-                if (!file.isHidden()) {
-                    try {
-                        JsonObjectBuilder fileStatus = importService.handleFile(dataverseRequest, owner, file,
-                                importType, validationLog, cleanupLog);
-                        status.add(fileStatus);
-                    } catch (ImportException | IOException e) {
-                        status.add(Json.createObjectBuilder().add("importStatus",
-                                "Exception importing " + file.getName() + ", message = " + e.getMessage()));
-                    }
+            if (!file.isHidden()) {
+                try {
+                    JsonObjectBuilder fileStatus = importService.handleFile(dataverseRequest, owner, file, importType,
+                            validationLog, cleanupLog);
+                    status.add(fileStatus);
+                } catch (ImportException | IOException e) {
+                    status.add(Json.createObjectBuilder().add("importStatus",
+                            "Exception importing " + file.getName() + ", message = " + e.getMessage()));
                 }
             }
         }
