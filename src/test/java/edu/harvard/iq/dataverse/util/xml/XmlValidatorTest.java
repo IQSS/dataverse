@@ -20,7 +20,6 @@ public class XmlValidatorTest {
     @Ignore
     @Category(NonEssentialTests.class)
     @Test
-    @Ignore
     public void testValidateXml() throws IOException, SAXException, ParserConfigurationException {
         assertTrue(XmlValidator.validateXmlSchema("src/test/java/edu/harvard/iq/dataverse/util/xml/sendToDataCite.xml", new URL("https://schema.datacite.org/meta/kernel-3/metadata.xsd")));
         // FIXME: Make sure the DDI we export is valid: https://github.com/IQSS/dataverse/issues/3648
