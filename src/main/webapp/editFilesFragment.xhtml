@@ -225,7 +225,7 @@
                                   dragDropSupport="true"
                                   auto="true"
                                   multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}"
-                                  disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}"
+                                  disabled="#{DatasetPage.lockedFromEdits || EditDatafilesPage.dataset.locked  || !(datasetPage || EditDatafilesPage.showFileUploadComponent())}"
                                   fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
                                   process="filesTable" 
                                   update=":datasetForm:filesTable, @([id$=filesButtons])"
@@ -239,7 +239,7 @@
                                   sequential="true"
                                   widgetVar="fileUploadWidget"/>
                                 
-                                <div jsf:id="dropboxBlock" jsf:rendered="#{settingsWrapper.isHasDropBoxKey()}" class="margin-top">
+                                <div jsf:id="dropboxBlock" jsf:rendered="#{settingsWrapper.isHasDropBoxKey() and !(DatasetPage.lockedFromEdits or EditDatafilesPage.dataset.locked ) }"  class="margin-top">
                                     <!-- Dropbox upload widget -->
                                     <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.fromDropbox.tip']}</p>
                                     <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
@@ -596,7 +596,7 @@
         </div>
     </div>
     <!-- END: Static Tab Layout -->
-
+    <p:remoteCommand  name="returnToDatasetPage" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.returnToDatasetOnly()}"  />
     <!-- TODO: a message panel informing the unauthorized, or unauthenticated user that they don't have permission - should it be here? L.A. 4.2 -->
     <!-- authentication and authorization: #dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) -->
 
