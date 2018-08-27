@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.DataverseLocaleBean;
+
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
@@ -12,16 +14,17 @@ public class BundleUtil {
     private static final Logger logger = Logger.getLogger(BundleUtil.class.getCanonicalName());
 
     private static final String defaultBundleFile = "Bundle";
-    private static final Locale defaultLocale = Locale.US;
+    private static Locale bundle_locale;
 
     public static String getStringFromBundle(String key) {
         return getStringFromBundle(key, null);
     }
 
     public static String getStringFromBundle(String key, List<String> arguments) {
-        ResourceBundle bundle = ResourceBundle.getBundle(defaultBundleFile, defaultLocale);
+        DataverseLocaleBean d = new DataverseLocaleBean();
+        bundle_locale= new Locale(d.getLocaleCode());
+        ResourceBundle bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale);
         return getStringFromBundle(key, arguments, bundle);
-
     }
 
     public static String getStringFromBundle(String key, List<String> arguments, ResourceBundle bundle) {

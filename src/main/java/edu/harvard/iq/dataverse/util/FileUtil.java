@@ -1166,19 +1166,14 @@ public class FileUtil implements java.io.Serializable  {
         }
     }
 
-    public static String getCiteDataFileFilename(FileMetadata fileMetadata, FileCitationExtension fileCitationExtension) {
-        if (fileMetadata == null) {
-            logger.info("In getCitationBibtex but FileMetadata is null!");
-            return null;
-        }
-        if (fileCitationExtension == null) {
-            logger.info("In getCitationBibtex but fileCitationExtension is null!");
-            return null;
-        }
-        if (fileMetadata.getLabel().endsWith("tab")) {
-            return fileMetadata.getLabel().replaceAll("\\.tab$", fileCitationExtension.text);
+    public static String getCiteDataFileFilename(String fileTitle, FileCitationExtension fileCitationExtension) {
+    	if((fileTitle==null) || (fileCitationExtension == null)) {
+    		return null;
+    	}
+        if (fileTitle.endsWith("tab")) {
+            return fileTitle.replaceAll("\\.tab$", fileCitationExtension.text);
         } else {
-            return fileMetadata.getLabel() + fileCitationExtension.text;
+            return fileTitle + fileCitationExtension.text;
         }
     }
 
