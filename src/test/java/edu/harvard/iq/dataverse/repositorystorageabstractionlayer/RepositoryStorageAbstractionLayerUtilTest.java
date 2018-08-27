@@ -54,7 +54,7 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         dataset.setIdentifier("FK2/identifierPartOfPersistentID");
         dataset.setAuthority("10.5072");
         String result = RepositoryStorageAbstractionLayerUtil.getLocalDataAccessDirectory(localDataAccessParentDir, dataset);
-        assertEquals("/opt/data/identifierPartOfPersistentID", result);//FIXME
+        assertEquals("/opt/data/identifierPartOfPersistentID", result);
     }
 
     @Test
@@ -63,7 +63,7 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         Dataset dataset = new Dataset();
         dataset.setIdentifier("FK2/identifierPartOfPersistentID");
         String result = RepositoryStorageAbstractionLayerUtil.getVerifyDataCommand(dataset);
-        assertEquals("cd identifierPartOfPersistentID ; shasum -c files.sha", result);//FIXME
+        assertEquals("cd identifierPartOfPersistentID ; shasum -c files.sha", result);
     }
 
 
