@@ -51,12 +51,16 @@
     <!--exploreTools is set as a ui:param by the file and dataset pages-->
     <!--Note that "WorldMap Explore" is not an explore tool (external tool)-->
     <div class="btn-group" jsf:rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and not empty exploreTools or (worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
-        <button jsf:rendered="#{exploreTools.size()==1}" type="button" class="btn btn-default"  onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
-            <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
-        </button>
-        <button jsf:rendered="#{exploreTools.size()>1}" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-            <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span  class="caret"/>
-        </button>
+        <ui:fragment rendered="#{exploreTools.size()==1}">
+            <button type="button" class="btn btn-default"  onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
+                <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
+            </button>
+        </ui:fragment>
+        <ui:fragment rendered="#{exploreTools.size()>1}">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span  class="caret"/>
+            </button>
+        </ui:fragment>
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
             <!--external tools-->
             <ui:repeat var="tool" value="#{exploreTools}">

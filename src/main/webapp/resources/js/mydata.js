@@ -336,7 +336,7 @@ function commaSeparateNumber(val){
 // If an image failed to load, then display the default icon 
 //
 function check_card_images(){
-    $("img").error(function () {
+    $("img").on("error",function () {
         if ($(this).hasClass('file_card_img')){
             $(this).next("span").show(); // show default icon in adjacent span
             $(this).hide(); // hide the actual image

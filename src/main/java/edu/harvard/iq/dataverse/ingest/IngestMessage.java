@@ -42,7 +42,6 @@ public class IngestMessage implements Serializable {
 
     public IngestMessage(int messageLevel)  {
         this.messageLevel = messageLevel;
-        //dataFiles = new ArrayList<DataFile>();
         datafile_ids = new ArrayList<Long>();
     }
    
@@ -52,7 +51,6 @@ public class IngestMessage implements Serializable {
     private Long datasetVersionId;
     private String versionNote;
     private String datasetVersionNumber;
-    //private List<DataFile> dataFiles;
     private List<Long> datafile_ids;
 
     public String getVersionNote() {
@@ -114,5 +112,4 @@ public class IngestMessage implements Serializable {
     public void addFileId(Long file_id) {
         datafile_ids.add(file_id);
     }
-    
 }

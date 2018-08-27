@@ -345,7 +345,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 throw returnEarly("EJBException: " + sb.toString());
             }
 
-            ingestService.startIngestJobs(dataset, user);
+            ingestService.startIngestJobsForDataset(dataset, user);
 
             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
             String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);

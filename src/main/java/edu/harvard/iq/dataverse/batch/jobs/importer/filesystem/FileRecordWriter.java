@@ -319,7 +319,7 @@ public class FileRecordWriter extends AbstractItemWriter {
                 // add code to generate the manifest, if not present? -- L.A. 
             } else {
                 try {
-                    packageFile.setChecksumValue(FileUtil.CalculateCheckSum(checksumManifestPath, packageFile.getChecksumType()));
+                    packageFile.setChecksumValue(FileUtil.CalculateChecksum(checksumManifestPath, packageFile.getChecksumType()));
                 } catch (Exception ex) {
                     getJobLogger().log(Level.SEVERE, "Failed to calculate checksum (type "+packageFile.getChecksumType()+") "+ex.getMessage());
                     jobContext.setExitStatus("FAILED");

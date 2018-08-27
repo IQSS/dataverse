@@ -1516,6 +1516,7 @@ public class DatasetPage implements java.io.Serializable {
                             setHasRsyncScript(true);
                             setRsyncScript(scriptRequestResponse.getScript());
                             rsyncScriptFilename = "upload-"+ workingVersion.getDataset().getIdentifier() + ".bash";
+                            rsyncScriptFilename = rsyncScriptFilename.replace("/", "_");
                         }
                         else{
                             setHasRsyncScript(false);
@@ -2373,10 +2374,10 @@ public class DatasetPage implements java.io.Serializable {
             }
             return "";
         } else {
-            boolean validSelection = false;
+            boolean validSelection = true;
             for (FileMetadata fmd : selectedFiles) {
-                if ((fmd.isRestricted() && !restricted) || (!fmd.isRestricted() && restricted)) {
-                    validSelection = true;
+                if ((fmd.isRestricted() && restricted) || (!fmd.isRestricted() && !restricted)) {
+                    validSelection = false;
                 }
             }
             if (!validSelection) {
@@ -2671,7 +2672,7 @@ public class DatasetPage implements java.io.Serializable {
         
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution: 
-        ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
+        ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) session.getUser());
 
         //After dataset saved, then persist prov json data
         if(systemConfig.isProvCollectionEnabled()) {
@@ -3052,8 +3053,11 @@ public class DatasetPage implements java.io.Serializable {
     }
         
     public void startMultipleFileDownload (Boolean writeGuestbook){
-
-        fileDownloadService.callDownloadServlet(getDownloadableFilesIdsString(), writeGuestbook);
+        if(getDownloadableFilesIdsString().split(",").length ==1) {
+            fileDownloadService.callDownloadServlet("Download", Long.parseLong(getDownloadableFilesIdsString()), writeGuestbook);
+        } else {
+          fileDownloadService.callDownloadServlet(getDownloadableFilesIdsString(), writeGuestbook);
+        }
 
     }
  
@@ -3076,6 +3080,15 @@ public class DatasetPage implements java.io.Serializable {
         }
         
          this.guestbookResponse = this.guestbookResponseService.modifySelectedFileIds(guestbookResponse, getSelectedDownloadableFilesIdsString());
+         if(this.selectedDownloadableFiles.size()<2) {
+             if(this.selectedDownloadableFiles.size()==1) {
+             Long id = selectedDownloadableFiles.get(0).getId();
+             DataFile df = datafileService.findCheapAndEasy(id);
+             guestbookResponse.setDataFile(df);
+             }
+         } else {
+             guestbookResponse.setDataFile(null);
+         }
          this.guestbookResponse.setDownloadtype("Download");
          this.guestbookResponse.setFileFormat("Download");
         RequestContext requestContext = RequestContext.getCurrentInstance();
@@ -4162,7 +4175,6 @@ public class DatasetPage implements java.io.Serializable {
     
     public void downloadRsyncScript() {
 
-        String bibFormatDowload = new BibtexCitation(workingVersion).toString();
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
