@@ -432,7 +432,7 @@
                             <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
                                 #{bundle['file.fileName']}
                             </label>
-                            <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;">
+                            <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}">
                             <p:ajax event="change" listener="#{EditDatafilesPage.handleNameChange}" update="fileName" />
                             </p:inputText>
                             <p:message for="fileName"/>
