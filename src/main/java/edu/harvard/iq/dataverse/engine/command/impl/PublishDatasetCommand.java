@@ -88,7 +88,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             ctxt.workflows().start(prePubWf.get(), buildContext(doiProvider, TriggerType.PrePublishDataset) );
             return new PublishDatasetResult(theDataset, false);
             
-        } else if ( ! datasetExternallyReleased ) {
+        } else{
             // We will skip trying to register the global identifiers for datafiles 
             // if "dependent" file-level identifiers are requested, AND the naming 
             // protocol of the dataset global id is different from the 
@@ -119,11 +119,6 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 return new PublishDatasetResult(theDataset, true);
             }
         }
-	else
-	{
-		// dataset's been externally released, we're done.
-		return new PublishDatasetResult( theDataset, true);
-	}
     }
     
     /**
