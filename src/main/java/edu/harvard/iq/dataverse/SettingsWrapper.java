@@ -170,8 +170,8 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public String getSupportTeamEmail() {
         String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
-        InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
-        return BrandingUtil.getSupportTeamEmailAddress(systemAddress);
+        InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);        
+        return BrandingUtil.getSupportTeamEmailAddress(systemAddress) != null ? BrandingUtil.getSupportTeamEmailAddress(systemAddress) : BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
     }
     
     public Integer getUploadMethodsCount() {
