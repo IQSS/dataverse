@@ -67,7 +67,7 @@ public class RepositoryStorageAbstractionLayerUtil {
 		    File f = new File( leafDirectory );
 		    return f.getName();
             } else {
-                // The "authority" is something like "10.5072/FK2".
+                // The "authority" is something like "FK2".
                 String relativePathToLeafDir = dataset.getAuthority();
                 return relativePathToLeafDir + File.separator + leafDirectory;
             }
