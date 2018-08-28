@@ -42,10 +42,19 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     private static final Logger logger = Logger.getLogger(FinalizeDatasetPublicationCommand.class.getName());
     
     String doiProvider;
+
+    /**
+     * mirror field from {@link PublishDatasetCommand} of same name
+     */
+    final boolean datasetExternallyReleased;
     
     public FinalizeDatasetPublicationCommand(Dataset aDataset, String aDoiProvider, DataverseRequest aRequest) {
+        this( aDataset, aDoiProvider, aRequest, false );
+    }
+    public FinalizeDatasetPublicationCommand(Dataset aDataset, String aDoiProvider, DataverseRequest aRequest, boolean isPidPrePublished) {
         super(aDataset, aRequest);
         doiProvider = aDoiProvider;
+	datasetExternallyReleased = isPidPrePublished;
     }
 
     @Override
@@ -192,7 +201,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 // one currently configured for the Dataverse. This is to specifically 
                 // address the issue with the datasets with handle ids registered, 
                 // that are currently configured to use DOI.
-                if (currentGlobalIdProtocol.equals(protocol) || dataFilePIDFormat.equals("INDEPENDENT")) {
+                if (currentGlobalIdProtocol.equals(protocol) || dataFilePIDFormat.equals("INDEPENDENT")) {//TODO(pm) - check authority too
                     //A false return value indicates a failure in calling the service
                     for (DataFile df : dataset.getFiles()) {
                         logger.log(Level.FINE, "registering global id for file {0}", df.getId());

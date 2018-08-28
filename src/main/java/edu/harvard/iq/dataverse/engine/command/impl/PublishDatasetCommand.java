@@ -99,8 +99,13 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // than the configured limit number of files, then call Finalize 
             // asychronously (default is 10)
             String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
+            String currentGlobalAuthority= ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
             String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-            boolean registerGlobalIdsForFiles = currentGlobalIdProtocol.equals(theDataset.getProtocol()) || dataFilePIDFormat.equals("INDEPENDENT");
+            boolean registerGlobalIdsForFiles = currentGlobalIdProtocol.equals(theDataset.getProtocol()) || dataFilePIDFormat.equals("INDEPENDENT"); // note that despite its name, the FinalizeDatasetPublicationComment in the else branch will still try to register, so this logic is duplicated there
+	    if ( registerGlobalIdsForFiles )
+	    {
+		    registerGlobalIdsForFiles = currentGlobalAuthority.equals( theDataset.getAuthority() );
+	    }
 
             if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount() && registerGlobalIdsForFiles) {     
                 String info = "Adding File PIDs asynchronously";
@@ -110,12 +115,12 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 lock.setDataset(theDataset);
                 lock.setInfo(info);
                 ctxt.datasets().addDatasetLock(theDataset, lock);
-                ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request);
+                ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
                 return new PublishDatasetResult(theDataset, false);
                 
             } else {
                 // Synchronous publishing (no workflow involved)
-                theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(ctxt.em().merge(theDataset), doiProvider, getRequest()));
+                theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(ctxt.em().merge(theDataset), doiProvider, getRequest(),datasetExternallyReleased));
                 return new PublishDatasetResult(theDataset, true);
             }
         }
