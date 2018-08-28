@@ -105,18 +105,22 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         ctxt.em().merge(ddu);
         
         updateParentDataversesSubjectsField(theDataset, ctxt);
-        publicizeExternalIdentifier(theDataset, ctxt); 
+	if (!datasetExternallyReleased){
+		publicizeExternalIdentifier(theDataset, ctxt);
+	}
 
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
         if (privateUrl != null) {
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
         }
         
-        if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
-            // some imported datasets may already be released.
-            publicizeExternalIdentifier(theDataset, ctxt);
-            theDataset.getLatestVersion().setVersionState(RELEASED);
-        }
+	if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
+		// some imported datasets may already be released.
+		if (!datasetExternallyReleased){
+			publicizeExternalIdentifier(theDataset, ctxt);
+		}
+		theDataset.getLatestVersion().setVersionState(RELEASED);
+	}
         
         exportMetadata(ctxt.settings());
         boolean doNormalSolrDocCleanUp = true;
