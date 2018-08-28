@@ -98,9 +98,14 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // If we are registering file-level identifiers, and there are more 
             // than the configured limit number of files, then call Finalize 
             // asychronously (default is 10)
+            // ...
+            // Additionaly in 4.9.3 we have added a system variable to disable 
+            // registering file PIDs on the installation level.
             String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
             String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-            boolean registerGlobalIdsForFiles = currentGlobalIdProtocol.equals(theDataset.getProtocol()) || dataFilePIDFormat.equals("INDEPENDENT");
+            boolean registerGlobalIdsForFiles = 
+                    (currentGlobalIdProtocol.equals(theDataset.getProtocol()) || dataFilePIDFormat.equals("INDEPENDENT")) 
+                    && ctxt.systemConfig().isFilePIDsEnabled();
 
             if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount() && registerGlobalIdsForFiles) {     
                 String info = "Adding File PIDs asynchronously";
@@ -115,8 +120,8 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 
             } else {
                 // Synchronous publishing (no workflow involved)
-                theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(ctxt.em().merge(theDataset), doiProvider, getRequest()));
-                return new PublishDatasetResult(theDataset, true);
+                theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(ctxt.em().merge(theDataset), doiProvider, getRequest())); 
+               return new PublishDatasetResult(theDataset, true);
             }
         }
     }

@@ -361,7 +361,11 @@ public class SettingsServiceBean {
         /*
         Number for the minimum number of files to send PID registration to asynchronous workflow
         */
-        PIDAsynchRegFileCount
+        PIDAsynchRegFileCount,
+        /**
+         * 
+         */
+        FilePIDsEnabled
         ;
 
         @Override

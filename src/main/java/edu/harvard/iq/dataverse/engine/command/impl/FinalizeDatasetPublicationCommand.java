@@ -186,13 +186,18 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             try {
                 String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
                 String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+                boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabled();
                 // We will skip trying to register the global identifiers for datafiles 
                 // if "dependent" file-level identifiers are requested, AND the naming 
                 // protocol of the dataset global id is different from the
                 // one currently configured for the Dataverse. This is to specifically 
                 // address the issue with the datasets with handle ids registered, 
                 // that are currently configured to use DOI.
-                if (currentGlobalIdProtocol.equals(protocol) || dataFilePIDFormat.equals("INDEPENDENT")) {
+                // ...
+                // Additionaly in 4.9.3 we have added a system variable to disable 
+                // registering file PIDs on the installation level.
+                if ((currentGlobalIdProtocol.equals(protocol) || dataFilePIDFormat.equals("INDEPENDENT"))
+                        && isFilePIDsEnabled) {
                     //A false return value indicates a failure in calling the service
                     for (DataFile df : dataset.getFiles()) {
                         logger.log(Level.FINE, "registering global id for file {0}", df.getId());
