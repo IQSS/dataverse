@@ -1516,6 +1516,7 @@ public class DatasetPage implements java.io.Serializable {
                             setHasRsyncScript(true);
                             setRsyncScript(scriptRequestResponse.getScript());
                             rsyncScriptFilename = "upload-"+ workingVersion.getDataset().getIdentifier() + ".bash";
+                            rsyncScriptFilename = rsyncScriptFilename.replace("/", "_");
                         }
                         else{
                             setHasRsyncScript(false);
@@ -4174,7 +4175,6 @@ public class DatasetPage implements java.io.Serializable {
     
     public void downloadRsyncScript() {
 
-        String bibFormatDowload = new BibtexCitation(workingVersion).toString();
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
