@@ -196,7 +196,7 @@ Each of the three main sections own sets of properties:
 |                       | for input and         |                        |
 |                       | presentation.         |                        |
 +-----------------------+-----------------------+------------------------+
-| displayFormat         | Controls how the      | See Appendix for       |
+| displayFormat         | Controls how the      | See Appendix_ for      |
 |                       | content is displayed  | displayFormat          |
 |                       | for presentation (not | variables              |
 |                       | entry). The value of  |                        |
