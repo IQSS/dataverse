@@ -76,26 +76,26 @@ Each of the three main sections own sets of properties:
 | **Property**          | **Purpose**           | **Allowed values and  |
 |                       |                       | restrictions**        |
 +-----------------------+-----------------------+-----------------------+
-| name                  | A user-definable      | -  No spaces or       |
-|                       | string used to        |    punctuation,       |
-|                       | identify a            |    except underscore. |
+| name                  | A user-definable      | \• No spaces or       |
+|                       | string used to        | punctuation,          |
+|                       | identify a            | except underscore.    |
 |                       | #metadataBlock        |                       |
-|                       |                       | -  By convention,     |
-|                       |                       |    should start with  |
-|                       |                       |    a letter, and use  |
-|                       |                       |    lower camel        |
-|                       |                       |    case [3]_          |
+|                       |                       | \• By convention,     |
+|                       |                       | should start with     |
+|                       |                       | a letter, and use     |
+|                       |                       | lower camel           |
+|                       |                       | case [3]_             |
 |                       |                       |                       |
-|                       |                       | -  Must not collide   |
-|                       |                       |    with a field of    |
-|                       |                       |    the same name in   |
-|                       |                       |    the same or any    |
-|                       |                       |    other              |
-|                       |                       |    #datasetField      |
-|                       |                       |    definition,        |
-|                       |                       |    including metadata |
-|                       |                       |    blocks defined     |
-|                       |                       |    elsewhere. [4]_    |
+|                       |                       | \• Must not collide   |
+|                       |                       | with a field of       |
+|                       |                       | the same name in      |
+|                       |                       | the same or any       |
+|                       |                       | other                 |
+|                       |                       | #datasetField         |
+|                       |                       | definition,           |
+|                       |                       | including metadata    |
+|                       |                       | blocks defined        |
+|                       |                       | elsewhere. [4]_       |
 +-----------------------+-----------------------+-----------------------+
 | dataverseAlias        | If specified, this    | Free text             |
 |                       | metadata block will   |                       |
@@ -121,51 +121,50 @@ Each of the three main sections own sets of properties:
 | **Property**          | **Purpose**           | **Allowed values and  |
 |                       |                       | restrictions**        |
 +-----------------------+-----------------------+-----------------------+
-| name                  | A user-definable      | -  (from              |
-|                       | string used to        |    DatasetFieldType.j |
-|                       | identify a            | ava)                  |
-|                       | #datasetField. Maps   |    The internal       |
-|                       | directly to field     |    DDI-like name, no  |
-|                       | name used by Solr.    |    spaces, etc.       |
+| name                  | A user-definable      | \• (from              |
+|                       | string used to        | DatasetFieldType.java)|
+|                       | identify a            | The internal          |
+|                       | #datasetField. Maps   | DDI-like name, no     |
+|                       | directly to field     | spaces, etc.          |
+|                       | name used by Solr.    |                       |
+|                       |                       | \• (from Solr) Field  |
+|                       |                       | names should          |
+|                       |                       | consist of            |
+|                       |                       | alphanumeric or       |
+|                       |                       | underscore            |
+|                       |                       | characters only       |
+|                       |                       | and not start with    |
+|                       |                       | a digit. This is      |
+|                       |                       | not currently         |
+|                       |                       | strictly enforced,    |
+|                       |                       | but other field       |
+|                       |                       | names will not        |
+|                       |                       | have first class      |
+|                       |                       | support from all      |
+|                       |                       | components and        |
+|                       |                       | back compatibility    |
+|                       |                       | is not guaranteed.    |
+|                       |                       | Names with both       |
+|                       |                       | leading and           |
+|                       |                       | trailing              |
+|                       |                       | underscores (e.g.     |
+|                       |                       | \_version_) are       |
+|                       |                       | reserved.             |
 |                       |                       |                       |
-|                       |                       | -  (from Solr) Field  |
-|                       |                       |    names should       |
-|                       |                       |    consist of         |
-|                       |                       |    alphanumeric or    |
-|                       |                       |    underscore         |
-|                       |                       |    characters only    |
-|                       |                       |    and not start with |
-|                       |                       |    a digit. This is   |
-|                       |                       |    not currently      |
-|                       |                       |    strictly enforced, |
-|                       |                       |    but other field    |
-|                       |                       |    names will not     |
-|                       |                       |    have first class   |
-|                       |                       |    support from all   |
-|                       |                       |    components and     |
-|                       |                       |    back compatibility |
-|                       |                       |    is not guaranteed. |
-|                       |                       |    Names with both    |
-|                       |                       |    leading and        |
-|                       |                       |    trailing           |
-|                       |                       |    underscores (e.g.  |
-|                       |                       |    \_version_) are    |
-|                       |                       |    reserved.          |
-|                       |                       |                       |
-|                       |                       | -  Must not collide   |
-|                       |                       |    with a field of    |
-|                       |                       |    the same same name |
-|                       |                       |    in another         |
-|                       |                       |    #metadataBlock     |
-|                       |                       |    definition or any  |
-|                       |                       |    name already       |
-|                       |                       |    included as a      |
-|                       |                       |    field in the Solr  |
-|                       |                       |    index.             |
+|                       |                       | \• Must not collide   |
+|                       |                       | with a field of       |
+|                       |                       | the same same name    |
+|                       |                       | in another            |
+|                       |                       | #metadataBlock        |
+|                       |                       | definition or any     |
+|                       |                       | name already          |
+|                       |                       | included as a         |
+|                       |                       | field in the Solr     |
+|                       |                       | index.                |
 +-----------------------+-----------------------+-----------------------+
 | title                 | Acts as a brief label | Should be relatively  |
-|                       | for display related   | brief (?? specific    |
-|                       | to this               | limit ??)             |
+|                       | for display related   | brief.                |
+|                       | to this               |                       |
 |                       | #datasetField.        |                       |
 +-----------------------+-----------------------+-----------------------+
 | description           | Used to provide a     | Free text             |
@@ -177,23 +176,23 @@ Each of the three main sections own sets of properties:
 |                       | a prompt for what the |                       |
 |                       | user should enter.    |                       |
 +-----------------------+-----------------------+-----------------------+
-| fieldType             | Defines the type of   | None                  |
+| fieldType             | Defines the type of   | \• None               |
 |                       | content that the      |                       |
-|                       | field, if not empty,  | Date                  |
+|                       | field, if not empty,  | \• Date               |
 |                       | is meant to contain.  |                       |
-|                       |                       | Email                 |
+|                       |                       | \• Email              |
 |                       |                       |                       |
-|                       |                       | Text                  |
+|                       |                       | \• Text               |
 |                       |                       |                       |
-|                       |                       | Textbox               |
+|                       |                       | \• Textbox            |
 |                       |                       |                       |
-|                       |                       | URL                   |
+|                       |                       | \• URL                |
 |                       |                       |                       |
-|                       |                       | Int                   |
+|                       |                       | \• Int                |
 |                       |                       |                       |
-|                       |                       | Float                 |
+|                       |                       | \• Float              |
 |                       |                       |                       |
-|                       |                       | See Appendix for      |
+|                       |                       | \• See Appendix for   |
 |                       |                       | fieldtype definitions |
 +-----------------------+-----------------------+-----------------------+
 | displayOrder          | Controls the sequence | Non-negative integer. |
@@ -203,7 +202,7 @@ Each of the three main sections own sets of properties:
 |                       | presentation.         |                       |
 +-----------------------+-----------------------+-----------------------+
 | displayFormat         | Controls how the      | See Appendix for      |
-|                       | content is displayed  | display facet         |
+|                       | content is displayed  | displayFormat         |
 |                       | for presentation (not | variables             |
 |                       | entry). The value of  |                       |
 |                       | this field may        |                       |
@@ -222,8 +221,8 @@ Each of the three main sections own sets of properties:
 |                       | field is available in | FALSE (not available) |
 |                       | advanced search.      |                       |
 +-----------------------+-----------------------+-----------------------+
-| allowControlledVocabu | Specify whether the   | TRUE (controlled) or  |
-| lary                  | possible values of    | FALSE (not            |
+| allowControlledVocabu\| Specify whether the   | TRUE (controlled) or  |
+| \lary                 | possible values of    | FALSE (not            |
 |                       | this field are        | controlled)           |
 |                       | determined by values  |                       |
 |                       | in the                |                       |
@@ -270,8 +269,8 @@ Each of the three main sections own sets of properties:
 |                       | values that are       |                       |
 |                       | likely to be unique.  |                       |
 +-----------------------+-----------------------+-----------------------+
-| displayOnCreate/showA | Designate fields that | TRUE (display during  |
-| boveFold [5]_         | should display during | creation) or FALSE    |
+| displayOnCreate/showA\| Designate fields that | TRUE (display during  |
+| \boveFold [5]_        | should display during | creation) or FALSE    |
 |                       | the creation of a new | (don’t display during |
 |                       | dataset, even before  | creation)             |
 |                       | the dataset is saved. |                       |
@@ -292,31 +291,31 @@ Each of the three main sections own sets of properties:
 |                       | the value of          |                       |
 |                       | allowmultiples.       |                       |
 +-----------------------+-----------------------+-----------------------+
-| parent                | For subfields,        | -  Must not result in |
-|                       | specify the name of   |    a cyclical         |
-|                       | the parent or         |    reference.         |
+| parent                | For subfields,        | \• Must not result in |
+|                       | specify the name of   | a cyclical            |
+|                       | the parent or         | reference.            |
 |                       | containing field.     |                       |
-|                       |                       | -  Must reference an  |
-|                       |                       |    existing field in  |
-|                       |                       |    the same           |
-|                       |                       |    #metadataBlock.    |
+|                       |                       | \• Must reference an  |
+|                       |                       | existing field in     |
+|                       |                       | the same              |
+|                       |                       | #metadataBlock.       |
 +-----------------------+-----------------------+-----------------------+
-| metadatablock_id      | Specify the name of   | -  Must reference an  |
-|                       | the #metadataBlock    |    existing           |
-|                       | that contains this    |    #metadataBlock.    |
+| metadatablock_id      | Specify the name of   | \• Must reference an  |
+|                       | the #metadataBlock    | existing              |
+|                       | that contains this    | #metadataBlock.       |
 |                       | field.                |                       |
-|                       |                       | -  As a best          |
-|                       |                       |    practice, the      |
-|                       |                       |    value should       |
-|                       |                       |    reference the      |
-|                       |                       |    #metadataBlock in  |
-|                       |                       |    the current        |
-|                       |                       |    definition; though |
-|                       |                       |    it is technically  |
-|                       |                       |    possible to        |
-|                       |                       |    reference another  |
-|                       |                       |    existing metadata  |
-|                       |                       |    block.             |
+|                       |                       | \• As a best          |
+|                       |                       | practice, the         |
+|                       |                       | value should          |
+|                       |                       | reference the         |
+|                       |                       | #metadataBlock in     |
+|                       |                       | the current           |
+|                       |                       | definition; though    |
+|                       |                       | it is technically     |
+|                       |                       | possible to           |
+|                       |                       | reference another     |
+|                       |                       | existing metadata     |
+|                       |                       | block.                |
 +-----------------------+-----------------------+-----------------------+
 
 #controlledVocabulary (enumerated) properties
@@ -351,7 +350,7 @@ Each of the three main sections own sets of properties:
 |                       | this value is used as |                       |
 |                       | the identifier.       |                       |
 +-----------------------+-----------------------+-----------------------+
-| Identifier            | A string used to      |                       |
+| Identifier            | A string used to      | Free text             |
 |                       | encode the selected   |                       |
 |                       | enumerated value of a |                       |
 |                       | field. If this        |                       |
@@ -412,7 +411,7 @@ FieldType definitions
 |                                   | for a numeric field.              |
 +-----------------------------------+-----------------------------------+
 
-Display facet variables
+displayFormat variables
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 +-----------------------------------+-----------------------------------+
@@ -446,7 +445,7 @@ Display facet variables
 |                                   | `1001 <http://emsearch.rutgers.ed |
 |                                   | u/atlas/1001_summary.html>`__     |
 |                                   | (hyperlinked to                   |
-|                                   | http://emsearch.rutgers.edu/atlas |
+|                                   | \http://emsearch.rutgers.edu/atlas|
 |                                   | /1001_summary.html))              |
 +-----------------------------------+-----------------------------------+
 | <img src="#VALUE" alt="#NAME"     | For displaying the image of an    |
@@ -457,7 +456,7 @@ Display facet variables
 +-----------------------------------+-----------------------------------+
 | #VALUE:                           | Appends and/or prepends           |
 |                                   | characters to the value of the    |
-| - #VALUE:                         | field. (e.g. if the displayFormat |
+| \- #VALUE:                        | field. (e.g. if the displayFormat |
 |                                   | for the distributorAffiliation is |
 | (#VALUE)                          | *(#VALUE)* and the value entered  |
 |                                   | is *University of North           |
@@ -477,7 +476,7 @@ Display facet variables
 |                                   |    seriesInformation is *A        |
 |                                   |    collection of NMR data*, the   |
 |                                   |    compound field is displayed in |
-|                                   |    the UI as *IMPs\ *\ **:**\ *A  |
+|                                   |    the UI as *IMPs: A             |
 |                                   |    collection of NMR data*        |
 +-----------------------------------+-----------------------------------+
 
