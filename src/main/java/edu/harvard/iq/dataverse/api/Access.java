@@ -6,7 +6,7 @@
 
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.BibtexCitation;
+import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
@@ -156,9 +156,9 @@ public class Access extends AbstractApiBean {
         FileMetadata fileMetadata = df.getFileMetadata();
         DatasetVersion datasetVersion = df.getOwner().getLatestVersion();
         
-        downloadInstance.setFileCitationEndNote(datasetService.createCitationXML(datasetVersion, fileMetadata));
-        downloadInstance.setFileCitationRIS(datasetService.createCitationRIS(datasetVersion, fileMetadata));
-        downloadInstance.setFileCitationBibtex(new BibtexCitation(datasetVersion).toString());
+        downloadInstance.setFileCitationEndNote(new DataCitation(fileMetadata).toEndNoteString());
+        downloadInstance.setFileCitationRIS(new DataCitation(fileMetadata).toRISString());
+        downloadInstance.setFileCitationBibtex(new DataCitation(fileMetadata).toBibtexString());
 
         ByteArrayOutputStream outStream = null;
         outStream = new ByteArrayOutputStream();
