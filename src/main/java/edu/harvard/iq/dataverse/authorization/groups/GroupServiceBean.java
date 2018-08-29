@@ -104,24 +104,6 @@ public class GroupServiceBean {
                               .collect( toSet() );
     }
 
-    /**
-     * groupsFor( RoleAssignee ra, DvObject dvo ) doesn't really get *all* the
-     * groups a Role assignee belongs to as advertised but this method comes
-     * closer.
-     *
-     * @param au An AuthenticatedUser.
-     * @return As many groups as we can find for the AuthenticatedUser.
-     * 
-     * @deprecated Does not look into IP Groups. Use {@link #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest)}
-     */
-    @Deprecated
-    public Set<Group> groupsFor(RoleAssignee ra) {
-        return groupProviders.values().stream()
-                             .flatMap(gp->(Stream<Group>)gp.groupsFor(ra).stream())
-                             .collect(toSet());
-    }
-
-    
     public Set<Group> groupsFor( DataverseRequest req ) {
         return groupProviders.values().stream()
                              .flatMap(gp->(Stream<Group>)gp.groupsFor(req).stream())

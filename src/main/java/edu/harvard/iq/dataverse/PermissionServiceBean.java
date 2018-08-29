@@ -39,6 +39,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 import javax.persistence.Query;
+import javax.validation.constraints.NotNull;
 
 /**
  * Your one-stop-shop for deciding which user can do what action on which
@@ -104,7 +105,7 @@ public class PermissionServiceBean {
     
     /**
      * A request-level permission query (e.g includes IP groups). These queries
-     * form a DSL for querying permissions, in a way that's hopefully more
+     * form a DSL* for querying permissions, in a way that's hopefully more
      * pleasant than passing a lot of parameters to a large method.
      * 
      * Do not instantiate a query yourself. Rather, use the query-returning methods
@@ -125,6 +126,8 @@ public class PermissionServiceBean {
      *  ...do the thing you must have p in order to do
      * }
      * </code>
+     * 
+     * * Domain Specific Language. 
      */
     public class RequestPermissionQuery {
 
@@ -184,7 +187,7 @@ public class PermissionServiceBean {
      * @param d the object on which the permissions will be queried
      * @return A permission query
      */
-    public RequestPermissionQuery on(DvObject d) {
+    public RequestPermissionQuery on( @NotNull DvObject d) {
         if (d == null) {
             throw new IllegalArgumentException("Cannot query permissions on a null DvObject");
         }
@@ -220,7 +223,7 @@ public class PermissionServiceBean {
      * Internal call; checks permissions, allows a callback for fine-grained
      * response if case there are not enough permissions.
      * 
-     * @param aCommand The command to be tested/
+     * @param aCommand The command to be tested.
      * @param ipc Callback, called if there are insufficient permissions for the passed command.
      * @return {@code true} iff the command will not be blocked due to permission issues.
      */

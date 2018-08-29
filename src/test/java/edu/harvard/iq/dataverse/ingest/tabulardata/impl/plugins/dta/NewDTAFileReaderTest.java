@@ -4,13 +4,10 @@ import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
-import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DataReader;
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
@@ -74,7 +71,10 @@ public class NewDTAFileReaderTest {
                           "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-04-01	2018-01-01	2018\n" +
                           "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-07-01	2018-07-01	2018\n" +
                           "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-11-01	2018-07-01	2018\n";
-        assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
+        String actual = FileUtils.readFileToString(result.getTabDelimitedFile());
+        System.out.println("actual\n" + actual + "\n/actual");
+        System.out.println("expected\n" + expected + "\n/expected");
+        assertEquals(expected, actual);
     }
     
     @Test(expected = IOException.class)
