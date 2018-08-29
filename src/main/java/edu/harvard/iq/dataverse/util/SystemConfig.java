@@ -25,6 +25,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import org.passay.CharacterRule;
+import org.apache.commons.io.IOUtils;
 
 /**
  * System-wide configuration
@@ -181,6 +182,8 @@ public class SystemConfig {
                             appVersionString = mavenProperties.getProperty("version");                        
                         } catch (IOException ioex) {
                             logger.warning("caught IOException trying to read and parse the pom properties file.");
+                        } finally {
+                            IOUtils.closeQuietly(mavenPropertiesInputStream);
                         }
                     }
                     
