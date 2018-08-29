@@ -166,8 +166,8 @@ public class WorkflowServiceBean {
         List<WorkflowStepData> stepsLeft = wf.getSteps().subList(pending.getPendingStepIdx(), wf.getSteps().size());
         
         WorkflowStep pendingStep = createStep(stepsLeft.get(0));
-        final WorkflowContext ctxt = pending.reCreateContext(roleAssignees);
-
+        WorkflowContext newCtxt = pending.reCreateContext(roleAssignees);
+        final WorkflowContext ctxt = refresh(newCtxt,retrieveRequestedSettings( wf.getRequiredSettings()), getCurrentApiToken(newCtxt.getRequest().getAuthenticatedUser()));
         WorkflowStepResult res = pendingStep.resume(ctxt, pending.getLocalData(), body);
         if (res instanceof Failure) {
             rollback(wf, ctxt, (Failure) res, pending.getPendingStepIdx() - 1);

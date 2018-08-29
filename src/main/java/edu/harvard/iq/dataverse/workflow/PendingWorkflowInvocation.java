@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.workflow;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
@@ -47,7 +48,6 @@ public class PendingWorkflowInvocation implements Serializable {
     
     int pendingStepIdx;
     
-    String doiProvider;
     String userId;
     String ipAddress;
     int typeOrdinal;
@@ -66,15 +66,13 @@ public class PendingWorkflowInvocation implements Serializable {
         userId = ctxt.getRequest().getUser().getIdentifier();
         ipAddress = ctxt.getRequest().getSourceAddress().toString();
         localData = new HashMap<>(result.getData());
-        doiProvider = ctxt.getDoiProvider();
         typeOrdinal = ctxt.getType().ordinal();
     }
     
     public WorkflowContext reCreateContext(RoleAssigneeServiceBean roleAssignees) {
         DataverseRequest aRequest = new DataverseRequest((User)roleAssignees.getRoleAssignee(userId), IpAddress.valueOf(ipAddress));
         final WorkflowContext workflowContext = new WorkflowContext(aRequest, dataset, nextVersionNumber, 
-                nextMinorVersionNumber, WorkflowContext.TriggerType.values()[typeOrdinal], 
-                doiProvider);
+                nextMinorVersionNumber, WorkflowContext.TriggerType.values()[typeOrdinal], null, null);
         workflowContext.setInvocationId(invocationId);
         return workflowContext;
     }
@@ -149,14 +147,6 @@ public class PendingWorkflowInvocation implements Serializable {
 
     public void setPendingStepIdx(int pendingStepIdx) {
         this.pendingStepIdx = pendingStepIdx;
-    }
-
-    public String getDoiProvider() {
-        return doiProvider;
-    }
-
-    public void setDoiProvider(String doiProvider) {
-        this.doiProvider = doiProvider;
     }
 
     public int getTypeOrdinal() {
