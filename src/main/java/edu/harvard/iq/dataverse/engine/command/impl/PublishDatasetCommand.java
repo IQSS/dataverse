@@ -85,7 +85,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         if ( prePubWf.isPresent() ) {
             // We start a workflow
             theDataset = ctxt.em().merge(theDataset);
-            ctxt.workflows().start(prePubWf.get(), buildContext(doiProvider, TriggerType.PrePublishDataset) );
+            ctxt.workflows().start(prePubWf.get(), buildContext(TriggerType.PrePublishDataset) );
             return new PublishDatasetResult(theDataset, false);
             
         } else {
@@ -103,7 +103,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 
             } else {
                 // Synchronous publishing (no workflow involved)
-                theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(ctxt.em().merge(theDataset), doiProvider, getRequest()));
+                theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(ctxt.em().merge(theDataset), getRequest()));
                 return new PublishDatasetResult(theDataset, true);
             }
         }

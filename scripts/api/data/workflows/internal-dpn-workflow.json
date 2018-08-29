@@ -6,6 +6,11 @@
             "stepType":"dpn",
             "parameters": {
                 "stepName":"dpn submission"
+            },
+            "requiredSettings": {
+                "DuraCloudHost":"string",
+                "DuraCloudPort":"string",
+                "DuraCloudContext":"string" 
             }
         }
     ]

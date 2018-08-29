@@ -36,7 +36,9 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 
     @Override
     public WorkflowStepResult run(WorkflowContext context) {
-        String host="qdr.duracloud.org"; //RETRIEVE FROM PARAMS
+        String host=(String) context.getSettings().get("DuraCloudHost");
+        String port = (String) context.getSettings().get("DuraCloudPort");
+        String dpnContext = (String) context.getSettings().get("DuraCloudContext");
         if(authService==null) {
         	logger.severe("No auth service");
         }
@@ -47,7 +49,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
         }
         return SubmitArchiveCommand.performDPNSubmission(
                 context.getDataset().getVersion(context.getNextVersionNumber(), context.getNextMinorVersionNumber()),
-                context.getRequest().getAuthenticatedUser(), host, null, null, token);
+                context.getRequest().getAuthenticatedUser(), host, port, dpnContext, token);
     }
 
 

@@ -5,7 +5,10 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
@@ -17,6 +20,8 @@ import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,13 +97,46 @@ public class WorkflowServiceBean {
      */
     @Asynchronous
     public void start(Workflow wf, WorkflowContext ctxt) throws CommandException {
-        ctxt = refresh(ctxt);
+        ctxt = refresh(ctxt, retrieveRequestedSettings( wf.getRequiredSettings()), getCurrentApiToken(ctxt.getRequest().getAuthenticatedUser()));
         lockDataset(ctxt);
         forward(wf, ctxt);
     }
     
 
-
+    private ApiToken getCurrentApiToken(AuthenticatedUser au) {
+        if (au != null) {
+            CommandContext ctxt = engine.getContext();
+            ApiToken token = ctxt.authentication().findApiTokenByUser(au);
+            if ((token == null) || (token.getExpireTime().before(new Date()))) {
+                token = ctxt.authentication().generateApiTokenForUser(au);
+            }
+            return token;
+        }
+        return null;
+    }
+    
+    private Map<String, Object> retrieveRequestedSettings(Map<String, String> requiredSettings) {
+        Map<String, Object> retrievedSettings = new HashMap<String, Object>();
+        for (String setting : requiredSettings.keySet()) {
+            String settingType = requiredSettings.get(setting);
+            switch (settingType) {
+            case "string": {
+                retrievedSettings.put(settingType, settings.get(setting));
+                break;
+            }
+            case "boolean": {
+                retrievedSettings.put(settingType, settings.isTrue(settingType, false));
+                break;
+            }
+            case "long": {
+                retrievedSettings.put(settingType,
+                        settings.getValueForKeyAsLong(SettingsServiceBean.Key.valueOf(setting)));
+                break;
+            }
+            }
+        }
+        return retrievedSettings;
+    }
 
     /**
      * Starting the resume process for a pending workflow. We first delete the
@@ -257,7 +295,7 @@ public class WorkflowServiceBean {
         logger.log(Level.INFO, "Workflow {0} completed.", ctxt.getInvocationId());
         if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
             try {
-                engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getDoiProvider(), ctxt.getRequest()) );
+                engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest()) );
                                 
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
@@ -356,10 +394,14 @@ public class WorkflowServiceBean {
         return provider.getStep(wsd.getStepType(), wsd.getStepParameters());
     }
     
-    private WorkflowContext refresh( WorkflowContext ctxt ) {
+    private WorkflowContext refresh(WorkflowContext ctxt) {
+    	return refresh(ctxt, ctxt.getSettings(), ctxt.getApiToken());
+    }
+    
+    private WorkflowContext refresh( WorkflowContext ctxt, Map<String, Object> settings, ApiToken apiToken ) {
         return new WorkflowContext( ctxt.getRequest(), 
                        datasets.find( ctxt.getDataset().getId() ), ctxt.getNextVersionNumber(), 
-                       ctxt.getNextMinorVersionNumber(), ctxt.getType(), ctxt.getDoiProvider() );
+                       ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken);
     }
 
 }

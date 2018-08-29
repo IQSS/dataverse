@@ -42,11 +42,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
     private static final Logger logger = Logger.getLogger(FinalizeDatasetPublicationCommand.class.getName());
     
-    String doiProvider;
-    
-    public FinalizeDatasetPublicationCommand(Dataset aDataset, String aDoiProvider, DataverseRequest aRequest) {
+    public FinalizeDatasetPublicationCommand(Dataset aDataset, DataverseRequest aRequest) {
         super(aDataset, aRequest);
-        doiProvider = aDoiProvider;
     }
 
     @Override
@@ -125,7 +122,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
-                ctxt.workflows().start(wf, buildContext(doiProvider, TriggerType.PostPublishDataset));
+                ctxt.workflows().start(wf, buildContext(TriggerType.PostPublishDataset));
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);
             }
