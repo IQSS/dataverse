@@ -85,7 +85,7 @@ public class WorkflowStepData implements Serializable {
 
     @Override
     public String toString() {
-        return "WorkflowStepData{" + "parent=" + parent + ", providerId=" + providerId + ", stepType=" + stepType + ", parameters=" + stepParameters + '}';
+        return "WorkflowStepData{" + "parent=" + parent + ", providerId=" + providerId + ", stepType=" + stepType + ", parameters=" + stepParameters + ", settings=" + stepSettings + '}';
     }
 
     public void setStepSettings(Map<String, String> settingsMap) {

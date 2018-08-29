@@ -219,7 +219,8 @@ public class JsonPrinter {
             for ( WorkflowStepData stp : wf.getSteps() ) {
                 arr.add( jsonObjectBuilder().add("stepType", stp.getStepType())
                                    .add("provider", stp.getProviderId())
-                                   .add("parameters", mapToObject(stp.getStepParameters())) );
+                                   .add("parameters", mapToObject(stp.getStepParameters()))
+                                   .add("requiredSettings", mapToObject(stp.getStepParameters())) );
             }
             bld.add("steps", arr );
         }

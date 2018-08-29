@@ -32,6 +32,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 
     @Override
     public WorkflowStepResult run(WorkflowContext context) {
+    	logger.info("Settings entries: " + context.getSettings().size());
         String host=(String) context.getSettings().get("DuraCloudHost");
         String port = (String) context.getSettings().get("DuraCloudPort");
         String dpnContext = (String) context.getSettings().get("DuraCloudContext");

@@ -98,6 +98,7 @@ public class WorkflowServiceBean {
     @Asynchronous
     public void start(Workflow wf, WorkflowContext ctxt) throws CommandException {
         ctxt = refresh(ctxt, retrieveRequestedSettings( wf.getRequiredSettings()), getCurrentApiToken(ctxt.getRequest().getAuthenticatedUser()));
+        
         lockDataset(ctxt);
         forward(wf, ctxt);
     }
@@ -119,6 +120,7 @@ public class WorkflowServiceBean {
         Map<String, Object> retrievedSettings = new HashMap<String, Object>();
         for (String setting : requiredSettings.keySet()) {
             String settingType = requiredSettings.get(setting);
+            logger.info("Getting: " + setting);
             switch (settingType) {
             case "string": {
                 retrievedSettings.put(setting, settings.get(setting));
@@ -134,6 +136,7 @@ public class WorkflowServiceBean {
                 break;
             }
             }
+            logger.info("Value for " + setting + " is " + retrievedSettings.get(setting));
         }
         return retrievedSettings;
     }
