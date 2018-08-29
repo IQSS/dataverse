@@ -51,11 +51,19 @@
                               </a>
                             </h4>
                         </div>
-                        <div class="panel-body" jsf:id="httpUploadDisabledDueToExistingRsyncPackage" jsf:rendered="#{EditDatafilesPage.workingVersion.hasPackageFile}">
+                        <div class="panel-body" jsf:id="httpUploadDisabledDueToExistingRsyncPackage" jsf:rendered="#{EditDatafilesPage.workingVersion.hasPackageFile and !EditDatafilesPage.dataset.released}">
                             <p class="help-block">
                                 <span class="glyphicon glyphicon-warning-sign text-danger"></span>
                                 <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.httpUploadDisabledDueToRsyncFileExisting']}">
-                                    <f:param value="#{settingsWrapper.supportTeamName}"/>
+                                    <f:param value="#{settingsWrapper.supportTeamEmail}"/>
+                                </h:outputFormat>
+                            </p>
+                        </div>
+                        <div class="panel-body" jsf:id="httpUploadDisabledDueToExistingRsyncPackagePublished" jsf:rendered="#{EditDatafilesPage.workingVersion.hasPackageFile and EditDatafilesPage.dataset.released}">
+                            <p class="help-block">
+                                <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+                                <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.httpUploadDisabledDueToRsyncFileExistingAndPublished']}">
+                                    
                                 </h:outputFormat>
                             </p>
                         </div>
@@ -316,7 +324,7 @@
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-warning-sign text-danger"></span>
                                             <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.rsyncUploadDisabledDueFileUploadedViaHttp']}">
-                                                <f:param value="#{settingsWrapper.supportTeamName}"/>
+                                                <f:param value="#{settingsWrapper.supportTeamEmail}"/>
                                             </h:outputFormat>
                                         </p>
                                     </ui:fragment>
@@ -324,7 +332,6 @@
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-warning-sign text-danger"></span>
                                             <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.rsyncUploadDisabledDueFileUploadedViaHttpAndPublished']}">
-                                                <f:param value="#{settingsWrapper.supportTeamName}"/>
                                             </h:outputFormat>
                                         </p>
                                     </ui:fragment>
