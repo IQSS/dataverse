@@ -1,5 +1,5 @@
-ALTER TABLE builtinuser REMOVE COLUMN affiliation character varying(255);
-ALTER TABLE builtinuser REMOVE COLUMN email character varying(255);
-ALTER TABLE builtinuser REMOVE COLUMN firstname character varying(255);
-ALTER TABLE builtinuser REMOVE COLUMN lastname character varying(255);
-ALTER TABLE builtinuser REMOVE COLUMN "position" character varying(255);
+ALTER TABLE builtinuser DROP COLUMN affiliation;
+ALTER TABLE builtinuser DROP COLUMN email;
+ALTER TABLE builtinuser DROP COLUMN firstname;
+ALTER TABLE builtinuser DROP COLUMN lastname;
+ALTER TABLE builtinuser DROP COLUMN position;
