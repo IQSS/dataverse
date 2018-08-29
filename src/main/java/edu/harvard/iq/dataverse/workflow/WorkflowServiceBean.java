@@ -121,15 +121,15 @@ public class WorkflowServiceBean {
             String settingType = requiredSettings.get(setting);
             switch (settingType) {
             case "string": {
-                retrievedSettings.put(settingType, settings.get(setting));
+                retrievedSettings.put(setting, settings.get(setting));
                 break;
             }
             case "boolean": {
-                retrievedSettings.put(settingType, settings.isTrue(settingType, false));
+                retrievedSettings.put(setting, settings.isTrue(settingType, false));
                 break;
             }
             case "long": {
-                retrievedSettings.put(settingType,
+                retrievedSettings.put(setting,
                         settings.getValueForKeyAsLong(SettingsServiceBean.Key.valueOf(setting)));
                 break;
             }
