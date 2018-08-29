@@ -25,11 +25,7 @@ import javax.ejb.EJB;
 
 public class DPNSubmissionWorkflowStep implements WorkflowStep {
 
-    @EJB
-    AuthenticationServiceBean authService;
-
     private static final Logger logger = Logger.getLogger(DPNSubmissionWorkflowStep.class.getName());
-
 
     public DPNSubmissionWorkflowStep(Map<String, String> paramSet) {
     }
@@ -39,17 +35,14 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
         String host=(String) context.getSettings().get("DuraCloudHost");
         String port = (String) context.getSettings().get("DuraCloudPort");
         String dpnContext = (String) context.getSettings().get("DuraCloudContext");
-        if(authService==null) {
-        	logger.severe("No auth service");
-        }
-        AuthenticatedUser user = context.getRequest().getAuthenticatedUser();
-        ApiToken token = authService.findApiTokenByUser(user);
-        if ((token == null) || (token.getExpireTime().before(new Date()))) {
-            token = authService.generateApiTokenForUser(user);
-        }
+        if(host==null) {
+            logger.severe("No DuraCloudHost - DPN Submission not attempted");
+            return new Failure("No DuraCloudHost", "DuraCloudHost not found in Settings");
+        } else {
         return SubmitArchiveCommand.performDPNSubmission(
                 context.getDataset().getVersion(context.getNextVersionNumber(), context.getNextMinorVersionNumber()),
-                context.getRequest().getAuthenticatedUser(), host, port, dpnContext, token);
+                context.getRequest().getAuthenticatedUser(), host, port, dpnContext, context.getApiToken());
+        }
     }
 
 
