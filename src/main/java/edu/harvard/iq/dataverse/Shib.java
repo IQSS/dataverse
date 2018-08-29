@@ -267,7 +267,8 @@ public class Shib implements java.io.Serializable {
                 existingBuiltInUserFoundByEmail = shibService.findBuiltInUserByAuthUserIdentifier(existingAuthUserFoundByEmail.getUserIdentifier());
                 if (existingBuiltInUserFoundByEmail != null) {
                     state = State.PROMPT_TO_CONVERT_EXISTING_ACCOUNT;
-                    existingDisplayName = existingBuiltInUserFoundByEmail.getDisplayName();
+//MAD: I think it is fine to remove this? We are already pulling it fromt Auth?
+                    //existingDisplayName = existingBuiltInUserFoundByEmail.getDisplayName();
                     debugSummary = "getting username from the builtin user we looked up via email";
                     builtinUsername = existingBuiltInUserFoundByEmail.getUserName();
                 } else {

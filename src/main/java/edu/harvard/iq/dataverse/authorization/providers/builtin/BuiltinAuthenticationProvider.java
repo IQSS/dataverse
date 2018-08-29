@@ -74,14 +74,17 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
         bean.save(biUser);
     }
 
+//MAD:  Delete this? After commenting out the info what is even left to happen?
+//          I need to better understand how this is used.
+    
     @Override
     public void updateUserInfo(String userIdInProvider, AuthenticatedUserDisplayInfo updatedUserData) {
         BuiltinUser biUser = bean.findByUserName( userIdInProvider );
-        biUser.setFirstName(updatedUserData.getFirstName());
-        biUser.setLastName(updatedUserData.getLastName());
-        biUser.setEmail( updatedUserData.getEmailAddress());
-        biUser.setAffiliation( updatedUserData.getAffiliation() );
-        biUser.setPosition(updatedUserData.getPosition());
+//        biUser.setFirstName(updatedUserData.getFirstName());
+//        biUser.setLastName(updatedUserData.getLastName());
+//        biUser.setEmail( updatedUserData.getEmailAddress());
+//        biUser.setAffiliation( updatedUserData.getAffiliation() );
+//        biUser.setPosition(updatedUserData.getPosition());
         
         bean.save(biUser);
     }
@@ -103,7 +106,7 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
 
     @Override
     public AuthenticationResponse authenticate( AuthenticationRequest authReq ) {
-        BuiltinUser u = bean.findByUsernameOrEmail(authReq.getCredential(KEY_USERNAME_OR_EMAIL) );
+        BuiltinUser u = bean.findByUsernameOnly(authReq.getCredential(KEY_USERNAME_OR_EMAIL) );
         if ( u == null ) return AuthenticationResponse.makeFail("Bad username, email address, or password");
         
         boolean userAuthenticated = PasswordEncryption.getVersion(u.getPasswordEncryptionVersion())
@@ -133,7 +136,10 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
                 return AuthenticationResponse.makeError("Error while attempting to upgrade password", ex);
             }
         }
-        return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
+        
+//MAD: Fix this. Returning null becaause I'm not sure the best way to go about this... get the AuthenticatedUser somehow...
+        return AuthenticationResponse.makeSuccess(u.getUserName(), null);        
+        //return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
    }
 
     @Override

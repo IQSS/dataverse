@@ -22,13 +22,12 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author xyang
  * @author mbarsinai
  */
+//MAD: I changed these named queries, doublecheck
 @NamedQueries({
 		@NamedQuery( name="BuiltinUser.findAll",
-				query = "SELECT u FROM BuiltinUser u ORDER BY u.lastName"),
+				query = "SELECT u FROM BuiltinUser u ORDER BY u.userName"),
 		@NamedQuery( name="BuiltinUser.findByUserName",
 				query = "SELECT u FROM BuiltinUser u WHERE u.userName=:userName"),
-		@NamedQuery( name="BuiltinUser.findByEmail",
-				query = "SELECT o FROM BuiltinUser o WHERE LOWER(o.email) = LOWER(:email)"),
 		@NamedQuery( name="BuiltinUser.listByUserNameLike",
 				query = "SELECT u FROM BuiltinUser u WHERE u.userName LIKE :userNameLike")
 })
@@ -46,23 +45,10 @@ public class BuiltinUser implements Serializable {
     @ValidateUserName(message = "{user.illegalCharacters}")
     @Column(nullable = false, unique=true)  
     private String userName;
-
-    @NotBlank(message = "{user.invalidEmail}")
-    @ValidateEmail(message = "{user.invalidEmail}")
-    @Column(nullable = false, unique=true)    
-    private String email;
-
-    @NotBlank(message =  "{user.firstName}")
-    private String firstName;
-
-    @NotBlank(message = "{user.lastName}")
-    private String lastName;
     
     private int passwordEncryptionVersion; 
     private String encryptedPassword;
 
-    private String affiliation;
-    private String position;
     
     public void updateEncryptedPassword( String encryptedPassword, int algorithmVersion ) {
         setEncryptedPassword(encryptedPassword);
@@ -84,30 +70,6 @@ public class BuiltinUser implements Serializable {
     public void setUserName(String userName) {
         this.userName = userName;
     }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
     
     public String getEncryptedPassword() {
         return encryptedPassword;
@@ -123,44 +85,6 @@ public class BuiltinUser implements Serializable {
     @Deprecated()
     public void setEncryptedPassword(String encryptedPassword) {
         this.encryptedPassword = encryptedPassword;
-    }
-    
-    public String getAffiliation() {
-        return affiliation;
-    }
-
-    public void setAffiliation(String affiliation) {
-        this.affiliation = affiliation;
-    }
-
-    public String getPosition() {
-        return position;
-    }
-
-    public void setPosition(String position) {
-        this.position = position;
-    }
-    
-    public String getDisplayName(){
-        return this.getFirstName() + " " + this.getLastName(); 
-    }
-    
-    public void applyDisplayInfo( AuthenticatedUserDisplayInfo inf ) {
-        setFirstName(inf.getFirstName());
-        setLastName(inf.getLastName());
-        if ( nonEmpty(inf.getEmailAddress()) ) {
-            setEmail(inf.getEmailAddress());
-        }
-        if ( nonEmpty(inf.getAffiliation()) ) {
-            setAffiliation( inf.getAffiliation() );
-        }
-        if ( nonEmpty(inf.getPosition()) ) {
-            setPosition( inf.getPosition());
-        }
-    }
-    
-    public AuthenticatedUserDisplayInfo getDisplayInfo() {
-        return new AuthenticatedUserDisplayInfo(getFirstName(), getLastName(), getEmail(), getAffiliation(), getPosition() );
     }
 
     @Override
@@ -179,10 +103,10 @@ public class BuiltinUser implements Serializable {
         return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
     }
 
-	@Override
-	public String toString() {
-		return "BuiltinUser{" + "id=" + id + ", userName=" + userName + ", email=" + email + '}';
-	}
+    @Override
+    public String toString() {
+            return "BuiltinUser{" + "id=" + id + ", userName=" + userName + '}';
+    }
 
     public int getPasswordEncryptionVersion() {
         return passwordEncryptionVersion;

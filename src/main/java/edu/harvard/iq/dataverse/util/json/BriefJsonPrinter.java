@@ -19,9 +19,6 @@ public class BriefJsonPrinter {
 		return ( usr==null ) 
 				? null
 				: jsonObjectBuilder().add("id", usr.getId())
-					.add("firstName", usr.getFirstName())
-					.add("lastName", usr.getLastName())
-					.add("affiliation", usr.getAffiliation())
 					;
 	}
 	

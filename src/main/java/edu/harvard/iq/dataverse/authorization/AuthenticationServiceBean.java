@@ -734,10 +734,6 @@ public class AuthenticationServiceBean {
         }
         BuiltinUser builtinUser = new BuiltinUser();
         builtinUser.setUserName(authenticatedUser.getUserIdentifier());
-        builtinUser.setFirstName(authenticatedUser.getFirstName());
-        builtinUser.setLastName(authenticatedUser.getLastName());
-        // Bean Validation will check for null and invalid email addresses
-        builtinUser.setEmail(newEmailAddress);
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         Set<ConstraintViolation<BuiltinUser>> violations = validator.validate(builtinUser);
@@ -808,7 +804,7 @@ public class AuthenticationServiceBean {
                  * AuthenticationServiceBean.convertBuiltInToShib
                  */
                 logger.info("AuthenticationFailedException caught in canLogInAsBuiltinUser: The username and/or password entered is invalid: " + ex.getResponse().getMessage() + " - Maybe the user (" + username + ") hasn't upgraded their password? Checking the old password...");
-                BuiltinUser builtinUser = builtinUserServiceBean.findByUsernameOrEmail(username);
+                BuiltinUser builtinUser = builtinUserServiceBean.findByUsernameOnly(username);
                 if (builtinUser != null) {
                     boolean userAuthenticated = PasswordEncryption.getVersion(builtinUser.getPasswordEncryptionVersion()).check(password, builtinUser.getEncryptedPassword());
                     if (userAuthenticated == true) {

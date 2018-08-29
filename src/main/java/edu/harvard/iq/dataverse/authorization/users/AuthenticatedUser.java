@@ -97,7 +97,7 @@ public class AuthenticatedUser implements User, Serializable {
     
     @Column(nullable = true)
     private Timestamp emailConfirmed;
-    //TODO: add the word time after next 3 columns   
+ 
     @Column(nullable=false)
     private Timestamp createdTime;
     

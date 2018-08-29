@@ -27,12 +27,16 @@ public class MockBuiltinUserServiceBean extends BuiltinUserServiceBean {
     
     
     @Override
-    public BuiltinUser findByUsernameOrEmail(String usernameOrEmail) {
+    public BuiltinUser findByUsernameOnly(String usernameOrEmail) {
         BuiltinUser u = findByUserName(usernameOrEmail);
-        if ( u != null ) return u;
-        return users.values().stream()
-                .filter( usr -> usr.getEmail().equals(usernameOrEmail))
-                .findFirst().orElse(null);
+        
+//MAD: I'm pretty sure I'm breaking this mock with my changes
+        return u;
+        
+//        if ( u != null ) return u;
+//        return users.values().stream()
+//                .filter( usr -> usr.getEmail().equals(usernameOrEmail))
+//                .findFirst().orElse(null);
     }
 
     @Override
