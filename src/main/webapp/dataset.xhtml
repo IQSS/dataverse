@@ -1263,6 +1263,7 @@
                    
                     <p:dialog id="linkDatasetForm" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 0}">
+                            <ui:remove>
                             <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
                                 <p class="help-block">#{bundle['dataverse.link.no.choice']}</p>
                             </ui:fragment>
@@ -1287,6 +1288,25 @@
                                     </div>
                                 </div>
                             </div>
+                                </ui:remove>
+                            <p:autoComplete id="dataverseLinkName" placeholder="#{bundle['dataverse.link.dataset.choose']}"
+                                            multiple="true" scrollHeight="180" forceSelection="true" 
+                                            minQueryLength="2" queryDelay="1000"                                                                                  
+                                            value="#{DatasetPage.selectedDataversesForLinking}"  
+                                            completeMethod="#{DatasetPage.completeLinkingDataverse}"
+                                             requiredMessage="Selection Required"
+                                            styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
+                                            var="dataverse" itemLabel="#{dataverse.displayName}" itemValue="#{dataverse}" converter="dataverseConverter">
+                                <p:column>
+                                    <h:outputText value="#{dataverse.displayName}"/> 
+                                    <h:outputText value=" (#{dataverse.id})" />
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{dataverse.alias}"/>
+                            </p:column>
+                                <p:ajax process="@this" event="itemSelect" />
+                                <p:ajax process="@this" event="itemUnselect" />
+                            </p:autoComplete>
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 0}">
                             <ui:fragment rendered="#{DatasetPage.noDVsAtAll }">

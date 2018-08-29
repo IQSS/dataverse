@@ -31,9 +31,11 @@ public class DataverseConverter implements Converter {
 
     @Override
     public String getAsString(FacesContext facesContext, UIComponent component, Object value) {
+        System.out.print("Not casted " + value);
         if (value == null || value.equals("")) {
             return "";
         } else {
+            System.out.print("get as string " + ((Dataverse) value).getDisplayName());
             return ((Dataverse) value).getId().toString();
             //return ((Dataverse) value).getAlias();
         }

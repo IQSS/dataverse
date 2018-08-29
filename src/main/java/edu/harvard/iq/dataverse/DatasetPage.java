@@ -2113,6 +2113,16 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedFiles = selectedFiles;
     }
     
+    private List<Dataverse> selectedDataversesForLinking  = new ArrayList<>();
+
+    public List<Dataverse> getSelectedDataversesForLinking() {
+        return selectedDataversesForLinking;
+    }
+
+    public void setSelectedDataversesForLinking(List<Dataverse> selectedDataversesForLinking) {
+        this.selectedDataversesForLinking = selectedDataversesForLinking;
+    }
+    
     private List<FileMetadata> selectedRestrictedFiles; // = new ArrayList<>();
 
     public List<FileMetadata> getSelectedRestrictedFiles() {
@@ -2307,6 +2317,15 @@ public class DatasetPage implements java.io.Serializable {
             FacesContext.getCurrentInstance().addMessage(null, message);
         }
         return returnToLatestVersion();
+    }
+    
+    public List<Dataverse> completeLinkingDataverse(String query) {
+        List<Dataverse> prelim = dataverseService.filterDataversesForLinking(query); 
+        for (Dataverse res : prelim){
+           System.out.print("Again: " + res.getDisplayName());
+       }
+
+        return prelim; 
     }
 
     List<FileMetadata> previouslyRestrictedFiles = null;
