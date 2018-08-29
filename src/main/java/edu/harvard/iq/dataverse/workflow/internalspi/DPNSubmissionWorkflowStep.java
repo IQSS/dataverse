@@ -33,9 +33,9 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
     @Override
     public WorkflowStepResult run(WorkflowContext context) {
     	logger.info("Settings entries: " + context.getSettings().size());
-        String host=(String) context.getSettings().get("DuraCloudHost");
-        String port = (String) context.getSettings().get("DuraCloudPort");
-        String dpnContext = (String) context.getSettings().get("DuraCloudContext");
+        String host=(String) context.getSettings().get(":DuraCloudHost");
+        String port = (String) context.getSettings().get(":DuraCloudPort");
+        String dpnContext = (String) context.getSettings().get(":DuraCloudContext");
         if(host==null) {
             logger.severe("No DuraCloudHost - DPN Submission not attempted");
             return new Failure("No DuraCloudHost", "DuraCloudHost not found in Settings");
