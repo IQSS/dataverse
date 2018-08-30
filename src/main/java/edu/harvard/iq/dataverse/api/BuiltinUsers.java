@@ -87,107 +87,108 @@ public class BuiltinUsers extends AbstractApiBean {
     
 //MAD:  I commented this all out because its based on posting a BuiltinUser 
 //          which will no longer have the required info.
-//      Its only exercized via api
+//      We will try to take the json object as is and use it, either by having 
+//          transient values on builtinuser or by parsing the object manually
     
     
-//    @POST
-//    @Path("{password}/{key}")
-//    public Response create(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key) {
-//        return internalSave(user, password, key);
-//    }
-//    
-//    @POST
-//    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key) {
-//        return internalSave(user, password, key);
-//    }
-//
-//    private Response internalSave(BuiltinUser user, String password, String key) {
-//        String expectedKey = settingsSvc.get(API_KEY_IN_SETTINGS);
-//        
-//        if (expectedKey == null) {
-//            return error(Status.SERVICE_UNAVAILABLE, "Dataverse config issue: No API key defined for built in user management");
-//        }
-//        if (!expectedKey.equals(key)) {
-//            return badApiKey(key);
-//        }
-//        
-//        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "create");
-//        
-//        try {
-//            
-//            if (password != null) {
-//                user.updateEncryptedPassword(PasswordEncryption.get().encrypt(password), PasswordEncryption.getLatestVersionNumber());
-//            }
-//            
-//            // Make sure the identifier is unique
-//            if ( (builtinUserSvc.findByUserName(user.getUserName()) != null)
-//                    || ( authSvc.identifierExists(user.getUserName())) ) {
-//                return error(Status.BAD_REQUEST, "username '" + user.getUserName() + "' already exists");
-//            }
-//            user = builtinUserSvc.save(user);
-//
-//            AuthenticatedUser au = authSvc.createAuthenticatedUser(
-//                    new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, user.getUserName()),
-//                    user.getUserName(), 
-//                    user.getDisplayInfo(),
-//                    false);
-//
-//            /**
-//             * @todo Move this to
-//             * AuthenticationServiceBean.createAuthenticatedUser
-//             */
-//            boolean rootDataversePresent = false;
-//            try {
-//                Dataverse rootDataverse = dataverseSvc.findRootDataverse();
-//                if (rootDataverse != null) {
-//                    rootDataversePresent = true;
-//                }
-//            } catch (Exception e) {
-//                logger.info("The root dataverse is not present. Don't send a notification to dataverseAdmin.");
-//            }
-//            if (rootDataversePresent) {
-//                userNotificationSvc.sendNotification(au,
-//                        new Timestamp(new Date().getTime()),
-//                        UserNotification.Type.CREATEACC, null);
-//            }
-//
-//            ApiToken token = new ApiToken();
-//
-//            token.setTokenString(java.util.UUID.randomUUID().toString());
-//            token.setAuthenticatedUser(au);
-//
-//            Calendar c = Calendar.getInstance();
-//            token.setCreateTime(new Timestamp(c.getTimeInMillis()));
-//            c.roll(Calendar.YEAR, 1);
-//            token.setExpireTime(new Timestamp(c.getTimeInMillis()));
-//            authSvc.save(token);
-//
-//            JsonObjectBuilder resp = Json.createObjectBuilder();
-//            resp.add("user", json(user));
-//            resp.add("authenticatedUser", json(au));
-//            resp.add("apiToken", token.getTokenString());
-//            
-//            alr.setInfo("builtinUser:" + user.getUserName() + " authenticatedUser:" + au.getIdentifier() );
-//            return ok(resp);
-//            
-//        } catch ( EJBException ejbx ) {
-//            alr.setActionResult(ActionLogRecord.Result.InternalError);
-//            alr.setInfo( alr.getInfo() + "// " + ejbx.getMessage());
-//            if ( ejbx.getCausedByException() instanceof IllegalArgumentException ) {
-//                return error(Status.BAD_REQUEST, "Bad request: can't save user. " + ejbx.getCausedByException().getMessage());
-//            } else {
-//                logger.log(Level.WARNING, "Error saving user: ", ejbx);
-//                return error(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + ejbx.getMessage());
-//            }
-//            
-//        } catch (Exception e) {
-//            logger.log(Level.WARNING, "Error saving user", e);
-//            alr.setActionResult(ActionLogRecord.Result.InternalError);
-//            alr.setInfo( alr.getInfo() + "// " + e.getMessage());
-//            return error(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + e.getMessage());
-//        } finally {
-//            actionLogSvc.log(alr);
-//        }
-//    }
+    @POST
+    @Path("{password}/{key}")
+    public Response create(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key) {
+        return internalSave(user, password, key);
+    }
+    
+    @POST
+    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key) {
+        return internalSave(user, password, key);
+    }
+
+    private Response internalSave(BuiltinUser user, String password, String key) {
+        String expectedKey = settingsSvc.get(API_KEY_IN_SETTINGS);
+        
+        if (expectedKey == null) {
+            return error(Status.SERVICE_UNAVAILABLE, "Dataverse config issue: No API key defined for built in user management");
+        }
+        if (!expectedKey.equals(key)) {
+            return badApiKey(key);
+        }
+        
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "create");
+        
+        try {
+            
+            if (password != null) {
+                user.updateEncryptedPassword(PasswordEncryption.get().encrypt(password), PasswordEncryption.getLatestVersionNumber());
+            }
+            
+            // Make sure the identifier is unique
+            if ( (builtinUserSvc.findByUserName(user.getUserName()) != null)
+                    || ( authSvc.identifierExists(user.getUserName())) ) {
+                return error(Status.BAD_REQUEST, "username '" + user.getUserName() + "' already exists");
+            }
+            user = builtinUserSvc.save(user);
+
+            AuthenticatedUser au = authSvc.createAuthenticatedUser(
+                    new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, user.getUserName()),
+                    user.getUserName(), 
+                    user.getDisplayInfoForApiCreation(),
+                    false);
+
+            /**
+             * @todo Move this to
+             * AuthenticationServiceBean.createAuthenticatedUser
+             */
+            boolean rootDataversePresent = false;
+            try {
+                Dataverse rootDataverse = dataverseSvc.findRootDataverse();
+                if (rootDataverse != null) {
+                    rootDataversePresent = true;
+                }
+            } catch (Exception e) {
+                logger.info("The root dataverse is not present. Don't send a notification to dataverseAdmin.");
+            }
+            if (rootDataversePresent) {
+                userNotificationSvc.sendNotification(au,
+                        new Timestamp(new Date().getTime()),
+                        UserNotification.Type.CREATEACC, null);
+            }
+
+            ApiToken token = new ApiToken();
+
+            token.setTokenString(java.util.UUID.randomUUID().toString());
+            token.setAuthenticatedUser(au);
+
+            Calendar c = Calendar.getInstance();
+            token.setCreateTime(new Timestamp(c.getTimeInMillis()));
+            c.roll(Calendar.YEAR, 1);
+            token.setExpireTime(new Timestamp(c.getTimeInMillis()));
+            authSvc.save(token);
+
+            JsonObjectBuilder resp = Json.createObjectBuilder();
+            resp.add("user", json(user));
+            resp.add("authenticatedUser", json(au));
+            resp.add("apiToken", token.getTokenString());
+            
+            alr.setInfo("builtinUser:" + user.getUserName() + " authenticatedUser:" + au.getIdentifier() );
+            return ok(resp);
+            
+        } catch ( EJBException ejbx ) {
+            alr.setActionResult(ActionLogRecord.Result.InternalError);
+            alr.setInfo( alr.getInfo() + "// " + ejbx.getMessage());
+            if ( ejbx.getCausedByException() instanceof IllegalArgumentException ) {
+                return error(Status.BAD_REQUEST, "Bad request: can't save user. " + ejbx.getCausedByException().getMessage());
+            } else {
+                logger.log(Level.WARNING, "Error saving user: ", ejbx);
+                return error(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + ejbx.getMessage());
+            }
+            
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Error saving user", e);
+            alr.setActionResult(ActionLogRecord.Result.InternalError);
+            alr.setInfo( alr.getInfo() + "// " + e.getMessage());
+            return error(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + e.getMessage());
+        } finally {
+            actionLogSvc.log(alr);
+        }
+    }
 
 }
