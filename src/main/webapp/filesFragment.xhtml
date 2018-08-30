@@ -282,13 +282,20 @@
                     <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
                 </div>
                 
+                <!-- NOTE the disabled="{_datasetPage.lockedFromDownload}" attributes on the 6 batch download buttons below. -->
+                <!-- it looks like they were put there in order to disable downloads while the dataset is locked. -->
+                <!-- Nobody appears to remember why we would ever want to do that... especially since individual downloads -->
+                <!-- are currently allowed on locked datasets. I've been asked to re-enable these download buttons, even -->
+                <!-- when the dataset is locked. I didn't want to completely remove the disabled="" attributes, -->
+                <!-- since I feel we should figure out/remember why we put that logic in place in the first place... -->
+                <!-- so I have replaced them with {false && DatasetPage.lockedFromDownload}. - L.A. Aug. 2018 -->
                 <div jsf:id="downloadButtonBlockNormal" class="btn-group" 
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                     and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
                                     and !DatasetPage.isHasTabular()}">
                     <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
                                     type="button" styleClass="btn btn-default"
-                                    disabled="#{DatasetPage.lockedFromDownload}"
+                                    disabled="#{false and DatasetPage.lockedFromDownload}"
                                     update="@form"
                                     actionListener="#{DatasetPage.validateFilesForDownload(false, false)}">
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
@@ -296,7 +303,7 @@
                     <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                     <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
                                     type="button" styleClass="btn btn-default"
-                                    disabled="#{DatasetPage.lockedFromDownload}"
+                                    disabled="#{false and DatasetPage.lockedFromDownload}"
                                     action="#{DatasetPage.validateFilesForDownload(true, false)}"
                                     update="@form" oncomplete="">
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
@@ -313,14 +320,14 @@
                         <ul jsf:id="downloadDropdownOptions" class="dropdown-menu multi-level pull-right text-left" role="menu">
                             <li >
                                 <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                                disabled="#{DatasetPage.lockedFromDownload}"
+                                                disabled="#{false and DatasetPage.lockedFromDownload}"
                                                 update="@form"
                                                 actionListener="#{DatasetPage.validateFilesForDownload(false, true)}">
                                     #{bundle.downloadOriginal}
                                 </p:commandLink>
                                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                                 <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                                disabled="#{DatasetPage.lockedFromDownload}"
+                                                disabled="#{false and DatasetPage.lockedFromDownload}"
                                                 action="#{DatasetPage.validateFilesForDownload(true, true)}"
                                                 update="@form" oncomplete="">
                                     #{bundle.downloadOriginal}
@@ -328,14 +335,14 @@
                             </li>
                             <li> <!--jsf:rendered="# {DatasetPage.isTabularDataSelected()}"-->
                                 <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                                disabled="#{DatasetPage.lockedFromDownload}"
+                                                disabled="#{false and DatasetPage.lockedFromDownload}"
                                                 update="@form"
                                                 actionListener="#{DatasetPage.validateFilesForDownload(false, false)}">
                                     #{bundle.downloadArchival}
                                 </p:commandLink>
                                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                                 <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                                disabled="#{DatasetPage.lockedFromDownload}"
+                                                disabled="#{false and DatasetPage.lockedFromDownload}"
                                                 action="#{DatasetPage.validateFilesForDownload(true, false)}"
                                                 update="@form" oncomplete="">
                                     #{bundle.downloadArchival}

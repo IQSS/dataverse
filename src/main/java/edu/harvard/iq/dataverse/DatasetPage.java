@@ -2937,6 +2937,19 @@ public class DatasetPage implements java.io.Serializable {
         return lockedFromEditsVar;
     }
     
+    // TODO: investigate why this method was needed in the first place?
+    // It appears that it was written under the assumption that downloads 
+    // should not be allowed when a dataset is locked... (why?)
+    // There are calls to the method throghout the file-download-buttons fragment; 
+    // except the way it's done there, it's actually disregarded (??) - so the 
+    // download buttons ARE always enabled. The only place where this method is 
+    // honored is on the batch (mutliple file) download buttons in filesFragment.xhtml. 
+    // As I'm working on #4000, I've been asked to re-enable the batch download 
+    // buttons there as well, even when the dataset is locked. I'm doing that - but 
+    // I feel we should probably figure out why we went to the trouble of creating 
+    // this code in the first place... is there some reason we are forgetting now, 
+    // why we do actually want to disable downloads on locked datasets??? 
+    // -- L.A. Aug. 2018
     public boolean isLockedFromDownload(){
         if(null == lockedFromDownloadVar || stateChanged) {
             try {
