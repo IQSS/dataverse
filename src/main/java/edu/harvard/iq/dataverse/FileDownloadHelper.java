@@ -218,7 +218,12 @@ public class FileDownloadHelper implements java.io.Serializable {
          
      }
     
-     public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse) {
+     // This helper method is called from the Download terms/guestbook/etc. popup, 
+     // when the user clicks the "ok" button. We use it, instead of calling 
+     // downloadServiceBean directly, in order to differentiate between single
+     // file downloads and multiple (batch) downloads - sice both use the same 
+     // terms/etc. popup. 
+     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
          RequestContext requestContext = RequestContext.getCurrentInstance();
          boolean valid = validateGuestbookResponse(guestbookResponse);
 
@@ -234,15 +239,12 @@ public class FileDownloadHelper implements java.io.Serializable {
              if (guestbookResponse.getSelectedFileIds() != null) {
                  // this is a batch (multiple file) download.
                  // Although here's a chance that this is not really a batch download - i.e., 
-                 // there may only be one file on the downloadable list. But the fileDownloadService 
+                 // there may only be one file on the file list. But the fileDownloadService 
                  // method below will check for that, and will redirect to the single download, if
                  // that's the case. -- L.A.
                  fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse);
              } else if (guestbookResponse.getDataFile() != null) {
                  // this a single file download: 
-                 // (This may never be the case in real life (as of Aug. 2018); 
-                 // meaning, single file downloads go directly to the file download 
-                 // service, bypassing this method.
                  fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse);
              }
          }

@@ -2204,9 +2204,9 @@ public class DatasetPage implements java.io.Serializable {
         if (downloadOriginal) {
             guestbookResponse.setFileFormat("original");
         } else {
-            guestbookResponse.setFileFormat("Download");
-            // ("Download" means the default, straight file download)
+            guestbookResponse.setFileFormat("");
         }
+        guestbookResponse.setDownloadtype("Download");
         
         // If we have a bunch of files that we can download, AND there were no files 
         // that we had to take off the list, because of permissions - we can 
@@ -3102,7 +3102,6 @@ public class DatasetPage implements java.io.Serializable {
         // that's the case. -- L.A.
         
         this.guestbookResponse.setDownloadtype("Download");
-        //this.guestbookResponse.setFileFormat("Download");
         RequestContext requestContext = RequestContext.getCurrentInstance();
         requestContext.execute("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
     }
