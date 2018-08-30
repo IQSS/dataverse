@@ -101,41 +101,6 @@ public class BuiltinUserServiceBean {
 				.setParameter("userNameLike", "%" + part + "%")
 				.getResultList();
 	}
-
-//MAD: will not work with removing of things from BuiltInuser
-//Search for more of these: BuiltinUser
-        
-        
-    /**
-     * @param email email of the user.
-     * @return A {@link BuiltinUser} or null if not found
-     */
-//    public BuiltinUser findByEmail(String email) {
-//        try {
-//            return em.createNamedQuery("BuiltinUser.findByEmail", BuiltinUser.class)
-//                    .setParameter("email", email)
-//                    .getSingleResult();
-//        } catch (NoResultException | NonUniqueResultException ex) {
-//            return null;
-//        }
-//    }
-
-        
-//MAD:  I'm changing this to be "findByUsernameOnly" but I am unsure if all the
-//          methods calling this are just using username...
-//      This should actually just be collapsed with findByUsername after I've checked
-    /**
-     * @param usernameOrEmail Username or email address of the user.
-     * @return A {@link BuiltinUser} or null if not found
-     */
-    public BuiltinUser findByUsernameOnly(String usernameOrEmail) {
-        BuiltinUser userFoundByUsername = findByUserName(usernameOrEmail);
-        if (userFoundByUsername != null) {
-            return userFoundByUsername;
-        } else {
-            return null;
-        }
-    }
     
     public List<BuiltinUser> findAll() {
 		return em.createNamedQuery("BuiltinUser.findAll", BuiltinUser.class).getResultList();

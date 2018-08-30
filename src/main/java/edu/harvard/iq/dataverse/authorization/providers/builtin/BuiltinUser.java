@@ -22,7 +22,6 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author xyang
  * @author mbarsinai
  */
-//MAD: I changed these named queries, doublecheck
 @NamedQueries({
 		@NamedQuery( name="BuiltinUser.findAll",
 				query = "SELECT u FROM BuiltinUser u ORDER BY u.userName"),
@@ -32,7 +31,7 @@ import org.hibernate.validator.constraints.NotBlank;
 				query = "SELECT u FROM BuiltinUser u WHERE u.userName LIKE :userNameLike")
 })
 @Entity
-@Table(indexes = {@Index(columnList="lastName")})  // for sorting the NamedQuery BuiltinUser.findAll
+@Table(indexes = {@Index(columnList="userName")})  // for sorting the NamedQuery BuiltinUser.findAll
 public class BuiltinUser implements Serializable {
 
     private static final long serialVersionUID = 1L;

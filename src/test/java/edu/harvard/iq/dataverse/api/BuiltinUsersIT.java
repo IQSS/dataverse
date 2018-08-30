@@ -196,14 +196,6 @@ public class BuiltinUsersIT {
         failExpected.prettyPrint();
         assertEquals(400, failExpected.getStatusCode());
 
-        if (BuiltinUsers.retrievingApiTokenViaEmailEnabled) {
-            Response getApiTokenUsingEmail = getApiTokenUsingEmail(usernameToCreate + "@mailinator.com", usernameToCreate);
-            getApiTokenUsingEmail.prettyPrint();
-            assertEquals(200, getApiTokenUsingEmail.getStatusCode());
-            String retrievedTokenUsingEmail = JsonPath.from(getApiTokenUsingEmail.asString()).getString("data.message");
-            assertEquals(createdToken, retrievedTokenUsingEmail);
-        }
-
         Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
         removeAllowApiTokenLookupViaApi.then().assertThat()
                 .statusCode(200);

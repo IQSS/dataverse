@@ -804,7 +804,7 @@ public class AuthenticationServiceBean {
                  * AuthenticationServiceBean.convertBuiltInToShib
                  */
                 logger.info("AuthenticationFailedException caught in canLogInAsBuiltinUser: The username and/or password entered is invalid: " + ex.getResponse().getMessage() + " - Maybe the user (" + username + ") hasn't upgraded their password? Checking the old password...");
-                BuiltinUser builtinUser = builtinUserServiceBean.findByUsernameOnly(username);
+                BuiltinUser builtinUser = builtinUserServiceBean.findByUserName(username);
                 if (builtinUser != null) {
                     boolean userAuthenticated = PasswordEncryption.getVersion(builtinUser.getPasswordEncryptionVersion()).check(password, builtinUser.getEncryptedPassword());
                     if (userAuthenticated == true) {
