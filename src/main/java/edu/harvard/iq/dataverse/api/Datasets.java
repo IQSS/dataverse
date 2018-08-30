@@ -78,6 +78,7 @@ import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -90,6 +91,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -154,6 +156,9 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     EjbDataverseEngine commandEngine;
+    
+    @EJB
+    IndexServiceBean indexService;
      
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1346,7 +1351,12 @@ public class Datasets extends AbstractApiBean {
                     if (!locks.isEmpty()) {
                         for (DatasetLock lock : locks) {
                             execCommand(new RemoveLockCommand(req, dataset, lock.getReason()));
+                            // refresh the dataset:
+                            dataset = findDatasetOrDie(id);
                         }
+                        // kick of dataset reindexing, in case the locks removed 
+                        // affected the search card:
+                        indexService.indexDataset(dataset, true);
                         return ok("locks removed");
                     }
                     return ok("dataset not locked");
@@ -1355,6 +1365,11 @@ public class Datasets extends AbstractApiBean {
                 DatasetLock lock = dataset.getLockFor(lockType);
                 if (lock != null) {
                     execCommand(new RemoveLockCommand(req, dataset, lock.getReason()));
+                    // refresh the dataset:
+                    dataset = findDatasetOrDie(id);
+                    // ... and kick of dataset reindexing, in case the lock removed 
+                    // affected the search card:
+                    indexService.indexDataset(dataset, true);
                     return ok("lock type " + lock.getReason() + " removed");
                 }
                 return ok("no lock type " + lockType + " on the dataset");
@@ -1382,6 +1397,10 @@ public class Datasets extends AbstractApiBean {
                 }
                 lock = new DatasetLock(lockType, user);
                 execCommand(new AddLockCommand(req, dataset, lock));
+                // refresh the dataset:
+                dataset = findDatasetOrDie(id);
+                // ... and kick of dataset reindexing:
+                indexService.indexDataset(dataset, true);
                 return ok("dataset locked with lock type " + lockType);
             } catch (WrappedResponse wr) {
                 return wr.getResponse();
