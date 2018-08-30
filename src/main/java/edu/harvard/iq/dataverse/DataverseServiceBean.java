@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
@@ -67,6 +68,9 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     @EJB
     DatasetLinkingServiceBean datasetLinkingService;
+    
+    @EJB
+    PermissionServiceBean permissionService;
     
     @EJB
     SystemConfig systemConfig;
@@ -453,41 +457,19 @@ public class DataverseServiceBean implements java.io.Serializable {
         return ret;
     }
     
-    public List<Dataverse> filterDataversesForLinking(String query) {
+    public List<Dataverse> filterDataversesForLinking(String query, AuthenticatedUser user) {
+
         List<Dataverse> dataverseList = new ArrayList<>();
 
-        // we get the users through a query that does the filtering through the db,
-        // so that we don't have to instantiate all of the RoleAssignee objects
-        /*
-        em.createNamedQuery("Dataverse.filterByName", Dataverse.class)
-                .setParameter("name", "%" + query + "%")
-                .getResultList().stream()
-                .filter(dv -> dataverseList == null || !dataverseList.contains(dv))
-                .forEach((dv) -> {
-                    dataverseList.add(dv);
-                });
-        */
-       List <Dataverse> results = em.createNamedQuery("Dataverse.filterByName", Dataverse.class)
+        List<Dataverse> results = em.createNamedQuery("Dataverse.filterByName", Dataverse.class)
                 .setParameter("name", "%" + query + "%")
                 .getResultList();
-       
-       for (Dataverse res : results){
-           System.out.print(res.getDisplayName());
-           dataverseList.add(res);
-       }
 
-        // now we add groups to the list, both global and explicit
-        /*
-        Set<Group> groups = groupSvc.findGlobalGroups();
-        groups.addAll(explicitGroupSvc.findAvailableFor(dvObject));
-        groups.stream()
-                .filter(ra -> StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query)
-                        || StringUtils.containsIgnoreCase(ra.getIdentifier(), query))
-                .filter(ra -> roleAssignSelectedRoleAssignees == null || !roleAssignSelectedRoleAssignees.contains(ra))
-                .forEach((ra) -> {
-                    roleAssigneeList.add(ra);
-                });
-*/
+        for (Dataverse res : results) {
+            if (this.permissionService.userOn(user, res).has(Permission.PublishDataverse)) {
+                dataverseList.add(res);
+            }
+        }
 
         return dataverseList;
     }

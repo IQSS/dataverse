@@ -184,7 +184,7 @@
                                 </ui:fragment>
                                 <!-- END: Publish/Submit for Review/Return to Author Button Group -->
                                 
-                                <p:commandLink rendered="#{dataverseSession.user.superuser and !DatasetPage.workingVersion.deaccessioned}"
+                                <p:commandLink rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned}"
                                                type="button" styleClass="btn btn-default btn-access"
                                                action="#{DatasetPage.updateLinkableDataverses()}"
                                                oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"
@@ -1295,14 +1295,14 @@
                                             value="#{DatasetPage.selectedDataversesForLinking}"  
                                             completeMethod="#{DatasetPage.completeLinkingDataverse}"
                                              requiredMessage="Selection Required"
-                                            styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
-                                            var="dataverse" itemLabel="#{dataverse.displayName}" itemValue="#{dataverse}" converter="dataverseConverter">
+                                            styleClass="DropdownPopup" 
+                                            var="dataverseLk" itemLabel="#{dataverseLk.displayName}" itemValue="#{dataverseLk}" converter="dataverseConverter">
                                 <p:column>
-                                    <h:outputText value="#{dataverse.displayName}"/> 
-                                    <h:outputText value=" (#{dataverse.id})" />
+                                    <h:outputText value="#{dataverseLk.displayName}"/> 
+                                    <h:outputText value=" (#{dataverseLk.id})" />
                                 </p:column>
                                 <p:column>
-                                    <h:outputText value="#{dataverse.alias}"/>
+                                    <h:outputText value="#{dataverseLk.alias}"/>
                             </p:column>
                                 <p:ajax process="@this" event="itemSelect" />
                                 <p:ajax process="@this" event="itemUnselect" />

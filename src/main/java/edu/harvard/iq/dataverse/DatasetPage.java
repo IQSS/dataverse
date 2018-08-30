@@ -2321,12 +2321,11 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public List<Dataverse> completeLinkingDataverse(String query) {
-        List<Dataverse> prelim = dataverseService.filterDataversesForLinking(query); 
-        for (Dataverse res : prelim){
-           System.out.print("Again: " + res.getDisplayName());
-       }
-
-        return prelim; 
+        if (session.getUser().isAuthenticated()) {
+            return dataverseService.filterDataversesForLinking(query, (AuthenticatedUser) session.getUser());
+        } else {
+            return null;
+        }
     }
 
     List<FileMetadata> previouslyRestrictedFiles = null;
