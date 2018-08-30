@@ -263,9 +263,7 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean hasRsyncScript = false;
     
     private Boolean hasTabular = false;
-    
-    private Boolean downloadOriginalTracker = false;
-    
+        
     List<ExternalTool> configureTools = new ArrayList<>();
     List<ExternalTool> exploreTools = new ArrayList<>();
     Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
@@ -2170,7 +2168,6 @@ public class DatasetPage implements java.io.Serializable {
     
             
     public void validateFilesForDownload(boolean guestbookRequired, boolean downloadOriginal){
-        downloadOriginalTracker = downloadOriginal;
         setSelectedDownloadableFiles(new ArrayList<>());
         setSelectedNonDownloadableFiles(new ArrayList<>());
         
@@ -2187,23 +2184,46 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         
-        if(!getSelectedDownloadableFiles().isEmpty() && getSelectedNonDownloadableFiles().isEmpty()){
-            if (guestbookRequired){
-                modifyGuestbookMultipleResponse();
-            } else {
-                // Note that the "false" parameter below means "skip writing the 
-                // GuestBookResponse record *on the Dataverse side*; so that it will 
-                // be written on the API side. --L.A. 
-                startMultipleFileDownload(false, downloadOriginal);
-            }        
-        }
-
+        // If some of the files were restricted and we had to drop them off the 
+        // list, and NONE of the files are left on the downloadable list
+        // - we show them a "you're out of luck" popup: 
         if(getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()){
             RequestContext requestContext = RequestContext.getCurrentInstance();
             requestContext.execute("PF('downloadInvalid').show()");
             return;
+        }
+        
+        // Note that the GuestbookResponse object may still have information from 
+        // the last download action performed by the user. For example, it may 
+        // still have the non-null Datafile in it, if the user has just downloaded
+        // a single file; or it may still have the format set to "original" - 
+        // even if that's not what they are trying to do now. 
+        // So make sure to reset these values:
+        guestbookResponse.setDataFile(null);
+        guestbookResponse.setSelectedFileIds(getSelectedDownloadableFilesIdsString());
+        if (downloadOriginal) {
+            guestbookResponse.setFileFormat("original");
+        } else {
+            guestbookResponse.setFileFormat("Download");
+            // ("Download" means the default, straight file download)
+        }
+        
+        // If we have a bunch of files that we can download, AND there were no files 
+        // that we had to take off the list, because of permissions - we can 
+        // either send the user directly to the download API (if no guestbook/terms
+        // popup is required), or send them to the download popup:
+        if(!getSelectedDownloadableFiles().isEmpty() && getSelectedNonDownloadableFiles().isEmpty()){
+            if (guestbookRequired){
+                openDownloadPopupForMultipleFileDownload();
+            } else {
+                startMultipleFileDownload();
+            }
+            return;
         } 
         
+        // ... and if some files were restricted, but some are downloadable, 
+        // we are showing them this "you are somewhat in luck" popup; that will 
+        // then direct them to the download, or popup, as needed:
         if(!getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()){
             RequestContext requestContext = RequestContext.getCurrentInstance();
             requestContext.execute("PF('downloadMixed').show()");
@@ -2211,10 +2231,6 @@ public class DatasetPage implements java.io.Serializable {
 
     }
     
-    public boolean getDownloadOriginalTracker() {
-        return downloadOriginalTracker;
-    }
-
     private boolean selectAllFiles;
 
     public boolean isSelectAllFiles() {
@@ -3052,16 +3068,13 @@ public class DatasetPage implements java.io.Serializable {
         this.datasetVersionDifference = datasetVersionDifference;
     }
         
-
-    // The "writeGuestbookOnDataverseSide" parameter means that if set to false, 
-    // it will be the download API's job to create the guestbook response record.
-    public void startMultipleFileDownload (Boolean writeGuestbookOnUiSide, Boolean downloadOriginal){
+    public void startMultipleFileDownload (){
         
-        this.guestbookResponse = this.guestbookResponseService.modifySelectedFileIds(guestbookResponse, getSelectedDownloadableFilesIdsString());
-        if (downloadOriginal) {
-            guestbookResponse.setFileFormat("original");
-        }
         boolean doNotSaveGuestbookResponse = workingVersion.isDraft();
+        // There's a chance that this is not really a batch download - i.e., 
+        // there may only be one file on the downloadable list. But the fileDownloadService 
+        // method below will check for that, and will redirect to the single download, if
+        // that's the case. -- L.A.
         fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse, doNotSaveGuestbookResponse);
     }
  
@@ -3076,25 +3089,20 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     
-    public void modifyGuestbookMultipleResponse(){
+    public void openDownloadPopupForMultipleFileDownload() {
         if (this.selectedFiles.isEmpty()) {
             RequestContext requestContext = RequestContext.getCurrentInstance();
             requestContext.execute("PF('selectFilesForDownload').show()");
             return;
         }
         
-         this.guestbookResponse = this.guestbookResponseService.modifySelectedFileIds(guestbookResponse, getSelectedDownloadableFilesIdsString());
-         if(this.selectedDownloadableFiles.size()<2) {
-             if(this.selectedDownloadableFiles.size()==1) {
-             Long id = selectedDownloadableFiles.get(0).getId();
-             DataFile df = datafileService.findCheapAndEasy(id);
-             guestbookResponse.setDataFile(df);
-             }
-         } else {
-             guestbookResponse.setDataFile(null);
-         }
-         this.guestbookResponse.setDownloadtype("Download");
-         this.guestbookResponse.setFileFormat("Download");
+        // There's a chance that this is not really a batch download - i.e., 
+        // there may only be one file on the downloadable list. But the fileDownloadService 
+        // method below will check for that, and will redirect to the single download, if
+        // that's the case. -- L.A.
+        
+        this.guestbookResponse.setDownloadtype("Download");
+        //this.guestbookResponse.setFileFormat("Download");
         RequestContext requestContext = RequestContext.getCurrentInstance();
         requestContext.execute("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
     }

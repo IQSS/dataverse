@@ -103,6 +103,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             }
         
             redirectToDownloadAPI(guestbookResponse.getFileFormat(), fileId, true);
+            return;
         }
         
         // OK, this is a real batch (multi-file) download. 
@@ -172,7 +173,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     // become necessary again, to pass the job of creating the access record 
     // to the API.
     private void redirectToBatchDownloadAPI(String multiFileString, Boolean guestbookRecordsAlreadyWritten, Boolean downloadOriginal){
-//MAD: Add original if flagged
 
         String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
         if (guestbookRecordsAlreadyWritten && !downloadOriginal){

@@ -218,7 +218,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          
      }
     
-     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse, Boolean downloadOriginal) {
+     public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse) {
          RequestContext requestContext = RequestContext.getCurrentInstance();
          boolean valid = validateGuestbookResponse(guestbookResponse);
 
@@ -231,15 +231,19 @@ public class FileDownloadHelper implements java.io.Serializable {
              // Note that this method is only ever called from the file-download-popup - 
              // meaning we know for the fact that we DO want to save this 
              // guestbookResponse permanently in the database.
-             if (guestbookResponse.getDataFile() != null) {
-                 // this a single file download:
-                 fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse);
-             } else if (guestbookResponse.getSessionId() != null) {
-                 // this is a batch (multiple file) download:
-                 if (downloadOriginal) {
-                     guestbookResponse.setFileFormat("original");
-                 }
+             if (guestbookResponse.getSelectedFileIds() != null) {
+                 // this is a batch (multiple file) download.
+                 // Although here's a chance that this is not really a batch download - i.e., 
+                 // there may only be one file on the downloadable list. But the fileDownloadService 
+                 // method below will check for that, and will redirect to the single download, if
+                 // that's the case. -- L.A.
                  fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse);
+             } else if (guestbookResponse.getDataFile() != null) {
+                 // this a single file download: 
+                 // (This may never be the case in real life (as of Aug. 2018); 
+                 // meaning, single file downloads go directly to the file download 
+                 // service, bypassing this method.
+                 fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse);
              }
          }
 
