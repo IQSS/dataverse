@@ -479,8 +479,7 @@ public class Access extends AbstractApiBean {
         User apiTokenUser = findAPITokenUser(apiToken); //for use in adding gb records if necessary
         
         String fileIdParams[] = fileIds.split(","); 
-
-        boolean accessToUnrestrictedFileAuthorized = false; 
+ 
         String fileManifest = "";
         long sizeTotal = 0L;
         List<DataFile> zipFileList = new ArrayList<>();
@@ -510,12 +509,7 @@ public class Access extends AbstractApiBean {
                     logger.fine("attempting to look up file id " + fileId);
                     DataFile file = dataFileService.find(fileId);
                     if (file != null) {
-                        if ((accessToUnrestrictedFileAuthorized && !file.isRestricted()) || 
-                                 isAccessAuthorized(file, apiToken)) { 
-
-                            if (!file.isRestricted()) {
-                                accessToUnrestrictedFileAuthorized = true;
-                            }
+                        if (isAccessAuthorized(file, apiToken)) { 
 
                             logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                             //downloadInstance.addDataFile(file);
@@ -566,8 +560,7 @@ public class Access extends AbstractApiBean {
                             }
 
                         } else if(file.isRestricted()) {
-                            //I have added an extra check on restricted to ensure the first file read does not get its name exposed
-                            //For example if its unpublished
+                            //I have added an extra check on restricted to ensure unpublished files do not get their name exposed
                                 partialResult = true;
                                 inaccessibleFileList.add(file);
                         } 
