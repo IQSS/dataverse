@@ -553,7 +553,7 @@ Or, to delete a lock of the type specified only::
 
 For example::
 
-    curl -X DELETE -H "X-Dataverse-key: $ADMIN_API_TOKEN" "$SERVER_URL/api/datasets/1234/locks?type=pidRegistration"
+    curl -X DELETE -H "X-Dataverse-key: $ADMIN_API_TOKEN" "$SERVER_URL/api/datasets/1234/locks?type=pidRegister"
 
 If the dataset is not locked (or if there is no lock of the specified type), the API will exit with a warning message. 
 

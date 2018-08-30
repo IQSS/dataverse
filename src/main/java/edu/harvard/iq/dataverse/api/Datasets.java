@@ -1345,12 +1345,15 @@ public class Datasets extends AbstractApiBean {
                     return error(Response.Status.FORBIDDEN, "This API end point can be used by superusers only.");
                 }
                 Dataset dataset = findDatasetOrDie(id);
-                Set<DatasetLock> locks;
+                
                 if (lockType == null) {
-                    locks = dataset.getLocks();
+                    Set<DatasetLock.Reason> locks = new HashSet<>();
+                    for (DatasetLock lock : dataset.getLocks()) {
+                        locks.add(lock.getReason());
+                    }
                     if (!locks.isEmpty()) {
-                        for (DatasetLock lock : locks) {
-                            execCommand(new RemoveLockCommand(req, dataset, lock.getReason()));
+                        for (DatasetLock.Reason locktype : locks) {
+                            execCommand(new RemoveLockCommand(req, dataset, locktype));
                             // refresh the dataset:
                             dataset = findDatasetOrDie(id);
                         }
