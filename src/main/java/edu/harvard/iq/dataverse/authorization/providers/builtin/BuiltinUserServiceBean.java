@@ -96,11 +96,11 @@ public class BuiltinUserServiceBean {
         }
     }
 	
-	public List<BuiltinUser> listByUsernamePart ( String part ) {
-		return em.createNamedQuery("BuiltinUser.listByUserNameLike", BuiltinUser.class)
-				.setParameter("userNameLike", "%" + part + "%")
-				.getResultList();
-	}
+    public List<BuiltinUser> listByUsernamePart ( String part ) {
+            return em.createNamedQuery("BuiltinUser.listByUserNameLike", BuiltinUser.class)
+                            .setParameter("userNameLike", "%" + part + "%")
+                            .getResultList();
+    }
     
     public List<BuiltinUser> findAll() {
 		return em.createNamedQuery("BuiltinUser.findAll", BuiltinUser.class).getResultList();

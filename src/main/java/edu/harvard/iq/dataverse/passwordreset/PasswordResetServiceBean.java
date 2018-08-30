@@ -54,7 +54,7 @@ public class PasswordResetServiceBean {
     public PasswordResetInitResponse requestReset(String emailAddress) throws PasswordResetException {
         deleteAllExpiredTokens();
         AuthenticatedUser authUser = authService.getAuthenticatedUserByEmail(emailAddress);        
-//MAD: I am unusre AuthenticatedUser.UserIdentifier is 1 to 1 with BuiltinUser.username
+//MAD: I am unusure AuthenticatedUser.UserIdentifier is 1 to 1 with BuiltinUser.username
         BuiltinUser user = dataverseUserService.findByUserName(authUser.getUserIdentifier());
 
         if (user != null) {

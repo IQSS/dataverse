@@ -73,21 +73,6 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
                                        PasswordEncryption.getLatestVersionNumber());
         bean.save(biUser);
     }
-
-//MAD:  Delete this? After commenting out the info what is even left to happen?
-//          I need to better understand how this is used.
-    
-    @Override
-    public void updateUserInfo(String userIdInProvider, AuthenticatedUserDisplayInfo updatedUserData) {
-        BuiltinUser biUser = bean.findByUserName( userIdInProvider );
-//        biUser.setFirstName(updatedUserData.getFirstName());
-//        biUser.setLastName(updatedUserData.getLastName());
-//        biUser.setEmail( updatedUserData.getEmailAddress());
-//        biUser.setAffiliation( updatedUserData.getAffiliation() );
-//        biUser.setPosition(updatedUserData.getPosition());
-        
-        bean.save(biUser);
-    }
     
     /**
      * Validates that the passed password is indeed the password of the user.

@@ -23,26 +23,6 @@ public class BriefJsonPrinterTest {
     public BriefJsonPrinterTest() {
     }
 
-//MAD: Fix the stuff I commented in this test? Or just kill it?
-    /**
-     * Test of json method, of class BriefJsonPrinter.
-     */
-    @Test
-    public void testJson_BuiltinUser() {
-        BuiltinUser laurenIpsum = new BuiltinUser();
-//        laurenIpsum.setFirstName("Lauren");
-//        laurenIpsum.setLastName("Ipsum");
-//        laurenIpsum.setAffiliation("IQSS");
-        
-        BriefJsonPrinter sut = new BriefJsonPrinter();
-        JsonObject res = sut.json(laurenIpsum).build();
-        
-//        assertEquals("Lauren", res.getString("firstName"));
-//        assertEquals("Ipsum", res.getString("lastName"));
-//        assertEquals("IQSS", res.getString("affiliation"));
-//        assertEquals(3, res.keySet().size());
-    }
-
     /**
      * Test of json method, of class BriefJsonPrinter.
      */

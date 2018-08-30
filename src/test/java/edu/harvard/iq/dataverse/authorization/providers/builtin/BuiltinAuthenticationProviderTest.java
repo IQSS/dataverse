@@ -97,28 +97,9 @@ public class BuiltinAuthenticationProviderTest {
     }
 
     
-//MAD: Re-enable
-    /**
-     * Test of updateUserInfo method, of class BuiltinAuthenticationProvider.
-     */
-//    @Test
-//    public void testUpdateUserInfo() {
-//        BuiltinUser user = bean.save(makeBuiltInUser());
-//        AuthenticatedUserDisplayInfo newInfo = new AuthenticatedUserDisplayInfo("nf", "nl", "ema@il.com", "newAffi", "newPos");
-//        sut.updateUserInfo(user.getUserName(), newInfo);
-//        assertEquals( newInfo, user.getDisplayInfo() );
-//    }
-
     private BuiltinUser makeBuiltInUser() {
         BuiltinUser user = new BuiltinUser();
         user.setUserName("username");
-//MAD: Does removing this break tests or just make things pointless?    
-    
-//        user.setFirstName("Firsty");
-//        user.setLastName("Last");
-//        user.setEmail("email@host.com");
-//        user.setAffiliation("an institute");
-//        user.setPosition("a position");
         user.updateEncryptedPassword(PasswordEncryption.get().encrypt("password"), PasswordEncryption.getLatestVersionNumber());
         return user;
     }
