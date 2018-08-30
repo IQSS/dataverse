@@ -39,10 +39,11 @@ public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse>
 
     @Override
     public DatasetLinkingDataverse execute(CommandContext ctxt) throws CommandException {
+        /*
         if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
             throw new PermissionException("Link Dataset can only be called by superusers.",
                     this, Collections.singleton(Permission.PublishDataverse), linkingDataverse);
-        }
+        }*/
         if (linkedDataset.getOwner().equals(linkingDataverse)) {
             throw new IllegalCommandException("Can't link a dataset to its dataverse", this);
         }

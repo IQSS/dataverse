@@ -2285,12 +2285,47 @@ public class DatasetPage implements java.io.Serializable {
     }
     
 
-        private List<String> getSuccessMessageArguments() {
+    private List<String> getSuccessMessageArguments() {
         List<String> arguments = new ArrayList<>();
         arguments.add(StringEscapeUtils.escapeHtml(dataset.getDisplayName()));
         String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
         arguments.add(linkString);
         return arguments;
+    }
+        
+    public String saveLinkingDataverses(){
+        if (selectedDataversesForLinking == null || selectedDataversesForLinking.isEmpty()) {
+            JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataverse.link.select"));
+            return "";
+        }
+        for (Dataverse dv : selectedDataversesForLinking){
+            saveLink(dv);
+        }
+        return "";
+    } 
+    
+    private void saveLink(Dataverse dataverse){
+        
+        if (readOnly) {
+            // Pass a "real", non-readonly dataset the the LinkDatasetCommand: 
+            dataset = datasetService.find(dataset.getId());
+        }
+        LinkDatasetCommand cmd = new LinkDatasetCommand(dvRequestService.getDataverseRequest(), dataverse, dataset);
+        linkingDataverse = dataverse;
+        try {
+            commandEngine.submit(cmd);
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", getSuccessMessageArguments()));
+        } catch (CommandException ex) {
+            String msg = "There was a problem linking this dataset to yours: " + ex;
+            logger.severe(msg);
+            msg = BundleUtil.getStringFromBundle("dataset.notlinked.msg") + ex;
+            /**
+             * @todo how do we get this message to show up in the GUI?
+             */
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), msg);
+            FacesContext.getCurrentInstance().addMessage(null, message);
+        }
+        
     }
     
     public String saveLinkedDataset() {
@@ -2321,8 +2356,9 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public List<Dataverse> completeLinkingDataverse(String query) {
+        dataset = datasetService.find(dataset.getId());
         if (session.getUser().isAuthenticated()) {
-            return dataverseService.filterDataversesForLinking(query, (AuthenticatedUser) session.getUser());
+            return dataverseService.filterDataversesForLinking(query, (AuthenticatedUser) session.getUser(), dataset);
         } else {
             return null;
         }

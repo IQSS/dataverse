@@ -1294,7 +1294,7 @@
                                             minQueryLength="2" queryDelay="1000"                                                                                  
                                             value="#{DatasetPage.selectedDataversesForLinking}"  
                                             completeMethod="#{DatasetPage.completeLinkingDataverse}"
-                                             requiredMessage="Selection Required"
+                                             emptyMessage="#{bundle['dataverse.link.dataset.none']}"
                                             styleClass="DropdownPopup" 
                                             var="dataverseLk" itemLabel="#{dataverseLk.displayName}" itemValue="#{dataverseLk}" converter="dataverseConverter">
                                 <p:column>
@@ -1317,12 +1317,9 @@
                             </ui:fragment>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle['dataset.link.save']}"
-                                           action="#{DatasetPage.saveLinkedDataset}"
-                                           rendered="#{DatasetPage.dataversesForLinking.size() > 1}" />
-                            <p:commandLink type="button" styleClass="btn btn-default" onclick="PF('linkDatasetForm').hide()"
-                                           value="#{bundle['dataset.link.save']}" actionListener="#{DatasetPage.saveLinkedDataset()}"
-                                           rendered="#{DatasetPage.dataversesForLinking.size() == 1}" />
+                            <p:commandLink type="button" styleClass="btn btn-default" onclick="PF('linkDatasetForm').hide()" update=":messagePanel"
+                                           value="#{bundle['dataset.link.save']}" action="#{DatasetPage.saveLinkingDataverses}"
+                                           />
                             <button type="button" class="btn btn-default" onclick="PF('linkDatasetForm').hide();PF('blockDatasetForm').hide();">
                                 #{bundle.cancel}
                             </button>

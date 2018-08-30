@@ -457,7 +457,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         return ret;
     }
     
-    public List<Dataverse> filterDataversesForLinking(String query, AuthenticatedUser user) {
+    public List<Dataverse> filterDataversesForLinking(String query, AuthenticatedUser user, Dataset dataset) {
 
         List<Dataverse> dataverseList = new ArrayList<>();
 
@@ -465,9 +465,20 @@ public class DataverseServiceBean implements java.io.Serializable {
                 .setParameter("name", "%" + query + "%")
                 .getResultList();
 
+        List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
+        List<Dataverse> remove = new ArrayList<>();
+
+        if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
+            alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((removeIt) -> {
+                remove.add(removeIt);
+            });
+        }
+        
         for (Dataverse res : results) {
-            if (this.permissionService.userOn(user, res).has(Permission.PublishDataverse)) {
-                dataverseList.add(res);
+            if (!remove.contains(res)) {
+                if (this.permissionService.userOn(user, res).has(Permission.PublishDataverse)) {
+                    dataverseList.add(res);
+                }
             }
         }
 
