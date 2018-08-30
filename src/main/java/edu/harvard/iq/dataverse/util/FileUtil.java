@@ -484,7 +484,7 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     // from MD5Checksum.java
-    public static String CalculateCheckSum(String datafile, ChecksumType checksumType) {
+    public static String CalculateChecksum(String datafile, ChecksumType checksumType) {
 
         FileInputStream fis = null;
         try {
@@ -1010,7 +1010,7 @@ public class FileUtil implements java.io.Serializable  {
         try {
             // We persist "SHA1" rather than "SHA-1".
             datafile.setChecksumType(checksumType);
-            datafile.setChecksumValue(CalculateCheckSum(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier(), datafile.getChecksumType()));
+            datafile.setChecksumValue(CalculateChecksum(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier(), datafile.getChecksumType()));
         } catch (Exception cksumEx) {
             logger.warning("Could not calculate " + checksumType + " signature for the new file " + fileName);
         }
@@ -1166,19 +1166,14 @@ public class FileUtil implements java.io.Serializable  {
         }
     }
 
-    public static String getCiteDataFileFilename(FileMetadata fileMetadata, FileCitationExtension fileCitationExtension) {
-        if (fileMetadata == null) {
-            logger.info("In getCitationBibtex but FileMetadata is null!");
-            return null;
-        }
-        if (fileCitationExtension == null) {
-            logger.info("In getCitationBibtex but fileCitationExtension is null!");
-            return null;
-        }
-        if (fileMetadata.getLabel().endsWith("tab")) {
-            return fileMetadata.getLabel().replaceAll("\\.tab$", fileCitationExtension.text);
+    public static String getCiteDataFileFilename(String fileTitle, FileCitationExtension fileCitationExtension) {
+    	if((fileTitle==null) || (fileCitationExtension == null)) {
+    		return null;
+    	}
+        if (fileTitle.endsWith("tab")) {
+            return fileTitle.replaceAll("\\.tab$", fileCitationExtension.text);
         } else {
-            return fileMetadata.getLabel() + fileCitationExtension.text;
+            return fileTitle + fileCitationExtension.text;
         }
     }
 
@@ -1345,13 +1340,14 @@ public class FileUtil implements java.io.Serializable  {
             return null;
         }
         File file = File.createTempFile(UUID.randomUUID().toString(), UUID.randomUUID().toString());
-        OutputStream outputStream = new FileOutputStream(file);
+        try(OutputStream outputStream = new FileOutputStream(file)){
         int read = 0;
         byte[] bytes = new byte[1024];
         while ((read = inputStream.read(bytes)) != -1) {
             outputStream.write(bytes, 0, read);
         }
         return file;
+	}
     }
 
     /* 

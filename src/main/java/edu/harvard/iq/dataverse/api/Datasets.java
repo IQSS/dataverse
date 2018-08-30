@@ -73,6 +73,8 @@ import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.S3PackageImporter;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -80,6 +82,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
@@ -102,6 +105,7 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -159,6 +163,9 @@ public class Datasets extends AbstractApiBean {
     
     @EJB
     IndexServiceBean indexService;
+
+    @EJB
+    S3PackageImporter s3PackageImporter;
      
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1018,6 +1025,20 @@ public class Datasets extends AbstractApiBean {
         }
     }
     
+    /**
+     * This api endpoint triggers the creation of a "package" file in a dataset 
+     *    after that package has been moved onto the same filesystem via the Data Capture Module.
+     * The package is really just a way that Dataverse interprets a folder created by DCM, seeing it as just one file.
+     * The "package" can be downloaded over RSAL.
+     * 
+     * This endpoint currently supports both posix file storage and AWS s3 storage in Dataverse, and depending on which one is active acts accordingly.
+     * 
+     * The initial design of the DCM/Dataverse interaction was not to use packages, but to allow import of all individual files natively into Dataverse.
+     * But due to the possibly immense number of files (millions) the package approach was taken.
+     * This is relevant because the posix ("file") code contains many remnants of that development work.
+     * The s3 code was written later and is set to only support import as packages. It takes a lot from FileRecordWriter.
+     * -MAD 4.9.1
+     */
     @POST
     @Path("{identifier}/dataCaptureModule/checksumValidation")
     public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject jsonFromDcm) {
@@ -1035,20 +1056,73 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset dataset = findDatasetOrDie(id);
             if ("validation passed".equals(statusMessageFromDcm)) {
+               logger.log(Level.INFO, "Checksum Validation passed for DCM."); 
+
+                String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file";
                 String uploadFolder = jsonFromDcm.getString("uploadFolder");
                 int totalSize = jsonFromDcm.getInt("totalSize");
-                ImportMode importMode = ImportMode.MERGE;
-                try {
-                    JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(findUserOrDie()), dataset, uploadFolder, new Long(totalSize), importMode));
-                    long jobId = jsonFromImportJobKickoff.getInt("executionId");
-                    String message = jsonFromImportJobKickoff.getString("message");
-                    JsonObjectBuilder job = Json.createObjectBuilder();
-                    job.add("jobId", jobId);
-                    job.add("message", message);
-                    return ok(job);
-                } catch (WrappedResponse wr) {
-                    String message = wr.getMessage();
-                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
+                
+                if (storageDriver.equals("file")) {
+                    logger.log(Level.INFO, "File storage driver used for (dataset id={0})", dataset.getId());
+
+                    ImportMode importMode = ImportMode.MERGE;
+                    try {
+                        JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(findUserOrDie()), dataset, uploadFolder, new Long(totalSize), importMode));
+                        long jobId = jsonFromImportJobKickoff.getInt("executionId");
+                        String message = jsonFromImportJobKickoff.getString("message");
+                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        job.add("jobId", jobId);
+                        job.add("message", message);
+                        return ok(job);
+                    } catch (WrappedResponse wr) {
+                        String message = wr.getMessage();
+                        return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
+                    }
+                } else if(storageDriver.equals("s3")) {
+                    
+                    logger.log(Level.INFO, "S3 storage driver used for DCM (dataset id={0})", dataset.getId());
+                    try {
+                        
+                        //Where the lifting is actually done, moving the s3 files over and having dataverse know of the existance of the package
+                        s3PackageImporter.copyFromS3(dataset, uploadFolder);
+                        DataFile packageFile = s3PackageImporter.createPackageDataFile(dataset, uploadFolder, new Long(totalSize));
+                        
+                        if (packageFile == null) {
+                            logger.log(Level.SEVERE, "S3 File package import failed.");
+                            return error(Response.Status.INTERNAL_SERVER_ERROR, "S3 File package import failed.");
+                        }
+                        DatasetLock dcmLock = dataset.getLockFor(DatasetLock.Reason.DcmUpload);
+                        if (dcmLock == null) {
+                            logger.log(Level.WARNING, "Dataset not locked for DCM upload");
+                        } else {
+                            datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.DcmUpload);
+                            dataset.removeLock(dcmLock);
+                        }
+                        
+                        // update version using the command engine to enforce user permissions and constraints
+                        if (dataset.getVersions().size() == 1 && dataset.getLatestVersion().getVersionState() == DatasetVersion.VersionState.DRAFT) {
+                            try {
+                                Command<Dataset> cmd;
+                                cmd = new UpdateDatasetVersionCommand(dataset, new DataverseRequest(authenticatedUser, (HttpServletRequest) null));
+                                commandEngine.submit(cmd);
+                            } catch (CommandException ex) {
+                                return error(Response.Status.INTERNAL_SERVER_ERROR, "CommandException updating DatasetVersion from batch job: " + ex.getMessage());
+                            }
+                        } else {
+                            String constraintError = "ConstraintException updating DatasetVersion form batch job: dataset must be a "
+                                    + "single version in draft mode.";
+                            logger.log(Level.SEVERE, constraintError);
+                        }
+
+                        JsonObjectBuilder job = Json.createObjectBuilder();
+                        return ok(job);
+                        
+                    }  catch (IOException e) {
+                        String message = e.getMessage();
+                        return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to move the files into Dataverse. Message was '" + message + "'.");
+                    } 
+                } else {
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Invalid storage driver in Dataverse, not compatible with dcm");
                 }
             } else if ("validation failed".equals(statusMessageFromDcm)) {
                 Map<String, AuthenticatedUser> distinctAuthors = permissionService.getDistinctUsersWithPermissionOn(Permission.EditDataset, dataset);
