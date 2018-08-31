@@ -1261,24 +1261,76 @@
                         </div>
                     </p:dialog>
                    
-                    <p:dialog id="linkDatasetForm" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
-                        <p:autoComplete id="dataverseLinkName" placeholder="#{bundle['dataverse.link.dataset.choose']}"
-                                        multiple="true" scrollHeight="180" forceSelection="true" 
-                                        minQueryLength="2" queryDelay="1000"                                                                                  
-                                        value="#{DatasetPage.selectedDataversesForLinking}"  
-                                        completeMethod="#{DatasetPage.completeLinkingDataverse}"
-                                        emptyMessage="#{bundle['dataverse.link.dataset.none']}"
-                                        styleClass="DropdownPopup" 
-                                        var="dataverseLk" itemLabel="#{dataverseLk.displayName}" itemValue="#{dataverseLk}" converter="dataverseConverter">
-                            <p:column>
-                                <h:outputText value="#{dataverseLk.displayName}"/> 
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{dataverseLk.alias}"/>
-                            </p:column>
-                            <p:ajax process="@this" event="itemSelect" />
-                            <p:ajax process="@this" event="itemUnselect" />
-                        </p:autoComplete>
+                    
+                    
+                    
+                    
+                    <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
+                        
+                        <!-- TODO: ADDED RENDER LOGIC AND MSG'S FROM PREVIOUS VERSION OF POPUP... CHECK IF NECESSARY -->
+                        
+                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 0}">
+                            <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
+                                <p class="help-block">#{bundle['dataverse.link.no.choice']}</p>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 1}">
+                                <p class="help-block">#{bundle['dataverse.link.dataset.choose']}</p>
+                            </ui:fragment>
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="col-xs-3 control-label">
+                                        <h:outputText value="#{bundle['dataverse.link.yourDataverses']}"/>
+                                    </label>
+                                    <div class="col-xs-8">
+                                        
+                                        
+                                        <!-- TODO: ADDED NEW AUTOCOMPLETE COMPONENT IN PLACE OF OLD SELECTONE... CHECK IF STILL WORKING -->
+                                        
+                                        
+                                        <p:autoComplete id="dataverseLinkName" style="width:75%;"
+                                                        placeholder="#{bundle['dataverse.link.yourDataverses.inputPlaceholder']}"
+                                                        emptyMessage="#{bundle['dataverse.link.dataset.none']}"
+                                                        multiple="true" scrollHeight="180" forceSelection="true" 
+                                                        minQueryLength="2" queryDelay="1000"                                                                                  
+                                                        value="#{DatasetPage.selectedDataversesForLinking}"  
+                                                        completeMethod="#{DatasetPage.completeLinkingDataverse}"
+                                                        var="dataverseLk" itemLabel="#{dataverseLk.displayName}" itemValue="#{dataverseLk}" converter="dataverseConverter">
+                                            <p:column>
+                                                <h:outputText value="#{dataverseLk.displayName}"/> 
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{dataverseLk.alias}"/>
+                                            </p:column>
+                                            <p:ajax process="@this" event="itemSelect" />
+                                            <p:ajax process="@this" event="itemUnselect" />
+                                        </p:autoComplete>
+                                        
+                                        
+                                        
+                                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
+                                            <p class="form-control-static">#{DatasetPage.linkingDataverse.displayName}</p>
+                                        </ui:fragment>
+                                    </div>
+                                </div>
+                            </div>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 0}">
+                            
+                            
+                            <!-- TODO: FROM PREVIOUS VERSION OF POPUP LIKE MSG'S ABOVE NO IDEA WHAT IT DOES... CHECK IF NECESSARY -->
+                            
+                            
+                            <ui:fragment rendered="#{DatasetPage.noDVsAtAll }">
+                                <p>#{bundle['dataverse.link.no.linkable']}</p>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{ DatasetPage.noDVsRemaining }">
+                                <p>#{bundle['dataverse.link.no.linkable.remaining']}</p>
+                            </ui:fragment>
+                        </ui:fragment>
+                        
+                        
+                        <!-- TODO: DIDN'T TOUCH THESE GUYS... HOPEFULLY IT ALL STILL WORKS -->
+                        
                         <div class="button-block">
                             <p:commandLink type="button" styleClass="btn btn-default" onclick="PF('linkDatasetForm').hide()" update=":messagePanel"
                                            value="#{bundle['dataset.link.save']}" action="#{DatasetPage.saveLinkingDataverses}"
@@ -1288,6 +1340,9 @@
                             </button>
                         </div>
                     </p:dialog>
+                    
+                    
+                    
                     
                     <p:dialog id="computeBatchListPopup" header="#{bundle['dataset.compute.computeBatchListHeader']}" widgetVar="computeBatchListPopup" modal="true">
                         <div class="text-right">
