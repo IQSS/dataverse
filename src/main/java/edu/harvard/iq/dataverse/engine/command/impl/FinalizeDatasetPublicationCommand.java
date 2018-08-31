@@ -119,17 +119,23 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             ctxt.engine().submit( 
                     new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
         }
-        theDataset = ctxt.em().merge(theDataset);
-        setDataset(theDataset);
+        
+    	final Dataset ds = theDataset;
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
-                ctxt.workflows().start(wf, buildContext(TriggerType.PostPublishDataset));
+                ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset));
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);
             }
         });
-        notifyUsersDatasetPublish(ctxt, theDataset);
-        return theDataset;
+        
+        Dataset readyDataset = ctxt.em().merge(theDataset);
+        
+        if ( readyDataset != null ) {
+            notifyUsersDatasetPublish(ctxt, theDataset);
+        }
+        
+        return readyDataset;
     }
 
     /**
