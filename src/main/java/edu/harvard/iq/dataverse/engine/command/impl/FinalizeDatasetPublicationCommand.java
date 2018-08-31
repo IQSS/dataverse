@@ -76,7 +76,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         // comes from there. There's a chance that the final merge, at the end of this
         // command, would be sufficient. -- L.A. Sep. 6 2017
         theDataset = ctxt.em().merge(theDataset);
-        
+        setDataset(theDataset);
         updateDatasetUser(ctxt);
         
         //if the publisher hasn't contributed to this version
@@ -120,6 +120,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
         }
         theDataset = ctxt.em().merge(theDataset);
+        setDataset(theDataset);
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
                 ctxt.workflows().start(wf, buildContext(TriggerType.PostPublishDataset));
