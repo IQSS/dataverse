@@ -750,45 +750,6 @@ public class DatasetPage implements java.io.Serializable {
         
     }
 
-    public void updateLinkableDataverses() {
-        dataversesForLinking = new ArrayList<>();
-        linkingDVSelectItems = new ArrayList<>();
-        
-        //Since this is a super user we are getting all dataverses
-        dataversesForLinking = dataverseService.findAll();
-        if (dataversesForLinking.isEmpty()) {
-            setNoDVsAtAll(true);
-            return;
-        }
-        
-        dataversesForLinking.remove(dataset.getOwner());
-        Dataverse testDV = dataset.getOwner();
-        while(testDV.getOwner() != null){
-            dataversesForLinking.remove(testDV.getOwner());
-            testDV = testDV.getOwner();
-        }                      
-        
-        for (Dataverse removeLinked : dsLinkingService.findLinkingDataverses(dataset.getId())) {
-            dataversesForLinking.remove(removeLinked);
-        }
-        for (Dataverse removeLinked : dvLinkingService.findLinkingDataverses(dataset.getOwner().getId())) {
-            dataversesForLinking.remove(removeLinked);
-        }
-
-        if (dataversesForLinking.isEmpty()) {
-            setNoDVsRemaining(true);            
-            return;
-        }
-
-        for (Dataverse selectDV : dataversesForLinking) {
-            linkingDVSelectItems.add(new SelectItem(selectDV.getId(), selectDV.getDisplayName()));
-        }
-
-        if (!dataversesForLinking.isEmpty() && dataversesForLinking.size() == 1 && dataversesForLinking.get(0) != null) {
-            linkingDataverse = dataversesForLinking.get(0);
-            linkingDataverseId = linkingDataverse.getId();
-        }
-    }
 
     public void updateSelectedLinkingDV(ValueChangeEvent event) {
         linkingDataverseId = (Long) event.getNewValue();
