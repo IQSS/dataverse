@@ -37,6 +37,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 
@@ -520,7 +521,10 @@ public class Access extends AbstractApiBean {
 
                             
                             long size = 0L;
-                            if(getOriginal) {
+                            // is the original format requested, and is this a tabular datafile, with a preserved original?
+                            if (getOriginal 
+                                    && file.isTabularData() 
+                                    && !StringUtil.isEmpty(file.getDataTable().getOriginalFileFormat())) {
                                 //This size check is probably fairly inefficient as we have to get all the AccessObjects
                                 //We do this again inside the zipper. I don't think there is a better solution
                                 //without doing a large deal of rewriting or architecture redo.
