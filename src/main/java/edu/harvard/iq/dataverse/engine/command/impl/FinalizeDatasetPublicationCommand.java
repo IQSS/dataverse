@@ -127,13 +127,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);
             }
         });
-        
+        logger.info("Returned from PostPublish");
         Dataset readyDataset = ctxt.em().merge(theDataset);
-        
+        logger.info("merged dataset");
         if ( readyDataset != null ) {
             notifyUsersDatasetPublish(ctxt, theDataset);
         }
-        
+        logger.info("notified users");
         return readyDataset;
     }
 
