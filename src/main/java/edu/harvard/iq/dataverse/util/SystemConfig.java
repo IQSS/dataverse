@@ -999,4 +999,9 @@ public class SystemConfig {
         return retVal;
     }
     
+    public boolean isFilePIDsEnabled() {
+        boolean safeDefaultIfKeyNotFound = true;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, safeDefaultIfKeyNotFound);
+    }
+    
 }
