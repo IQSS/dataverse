@@ -90,6 +90,59 @@ The custom file type icons were created with the help of `FontCustom <https://gi
 
 Here is a vector-based SVG file to start with as a template: :download:`icon-template.svg <../_static/icon-template.svg>`
 
+SonarQube
++++++++++
+
+SonarQube is a static analysis tool that can be used to identify possible problems in the codebase, or with new code. It may report false positives or false negatives, but can help identify potential problems before they are reported in prodution or to identify potential causes of problems reported in production.
+
+Download SonarQube from https://www.sonarqube.org and start look in the `bin` directory for a `sonar.sh` script for your architecture. Once the tool is running on http://localhost:9000 you can use it as the URL in this example script to run sonar:
+
+.. code-block:: bash
+
+    #!/bin/sh
+
+    mvn sonar:sonar \
+    -Dsonar.host.url=${your_sonar_url} \
+    -Dsonar.login=${your_sonar_token_for_project} \
+    -Dsonar.test.exclusions='src/test/**,src/main/webapp/resources/**' \
+    -Dsonar.issuesReport.html.enable=true \
+    -Dsonar.issuesReport.html.location='sonar-issues-report.html' \
+    -Dsonar.jacoco.reportPath=target/jacoco.exec
+
+Once the analysis is complete, you should be able to access http://localhost:9000/dashboard?id=edu.harvard.iq%3Adataverse to see the report. To learn about resource leaks, for example, click on "Bugs", the "Tag", then "leak" or "Rule", then "Resources should be closed".
+
+Infer
++++++
+
+Infer is another static analysis tool that can be downloaded from https://github.com/facebook/infer
+
+Example command to run infer:
+
+.. code-block:: bash
+
+    $  infer -- mvn package
+
+Look for "RESOURCE_LEAK", for example.
+
+lsof
+++++
+
+If file descriptors are not closed, eventually the open but unused resources can cause problems with system (glassfish in particular) stability.
+Static analysis and heap dumps are not always sufficient to identify the sources of these problems.
+For a quick sanity check, it can be helpful to check that the number of file descriptors does not increase after a request has finished processing.
+
+For example...
+
+.. code-block:: bash
+
+    $  lsof | grep M6EI0N | wc -l
+    0
+    $  curl -X GET "http://localhost:8083/dataset.xhtml?persistentId=doi:10.5072/FK2/M6EI0N" > /dev/null
+    $  lsof | grep M6EI0N | wc -l
+    500
+
+would be consistent with a file descriptor leak on the dataset page.
+
 ----
 
 Previous: :doc:`making-releases` | Next: :doc:`unf/index`

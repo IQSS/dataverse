@@ -42,10 +42,19 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     private static final Logger logger = Logger.getLogger(FinalizeDatasetPublicationCommand.class.getName());
     
     String doiProvider;
+
+    /**
+     * mirror field from {@link PublishDatasetCommand} of same name
+     */
+    final boolean datasetExternallyReleased;
     
     public FinalizeDatasetPublicationCommand(Dataset aDataset, String aDoiProvider, DataverseRequest aRequest) {
+        this( aDataset, aDoiProvider, aRequest, false );
+    }
+    public FinalizeDatasetPublicationCommand(Dataset aDataset, String aDoiProvider, DataverseRequest aRequest, boolean isPidPrePublished) {
         super(aDataset, aRequest);
         doiProvider = aDoiProvider;
+	datasetExternallyReleased = isPidPrePublished;
     }
 
     @Override
@@ -96,18 +105,22 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         ctxt.em().merge(ddu);
         
         updateParentDataversesSubjectsField(theDataset, ctxt);
-        publicizeExternalIdentifier(theDataset, ctxt); 
+	if (!datasetExternallyReleased){
+		publicizeExternalIdentifier(theDataset, ctxt);
+	}
 
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
         if (privateUrl != null) {
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
         }
         
-        if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
-            // some imported datasets may already be released.
-            publicizeExternalIdentifier(theDataset, ctxt);
-            theDataset.getLatestVersion().setVersionState(RELEASED);
-        }
+	if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
+		// some imported datasets may already be released.
+		if (!datasetExternallyReleased){
+			publicizeExternalIdentifier(theDataset, ctxt);
+		}
+		theDataset.getLatestVersion().setVersionState(RELEASED);
+	}
         
         exportMetadata(ctxt.settings());
         boolean doNormalSolrDocCleanUp = true;
@@ -196,7 +209,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 // ...
                 // Additionaly in 4.9.3 we have added a system variable to disable 
                 // registering file PIDs on the installation level.
-                if ((currentGlobalIdProtocol.equals(protocol) || dataFilePIDFormat.equals("INDEPENDENT"))
+                if ((currentGlobalIdProtocol.equals(protocol) || dataFilePIDFormat.equals("INDEPENDENT"))//TODO(pm) - check authority too
                         && isFilePIDsEnabled) {
                     //A false return value indicates a failure in calling the service
                     for (DataFile df : dataset.getFiles()) {

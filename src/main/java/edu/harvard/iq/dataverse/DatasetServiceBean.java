@@ -712,7 +712,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     @Asynchronous
-    public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request) throws CommandException {
+    public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request, boolean isPidPrePublished) throws CommandException {
 
         // Since we are calling the next command asynchronously anyway - sleep here 
         // for a few seconds, just in case, to make sure the database update of 
@@ -727,7 +727,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         Dataset theDataset = find(datasetId);
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, doiProvider, request));
+        commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, doiProvider, request, isPidPrePublished));
     }
     
     /*
