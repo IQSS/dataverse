@@ -233,7 +233,8 @@ public class WorkflowServiceBean {
             try {
                 if (res == WorkflowStepResult.OK) {
                     logger.log(Level.INFO, "Workflow {0} step {1}: OK", new Object[]{ctxt.getInvocationId(), stepIdx});
-
+                    em.merge(ctxt.getDataset());
+                    ctxt = refresh(ctxt);
                 } else if (res instanceof Failure) {
                     logger.log(Level.WARNING, "Workflow {0} failed: {1}", new Object[]{ctxt.getInvocationId(), ((Failure) res).getReason()});
                     rollback(wf, ctxt, (Failure) res, stepIdx-1 );
