@@ -817,6 +817,12 @@ Otherwise, if ``:DataFilePIDFormat`` is set to *INDEPENDENT*, then each file wil
 
 Note that in either case, when using the ``sequentialNumber`` option, datasets and files share the same database sequence that was created as part of the setup described in ``:IdentifierGenerationStyle`` above.
 
+:FilePIDsEnabled
+++++++++++++++++
+
+Enable/disable the publishing of file based PIDs for the whole installation. This is enabled by default
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
 :ApplicationTermsOfUse
 ++++++++++++++++++++++
