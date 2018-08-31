@@ -1262,60 +1262,23 @@
                     </p:dialog>
                    
                     <p:dialog id="linkDatasetForm" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
-                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 0}">
-                            <ui:remove>
-                            <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
-                                <p class="help-block">#{bundle['dataverse.link.no.choice']}</p>
-                            </ui:fragment>
-                            <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 1}">
-                                <p class="help-block">#{bundle['dataverse.link.dataset.choose']}</p>
-                            </ui:fragment>
-                            <div class="form-horizontal">
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">
-                                        <h:outputFormat value="#{bundle['dataverse.link.yourDataverses']}">
-                                            <f:param value="#{DatasetPage.dataversesForLinking.size()}"/>
-                                        </h:outputFormat>
-                                    </label>
-                                    <div class="col-sm-7">
-                                        <h:selectOneMenu styleClass="form-control" value="#{DatasetPage.linkingDataverseId}"
-                                                         rendered="#{DatasetPage.dataversesForLinking.size() > 1}">
-                                            <f:selectItems value="#{DatasetPage.linkingDVSelectItems}" />
-                                        </h:selectOneMenu>
-                                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
-                                            <p class="form-control-static">#{DatasetPage.linkingDataverse.displayName}</p>
-                                        </ui:fragment>
-                                    </div>
-                                </div>
-                            </div>
-                                </ui:remove>
-                            <p:autoComplete id="dataverseLinkName" placeholder="#{bundle['dataverse.link.dataset.choose']}"
-                                            multiple="true" scrollHeight="180" forceSelection="true" 
-                                            minQueryLength="2" queryDelay="1000"                                                                                  
-                                            value="#{DatasetPage.selectedDataversesForLinking}"  
-                                            completeMethod="#{DatasetPage.completeLinkingDataverse}"
-                                             emptyMessage="#{bundle['dataverse.link.dataset.none']}"
-                                            styleClass="DropdownPopup" 
-                                            var="dataverseLk" itemLabel="#{dataverseLk.displayName}" itemValue="#{dataverseLk}" converter="dataverseConverter">
-                                <p:column>
-                                    <h:outputText value="#{dataverseLk.displayName}"/> 
-                                    <h:outputText value=" (#{dataverseLk.id})" />
-                                </p:column>
-                                <p:column>
-                                    <h:outputText value="#{dataverseLk.alias}"/>
+                        <p:autoComplete id="dataverseLinkName" placeholder="#{bundle['dataverse.link.dataset.choose']}"
+                                        multiple="true" scrollHeight="180" forceSelection="true" 
+                                        minQueryLength="2" queryDelay="1000"                                                                                  
+                                        value="#{DatasetPage.selectedDataversesForLinking}"  
+                                        completeMethod="#{DatasetPage.completeLinkingDataverse}"
+                                        emptyMessage="#{bundle['dataverse.link.dataset.none']}"
+                                        styleClass="DropdownPopup" 
+                                        var="dataverseLk" itemLabel="#{dataverseLk.displayName}" itemValue="#{dataverseLk}" converter="dataverseConverter">
+                            <p:column>
+                                <h:outputText value="#{dataverseLk.displayName}"/> 
                             </p:column>
-                                <p:ajax process="@this" event="itemSelect" />
-                                <p:ajax process="@this" event="itemUnselect" />
-                            </p:autoComplete>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 0}">
-                            <ui:fragment rendered="#{DatasetPage.noDVsAtAll }">
-                                <p>#{bundle['dataverse.link.no.linkable']}</p>
-                            </ui:fragment>
-                            <ui:fragment rendered="#{ DatasetPage.noDVsRemaining }">
-                                <p>#{bundle['dataverse.link.no.linkable.remaining']}</p>
-                            </ui:fragment>
-                        </ui:fragment>
+                            <p:column>
+                                <h:outputText value="#{dataverseLk.alias}"/>
+                            </p:column>
+                            <p:ajax process="@this" event="itemSelect" />
+                            <p:ajax process="@this" event="itemUnselect" />
+                        </p:autoComplete>
                         <div class="button-block">
                             <p:commandLink type="button" styleClass="btn btn-default" onclick="PF('linkDatasetForm').hide()" update=":messagePanel"
                                            value="#{bundle['dataset.link.save']}" action="#{DatasetPage.saveLinkingDataverses}"

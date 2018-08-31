@@ -2327,33 +2327,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         
     }
-    
-    public String saveLinkedDataset() {
-        if (linkingDataverseId == null) {
-            JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataverse.link.select"));
-            return "";
-        }
-        linkingDataverse = dataverseService.find(linkingDataverseId);
-        if (readOnly) {
-            // Pass a "real", non-readonly dataset the the LinkDatasetCommand: 
-            dataset = datasetService.find(dataset.getId());
-        }
-        LinkDatasetCommand cmd = new LinkDatasetCommand(dvRequestService.getDataverseRequest(), linkingDataverse, dataset);
-        try {
-            commandEngine.submit(cmd);
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", getSuccessMessageArguments()));
-        } catch (CommandException ex) {
-            String msg = "There was a problem linking this dataset to yours: " + ex;
-            logger.severe(msg);
-            msg = BundleUtil.getStringFromBundle("dataset.notlinked.msg") + ex;
-            /**
-             * @todo how do we get this message to show up in the GUI?
-             */
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), msg);
-            FacesContext.getCurrentInstance().addMessage(null, message);
-        }
-        return returnToLatestVersion();
-    }
+
     
     public List<Dataverse> completeLinkingDataverse(String query) {
         dataset = datasetService.find(dataset.getId());
