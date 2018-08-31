@@ -41,7 +41,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
             return new Failure("No DuraCloudHost", "DuraCloudHost not found in Settings");
         } else {
         return SubmitArchiveCommand.performDPNSubmission(
-                context.getDataset().getVersion(context.getNextVersionNumber(), context.getNextMinorVersionNumber()),
+                context.getDataset().getReleasedVersion(),
                 context.getRequest().getAuthenticatedUser(), host, port, dpnContext, context.getApiToken());
         }
     }
