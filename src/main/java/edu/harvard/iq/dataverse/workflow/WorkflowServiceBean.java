@@ -97,8 +97,9 @@ public class WorkflowServiceBean {
      */
     @Asynchronous
     public void start(Workflow wf, WorkflowContext ctxt) throws CommandException {
+    	logger.info("Released version in context is: " + ctxt.getDataset().getReleasedVersion().getFriendlyVersionNumber());
         ctxt = refresh(ctxt, retrieveRequestedSettings( wf.getRequiredSettings()), getCurrentApiToken(ctxt.getRequest().getAuthenticatedUser()));
-        
+        logger.info("Released version in refreshed context is: " + ctxt.getDataset().getReleasedVersion().getFriendlyVersionNumber());
         lockDataset(ctxt);
         forward(wf, ctxt);
     }
@@ -233,8 +234,11 @@ public class WorkflowServiceBean {
             try {
                 if (res == WorkflowStepResult.OK) {
                     logger.log(Level.INFO, "Workflow {0} step {1}: OK", new Object[]{ctxt.getInvocationId(), stepIdx});
+                    logger.info("Released version at OK is: " + ctxt.getDataset().getReleasedVersion().getFriendlyVersionNumber());
+                    logger.info("Replica at: " + ctxt.getDataset().getReleasedVersion().getReplicaLocation());
                     em.merge(ctxt.getDataset());
                     ctxt = refresh(ctxt);
+                    logger.info("merged Replica at: " + ctxt.getDataset().getReleasedVersion().getReplicaLocation());
                 } else if (res instanceof Failure) {
                     logger.log(Level.WARNING, "Workflow {0} failed: {1}", new Object[]{ctxt.getInvocationId(), ((Failure) res).getReason()});
                     rollback(wf, ctxt, (Failure) res, stepIdx-1 );

@@ -106,6 +106,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             publicizeExternalIdentifier(theDataset, ctxt);
             theDataset.getLatestVersion().setVersionState(RELEASED);
         }
+        logger.info("Released version is: " + theDataset.getReleasedVersion().getFriendlyVersionNumber());
         
         exportMetadata(ctxt.settings());
         boolean doNormalSolrDocCleanUp = true;
@@ -121,9 +122,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
         
     	final Dataset ds = ctxt.em().merge(theDataset);
+    	
     	if(ds == null) {
     		logger.severe("Null DS after merge");
     	}
+    	logger.info("Released ds version is: " + ds.getReleasedVersion().getFriendlyVersionNumber());
     		ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
                 ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset));
