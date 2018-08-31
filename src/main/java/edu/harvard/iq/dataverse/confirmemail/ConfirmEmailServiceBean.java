@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.confirmemail;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
@@ -18,10 +19,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
+import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 /**
@@ -44,8 +44,8 @@ public class ConfirmEmailServiceBean {
 
     @EJB DataverseServiceBean dataverseService;
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
 
     /**
      * Initiate the email confirmation process.
@@ -66,11 +66,11 @@ public class ConfirmEmailServiceBean {
         // delete old tokens for the user
         ConfirmEmailData oldToken = findSingleConfirmEmailDataByUser(aUser);
         if (oldToken != null) {
-            em.remove(oldToken);
+            emBean.getMasterEM().remove(oldToken);
         }
 
         aUser.setEmailConfirmed(null);
-        aUser = em.merge(aUser);
+        aUser = emBean.getMasterEM().merge(aUser);
         // create a fresh token for the user iff they don't have an existing token
         ConfirmEmailData confirmEmailData = new ConfirmEmailData(aUser, systemConfig.getMinutesUntilConfirmEmailTokenExpires());
         try {
@@ -80,7 +80,7 @@ public class ConfirmEmailServiceBean {
              * wasn't deleted above). Exercise this bug by running
              * ConfirmEmailIT.
              */
-            em.persist(confirmEmailData);
+            emBean.getMasterEM().persist(confirmEmailData);
             ConfirmEmailInitResponse confirmEmailInitResponse = new ConfirmEmailInitResponse(true, confirmEmailData, optionalConfirmEmailAddonMsg(aUser));
             if (sendEmail) {
                 sendLinkOnEmailChange(aUser, confirmEmailInitResponse.getConfirmUrl());
@@ -157,7 +157,7 @@ public class ConfirmEmailServiceBean {
                 Timestamp emailConfirmed = new Timestamp(nowInMilliseconds);
                 AuthenticatedUser authenticatedUser = confirmEmailData.getAuthenticatedUser();
                 authenticatedUser.setEmailConfirmed(emailConfirmed);
-                em.remove(confirmEmailData);
+                emBean.getMasterEM().remove(confirmEmailData);
                 return goodTokenCanProceed;
             }
         } else {
@@ -171,7 +171,7 @@ public class ConfirmEmailServiceBean {
      */
     private ConfirmEmailData findSingleConfirmEmailDataByToken(String token) {
         ConfirmEmailData confirmEmailData = null;
-        TypedQuery<ConfirmEmailData> typedQuery = em.createNamedQuery("ConfirmEmailData.findByToken", ConfirmEmailData.class);
+        TypedQuery<ConfirmEmailData> typedQuery = emBean.getMasterEM().createNamedQuery("ConfirmEmailData.findByToken", ConfirmEmailData.class);
         typedQuery.setParameter("token", token);
         try {
             confirmEmailData = typedQuery.getSingleResult();
@@ -183,7 +183,7 @@ public class ConfirmEmailServiceBean {
 
     public ConfirmEmailData findSingleConfirmEmailDataByUser(AuthenticatedUser user) {
         ConfirmEmailData confirmEmailData = null;
-        TypedQuery<ConfirmEmailData> typedQuery = em.createNamedQuery("ConfirmEmailData.findByUser", ConfirmEmailData.class);
+        TypedQuery<ConfirmEmailData> typedQuery = emBean.getMasterEM().createNamedQuery("ConfirmEmailData.findByUser", ConfirmEmailData.class);
         typedQuery.setParameter("user", user);
         try {
             confirmEmailData = typedQuery.getSingleResult();
@@ -194,7 +194,7 @@ public class ConfirmEmailServiceBean {
     }
 
     public List<ConfirmEmailData> findAllConfirmEmailData() {
-        TypedQuery<ConfirmEmailData> typedQuery = em.createNamedQuery("ConfirmEmailData.findAll", ConfirmEmailData.class);
+        TypedQuery<ConfirmEmailData> typedQuery = emBean.getMasterEM().createNamedQuery("ConfirmEmailData.findAll", ConfirmEmailData.class);
         List<ConfirmEmailData> confirmEmailDatas = typedQuery.getResultList();
         return confirmEmailDatas;
     }
@@ -207,7 +207,7 @@ public class ConfirmEmailServiceBean {
         List<ConfirmEmailData> allData = findAllConfirmEmailData();
         for (ConfirmEmailData data : allData) {
             if (data.isExpired()) {
-                em.remove(data);
+                emBean.getMasterEM().remove(data);
                 numDeleted++;
             }
         }
@@ -221,7 +221,7 @@ public class ConfirmEmailServiceBean {
     public boolean deleteTokenForUser(AuthenticatedUser authenticatedUser) {
         ConfirmEmailData confirmEmailData = findSingleConfirmEmailDataByUser(authenticatedUser);
         if (confirmEmailData != null) {
-            em.remove(confirmEmailData);
+            emBean.getMasterEM().remove(confirmEmailData);
             return true;
         }
         return false;
@@ -229,7 +229,7 @@ public class ConfirmEmailServiceBean {
 
     public ConfirmEmailData createToken(AuthenticatedUser au) {
         ConfirmEmailData confirmEmailData = new ConfirmEmailData(au, systemConfig.getMinutesUntilConfirmEmailTokenExpires());
-        em.persist(confirmEmailData);
+        emBean.getMasterEM().persist(confirmEmailData);
         return confirmEmailData;
     }
 

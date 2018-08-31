@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
@@ -23,14 +24,13 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
 
@@ -50,14 +50,13 @@ public class SavedSearchServiceBean {
     DataverseLinkingServiceBean dataverseLinkingService;
     @EJB
     EjbDataverseEngine commandEngine;
+    @Inject
+    EntityManagerBean emBean;
 
     private final String resultString = "result";
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
-
     public SavedSearch find(long id) {
-        TypedQuery<SavedSearch> typedQuery = em.createQuery("SELECT OBJECT(o) FROM SavedSearch AS o WHERE o.id = :id", SavedSearch.class);
+        TypedQuery<SavedSearch> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM SavedSearch AS o WHERE o.id = :id", SavedSearch.class);
         typedQuery.setParameter("id", id);
         try {
             return typedQuery.getSingleResult();
@@ -67,7 +66,7 @@ public class SavedSearchServiceBean {
     }
 
     public List<SavedSearch> findAll() {
-        TypedQuery<SavedSearch> typedQuery = em.createQuery("SELECT OBJECT(o) FROM SavedSearch AS o ORDER BY o.id", SavedSearch.class);
+        TypedQuery<SavedSearch> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM SavedSearch AS o ORDER BY o.id", SavedSearch.class);
         return typedQuery.getResultList();
     }
 
@@ -81,7 +80,7 @@ public class SavedSearchServiceBean {
          */
         SavedSearch persisted = null;
         try {
-            persisted = em.merge(toPersist);
+            persisted = emBean.getMasterEM().merge(toPersist);
         } catch (Exception ex) {
             System.out.println("exeption: " + ex);
         }
@@ -93,8 +92,8 @@ public class SavedSearchServiceBean {
         boolean wasDeleted = false;
         if (doomed != null) {
             System.out.println("deleting saved search id " + doomed.getId());
-            em.remove(doomed);
-            em.flush();
+            emBean.getMasterEM().remove(doomed);
+            emBean.getMasterEM().flush();
             wasDeleted = true;
         } else {
             System.out.println("problem deleting saved search id " + id);
@@ -104,10 +103,10 @@ public class SavedSearchServiceBean {
 
     public SavedSearch save(SavedSearch savedSearch) {
         if (savedSearch.getId() == null) {
-            em.persist(savedSearch);
+            emBean.getMasterEM().persist(savedSearch);
             return savedSearch;
         } else {
-            return em.merge(savedSearch);
+            return emBean.getMasterEM().merge(savedSearch);
         }
     }
 

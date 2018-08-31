@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.harvest.server;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -28,9 +29,8 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.TemporalType;
 
@@ -52,11 +52,10 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     DatasetServiceBean datasetService;
     @EJB 
     SettingsServiceBean settingsService;
+    @Inject
+    EntityManagerBean emBean;
     //@EJB
     //ExportService exportService;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    EntityManager em;   
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean");
     
@@ -139,7 +138,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                     }
 
                     setUpdateLogger.fine("\"last exported\" timestamp: " + dataset.getLastExportTime());
-                    em.refresh(dataset);
+                    emBean.getMasterEM().refresh(dataset);
                     setUpdateLogger.fine("\"last exported\" timestamp, after db refresh: " + dataset.getLastExportTime());
 
                     updateOaiRecordForDataset(dataset, setName, recordMap, setUpdateLogger);
@@ -169,7 +168,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             if (record == null) {
                 setUpdateLogger.info("creating a new OAI Record for " + dataset.getGlobalIdString());
                 record = new OAIRecord(setName, dataset.getGlobalIdString(), new Date());
-                em.persist(record);
+                emBean.getMasterEM().persist(record);
             } else {
                 if (record.isRemoved()) {
                     setUpdateLogger.info("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalIdString());
@@ -278,7 +277,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         logger.fine("findOAIRecordBySetNameandGlobalId; query: "+queryString+"; globalId: "+globalId+"; setName: "+setName);
                 
         
-        TypedQuery query = em.createQuery(queryString, OAIRecord.class).setParameter("globalId",globalId);
+        TypedQuery query = emBean.getMasterEM().createQuery(queryString, OAIRecord.class).setParameter("globalId",globalId);
         if (setName != null) { query.setParameter("setName",setName); }        
         
         try {
@@ -294,7 +293,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         String query="SELECT object(h) from OAIRecord h where h.globalId = :globalId";
         List<OAIRecord> oaiRecords = null;
         try {
-            oaiRecords = em.createQuery(query, OAIRecord.class).setParameter("globalId",globalId).getResultList();
+            oaiRecords = emBean.getMasterEM().createQuery(query, OAIRecord.class).setParameter("globalId",globalId).getResultList();
         } catch (Exception ex) {
             // Do nothing, return null. 
         }
@@ -331,7 +330,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
 
         logger.fine("Query: "+queryString);
         
-        TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
+        TypedQuery<OAIRecord> query = emBean.getMasterEM().createQuery(queryString, OAIRecord.class);
         if (setName != null) { query.setParameter("setName",setName); }
         if (from != null) { query.setParameter("from",from,TemporalType.TIMESTAMP); }
         // In order to achieve inclusivity on the "until" matching, we need to do 
@@ -379,7 +378,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         queryString += setName != null ? " and (h.setName = :setName)" : "and (h.setName is null)";
         logger.fine("Query: "+queryString);
         
-        TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
+        TypedQuery<OAIRecord> query = emBean.getMasterEM().createQuery(queryString, OAIRecord.class);
         if (setName != null) { query.setParameter("setName",setName); }
         
         try {
@@ -398,7 +397,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         queryString += setName != null ? " and (h.setName = :setName)" : "and (h.setName is null)";
         logger.fine("Query: "+queryString);
         
-        TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
+        TypedQuery<OAIRecord> query = emBean.getMasterEM().createQuery(queryString, OAIRecord.class);
         if (setName != null) { query.setParameter("setName",setName); }
         
         try {

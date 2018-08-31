@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.workflow;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
@@ -26,8 +27,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.inject.Inject;
 import javax.persistence.Query;
 
 /**
@@ -41,8 +41,8 @@ public class WorkflowServiceBean {
     private static final Logger logger = Logger.getLogger(WorkflowServiceBean.class.getName());
     private static final String WORKFLOW_ID_KEY = "WorkflowServiceBean.WorkflowId:";
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
     
     @EJB
     DatasetServiceBean datasets;
@@ -107,7 +107,7 @@ public class WorkflowServiceBean {
      */
     @Asynchronous
     public void resume(PendingWorkflowInvocation pending, String body) {
-        em.remove(em.merge(pending));
+        emBean.getMasterEM().remove(emBean.getMasterEM().merge(pending));
         doResume(pending, body);
     }
     
@@ -159,7 +159,7 @@ public class WorkflowServiceBean {
             engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow) );
             
             // Corner case - delete locks generated within this same transaction.
-            Query deleteQuery = em.createQuery("DELETE from DatasetLock l WHERE l.dataset.id=:id AND l.reason=:reason");
+            Query deleteQuery = emBean.getMasterEM().createQuery("DELETE from DatasetLock l WHERE l.dataset.id=:id AND l.reason=:reason");
             deleteQuery.setParameter("id", ctxt.getDataset().getId() );
             deleteQuery.setParameter("reason", DatasetLock.Reason.Workflow );
             deleteQuery.executeUpdate();
@@ -233,8 +233,8 @@ public class WorkflowServiceBean {
         final DatasetLock datasetLock = new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser());
 //        engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
         datasetLock.setDataset(ctxt.getDataset());
-        em.persist(datasetLock);
-        em.flush();
+        emBean.getMasterEM().persist(datasetLock);
+        emBean.getMasterEM().flush();
     }
     
     //
@@ -244,7 +244,7 @@ public class WorkflowServiceBean {
     private void pauseAndAwait(Workflow wf, WorkflowContext ctxt, Pending pendingRes, int idx) {
         PendingWorkflowInvocation pending = new PendingWorkflowInvocation(wf, ctxt, pendingRes);
         pending.setPendingStepIdx(idx);
-        em.persist(pending);
+        emBean.getMasterEM().persist(pending);
     }
 
     private void workflowCompleted(Workflow wf, WorkflowContext ctxt) {
@@ -261,20 +261,20 @@ public class WorkflowServiceBean {
     }
 
     public List<Workflow> listWorkflows() {
-        return em.createNamedQuery("Workflow.listAll").getResultList();
+        return emBean.getMasterEM().createNamedQuery("Workflow.listAll").getResultList();
     }
 
     public Optional<Workflow> getWorkflow(long workflowId) {
-        return Optional.ofNullable(em.find(Workflow.class, workflowId));
+        return Optional.ofNullable(emBean.getEntityManager().find(Workflow.class, workflowId));
     }
 
     public Workflow save(Workflow workflow) {
         if (workflow.getId() == null) {
-            em.persist(workflow);
-            em.flush();
+            emBean.getMasterEM().persist(workflow);
+            emBean.getMasterEM().flush();
             return workflow;
         } else {
-            return em.merge(workflow);
+            return emBean.getMasterEM().merge(workflow);
         }
     }
 
@@ -296,7 +296,7 @@ public class WorkflowServiceBean {
                 }
             }
 
-            em.remove(doomedOpt.get());
+            emBean.getMasterEM().remove(doomedOpt.get());
             return true;
         } else {
             return false;
@@ -304,12 +304,12 @@ public class WorkflowServiceBean {
     }
 
     public List<PendingWorkflowInvocation> listPendingInvocations() {
-        return em.createNamedQuery("PendingWorkflowInvocation.listAll")
+        return emBean.getMasterEM().createNamedQuery("PendingWorkflowInvocation.listAll")
                 .getResultList();
     }
 
     public PendingWorkflowInvocation getPendingWorkflow(String invocationId) {
-        return em.find(PendingWorkflowInvocation.class, invocationId);
+        return emBean.getEntityManager().find(PendingWorkflowInvocation.class, invocationId);
     }
 
     public Optional<Workflow> getDefaultWorkflow( WorkflowContext.TriggerType type ) {

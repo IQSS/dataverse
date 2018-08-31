@@ -24,9 +24,8 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -39,8 +38,6 @@ import org.apache.commons.lang.StringUtils;
 public class RoleAssigneeServiceBean {
 
     private static final Logger logger = Logger.getLogger(RoleAssigneeServiceBean.class.getName());
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
 
     @EJB
     AuthenticationServiceBean authSvc;
@@ -53,6 +50,9 @@ public class RoleAssigneeServiceBean {
 
     @EJB
     DataverseRoleServiceBean dataverseRoleService;
+    
+    @Inject
+    EntityManagerBean emBean;
 
     protected Map<String, RoleAssignee> predefinedRoleAssignees = new TreeMap<>();
 
@@ -93,7 +93,7 @@ public class RoleAssigneeServiceBean {
     }
 
     public List<RoleAssignment> getAssignmentsFor(String roleAssigneeIdentifier) {
-        return em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class)
+        return emBean.getMasterEM().createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class)
                 .setParameter("assigneeIdentifier", roleAssigneeIdentifier)
                 .getResultList();
     }
@@ -156,7 +156,7 @@ public class RoleAssigneeServiceBean {
         qstr += ";";
         msg("qstr: " + qstr);
 
-        for (Object o : em.createNativeQuery(qstr).getResultList()) {
+        for (Object o : emBean.getMasterEM().createNativeQuery(qstr).getResultList()) {
             retList.add(dataverseRoleService.find((Long) o));
         }
         return retList;
@@ -192,7 +192,7 @@ public class RoleAssigneeServiceBean {
         qstr += getRoleIdListClause(roleIdList);
         qstr += ";";
         msg("qstr: " + qstr);
-        return em.createNativeQuery(qstr).getResultList();
+        return emBean.getMasterEM().createNativeQuery(qstr).getResultList();
 
     }
 
@@ -221,7 +221,7 @@ public class RoleAssigneeServiceBean {
         qstr += ";";
         msg("qstr: " + qstr);
 
-        return em.createNativeQuery(qstr).getResultList();
+        return emBean.getMasterEM().createNativeQuery(qstr).getResultList();
 
     }
 
@@ -290,7 +290,7 @@ public class RoleAssigneeServiceBean {
         qstr += ";";
         //msg("qstr: " + qstr);
 
-        return em.createNativeQuery(qstr).getResultList();
+        return emBean.getMasterEM().createNativeQuery(qstr).getResultList();
 
     }
 
@@ -349,7 +349,7 @@ public class RoleAssigneeServiceBean {
 
         // we get the users through a query that does the filtering through the db,
         // so that we don't have to instantiate all of the RoleAssignee objects
-        em.createNamedQuery("AuthenticatedUser.filter", AuthenticatedUser.class)
+        emBean.getMasterEM().createNamedQuery("AuthenticatedUser.filter", AuthenticatedUser.class)
                 .setParameter("query", "%" + query + "%")
                 .getResultList().stream()
                 .filter(ra -> roleAssignSelectedRoleAssignees == null || !roleAssignSelectedRoleAssignees.contains(ra))

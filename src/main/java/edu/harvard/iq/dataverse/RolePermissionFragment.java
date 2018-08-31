@@ -32,9 +32,6 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -61,10 +58,8 @@ public class RolePermissionFragment implements java.io.Serializable {
     EjbDataverseEngine commandEngine;
     @Inject
     DataverseRequestServiceBean dvRequestService;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    EntityManager em;
-
+    @Inject
+    EntityManagerBean emBean;
     @Inject
     DataverseSession session;
 
@@ -201,7 +196,7 @@ public class RolePermissionFragment implements java.io.Serializable {
 
     public void revokeRole(Long roleAssignmentId) {
         try {
-            commandEngine.submit(new RevokeRoleCommand(em.find(RoleAssignment.class, roleAssignmentId), dvRequestService.getDataverseRequest()));
+            commandEngine.submit(new RevokeRoleCommand(emBean.getEntityManager().find(RoleAssignment.class, roleAssignmentId), dvRequestService.getDataverseRequest()));
             JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("permission.roleRevoked" ));
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotRevokeRole1" , Arrays.asList(ex.getRequiredPermissions().toString())));

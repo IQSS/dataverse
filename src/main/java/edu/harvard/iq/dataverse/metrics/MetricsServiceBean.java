@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.metrics;
 
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.Metric;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.Serializable;
@@ -11,20 +12,20 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
+import javax.inject.Inject;
 import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 @Stateless
 public class MetricsServiceBean implements Serializable {
+    
+    @Inject
+    EntityManagerBean emBean;
 
     private static final Logger logger = Logger.getLogger(MetricsServiceBean.class.getCanonicalName());
 
     private static final SimpleDateFormat yyyymmFormat = new SimpleDateFormat(MetricsUtil.YEAR_AND_MONTH_PATTERN);
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
     @EJB
     SystemConfig systemConfig;
 
@@ -32,7 +33,7 @@ public class MetricsServiceBean implements Serializable {
      * @param yyyymm Month in YYYY-MM format.
      */
     public long dataversesToMonth(String yyyymm) throws Exception {
-        Query query = em.createNativeQuery(""
+        Query query = emBean.getMasterEM().createNativeQuery(""
                 + "select count(dvobject.id)\n"
                 + "from dataverse\n"
                 + "join dvobject on dvobject.id = dataverse.id\n"
@@ -48,7 +49,7 @@ public class MetricsServiceBean implements Serializable {
      * @param yyyymm Month in YYYY-MM format.
      */
     public long datasetsToMonth(String yyyymm) throws Exception {
-        Query query = em.createNativeQuery(""
+        Query query = emBean.getMasterEM().createNativeQuery(""
                 + "select count(*)\n"
                 + "from datasetversion\n"
                 + "where datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n"
@@ -71,7 +72,7 @@ public class MetricsServiceBean implements Serializable {
      * @param yyyymm Month in YYYY-MM format.
      */
     public long filesToMonth(String yyyymm) throws Exception {
-        Query query = em.createNativeQuery(""
+        Query query = emBean.getMasterEM().createNativeQuery(""
                 + "select count(*)\n"
                 + "from filemetadata\n"
                 + "join datasetversion on datasetversion.id = filemetadata.datasetversion_id\n"
@@ -95,7 +96,7 @@ public class MetricsServiceBean implements Serializable {
      * @param yyyymm Month in YYYY-MM format.
      */
     public long downloadsToMonth(String yyyymm) throws Exception {
-        Query query = em.createNativeQuery(""
+        Query query = emBean.getMasterEM().createNativeQuery(""
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
                 + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM');"
@@ -106,7 +107,7 @@ public class MetricsServiceBean implements Serializable {
 
     public List<Object[]> dataversesByCategory() throws Exception {
 
-        Query query = em.createNativeQuery(""
+        Query query = emBean.getMasterEM().createNativeQuery(""
                 + "select dataversetype, count(dataversetype) from dataverse\n"
                 + "join dvobject on dvobject.id = dataverse.id\n"
                 + "where dvobject.publicationdate is not null\n"
@@ -119,7 +120,7 @@ public class MetricsServiceBean implements Serializable {
     }
 
     public List<Object[]> datasetsBySubject() {
-        Query query = em.createNativeQuery(""
+        Query query = emBean.getMasterEM().createNativeQuery(""
                + "SELECT strvalue, count(dataset.id)\n"
                + "FROM datasetfield_controlledvocabularyvalue \n"
                + "JOIN controlledvocabularyvalue ON controlledvocabularyvalue.id = datasetfield_controlledvocabularyvalue.controlledvocabularyvalues_id\n"
@@ -221,11 +222,11 @@ public class MetricsServiceBean implements Serializable {
             oldMetric = getMetric(newMetric.getMetricTitle());
         }
         if (oldMetric != null) {
-            em.remove(oldMetric);
-            em.flush();
+            emBean.getMasterEM().remove(oldMetric);
+            emBean.getMasterEM().flush();
         }
-        em.persist(newMetric);
-        return em.merge(newMetric);
+        emBean.getMasterEM().persist(newMetric);
+        return emBean.getMasterEM().merge(newMetric);
     }
 
     public Metric getMetric(String metricTitle, String yymmmm) throws Exception {
@@ -235,7 +236,7 @@ public class MetricsServiceBean implements Serializable {
     }
 
     public Metric getMetric(String searchMetricName) throws Exception {
-        Query query = em.createQuery("select object(o) from Metric as o where o.metricName = :metricName", Metric.class);
+        Query query = emBean.getMasterEM().createQuery("select object(o) from Metric as o where o.metricName = :metricName", Metric.class);
         query.setParameter("metricName", searchMetricName);
         Metric metric = null;
         try {

@@ -29,10 +29,8 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 /**
@@ -61,14 +59,14 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    
+    @Inject
+    EntityManagerBean emBean;
 
     public Dataverse save(Dataverse dataverse) {
        
         dataverse.setModificationTime(new Timestamp(new Date().getTime()));
-        Dataverse savedDataverse = em.merge(dataverse);
+        Dataverse savedDataverse = emBean.getMasterEM().merge(dataverse);
         /**
          * @todo check the result to see if indexing was successful or not
          */
@@ -78,11 +76,11 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public Dataverse find(Object pk) {
-        return em.find(Dataverse.class, pk);
+        return emBean.getEntityManager().find(Dataverse.class, pk);
     }
 
     public List<Dataverse> findAll() {
-        return em.createQuery("select object(o) from Dataverse as o order by o.name", Dataverse.class).getResultList();
+        return emBean.getMasterEM().createQuery("select object(o) from Dataverse as o order by o.name", Dataverse.class).getResultList();
     }
 
     /**
@@ -106,7 +104,7 @@ public class DataverseServiceBean implements java.io.Serializable {
             numPartitions = saneNumPartitions;
         }
         String skipClause = skipIndexed ? "AND o.indexTime is null " : "";
-        TypedQuery<Dataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM Dataverse AS o WHERE MOD( o.id, :numPartitions) = :partitionId " +
+        TypedQuery<Dataverse> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM Dataverse AS o WHERE MOD( o.id, :numPartitions) = :partitionId " +
                 skipClause +
                 "ORDER BY o.id", Dataverse.class);
         typedQuery.setParameter("numPartitions", numPartitions);
@@ -116,25 +114,25 @@ public class DataverseServiceBean implements java.io.Serializable {
     
     public List<Long> findDataverseIdsForIndexing(boolean skipIndexed) {
         if (skipIndexed) {
-            return em.createQuery("SELECT o.id FROM Dataverse o WHERE o.indexTime IS null ORDER BY o.id", Long.class).getResultList();
+            return emBean.getMasterEM().createQuery("SELECT o.id FROM Dataverse o WHERE o.indexTime IS null ORDER BY o.id", Long.class).getResultList();
         }
-        return em.createQuery("SELECT o.id FROM Dataverse o ORDER BY o.id", Long.class).getResultList();
+        return emBean.getMasterEM().createQuery("SELECT o.id FROM Dataverse o ORDER BY o.id", Long.class).getResultList();
         
     }
 
     public List<Dataverse> findByOwnerId(Long ownerId) {
         String qr = "select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name";
-        return em.createQuery(qr, Dataverse.class).setParameter("ownerId", ownerId).getResultList();
+        return emBean.getMasterEM().createQuery(qr, Dataverse.class).setParameter("ownerId", ownerId).getResultList();
     }
     
     public List<Long> findIdsByOwnerId(Long ownerId) {
         String qr = "select o.id from Dataverse as o where o.owner.id =:ownerId order by o.id";
-        return em.createQuery(qr, Long.class).setParameter("ownerId", ownerId).getResultList();
+        return emBean.getMasterEM().createQuery(qr, Long.class).setParameter("ownerId", ownerId).getResultList();
     }
     
     public List<Dataverse> findPublishedByOwnerId(Long ownerId) {
         String qr ="select object(o) from Dataverse as o where o.owner.id =:ownerId and o.publicationDate is not null order by o.name";
-        return em.createQuery(qr, Dataverse.class).setParameter("ownerId", ownerId).getResultList();
+        return emBean.getMasterEM().createQuery(qr, Dataverse.class).setParameter("ownerId", ownerId).getResultList();
     }
 
     /**
@@ -143,7 +141,7 @@ public class DataverseServiceBean implements java.io.Serializable {
      * NoResultException which is a RuntimeException?
      */
     public Dataverse findRootDataverse() {
-        return em.createNamedQuery("Dataverse.findRoot", Dataverse.class).getSingleResult();
+        return emBean.getMasterEM().createNamedQuery("Dataverse.findRoot", Dataverse.class).getSingleResult();
     }
     
     public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {
@@ -171,7 +169,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         try {
             return (anAlias.toLowerCase().equals(":root"))
 				? findRootDataverse()
-				: em.createNamedQuery("Dataverse.findByAlias", Dataverse.class)
+				: emBean.getMasterEM().createNamedQuery("Dataverse.findByAlias", Dataverse.class)
 					.setParameter("alias", anAlias.toLowerCase())
 					.getSingleResult();
         } catch ( NoResultException|NonUniqueResultException ex ) {
@@ -181,14 +179,14 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 	
 	public boolean hasData( Dataverse dv ) {
-		TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
+		TypedQuery<Long> amountQry = emBean.getMasterEM().createNamedQuery("Dataverse.ownedObjectsById", Long.class)
 								.setParameter("id", dv.getId());
 		
 		return (amountQry.getSingleResult()>0);
 	}
 	
     public boolean isRootDataverseExists() {
-        long count = em.createQuery("SELECT count(dv) FROM Dataverse dv WHERE dv.owner.id=null", Long.class).getSingleResult();
+        long count = emBean.getMasterEM().createQuery("SELECT count(dv) FROM Dataverse dv WHERE dv.owner.id=null", Long.class).getSingleResult();
         return (count == 1);
     }
 
@@ -203,36 +201,36 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public MetadataBlock findMDB(Long id) {
-        return em.find(MetadataBlock.class, id);
+        return emBean.getEntityManager().find(MetadataBlock.class, id);
     }
 
     public MetadataBlock findMDBByName(String name) {
-        return em.createQuery("select m from MetadataBlock m WHERE m.name=:name", MetadataBlock.class)
+        return emBean.getMasterEM().createQuery("select m from MetadataBlock m WHERE m.name=:name", MetadataBlock.class)
                 .setParameter("name", name)
                 .getSingleResult();
     }
 
     public List<MetadataBlock> findAllMetadataBlocks() {
-        return em.createQuery("select object(o) from MetadataBlock as o order by o.id", MetadataBlock.class).getResultList();
+        return emBean.getMasterEM().createQuery("select object(o) from MetadataBlock as o order by o.id", MetadataBlock.class).getResultList();
     }
     
     public List<MetadataBlock> findSystemMetadataBlocks(){
         String qr = "select object(o) from MetadataBlock as o where o.owner.id=null  order by o.id";
-        return em.createQuery(qr, MetadataBlock.class).getResultList();
+        return emBean.getMasterEM().createQuery(qr, MetadataBlock.class).getResultList();
     }
     
     public List<MetadataBlock> findMetadataBlocksByDataverseId(Long dataverse_id) {
         String qr = "select object(o) from MetadataBlock as o where o.owner.id=:dataverse_id order by o.id";
-        return em.createQuery(qr, MetadataBlock.class)
+        return emBean.getMasterEM().createQuery(qr, MetadataBlock.class)
                 .setParameter("dataverse_id", dataverse_id).getResultList();
     }
     
     public DataverseFacet findFacet(Long id) {
-        return em.find(DataverseFacet.class, id);
+        return emBean.getEntityManager().find(DataverseFacet.class, id);
     }
     
     public List<DataverseFacet> findAllDataverseFacets() {
-        return em.createQuery("select object(o) from DataverseFacet as o order by o.display", DataverseFacet.class).getResultList();
+        return emBean.getMasterEM().createQuery("select object(o) from DataverseFacet as o order by o.display", DataverseFacet.class).getResultList();
     }
     
     public String getDataverseLogoThumbnailAsBase64(Dataverse dataverse, User user) {
@@ -349,7 +347,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         String logoFileName;
         
         try {
-                logoFileName = (String) em.createNativeQuery("SELECT logo FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
+                logoFileName = (String) emBean.getMasterEM().createNativeQuery("SELECT logo FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
             
         } catch (Exception ex) {
             return null;
@@ -379,7 +377,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         Object[] result;
         
         try {
-                result = (Object[]) em.createNativeQuery("SELECT logo, logoFormat FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
+                result = (Object[]) emBean.getMasterEM().createNativeQuery("SELECT logo, logoFormat FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
             
         } catch (Exception ex) {
             return null;
@@ -427,9 +425,9 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
     
     public List<Dataverse> filterByAliasQuery(String filterQuery) {
-        //Query query = em.createNativeQuery("select o from Dataverse o where o.alias LIKE '" + filterQuery + "%' order by o.alias");
-        //Query query = em.createNamedQuery("Dataverse.filterByAlias", Dataverse.class).setParameter("alias", filterQuery.toLowerCase() + "%");
-        List<Dataverse> ret = em.createNamedQuery("Dataverse.filterByAliasNameAffiliation", Dataverse.class)
+        //Query query = emBean.getMasterEM().createNativeQuery("select o from Dataverse o where o.alias LIKE '" + filterQuery + "%' order by o.alias");
+        //Query query = emBean.getMasterEM().createNamedQuery("Dataverse.filterByAlias", Dataverse.class).setParameter("alias", filterQuery.toLowerCase() + "%");
+        List<Dataverse> ret = emBean.getMasterEM().createNamedQuery("Dataverse.filterByAliasNameAffiliation", Dataverse.class)
                 .setParameter("alias", filterQuery.toLowerCase() + "%")
                 .setParameter("name", "%" + filterQuery.toLowerCase() + "%")
                 .setParameter("affiliation", "%" + filterQuery.toLowerCase() + "%").getResultList();
@@ -452,7 +450,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         List<Object[]> searchResults = null;
         
         try {
-            searchResults = em.createNativeQuery(qstr).getResultList();
+            searchResults = emBean.getMasterEM().createNativeQuery(qstr).getResultList();
         } catch (Exception ex) {
             searchResults = null;
         }
@@ -492,7 +490,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         String searchResult;
         try {
-            searchResult = (String) em.createNativeQuery("select  t0.ALIAS FROM DATAVERSE t0, DVOBJECT t1,  DVOBJECT t2 WHERE (t0.ID = t1.ID) AND (t2.OWNER_ID = t1.ID)  AND (t2.ID =" + dvId + ")").getSingleResult();
+            searchResult = (String) emBean.getMasterEM().createNativeQuery("select  t0.ALIAS FROM DATAVERSE t0, DVOBJECT t1,  DVOBJECT t2 WHERE (t0.ID = t1.ID) AND (t2.OWNER_ID = t1.ID)  AND (t2.ID =" + dvId + ")").getSingleResult();
 
         } catch (Exception ex) {
             return retVal;
@@ -532,9 +530,9 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         try {
             if (parentDvId == null) {
-                searchResult = (Object[]) em.createNativeQuery("SELECT t0.AFFILIATION, t0.ALIAS FROM DATAVERSE t0 WHERE t0.ID = " + dvId).getSingleResult();
+                searchResult = (Object[]) emBean.getMasterEM().createNativeQuery("SELECT t0.AFFILIATION, t0.ALIAS FROM DATAVERSE t0 WHERE t0.ID = " + dvId).getSingleResult();
             } else {
-                searchResult = (Object[]) em.createNativeQuery("SELECT t0.AFFILIATION, t0.ALIAS, t2.ALIAS FROM DATAVERSE t0, DVOBJECT t1, DATAVERSE t2, DVOBJECT t3 WHERE (t0.ID = t1.ID) AND (t1.OWNER_ID = t3.ID) AND (t2.ID = t3.ID) AND (t0.ID = " + dvId + ")").getSingleResult();
+                searchResult = (Object[]) emBean.getMasterEM().createNativeQuery("SELECT t0.AFFILIATION, t0.ALIAS, t2.ALIAS FROM DATAVERSE t0, DVOBJECT t1, DATAVERSE t2, DVOBJECT t3 WHERE (t0.ID = t1.ID) AND (t1.OWNER_ID = t3.ID) AND (t2.ID = t3.ID) AND (t0.ID = " + dvId + ")").getSingleResult();
             }
         } catch (Exception ex) {
             return;

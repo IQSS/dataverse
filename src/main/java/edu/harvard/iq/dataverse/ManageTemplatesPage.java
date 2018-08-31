@@ -19,8 +19,6 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 /**
  *
@@ -38,9 +36,6 @@ public class ManageTemplatesPage implements java.io.Serializable {
     
     @EJB
     EjbDataverseEngine engineService;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    EntityManager em;
 
     @Inject
     DataversePage dvpage;

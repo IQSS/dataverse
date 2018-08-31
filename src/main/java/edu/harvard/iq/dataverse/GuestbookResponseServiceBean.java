@@ -27,9 +27,8 @@ import javax.faces.application.FacesMessage;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
@@ -40,6 +39,10 @@ import javax.persistence.TypedQuery;
 @Stateless
 @Named
 public class GuestbookResponseServiceBean {
+    
+    @Inject
+    EntityManagerBean emBean;
+    
     private static final Logger logger = Logger.getLogger(GuestbookResponseServiceBean.class.getCanonicalName());
     
     // The query below is used for retrieving guestbook responses used to download 
@@ -80,12 +83,9 @@ public class GuestbookResponseServiceBean {
 
     
     private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/d/yyyy");
-    
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
 
     public List<GuestbookResponse> findAll() {
-        return em.createQuery("select object(o) from GuestbookResponse as o order by o.responseTime desc", GuestbookResponse.class).getResultList();
+        return emBean.getMasterEM().createQuery("select object(o) from GuestbookResponse as o order by o.responseTime desc", GuestbookResponse.class).getResultList();
     }
 
     public List<Long> findAllIds() {
@@ -94,16 +94,16 @@ public class GuestbookResponseServiceBean {
 
     public List<Long> findAllIds(Long dataverseId) {
         if (dataverseId == null) {
-            return em.createQuery("select o.id from GuestbookResponse as o order by o.responseTime desc", Long.class).getResultList();
+            return emBean.getMasterEM().createQuery("select o.id from GuestbookResponse as o order by o.responseTime desc", Long.class).getResultList();
         }
-        return em.createQuery("select o.id from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc", Long.class).getResultList();
+        return emBean.getMasterEM().createQuery("select o.id from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc", Long.class).getResultList();
     }
 
     public List<GuestbookResponse> findAllByGuestbookId(Long guestbookId) {
 
         if (guestbookId == null) {
         } else {
-            return em.createQuery("select o from GuestbookResponse as o where o.guestbook.id = " + guestbookId + " order by o.responseTime desc", GuestbookResponse.class).getResultList();
+            return emBean.getMasterEM().createQuery("select o from GuestbookResponse as o where o.guestbook.id = " + guestbookId + " order by o.responseTime desc", GuestbookResponse.class).getResultList();
         }
         return null;
     }
@@ -135,7 +135,7 @@ public class GuestbookResponseServiceBean {
         queryString += ";";
         logger.fine("stream responses query: " + queryString);
         
-        List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
+        List<Object[]> guestbookResults = emBean.getMasterEM().createNativeQuery(queryString).getResultList();
 
         // the CSV header:
         out.write("Guestbook, Dataset, Date, Type, File Name, File Id, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
@@ -200,7 +200,7 @@ public class GuestbookResponseServiceBean {
             // the top of this method. -- L.A.)
             
             /*String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + result[0];
-            List<Object[]> customResponses = em.createNativeQuery(cqString).getResultList();
+            List<Object[]> customResponses = emBean.getMasterEM().createNativeQuery(cqString).getResultList();
             if (customResponses != null) {
                 for (Object[] response : customResponses) {
                     sb.append(SEPARATOR);
@@ -230,7 +230,7 @@ public class GuestbookResponseServiceBean {
     */
     public List<Object[]> findArrayByGuestbookIdAndDataverseId (Long guestbookId, Long dataverseId, Long limit){
 
-        Guestbook gbIn = em.find(Guestbook.class, guestbookId);
+        Guestbook gbIn = emBean.getEntityManager().find(Guestbook.class, guestbookId);
         boolean hasCustomQuestions = gbIn.getCustomQuestions() != null;
         List<Object[]> retVal =  new ArrayList<>();
 
@@ -250,7 +250,7 @@ public class GuestbookResponseServiceBean {
         
         logger.fine("search query: " + queryString);
         
-        List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
+        List<Object[]> guestbookResults = emBean.getMasterEM().createNativeQuery(queryString).getResultList();
         
         if (guestbookResults == null || guestbookResults.size() == 0) {
             return retVal; 
@@ -299,7 +299,7 @@ public class GuestbookResponseServiceBean {
                     // -- L.A.)
 
                     /*String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + result[0];
-                    singleResult[5]   = em.createNativeQuery(cqString).getResultList();*/
+                    singleResult[5]   = emBean.getMasterEM().createNativeQuery(cqString).getResultList();*/
                     if (customQandAs.containsKey(guestbookResponseId)) {
                         singleResult[5] = customQandAs.get(guestbookResponseId);
                     }
@@ -351,7 +351,7 @@ public class GuestbookResponseServiceBean {
         cqString += ";";
         logger.fine("custom questions query: " + cqString);
 
-        List<Object[]> customResponses = em.createNativeQuery(cqString).getResultList();
+        List<Object[]> customResponses = emBean.getMasterEM().createNativeQuery(cqString).getResultList();
 
         if (customResponses != null) {
             for (Object[] response : customResponses) {
@@ -391,11 +391,11 @@ public class GuestbookResponseServiceBean {
                     return 0L;
         } else if ( dataverseId == null) {
             String queryString = "select count(o) from GuestbookResponse as o where o.guestbook_id = " + guestbookId;
-            Query query = em.createNativeQuery(queryString);
+            Query query = emBean.getMasterEM().createNativeQuery(queryString);
             return (Long) query.getSingleResult();
         } else  {
             String queryString = "select count(o) from GuestbookResponse as o, Dataset d, DvObject obj where o.dataset_id = d.id and d.id = obj.id and obj.owner_id = " + dataverseId + "and o.guestbook_id = " + guestbookId;
-            Query query = em.createNativeQuery(queryString);
+            Query query = emBean.getMasterEM().createNativeQuery(queryString);
             return (Long) query.getSingleResult();            
         }
 
@@ -423,7 +423,7 @@ public class GuestbookResponseServiceBean {
         queryString += " and o.responseTime<='" + endTime + "'";
         queryString += "  order by o.responseTime desc";
 
-        return em.createQuery(queryString, Long.class).getResultList();
+        return emBean.getMasterEM().createQuery(queryString, Long.class).getResultList();
     }
 
     public Long findCount30Days() {
@@ -446,7 +446,7 @@ public class GuestbookResponseServiceBean {
         }
         queryString += " o.responseTime >='" + beginTime + "'";
         queryString += " and o.responseTime<='" + endTime + "'";
-        Query query = em.createNativeQuery(queryString);
+        Query query = emBean.getMasterEM().createNativeQuery(queryString);
         return (Long) query.getSingleResult();
     }
 
@@ -462,12 +462,12 @@ public class GuestbookResponseServiceBean {
             queryString = "select count(o.id) from GuestbookResponse  o ";
         }
 
-        Query query = em.createNativeQuery(queryString);
+        Query query = emBean.getMasterEM().createNativeQuery(queryString);
         return (Long) query.getSingleResult();
     }
 
     public List<GuestbookResponse> findAllByDataverse(Long dataverseId) {
-        return em.createQuery("select object(o) from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc", GuestbookResponse.class).getResultList();
+        return emBean.getMasterEM().createQuery("select object(o) from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc", GuestbookResponse.class).getResultList();
     }
 
     public List<GuestbookResponse> findAllWithin30Days() {
@@ -491,7 +491,7 @@ public class GuestbookResponseServiceBean {
         queryString += " o.responseTime >='" + beginTime + "'";
         queryString += " and o.responseTime<='" + endTime + "'";
         queryString += "  order by o.responseTime desc";
-        TypedQuery<GuestbookResponse> query = em.createQuery(queryString, GuestbookResponse.class);
+        TypedQuery<GuestbookResponse> query = emBean.getMasterEM().createQuery(queryString, GuestbookResponse.class);
 
         return query.getResultList();
     }
@@ -507,9 +507,9 @@ public class GuestbookResponseServiceBean {
     private String generateTempTableString(List<Long> datasetIds) {
         // first step: create the temp table with the ids
 
-        em.createNativeQuery(" BEGIN; SET TRANSACTION READ WRITE; DROP TABLE IF EXISTS tempid; END;").executeUpdate();
-        em.createNativeQuery(" BEGIN; SET TRANSACTION READ WRITE; CREATE TEMPORARY TABLE tempid (tempid integer primary key, orderby integer); END;").executeUpdate();
-        em.createNativeQuery(" BEGIN; SET TRANSACTION READ WRITE; INSERT INTO tempid VALUES " + generateIDsforTempInsert(datasetIds) + "; END;").executeUpdate();
+        emBean.getMasterEM().createNativeQuery(" BEGIN; SET TRANSACTION READ WRITE; DROP TABLE IF EXISTS tempid; END;").executeUpdate();
+        emBean.getMasterEM().createNativeQuery(" BEGIN; SET TRANSACTION READ WRITE; CREATE TEMPORARY TABLE tempid (tempid integer primary key, orderby integer); END;").executeUpdate();
+        emBean.getMasterEM().createNativeQuery(" BEGIN; SET TRANSACTION READ WRITE; INSERT INTO tempid VALUES " + generateIDsforTempInsert(datasetIds) + "; END;").executeUpdate();
         return "select tempid from tempid";
     }
 
@@ -537,7 +537,7 @@ public class GuestbookResponseServiceBean {
                 + " and gbr.id = cqr.guestbookresponse_id "
                 + "and cq.id = cqr.customquestion_id "
                 + " and cqr.guestbookresponse_id =  " + gbrId;
-        TypedQuery<Object[]> query = em.createQuery(gbrCustomQuestionQueryString, Object[].class);
+        TypedQuery<Object[]> query = emBean.getMasterEM().createQuery(gbrCustomQuestionQueryString, Object[].class);
 
         return convertIntegerToLong(query.getResultList(), 1);
     }
@@ -545,7 +545,7 @@ public class GuestbookResponseServiceBean {
     private Guestbook findDefaultGuestbook() {
         Guestbook guestbook = new Guestbook();
         String queryStr = "SELECT object(o) FROM Guestbook as o WHERE o.dataverse.id = null";
-        List<Guestbook> resultList = em.createQuery(queryStr, Guestbook.class).getResultList();
+        List<Guestbook> resultList = emBean.getMasterEM().createQuery(queryStr, Guestbook.class).getResultList();
 
         if (resultList.size() >= 1) {
             guestbook = resultList.get(0);
@@ -921,30 +921,30 @@ public class GuestbookResponseServiceBean {
 
 
     public GuestbookResponse findById(Long id) {
-        return em.find(GuestbookResponse.class, id);
+        return emBean.getEntityManager().find(GuestbookResponse.class, id);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void save(GuestbookResponse guestbookResponse) {
-        em.persist(guestbookResponse);
+        emBean.getMasterEM().persist(guestbookResponse);
     }
     
     
     public Long getCountGuestbookResponsesByDataFileId(Long dataFileId) {
         // datafile id is null, will return 0
-        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.datafile_id  = " + dataFileId);
+        Query query = emBean.getMasterEM().createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.datafile_id  = " + dataFileId);
         return (Long) query.getSingleResult();
     }
     
     public Long getCountGuestbookResponsesByDatasetId(Long datasetId) {
         // dataset id is null, will return 0        
-        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId);
+        Query query = emBean.getMasterEM().createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId);
         return (Long) query.getSingleResult();
     }    
 
     public Long getCountOfAllGuestbookResponses() {
         // dataset id is null, will return 0        
-        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o;");
+        Query query = emBean.getMasterEM().createNativeQuery("select count(o.id) from GuestbookResponse  o;");
         return (Long) query.getSingleResult();
     }
     

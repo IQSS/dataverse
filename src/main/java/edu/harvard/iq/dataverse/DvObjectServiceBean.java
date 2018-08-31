@@ -12,11 +12,10 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
@@ -31,8 +30,8 @@ import org.ocpsoft.common.util.Strings;
 @Named
 public class DvObjectServiceBean implements java.io.Serializable {
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
     
     private static final Logger logger = Logger.getLogger(DvObjectServiceBean.class.getCanonicalName());
     /**
@@ -41,14 +40,14 @@ public class DvObjectServiceBean implements java.io.Serializable {
      * {@link DvObject}.
      */
     public boolean hasData(DvObjectContainer dvoc) {
-        return em.createNamedQuery("DvObject.ownedObjectsById", Long.class)
+        return emBean.getMasterEM().createNamedQuery("DvObject.ownedObjectsById", Long.class)
                 .setParameter("id", dvoc.getId())
                 .getSingleResult() > 0;
     }
 
     public DvObject findDvObject(Long id) {
         try {
-            return em.createNamedQuery("DvObject.findById", DvObject.class)
+            return emBean.getMasterEM().createNamedQuery("DvObject.findById", DvObject.class)
                     .setParameter("id", id)
                     .getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
@@ -57,7 +56,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
     }
 
     public List<DvObject> findAll() {
-        return em.createNamedQuery("DvObject.findAll", DvObject.class).getResultList();
+        return emBean.getMasterEM().createNamedQuery("DvObject.findAll", DvObject.class).getResultList();
     }
 
     // FIXME This type-by-string has to go, in favor of passing a class parameter.
@@ -69,7 +68,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
             DvObject foundDvObject = null;
             try {
                 Query query;
-                query = em.createNamedQuery("DvObject.findByGlobalId");
+                query = emBean.getMasterEM().createNamedQuery("DvObject.findByGlobalId");
                 query.setParameter("identifier", gid.getIdentifier());
                 query.setParameter("protocol", gid.getProtocol());
                 query.setParameter("authority", gid.getAuthority());
@@ -101,7 +100,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
          */
         DvObject dvObjectToModify = findDvObject(dvObject.getId());
         dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
-        DvObject savedDvObject = em.merge(dvObjectToModify);
+        DvObject savedDvObject = emBean.getMasterEM().merge(dvObjectToModify);
         return savedDvObject;
     }
 
@@ -124,20 +123,20 @@ public class DvObjectServiceBean implements java.io.Serializable {
             return dvObject;
         }
         dvObjectToModify.setPermissionIndexTime(new Timestamp(new Date().getTime()));
-        DvObject savedDvObject = em.merge(dvObjectToModify);
+        DvObject savedDvObject = emBean.getMasterEM().merge(dvObjectToModify);
         logger.log(Level.FINE, "Updated permission index time for DvObject id {0}", dvObjectId);
         return savedDvObject;
     }
 
     @TransactionAttribute(REQUIRES_NEW)
     public int clearAllIndexTimes() {
-        Query clearIndexTimes = em.createQuery("UPDATE DvObject o SET o.indexTime = NULL, o.permissionIndexTime = NULL");
+        Query clearIndexTimes = emBean.getMasterEM().createQuery("UPDATE DvObject o SET o.indexTime = NULL, o.permissionIndexTime = NULL");
         int numRowsUpdated = clearIndexTimes.executeUpdate();
         return numRowsUpdated;
     }
 
     public int clearIndexTimes(long dvObjectId) {
-        Query clearIndexTimes = em.createQuery("UPDATE DvObject o SET o.indexTime = NULL, o.permissionIndexTime = NULL WHERE o.id =:dvObjectId");
+        Query clearIndexTimes = emBean.getMasterEM().createQuery("UPDATE DvObject o SET o.indexTime = NULL, o.permissionIndexTime = NULL WHERE o.id =:dvObjectId");
         clearIndexTimes.setParameter("dvObjectId", dvObjectId);
         int numRowsUpdated = clearIndexTimes.executeUpdate();
         return numRowsUpdated;
@@ -173,7 +172,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         qstr += " WHERE  dv.id IN " + dvObjectClause;
         qstr += ";";
 
-        return em.createNativeQuery(qstr).getResultList();
+        return emBean.getMasterEM().createNativeQuery(qstr).getResultList();
         
     }
     
@@ -199,7 +198,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         qstr += " WHERE  dv.owner_id IN " + dvObjectClause;
         qstr += ";";
 
-        return em.createNativeQuery(qstr).getResultList();
+        return emBean.getMasterEM().createNativeQuery(qstr).getResultList();
         
     }
     
@@ -212,7 +211,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         
         String qstr = "SELECT h.dataverse_id FROM harvestingclient h;";
 
-        return em.createNativeQuery(qstr).getResultList();
+        return emBean.getMasterEM().createNativeQuery(qstr).getResultList();
         
     }
     
@@ -240,7 +239,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         List<Object[]> searchResults;
         
         try {
-            searchResults = em.createNativeQuery(qstr).getResultList();
+            searchResults = emBean.getMasterEM().createNativeQuery(qstr).getResultList();
         } catch (Exception ex) {
             searchResults = null;
         }

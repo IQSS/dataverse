@@ -36,8 +36,8 @@ import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
@@ -155,9 +155,6 @@ public class EjbDataverseEngine {
 
     @EJB
     DataCaptureModuleServiceBean dataCaptureModule;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
     
     @EJB
     ActionLogServiceBean logSvc;
@@ -167,6 +164,9 @@ public class EjbDataverseEngine {
     
     @Resource
     EJBContext ejbCtxt;
+    
+    @Inject
+    EntityManagerBean emBean;
 
     private CommandContext ctxt;
     
@@ -330,7 +330,7 @@ public class EjbDataverseEngine {
 
                 @Override
                 public EntityManager em() {
-                    return em;
+                    return emBean.getMasterEM();
                 }
 
                 @Override

@@ -31,8 +31,6 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -61,9 +59,6 @@ public class ManageGroupsPage implements java.io.Serializable {
     
     @Inject
     PermissionsWrapper permissionsWrapper;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    EntityManager em;
 
     @Inject
     DataversePage dvpage;

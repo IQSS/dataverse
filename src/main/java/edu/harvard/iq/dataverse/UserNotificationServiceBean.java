@@ -13,9 +13,8 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
@@ -31,23 +30,23 @@ public class UserNotificationServiceBean {
 
     @EJB
     MailServiceBean mailService;
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
     
     public List<UserNotification> findByUser(Long userId) {
-        TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc", UserNotification.class);
+        TypedQuery<UserNotification> query = emBean.getMasterEM().createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc", UserNotification.class);
         query.setParameter("userId", userId);
         return query.getResultList();
     }
     
     public List<UserNotification> findByDvObject(Long dvObjId) {
-        TypedQuery<UserNotification> query = em.createQuery("select object(o) from UserNotification as o where o.objectId =:dvObjId order by o.sendDate desc", UserNotification.class);
+        TypedQuery<UserNotification> query = emBean.getMasterEM().createQuery("select object(o) from UserNotification as o where o.objectId =:dvObjId order by o.sendDate desc", UserNotification.class);
         query.setParameter("dvObjId", dvObjId);
         return query.getResultList();
     }
     
     public List<UserNotification> findUnreadByUser(Long userId) {
-        TypedQuery<UserNotification> query = em.createQuery("select object(o) from UserNotification as o where o.user.id =:userId and o.readNotification = 'false' order by o.sendDate desc", UserNotification.class);
+        TypedQuery<UserNotification> query = emBean.getMasterEM().createQuery("select object(o) from UserNotification as o where o.user.id =:userId and o.readNotification = 'false' order by o.sendDate desc", UserNotification.class);
         query.setParameter("userId", userId);
         return query.getResultList();
     }
@@ -56,25 +55,25 @@ public class UserNotificationServiceBean {
         if (userId == null){
             return new Long("0");
         }
-        Query query = em.createNativeQuery("select count(id) from usernotification as o where o.user_id = " + userId + " and o.readnotification = 'false';");
+        Query query = emBean.getMasterEM().createNativeQuery("select count(id) from usernotification as o where o.user_id = " + userId + " and o.readnotification = 'false';");
         return (Long) query.getSingleResult();    
     }
     
     public List<UserNotification> findUnemailed() {
-        TypedQuery<UserNotification> query = em.createQuery("select object(o) from UserNotification as o where o.readNotification = 'false' and o.emailed = 'false'", UserNotification.class);
+        TypedQuery<UserNotification> query = emBean.getMasterEM().createQuery("select object(o) from UserNotification as o where o.readNotification = 'false' and o.emailed = 'false'", UserNotification.class);
         return query.getResultList();
     }
     
     public UserNotification find(Object pk) {
-        return em.find(UserNotification.class, pk);
+        return emBean.getEntityManager().find(UserNotification.class, pk);
     }
 
     public UserNotification save(UserNotification userNotification) {
-        return em.merge(userNotification);
+        return emBean.getMasterEM().merge(userNotification);
     }
     
     public void delete(UserNotification userNotification) {
-        em.remove(em.merge(userNotification));
+        emBean.getMasterEM().remove(emBean.getMasterEM().merge(userNotification));
     }    
 
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {

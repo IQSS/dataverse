@@ -10,9 +10,8 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
@@ -24,17 +23,15 @@ import javax.persistence.TypedQuery;
 @Named
 public class DataverseLinkingServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DataverseLinkingServiceBean.class.getCanonicalName());
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
     
     @EJB
     DataverseServiceBean dataverseService;
-    
+    @Inject
+    EntityManagerBean emBean;
     
     public List<Dataverse> findLinkedDataverses(Long linkingDataverseId) {
         List<Dataverse> retList = new ArrayList<>();
-        Query query = em.createQuery("select object(o) from DataverseLinkingDataverse as o where o.linkingDataverse.id =:linkingDataverseId order by o.id");
+        Query query = emBean.getMasterEM().createQuery("select object(o) from DataverseLinkingDataverse as o where o.linkingDataverse.id =:linkingDataverseId order by o.id");
         query.setParameter("linkingDataverseId", linkingDataverseId);
         for (Object o : query.getResultList()) {
             DataverseLinkingDataverse convterted = (DataverseLinkingDataverse) o;
@@ -45,7 +42,7 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
 
     public List<Dataverse> findLinkingDataverses(Long dataverseId) {
         List<Dataverse> retList = new ArrayList<>();
-        Query query = em.createQuery("select object(o) from DataverseLinkingDataverse as o where o.dataverse.id =:dataverseId order by o.id");
+        Query query = emBean.getMasterEM().createQuery("select object(o) from DataverseLinkingDataverse as o where o.dataverse.id =:dataverseId order by o.id");
         query.setParameter("dataverseId", dataverseId);
         for (Object o : query.getResultList()) {
             DataverseLinkingDataverse convterted = (DataverseLinkingDataverse) o;
@@ -56,16 +53,16 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
     
     public void save(DataverseLinkingDataverse dataverseLinkingDataverse) {
         if (dataverseLinkingDataverse.getId() == null) {
-            em.persist(dataverseLinkingDataverse);
+            emBean.getMasterEM().persist(dataverseLinkingDataverse);
         } else {
-            em.merge(dataverseLinkingDataverse);
+            emBean.getMasterEM().merge(dataverseLinkingDataverse);
         }
     }
     
     public DataverseLinkingDataverse findDataverseLinkingDataverse(Long dataverseId, Long linkingDataverseId) {
         DataverseLinkingDataverse foundDataverseLinkingDataverse = null;
         try {
-            foundDataverseLinkingDataverse = em.createQuery("SELECT OBJECT(o) FROM DataverseLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId AND o.dataverse.id = :dataverseId", DataverseLinkingDataverse.class)
+            foundDataverseLinkingDataverse = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM DataverseLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId AND o.dataverse.id = :dataverseId", DataverseLinkingDataverse.class)
                     .setParameter("dataverseId", dataverseId)
                     .setParameter("linkingDataverseId", linkingDataverseId)
                     .getSingleResult();
@@ -76,7 +73,7 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
     }
 
     public boolean alreadyLinked(Dataverse definitionPoint, Dataverse dataverseToLinkTo) {
-        TypedQuery<DataverseLinkingDataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM DataverseLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId AND o.dataverse.id = :dataverseToLinkTo", DataverseLinkingDataverse.class);
+        TypedQuery<DataverseLinkingDataverse> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM DataverseLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId AND o.dataverse.id = :dataverseToLinkTo", DataverseLinkingDataverse.class);
         typedQuery.setParameter("dataverseId", definitionPoint.getId());
         typedQuery.setParameter("dataverseToLinkTo", dataverseToLinkTo.getId());
         return !typedQuery.getResultList().isEmpty();

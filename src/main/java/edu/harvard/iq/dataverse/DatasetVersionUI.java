@@ -21,8 +21,6 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 /**
  *
@@ -33,8 +31,6 @@ public class DatasetVersionUI implements Serializable {
 
     @EJB
     DataverseServiceBean dataverseService;
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;   
     
     public DatasetVersionUI() {
     }

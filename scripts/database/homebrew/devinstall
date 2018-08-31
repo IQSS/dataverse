@@ -3,6 +3,7 @@ cd scripts/installer
 export DB_NAME=dataverse_db
 export DB_PORT=5432
 export DB_HOST=localhost
+export DB_SERVICE=localhost
 export DB_USER=dataverse_app
 export DB_PASS=secret
 export RSERVE_HOST=localhost

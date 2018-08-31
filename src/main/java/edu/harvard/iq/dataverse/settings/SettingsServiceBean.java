@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.settings;
 
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
@@ -10,9 +11,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 /**
  * Service bean accessing a persistent hash map, used as settings in the application.
@@ -374,8 +374,8 @@ public class SettingsServiceBean {
         }
     }
     
-    @PersistenceContext
-    EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
     
     @EJB
     ActionLogServiceBean actionLogSvc;
@@ -386,7 +386,7 @@ public class SettingsServiceBean {
      * @return the actual setting, or {@code null}.
      */
     public String get( String name ) {
-        Setting s = em.find( Setting.class, name );
+        Setting s = emBean.getEntityManager().find( Setting.class, name );
         return (s!=null) ? s.getContent() : null;
     }
     
@@ -447,7 +447,7 @@ public class SettingsServiceBean {
      
     public Setting set( String name, String content ) {
         Setting s = new Setting( name, content );
-        s = em.merge(s);
+        s = emBean.getMasterEM().merge(s);
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
                             .setInfo(name + ": " + content));
         return s;
@@ -484,13 +484,13 @@ public class SettingsServiceBean {
     public void delete( String name ) {
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
                             .setInfo(name));
-        em.createNamedQuery("Setting.deleteByName")
+        emBean.getMasterEM().createNamedQuery("Setting.deleteByName")
                 .setParameter("name", name)
                 .executeUpdate();
     }
     
     public Set<Setting> listAll() {
-        return new HashSet<>(em.createNamedQuery("Setting.findAll", Setting.class).getResultList());
+        return new HashSet<>(emBean.getMasterEM().createNamedQuery("Setting.findAll", Setting.class).getResultList());
     }
     
     

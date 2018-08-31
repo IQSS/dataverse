@@ -22,8 +22,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.HashSet;
 import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -71,9 +69,6 @@ public class PermissionServiceBean {
     @EJB
     DataverseServiceBean dataverseService;
 
-    @PersistenceContext
-    EntityManager em;
-
     @EJB
     GroupServiceBean groupService;
     
@@ -82,6 +77,9 @@ public class PermissionServiceBean {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    
+    @Inject
+    EntityManagerBean emBean;
     
     /**
      * A request-level permission query (e.g includes IP groups).
@@ -194,7 +192,7 @@ public class PermissionServiceBean {
     }
 
     public List<RoleAssignment> assignmentsOn(DvObject d) {
-        return em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
+        return emBean.getMasterEM().createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
                 .setParameter("definitionPointId", d.getId()).getResultList();
     }
     
@@ -398,7 +396,7 @@ public class PermissionServiceBean {
          */
         String query = "SELECT id FROM dvobject WHERE dtype = 'Dataverse' and id in (select definitionpoint_id from roleassignment where assigneeidentifier in (" + identifiers + "));";
         logger.log(Level.FINE, "query: {0}", query);
-        Query nativeQuery = em.createNativeQuery(query);
+        Query nativeQuery = emBean.getMasterEM().createNativeQuery(query);
         List<Integer> dataverseIdsToCheck = nativeQuery.getResultList();
         List<Dataverse> dataversesUserHasPermissionOn = new LinkedList<>();
         for (int dvIdAsInt : dataverseIdsToCheck) {
@@ -488,7 +486,7 @@ public class PermissionServiceBean {
         String roleString = getRolesClause (roles);
         String typeString = getTypesClause(types);
 
-        Query nativeQuery = em.createNativeQuery("SELECT id FROM dvobject WHERE "
+        Query nativeQuery = emBean.getMasterEM().createNativeQuery("SELECT id FROM dvobject WHERE "
                 + typeString + " id in (select definitionpoint_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "') "
                 + roleString + ");");
         List<Integer> dataverseIdsToCheck = nativeQuery.getResultList();
@@ -510,7 +508,7 @@ public class PermissionServiceBean {
         // Get child datasets and files
         if (indirect) {
             indirectParentIds += ") ";
-            Query nativeQueryIndirect = em.createNativeQuery("SELECT id FROM dvobject WHERE "
+            Query nativeQueryIndirect = emBean.getMasterEM().createNativeQuery("SELECT id FROM dvobject WHERE "
                     + " owner_id in " + indirectParentIds + " and dType = 'Dataset'; ");
 
             List<Integer> childDatasetIds = nativeQueryIndirect.getResultList();
@@ -528,7 +526,7 @@ public class PermissionServiceBean {
                     }
                 }
             }
-            Query nativeQueryFileIndirect = em.createNativeQuery("SELECT id FROM dvobject WHERE "
+            Query nativeQueryFileIndirect = emBean.getMasterEM().createNativeQuery("SELECT id FROM dvobject WHERE "
                     + " owner_id in " + indirectDatasetParentIds + " and dType = 'DataFile'; ");
 
             List<Integer> childFileIds = nativeQueryFileIndirect.getResultList();

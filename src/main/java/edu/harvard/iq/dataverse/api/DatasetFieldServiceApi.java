@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
@@ -36,6 +37,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import javax.ws.rs.core.Response.Status;
@@ -54,6 +56,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
 
     @EJB
     ControlledVocabularyValueServiceBean controlledVocabularyValueService;
+    
+    @Inject
+    EntityManagerBean emBean;
 
     @GET
     public Response getAll() {
@@ -195,7 +200,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     public Response loadNAControlledVocabularyValue() {
         // the find will throw a javax.persistence.NoResultException if no values are in db
 //            datasetFieldService.findNAControlledVocabularyValue();
-        TypedQuery<ControlledVocabularyValue> naValueFinder = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.datasetFieldType is null AND o.strValue = :strvalue", ControlledVocabularyValue.class);
+        TypedQuery<ControlledVocabularyValue> naValueFinder = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.datasetFieldType is null AND o.strValue = :strvalue", ControlledVocabularyValue.class);
         naValueFinder.setParameter("strvalue", DatasetField.NA_VALUE);
         
         if ( naValueFinder.getResultList().isEmpty() ) {

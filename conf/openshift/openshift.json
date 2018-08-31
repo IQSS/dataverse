@@ -625,10 +625,10 @@
         "from": "[a-zA-Z0-9]{8}"
     },
     {
-      "name": "POSTGRESQL_MASTER_USER",
-      "description": "postgresql master user",
-      "generate": "expression",
-      "from": "user[A-Z0-9]{3}"
+        "name": "POSTGRESQL_MASTER_USER",
+        "description": "postgresql master user",
+        "generate": "expression",
+        "from": "user[A-Z0-9]{3}"
     },
     {
         "name": "POSTGRESQL_MASTER_PASSWORD",

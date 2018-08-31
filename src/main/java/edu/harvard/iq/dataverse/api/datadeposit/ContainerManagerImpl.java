@@ -27,8 +27,6 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.abdera.parser.ParseException;
 import org.swordapp.server.AuthCredentials;
@@ -54,8 +52,6 @@ public class ContainerManagerImpl implements ContainerManager {
     DatasetServiceBean datasetService;
     @EJB
     IndexServiceBean indexService;
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    EntityManager em;
     @EJB
     ImportGenericServiceBean importGenericService;
     @EJB

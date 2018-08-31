@@ -38,8 +38,6 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringEscapeUtils;
 
 /**
@@ -74,11 +72,6 @@ public class ManagePermissionsPage implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     @Inject
     PermissionsWrapper permissionsWrapper;
-
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    EntityManager em;
-
     @Inject
     DataverseSession session;
     

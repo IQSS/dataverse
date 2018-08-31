@@ -11,9 +11,8 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 /**
  *
@@ -22,8 +21,9 @@ import javax.persistence.PersistenceContext;
 @Stateless
 @Named
 public class FeaturedDataverseServiceBean {
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    
+    @Inject
+    EntityManagerBean emBean;
     
     @EJB
     DataverseServiceBean dataverseService;
@@ -32,15 +32,15 @@ public class FeaturedDataverseServiceBean {
     
     public List<DataverseFeaturedDataverse> findByDataverseId(Long dataverseId) {
         String qr = "select object(o) from DataverseFeaturedDataverse as o where o.dataverse.id = :dataverseId order by o.displayOrder";
-        return em.createQuery(qr, DataverseFeaturedDataverse.class).setParameter("dataverseId", dataverseId).getResultList();
+        return emBean.getMasterEM().createQuery(qr, DataverseFeaturedDataverse.class).setParameter("dataverseId", dataverseId).getResultList();
     }
     
     public List<Dataverse> findByDataverseIdQuick(Long dataverseId) {
          List<Object[]> searchResults;
          
          try {
-             //searchResults = em.createNativeQuery("SELECT id, alias, name FROM dataverse WHERE id IN (select featureddataverse_id from DataverseFeaturedDataverse where dataverse_id = "+dataverseId+" order by displayOrder)").getResultList();
-             searchResults = em.createNativeQuery("SELECT d.id, d.alias, d.name FROM dataverse d, DataverseFeaturedDataverse f WHERE f.featureddataverse_id = d.id AND f.dataverse_id = "+dataverseId+" order by f.displayOrder").getResultList();
+             //searchResults = emBean.getMasterEM().createNativeQuery("SELECT id, alias, name FROM dataverse WHERE id IN (select featureddataverse_id from DataverseFeaturedDataverse where dataverse_id = "+dataverseId+" order by displayOrder)").getResultList();
+             searchResults = emBean.getMasterEM().createNativeQuery("SELECT d.id, d.alias, d.name FROM dataverse d, DataverseFeaturedDataverse f WHERE f.featureddataverse_id = d.id AND f.dataverse_id = "+dataverseId+" order by f.displayOrder").getResultList();
          } catch (Exception ex) {
              return null;
          }
@@ -76,15 +76,15 @@ public class FeaturedDataverseServiceBean {
     }
     
     public List<DataverseFeaturedDataverse> findByRootDataverse() {
-        return em.createQuery("select object(o) from DataverseFeaturedDataverse as o where o.dataverse.id = 1 order by o.displayOrder", DataverseFeaturedDataverse.class).getResultList();
+        return emBean.getMasterEM().createQuery("select object(o) from DataverseFeaturedDataverse as o where o.dataverse.id = 1 order by o.displayOrder", DataverseFeaturedDataverse.class).getResultList();
     }
 
     public void delete(DataverseFeaturedDataverse dataverseFeaturedDataverse) {
-        em.remove(em.merge(dataverseFeaturedDataverse));
+        emBean.getMasterEM().remove(emBean.getMasterEM().merge(dataverseFeaturedDataverse));
     }
     
 	public void deleteFeaturedDataversesFor( Dataverse d ) {
-		em.createNamedQuery("DataverseFeaturedDataverse.removeByOwnerId")
+		emBean.getMasterEM().createNamedQuery("DataverseFeaturedDataverse.removeByOwnerId")
 			.setParameter("ownerId", d.getId())
 				.executeUpdate();
 	}
@@ -94,13 +94,13 @@ public class FeaturedDataverseServiceBean {
         
         dataverseFeaturedDataverse.setDisplayOrder(diplayOrder);
         
-        Dataverse dataverse = em.find(Dataverse.class, dataverseId);
+        Dataverse dataverse = emBean.getEntityManager().find(Dataverse.class, dataverseId);
         dataverseFeaturedDataverse.setDataverse(dataverse);
         
-        Dataverse featuredDataverse = em.find(Dataverse.class, featuredDataverseId);
+        Dataverse featuredDataverse = emBean.getEntityManager().find(Dataverse.class, featuredDataverseId);
         dataverseFeaturedDataverse.setFeaturedDataverse(featuredDataverse);
 
-        em.persist(dataverseFeaturedDataverse);
+        emBean.getMasterEM().persist(dataverseFeaturedDataverse);
     }	
     
     

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization;
 
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -47,11 +48,10 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Singleton;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -81,6 +81,9 @@ public class AuthenticationServiceBean {
     
     final Map<String, AuthenticationProviderFactory> providerFactories = new HashMap<>();
     
+    @Inject
+    EntityManagerBean emBean;
+    
     @EJB
     BuiltinUserServiceBean builtinUserServiceBean;
     
@@ -104,9 +107,6 @@ public class AuthenticationServiceBean {
 
     @EJB
     PasswordValidatorServiceBean passwordValidatorService;
-        
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
     
     @PostConstruct
     public void startup() {
@@ -122,7 +122,7 @@ public class AuthenticationServiceBean {
         }
         
         // Now, load the providers.
-        em.createNamedQuery("AuthenticationProviderRow.findAllEnabled", AuthenticationProviderRow.class)
+        emBean.getMasterEM().createNamedQuery("AuthenticationProviderRow.findAllEnabled", AuthenticationProviderRow.class)
                 .getResultList().forEach((row) -> {
                     try {
                         registerProvider( loadProvider(row) );
@@ -226,14 +226,14 @@ public class AuthenticationServiceBean {
         if (pk==null){
             return null;
         }
-        return em.find(AuthenticatedUser.class, pk);
+        return emBean.getEntityManager().find(AuthenticatedUser.class, pk);
     }
 
     public void removeApiToken(AuthenticatedUser user){
         if (user!=null) {
             ApiToken apiToken = findApiTokenByUser(user);
             if (apiToken != null) {
-                em.remove(apiToken);
+                emBean.getMasterEM().remove(apiToken);
             }
         }
     }
@@ -262,19 +262,19 @@ public class AuthenticationServiceBean {
      * method/command. See https://github.com/IQSS/dataverse/issues/2419
      */
     public void deleteAuthenticatedUser(Object pk) {
-        AuthenticatedUser user = em.find(AuthenticatedUser.class, pk);
+        AuthenticatedUser user = emBean.getEntityManager().find(AuthenticatedUser.class, pk);
 
         if (user != null) {
             ApiToken apiToken = findApiTokenByUser(user);
             if (apiToken != null) {
-                em.remove(apiToken);
+                emBean.getMasterEM().remove(apiToken);
             }
             ConfirmEmailData confirmEmailData = confirmEmailService.findSingleConfirmEmailDataByUser(user);
             if (confirmEmailData != null) {
                 /**
                  * @todo This could probably be a cascade delete instead.
                  */
-                em.remove(confirmEmailData);
+                emBean.getMasterEM().remove(confirmEmailData);
             }
             userNotificationService.findByUser(user.getId()).forEach(userNotificationService::delete);
             
@@ -285,15 +285,15 @@ public class AuthenticationServiceBean {
             
             actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deleteUser")
                 .setInfo(user.getUserIdentifier()));
-            em.remove(user.getAuthenticatedUserLookup());         
-            em.remove(user);
+            emBean.getMasterEM().remove(user.getAuthenticatedUserLookup());         
+            emBean.getMasterEM().remove(user);
 
         }
     }
             
     public AuthenticatedUser getAuthenticatedUser( String identifier ) {
         try {
-            return em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)
+            return emBean.getMasterEM().createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)
                     .setParameter("identifier", identifier)
                     .getSingleResult();
         } catch ( NoResultException nre ) {
@@ -303,7 +303,7 @@ public class AuthenticationServiceBean {
     
     public AuthenticatedUser getAdminUser() {
         try {
-            return em.createNamedQuery("AuthenticatedUser.findAdminUser", AuthenticatedUser.class)
+            return emBean.getMasterEM().createNamedQuery("AuthenticatedUser.findAdminUser", AuthenticatedUser.class)
                     .setMaxResults(1)
                     .getSingleResult();
         } catch (Exception ex) {
@@ -313,7 +313,7 @@ public class AuthenticationServiceBean {
 
     public AuthenticatedUser getAuthenticatedUserByEmail( String email ) {
         try {
-            return em.createNamedQuery("AuthenticatedUser.findByEmail", AuthenticatedUser.class)
+            return emBean.getMasterEM().createNamedQuery("AuthenticatedUser.findByEmail", AuthenticatedUser.class)
                     .setParameter("email", email)
                     .getSingleResult();
         } catch ( NoResultException ex ) {
@@ -373,7 +373,7 @@ public class AuthenticationServiceBean {
      * @return {@code true} iff the none of the authenticated users has the passed email address.
      */
     public boolean isEmailAddressAvailable(String email) {
-        return em.createNamedQuery("AuthenticatedUser.findByEmail", AuthenticatedUser.class)
+        return emBean.getMasterEM().createNamedQuery("AuthenticatedUser.findByEmail", AuthenticatedUser.class)
                  .setParameter("email", email)
                  .getResultList().isEmpty();
     }
@@ -383,7 +383,7 @@ public class AuthenticationServiceBean {
     }
     
     public AuthenticatedUser lookupUser(String authPrvId, String userPersistentId) {
-        TypedQuery<AuthenticatedUserLookup> typedQuery = em.createNamedQuery("AuthenticatedUserLookup.findByAuthPrvID_PersUserId", AuthenticatedUserLookup.class);
+        TypedQuery<AuthenticatedUserLookup> typedQuery = emBean.getMasterEM().createNamedQuery("AuthenticatedUserLookup.findByAuthPrvID_PersUserId", AuthenticatedUserLookup.class);
         typedQuery.setParameter("authPrvId", authPrvId);
         typedQuery.setParameter("persUserId", userPersistentId);
         try {
@@ -400,7 +400,7 @@ public class AuthenticationServiceBean {
     
     public ApiToken findApiToken(String token) {
         try {
-            return em.createNamedQuery("ApiToken.findByTokenString", ApiToken.class)
+            return emBean.getMasterEM().createNamedQuery("ApiToken.findByTokenString", ApiToken.class)
                     .setParameter("tokenString", token)
                     .getSingleResult();
         } catch (NoResultException ex) {
@@ -412,7 +412,7 @@ public class AuthenticationServiceBean {
         if (au == null) {
             return null;
         }
-        TypedQuery<ApiToken> typedQuery = em.createNamedQuery("ApiToken.findByUser", ApiToken.class);
+        TypedQuery<ApiToken> typedQuery = emBean.getMasterEM().createNamedQuery("ApiToken.findByUser", ApiToken.class);
         typedQuery.setParameter("user", au);
         try {
             return typedQuery.getSingleResult();
@@ -454,7 +454,7 @@ public class AuthenticationServiceBean {
         if ( tkn.isDisabled() ) return null;
         if ( tkn.getExpireTime() != null ) {
             if ( tkn.getExpireTime().before( new Timestamp(new Date().getTime())) ) {
-                em.remove(tkn);
+                emBean.getMasterEM().remove(tkn);
                 return null;
             }
         }
@@ -463,21 +463,21 @@ public class AuthenticationServiceBean {
     }
     
     public AuthenticatedUser save( AuthenticatedUser user ) {
-        em.persist(user);
-        em.flush();
+        emBean.getMasterEM().persist(user);
+        emBean.getMasterEM().flush();
         return user;
     }
     
     public AuthenticatedUser update( AuthenticatedUser user ) {
-        return em.merge(user);
+        return emBean.getMasterEM().merge(user);
     }
     
     public ApiToken save( ApiToken aToken ) {
         if ( aToken.getId() == null ) {
-            em.persist(aToken);
+            emBean.getMasterEM().persist(aToken);
             return aToken;
         } else { 
-            return em.merge( aToken );
+            return emBean.getMasterEM().merge( aToken );
             
         }
     }
@@ -491,7 +491,7 @@ public class AuthenticationServiceBean {
      */
     public boolean updateProvider( AuthenticatedUser authenticatedUser, String authenticationProviderId, String persistentIdInProvider ) {
         try {
-            AuthenticatedUserLookup aul = em.createNamedQuery("AuthenticatedUserLookup.findByAuthUser", AuthenticatedUserLookup.class)
+            AuthenticatedUserLookup aul = emBean.getMasterEM().createNamedQuery("AuthenticatedUserLookup.findByAuthUser", AuthenticatedUserLookup.class)
                     .setParameter("authUser", authenticatedUser)
                     .getSingleResult();
             aul.setAuthenticationProviderId(authenticationProviderId);
@@ -554,7 +554,7 @@ public class AuthenticationServiceBean {
         authenticatedUser = save( authenticatedUser );
         // TODO should unlock table authenticated users for write here
         AuthenticatedUserLookup auusLookup = userRecordId.createAuthenticatedUserLookup(authenticatedUser);
-        em.persist( auusLookup );
+        emBean.getMasterEM().persist( auusLookup );
         authenticatedUser.setAuthenticatedUserLookup(auusLookup);
 
         if (ShibAuthenticationProvider.PROVIDER_ID.equals(auusLookup.getAuthenticationProviderId())) {
@@ -580,7 +580,7 @@ public class AuthenticationServiceBean {
      * @return {@code true} iff there's already a user by that username.
      */
     public boolean identifierExists( String idtf ) {
-        return em.createNamedQuery("AuthenticatedUser.countOfIdentifier", Number.class)
+        return emBean.getMasterEM().createNamedQuery("AuthenticatedUser.countOfIdentifier", Number.class)
                 .setParameter("identifier", idtf)
                 .getSingleResult().intValue() > 0;
     }
@@ -593,11 +593,11 @@ public class AuthenticationServiceBean {
     }
     
     public List<AuthenticatedUser> findAllAuthenticatedUsers() {
-        return em.createNamedQuery("AuthenticatedUser.findAll", AuthenticatedUser.class).getResultList();
+        return emBean.getMasterEM().createNamedQuery("AuthenticatedUser.findAll", AuthenticatedUser.class).getResultList();
     }
 
     public List<AuthenticatedUser> findSuperUsers() {
-        return em.createNamedQuery("AuthenticatedUser.findSuperUsers", AuthenticatedUser.class).getResultList();
+        return emBean.getMasterEM().createNamedQuery("AuthenticatedUser.findSuperUsers", AuthenticatedUser.class).getResultList();
     }
     
     
@@ -620,7 +620,7 @@ public class AuthenticationServiceBean {
         logger.info("converting user " + builtInUserToConvert.getId() + " from builtin to shib");
         String builtInUserIdentifier = builtInUserToConvert.getIdentifier();
         logger.info("builtin user identifier: " + builtInUserIdentifier);
-        TypedQuery<AuthenticatedUserLookup> typedQuery = em.createQuery("SELECT OBJECT(o) FROM AuthenticatedUserLookup AS o WHERE o.authenticatedUser = :auid", AuthenticatedUserLookup.class);
+        TypedQuery<AuthenticatedUserLookup> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM AuthenticatedUserLookup AS o WHERE o.authenticatedUser = :auid", AuthenticatedUserLookup.class);
         typedQuery.setParameter("auid", builtInUserToConvert);
         AuthenticatedUserLookup authuserLookup;
         try {
@@ -645,16 +645,16 @@ public class AuthenticationServiceBean {
          * the authenticateduserlookup and also delete the row from the
          * builtinuser table in a single transaction.
          */
-        em.persist(authuserLookup);
+        emBean.getMasterEM().persist(authuserLookup);
         String builtinUsername = builtInUserIdentifier.replaceFirst(AuthenticatedUser.IDENTIFIER_PREFIX, "");
         BuiltinUser builtin = builtinUserServiceBean.findByUserName(builtinUsername);
         if (builtin != null) {
             // These were created by AuthenticationResponse.Status.BREAKOUT in canLogInAsBuiltinUser
             List<PasswordResetData> oldTokens = passwordResetServiceBean.findPasswordResetDataByDataverseUser(builtin);
             for (PasswordResetData oldToken : oldTokens) {
-                em.remove(oldToken);
+                emBean.getMasterEM().remove(oldToken);
             }
-            em.remove(builtin);
+            emBean.getMasterEM().remove(builtin);
         } else {
             logger.info("Couldn't delete builtin user because could find it based on username " + builtinUsername);
         }
@@ -669,7 +669,7 @@ public class AuthenticationServiceBean {
         logger.info("converting user " + builtInUserToConvert.getId() + " from builtin to remote");
         String builtInUserIdentifier = builtInUserToConvert.getIdentifier();
         logger.info("builtin user identifier: " + builtInUserIdentifier);
-        TypedQuery<AuthenticatedUserLookup> typedQuery = em.createQuery("SELECT OBJECT(o) FROM AuthenticatedUserLookup AS o WHERE o.authenticatedUser = :auid", AuthenticatedUserLookup.class);
+        TypedQuery<AuthenticatedUserLookup> typedQuery = emBean.getMasterEM().createQuery("SELECT OBJECT(o) FROM AuthenticatedUserLookup AS o WHERE o.authenticatedUser = :auid", AuthenticatedUserLookup.class);
         typedQuery.setParameter("auid", builtInUserToConvert);
         AuthenticatedUserLookup authuserLookup;
         try {
@@ -694,16 +694,16 @@ public class AuthenticationServiceBean {
          * the authenticateduserlookup and also delete the row from the
          * builtinuser table in a single transaction.
          */
-        em.persist(authuserLookup);
+        emBean.getMasterEM().persist(authuserLookup);
         String builtinUsername = builtInUserIdentifier.replaceFirst(AuthenticatedUser.IDENTIFIER_PREFIX, "");
         BuiltinUser builtin = builtinUserServiceBean.findByUserName(builtinUsername);
         if (builtin != null) {
             // These were created by AuthenticationResponse.Status.BREAKOUT in canLogInAsBuiltinUser
             List<PasswordResetData> oldTokens = passwordResetServiceBean.findPasswordResetDataByDataverseUser(builtin);
             for (PasswordResetData oldToken : oldTokens) {
-                em.remove(oldToken);
+                emBean.getMasterEM().remove(oldToken);
             }
-            em.remove(builtin);
+            emBean.getMasterEM().remove(builtin);
         } else {
             logger.info("Couldn't delete builtin user because could find it based on username " + builtinUsername);
         }
@@ -768,10 +768,10 @@ public class AuthenticationServiceBean {
         }
         lookup.setAuthenticationProviderId(BuiltinAuthenticationProvider.PROVIDER_ID);
         lookup.setPersistentUserId(authenticatedUser.getUserIdentifier());
-        em.persist(lookup);
+        emBean.getMasterEM().persist(lookup);
         authenticatedUser.setEmail(newEmailAddress);
-        em.persist(authenticatedUser);
-        em.flush();
+        emBean.getMasterEM().persist(authenticatedUser);
+        emBean.getMasterEM().flush();
         return builtinUser;
     }
 

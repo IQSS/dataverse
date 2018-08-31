@@ -16,9 +16,8 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 /**
@@ -31,8 +30,8 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
 
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;
@@ -45,14 +44,14 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 
     public DataverseRole save(DataverseRole aRole) {
         if (aRole.getId() == null) {
-            em.persist(aRole);
+            emBean.getMasterEM().persist(aRole);
             /**
              * @todo Why would getId be null? Should we call
              * indexDefinitionPoint here too? A: it's null for new roles.
              */
             return aRole;
         } else {
-            DataverseRole merged = em.merge(aRole);
+            DataverseRole merged = emBean.getMasterEM().merge(aRole);
             /**
              * @todo update permissionModificationTime here.
              */
@@ -68,9 +67,9 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     
     public RoleAssignment save(RoleAssignment assignment, boolean createIndex) {
         if (assignment.getId() == null) {
-            em.persist(assignment);
+            emBean.getMasterEM().persist(assignment);
         } else {
-            assignment = em.merge(assignment);
+            assignment = emBean.getMasterEM().merge(assignment);
         }
         /**
          * @todo update permissionModificationTime here.
@@ -91,53 +90,53 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     }
 
     public DataverseRole find(Long id) {
-        return em.find(DataverseRole.class, id);
+        return emBean.getEntityManager().find(DataverseRole.class, id);
     }
 
     public List<DataverseRole> findAll() {
-        return em.createNamedQuery("DataverseRole.listAll", DataverseRole.class).getResultList();
+        return emBean.getMasterEM().createNamedQuery("DataverseRole.listAll", DataverseRole.class).getResultList();
     }
 
     public void delete(Long id) {
-        em.createNamedQuery("DataverseRole.deleteById", DataverseRole.class)
+        emBean.getMasterEM().createNamedQuery("DataverseRole.deleteById", DataverseRole.class)
             .setParameter("id", id)
             .executeUpdate();
     }
 
     public List<DataverseRole> findByOwnerId(Long ownerId) {
-        return em.createNamedQuery("DataverseRole.findByOwnerId", DataverseRole.class)
+        return emBean.getMasterEM().createNamedQuery("DataverseRole.findByOwnerId", DataverseRole.class)
             .setParameter("ownerId", ownerId)
             .getResultList();
     }
 
     public List<DataverseRole> findBuiltinRoles() {
-        return em.createNamedQuery("DataverseRole.findBuiltinRoles", DataverseRole.class)
+        return emBean.getMasterEM().createNamedQuery("DataverseRole.findBuiltinRoles", DataverseRole.class)
             .getResultList();
     }
 
     public DataverseRole findBuiltinRoleByAlias(String alias) {
-        return em.createNamedQuery("DataverseRole.findBuiltinRoleByAlias", DataverseRole.class)
+        return emBean.getMasterEM().createNamedQuery("DataverseRole.findBuiltinRoleByAlias", DataverseRole.class)
             .setParameter("alias", alias)
             .getSingleResult();
     }
 
     public void revoke(Set<DataverseRole> roles, RoleAssignee assignee, DvObject defPoint) {
         for (DataverseRole role : roles) {
-            em.createNamedQuery("RoleAssignment.deleteByAssigneeIdentifier_RoleIdDefinition_PointId")
+            emBean.getMasterEM().createNamedQuery("RoleAssignment.deleteByAssigneeIdentifier_RoleIdDefinition_PointId")
                 .setParameter("assigneeIdentifier", assignee.getIdentifier())
                 .setParameter("roleId", role.getId())
                 .setParameter("definitionPointId", defPoint.getId())
                 .executeUpdate();
-            em.refresh(role);
+            emBean.getMasterEM().refresh(role);
         }
-        em.refresh(assignee);
+        emBean.getMasterEM().refresh(assignee);
     }
 
     public void revoke(RoleAssignment ra) {
-        if (!em.contains(ra)) {
-            ra = em.merge(ra);
+        if (!emBean.getMasterEM().contains(ra)) {
+            ra = emBean.getMasterEM().merge(ra);
         }
-        em.remove(ra);
+        emBean.getMasterEM().remove(ra);
         /**
          * @todo update permissionModificationTime here.
          */
@@ -152,10 +151,10 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         Set<DvObject> reindexSet = new HashSet<>();
 
         for (RoleAssignment ra : roleAssigneeService.getAssignmentsFor(assignee.getIdentifier())) {
-            if (!em.contains(ra)) {
-                ra = em.merge(ra);
+            if (!emBean.getMasterEM().contains(ra)) {
+                ra = emBean.getMasterEM().merge(ra);
             }
-            em.remove(ra);
+            emBean.getMasterEM().remove(ra);
 
             reindexSet.add(ra.getDefinitionPoint());
         }
@@ -176,7 +175,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     }
 
     public List<RoleAssignment> roleAssignments(Long roleId) {
-        return em.createNamedQuery("RoleAssignment.listByRoleId", RoleAssignment.class)
+        return emBean.getMasterEM().createNamedQuery("RoleAssignment.listByRoleId", RoleAssignment.class)
             .setParameter("roleId", roleId)
             .getResultList();
     }
@@ -208,12 +207,12 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     public Set<RoleAssignment> rolesAssignments(DvObject dv) {
         Set<RoleAssignment> ras = new HashSet<>();
         while (!dv.isEffectivelyPermissionRoot()) {
-            ras.addAll(em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
+            ras.addAll(emBean.getMasterEM().createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
                 .setParameter("definitionPointId", dv.getId()).getResultList());
             dv = dv.getOwner();
         }
 
-        ras.addAll(em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
+        ras.addAll(emBean.getMasterEM().createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
             .setParameter("definitionPointId", dv.getId()).getResultList());
 
         return ras;
@@ -233,7 +232,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         if (roas == null) {
             throw new IllegalArgumentException("RoleAssignee cannot be null");
         }
-        TypedQuery<RoleAssignment> query = em.createNamedQuery(
+        TypedQuery<RoleAssignment> query = emBean.getMasterEM().createNamedQuery(
             "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId",
             RoleAssignment.class);
         query.setParameter("assigneeIdentifier", roas.getIdentifier());
@@ -251,7 +250,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * edu.harvard.iq.dataverse.Dataverse)
      */
     public List<RoleAssignment> directRoleAssignments(DvObject dvo) {
-        TypedQuery<RoleAssignment> query = em.createNamedQuery(
+        TypedQuery<RoleAssignment> query = emBean.getMasterEM().createNamedQuery(
             "RoleAssignment.listByDefinitionPointId",
             RoleAssignment.class);
         query.setParameter("definitionPointId", dvo.getId());
@@ -267,7 +266,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @return map of available roles.
      */
     public Set<DataverseRole> availableRoles(Long dvId) {
-        Dataverse dv = em.find(Dataverse.class, dvId);
+        Dataverse dv = emBean.getEntityManager().find(Dataverse.class, dvId);
         Set<DataverseRole> roles = dv.getRoles();
         roles.addAll(findBuiltinRoles());
 

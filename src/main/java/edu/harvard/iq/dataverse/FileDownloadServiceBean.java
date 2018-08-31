@@ -24,8 +24,6 @@ import javax.ejb.Stateless;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,9 +36,6 @@ import javax.servlet.http.HttpServletResponse;
 @Stateless
 @Named
 public class FileDownloadServiceBean implements java.io.Serializable {
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
     
     @EJB
     GuestbookResponseServiceBean guestbookResponseService;

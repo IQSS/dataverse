@@ -5,8 +5,7 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteHarvestingClientCommand;
+import edu.harvard.iq.dataverse.EntityManagerBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
 import java.util.ArrayList;
@@ -20,10 +19,8 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
 
 /**
  *
@@ -46,19 +43,18 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     IndexServiceBean indexService;
     @EJB
     DataverseTimerServiceBean dataverseTimerService;
-    
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    @Inject
+    EntityManagerBean emBean;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvestingClinetServiceBean");
     
     public HarvestingClient find(Object pk) {
-        return em.find(HarvestingClient.class, pk);
+        return emBean.getEntityManager().find(HarvestingClient.class, pk);
     }
     
     public HarvestingClient findByNickname(String nickName) {
         try {
-            return em.createNamedQuery("HarvestingClient.findByNickname", HarvestingClient.class)
+            return emBean.getEntityManager().createNamedQuery("HarvestingClient.findByNickname", HarvestingClient.class)
 					.setParameter("nickName", nickName.toLowerCase())
 					.getSingleResult();
         } catch ( NoResultException|NonUniqueResultException ex ) {
@@ -69,7 +65,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     
     public List<HarvestingClient> getAllHarvestingClients() {
         try {
-            return em.createQuery("SELECT object(c) FROM HarvestingClient AS c WHERE c.harvestType='oai' ORDER BY c.name", HarvestingClient.class).getResultList();
+            return emBean.getEntityManager().createQuery("SELECT object(c) FROM HarvestingClient AS c WHERE c.harvestType='oai' ORDER BY c.name", HarvestingClient.class).getResultList();
         } catch (Exception ex) {
             logger.warning("Unknown exception caught while looking up configured Harvesting Clients: "+ex.getMessage());
         }
@@ -78,11 +74,11 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void resetHarvestInProgress(Long hcId) {
-        HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
+        HarvestingClient harvestingClient = emBean.getEntityManager().find(HarvestingClient.class, hcId);
         if (harvestingClient == null) {
             return;
         }
-        em.refresh(harvestingClient);
+        emBean.getEntityManager().refresh(harvestingClient);
         harvestingClient.setHarvestingNow(false);
         
         // And if there is an unfinished RunResult object, we'll
@@ -96,11 +92,11 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void setHarvestInProgress(Long hcId, Date startTime) {
-        HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
+        HarvestingClient harvestingClient = emBean.getEntityManager().find(HarvestingClient.class, hcId);
         if (harvestingClient == null) {
             return;
         }
-        em.refresh(harvestingClient);
+        emBean.getEntityManager().refresh(harvestingClient);
         harvestingClient.setHarvestingNow(true);
         if (harvestingClient.getRunHistory() == null) {
             harvestingClient.setRunHistory(new ArrayList<>());
@@ -114,11 +110,11 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void setDeleteInProgress(Long hcId) {
-        HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
+        HarvestingClient harvestingClient = emBean.getEntityManager().find(HarvestingClient.class, hcId);
         if (harvestingClient == null) {
             return;
         }
-        em.refresh(harvestingClient); // why are we doing this?
+        emBean.getEntityManager().refresh(harvestingClient); // why are we doing this?
         harvestingClient.setDeleteInProgress(true);
     }
     
@@ -138,7 +134,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
 
         try {
             //engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), victim));
-            HarvestingClient merged = em.merge(victim);
+            HarvestingClient merged = emBean.getEntityManager().merge(victim);
 
             // if this was a scheduled harvester, make sure the timer is deleted:
             dataverseTimerService.removeHarvestTimer(victim);
@@ -150,12 +146,12 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
             // files, however. So they need to be removed explicitly; before we 
             // proceed removing the client itself. 
             for (DataFile harvestedFile : dataFileService.findHarvestedFilesByClient(merged)) {
-                DataFile mergedFile = em.merge(harvestedFile);
-                em.remove(mergedFile);
+                DataFile mergedFile = emBean.getEntityManager().merge(harvestedFile);
+                emBean.getEntityManager().remove(mergedFile);
                 harvestedFile = null;
             }
 
-            em.remove(merged);
+            emBean.getEntityManager().remove(merged);
         } catch (Exception e) {
             errorMessage = "Failed to delete cleint. Unknown exception: " + e.getMessage();
         }
@@ -167,11 +163,11 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void setHarvestSuccess(Long hcId, Date currentTime, int harvestedCount, int failedCount, int deletedCount) {
-        HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
+        HarvestingClient harvestingClient = emBean.getEntityManager().find(HarvestingClient.class, hcId);
         if (harvestingClient == null) {
             return;
         }
-        em.refresh(harvestingClient);
+        emBean.getEntityManager().refresh(harvestingClient);
         
         ClientHarvestRun currentRun = harvestingClient.getLastRun();
         
@@ -189,11 +185,11 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void setHarvestFailure(Long hcId, Date currentTime) {
-        HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
+        HarvestingClient harvestingClient = emBean.getEntityManager().find(HarvestingClient.class, hcId);
         if (harvestingClient == null) {
             return;
         }
-        em.refresh(harvestingClient);
+        emBean.getEntityManager().refresh(harvestingClient);
         
         ClientHarvestRun currentRun = harvestingClient.getLastRun();
         
@@ -217,7 +213,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
         }
         
         try {
-            return (Long) em.createNativeQuery("SELECT count(d.id) FROM dataset d, "
+            return (Long) emBean.getEntityManager().createNativeQuery("SELECT count(d.id) FROM dataset d, "
                     + " dvobject o WHERE d.id = o.id AND o.owner_id in (" 
                     + dvs + ")").getSingleResult();
 
