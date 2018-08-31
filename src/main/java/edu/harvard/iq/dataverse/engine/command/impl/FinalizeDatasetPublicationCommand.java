@@ -120,8 +120,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
         }
         
-    	final Dataset ds = theDataset;
-        ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
+    	final Dataset ds = ctxt.em().merge(theDataset);
+    	if(ds == null) {
+    		logger.severe("Null DS after merge");
+    	}
+    		ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
                 ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset));
             } catch (CommandException ex) {
