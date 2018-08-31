@@ -2251,12 +2251,13 @@ public class DatasetPage implements java.io.Serializable {
         arguments.add(StringEscapeUtils.escapeHtml(dataset.getDisplayName()));
         String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
         arguments.add(linkString);
+        arguments.add(settingsWrapper.getSupportTeamName());
         return arguments;
     }
         
     public String saveLinkingDataverses(){
         if (selectedDataversesForLinking == null || selectedDataversesForLinking.isEmpty()) {
-            JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataverse.link.select"));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.link.select"));
             return "";
         }
         for (Dataverse dv : selectedDataversesForLinking){

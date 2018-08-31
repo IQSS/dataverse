@@ -186,7 +186,7 @@
                                 
                                 <p:commandLink rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned}"
                                                type="button" styleClass="btn btn-default btn-access"
-                                               action="#{DatasetPage.updateLinkableDataverses()}"
+                                               
                                                oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"
                                                update="linkDatasetForm">
                                     <span class="glyphicon glyphicon-link"/> #{bundle['link']}
@@ -1269,13 +1269,6 @@
                         
                         <!-- TODO: ADDED RENDER LOGIC AND MSG'S FROM PREVIOUS VERSION OF POPUP... CHECK IF NECESSARY -->
                         
-                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 0}">
-                            <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
-                                <p class="help-block">#{bundle['dataverse.link.no.choice']}</p>
-                            </ui:fragment>
-                            <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 1}">
-                                <p class="help-block">#{bundle['dataverse.link.dataset.choose']}</p>
-                            </ui:fragment>
                             <div class="form-horizontal">
                                 <div class="form-group">
                                     <label class="col-xs-3 control-label">
@@ -1313,20 +1306,6 @@
                                     </div>
                                 </div>
                             </div>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 0}">
-                            
-                            
-                            <!-- TODO: FROM PREVIOUS VERSION OF POPUP LIKE MSG'S ABOVE NO IDEA WHAT IT DOES... CHECK IF NECESSARY -->
-                            
-                            
-                            <ui:fragment rendered="#{DatasetPage.noDVsAtAll }">
-                                <p>#{bundle['dataverse.link.no.linkable']}</p>
-                            </ui:fragment>
-                            <ui:fragment rendered="#{ DatasetPage.noDVsRemaining }">
-                                <p>#{bundle['dataverse.link.no.linkable.remaining']}</p>
-                            </ui:fragment>
-                        </ui:fragment>
                         
                         
                         <!-- TODO: DIDN'T TOUCH THESE GUYS... HOPEFULLY IT ALL STILL WORKS -->
