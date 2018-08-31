@@ -337,6 +337,10 @@ public class AuthenticationServiceBean {
      * @return The authenticated user for the passed provider id and authentication request.
      * @throws AuthenticationFailedException 
      */
+    // This method no longer performs creation if an AuthenticatedUser does not exist
+    // It seems the two methods calling this one probably do not need the case.
+    // The idea is to rename this when we are sure (maybe getUpdateAuthenticatedUser() ).
+    // --MAD 4.9.3
     public AuthenticatedUser getCreateAuthenticatedUser( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
         AuthenticationProvider prv = getAuthenticationProvider(authenticationProviderId);
         if ( prv == null ) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );
@@ -354,8 +358,9 @@ public class AuthenticationServiceBean {
             }
             
             if ( user == null ) {
-                return createAuthenticatedUser(
-                        new UserRecordIdentifier(authenticationProviderId, resp.getUserId()), resp.getUserId(), resp.getUserDisplayInfo(), true );
+                throw new IllegalStateException("Authenticated user does not exist. The functionality to support creating one at this point in authentication has been removed.");
+                //return createAuthenticatedUser(
+                //        new UserRecordIdentifier(authenticationProviderId, resp.getUserId()), resp.getUserId(), resp.getUserDisplayInfo(), true );
             } else {
                 if (BuiltinAuthenticationProvider.PROVIDER_ID.equals(user.getAuthenticatedUserLookup().getAuthenticationProviderId())) {
                     return user;

@@ -205,6 +205,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         auReq.putCredential(creds.get(0).getTitle(), getUsername());
         auReq.putCredential(creds.get(1).getTitle(), getPassword());
         try {
+//MAD: In this case we think that we are converting builtin to oauth
             AuthenticatedUser existingUser = authenticationSvc.getCreateAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, auReq);
             authenticationSvc.updateProvider(existingUser, newUser.getServiceId(), newUser.getIdInService());
             builtinUserSvc.removeUser(existingUser.getUserIdentifier());
