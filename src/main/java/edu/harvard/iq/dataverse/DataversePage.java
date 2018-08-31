@@ -181,59 +181,6 @@ public class DataversePage implements java.io.Serializable {
     public void setLinkMode(LinkMode linkMode) {
         this.linkMode = linkMode;
     }
-    
-    public void setupLinkingPopup (String popupSetting){
-        if (popupSetting.equals("link")){
-            setLinkMode(LinkMode.LINKDATAVERSE);           
-        } else {
-            setLinkMode(LinkMode.SAVEDSEARCH); 
-        }
-        updateLinkableDataverses();
-    }
-
-    public void updateLinkableDataverses() {
-        dataversesForLinking = new ArrayList<>();
-        linkingDVSelectItems = new ArrayList<>();
-        
-        //Since only a super user function add all dvs
-        dataversesForLinking = dataverseService.findAll();// permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
-        
-        /*
-        List<DataverseRole> roles = dataverseRoleServiceBean.getDataverseRolesByPermission(Permission.PublishDataverse, dataverse.getId());
-        List<String> types = new ArrayList();
-        types.add("Dataverse");
-        for (Long dvIdAsInt : permissionService.getDvObjectIdsUserHasRoleOn(session.getUser(), roles, types, false)) {
-            dataversesForLinking.add(dataverseService.find(dvIdAsInt));
-        }*/
-        
-        //for linking - make sure the link hasn't occurred and its not int the tree
-        if (this.linkMode.equals(LinkMode.LINKDATAVERSE)) {
-        
-            // remove this and it's parent tree
-            dataversesForLinking.remove(dataverse);
-            Dataverse testDV = dataverse;
-            while(testDV.getOwner() != null){
-                dataversesForLinking.remove(testDV.getOwner());
-                testDV = testDV.getOwner();
-            }                
-            
-            for (Dataverse removeLinked : linkingService.findLinkingDataverses(dataverse.getId())) {
-                dataversesForLinking.remove(removeLinked);
-            }
-        } else{
-            //for saved search add all
-
-        }
-
-        for (Dataverse selectDV : dataversesForLinking) {
-            linkingDVSelectItems.add(new SelectItem(selectDV.getId(), selectDV.getDisplayName()));
-        }
-
-        if (!dataversesForLinking.isEmpty() && dataversesForLinking.size() == 1 && dataversesForLinking.get(0) != null) {
-            linkingDataverse = dataversesForLinking.get(0);
-            linkingDataverseId = linkingDataverse.getId();
-        }
-    }
 
     public void updateSelectedLinkingDV(ValueChangeEvent event) {
         linkingDataverseId = (Long) event.getNewValue();
