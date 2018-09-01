@@ -408,7 +408,7 @@ public class WorkflowServiceBean {
     
     private WorkflowContext refresh( WorkflowContext ctxt, Map<String, Object> settings, ApiToken apiToken ) {
         return new WorkflowContext( ctxt.getRequest(), 
-                       datasets.find( ctxt.getDataset().getId() ), ctxt.getNextVersionNumber(), 
+                       em.merge(ctxt.getDataset()), ctxt.getNextVersionNumber(), 
                        ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken);
     }
 
