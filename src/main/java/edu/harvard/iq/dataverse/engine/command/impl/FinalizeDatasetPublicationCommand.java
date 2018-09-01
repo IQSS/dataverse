@@ -127,6 +127,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     		logger.severe("Null DS after merge");
     	}
     	logger.info("Released ds version is: " + ds.getReleasedVersion().getFriendlyVersionNumber());
+    	ctxt.em().persist(ds);
     		ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
                 ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset));
