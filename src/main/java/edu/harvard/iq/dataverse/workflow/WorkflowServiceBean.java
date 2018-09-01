@@ -310,7 +310,8 @@ public class WorkflowServiceBean {
                 rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size()-1);
             }
         }
-        datasets.removeDatasetLocks(ctxt.getDataset(), DatasetLock.Reason.Workflow);
+        logger.info("Num Locks: "  + ctxt.getDataset().getLocks().size());
+        datasets.removeDatasetLocks(datasets.find(ctxt.getDataset().getId()), DatasetLock.Reason.Workflow);
     }
 
     public List<Workflow> listWorkflows() {
