@@ -37,6 +37,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  * Service bean for managing and executing {@link Workflow}s
@@ -288,6 +289,21 @@ public class WorkflowServiceBean {
         em.persist(datasetLock);
         em.flush();
     }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    void unlockDataset( WorkflowContext ctxt ) {
+        TypedQuery<DatasetLock> lockCounter = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
+        lockCounter.setParameter("datasetId", ctxt.getDataset().getId());
+        //lockCounter.setMaxResults(1);
+        List<DatasetLock> locks = lockCounter.getResultList();
+        for(DatasetLock lock: locks) {
+        	if(lock.getReason() == DatasetLock.Reason.Workflow) {
+        		logger.info("Removing lock");
+        		em.remove(lock);
+        	}
+        }
+        em.flush();
+    }
     
     //
     //
@@ -311,7 +327,8 @@ public class WorkflowServiceBean {
             }
         }
         logger.info("Num Locks: "  + ctxt.getDataset().getLocks().size());
-        datasets.removeDatasetLocks(datasets.find(ctxt.getDataset().getId()), DatasetLock.Reason.Workflow);
+        unlockDataset(ctxt);
+        //datasets.removeDatasetLocks(datasets.find(ctxt.getDataset().getId()), DatasetLock.Reason.Workflow);
     }
 
     public List<Workflow> listWorkflows() {
