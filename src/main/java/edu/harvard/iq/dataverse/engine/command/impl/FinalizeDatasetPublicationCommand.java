@@ -128,6 +128,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     	}
     	logger.info("Released ds version is: " + ds.getReleasedVersion().getFriendlyVersionNumber());
     	ctxt.em().persist(ds);
+    	ctxt.em().persist(ds.getReleasedVersion());
+    	logger.info("Persisted Released ds version is: " + ds.getReleasedVersion().getFriendlyVersionNumber());
+    	
     		ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
                 ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset));
