@@ -2,12 +2,12 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
@@ -17,28 +17,23 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
+import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import static java.util.stream.Collectors.toSet;
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
@@ -67,6 +62,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
     PermissionServiceBean permissionService;
     @EJB
     DvObjectServiceBean dvObjectService;
+
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
     @Inject
     DataverseSession session;
     @Inject
@@ -816,7 +814,35 @@ public class SearchIncludeFragment implements java.io.Serializable {
             return null;
         }
     }
-
+    
+    private Boolean canShowAddDataFragmentCache = null;
+    public boolean canShowAddDataFragment() {
+        if ( canShowAddDataFragmentCache == null ) {
+        /*
+            Original JSF logic
+            !dataverseSession.user.authenticated 
+            and (
+                permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
+                or
+                permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateNewDatasetCommand')
+            )
+        */
+            DataverseRequest dvReq = dvRequestService.getDataverseRequest();
+            
+            Set<Permission> authUsersPerms = permissionService.assignmentsFor(AuthenticatedUsers.get(), dataverse)
+                                                              .stream().map(asn->asn.getRole())
+                                                              .flatMap( r->r.permissions().stream())
+                                                              .collect( toSet() );
+            
+            canShowAddDataFragmentCache = (!dvReq.getUser().isAuthenticated()) && (
+                  CH.permissionsRequired( CreateDataverseCommand.class).get("").containsAll(authUsersPerms)
+                    ||
+                  CH.permissionsRequired( CreateNewDatasetCommand.class).get("").containsAll(authUsersPerms)
+                );
+        }
+        return canShowAddDataFragmentCache;
+    }
+    
     /**
      * Allow only valid values to be set.
      *

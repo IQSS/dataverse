@@ -21,7 +21,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.HashSet;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -34,6 +33,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -542,7 +542,6 @@ public class PermissionServiceBean {
         return dataversesUserHasPermissionOn;
     }
 
-    // MBS FIXME: This belongs in a Command (returns void, throws command related exception). Move it somewhere that makes more sense.
     public void checkEditDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         if (dataset.isLocked()) {
             if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
@@ -568,7 +567,6 @@ public class PermissionServiceBean {
         }
     }
 
-    // MBS FIXME: This belongs in a Command (returns void, throws command related exception). Move it somewhere that makes more sense.
     public void checkDownloadFileLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         if (dataset.isLocked()) {
             if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
@@ -690,5 +688,5 @@ public class PermissionServiceBean {
         }
         return required.isEmpty();
     }
-
+    
 }
