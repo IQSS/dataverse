@@ -337,11 +337,7 @@ public class AuthenticationServiceBean {
      * @return The authenticated user for the passed provider id and authentication request.
      * @throws AuthenticationFailedException 
      */
-    // This method no longer performs creation if an AuthenticatedUser does not exist
-    // It seems the two methods calling this one probably do not need the case.
-    // The idea is to rename this when we are sure (maybe getUpdateAuthenticatedUser() ).
-    // --MAD 4.9.3
-    public AuthenticatedUser getCreateAuthenticatedUser( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
+    public AuthenticatedUser getUpdateAuthenticatedUser( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
         AuthenticationProvider prv = getAuthenticationProvider(authenticationProviderId);
         if ( prv == null ) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );
         if ( ! (prv instanceof CredentialsAuthenticationProvider) ) {
@@ -797,7 +793,7 @@ public class AuthenticationServiceBean {
 
         String credentialsAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
         try {
-            AuthenticatedUser au = getCreateAuthenticatedUser(credentialsAuthProviderId, authReq);
+            AuthenticatedUser au = getUpdateAuthenticatedUser(credentialsAuthProviderId, authReq);
             logger.fine("User authenticated:" + au.getEmail());
             return au;
         } catch (AuthenticationFailedException ex) {
