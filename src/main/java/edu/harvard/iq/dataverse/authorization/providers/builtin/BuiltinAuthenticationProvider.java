@@ -95,9 +95,6 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
 
     @Override
     public AuthenticationResponse authenticate( AuthenticationRequest authReq ) {
-        //MAD: I am a bit uneasy about how I've switched this to findByUsername. 
-        //An email may still be passed to this point and blow up because builtinuser no longer contains it
-        //This needs testing, and if it doesn't work we'll need to confirm and check with auth user
         BuiltinUser u = bean.findByUserName(authReq.getCredential(KEY_USERNAME_OR_EMAIL) );
         if ( u == null ) return AuthenticationResponse.makeFail("Bad username, email address, or password");
         

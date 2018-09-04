@@ -54,7 +54,6 @@ public class PasswordResetServiceBean {
     public PasswordResetInitResponse requestReset(String emailAddress) throws PasswordResetException {
         deleteAllExpiredTokens();
         AuthenticatedUser authUser = authService.getAuthenticatedUserByEmail(emailAddress);        
-//MAD: I am unusure AuthenticatedUser.UserIdentifier is 1 to 1 with BuiltinUser.username
         BuiltinUser user = dataverseUserService.findByUserName(authUser.getUserIdentifier());
 
         if (user != null) {
@@ -65,7 +64,6 @@ public class PasswordResetServiceBean {
     }
     
     public PasswordResetInitResponse requestPasswordReset( BuiltinUser aUser, boolean sendEmail, PasswordResetData.Reason reason ) throws PasswordResetException {
-        //MAD: I am unusre AuthenticatedUser.UserIdentifier is 1 to 1 with BuiltinUser.username, and visa versa
         AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
         
         // delete old tokens for the user
@@ -94,7 +92,6 @@ public class PasswordResetServiceBean {
     }
 
     private void sendPasswordResetEmail(BuiltinUser aUser, String passwordResetUrl) throws PasswordResetException {
-        //MAD: I am unusre AuthenticatedUser.UserIdentifier is 1 to 1 with BuiltinUser.username, and visa versa
         AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
         
         String messageBody = "Hi " + authUser.getName() + ",\n\n"
