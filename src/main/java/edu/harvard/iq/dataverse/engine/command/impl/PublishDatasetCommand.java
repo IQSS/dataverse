@@ -98,13 +98,18 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // If we are registering file-level identifiers, and there are more 
             // than the configured limit number of files, then call Finalize 
             // asychronously (default is 10)
+            // ...
+            // Additionaly in 4.9.3 we have added a system variable to disable 
+            // registering file PIDs on the installation level.
             String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
             String currentGlobalAuthority= ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
             String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-            boolean registerGlobalIdsForFiles = currentGlobalIdProtocol.equals(theDataset.getProtocol()) || dataFilePIDFormat.equals("INDEPENDENT"); // note that despite its name, the FinalizeDatasetPublicationComment in the else branch will still try to register, so this logic is duplicated there
-	    if ( registerGlobalIdsForFiles )
-	    {
-		    registerGlobalIdsForFiles = currentGlobalAuthority.equals( theDataset.getAuthority() );
+            boolean registerGlobalIdsForFiles = 
+                    (currentGlobalIdProtocol.equals(theDataset.getProtocol()) || dataFilePIDFormat.equals("INDEPENDENT")) 
+                    && ctxt.systemConfig().isFilePIDsEnabled();
+            
+            if ( registerGlobalIdsForFiles ){
+                registerGlobalIdsForFiles = currentGlobalAuthority.equals( theDataset.getAuthority() );
 	    }
 
             if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount() && registerGlobalIdsForFiles) {     
