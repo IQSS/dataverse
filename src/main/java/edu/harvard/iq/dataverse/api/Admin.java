@@ -1111,6 +1111,7 @@ public class Admin extends AbstractApiBean {
 					logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
 				}
 			} catch (WrappedResponse ex) {
+				released++;
 				logger.info("Failed to register file id: " + df.getId());
 				Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
 			} catch (Exception e) {
