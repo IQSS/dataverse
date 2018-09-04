@@ -180,6 +180,9 @@ public class AccessIT {
         assertThat(origSizeAuthUnpublished, is(not(convertSizeAuthUnpublished)));  
     }
     
+    //MAD: These tests are based off the 207 status code we decided not to provide
+    //MAD: I need to find a different way to ensure these or just disable it for now
+    @Ignore
     @Test
     public void testDownloadMultipleFiles() {
     //Not logged in non-restricted
@@ -235,4 +238,6 @@ public class AccessIT {
         System.out.println("origSize: "+origSizeAuthUnpublished+ " | convertSize: " + convertSizeAuthUnpublished);
         assertThat(origSizeAuthUnpublished, is(not(convertSizeAuthUnpublished)));  
     }
+    
+    //MAD: WE HAVE TO HAVE A TEST AROUND RESTRICTED AND UNPUBLISHED FILES
 }

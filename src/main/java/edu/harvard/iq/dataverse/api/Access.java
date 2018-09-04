@@ -452,20 +452,18 @@ public class Access extends AbstractApiBean {
      * API method for downloading zipped bundles of multiple files:
     */
     
-    
+    // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
-    public Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException, IOException, Exception /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        
+    public Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+
         long setLimit = systemConfig.getZipDownloadLimit();
         if (!(setLimit > 0L)) {
             setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
         }
         
-        Boolean partialResult = false;
-        
-        long zipDownloadSizeLimit = setLimit; 
+        final long zipDownloadSizeLimit = setLimit; //to use via anon inner class
         
         logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
         
@@ -479,14 +477,6 @@ public class Access extends AbstractApiBean {
         
         User apiTokenUser = findAPITokenUser(apiToken); //for use in adding gb records if necessary
         
-        String fileIdParams[] = fileIds.split(","); 
- 
-        String fileManifest = "";
-        long sizeTotal = 0L;
-        List<DataFile> zipFileList = new ArrayList<>();
-        List<DataFile> beyondLimitFileList = new ArrayList<>();
-        List<DataFile> inaccessibleFileList = new ArrayList<>();
-
         Boolean getOrig = false;
         for (String key : uriInfo.getQueryParameters().keySet()) {
             String value = uriInfo.getQueryParameters().getFirst(key);
@@ -494,140 +484,132 @@ public class Access extends AbstractApiBean {
                 getOrig = true;
             }
         }
-        final boolean getOriginal = getOrig; //final is needed to be read by write method
-
-        if (fileIdParams != null && fileIdParams.length > 0) {
-            logger.fine(fileIdParams.length + " tokens;");
-            for (int i = 0; i < fileIdParams.length; i++) {
-                logger.fine("token: " + fileIdParams[i]);
-                Long fileId = null;
-                try {
-                    fileId = new Long(fileIdParams[i]);
-                } catch (NumberFormatException nfe) {
-                    fileId = null;
-                }
-                if (fileId != null) {
-                    logger.fine("attempting to look up file id " + fileId);
-                    DataFile file = dataFileService.find(fileId);
-                    if (file != null) {
-                        if (isAccessAuthorized(file, apiToken)) { 
-
-                            logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
-                            //downloadInstance.addDataFile(file);
-                            if (gbrecs == null && file.isReleased()){
-                                GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
-                                guestbookResponseService.save(gbr);
-                            }
-
-                            
-                            long size = 0L;
-                            // is the original format requested, and is this a tabular datafile, with a preserved original?
-                            if (getOriginal 
-                                    && file.isTabularData() 
-                                    && !StringUtil.isEmpty(file.getDataTable().getOriginalFileFormat())) {
-                                //This size check is probably fairly inefficient as we have to get all the AccessObjects
-                                //We do this again inside the zipper. I don't think there is a better solution
-                                //without doing a large deal of rewriting or architecture redo.
-                                //The previous size checks for non-original download is still quick.
-                                //-MAD 4.9.2
-                                DataAccessRequest daReq = new DataAccessRequest();
-                                StorageIO<DataFile> accessObject = DataAccess.getStorageIO(file, daReq);
-
-                                if (accessObject != null) {
-                                    Boolean gotOriginal = false;
-                                    StoredOriginalFile sof = new StoredOriginalFile();
-                                    StorageIO<DataFile> tempAccessObject = sof.retreive(accessObject);
-                                    if(null != tempAccessObject) { //If there is an original, use it
-                                        gotOriginal = true;
-                                        accessObject = tempAccessObject; 
-                                    } 
-                                    if(!gotOriginal) { //if we didn't get this from sof.retreive we have to open it
-                                        accessObject.open();
-                                    }
-                                    size = accessObject.getSize(); 
-                                }
-                                if(size == 0L){
-                                    throw new IOException("Invalid file size or accessObject when checking limits of zip file");
-                                }
-
-                            } else {
-                                size = file.getFilesize();
-                            }
-                            if (sizeTotal + size < zipDownloadSizeLimit) {
-                                sizeTotal += size; 
-                                zipFileList.add(file);
-                            } else {
-                                partialResult = true;
-                                beyondLimitFileList.add(file);
-                            }
-
-                        } else if(file.isRestricted()) {
-                            //I have added an extra check on restricted to ensure unpublished files do not get their name exposed
-                                partialResult = true;
-                                inaccessibleFileList.add(file);
-                        } 
-
-                    } else {
-                        // Or should we just drop it and make a note in the Manifest?
-                        String errorMessage = "Datafile " + fileId + ": no such object in the database";
-                        throw new NotFoundException(errorMessage);
-                    }
-                }
-            }
-        } else {
-            throw new BadRequestException();
-        }
-
+        final boolean getOriginal = getOrig; //to use via anon inner class
+        
         StreamingOutput stream = new StreamingOutput() {
 
             @Override
             public void write(OutputStream os) throws IOException,
                     WebApplicationException {
+                String fileIdParams[] = fileIds.split(",");
+                DataFileZipper zipper = null; 
+                String fileManifest = "";
+                long sizeTotal = 0L;
                 
-                if (zipFileList.isEmpty()) {
-                    // it means that there were file ids supplied - but none of the corresponding 
+                if (fileIdParams != null && fileIdParams.length > 0) {
+                    logger.fine(fileIdParams.length + " tokens;");
+                    for (int i = 0; i < fileIdParams.length; i++) {
+                        logger.fine("token: " + fileIdParams[i]);
+                        Long fileId = null;
+                        try {
+                            fileId = new Long(fileIdParams[i]);
+                        } catch (NumberFormatException nfe) {
+                            fileId = null;
+                        }
+                        if (fileId != null) {
+                            logger.fine("attempting to look up file id " + fileId);
+                            DataFile file = dataFileService.find(fileId);
+                            if (file != null) {
+                                if (isAccessAuthorized(file, apiToken)) { 
+                                    
+                                    logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
+                                    //downloadInstance.addDataFile(file);
+                                    if (gbrecs == null && file.isReleased()){
+                                        GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
+                                        guestbookResponseService.save(gbr);
+                                    }
+                                    
+                                    if (zipper == null) {
+                                        // This is the first file we can serve - so we now know that we are going to be able 
+                                        // to produce some output.
+                                        zipper = new DataFileZipper(os);
+                                        zipper.setFileManifest(fileManifest);
+                                        response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
+                                        response.setHeader("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
+                                    }
+                                    
+                                    long size = 0L;
+                                    // is the original format requested, and is this a tabular datafile, with a preserved original?
+                                    if (getOriginal 
+                                            && file.isTabularData() 
+                                            && !StringUtil.isEmpty(file.getDataTable().getOriginalFileFormat())) {
+                                        //This size check is probably fairly inefficient as we have to get all the AccessObjects
+                                        //We do this again inside the zipper. I don't think there is a better solution
+                                        //without doing a large deal of rewriting or architecture redo.
+                                        //The previous size checks for non-original download is still quick.
+                                        //-MAD 4.9.2
+                                        DataAccessRequest daReq = new DataAccessRequest();
+                                        StorageIO<DataFile> accessObject = DataAccess.getStorageIO(file, daReq);
+
+                                        if (accessObject != null) {
+                                            Boolean gotOriginal = false;
+                                            StoredOriginalFile sof = new StoredOriginalFile();
+                                            StorageIO<DataFile> tempAccessObject = sof.retreive(accessObject);
+                                            if(null != tempAccessObject) { //If there is an original, use it
+                                                gotOriginal = true;
+                                                accessObject = tempAccessObject; 
+                                            } 
+                                            if(!gotOriginal) { //if we didn't get this from sof.retreive we have to open it
+                                                accessObject.open();
+                                            }
+                                            size = accessObject.getSize(); 
+                                        }
+                                        if(size == 0L){
+                                            throw new IOException("Invalid file size or accessObject when checking limits of zip file");
+                                        }
+                                    } else {
+                                        size = file.getFilesize();
+                                    }
+                                    if (sizeTotal + size < zipDownloadSizeLimit) {
+                                        sizeTotal += zipper.addFileToZipStream(file, getOriginal);
+                                    } else {
+                                        String fileName = file.getFileMetadata().getLabel();
+                                        String mimeType = file.getContentType();
+                                        
+                                        zipper.addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + zipDownloadSizeLimit + " bytes.\r\n");
+                                    }
+                                } else if(file.isRestricted()) {
+                                    if (zipper == null) {
+                                        fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n";
+                                    } else {
+                                        zipper.addToManifest(file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
+                                    }
+                                } else {
+                                    fileId = null;
+                                }
+                            
+                            } if (null == fileId) {
+                                // As of now this errors out.
+                                // This is bad because the user ends up with a broken zip and manifest
+                                // This is good in that the zip ends early so the user does not wait for the results
+                                String errorMessage = "Datafile " + fileId + ": no such object available";
+                                throw new NotFoundException(errorMessage);
+                            }
+                        }
+                    }
+                } else {
+                    throw new BadRequestException();
+                }
+
+                if (zipper == null) {
+                    // If the DataFileZipper object is still NULL, it means that 
+                    // there were file ids supplied - but none of the corresponding 
                     // files were accessible for this user. 
-                    // In which case we don't bother generating any output, and 
+                    // In which casew we don't bother generating any output, and 
                     // just give them a 403:
                     throw new ForbiddenException();
                 }
-                
-                DataFileZipper zipper = new DataFileZipper(os);
-                zipper.setFileManifest(fileManifest);
-                response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
-                response.setHeader("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
 
-                for(DataFile file : zipFileList) {
-                    zipper.addFileToZipStream(file, getOriginal);
-                }
-                for(DataFile file : beyondLimitFileList) {
-                    String fileName = file.getFileMetadata().getLabel();
-                    String mimeType = file.getContentType();
-
-                    zipper.addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + zipDownloadSizeLimit + " bytes.\r\n");
-                }
-                for(DataFile file : inaccessibleFileList) { 
-                    zipper.addToManifest(file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
-                }
-                
                 // This will add the generated File Manifest to the zipped output, 
                 // then flush and close the stream:
                 zipper.finalizeZipStream();
-
+                
+                //os.flush();
+                //os.close();
             }
         };
-
-/** Disable this if statement if we don't want to return 207s */
-        if(partialResult) {
-            //TODO: We should add more details to the 207 response
-            //to inform systems that have connected to us: https://httpstatuses.com/207
-            return Response.status(207).entity(stream).build();
-            
-        }
         return Response.ok(stream).build();
-        
     }
-    
     
     /* 
      * Geting rid of the tempPreview API - it's always been a big, fat hack. 
