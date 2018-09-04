@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
@@ -98,9 +97,7 @@ public class WorkflowServiceBean {
      */
     @Asynchronous
     public void start(Workflow wf, WorkflowContext ctxt) throws CommandException {
-    	logger.info("Released version in context is: " + ctxt.getDataset().getReleasedVersion().getFriendlyVersionNumber());
         ctxt = refresh(ctxt, retrieveRequestedSettings( wf.getRequiredSettings()), getCurrentApiToken(ctxt.getRequest().getAuthenticatedUser()));
-        logger.info("Released version in refreshed context is: " + ctxt.getDataset().getReleasedVersion().getFriendlyVersionNumber());
         lockDataset(ctxt);
         forward(wf, ctxt);
     }
@@ -122,7 +119,6 @@ public class WorkflowServiceBean {
         Map<String, Object> retrievedSettings = new HashMap<String, Object>();
         for (String setting : requiredSettings.keySet()) {
             String settingType = requiredSettings.get(setting);
-            logger.info("Getting: " + setting);
             switch (settingType) {
             case "string": {
                 retrievedSettings.put(setting, settings.get(setting));
@@ -138,7 +134,6 @@ public class WorkflowServiceBean {
                 break;
             }
             }
-            logger.info("Value for " + setting + " is " + retrievedSettings.get(setting));
         }
         return retrievedSettings;
     }
@@ -235,11 +230,8 @@ public class WorkflowServiceBean {
             try {
                 if (res == WorkflowStepResult.OK) {
                     logger.log(Level.INFO, "Workflow {0} step {1}: OK", new Object[]{ctxt.getInvocationId(), stepIdx});
-                    logger.info("Released version at OK is: " + ctxt.getDataset().getReleasedVersion().getFriendlyVersionNumber());
-                    logger.info("Replica at: " + ctxt.getDataset().getReleasedVersion().getReplicaLocation());
                     em.merge(ctxt.getDataset());
                     ctxt = refresh(ctxt);
-                    logger.info("merged Replica at: " + ctxt.getDataset().getReleasedVersion().getReplicaLocation());
                 } else if (res instanceof Failure) {
                     logger.log(Level.WARNING, "Workflow {0} failed: {1}", new Object[]{ctxt.getInvocationId(), ((Failure) res).getReason()});
                     rollback(wf, ctxt, (Failure) res, stepIdx-1 );
@@ -281,10 +273,17 @@ public class WorkflowServiceBean {
         step.rollback(ctxt, reason);
     }
     
+    
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     void lockDataset( WorkflowContext ctxt ) throws CommandException {
         final DatasetLock datasetLock = new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser());
-//        engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
+        /* Note that this method directly adds a lock to the database rather than adding it via 
+         * engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
+         * which would update the dataset's list of locks, etc. 
+         * An em.find() for the dataset would get a Dataset that has an updated list of locks, but this copy would not have any changes
+         * made in a calling command (e.g. for a PostPublication workflow, the fact that the latest version is 'released' is not yet in the 
+         * database. 
+         */
         datasetLock.setDataset(ctxt.getDataset());
         em.persist(datasetLock);
         em.flush();
@@ -292,9 +291,12 @@ public class WorkflowServiceBean {
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     void unlockDataset( WorkflowContext ctxt ) {
+    	/* Since the lockDataset command above directly persists a lock to the database, 
+    	 * the ctxt.getDataset() is not updated and its list of locks can't be used. Using the named query below will find the workflow
+    	 * lock and remove it (actually all workflow locks for this Dataset but only one workflow should be active). 
+    	 */
         TypedQuery<DatasetLock> lockCounter = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
         lockCounter.setParameter("datasetId", ctxt.getDataset().getId());
-        //lockCounter.setMaxResults(1);
         List<DatasetLock> locks = lockCounter.getResultList();
         for(DatasetLock lock: locks) {
         	if(lock.getReason() == DatasetLock.Reason.Workflow) {
@@ -326,9 +328,8 @@ public class WorkflowServiceBean {
                 rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size()-1);
             }
         }
-        logger.info("Num Locks: "  + ctxt.getDataset().getLocks().size());
         unlockDataset(ctxt);
-        //datasets.removeDatasetLocks(datasets.find(ctxt.getDataset().getId()), DatasetLock.Reason.Workflow);
+        
     }
 
     public List<Workflow> listWorkflows() {
@@ -425,6 +426,13 @@ public class WorkflowServiceBean {
     }
     
     private WorkflowContext refresh( WorkflowContext ctxt, Map<String, Object> settings, ApiToken apiToken ) {
+    	/* An earlier version of this class used em.find() to 'refresh' the Dataset in the context. 
+    	 * For a PostPublication workflow, this had the consequence of hiding/removing changes to the Dataset 
+    	 * made in the FinalizeDatasetPublicationCommand (i.e. the fact that the draft version is now released and
+    	 * has a version number). It is not clear to me if the em.merge below is needed or if it handles the case of 
+    	 * resumed workflows. (The overall method is needed to allow the context to be updated in the start() method with the
+    	 * settings and APItoken retrieved by the WorkflowServiceBean).
+    	 */
         return new WorkflowContext( ctxt.getRequest(), 
                        em.merge(ctxt.getDataset()), ctxt.getNextVersionNumber(), 
                        ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken);

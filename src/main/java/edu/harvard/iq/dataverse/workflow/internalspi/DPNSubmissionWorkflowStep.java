@@ -1,20 +1,14 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitArchiveCommand;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.ejb.EJB;
 
 /**
  * A step that submits a BagIT bag of the newly published dataset version to DPN
@@ -32,11 +26,9 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
 
     @Override
     public WorkflowStepResult run(WorkflowContext context) {
-    	logger.info("Settings entries: " + context.getSettings().size());
         String host=(String) context.getSettings().get(":DuraCloudHost");
         String port = (String) context.getSettings().get(":DuraCloudPort");
         String dpnContext = (String) context.getSettings().get(":DuraCloudContext");
-        logger.info("Released version in step is: " + context.getDataset().getReleasedVersion().getFriendlyVersionNumber());
         if(host==null) {
             logger.severe("No DuraCloudHost - DPN Submission not attempted");
             return new Failure("No DuraCloudHost", "DuraCloudHost not found in Settings");
