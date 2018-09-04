@@ -355,10 +355,17 @@ public class SettingsServiceBean {
         'INDEPENDENT' means a new global id, completely independent from the dataset-level global id.
         */
         DataFilePIDFormat, 
+        /* Json array of supported languages
+        */
+        Languages,
         /*
         Number for the minimum number of files to send PID registration to asynchronous workflow
         */
-        PIDAsynchRegFileCount
+        PIDAsynchRegFileCount,
+        /**
+         * 
+         */
+        FilePIDsEnabled
         ;
 
         @Override

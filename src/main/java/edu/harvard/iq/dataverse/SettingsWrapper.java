@@ -163,6 +163,5 @@ public class SettingsWrapper implements java.io.Serializable {
     public boolean isRootDataverseThemeDisabled() {
         return isTrueForKey(Key.DisableRootDataverseTheme, false);
     }
-
 }
 
