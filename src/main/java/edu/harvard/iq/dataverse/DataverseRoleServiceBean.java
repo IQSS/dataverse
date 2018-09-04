@@ -23,7 +23,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.NotNull;
 
 /**
  *
@@ -233,7 +233,8 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
      * edu.harvard.iq.dataverse.Dataverse)
      */
-    public List<RoleAssignment> directRoleAssignments(@NotNull RoleAssignee roas, @NotNull DvObject dvo) {
+    //public List<RoleAssignment> directRoleAssignments(@NotNull RoleAssignee roas, @NotNull DvObject dvo) {
+    public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
         List<RoleAssignment> unfiltered = em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class).
                             setParameter("assigneeIdentifier", roas.getIdentifier())
                             .getResultList();
@@ -250,7 +251,8 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
      * edu.harvard.iq.dataverse.Dataverse)
      */
-    public List<RoleAssignment> directRoleAssignments(@NotNull Set<? extends RoleAssignee> roleAssignees, @NotNull Collection<DvObject> dvos) {
+    //public List<RoleAssignment> directRoleAssignments(@NotNull Set<? extends RoleAssignee> roleAssignees, @NotNull Collection<DvObject> dvos) {
+    public List<RoleAssignment> directRoleAssignments(Set<? extends RoleAssignee> roleAssignees, Collection<DvObject> dvos) {
         List<String> raIds = roleAssignees.stream().map(roas -> roas.getIdentifier()).collect(Collectors.toList());
         List<Long> dvoIds = dvos.stream().map(dvo -> dvo.getId()).collect(Collectors.toList());
         
