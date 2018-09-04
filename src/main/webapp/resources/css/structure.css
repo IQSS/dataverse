@@ -680,6 +680,8 @@ span.text-info.popoverHTML {display:inline-block;}
 /*div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}*/
 div[id$="versionsTable"] th.col-select-width * {display:none;}
 
+div[id$="filesTable"].ui-datatable.ui-widget div.ui-datatable-tablewrapper {overflow:visible;}
+
 div[id$="filesTable"].ui-datatable.ui-widget {margin-bottom:20px;}
 div[id$="filesTable"].ui-datatable.ui-widget table {table-layout: fixed;}
 div[id$="filesTable"].ui-datatable.ui-widget table th,
