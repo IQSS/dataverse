@@ -4,10 +4,12 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import java.util.Arrays;
 import java.util.List;
 import static edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider.Credential;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
@@ -26,10 +28,12 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     private static List<Credential> CREDENTIALS_LIST;
       
     final BuiltinUserServiceBean bean;
+    final AuthenticationServiceBean authBean;
     private PasswordValidatorServiceBean passwordValidatorService;
 
-    public BuiltinAuthenticationProvider( BuiltinUserServiceBean aBean, PasswordValidatorServiceBean passwordValidatorService  ) {
+    public BuiltinAuthenticationProvider( BuiltinUserServiceBean aBean, PasswordValidatorServiceBean passwordValidatorService, AuthenticationServiceBean auBean  ) {
         this.bean = aBean;
+        this.authBean = auBean;
         this.passwordValidatorService = passwordValidatorService;
         KEY_USERNAME_OR_EMAIL = BundleUtil.getStringFromBundle("login.builtin.credential.usernameOrEmail");
         KEY_PASSWORD = BundleUtil.getStringFromBundle("login.builtin.credential.password");
@@ -125,9 +129,9 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
             }
         }
         
-//MAD: Fix this. Returning null becaause I'm not sure the best way to go about this... get the AuthenticatedUser somehow...
-        return AuthenticationResponse.makeSuccess(u.getUserName(), null);        
-        //return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
+        AuthenticatedUser authUser = authBean.getAuthenticatedUser(u.getUserName());
+        
+        return AuthenticationResponse.makeSuccess(u.getUserName(), authUser.getDisplayInfo());
    }
 
     @Override

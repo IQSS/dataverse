@@ -1,8 +1,9 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
-import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.mocks.MockAuthenticationServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockBuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockPasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
@@ -19,12 +20,14 @@ public class BuiltinAuthenticationProviderTest {
     BuiltinAuthenticationProvider sut = null;
     PasswordValidatorServiceBean passwordValidatorService;
     MockBuiltinUserServiceBean bean = null;
+    AuthenticationServiceBean authBean = null;
     
     @Before
     public void setup() {
         bean = new MockBuiltinUserServiceBean();
         passwordValidatorService = new MockPasswordValidatorServiceBean();
-        sut = new BuiltinAuthenticationProvider(bean, passwordValidatorService);
+        authBean = new MockAuthenticationServiceBean();
+        sut = new BuiltinAuthenticationProvider(bean, passwordValidatorService, authBean);
     }
 
     /**

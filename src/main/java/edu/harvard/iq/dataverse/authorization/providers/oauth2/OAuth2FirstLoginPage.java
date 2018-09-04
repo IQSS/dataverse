@@ -199,7 +199,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public String convertExistingAccount() {
-        BuiltinAuthenticationProvider biap = new BuiltinAuthenticationProvider(builtinUserSvc, passwordValidatorService);
+        BuiltinAuthenticationProvider biap = new BuiltinAuthenticationProvider(builtinUserSvc, passwordValidatorService, authenticationSvc);
         AuthenticationRequest auReq = new AuthenticationRequest();
         final List<CredentialsAuthenticationProvider.Credential> creds = biap.getRequiredCredentials();
         auReq.putCredential(creds.get(0).getTitle(), getUsername());

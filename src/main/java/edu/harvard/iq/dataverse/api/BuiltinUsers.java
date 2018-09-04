@@ -73,6 +73,19 @@ public class BuiltinUsers extends AbstractApiBean {
         return (t != null ) ? ok(t.getTokenString()) : notFound("User " + username + " does not have an API token");
     }
     
+    
+    //These two endpoints take in a BuiltinUser as json. To support these endpoints
+    //with the removal of attributes from BuiltinUser in 4565, BuiltinUser supports
+    //the extended attributes as transient (not stored to the database). They are
+    //immediately used to create an AuthenticatedUser.
+    //If this proves to be too confusing, we can parse the json more manually
+    //and use the values to create BuiltinUser/AuthenticatedUser.
+    //--MAD 4.9.3
+    @POST
+    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key) {
+        return internalSave(user, password, key);
+    }
+
     /**
      * Created this new API command because the save method could not be run
      * from the RestAssured API. RestAssured doesn't allow a Post request to
@@ -84,24 +97,12 @@ public class BuiltinUsers extends AbstractApiBean {
      * @param key
      * @return
      */
-    
-//MAD:  I commented this all out because its based on posting a BuiltinUser 
-//          which will no longer have the required info.
-//      We will try to take the json object as is and use it, either by having 
-//          transient values on builtinuser or by parsing the object manually
-    
-    
     @POST
     @Path("{password}/{key}")
     public Response create(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key) {
         return internalSave(user, password, key);
     }
     
-    @POST
-    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key) {
-        return internalSave(user, password, key);
-    }
-
     private Response internalSave(BuiltinUser user, String password, String key) {
         String expectedKey = settingsSvc.get(API_KEY_IN_SETTINGS);
         
