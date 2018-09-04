@@ -550,13 +550,11 @@ public class Access extends AbstractApiBean {
                                     throw new IOException("Invalid file size or accessObject when checking limits of zip file");
                                 }
 
-                                sizeTotal += size;
-
                             } else {
                                 size = file.getFilesize();
                             }
                             if (sizeTotal + size < zipDownloadSizeLimit) {
-                                sizeTotal += file.getFilesize(); 
+                                sizeTotal += size; 
                                 zipFileList.add(file);
                             } else {
                                 partialResult = true;
