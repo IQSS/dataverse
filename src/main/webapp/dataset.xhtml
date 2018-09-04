@@ -170,14 +170,16 @@
                                     <!-- END: Return to Author Button -->
 
                                     <!-- Submit for Review Button -->
-                                    <button type="button" class="btn btn-default btn-access #{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" onclick="PF('inreview').show()"
-                                            jsf:rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
-                                                            and !DatasetPage.datasetLockedInWorkflow
-                                                            and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                            and DatasetPage.canUpdateDataset()
-                                                            and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
-                                        <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
-                                    </button>
+                                    <ui:fragment rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                                and !DatasetPage.datasetLockedInWorkflow
+                                                                and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
+                                                                and DatasetPage.canUpdateDataset()
+                                                                and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                        <button type="button" class="btn btn-default btn-access #{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" onclick="PF('inreview').show()">
+                                            <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
+                                        </button>
+                                    </ui:fragment>
+                                        
                                     <!-- End: Submit for Review Button -->
                                 </ui:fragment>
                                 <!-- END: Publish/Submit for Review/Return to Author Button Group -->
@@ -1205,6 +1207,7 @@
                         <p class="help-block">
                             <span class="glyphicon glyphicon-warning-sign text-danger"/>&#160;
                             <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
+                                <f:param value="#{navigationWrapper.redirectPage}"/>
                                 <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}"/>
                                 <f:param value="#{widgetWrapper.widgetView ? '_blank' : '_self'}"/>
                             </h:outputFormat>

@@ -7,12 +7,15 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.ejb.EJB;
 
 /**
@@ -170,6 +173,7 @@ public class GlobalId implements java.io.Serializable {
                 }
                 //Strip any whitespace, ; and ' from authority (should finding them cause a failure instead?)
                 authority = formatIdentifierString(identifierString.substring(index1 + 1, index2));
+                if(testforNullTerminator(authority)) return false;
                 if (protocol.equals(DOI_PROTOCOL)) {
                     if (!this.checkDOIAuthority(authority)) {
                         return false;
@@ -178,6 +182,7 @@ public class GlobalId implements java.io.Serializable {
                 // Passed all checks
                 //Strip any whitespace, ; and ' from identifier (should finding them cause a failure instead?)
                 identifier = formatIdentifierString(identifierString.substring(index2 + 1));
+                if(testforNullTerminator(identifier)) return false;               
             } else {
                 logger.log(Level.INFO, "Error parsing identifier: {0}: '':<authority>/<identifier>'' not found in string", identifierString);
                 return false;
@@ -213,6 +218,12 @@ public class GlobalId implements java.io.Serializable {
         // http://www.doi.org/doi_handbook/2_Numbering.html
     }
     
+    private static boolean testforNullTerminator(String str){
+        if(str == null) {
+            return false;
+        }
+        return str.indexOf('\u0000') > 0;
+    }
     
     private boolean checkDOIAuthority(String doiAuthority){
         
@@ -226,6 +237,19 @@ public class GlobalId implements java.io.Serializable {
         
         return true;
     }
-    
-    
+
+    /**
+     * Verifies that the pid only contains allowed characters.
+     *
+     * @param pidParam
+     * @return true if pid only contains allowed characters false if pid
+     * contains characters not specified in the allowed characters regex.
+     */
+    public static boolean verifyImportCharacters(String pidParam) {
+
+        Pattern p = Pattern.compile(BundleUtil.getStringFromBundle("pid.allowedCharacters"));
+        Matcher m = p.matcher(pidParam);
+
+        return m.matches();
+    }
 }

@@ -4,7 +4,7 @@
 
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.9.1</version>
+    <version>4.9.2</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
@@ -144,6 +144,13 @@
             <version>1.1</version>
         </dependency>
         <!-- END Data Deposit API v1 (SWORD v2) -->
+        <dependency>
+            <!-- There are later versions of this lib available at jitpack.io,
+                 but it seemed better to not add another repo. -->
+            <groupId>org.everit.json</groupId>
+            <artifactId>org.everit.json.schema</artifactId>
+            <version>1.5.1</version>
+        </dependency>
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
@@ -452,6 +459,22 @@
     </dependencies>
 
     <build>
+<!--        <testResources>
+            <testResource>
+                <directory>${project.basedir}/src/main/resources</directory>
+            </testResource>
+        </testResources>-->
+<!--        <testResources>
+            <testResource>
+              <directory>${project.basedir}/src/test/java</directory>
+              <excludes>
+                  <exclude>**/*.java</exclude>
+              </excludes>
+            </testResource>
+            <testResource>
+              <directory>${project.basedir}/src/test/resources</directory>
+            </testResource>
+          </testResources>-->
         <resources>
             <resource>
                 <directory>src/main/java</directory>
@@ -605,7 +628,32 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <!-- https://stackoverflow.com/questions/46177921/how-to-run-unit-tests-in-excludedgroups-in-maven -->
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.0</version>
+                <configuration>
+                   <!-- testsToExclude come from the profile-->
+                   <excludedGroups>${testsToExclude}</excludedGroups>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
-
+    <profiles>
+      <profile>
+        <id>dev</id>
+        <activation>
+            <!-- https://stackoverflow.com/questions/11824328/default-build-profile-for-maven -->
+            <!-- We set dev to true to developers don't have to run non-essential tests over and over. -->
+          <activeByDefault>true</activeByDefault>
+        </activation>
+        <properties>
+            <testsToExclude>edu.harvard.iq.dataverse.NonEssentialTests</testsToExclude>
+        </properties>
+      </profile>
+      <profile>
+        <id>all-unit-tests</id>
+      </profile>
+      <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
+    </profiles>
 </project>

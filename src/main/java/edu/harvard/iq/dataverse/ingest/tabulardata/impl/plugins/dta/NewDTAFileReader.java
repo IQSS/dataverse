@@ -503,15 +503,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
             int type = reader.readUShort();
             logger.fine("variable " + i + ": type=" + type);
-            DataVariable dv = new DataVariable();
-
-            dv.setInvalidRanges(new ArrayList<>());
-            dv.setSummaryStatistics(new ArrayList<>());
-            dv.setCategories(new ArrayList<>());
-
-            dv.setUnf("UNF:pending");
-            dv.setFileOrder(i);
-            dv.setDataTable(dataTable);
+            DataVariable dv = new DataVariable(i, dataTable);
 
             variableTypes[i] = configureVariableType(dv, type);
 
@@ -1195,7 +1187,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                 label_offset = value_label_offsets[i];
 
                 if (value_label_offsets_sorted == null) {
-                label_end = i < number_of_categories - 1 ? value_label_offsets[i + 1] : text_length;
+                    label_end = i < number_of_categories - 1 ? value_label_offsets[i + 1] : text_length;
                 } else {
                     int sortedPos = Arrays.binarySearch(value_label_offsets_sorted, label_offset);
                     label_end = sortedPos < number_of_categories - 1 ? value_label_offsets_sorted[sortedPos + 1] : text_length;
@@ -1218,11 +1210,13 @@ public class NewDTAFileReader extends TabularDataFileReader {
                 throw new IOException("<read mismatch in readLabels() 2>");
             }
             reader.readClosingTag(TAG_VALUE_LABELS_LBL_DEF);
-
+            
+            List<DataVariable> dataVariables = dataTable.getDataVariables();
             // Find the variables that may be linking to this Category Values Table 
             // and create VariableCategory objects for the corresponding 
             // DataVariables: 
-            for (int i = 0; i < dataTable.getVarQuantity(); i++) {
+            for (int i = 0; i < dataVariables.size(); i++) {
+                DataVariable dataVariable = dataVariables.get(i);
                 if (label_table_name.equals(valueLabelsLookupTable[i])) {
                     logger.fine("cross-linking value label table for " + label_table_name);
                     
@@ -1236,8 +1230,8 @@ public class NewDTAFileReader extends TabularDataFileReader {
                         cat.setLabel(cat_label);
 
                         /* cross-link the variable and category to each other: */
-                        cat.setDataVariable(dataTable.getDataVariables().get(i));
-                        dataTable.getDataVariables().get(i).getCategories().add(cat);
+                        cat.setDataVariable(dataVariable);
+                        dataVariable.getCategories().add(cat);
                     }
                 }
             }

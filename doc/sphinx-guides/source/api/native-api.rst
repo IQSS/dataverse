@@ -501,24 +501,87 @@ In the example below, the curator has saved the JSON file as :download:`reason-f
 
 The review process can sometimes resemble a tennis match, with the authors submitting and resubmitting the dataset over and over until the curators are satisfied. Each time the curators send a "reason for return" via API, that reason is persisted into the database, stored at the dataset version level.
 
+Dataset Locks
+~~~~~~~~~~~~~
+
+To check if a dataset is locked:: 
+
+    curl -H "$SERVER_URL/api/datasets/{database_id}/locks
+
+Optionally, you can check if there's a lock of a specific type on the dataset:: 
+
+    curl -H "$SERVER_URL/api/datasets/{database_id}/locks?type={lock_type}
+
+Currently implemented lock types are ``Ingest, Workflow, InReview, DcmUpload and pidRegister``. 
+
+The API will output the list of locks, for example:: 
+
+    {"status":"OK","data":
+	[
+		{
+		 "lockType":"Ingest",
+		 "date":"Fri Aug 17 15:05:51 EDT 2018",
+		 "user":"dataverseAdmin"
+		},
+		{
+		 "lockType":"Workflow",
+		 "date":"Fri Aug 17 15:02:00 EDT 2018",
+		 "user":"dataverseAdmin"
+		}
+	]
+    }
+
+If the dataset is not locked (or if there is no lock of the requested type), the API will return an empty list. 
+
+The following API end point will lock a Dataset with a lock of specified type::
+
+    POST /api/datasets/{database_id}/lock/{lock_type}
+
+For example::
+
+    curl -X POST "$SERVER_URL/api/datasets/1234/lock/Ingest?key=$ADMIN_API_TOKEN"
+    or 
+    curl -X POST -H "X-Dataverse-key: $ADMIN_API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/lock/Ingest?persistentId=$DOI_OR_HANDLE_OF_DATASET"
+
+Use the following API to unlock the dataset, by deleting all the locks currently on the dataset::
+
+    DELETE /api/datasets/{database_id}/locks
+
+Or, to delete a lock of the type specified only::
+
+    DELETE /api/datasets/{database_id}/locks?type={lock_type}
+
+For example::
+
+    curl -X DELETE -H "X-Dataverse-key: $ADMIN_API_TOKEN" "$SERVER_URL/api/datasets/1234/locks?type=pidRegister"
+
+If the dataset is not locked (or if there is no lock of the specified type), the API will exit with a warning message. 
+
+(Note that the API calls above all support both the database id and persistent identifier notation for referencing the dataset)
+
 
 Files
-~~~~~
+-----
 
-.. note:: Files can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+Adding Files
+~~~~~~~~~~~~
+
+.. Note:: Files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the Datasets_ endpoint above for more information.
+
+Accessing (downloading) files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. Note:: Access API has its own section in the Guide: :doc:`/api/dataaccess`
+
+**Note** Data Access API calls can now be made using persistent identifiers (in addition to database ids). This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
 
   Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::
 
     GET http://$SERVER/api/access/datafile/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
 
 
-Adding Files
-^^^^^^^^^^^^
-
-.. note:: Please note that files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the "Datasets" endpoint above for more information.
-
 Restrict Files
-^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 
 Restrict or unrestrict an existing file where ``id`` is the database id of the file or ``pid`` is the persistent id (DOI or Handle) of the file to restrict. Note that some Dataverse installations do not allow the ability to restrict files.
 
@@ -531,7 +594,7 @@ A curl example using a ``pid``::
     curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/files/:persistentId/restrict?persistentId={pid}
 
 Replacing Files
-^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~
 
 Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note that metadata such as description and tags are not carried over from the file being replaced
 
@@ -610,10 +673,23 @@ Example python code to replace a file.  This may be run by changing these parame
 Uningest a File
 ~~~~~~~~~~~~~~~
 
-Reverse the ingest process performed on a file where ``id`` is the database id of the file to process. Note that this requires "super user" credentials::
+Reverse the tabular data ingest process performed on a file where ``{id}`` is the database id of the file to process. Note that this requires "super user" credentials::
 
-    POST http://$SERVER/api/files/{id}/uningest?key=$apiKey    
+    POST http://$SERVER/api/files/{id}/uningest?key={apiKey}
 
+
+Reingest a File
+~~~~~~~~~~~~~~~
+
+Attempt to ingest an existing datafile as tabular data. This API can be used on a file that was not ingested as tabular back when it was uploaded. For example, a Stata v.14 file that was uploaded before ingest support for Stata 14 was added (in Dataverse v.4.9). It can also be used on a file that failed to ingest due to a bug in the ingest plugin that has since been fixed (hence the name "re-ingest").
+
+Note that this requires "super user" credentials:: 
+
+    POST http://$SERVER/api/files/{id}/reingest?key={apiKey}
+
+(``{id}`` is the database id of the file to process)
+
+Also, note that, at present the API cannot be used on a file that's already ingested as tabular.
 
 Provenance
 ~~~~~~~~~~

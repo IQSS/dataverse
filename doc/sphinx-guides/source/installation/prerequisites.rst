@@ -1,3 +1,5 @@
+.. role:: fixedwidthplain
+
 =============
 Prerequisites
 =============
@@ -102,7 +104,7 @@ Please note that you must run Glassfish in an English locale. If you are using s
 
 Also note that Glassfish may utilize more than the default number of file descriptors, especially when running batch jobs such as harvesting. We have increased ours by adding ulimit -n 32768 to our glassfish init script. On operating systems which use systemd such as RHEL or CentOS 7, file descriptor limits may be increased by adding a line like LimitNOFILE=32768 to the systemd unit file. You may adjust the file descriptor limits on running processes by using the prlimit utility:
 
-	# sudo prlimit -p pid -n 32768:32768
+	# sudo prlimit --pid pid --nofile=32768:32768
 
 PostgreSQL
 ----------
@@ -210,7 +212,7 @@ With the Dataverse-specific config in place, you can now start Solr and create t
 	
 Please note: Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script and adding solr soft nproc 65000 to /etc/security/limits.conf. On operating systems which use systemd such as RHEL or CentOS 7, you may add a line like LimitNOFILE=65000 to the systemd unit file, or adjust the limits on a running process using the prlimit tool:
 
-	# sudo prlimit -p pid -n 65000:65000
+	# sudo prlimit --pid pid --nofile=65000:65000
 	
 
 Solr Init Script
@@ -269,7 +271,116 @@ If the installed location of the convert executable is different from ``/usr/bin
 
 (see the :doc:`config` section for more information on the JVM options)
 
+R
+-
 
+Dataverse uses `R <https://https://cran.r-project.org/>`_ to handle
+tabular data files. The instructions below describe a **minimal** R
+installation. It will allow you to ingest R (.RData) files as tabular
+data; to export tabular data as .RData files; and to run `Data
+Explorer <https://github.com/scholarsportal/Dataverse-Data-Explorer>`_
+(specifically, R is used to generate .prep metadata files that Data
+Explorer uses).  R can be considered an optional component, meaning
+that if you don't have R installed, you will still be able to run and
+use Dataverse - but the functionality specific to tabular data
+mentioned above will not be available to your users.  **Note** that if
+you choose to also install `TwoRavens
+<https://github.com/IQSS/TwoRavens>`_, it will require some extra R
+components and libraries.  Please consult the instructions in the
+TowRavens section of the Installation Guide.
+
+
+Installing R
+============
+
+Can be installed with :fixedwidthplain:`yum`::
+
+       yum install R-core R-core-devel
+
+EPEL distribution is strongly recommended. The version of R currently available from epel6 and epel7 is 3.5; it has been tested and is known to work on RedHat and CentOS versions 6 and 7.
+
+If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ):
+
+RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 7::
+
+       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 6::
+
+       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+
+RHEL users will want to log in to their organization's respective RHN interface, find the particular machine in question and:
+
+• click on "Subscribed Channels: Alter Channel Subscriptions"
+• enable EPEL, Server Extras, Server Optional
+
+Installing the required R libraries
+===================================
+
+The following R packages (libraries) are required::
+
+    R2HTML
+    rjson
+    DescTools
+    Rserve
+    haven
+
+Install them following the normal R package installation procedures. For example, with the following R commands::
+
+	install.packages("R2HTML", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("rjson", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("DescTools", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("Rserve", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("haven", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+
+Rserve
+======
+
+Dataverse uses `Rserve <https://rforge.net/Rserve/>`_ to communicate
+to R. Rserve is installed as a library package, as described in the
+step above. It runs as a daemon process on the server, accepting
+network connections on a dedicated port. This requires some extra 
+configuration and we provide a  script (:fixedwidthplain:`scripts/r/rserve/rserve-setup.sh`) for setting it up.  
+Run the script as follows (as root)::
+
+    cd <DATAVERSE SOURCE TREE>/scripts/r/rserve
+    ./rserve-setup.sh
+
+The setup script will create a system user :fixedwidthplain:`rserve`
+that will run the daemon process.  It will install the startup script
+for the daemon (:fixedwidthplain:`/etc/init.d/rserve`), so that it
+gets started automatically when the system boots.  This is an
+:fixedwidthplain:`init.d`-style startup file. If this is a
+RedHat/CentOS 7 system, you may want to use the
+:fixedwidthplain:`systemctl`-style file
+:fixedwidthplain:`rserve.service` instead. (Copy it into the
+:fixedwidthplain:`/usr/lib/systemd/system/` directory)
+
+
+
+Note that the setup will also set the Rserve password to
+":fixedwidthplain:`rserve`".  Rserve daemon runs under a
+non-privileged user id, so there's not much potential for security
+damage through unauthorized access. It is however still a good idea
+**to change the password**. The password is specified in
+:fixedwidthplain:`/etc/Rserv.pwd`.  You can consult `Rserve
+documentation <https://rforge.net/Rserve/doc.html>`_ for more
+information on password encryption and access security.
+
+You should already have the following 4 JVM options added to your
+:fixedwidthplain:`domain.xml` by the Dataverse installer::
+
+        <jvm-options>-Ddataverse.rserve.host=localhost</jvm-options>
+        <jvm-options>-Ddataverse.rserve.port=6311</jvm-options>
+        <jvm-options>-Ddataverse.rserve.user=rserve</jvm-options>
+        <jvm-options>-Ddataverse.rserve.password=rserve</jvm-options>
+
+If you have changed the password, make sure it is correctly specified
+in the :fixedwidthplain:`dataverse.rserve.password` option above.  If
+Rserve is running on a host that's different from your Dataverse
+server, change the :fixedwidthplain:`dataverse.rserve.host` option
+above as well (and make sure the port 6311 on the Rserve host is not
+firewalled from your Dataverse host).
 
 Now that you have all the prerequisites in place, you can proceed to the :doc:`installation-main` section.
 

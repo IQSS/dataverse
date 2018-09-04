@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
@@ -41,10 +42,19 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     private static final Logger logger = Logger.getLogger(FinalizeDatasetPublicationCommand.class.getName());
     
     String doiProvider;
+
+    /**
+     * mirror field from {@link PublishDatasetCommand} of same name
+     */
+    final boolean datasetExternallyReleased;
     
     public FinalizeDatasetPublicationCommand(Dataset aDataset, String aDoiProvider, DataverseRequest aRequest) {
+        this( aDataset, aDoiProvider, aRequest, false );
+    }
+    public FinalizeDatasetPublicationCommand(Dataset aDataset, String aDoiProvider, DataverseRequest aRequest, boolean isPidPrePublished) {
         super(aDataset, aRequest);
         doiProvider = aDoiProvider;
+	datasetExternallyReleased = isPidPrePublished;
     }
 
     @Override
@@ -95,18 +105,22 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         ctxt.em().merge(ddu);
         
         updateParentDataversesSubjectsField(theDataset, ctxt);
-        publicizeExternalIdentifier(theDataset, ctxt); 
+	if (!datasetExternallyReleased){
+		publicizeExternalIdentifier(theDataset, ctxt);
+	}
 
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
         if (privateUrl != null) {
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
         }
         
-        if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
-            // some imported datasets may already be released.
-            publicizeExternalIdentifier(theDataset, ctxt);
-            theDataset.getLatestVersion().setVersionState(RELEASED);
-        }
+	if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
+		// some imported datasets may already be released.
+		if (!datasetExternallyReleased){
+			publicizeExternalIdentifier(theDataset, ctxt);
+		}
+		theDataset.getLatestVersion().setVersionState(RELEASED);
+	}
         
         exportMetadata(ctxt.settings());
         boolean doNormalSolrDocCleanUp = true;
@@ -180,20 +194,42 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
         String protocol = getDataset().getProtocol();
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
-        if ( idServiceBean != null ){
+        if (idServiceBean != null) {
+            List<String> args = idServiceBean.getProviderInformation();
             try {
-                idServiceBean.publicizeIdentifier(dataset);
+                String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
+                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+                boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabled();
+                // We will skip trying to register the global identifiers for datafiles 
+                // if "dependent" file-level identifiers are requested, AND the naming 
+                // protocol of the dataset global id is different from the
+                // one currently configured for the Dataverse. This is to specifically 
+                // address the issue with the datasets with handle ids registered, 
+                // that are currently configured to use DOI.
+                // ...
+                // Additionaly in 4.9.3 we have added a system variable to disable 
+                // registering file PIDs on the installation level.
+                if ((currentGlobalIdProtocol.equals(protocol) || dataFilePIDFormat.equals("INDEPENDENT"))//TODO(pm) - check authority too
+                        && isFilePIDsEnabled) {
+                    //A false return value indicates a failure in calling the service
+                    for (DataFile df : dataset.getFiles()) {
+                        logger.log(Level.FINE, "registering global id for file {0}", df.getId());
+                        //A false return value indicates a failure in calling the service
+                        if (!idServiceBean.publicizeIdentifier(df)) {
+                            throw new Exception();
+                        }
+                        df.setGlobalIdCreateTime(getTimestamp());
+                        df.setIdentifierRegistered(true);
+                    }
+                }
+                if (!idServiceBean.publicizeIdentifier(dataset)) {
+                    throw new Exception();
+                }
                 dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
                 dataset.setIdentifierRegistered(true);
-                for (DataFile df : dataset.getFiles()) {
-                    logger.log(Level.FINE, "registering global id for file {0}", df.getId());
-                    idServiceBean.publicizeIdentifier(df);
-                    df.setGlobalIdCreateTime(getTimestamp());
-                    df.setIdentifierRegistered(true);
-                }
             } catch (Throwable e) {
                 ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.pidRegister);
-                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()),this); 
+                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
             }
         }
     }
