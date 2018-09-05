@@ -358,7 +358,6 @@ public class FileRecordWriter extends AbstractItemWriter {
         dataset.getLatestVersion().getFileMetadatas().add(fmd);
         fmd.setDatasetVersion(dataset.getLatestVersion());
         
-	//pm - start file PID block
 	String isFilePIDsEnabled = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.FilePIDsEnabled, "true"); //default value for file PIDs is 'true'
 	if ("true".contentEquals( isFilePIDsEnabled )) {
 	
@@ -392,7 +391,6 @@ public class FileRecordWriter extends AbstractItemWriter {
             }
         }
 	}
-	//pm - end file PID block
 
         getJobLogger().log(Level.INFO, "Successfully created a file of type package");
         
