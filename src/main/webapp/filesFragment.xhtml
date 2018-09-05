@@ -104,25 +104,26 @@
                     <p:outputPanel id="filesButtons">
                     <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->
                     <!-- tab-header pull-right -->
-                    <div jsf:id="uploadComputeBlock" class="pull-right"
+                    <div jsf:id="uploadComputeBlock" class="button-block pull-right no-margin-top"
                           jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
                                          and (DatasetPage.canUpdateDataset()
                                          or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
+                        
+                        <!-- DOWNLOAD DCM SCRIPT BUTTON -->
+                        <h:commandLink id="rsyncDL" actionListener="#{DatasetPage.downloadRsyncScript()}" styleClass="btn btn-default"
+                                       rendered="#{DatasetPage.sessionUserAuthenticated
+                                                                                    and DatasetPage.canUpdateDataset()
+                                                                                    and !widgetWrapper.widgetView and DatasetPage.lockedDueToDcmUpload}">
+                            <span class="glyphicon glyphicon-download-alt"/> <h:outputText value=" #{bundle['file.rsyncUpload.step2.downloadScriptButton']}"/>
+                        </h:commandLink>
+                        
+                        <!-- UPLOAD FILES BUTTON -->
                         <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
                                       type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits ? 'ui-state-disabled' : ''}"
                                       disabled="#{DatasetPage.lockedFromEdits}" rendered="#{DatasetPage.sessionUserAuthenticated 
                                                                                     and DatasetPage.canUpdateDataset()
                                                                                     and !widgetWrapper.widgetView}">
-                            <!-- UPLOAD FILES BUTTON -->
                             <span class="glyphicon #{DatasetPage.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
-                        </h:outputLink>
-                        <!-- REDOWNLOAD DCM SCRIPT BUTTON -->
-                        <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
-                                      type="button" styleClass="btn btn-default btn-access #{false and DatasetPage.lockedFromEdits ? 'ui-state-disabled' : ''}"
-                                      disabled="#{false}" rendered="#{DatasetPage.sessionUserAuthenticated
-                                                                                    and DatasetPage.canUpdateDataset()
-                                                                                    and !widgetWrapper.widgetView and DatasetPage.lockedDueToDcmUpload}">
-                            <h:outputText id="uploadFileToRedownloadRsyncScript" value="#{bundle['file.redownloadDcmScript']}"/>
                         </h:outputLink>
                     </div>
                    </p:outputPanel>
