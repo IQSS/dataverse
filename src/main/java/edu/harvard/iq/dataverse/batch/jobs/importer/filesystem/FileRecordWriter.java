@@ -358,6 +358,10 @@ public class FileRecordWriter extends AbstractItemWriter {
         dataset.getLatestVersion().getFileMetadatas().add(fmd);
         fmd.setDatasetVersion(dataset.getLatestVersion());
         
+	//pm - start file PID block
+	String isFilePIDsEnabled = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.FilePIDsEnabled, "true"); //default value for file PIDs is 'true'
+	if ("true".contentEquals( isFilePIDsEnabled )) {
+	
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
             packageFile.setIdentifier(dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean));
@@ -387,6 +391,8 @@ public class FileRecordWriter extends AbstractItemWriter {
                 packageFile.setGlobalIdCreateTime(new Date());
             }
         }
+	}
+	//pm - end file PID block
 
         getJobLogger().log(Level.INFO, "Successfully created a file of type package");
         
