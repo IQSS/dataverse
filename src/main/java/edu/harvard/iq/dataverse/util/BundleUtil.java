@@ -2,6 +2,9 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.DataverseLocaleBean;
 
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
@@ -21,9 +24,27 @@ public class BundleUtil {
     }
 
     public static String getStringFromBundle(String key, List<String> arguments) {
+
         DataverseLocaleBean d = new DataverseLocaleBean();
         bundle_locale= new Locale(d.getLocaleCode());
-        ResourceBundle bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale);
+
+        logger.info("dataverselocalebean   : **** : " + d.getLocaleCode() );
+        String filesRootDirectory = System.getProperty("dataverse.lang.directory");
+        if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
+            filesRootDirectory = "/tmp/lang";
+        }
+
+        File file = new File(filesRootDirectory);
+        URL[] urls = null;
+        try {
+            urls = new URL[]{file.toURI().toURL()};
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        ClassLoader loader = new URLClassLoader(urls);
+        ResourceBundle bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale, loader);
         return getStringFromBundle(key, arguments, bundle);
     }
 

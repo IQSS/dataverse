@@ -25,7 +25,7 @@ public class LocalBundle extends ResourceBundle {
 
     public LocalBundle(){
         DataverseLocaleBean d = new DataverseLocaleBean();
-        bundle_locale= d.getLocale();
+        bundle_locale= new Locale(d.getLocaleCode());
 
         String filesRootDirectory = System.getProperty("dataverse.lang.directory");
         if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
