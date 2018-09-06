@@ -815,6 +815,12 @@ Otherwise, if ``:DataFilePIDFormat`` is set to *INDEPENDENT*, then each file wil
 
 Note that in either case, when using the ``sequentialNumber`` option, datasets and files share the same database sequence that was created as part of the setup described in ``:IdentifierGenerationStyle`` above.
 
+:FilePIDsEnabled
+++++++++++++++++
+
+Enable/disable the publishing of file based PIDs for the whole installation. This is enabled by default
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
 :ApplicationTermsOfUse
 ++++++++++++++++++++++
@@ -1297,3 +1303,11 @@ Enable the collection of provenance metadata on Dataverse via the provenance pop
 Sets how long a cached metrics result is used before re-running the query for a request. Note this only effects queries on the current month, previous months queries are cached indefinitely. The default timeout is 7 days (10080 minutes).
 
 ``curl -X PUT -d 10080 http://localhost:8080/api/admin/settings/:MetricsCacheTimeoutMinutes``
+
+:Languages
+++++++++++
+
+Sets which languages should be available. If there is more than one, a dropdown is displayed
+in the header. This should be formated as a JSON array as shown below.
+
+``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{  "locale":"en", "title":"English"},  {  "locale":"fr", "title":"Français"}]'``

@@ -418,7 +418,7 @@ public class UtilIT {
             .header(API_TOKEN_HTTP_HEADER, apiToken)
             .put("api/datasets/" + linkedDatasetId + "/link/" + linkingDataverseAlias);
         return response;
-    }   
+    } 
     
     static Response deleteDatasetLink(Long linkedDatasetId, String linkingDataverseAlias, String apiToken) {
         Response response = given()
@@ -1637,5 +1637,24 @@ public class UtilIT {
         assertEquals("A Dataset with a File", title);
     }
     
-
+    static Response checkDatasetLocks(long datasetId, String lockType, String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .get("api/datasets/" + datasetId + "/locks" + (lockType == null ? "" : "?type="+lockType));
+        return response;       
+    }
+    
+    static Response lockDataset(long datasetId, String lockType, String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .post("api/datasets/" + datasetId + "/lock/" + lockType);
+        return response;       
+    }
+    
+    static Response unlockDataset(long datasetId, String lockType, String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .delete("api/datasets/" + datasetId + "/locks" + (lockType == null ? "" : "?type="+lockType));
+        return response;       
+    }
 }
