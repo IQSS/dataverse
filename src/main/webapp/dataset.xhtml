@@ -998,7 +998,7 @@
                             <p:commandButton value="#{bundle.done}" onclick="PF('detailsBlocks').hide();PF('blockDatasetForm').hide();" type="button" />
                         </div>
                     </p:dialog>
-
+                    
                     <p:dialog id="selectFilesForDownload" styleClass="smallPopUp"
                               header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDownload" modal ="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDownload']}</p>
@@ -1281,10 +1281,11 @@
                                         <p class="help-block">#{bundle['dataverse.link.dataset.choose']}</p>
                                         
                                         <p:autoComplete id="dataverseLinkName" style="width:75%;"
+                                                        binding="#{DatasetPage.selectedDataverseMenu}"
                                                         placeholder="#{bundle['dataverse.link.yourDataverses.inputPlaceholder']}"
                                                         emptyMessage="#{bundle['dataverse.link.dataset.none']}"
                                                         multiple="true" scrollHeight="180" forceSelection="true" 
-                                                        minQueryLength="2" queryDelay="1000"                                                                                  
+                                                        minQueryLength="3" queryDelay="1000"                                                                                  
                                                         value="#{DatasetPage.selectedDataversesForLinking}"  
                                                         completeMethod="#{DatasetPage.completeLinkingDataverse}"
                                                         var="dataverseLk" itemLabel="#{dataverseLk.displayName}" itemValue="#{dataverseLk}" converter="dataverseConverter">
@@ -1298,11 +1299,7 @@
                                             <p:ajax process="@this" event="itemUnselect" />
                                         </p:autoComplete>
                                         
-                                        
-                                        
-                                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
-                                            <p class="form-control-static">#{DatasetPage.linkingDataverse.displayName}</p>
-                                        </ui:fragment>
+                                        <p:message for="dataverseLinkName"/>
                                     </div>
                                 </div>
                             </div>
@@ -1311,17 +1308,15 @@
                         <!-- TODO: DIDN'T TOUCH THESE GUYS... HOPEFULLY IT ALL STILL WORKS -->
                         
                         <div class="button-block">
-                            <p:commandLink type="button" styleClass="btn btn-default" onclick="PF('linkDatasetForm').hide()" update=":messagePanel"
-                                           value="#{bundle['dataset.link.save']}" action="#{DatasetPage.saveLinkingDataverses}"
+                            <p:commandLink type="button" styleClass="btn btn-default"  update=":messagePanel,linkDatasetForm"
+                                           value="#{bundle['dataset.link.save']}" action="#{DatasetPage.saveLinkingDataverses()}"
                                            />
                             <button type="button" class="btn btn-default" onclick="PF('linkDatasetForm').hide();PF('blockDatasetForm').hide();">
                                 #{bundle.cancel}
                             </button>
                         </div>
                     </p:dialog>
-                    
-                    
-                    
+                                        
                     
                     <p:dialog id="computeBatchListPopup" header="#{bundle['dataset.compute.computeBatchListHeader']}" widgetVar="computeBatchListPopup" modal="true">
                         <div class="text-right">
