@@ -15,16 +15,6 @@ import javax.json.JsonObjectBuilder;
  */
 public class BriefJsonPrinter {
 	
-	public JsonObjectBuilder json( BuiltinUser usr ) {
-		return ( usr==null ) 
-				? null
-				: jsonObjectBuilder().add("id", usr.getId())
-					.add("firstName", usr.getFirstName())
-					.add("lastName", usr.getLastName())
-					.add("affiliation", usr.getAffiliation())
-					;
-	}
-	
 	public JsonObjectBuilder json( DatasetVersion dsv ) {
 		return ( dsv==null ) 
 				? null

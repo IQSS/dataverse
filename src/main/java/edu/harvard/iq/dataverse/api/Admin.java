@@ -384,8 +384,9 @@ public class Admin extends AbstractApiBean {
 	@Path("authenticatedUsers/id/{id}/convertShibToBuiltIn")
 	@Deprecated
 	public Response convertShibUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-		try {
-			AuthenticatedUser user = findAuthenticatedUserOrDie();
+		AuthenticatedUser user;
+                try {
+			user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -399,7 +400,7 @@ public class Admin extends AbstractApiBean {
 						+ " could not be converted from Shibboleth to BuiltIn. An Exception was not thrown.");
 			}
 			JsonObjectBuilder output = Json.createObjectBuilder();
-			output.add("email", builtinUser.getEmail());
+			output.add("email", user.getEmail());
 			output.add("username", builtinUser.getUserName());
 			return ok(output);
 		} catch (Throwable ex) {
@@ -419,8 +420,9 @@ public class Admin extends AbstractApiBean {
 	@PUT
 	@Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
 	public Response convertOAuthUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-		try {
-			AuthenticatedUser user = findAuthenticatedUserOrDie();
+		AuthenticatedUser user;
+                try {
+			user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -434,7 +436,7 @@ public class Admin extends AbstractApiBean {
 						+ " could not be converted from remote to BuiltIn. An Exception was not thrown.");
 			}
 			JsonObjectBuilder output = Json.createObjectBuilder();
-			output.add("email", builtinUser.getEmail());
+			output.add("email", user.getEmail());
 			output.add("username", builtinUser.getUserName());
 			return ok(output);
 		} catch (Throwable ex) {

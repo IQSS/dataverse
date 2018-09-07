@@ -292,12 +292,7 @@ public class JsonPrinter {
                 ? null
                 : jsonObjectBuilder()
                 .add("id", user.getId())
-                .add("firstName", user.getFirstName())
-                .add("lastName", user.getLastName())
-                .add("userName", user.getUserName())
-                .add("affiliation", user.getAffiliation())
-                .add("position", user.getPosition())
-                .add("email", user.getEmail());
+                .add("userName", user.getUserName());
     }
 
     public static JsonObjectBuilder json(Dataset ds) {
