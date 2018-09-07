@@ -17,6 +17,9 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Ignore;
+import static junit.framework.Assert.assertEquals;
+import static com.jayway.restassured.RestAssured.given;
+import static junit.framework.Assert.assertEquals;
 
 /**
  * extremely minimal API tests for creating OAI sets.
@@ -101,8 +104,9 @@ public class HarvestingServerIT
 
 	}
         
-    // A more elaborate test - we'll create a set with dataset, and attempt 
-    // to retrieve the record.
+    // A more elaborate test - we'll create and publish a dataset, then create an
+    // OAI set with that one dataset, and attempt to retrieve the OAI record
+    // with GetRecord. 
     @Test
     public void testGetRecord() throws InterruptedException {
 
@@ -123,21 +127,19 @@ public class HarvestingServerIT
         
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, adminUserAPIKey);
         createDatasetResponse.prettyPrint();
-        //Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
         
         // retrieve the global id: 
-        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
-        
-        Response datasetAsJson = UtilIT.nativeGetUsingPersistentId(datasetPersistentId, adminUserAPIKey);
-        datasetAsJson.then().assertThat()
-                .statusCode(OK.getStatusCode());
-       
-        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        String datasetPersistentId = UtilIT.getPersistentDatasetIdFromResponse(createDatasetResponse);
         
         // publish dataset:
         
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", adminUserAPIKey);
         assertEquals(200, publishDataset.getStatusCode());
+        
+        String identifier = datasetPersistentId.substring(datasetPersistentId.lastIndexOf('/')+1);
+        
+        logger.info("identifier: "+identifier);
         
         // Let's try and create an OAI set with the dataset we have just 
         // created and published: 
@@ -169,10 +171,11 @@ public class HarvestingServerIT
         // And now run GetRecord, since we know the persistent id of the dataset:
         
         apiPath = String.format("/oai?verb=GetRecord&identifier=%s&metadataPrefix=oai_dc", datasetPersistentId);
+        logger.info("GetRecord url: "+apiPath);
         Response getRecordResponse = given()
-                .put(apiPath);
-        assertEquals(200, getRecordResponse.getStatusCode());
-        
+                .get(apiPath);
+        //assertEquals(200, getRecordResponse.getStatusCode());
+        logger.info(getRecordResponse.getBody().asString());
         // And confirm that we got the correct record back:
         
         assertEquals(datasetPersistentId, getRecordResponse.getBody().xmlPath().getString("OAI-PMH.GetRecord.record.header.identifier"));
