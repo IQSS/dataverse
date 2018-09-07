@@ -59,36 +59,16 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     EntityManager em;   
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean");
-    
-    /*
-    public void updateOaiRecords() {
-        Date updateTime = new Date();
-        List<OAISet> sets = oaiSetService.findAll();
-        
-        for (OAISet oaiSet : sets) {
-            List<Long> studyIds = indexService.query(oaiSet.getDefinition());
-            studyIds = studyService.getVisibleStudies(studyIds, null);
-            studyIds = studyService.getViewableStudies(studyIds);
-            updateOaiRecords( oaiSet.getSpec(), studyIds, updateTime );
-        }
-        
-        // also do noset membet
-        List<Long> studyIds = studyService.getAllNonHarvestedStudyIds();
-        studyIds = studyService.getVisibleStudies(studyIds, null);
-        studyIds = studyService.getViewableStudies(studyIds);        
-        updateOaiRecords( null, studyIds, updateTime );
-        
-    }   */ 
 
     public void updateOaiRecords(String setName, List<Long> datasetIds, Date updateTime, boolean doExport) {
         updateOaiRecords(setName, datasetIds, updateTime, doExport, logger);
     }
     
     public void updateOaiRecords(String setName, List<Long> datasetIds, Date updateTime, boolean doExport, Logger setUpdateLogger) {
-        
+
         // create Map of OaiRecords
-        List<OAIRecord> oaiRecords = findOaiRecordsBySetName( setName );
-        Map<String,OAIRecord> recordMap = new HashMap<>();
+        List<OAIRecord> oaiRecords = findOaiRecordsBySetName(setName);
+        Map<String, OAIRecord> recordMap = new HashMap<>();
         if (oaiRecords != null) {
             for (OAIRecord record : oaiRecords) {
                 // look for duplicates here? delete?
@@ -96,10 +76,10 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             }
         } else {
             setUpdateLogger.fine("Null returned - no records found.");
-        } 
+        }
 
         if (!recordMap.isEmpty()) {
-            setUpdateLogger.fine("Found "+recordMap.size()+" existing records");
+            setUpdateLogger.fine("Found " + recordMap.size() + " existing records");
         } else {
             setUpdateLogger.fine("No records in the set yet.");
         }
@@ -110,32 +90,33 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                 Dataset dataset = datasetService.find(datasetId);
                 if (dataset == null) {
                     setUpdateLogger.fine("failed to find dataset!");
-                } else {
-                    setUpdateLogger.fine("found dataset.");
+                } else if (dataset.isReleased() && !dataset.isDeaccessioned()) {
+                    // This means this is a published dataset
+                    setUpdateLogger.fine("found published dataset.");
 
-                    // TODO: option to *force* export? 
+                    // if doExport was requested, we'll check if the 
+                    // dataset has been exported since the last time it was 
+                    // published, and try to export if not.
                     if (doExport) {
-                        // TODO: 
-                        // Review this logic - specifically for handling of 
-                        // deaccessioned datasets. -- L.A. 4.5
                         // OK, it looks like we can't rely on .getPublicationDate() - 
                         // as it is essentially the *first publication* date; 
                         // and we are interested in the *last*
-                        
+
                         DatasetVersion releasedVersion = dataset.getReleasedVersion();
                         Date publicationDate = releasedVersion == null ? null : releasedVersion.getReleaseTime();
-                        
+
                         //if (dataset.getPublicationDate() != null
                         //        && (dataset.getLastExportTime() == null
                         //        || dataset.getLastExportTime().before(dataset.getPublicationDate()))) {
-                        
-                        if (publicationDate != null 
+                        if (publicationDate != null
                                 && (dataset.getLastExportTime() == null
                                 || dataset.getLastExportTime().before(publicationDate))) {
-                        
+
                             setUpdateLogger.fine("Attempting to run export on dataset " + dataset.getGlobalIdString());
                             exportAllFormats(dataset);
                         }
+                        
+                        // TODO: should probably bail if the export attempt has failed! -- L.A. 4.9.2
                     }
 
                     setUpdateLogger.fine("\"last exported\" timestamp: " + dataset.getLastExportTime());
@@ -323,6 +304,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                 queryString += " and h.setName = :setName";
             } 
         } else {
+            // TODO: this is probably unnecessary - setName should never be null really... -- L.A. 4.9.2
             queryString += " and h.setName is null";
         }
         queryString += from != null ? " and h.lastUpdateTime >= :from" : "";
