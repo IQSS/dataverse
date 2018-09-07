@@ -371,6 +371,7 @@ public class Admin extends AbstractApiBean {
 		return ok(json(authenticatedUser));
 	}
 
+        //TODO: Delete this endpoint after 4.9.3. Was updated with change in docs. --MAD
 	/**
 	 * curl -X PUT -d "shib@mailinator.com"
 	 * http://localhost:8080/api/admin/authenticatedUsers/id/11/convertShibToBuiltIn
