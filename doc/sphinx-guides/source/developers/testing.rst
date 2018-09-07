@@ -188,7 +188,7 @@ Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)
 
 To see the full list of tests used by the Docker option mentioned above, see :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>`.
 
-Measuring coverage of integration tests
+Measuring Coverage of Integration Tests
 ---------------------------------------
 Measuring the code coverage of integration tests with jacoco requires several steps:
 
