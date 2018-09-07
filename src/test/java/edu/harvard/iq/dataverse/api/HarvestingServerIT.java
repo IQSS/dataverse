@@ -9,6 +9,14 @@ import static junit.framework.Assert.assertEquals;
 
 import com.jayway.restassured.response.Response;
 import static com.jayway.restassured.RestAssured.given;
+import com.jayway.restassured.path.json.JsonPath;
+import javax.json.Json;
+import javax.json.JsonArray;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.OK;
+import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.equalTo;
+import org.junit.Ignore;
 
 /**
  * extremely minimal API tests for creating OAI sets.
@@ -92,4 +100,88 @@ public class HarvestingServerIT
 		// TODO - get an answer to the question of if it's worth cleaning up (users, sets) or not
 
 	}
+        
+    // A more elaborate test - we'll create a set with dataset, and attempt 
+    // to retrieve the record.
+    @Test
+    public void testGetRecord() throws InterruptedException {
+
+        setupUsers();
+
+        // create dataverse:
+        
+        Response createDataverseResponse = UtilIT.createRandomDataverse(adminUserAPIKey);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // publish dataverse:
+        
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, adminUserAPIKey);
+        assertEquals(OK.getStatusCode(), publishDataverse.getStatusCode());
+        
+        // create dataset: 
+        
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, adminUserAPIKey);
+        createDatasetResponse.prettyPrint();
+        //Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        
+        // retrieve the global id: 
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        
+        Response datasetAsJson = UtilIT.nativeGetUsingPersistentId(datasetPersistentId, adminUserAPIKey);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+       
+        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        
+        // publish dataset:
+        
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", adminUserAPIKey);
+        assertEquals(200, publishDataset.getStatusCode());
+        
+        // Let's try and create an OAI set with the dataset we have just 
+        // created and published: 
+        
+        String setName = identifier;
+        String setQuery="dsPersistentId:"+identifier;
+        String apiPath = String.format("/api/harvest/server/oaisets/%s",setName);
+                
+                
+        Response createSetResponse = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
+                .body(jsonForTestSpec(setName, setQuery))
+                .post(apiPath);
+        assertEquals(201, createSetResponse.getStatusCode());
+        
+        // TODO: a) look up the set via native harvest/server api; 
+        //       b) look up the set via the OAI ListSets;
+        
+        // export set: 
+        // (this is asynchronous - so we should probably wait a little)
+        
+        apiPath = String.format("/api/admin/metadata/exportOAI/%s", setName);
+        Response exportSetResponse = given()
+                .put(apiPath);
+        assertEquals(200, exportSetResponse.getStatusCode());
+        
+        Thread.sleep(5000L);
+        
+        // And now run GetRecord, since we know the persistent id of the dataset:
+        
+        apiPath = String.format("/oai?verb=GetRecord&identifier=%s&metadataPrefix=oai_dc", datasetPersistentId);
+        Response getRecordResponse = given()
+                .put(apiPath);
+        assertEquals(200, getRecordResponse.getStatusCode());
+        
+        // And confirm that we got the correct record back:
+        
+        assertEquals(datasetPersistentId, getRecordResponse.getBody().xmlPath().getString("OAI-PMH.GetRecord.record.header.identifier"));
+        
+        // TODO: 
+        // check the metadata payload of the OAI record?
+        
+        // TODO: 
+        // run ListIdentifiers on the set created above; verify that it returns 
+        // one record, and that it is for the correct dataset.
+    }
 }
