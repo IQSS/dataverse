@@ -185,7 +185,7 @@ public class DataverseServiceBean implements java.io.Serializable {
             return null;
         }
     }
-	
+    
 	public boolean hasData( Dataverse dv ) {
 		TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
 								.setParameter("id", dv.getId());
@@ -466,7 +466,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         for (Dataverse res : results) {
             if (!remove.contains(res)) {
-                if (this.permissionService.requestOn(req, res).has(Permission.PublishDataverse)) {
+                if (this.permissionService.requestOn(req, res).has(Permission.PublishDataset)) {
                     dataverseList.add(res);
                 }
             }

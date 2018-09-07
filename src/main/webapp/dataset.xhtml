@@ -1279,16 +1279,14 @@
                                                         binding="#{DatasetPage.selectedDataverseMenu}"
                                                         placeholder="#{bundle['dataverse.link.yourDataverses.inputPlaceholder']}"
                                                         emptyMessage="#{bundle['dataverse.link.dataset.none']}"
-                                                        multiple="true" scrollHeight="180" forceSelection="true" 
-                                                        minQueryLength="3" queryDelay="1000"                                                                                  
-                                                        value="#{DatasetPage.selectedDataversesForLinking}"  
+                                                         scrollHeight="180" forceSelection="true" 
+                                                        minQueryLength="1" queryDelay="1000"                                                                                  
+                                                        value="#{DatasetPage.selectedDataverseForLinking}" 
+                                                         multiple="false"
                                                         completeMethod="#{DatasetPage.completeLinkingDataverse}"
                                                         var="dataverseLk" itemLabel="#{dataverseLk.displayName}" itemValue="#{dataverseLk}" converter="dataverseConverter">
                                             <p:column>
                                                 <h:outputText value="#{dataverseLk.displayName}"/> 
-                                            </p:column>
-                                            <p:column>
-                                                <h:outputText value="#{dataverseLk.alias}"/>
                                             </p:column>
                                             <p:ajax process="@this" event="itemSelect" />
                                             <p:ajax process="@this" event="itemUnselect" />

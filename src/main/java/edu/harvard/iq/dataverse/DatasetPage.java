@@ -2069,14 +2069,14 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedFiles = selectedFiles;
     }
     
-    private List<Dataverse> selectedDataversesForLinking  = new ArrayList<>();
+    private Dataverse selectedDataverseForLinking;
 
-    public List<Dataverse> getSelectedDataversesForLinking() {
-        return selectedDataversesForLinking;
+    public Dataverse getSelectedDataverseForLinking() {
+        return selectedDataverseForLinking;
     }
 
-    public void setSelectedDataversesForLinking(List<Dataverse> selectedDataversesForLinking) {
-        this.selectedDataversesForLinking = selectedDataversesForLinking;
+    public void setSelectedDataverseForLinking(Dataverse sdvfl) {
+        this.selectedDataverseForLinking = sdvfl;
     }
     
     private List<FileMetadata> selectedRestrictedFiles; // = new ArrayList<>();
@@ -2244,9 +2244,7 @@ public class DatasetPage implements java.io.Serializable {
         List<String> arguments = new ArrayList<>();
         String dataverseString = "";
         arguments.add(StringEscapeUtils.escapeHtml(dataset.getDisplayName()));
-        for (Dataverse dv: selectedDataversesForLinking ){
-            dataverseString += " <a href=\"/dataverse/" + dv.getAlias() + "\">" + StringEscapeUtils.escapeHtml(dv.getDisplayName()) + "</a>";
-        }
+        dataverseString += " <a href=\"/dataverse/" + selectedDataverseForLinking.getAlias() + "\">" + StringEscapeUtils.escapeHtml(selectedDataverseForLinking.getDisplayName()) + "</a>";
         arguments.add(dataverseString);
         arguments.add(settingsWrapper.getSupportTeamName());
         return arguments;
@@ -2255,31 +2253,13 @@ public class DatasetPage implements java.io.Serializable {
         
     public void saveLinkingDataverses() {
 
-        if (selectedDataversesForLinking == null || selectedDataversesForLinking.isEmpty()) {
+        if (selectedDataverseForLinking == null) {
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dataverse.link.select"));
             FacesContext.getCurrentInstance().addMessage(null, message);
             return;
-        }
+        }     
 
-        for (Dataverse dv : selectedDataversesForLinking) {
-            if (dataset.getOwner().equals(dv)) {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), BundleUtil.getStringFromBundle("dataset.link.not.to.owner"));
-                FacesContext.getCurrentInstance().addMessage(null, message);
-                return;
-            }
-            if (dataset.getOwner().getOwners().contains(dv)) {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), BundleUtil.getStringFromBundle("dataset.link.not.to.parent.dataverse"));
-                FacesContext.getCurrentInstance().addMessage(null, message);
-                return;
-            }
-        }      
-        
-        boolean success = true;
-        for (Dataverse dv : selectedDataversesForLinking){
-          success &=  saveLink(dv);
-        }
-        
-        if(success){
+        if(saveLink(selectedDataverseForLinking)){
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", getSuccessMessageArguments()));
         } else{           
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), linkingDataverseErrorMessage);

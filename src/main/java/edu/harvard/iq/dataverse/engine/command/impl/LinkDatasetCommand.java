@@ -23,7 +23,7 @@ import java.util.Date;
  *
  * @author skraffmiller
  */
-@RequiredPermissions(Permission.PublishDataverse)
+@RequiredPermissions(Permission.PublishDataset)
 public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse> {
     
     private final Dataset linkedDataset;
