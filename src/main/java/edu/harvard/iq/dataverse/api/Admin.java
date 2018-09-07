@@ -27,6 +27,8 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailInitResponse;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
 import javax.json.Json;
@@ -41,6 +43,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+
+import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Map;
 import java.util.logging.Level;
@@ -65,6 +69,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import java.util.Date;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
@@ -1099,6 +1104,91 @@ public class Admin extends AbstractApiBean {
 				+ " unregistered, published files registered successfully.");
 	}
 
+	@GET
+	@Path("/updateHashValues/{alg}")
+	public Response updateHashValues(@PathParam("alg") String alg, @QueryParam("num") int num) {
+		Integer count = fileService.findAll().size();
+		Integer successes = 0;
+		Integer alreadyUpdated = 0;
+		Integer rehashed = 0;
+		logger.info("Num = " + num);
+		if (num <= 0)
+			num = Integer.MAX_VALUE;
+		DataFile.ChecksumType cType = null;
+		try {
+			cType = DataFile.ChecksumType.fromString(alg);
+		} catch (IllegalArgumentException iae) {
+			return error(Status.BAD_REQUEST, "Unknown algorithm");
+		}
+		logger.info("Starting to rehash: analyzing " + count + " files. " + new Date());
+		logger.info("Hashes not created with " + alg + " will be verified, and, if valid, replaced with a hash using "
+				+ alg);
+		try {
+			User u = findAuthenticatedUserOrDie();
+			if (!u.isSuperuser())
+				return error(Status.UNAUTHORIZED, "must be superuser");
+		} catch (WrappedResponse e1) {
+			return error(Status.UNAUTHORIZED, "api key required");
+		}
+
+		for (DataFile df : fileService.findAll()) {
+			if (rehashed.intValue() >= num)
+				break;
+			try {
+				if (!df.getChecksumType().equals(cType)) {
+					rehashed++;
+					logger.info(
+							rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", " + df.getIdentifier());
+					// verify hash and calc new one to replace it
+					StorageIO<DataFile> storage = df.getStorageIO();
+					storage.open(DataAccessOption.READ_ACCESS);
+					InputStream in = storage.getInputStream();
+					if (in == null)
+						logger.warning("Null stream");
+					String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
+					if (currentChecksum.equals(df.getChecksumValue())) {
+						logger.info("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
+								+ df.getIdentifier() + " is valid");
+						storage.open(DataAccessOption.READ_ACCESS);
+						InputStream in2 = storage.getInputStream();
+						if (in2 == null)
+							logger.warning("Null stream");
+						String newChecksum = FileUtil.CalculateChecksum(in2, cType);
+
+						df.setChecksumType(cType);
+						df.setChecksumValue(newChecksum);
+						successes++;
+					} else {
+						logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
+								+ ", " + df.getIdentifier() + " is INVALID");
+					}
+				} else {
+					alreadyUpdated++;
+					if (alreadyUpdated % 100 == 0) {
+						logger.info(alreadyUpdated + " of  " + count
+								+ " files are already have hashes with the new algorithm. " + new Date());
+					}
+				}
+				if (successes % 100 == 0) {
+					logger.info(successes + " of  " + count + " files rehashed successfully. " + new Date());
+				}
+
+			} catch (Exception e) {
+				logger.info("Unexpected Exception: " + e.getMessage());
+
+			}
+		}
+		logger.info("Final Results:");
+		logger.info(
+				alreadyUpdated + " of  " + count + " files already had hashes with the new algorithm. " + new Date());
+		logger.info(rehashed + " of  " + count + " files to rehash. " + new Date());
+		logger.info(
+				successes + " of  " + rehashed + " files successfully rehashed with the new algorithm. " + new Date());
+
+		return ok("Datafile rehashing complete." + successes + " of  " + rehashed + " files successfully rehashed.");
+	}
+
+	
 	@DELETE
 	@Path("/clearMetricsCache")
 	public Response clearMetricsCache() {

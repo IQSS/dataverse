@@ -1089,7 +1089,11 @@ This sets the base name (without dot and extension), if not set it defaults to '
 
 Dataverse calculates checksums for uploaded files so that users can determine if their file was corrupted via upload or download. This is sometimes called "file fixity": https://en.wikipedia.org/wiki/File_Fixity
 
-The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1" is an experimental alternate value for this setting.
+The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1", "SHA-256" and "SHA-512" are alternate values for this setting.
+The fixity algorithm used on existing files can be changed by a superuser using the API. The API call will only update the algorithm and checksum for a file if the existing checksum can be validated against the file.
+Statistics concerning the updates are returned in the response to the API call with details in the log.
+
+``curl -X PUT -d domainstats http://localhost:8080/api/admin/updateHashValues/{alg}``
 
 .. _:PVMinLength:
 
