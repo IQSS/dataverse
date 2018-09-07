@@ -57,6 +57,9 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
+
+import org.apache.solr.common.util.IOUtils;
+
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -1111,7 +1114,7 @@ public class Admin extends AbstractApiBean {
 		Integer successes = 0;
 		Integer alreadyUpdated = 0;
 		Integer rehashed = 0;
-		logger.info("Num = " + num);
+		
 		if (num <= 0)
 			num = Integer.MAX_VALUE;
 		DataFile.ChecksumType cType = null;
@@ -1134,25 +1137,27 @@ public class Admin extends AbstractApiBean {
 		for (DataFile df : fileService.findAll()) {
 			if (rehashed.intValue() >= num)
 				break;
+			InputStream in = null;
+			InputStream in2 = null; 
 			try {
 				if (!df.getChecksumType().equals(cType)) {
 					rehashed++;
-					logger.info(
+					logger.fine(
 							rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", " + df.getIdentifier());
 					// verify hash and calc new one to replace it
 					StorageIO<DataFile> storage = df.getStorageIO();
 					storage.open(DataAccessOption.READ_ACCESS);
-					InputStream in = storage.getInputStream();
+					in = storage.getInputStream();
 					if (in == null)
-						logger.warning("Null stream");
+						logger.warning("Cannot retrieve file.");
 					String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
 					if (currentChecksum.equals(df.getChecksumValue())) {
-						logger.info("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
+						logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
 								+ df.getIdentifier() + " is valid");
 						storage.open(DataAccessOption.READ_ACCESS);
-						InputStream in2 = storage.getInputStream();
+						in2 = storage.getInputStream();
 						if (in2 == null)
-							logger.warning("Null stream");
+							logger.warning("Cannot retrieve file to calculate new checksum.");
 						String newChecksum = FileUtil.CalculateChecksum(in2, cType);
 
 						df.setChecksumType(cType);
@@ -1174,8 +1179,11 @@ public class Admin extends AbstractApiBean {
 				}
 
 			} catch (Exception e) {
-				logger.info("Unexpected Exception: " + e.getMessage());
+				logger.warning("Unexpected Exception: " + e.getMessage());
 
+			} finally {
+				IOUtils.closeQuietly(in);
+				IOUtils.closeQuietly(in2);
 			}
 		}
 		logger.info("Final Results:");
