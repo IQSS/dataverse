@@ -159,7 +159,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         configuredHarvestingSets = oaiSets; 
     }
     
-    public boolean isConfiguredNamedOAISets() {
+    public boolean isHasNamedOAISets() {
         List<OAISet> namedSets = oaiSetService.findAllNamedSets();
         return namedSets != null && namedSets.size() > 0;
     }
@@ -344,6 +344,8 @@ public class HarvestingSetsPage implements java.io.Serializable {
         
         newOaiSet.setSpec("");
         newOaiSet.setName("");
+        // The default description of the default set. The admin will be  
+        // able to modify it later, if necessary.
         newOaiSet.setDescription("The default, \"no name\" set. The OAI server will serve the records from this set when no \"setspec\" argument is specified by the client.");
         newOaiSet.setDefinition("");
         

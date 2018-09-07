@@ -51,9 +51,9 @@
                 </h:form>
                 
                 <h:form id="harvestingSetsForm" rendered="#{true}">
-                    <p:fragment id="emptySetsTable" rendered="#{!harvestingSetsPage.configuredNamedOAISets or !harvestingSetsPage.harvestingServerEnabled}">
+                    <p:fragment id="emptySetsTable" rendered="#{!harvestingSetsPage.hasNamedOAISets or !harvestingSetsPage.harvestingServerEnabled}">
                         <!-- we DON'T want to show the "add set" button until the service is enabled! -->
-                        <div class="row" jsf:rendered="#{!harvestingSetsPage.configuredNamedOAISets and harvestingSetsPage.harvestingServerEnabled}">
+                        <div class="row" jsf:rendered="#{!harvestingSetsPage.hasNamedOAISets and harvestingSetsPage.harvestingServerEnabled}">
                             <div class="col-sm-12 text-right">
                                 <p:commandLink type="button" id="addSetEmpty" styleClass="btn btn-default margin-bottom"
                                                actionListener="#{harvestingSetsPage.initNewSet}"
@@ -121,12 +121,12 @@
                         </f:facet>
                         <p:column width="20%" headerText="#{bundle['harvestserver.tab.header.spec']}/#{bundle['harvestserver.tab.header.description']}">
                             <h:outputText value="#{oaiSet.spec}" rendered="#{!oaiSet.defaultSet}"/>
-                            <h:outputText value="DEFAULT" rendered="#{oaiSet.defaultSet}"/>
+                            <h:outputText value="#{bundle['harvestserver.tab.col.spec.default']}" rendered="#{oaiSet.defaultSet}"/>
                             <div class="text-muted small"><h:outputText value="#{oaiSet.description}" /></div>
                         </p:column>
                         <p:column width="31%" class="text-center" headerText="#{bundle['harvestserver.tab.header.definition']}">
                             <h:outputText value="#{oaiSet.definition}" rendered="#{!oaiSet.defaultSet}"/> 
-                            <h:outputText value="All Published Local Datasets" rendered="#{oaiSet.defaultSet}"/>
+                            <h:outputText value="#{bundle['harvestserver.tab.col.definition.default']}" rendered="#{oaiSet.defaultSet}"/>
                         </p:column>
                         <p:column width="34%" class="text-center" headerText="#{bundle['harvestserver.tab.header.stats']}">
                             <h:outputFormat rendered="#{!oaiSet.updateInProgress and !oaiSet.deleteInProgress}" value="#{harvestingSetsPage.getSetInfoNumOfDatasets(oaiSet) gt 0 ? bundle['harvestserver.tab.col.stats.results'] : bundle['harvestserver.tab.col.stats.empty']}">
@@ -238,7 +238,7 @@
                                     </label>
                                     <div class="col-sm-8">
                                         <p class="form-control-static" jsf:rendered="#{!harvestingSetsPage.selectedSet.defaultSet}"><h:outputText rendered="#{!harvestingSetsPage.selectedSet.defaultSet}" value="#{harvestingSetsPage.newSetSpec}"/></p>
-                                        <p class="help-block"><h:outputText value="#{harvestingSetsPage.selectedSet.defaultSet ? 'this is the default, unnamed set' : bundle['harvestserver.editSetDialog.setspec.helptext']}"/></p>
+                                        <p class="help-block"><h:outputText value="#{harvestingSetsPage.selectedSet.defaultSet ? bundle['harvestserver.editSetDialog.setspec.helptext.default'] : bundle['harvestserver.editSetDialog.setspec.helptext']}"/></p>
                                     </div>
                                 </div>
                                 

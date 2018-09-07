@@ -296,17 +296,17 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     
     public List<OAIRecord> findOaiRecordsBySetName(String setName, Date from, Date until, boolean excludeSet) {
                 
+        if (setName == null) {
+            setName = "";
+        }
+        
         String queryString ="SELECT object(h) from OAIRecord h where h.id is not null";
-        if (setName != null) {
             if (excludeSet) {
                 queryString += " and h.setName is not null and h.setName != '' and h.setName != :setName";
             } else {
                 queryString += " and h.setName = :setName";
             } 
-        } else {
-            // TODO: this is probably unnecessary - setName should never be null really... -- L.A. 4.9.2
-            queryString += " and h.setName is null";
-        }
+        
         queryString += from != null ? " and h.lastUpdateTime >= :from" : "";
         queryString += until != null ? " and h.lastUpdateTime<=:until" : "";
         queryString += " order by h.globalId";
