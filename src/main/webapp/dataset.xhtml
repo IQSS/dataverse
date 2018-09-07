@@ -1288,6 +1288,9 @@
                                             <p:column>
                                                 <h:outputText value="#{dataverseLk.displayName}"/> 
                                             </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{dataverseLk.alias}"/> 
+                                            </p:column>
                                             <p:ajax process="@this" event="itemSelect" />
                                             <p:ajax process="@this" event="itemUnselect" />
                                         </p:autoComplete>
