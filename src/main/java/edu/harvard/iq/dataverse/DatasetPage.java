@@ -239,7 +239,6 @@ public class DatasetPage implements java.io.Serializable {
     
     private boolean stateChanged = false;
 
-    private List<Dataverse> dataversesForLinking = new ArrayList<>();
     private Long linkingDataverseId;
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
@@ -737,13 +736,7 @@ public class DatasetPage implements java.io.Serializable {
         this.linkingDataverseId = linkingDataverseId;
     }
 
-    public List<Dataverse> getDataversesForLinking() {
-        return dataversesForLinking;
-    }
 
-    public void setDataversesForLinking(List<Dataverse> dataversesForLinking) {
-        this.dataversesForLinking = dataversesForLinking;
-    }
     
     public void updateReleasedVersions(){
         
@@ -2249,29 +2242,38 @@ public class DatasetPage implements java.io.Serializable {
 
     private List<String> getSuccessMessageArguments() {
         List<String> arguments = new ArrayList<>();
+        String dataverseString = "";
         arguments.add(StringEscapeUtils.escapeHtml(dataset.getDisplayName()));
-        
-        arguments.add(linkedDVSuccessMessage);
+        for (Dataverse dv: selectedDataversesForLinking ){
+            dataverseString += " <a href=\"/dataverse/" + dv.getAlias() + "\">" + StringEscapeUtils.escapeHtml(dv.getDisplayName()) + "</a>";
+        }
+        arguments.add(dataverseString);
         arguments.add(settingsWrapper.getSupportTeamName());
         return arguments;
     }
     
-    private void addLinkedDVMessage(Dataverse linkingDataverse) {
-
-        if (linkedDVSuccessMessage != null && !linkedDVSuccessMessage.isEmpty()) linkedDVSuccessMessage.concat(", ");
-
-        linkedDVSuccessMessage+= " <a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
-
-    }
         
-    public void saveLinkingDataverses(){
+    public void saveLinkingDataverses() {
 
         if (selectedDataversesForLinking == null || selectedDataversesForLinking.isEmpty()) {
-
-            FacesContext.getCurrentInstance().addMessage(getSelectedDataverseMenu().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("dataverse.link.select")));
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dataverse.link.select"));
+            FacesContext.getCurrentInstance().addMessage(null, message);
             return;
         }
+
+        for (Dataverse dv : selectedDataversesForLinking) {
+            if (dataset.getOwner().equals(dv)) {
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), BundleUtil.getStringFromBundle("dataset.link.not.to.owner"));
+                FacesContext.getCurrentInstance().addMessage(null, message);
+                return;
+            }
+            if (dataset.getOwner().getOwners().contains(dv)) {
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), BundleUtil.getStringFromBundle("dataset.link.not.to.parent.dataverse"));
+                FacesContext.getCurrentInstance().addMessage(null, message);
+                return;
+            }
+        }      
+        
         boolean success = true;
         for (Dataverse dv : selectedDataversesForLinking){
           success &=  saveLink(dv);
@@ -2279,15 +2281,14 @@ public class DatasetPage implements java.io.Serializable {
         
         if(success){
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", getSuccessMessageArguments()));
-        } else{
-            
+        } else{           
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), linkingDataverseErrorMessage);
             FacesContext.getCurrentInstance().addMessage(null, message);
         }
     } 
     
     private String linkingDataverseErrorMessage = "";
-    private String linkedDVSuccessMessage = "";
+
 
     public String getLinkingDataverseErrorMessage() {
         return linkingDataverseErrorMessage;
@@ -2296,15 +2297,6 @@ public class DatasetPage implements java.io.Serializable {
     public void setLinkingDataverseErrorMessage(String linkingDataverseErrorMessage) {
         this.linkingDataverseErrorMessage = linkingDataverseErrorMessage;
     }
-
-    public String getLinkedDVSuccessMessage() {
-        return linkedDVSuccessMessage;
-    }
-
-    public void setLinkedDVSuccessMessage(String linkedDVSuccessMessage) {
-        this.linkedDVSuccessMessage = linkedDVSuccessMessage;
-    }
-
     
     UIInput selectedLinkingDataverseMenu;
     
@@ -2326,9 +2318,7 @@ public class DatasetPage implements java.io.Serializable {
         LinkDatasetCommand cmd = new LinkDatasetCommand(dvRequestService.getDataverseRequest(), dataverse, dataset);
         linkingDataverse = dataverse;
         try {
-            commandEngine.submit(cmd);
-            addLinkedDVMessage(linkingDataverse);
-            
+            commandEngine.submit(cmd);           
         } catch (CommandException ex) {
             String msg = "There was a problem linking this dataset to yours: " + ex;
             logger.severe(msg);
@@ -2346,7 +2336,7 @@ public class DatasetPage implements java.io.Serializable {
     public List<Dataverse> completeLinkingDataverse(String query) {
         dataset = datasetService.find(dataset.getId());
         if (session.getUser().isAuthenticated()) {
-            return dataverseService.filterDataversesForLinking(query, (AuthenticatedUser) session.getUser(), dataset);
+            return dataverseService.filterDataversesForLinking(query, dvRequestService.getDataverseRequest(), dataset);
         } else {
             return null;
         }

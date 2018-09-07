@@ -6,12 +6,10 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.groups.Group;
-import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -27,7 +25,6 @@ import java.util.logging.Logger;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -40,7 +37,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -56,12 +52,6 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     @EJB
     DatasetServiceBean datasetService;
-    
-    @EJB 
-    GroupServiceBean groupSvc;
-
-    @EJB
-    ExplicitGroupServiceBean explicitGroupSvc;
     
     @EJB
     DataverseLinkingServiceBean dataverseLinkingService;
@@ -457,7 +447,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         return ret;
     }
     
-    public List<Dataverse> filterDataversesForLinking(String query, AuthenticatedUser user, Dataset dataset) {
+    public List<Dataverse> filterDataversesForLinking(String query, DataverseRequest req, Dataset dataset) {
 
         List<Dataverse> dataverseList = new ArrayList<>();
 
@@ -476,7 +466,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         for (Dataverse res : results) {
             if (!remove.contains(res)) {
-                if (this.permissionService.userOn(user, res).has(Permission.PublishDataverse)) {
+                if (this.permissionService.requestOn(req, res).has(Permission.PublishDataverse)) {
                     dataverseList.add(res);
                 }
             }

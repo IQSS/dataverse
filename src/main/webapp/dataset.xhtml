@@ -185,8 +185,7 @@
                                 <!-- END: Publish/Submit for Review/Return to Author Button Group -->
                                 
                                 <p:commandLink rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned}"
-                                               type="button" styleClass="btn btn-default btn-access"
-                                               
+                                               type="button" styleClass="btn btn-default btn-access"                                              
                                                oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"
                                                update="linkDatasetForm">
                                     <span class="glyphicon glyphicon-link"/> #{bundle['link']}
@@ -1267,17 +1266,13 @@
                     
                     <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
                         
-                        <!-- TODO: ADDED RENDER LOGIC AND MSG'S FROM PREVIOUS VERSION OF POPUP... CHECK IF NECESSARY -->
-                        
                             <div class="form-horizontal">
                                 <div class="form-group">
                                     <label class="col-xs-3 control-label">
                                         <h:outputText value="#{bundle['dataverse.link.yourDataverses']}"/>
                                     </label>
                                     <div class="col-xs-8">
-                                        
-                                        
-                                        <!-- TODO: ADDED NEW AUTOCOMPLETE COMPONENT IN PLACE OF OLD SELECTONE... CHECK IF STILL WORKING -->
+
                                         <p class="help-block">#{bundle['dataverse.link.dataset.choose']}</p>
                                         
                                         <p:autoComplete id="dataverseLinkName" style="width:75%;"
@@ -1303,9 +1298,6 @@
                                     </div>
                                 </div>
                             </div>
-                        
-                        
-                        <!-- TODO: DIDN'T TOUCH THESE GUYS... HOPEFULLY IT ALL STILL WORKS -->
                         
                         <div class="button-block">
                             <p:commandLink type="button" styleClass="btn btn-default"  update=":messagePanel,linkDatasetForm"
