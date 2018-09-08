@@ -56,6 +56,9 @@ import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.poi.util.IOUtils;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -435,8 +438,9 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                 + SEP + uploadFolder
                 + SEP + manifest;
         getJobLogger().log(Level.INFO, "Reading checksum manifest: " + manifestAbsolutePath);
+        Scanner scanner = null;
         try {
-            Scanner scanner = new Scanner(new FileReader(manifestAbsolutePath));
+            scanner = new Scanner(new FileReader(manifestAbsolutePath));
             HashMap<String, String> map = new HashMap<>();
             while (scanner.hasNextLine()) {
                 String[] parts = scanner.nextLine().split("\\s+"); // split on any empty space between path and checksum
@@ -449,6 +453,8 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         } catch (IOException ioe) {
             getJobLogger().log(Level.SEVERE, "Unable to load checksum manifest file: " + ioe.getMessage());
             jobContext.setExitStatus("FAILED");
+        } finally {
+            IOUtils.closeQuietly(scanner);
         }
 
     }
