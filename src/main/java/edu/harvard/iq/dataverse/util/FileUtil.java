@@ -1360,13 +1360,14 @@ public class FileUtil implements java.io.Serializable  {
             return null;
         }
         File file = File.createTempFile(UUID.randomUUID().toString(), UUID.randomUUID().toString());
-        OutputStream outputStream = new FileOutputStream(file);
-        int read = 0;
-        byte[] bytes = new byte[1024];
-        while ((read = inputStream.read(bytes)) != -1) {
-            outputStream.write(bytes, 0, read);
+        try (OutputStream outputStream = new FileOutputStream(file);) {
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            while ((read = inputStream.read(bytes)) != -1) {
+                outputStream.write(bytes, 0, read);
+            }
+            return file;
         }
-        return file;
     }
 
     /* 

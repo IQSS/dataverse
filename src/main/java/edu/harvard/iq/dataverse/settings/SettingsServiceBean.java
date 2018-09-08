@@ -359,7 +359,13 @@ public class SettingsServiceBean {
         /*
         Number for the minimum number of files to send PID registration to asynchronous workflow
         */
-        PIDAsynchRegFileCount
+        PIDAsynchRegFileCount,
+        
+        /**
+         * Whether new dataverses should inherit the set of admins of the parent dataverse (along with the dataverse creator).
+         */
+        InheritParentAdmins
+        
         ;
 
         @Override
