@@ -30,6 +30,7 @@ import java.util.regex.*;
 import java.util.zip.*;
 import java.util.logging.Logger;
 import org.apache.commons.lang.builder.*;
+import org.apache.poi.util.IOUtils;
 
 /**
  * This is a virtually unchanged DVN v2-3 implementation by 
@@ -569,16 +570,17 @@ public class IngestableDataChecker implements java.io.Serializable {
                 byte[] hdr = new byte[gzip_buffer_size];
                 buff.get(hdr, 0, gzip_buffer_size);
 
-                GZIPInputStream gzin = new GZIPInputStream(new ByteArrayInputStream(hdr));
+                try (GZIPInputStream gzin = new GZIPInputStream(new ByteArrayInputStream(hdr));) {
 
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < RDA_HEADER_SIZE; i++) {
-                    sb.append(String.format("%02X", gzin.read()));
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < RDA_HEADER_SIZE; i++) {
+                        sb.append(String.format("%02X", gzin.read()));
+                    }
+                    String fisrt5bytes = sb.toString();
+
+                    result = this.checkUncompressedFirst5bytes(fisrt5bytes);
                 }
-                String fisrt5bytes = sb.toString();
-
-                result = this.checkUncompressedFirst5bytes(fisrt5bytes);
-            // end of compressed case
+                // end of compressed case
             } else {
                 // uncompressed case?
                 if (DEBUG) {
@@ -608,12 +610,13 @@ public class IngestableDataChecker implements java.io.Serializable {
     public String detectTabularDataFormat(File fh) {
         boolean DEBUG = false;
         String readableFormatType = null;
+        FileChannel srcChannel = null;
         try {
             int buffer_size = this.getBufferSize(fh);
             dbgLog.fine("buffer_size: " + buffer_size);
         
             // set-up a FileChannel instance for a given file object
-            FileChannel srcChannel = new FileInputStream(fh).getChannel();
+            srcChannel = new FileInputStream(fh).getChannel();
 
             // create a read-only MappedByteBuffer
             MappedByteBuffer buff = srcChannel.map(FileChannel.MapMode.READ_ONLY, 0, buffer_size);
@@ -676,6 +679,8 @@ public class IngestableDataChecker implements java.io.Serializable {
         } catch (IOException ie) {
             dbgLog.fine("other io exception detected");
             ie.printStackTrace();
+        } finally {
+            IOUtils.closeQuietly(srcChannel);
         }
         return readableFormatType;
     }

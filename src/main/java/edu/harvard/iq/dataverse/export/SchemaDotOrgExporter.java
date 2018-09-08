@@ -20,7 +20,8 @@ public class SchemaDotOrgExporter implements Exporter {
     public static final String NAME = "schema.org";
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
+    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
+            throws ExportException {
         String jsonLdAsString = version.getJsonLd();
         try (JsonReader jsonReader = Json.createReader(new StringReader(jsonLdAsString));) {
             JsonObject jsonLdJsonObject = jsonReader.readObject();
@@ -54,7 +55,8 @@ public class SchemaDotOrgExporter implements Exporter {
 
     @Override
     public Boolean isHarvestable() {
-        // Defer harvesting because the current effort was estimated as a "2": https://github.com/IQSS/dataverse/issues/3700
+        // Defer harvesting because the current effort was estimated as a "2":
+        // https://github.com/IQSS/dataverse/issues/3700
         return false;
     }
 
