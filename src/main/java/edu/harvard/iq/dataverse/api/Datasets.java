@@ -21,7 +21,6 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -77,7 +76,6 @@ import edu.harvard.iq.dataverse.S3PackageImporter;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.EjbUtil;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -94,7 +92,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -177,7 +174,7 @@ public class Datasets extends AbstractApiBean {
         T handleSpecific( long major, long minor );
         T handleLatestPublished();
     }
-	
+    
     @GET
     @Path("{id}")
     public Response getDataset(@PathParam("id") String id) {
@@ -209,18 +206,8 @@ public class Datasets extends AbstractApiBean {
             
             ExportService instance = ExportService.getInstance(settingsSvc);
             
-            String xml = instance.getExportAsString(dataset, exporter);
-            // I'm wondering if this going to become a performance problem 
-            // with really GIANT datasets,
-            // the fact that we are passing these exports, blobs of JSON, and, 
-            // especially, DDI XML as complete strings. It would be nicer 
-            // if we could stream instead - and the export service already can
-            // give it to as as a stream; then we could start sending the 
-            // output to the remote client as soon as we got the first bytes, 
-            // without waiting for the whole thing to be generated and buffered... 
-            // (the way Access API streams its output). 
-            // -- L.A., 4.5
-            
+            InputStream xml = instance.getExport(dataset, exporter);
+           
             String mediaType = MediaType.TEXT_PLAIN;//PM - output formats appear to be either JSON or XML, unclear why text/plain is being used as default content-type.
 
             if (instance.isXMLFormat(exporter)){
@@ -235,37 +222,37 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-	@DELETE
-	@Path("{id}")
-	public Response deleteDataset( @PathParam("id") String id) {
-		return response( req -> {
-			execCommand( new DeleteDatasetCommand(req, findDatasetOrDie(id)));
-			return ok("Dataset " + id + " deleted");
+    @DELETE
+    @Path("{id}")
+    public Response deleteDataset( @PathParam("id") String id) {
+        return response( req -> {
+            execCommand( new DeleteDatasetCommand(req, findDatasetOrDie(id)));
+            return ok("Dataset " + id + " deleted");
         });
-	}
+    }
         
-	@DELETE
-	@Path("{id}/destroy")
-	public Response destroyDataset( @PathParam("id") String id) {
-		return response( req -> {
-			execCommand( new DestroyDatasetCommand(findDatasetOrDie(id), req) );
-			return ok("Dataset " + id + " destroyed");
+    @DELETE
+    @Path("{id}/destroy")
+    public Response destroyDataset( @PathParam("id") String id) {
+        return response( req -> {
+            execCommand( new DestroyDatasetCommand(findDatasetOrDie(id), req) );
+            return ok("Dataset " + id + " destroyed");
         });
-	}
+    }
         
         @DELETE
-	@Path("{datasetId}/deleteLink/{linkedDataverseId}")
-	public Response deleteDatasetLinkingDataverse( @PathParam("datasetId") String datasetId, @PathParam("linkedDataverseId") String linkedDataverseId) {
+    @Path("{datasetId}/deleteLink/{linkedDataverseId}")
+    public Response deleteDatasetLinkingDataverse( @PathParam("datasetId") String datasetId, @PathParam("linkedDataverseId") String linkedDataverseId) {
                 boolean index = true;
-		return response(req -> {
-			execCommand(new DeleteDatasetLinkingDataverseCommand(req, findDatasetOrDie(datasetId), findDatasetLinkingDataverseOrDie(datasetId, linkedDataverseId), index));
-			return ok("Link from Dataset " + datasetId + " to linked Dataverse " + linkedDataverseId + " deleted");
+        return response(req -> {
+            execCommand(new DeleteDatasetLinkingDataverseCommand(req, findDatasetOrDie(datasetId), findDatasetLinkingDataverseOrDie(datasetId, linkedDataverseId), index));
+            return ok("Link from Dataset " + datasetId + " to linked Dataverse " + linkedDataverseId + " deleted");
         });
-	}
+    }
         
-	@PUT
-	@Path("{id}/citationdate")
-	public Response setCitationDate( @PathParam("id") String id, String dsfTypeName) {
+    @PUT
+    @Path("{id}/citationdate")
+    public Response setCitationDate( @PathParam("id") String id, String dsfTypeName) {
         return response( req -> {
             if ( dsfTypeName.trim().isEmpty() ){
                 return badRequest("Please provide a dataset field type in the requst body.");
@@ -281,19 +268,19 @@ public class Datasets extends AbstractApiBean {
             execCommand(new SetDatasetCitationDateCommand(req, findDatasetOrDie(id), dsfType));
             return ok("Citation Date for dataset " + id + " set to: " + (dsfType != null ? dsfType.getDisplayName() : "default"));
         });
-	}    
+    }    
     
-	@DELETE
-	@Path("{id}/citationdate")
-	public Response useDefaultCitationDate( @PathParam("id") String id) {
+    @DELETE
+    @Path("{id}/citationdate")
+    public Response useDefaultCitationDate( @PathParam("id") String id) {
         return response( req -> {
             execCommand(new SetDatasetCitationDateCommand(req, findDatasetOrDie(id), null));
             return ok("Citation Date for dataset " + id + " set to default");
         });
-	}         
-	
-	@GET
-	@Path("{id}/versions")
+    }         
+    
+    @GET
+    @Path("{id}/versions")
     public Response listVersions( @PathParam("id") String id ) {
         return allowCors(response( req -> 
              ok( execCommand( new ListVersionsCommand(req, findDatasetOrDie(id)) )
@@ -301,9 +288,9 @@ public class Datasets extends AbstractApiBean {
                                 .map( d -> json(d) )
                                 .collect(toJsonArray()))));
     }
-	
-	@GET
-	@Path("{id}/versions/{versionId}")
+    
+    @GET
+    @Path("{id}/versions/{versionId}")
     public Response getVersion( @PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
         return allowCors(response( req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId));            
@@ -311,9 +298,9 @@ public class Datasets extends AbstractApiBean {
                                                         : ok(json(dsv));
         }));
     }
-	
+    
     @GET
-	@Path("{id}/versions/{versionId}/files")
+    @Path("{id}/versions/{versionId}/files")
     public Response getVersionFiles( @PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
         return allowCors(response( req -> ok( jsonFileMetadatas(
                          getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId)).getFileMetadatas()))));
@@ -322,18 +309,18 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{id}/versions/{versionId}/metadata")
     public Response getVersionMetadata( @PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
-		return allowCors(response( req -> ok(
+        return allowCors(response( req -> ok(
                     jsonByBlocks(
                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId) )
                                 .getDatasetFields()))));
     }
     
     @GET
-	@Path("{id}/versions/{versionNumber}/metadata/{block}")
+    @Path("{id}/versions/{versionNumber}/metadata/{block}")
     public Response getVersionMetadataBlock( @PathParam("id") String datasetId, 
                                              @PathParam("versionNumber") String versionNumber, 
                                              @PathParam("block") String blockName ) {
-		
+        
         return allowCors(response( req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId) );
             
@@ -346,10 +333,10 @@ public class Datasets extends AbstractApiBean {
             return notFound("metadata block named " + blockName + " not found");
         }));
     }
-	
+    
     @DELETE
-	@Path("{id}/versions/{versionId}")
-	public Response deleteDraftVersion( @PathParam("id") String id,  @PathParam("versionId") String versionId ){
+    @Path("{id}/versions/{versionId}")
+    public Response deleteDraftVersion( @PathParam("id") String id,  @PathParam("versionId") String versionId ){
         if ( ! ":draft".equals(versionId) ) {
             return badRequest("Only the :draft version can be deleted");
         }
@@ -464,9 +451,9 @@ public class Datasets extends AbstractApiBean {
 
             dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
 
-            List<ControlledVocabularyValue> controlledVocabularyItemsToRemove = new ArrayList();
-            List<DatasetFieldValue> datasetFieldValueItemsToRemove = new ArrayList();
-            List<DatasetFieldCompoundValue> datasetFieldCompoundValueItemsToRemove = new ArrayList();
+            List<ControlledVocabularyValue> controlledVocabularyItemsToRemove = new ArrayList<ControlledVocabularyValue>();
+            List<DatasetFieldValue> datasetFieldValueItemsToRemove = new ArrayList<DatasetFieldValue>();
+            List<DatasetFieldCompoundValue> datasetFieldCompoundValueItemsToRemove = new ArrayList<DatasetFieldCompoundValue>();
 
             for (DatasetField updateField : fields) {
                 boolean found = false;
@@ -643,8 +630,8 @@ public class Datasets extends AbstractApiBean {
                         if (dsf.isEmpty() || dsf.getDatasetFieldType().isAllowMultiples() || replaceData ) {
                             if(replaceData){
                                 if(dsf.getDatasetFieldType().isAllowMultiples()){
-                                    dsf.setDatasetFieldCompoundValues(new ArrayList());
-                                    dsf.setDatasetFieldValues(new ArrayList());
+                                    dsf.setDatasetFieldCompoundValues(new ArrayList<DatasetFieldCompoundValue>());
+                                    dsf.setDatasetFieldValues(new ArrayList<DatasetFieldValue>());
                                     dsf.getControlledVocabularyValues().clear();
                                 } else {
                                     dsf.setSingleValue("");
@@ -1002,7 +989,7 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{identifier}/dataCaptureModule/rsync")
     public Response getRsync(@PathParam("identifier") String id) {
-	    //TODO - does it make sense to switch this to dataset identifier for consistency with the rest of the DCM APIs?
+        //TODO - does it make sense to switch this to dataset identifier for consistency with the rest of the DCM APIs?
         if (!DataCaptureModuleUtil.rsyncSupportEnabled(settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
             return error(Response.Status.METHOD_NOT_ALLOWED, SettingsServiceBean.Key.UploadMethods + " does not contain " + SystemConfig.FileUploadMethods.RSYNC + ".");
         }
@@ -1238,7 +1225,6 @@ public class Datasets extends AbstractApiBean {
         // -------------------------------------
         Dataset dataset;
         
-        Long datasetId;
         try {
             dataset = findDatasetOrDie(idSupplied);
         } catch (WrappedResponse wr) {
@@ -1332,10 +1318,10 @@ public class Datasets extends AbstractApiBean {
     private <T> T handleVersion( String versionId, DsVersionHandler<T> hdl )
         throws WrappedResponse {
         switch (versionId) {
-			case ":latest": return hdl.handleLatest();
-			case ":draft": return hdl.handleDraft();
+            case ":latest": return hdl.handleLatest();
+            case ":draft": return hdl.handleDraft();
             case ":latest-published": return hdl.handleLatestPublished();
-			default:
+            default:
                 try {
                     String[] versions = versionId.split("\\.");
                     switch (versions.length) {
@@ -1349,7 +1335,7 @@ public class Datasets extends AbstractApiBean {
                 } catch ( NumberFormatException nfe ) {
                     throw new WrappedResponse( error( Response.Status.BAD_REQUEST, "Illegal version identifier '" + versionId + "'") );
                 }
-		}
+        }
     }
     
     private DatasetVersion getDatasetVersionOrDie( final DataverseRequest req, String versionNumber, final Dataset ds ) throws WrappedResponse {
