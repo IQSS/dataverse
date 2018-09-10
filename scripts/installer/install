@@ -542,6 +542,12 @@ my $glassfish_dir = $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'};
 
 my $done = &setup();
 
+unless ($done == 1)
+{
+    print STDERR "Postgres setup has failed!\n";
+    print STDERR "Aborting - sorry...\n\n";
+    exit 1; 
+}
 
 # 7. PRE-POPULATE THE DATABASE:
 # (in this step some pre-supplied content is inserted into the database that we have just created;
@@ -569,6 +575,8 @@ unless ((
 	print STDERR "It appears that the Dataverse application is not running...\n";
 	print STDERR "Even though the \"asadmin deploy\" command had succeeded earlier.\n\n";
 	print STDERR "Aborting - sorry...\n\n";
+
+	exit 1; 
     }
 }
 
@@ -750,7 +758,8 @@ sub setup {
     
     $ENV{'WARFILE_LOCATION'} = $WARFILE_LOCATION;
     
-    #start-glassfish is a container name for OpenShift deployment 
+    #start-glassfish is a container name for OpenShift deployment
+    my $postgres_setup_status;
     if ( exists($ENV{'MY_POD_NAME'}) )
     {
 	    # assume that the second postgres-setup call is sufficient outside OpenShift
@@ -758,12 +767,20 @@ sub setup {
 	    unless($ENV{"MY_POD_NAME"} eq "start-glassfish" || $ENV{"MY_POD_NAME"} eq "dataverse-glassfish-0") {
 		system("perl ./postgres-setup");
 	    }
+	    $postgres_setup_status = $?
     }
     else
     {
-		system("perl ./postgres-setup");
+	system("perl ./postgres-setup");
+	$postgres_setup_status = $?
     }
     
+    if ($postgres_setup_status != undef && $postgres_setup_status != 0)
+    {
+	print "First postgres configuration pass failed!\n";
+	return $failure;
+    }
+
     print "Finished configuring postgres \n";
     
     #Start and Setup Glassfish + Deploy war file
@@ -777,7 +794,8 @@ sub setup {
     	system("perl ./glassfish-startup -y");
     }
 
-    print "Finished configuring postgres \n";
+    # TODO: check the exit code of the script above!
+    print "Finished configuring Glassfish and deploying the dataverse application.  \n";
 
     #Pre-populate the database 
     $ENV{'PREPOPULATE'} = 1;
