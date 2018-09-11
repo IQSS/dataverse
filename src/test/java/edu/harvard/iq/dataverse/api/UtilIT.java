@@ -1637,4 +1637,9 @@ public class UtilIT {
         String apiPath = String.format("/oai?verb=GetRecord&identifier=%s&metadataPrefix=%s", datasetPersistentId, metadataFormat);
         return given().get(apiPath);
     }
+    
+    static Response getOaiListIdentifiers(String setName, String metadataFormat) {
+        String apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        return given().get(apiPath);
+    }
 }
