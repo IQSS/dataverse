@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
-import edu.harvard.iq.dataverse.engine.command.impl.SubmitArchiveCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
@@ -33,7 +33,7 @@ public class DPNSubmissionWorkflowStep implements WorkflowStep {
             logger.severe("No DuraCloudHost - DPN Submission not attempted");
             return new Failure("No DuraCloudHost", "DuraCloudHost not found in Settings");
         } else {
-        return SubmitArchiveCommand.performDPNSubmission(
+        return SubmitToArchiveCommand.performDPNSubmission(
                 context.getDataset().getReleasedVersion(),
                 context.getRequest().getAuthenticatedUser(), host, port, dpnContext, context.getApiToken());
         }
