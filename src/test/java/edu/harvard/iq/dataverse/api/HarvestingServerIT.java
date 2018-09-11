@@ -95,9 +95,7 @@ public class HarvestingServerIT
 		assertEquals( 400, r3.getStatusCode() );
 
 		// try to export set as admin user, should succeed (under admin API, not checking that normal user will fail)
-		String u1 = String.format("/api/admin/metadata/exportOAI/%s",setName);
-		Response r4 = given()
-			.put( u1 );
+		Response r4 = UtilIT.exportOaiSet(setName);
 		assertEquals( 200 , r4.getStatusCode() );
 
 		// TODO - get an answer to the question of if it's worth cleaning up (users, sets) or not
@@ -130,7 +128,7 @@ public class HarvestingServerIT
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
         
         // retrieve the global id: 
-        String datasetPersistentId = UtilIT.getPersistentDatasetIdFromResponse(createDatasetResponse);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
         
         // publish dataset:
         
@@ -161,22 +159,14 @@ public class HarvestingServerIT
         // export set: 
         // (this is asynchronous - so we should probably wait a little)
         
-        apiPath = String.format("/api/admin/metadata/exportOAI/%s", setName);
-        Response exportSetResponse = given()
-                .put(apiPath);
+        Response exportSetResponse = UtilIT.exportOaiSet(setName);
         assertEquals(200, exportSetResponse.getStatusCode());
         
         Thread.sleep(5000L);
         
         // And now run GetRecord, since we know the persistent id of the dataset:
         
-        apiPath = String.format("/oai?verb=GetRecord&identifier=%s&metadataPrefix=oai_dc", datasetPersistentId);
-        logger.info("GetRecord url: "+apiPath);
-        Response getRecordResponse = given()
-                .get(apiPath);
-        //assertEquals(200, getRecordResponse.getStatusCode());
-        logger.info(getRecordResponse.getBody().asString());
-        // And confirm that we got the correct record back:
+        Response getRecordResponse = UtilIT.getOaiRecord(datasetPersistentId, "oai_dc");
         
         assertEquals(datasetPersistentId, getRecordResponse.getBody().xmlPath().getString("OAI-PMH.GetRecord.record.header.identifier"));
         
