@@ -3,10 +3,16 @@
 #This needs to take in an argument of the branch name
 
 #Create security group if it doesn't already exist
-echo "*Creating security group"
-aws ec2 create-security-group --group-name devenv-sg --description "security group for development environment"
-aws ec2 authorize-security-group-ingress --group-name devenv-sg --protocol tcp --port 22 --cidr 0.0.0.0/0
-echo "*End creating security group"
+echo "*Checking for existing security group"
+GROUP_CHECK=$(aws ec2 describe-security-groups --group-name devenv-sg)
+if [[ "$?" -ne 0 ]]; then
+  echo "*Creating security group"
+  aws ec2 create-security-group --group-name devenv-sg --description "security group for development environment"
+  aws ec2 authorize-security-group-ingress --group-name devenv-sg --protocol tcp --port 22 --cidr 0.0.0.0/0
+  echo "*End creating security group"
+else
+  echo "*Security group already exists."
+fi
 
 #Create key pair. Does this pem need to be saved or just held temporarilly?
 # - Probably held, we probably need another script to blow away our spinned-up ec2 instance
