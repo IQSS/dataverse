@@ -346,7 +346,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         newOaiSet.setName("");
         // The default description of the default set. The admin will be  
         // able to modify it later, if necessary.
-        newOaiSet.setDescription("The default, \"no name\" set. The OAI server will serve the records from this set when no \"setspec\" argument is specified by the client.");
+        newOaiSet.setDescription(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setdescription.default"));
         newOaiSet.setDefinition("");
         
         boolean success = false;
