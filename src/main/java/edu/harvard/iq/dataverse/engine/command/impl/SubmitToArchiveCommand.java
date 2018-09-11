@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -15,10 +14,9 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.export.DataCiteExporter;
-import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.bagit.BagIt_Export;
+import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
+import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
@@ -44,6 +42,9 @@ import org.duracloud.client.ContentStoreManager;
 import org.duracloud.client.ContentStoreManagerImpl;
 import org.duracloud.common.model.Credential;
 import org.duracloud.error.ContentStoreException;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 @RequiredPermissions(Permission.ArchiveDatasetVersion)
 public class SubmitToArchiveCommand implements Command<DatasetVersion> {
@@ -125,20 +126,63 @@ public class SubmitToArchiveCommand implements Command<DatasetVersion> {
                     store = storeManager.getPrimaryContentStore();
                     //Create space to copy archival files to
                     store.createSpace(spaceName);
+                    DataCitation dc = new DataCitation(dv);
+                    Map<String, String> metadata = dc.getDataCiteMetadata();
+                    String dataciteXml = DOIDataCiteRegisterService.getMetadataFromDvObject(
+                            dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
+                 
+                    try {
+                 // Add datacite.xml file
+                    MessageDigest messageDigest = MessageDigest.getInstance("MD5");
 
+                    PipedInputStream dataciteIn = new PipedInputStream();
+                    PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn);
+                    new Thread(new Runnable() {
+                        public void run() {
+                            try {
+                                
+                                dataciteOut.write(dataciteXml.getBytes(Charset.forName("utf-8")));
+                                dataciteOut.close();
+                            } catch (Exception e) {
+                                logger.severe("Error creating datacite.xml: " + e.getMessage());
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                                IOUtils.closeQuietly(dataciteIn);
+                                IOUtils.closeQuietly(dataciteOut);
+                            }
+                        }
+                    }).start();
+
+                    DigestInputStream digestInputStream = new DigestInputStream(dataciteIn, messageDigest);
+                    String checksum = store.addContent(spaceName, "datacite.xml", digestInputStream, -1l, null, null,
+                            null);
+                    logger.fine("Content: datacite.xml added with checksum: " + checksum);
+                    String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
+                    if (!checksum.equals(localchecksum)) {
+                        logger.severe(checksum + " not equal to " + localchecksum);
+                        return new Failure("Error in transferring DataCite.xml file to DPN",
+                                "DPN Submission Failure: incomplete metadata transfer");
+                    }
+                    IOUtils.closeQuietly(digestInputStream);
+
+                    
                     // Store BagIt file
                     String fileName = spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip";
-                    try {
+
                         // Add BagIt ZIP file
                         //Although DPN uses SHA-256 internally, it's API uses MD5 to verify the transfer
-                        MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+                        messageDigest = MessageDigest.getInstance("MD5");
                         PipedInputStream in = new PipedInputStream();
                         PipedOutputStream out = new PipedOutputStream(in);
                         new Thread(new Runnable() {
                             public void run() {
                                 try {
-                                    BagIt_Export.exportDatasetVersionAsBag(dv, token, out);
-                                    out.close();
+                                    //Get OREmap, convert from javax.json.JsonObject to com.google.gson.JsonObject
+                                    JsonObject oremap = (JsonObject) new JsonParser().parse(new OREMap(dv).getOREMap().toString());
+                                    //Generate bag
+                                    BagGenerator bagger = new BagGenerator(oremap, dataciteXml);
+                                    bagger.setAuthenticationKey(token.getTokenString());
+                                    bagger.generateBag(out);
                                 } catch (Exception e) {
                                     logger.severe("Error creating bag: " + e.getMessage());
                                     // TODO Auto-generated catch block
@@ -148,11 +192,11 @@ public class SubmitToArchiveCommand implements Command<DatasetVersion> {
                                 }
                             }
                         }).start();
-                        DigestInputStream digestInputStream = new DigestInputStream(in, messageDigest);
-                        String checksum = store.addContent(spaceName, fileName, digestInputStream, -1l, null, null,
+                        digestInputStream = new DigestInputStream(in, messageDigest);
+                        checksum = store.addContent(spaceName, fileName, digestInputStream, -1l, null, null,
                                 null);
                         logger.fine("Content: " + fileName + " added with checksum: " + checksum);
-                        String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
+                        localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
                         if (!checksum.equals(localchecksum)) {
                             logger.severe(checksum + " not equal to " + localchecksum);
                             return new Failure("Error in transferring Zip file to DPN",
@@ -160,42 +204,7 @@ public class SubmitToArchiveCommand implements Command<DatasetVersion> {
                         }
                         IOUtils.closeQuietly(digestInputStream);
                         
-                        // Add datacite.xml file
-                        messageDigest = MessageDigest.getInstance("MD5");
-
-                        PipedInputStream dataciteIn = new PipedInputStream();
-                        PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn);
-                        new Thread(new Runnable() {
-                            public void run() {
-                                try {
-                                    DataCitation dc = new DataCitation(dv);
-                                    Map<String, String> metadata = dc.getDataCiteMetadata();
-                                    String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(
-                                            dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
-                                    dataciteOut.write(xml.getBytes(Charset.forName("utf-8")));
-                                    dataciteOut.close();
-                                } catch (Exception e) {
-                                    logger.severe("Error creating datacite.xml: " + e.getMessage());
-                                    // TODO Auto-generated catch block
-                                    e.printStackTrace();
-                                    IOUtils.closeQuietly(dataciteIn);
-                                    IOUtils.closeQuietly(dataciteOut);
-                                }
-                            }
-                        }).start();
-
-                        digestInputStream = new DigestInputStream(dataciteIn, messageDigest);
-                        checksum = store.addContent(spaceName, "datacite.xml", digestInputStream, -1l, null, null,
-                                null);
-                        logger.fine("Content: datacite.xml added with checksum: " + checksum);
-                        localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
-                        if (!checksum.equals(localchecksum)) {
-                            logger.severe(checksum + " not equal to " + localchecksum);
-                            return new Failure("Error in transferring DataCite.xml file to DPN",
-                                    "DPN Submission Failure: incomplete metadata transfer");
-                        }
-                        IOUtils.closeQuietly(digestInputStream);
-
+                        
                         logger.fine("DPN Submission step: Content Transferred");
                         
                         // Document the location of dataset archival copy location (actually the URL where you can
