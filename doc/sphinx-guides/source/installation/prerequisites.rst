@@ -89,6 +89,14 @@ This recommendation comes from http://www.c2b2.co.uk/middleware-blog/glassfish-4
 	# /usr/local/glassfish4/bin/asadmin start-domain
 	# /usr/local/glassfish4/bin/asadmin osgi lb | grep 'Weld OSGi Bundle'
 
+The Certificate Authority (CA) certificate bundle file from Glassfish contains certs that expired in August 2018, causing problems with ORCID login.
+
+- Overwrite Glassfish's CA certs file with the file that ships with the operating system and restart Glassfish::
+
+	# cp /etc/pki/ca-trust/extracted/java/cacerts /usr/local/glassfish4/glassfish/domains/domain1/config/cacerts.jks
+	# /usr/local/glassfish4/bin/asadmin stop-domain
+	# /usr/local/glassfish4/bin/asadmin start-domain
+
 Launching Glassfish on system boot
 ==================================
 
