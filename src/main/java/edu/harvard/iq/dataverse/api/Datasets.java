@@ -206,15 +206,12 @@ public class Datasets extends AbstractApiBean {
             
             ExportService instance = ExportService.getInstance(settingsSvc);
             
-            InputStream xml = instance.getExport(dataset, exporter);
+            InputStream is = instance.getExport(dataset, exporter);
            
-            String mediaType = MediaType.TEXT_PLAIN;//PM - output formats appear to be either JSON or XML, unclear why text/plain is being used as default content-type.
-
-            if (instance.isXMLFormat(exporter)){
-                mediaType = MediaType.APPLICATION_XML;
-            }
+            String mediaType = instance.getMediaType(exporter);
+            
             return allowCors(Response.ok()
-                    .entity(xml)
+                    .entity(is)
                     .type(mediaType).
                     build());
         } catch (Exception wr) {

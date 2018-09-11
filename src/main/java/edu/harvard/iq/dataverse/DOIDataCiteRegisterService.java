@@ -115,7 +115,7 @@ public class DOIDataCiteRegisterService {
         return retString;
     }
 
-    private String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
+    public String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
 
         Dataset dataset = null;
 

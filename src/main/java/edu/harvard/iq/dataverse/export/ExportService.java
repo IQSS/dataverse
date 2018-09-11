@@ -33,6 +33,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.core.MediaType;
+
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -358,5 +360,20 @@ public class ExportService {
         }
         return null;
     }
+
+	public String getMediaType(String provider) {
+		 try {
+	            Iterator<Exporter> exporters = loader.iterator();
+	            while (exporters.hasNext()) {
+	                Exporter e = exporters.next();
+	                if (e.getProviderName().equals(provider)) {
+	                    return e.getMediaType();
+	                }
+	            }
+	        } catch (ServiceConfigurationError serviceError) {
+	            serviceError.printStackTrace();
+	        }
+	        return MediaType.TEXT_PLAIN;
+	}
 
 }
