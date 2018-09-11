@@ -38,9 +38,6 @@ public class DOIDataCiteRegisterService {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    @EJB
-    DataverseServiceBean dataverseService;
-
     private DataCiteRESTfullClient openClient() throws IOException {
         return new DataCiteRESTfullClient(System.getProperty("doi.baseurlstring"), System.getProperty("doi.username"), System.getProperty("doi.password"));
     }
@@ -115,7 +112,7 @@ public class DOIDataCiteRegisterService {
         return retString;
     }
 
-    public String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
+    public static String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
 
         Dataset dataset = null;
 
@@ -145,7 +142,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
         metadataTemplate.setTitle(dvObject.getDisplayName());
-        String producerString = dataverseService.findRootDataverse().getName();
+        String producerString = dataset.getLatestVersion().getRootDataverseNameforCitation();
         if (producerString.isEmpty()) {
             producerString = ":unav";
         }
