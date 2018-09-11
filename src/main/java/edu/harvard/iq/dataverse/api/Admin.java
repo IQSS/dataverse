@@ -75,7 +75,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.SubmitArchiveCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
@@ -1221,10 +1221,10 @@ public class Admin extends AbstractApiBean {
 			AuthenticatedUser au = findAuthenticatedUserOrDie();
 			if (au.isSuperuser()) {
 				DatasetVersion dv = datasetversionService.retrieveDatasetVersionByVersionId(dvid).getDatasetVersion();
-				SubmitArchiveCommand cmd = new SubmitArchiveCommand(dvRequestService.getDataverseRequest(), dv);
+				SubmitToArchiveCommand cmd = new SubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
 				try {
 					commandEngine.submit(cmd);
-					return ok("DatasetVersion id=" + dvid + " submitted to Duracloud");
+					return ok("DatasetVersion id=" + dvid + " submitted to DPN/Duracloud");
 				} catch (CommandException ex) {
 					logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
 					return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getMessage());

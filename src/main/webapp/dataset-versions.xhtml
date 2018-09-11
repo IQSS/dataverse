@@ -141,19 +141,17 @@
                 <h:outputText id="versionDate" value="#{versionTab.versionDate}" />
             </ui:fragment>
         </p:column><!-- end: date column -->
-                <!-- <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-1"> -->
-                <p:column headerText="Replicated" class="col-sm-1"  rendered="#{DatasetPage.isSuperUser() and !versionTab.isDraft()}">
+        <p:column headerText="Archived" class="col-sm-1"  rendered="#{DatasetPage.isSuperUser() and !versionTab.isDraft()}">
             <ui:fragment>
-                <h:outputLink id="replicated" value="#{versionTab.replicaLocation}" target="_blank" rendered="#{!empty(versionTab.replicaLocation)}">
+                <h:outputLink id="archived" value="#{versionTab.archivalCopyLocation}" target="_blank" rendered="#{!empty(versionTab.archivalCopyLocation)}">
                     <h:outputText  value="Complete" />
                 </h:outputLink>
-         <p:commandLink rendered="#{empty(versionTab.replicaLocation)}" update="#{p:resolveClientId('datasetForm:tabView:versionsTable', view)},:messagePanel" 
+                <p:commandLink rendered="#{empty(versionTab.archivalCopyLocation)}" update="#{p:resolveClientId('datasetForm:tabView:versionsTable', view)},:messagePanel" 
                                                    action="#{DatasetPage.archiveVersion(versionTab.id)}">
-                                        <h:outputText value="Submit"/>
-                                    </p:commandLink>
-                
+                    <h:outputText value="Submit"/>
+                </p:commandLink>
             </ui:fragment>
-        </p:column><!-- end: date column -->
+        </p:column><!-- end: archivalCopy column -->
     </p:dataTable>
 <!-- / VERSIONS -->
 </ui:fragment>

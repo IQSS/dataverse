@@ -46,16 +46,16 @@ import org.duracloud.common.model.Credential;
 import org.duracloud.error.ContentStoreException;
 
 @RequiredPermissions(Permission.ArchiveDatasetVersion)
-public class SubmitArchiveCommand implements Command<DatasetVersion> {
+public class SubmitToArchiveCommand implements Command<DatasetVersion> {
 
     private final DatasetVersion version;
     private final DataverseRequest request;
     private final Map<String, DvObject> affectedDvObjects;
-    private static final Logger logger = Logger.getLogger(SubmitArchiveCommand.class.getName());
+    private static final Logger logger = Logger.getLogger(SubmitToArchiveCommand.class.getName());
     private static final String DEFAULT_PORT = "443";
     private static final String DEFAULT_CONTEXT = "durastore";
 
-    public SubmitArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
+    public SubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         this.request = aRequest;
         this.version = version;
         affectedDvObjects = new HashMap<>();
@@ -107,7 +107,7 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
         if (host != null) {
             Dataset dataset = dv.getDataset();
             if (dataset.getLockFor(Reason.pidRegister) == null) {
-
+                //Use Duracloud client classes to login
                 ContentStoreManager storeManager = new ContentStoreManagerImpl(host, port, dpnContext);
                 Credential credential = new Credential(System.getProperty("duracloud.username"),
                         System.getProperty("duracloud.password"));
@@ -118,19 +118,20 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
 
                 ContentStore store;
                 try {
+                    /* If there is a failure in creating a space, it is likely that a prior version has not been fully processed 
+                     * (snapshot created, archiving completed and files and space deleted - currently manual operations 
+                     * done at the project's duracloud website) 
+                     */
                     store = storeManager.getPrimaryContentStore();
-
+                    //Create space to copy archival files to
                     store.createSpace(spaceName);
 
-                    // Store file
-
+                    // Store BagIt file
                     String fileName = spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip";
                     try {
-
                         // Add BagIt ZIP file
+                        //Although DPN uses SHA-256 internally, it's API uses MD5 to verify the transfer
                         MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-
-
                         PipedInputStream in = new PipedInputStream();
                         PipedOutputStream out = new PipedOutputStream(in);
                         new Thread(new Runnable() {
@@ -147,12 +148,10 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
                                 }
                             }
                         }).start();
-
                         DigestInputStream digestInputStream = new DigestInputStream(in, messageDigest);
-
                         String checksum = store.addContent(spaceName, fileName, digestInputStream, -1l, null, null,
                                 null);
-                        logger.info("Content: " + fileName + " added with checksum: " + checksum);
+                        logger.fine("Content: " + fileName + " added with checksum: " + checksum);
                         String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
                         if (!checksum.equals(localchecksum)) {
                             logger.severe(checksum + " not equal to " + localchecksum);
@@ -160,6 +159,7 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
                                     "DPN Submission Failure: incomplete archive transfer");
                         }
                         IOUtils.closeQuietly(digestInputStream);
+                        
                         // Add datacite.xml file
                         messageDigest = MessageDigest.getInstance("MD5");
 
@@ -185,10 +185,9 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
                         }).start();
 
                         digestInputStream = new DigestInputStream(dataciteIn, messageDigest);
-
                         checksum = store.addContent(spaceName, "datacite.xml", digestInputStream, -1l, null, null,
                                 null);
-                        logger.info("Content: datacite.xml added with checksum: " + checksum);
+                        logger.fine("Content: datacite.xml added with checksum: " + checksum);
                         localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
                         if (!checksum.equals(localchecksum)) {
                             logger.severe(checksum + " not equal to " + localchecksum);
@@ -197,8 +196,9 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
                         }
                         IOUtils.closeQuietly(digestInputStream);
 
-                        logger.info("DPN Submission step: Content Transferred");
-                        // Document location of dataset version replica (actually the URL where you can
+                        logger.fine("DPN Submission step: Content Transferred");
+                        
+                        // Document the location of dataset archival copy location (actually the URL where you can
                         // view it as an admin)
                         StringBuffer sb = new StringBuffer("https://");
                         sb.append(host);
@@ -208,8 +208,8 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
                         sb.append("/duradmin/spaces/sm/");
                         sb.append(store.getStoreId());
                         sb.append("/" + spaceName + "/" + fileName);
-                        dv.setReplicaLocation(sb.toString());
-                        logger.info("DPN Submission step complete: " + sb.toString());
+                        dv.setArchivalCopyLocation(sb.toString());
+                        logger.fine("DPN Submission step complete: " + sb.toString());
                     } catch (ContentStoreException | IOException e) {
                         // TODO Auto-generated catch block
                         logger.warning(e.getMessage());
@@ -220,7 +220,6 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
                         logger.severe("MD5 MessageDigest not available!");
                     }
                 } catch (ContentStoreException e) {
-                    // TODO Auto-generated catch block
                     logger.warning(e.getMessage());
                     e.printStackTrace();
                     String mesg = "DPN Submission Failure";
@@ -238,5 +237,4 @@ public class SubmitArchiveCommand implements Command<DatasetVersion> {
             return new Failure("DPN Submission not configured.");
         }
     }
-
 }
