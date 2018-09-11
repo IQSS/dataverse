@@ -129,7 +129,7 @@
         </p:column><!-- end: description column -->
 
         <!-- contributor column -->
-        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.contributors']}" class="col-sm-3">
+        <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.contributors']}" class="col-sm-2">
             <ui:fragment rendered="#{!empty(versionTab.contributorNames)}">
                 <h:outputText value="#{versionTab.contributorNames}" />
             </ui:fragment>
@@ -141,6 +141,17 @@
                 <h:outputText id="versionDate" value="#{versionTab.versionDate}" />
             </ui:fragment>
         </p:column><!-- end: date column -->
+        <p:column headerText="Archived" class="col-sm-1"  rendered="#{DatasetPage.isSuperUser() and !versionTab.isDraft()}">
+            <ui:fragment>
+                <h:outputLink id="archived" value="#{versionTab.archivalCopyLocation}" target="_blank" rendered="#{!empty(versionTab.archivalCopyLocation)}">
+                    <h:outputText  value="Complete" />
+                </h:outputLink>
+                <p:commandLink rendered="#{empty(versionTab.archivalCopyLocation)}" update="#{p:resolveClientId('datasetForm:tabView:versionsTable', view)},:messagePanel" 
+                                                   action="#{DatasetPage.archiveVersion(versionTab.id)}">
+                    <h:outputText value="Submit"/>
+                </p:commandLink>
+            </ui:fragment>
+        </p:column><!-- end: archivalCopy column -->
     </p:dataTable>
 <!-- / VERSIONS -->
 </ui:fragment>

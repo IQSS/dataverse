@@ -88,6 +88,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
@@ -4308,7 +4309,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public void clearSelection() {
         logger.info("clearSelection called");
-        selectedFiles = Collections.EMPTY_LIST;
+        selectedFiles = Collections.emptyList();
     }
     
     public void fileListingPaginatorListener(PageEvent event) {       
@@ -4321,4 +4322,34 @@ public class DatasetPage implements java.io.Serializable {
         setFilePaginatorPage(dt.getPage());      
         setRowsPerPage(dt.getRowsToRender());
     }  
+    
+    public void archiveVersion(Long id) {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser au = ((AuthenticatedUser) session.getUser());
+            if (au.isSuperuser()) {
+                DatasetVersion dv = datasetVersionService.retrieveDatasetVersionByVersionId(id).getDatasetVersion();
+                SubmitToArchiveCommand cmd = new SubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
+                try {
+                    DatasetVersion version = commandEngine.submit(cmd);
+                    logger.info("Archived to " + version.getArchivalCopyLocation());
+                    if(version.getArchivalCopyLocation()!=null) {
+                    	resetVersionTabList();
+                    	this.setVersionTabListForPostLoad(getVersionTabList());
+                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.success"));
+                    } else {
+                        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
+                    }
+                } catch (CommandException ex) {
+                    logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
+                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
+                }
+            }
+        } else {
+            logger.warning("Non-superuser calling archiveVersion()");
+            // Shouldn't happen since button only shows for superuser
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Authentication error",
+                    "Contact an administrator");
+            FacesContext.getCurrentInstance().addMessage(null, message);
+        }
+    }
 }

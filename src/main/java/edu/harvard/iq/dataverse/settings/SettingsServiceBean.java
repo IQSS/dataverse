@@ -365,7 +365,23 @@ public class SettingsServiceBean {
         /**
          * 
          */
-        FilePIDsEnabled
+        FilePIDsEnabled,
+        
+        /**
+         * Providing a Duracloud host (and optional port) enables manual submission of archival copies of published dataset versions
+         * to that host, e.g. as the first step in archiving through the Digital Preservation Network (DPN.org).
+         * Note: 
+         * Configuration also requires adding the username and password as jvm-options in glassfish.
+         * To automate this step as part of publication, a post-publication workflow must also be configured.
+         * 
+         * DuraCloudHost , eg. "qdr.duracloud.org", a non-null value enables submission
+         * DuraCloudPort, default is 443
+         * DuraCloudContext, default is "durastore"
+         */
+        
+        DuraCloudHost,
+        DuraCloudPort,
+        DuraCloudContext
         ;
 
         @Override
