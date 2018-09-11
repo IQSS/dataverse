@@ -1,6 +1,18 @@
-#Refering to this doc: https://docs.aws.amazon.com/cli/latest/userguide/tutorial-ec2-ubuntu.html
+#!/bin/bash
+#Initially Referred to this doc: https://docs.aws.amazon.com/cli/latest/userguide/tutorial-ec2-ubuntu.html
 
-#This needs to take in an argument of the branch name
+DEPLOY_FILE=dataverse_deploy_info.txt
+
+if [ "$1" = "" ]; then
+    echo "No branch name provided"
+    exit 1
+else
+	BRANCH_NAME=$1
+	if [[ $(git ls-remote --heads https://github.com/IQSS/dataverse.git $BRANCH_NAME | wc -l) -eq 0 ]]; then
+		echo "Branch does not exist on the Dataverse github repo"
+		exit 1
+	fi
+fi
 
 #Create security group if it doesn't already exist
 echo "*Checking for existing security group"
@@ -17,14 +29,51 @@ fi
 #Create key pair. Does this pem need to be saved or just held temporarilly?
 # - Probably held, we probably need another script to blow away our spinned-up ec2 instance
 # - Should attach the branch name to the key
-echo "*Creating key pair"
-aws ec2 create-key-pair --key-name devenv-key --query 'KeyMaterial' --output text > devenv-key.pem
-chmod 400 devenv-key.pem
-echo "*End creating key pair"
+echo "*Checking for existing key pair"
+if ! [ -f devenv-key.pem ]; then
+	echo "*Creating key pair"
+	PRIVATE_KEY=$(aws ec2 create-key-pair --key-name devenv-key --query 'KeyMaterial' --output text)
+	if [[ $PRIVATE_KEY = '-----BEGIN RSA PRIVATE KEY-----'* ]]; then
+		printf -- "$PRIVATE_KEY">devenv-key.pem
+		chmod 400 devenv-key.pem
+		echo "*New key pair created"
+	fi
+	echo "*End creating key pair"
+else
+	echo "*Key pair alraedy exists."
+fi
 
 #AMI ID acquired by this (very slow) query Sept 10th 2018
+#This does not need to be run every time, leaving it in here so it is remembered
 #aws ec2 describe-images  --owners 'aws-marketplace' --filters 'Name=product-code,Values=aw0evgkw8e5c1q413zgy5pjce' --query 'sort_by(Images, &CreationDate)[-1].[ImageId]' --output 'text'
 
+#The AMI ID only works for region us-east-1, for now just forcing that
+#Using this image ID a 1-time requires subscription per root account, which was done through the UI
 echo "*Creating ec2 instance"
-aws ec2 run-instances --image-id ami-9887c6e7 --security-groups devenv-sg --count 1 --instance-type t2.micro --key-name devenv-key --query 'Instances[0].InstanceId'
+#INSTACE_ID=$(aws ec2 run-instances --image-id ami-9887c6e7 --security-groups devenv-sg --count 1 --instance-type t2.nano --key-name devenv-key --query 'Instances[0].InstanceId' --block-device-mappings file://ec2-device-mapping.json | tr -d \")
+INSTACE_ID=$(aws ec2 run-instances --image-id ami-9887c6e7 --security-groups devenv-sg --count 1 --instance-type t2.nano --key-name devenv-key --query 'Instances[0].InstanceId' --block-device-mappings '[ { "DeviceName": "/dev/sda1", "Ebs": { "DeleteOnTermination": true } } ]' | tr -d \")
+echo "Instance ID: "$INSTACE_ID
 echo "*End creating EC2 instance"
+
+PUBLIC_DNS=$(aws ec2 describe-instances --instance-ids $INSTACE_ID --query "Reservations[*].Instances[*].[PublicDnsName]" --output text)
+
+echo $BRANCH_NAME > $DEPLOY_FILE
+echo "Connecting to the instance. This may take a minute as it is being spun up"
+#MAD: I'm a bit confused, this says its adding it to a file even though I don't think it should. At least its passing without me pressing enter
+scp -i devenv-key.pem -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' $DEPLOY_FILE centos@${PUBLIC_DNS}:~
+rm -rf $DEPLOY_FILE
+
+echo "New EC2 instance created at $PUBLIC_DNS"
+
+#ssh -i devenv-key.pem centos@$PUBLIC_DNS
+
+#PUBLIC_IP=$()
+
+#echo $PUBLIC_IP
+
+#Outstanding needs:
+# - Delete Script
+# - Correct ec2 specs for our needs
+# - better error handling
+# - maybe less verbose messaging?
+# - force region? --region us-east-1 
