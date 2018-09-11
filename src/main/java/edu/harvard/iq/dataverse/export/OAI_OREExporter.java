@@ -4,7 +4,7 @@ import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.export.ExportException;
-import edu.harvard.iq.dataverse.util.bagit.OREMap_Export;
+import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import javax.json.JsonObject;
+import javax.ws.rs.core.MediaType;
 
 @AutoService(Exporter.class)
 public class OAI_OREExporter implements Exporter {
@@ -24,7 +25,7 @@ public class OAI_OREExporter implements Exporter {
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
             throws ExportException {
         try {
-            new OREMap_Export(version).exportOREMap(outputStream);
+            new OREMap(version).writeOREMap(outputStream);
         } catch (Exception e) {
             logger.severe(e.getMessage());
             e.printStackTrace();
@@ -51,8 +52,6 @@ public class OAI_OREExporter implements Exporter {
 
     @Override
     public Boolean isHarvestable() {
-        // Defer harvesting because the current effort was estimated as a "2":
-        // https://github.com/IQSS/dataverse/issues/3700
         return false;
     }
 
@@ -81,5 +80,9 @@ public class OAI_OREExporter implements Exporter {
         // this exporter doesn't need/doesn't currently take any parameters
     }
 
+    @Override
+    public String getMediaType() {
+        return MediaType.APPLICATION_JSON;
+    }
 
 }

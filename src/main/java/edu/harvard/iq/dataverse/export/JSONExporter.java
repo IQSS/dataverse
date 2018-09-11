@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import javax.json.JsonObject;
+import javax.ws.rs.core.MediaType;
 
 
 /**
@@ -71,6 +72,11 @@ public class JSONExporter implements Exporter {
     @Override
     public void setParam(String name, Object value) {
         // this exporter doesn't need/doesn't currently take any parameters
+    }
+    
+    @Override
+    public String getMediaType() {
+        return MediaType.APPLICATION_JSON;
     }
     
 }

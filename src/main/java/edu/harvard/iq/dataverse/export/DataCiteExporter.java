@@ -11,10 +11,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
-
 import javax.json.JsonObject;
 
 /**

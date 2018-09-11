@@ -29,19 +29,20 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
-public class OREMap_Export {
+public class OREMap {
 
     public static final String NAME = "OREMap";
     private Map<String, String> localContext = new TreeMap<String, String>();
     private DatasetVersion version;
 
-    public OREMap_Export(DatasetVersion version) {
+    public OREMap(DatasetVersion version) {
         this.version = version;
     }
 
-    public void exportOREMap(OutputStream outputStream) throws Exception {
+    public void writeOREMap(OutputStream outputStream) throws Exception {
 
-        // Add namespaces we'll use to Context
+        // Add namespaces we'll definitely use to Context
+        // Additional namespaces are added as needed below
         localContext.putIfAbsent(JsonLDNamespace.ore.getPrefix(), JsonLDNamespace.ore.getUrl());
         localContext.putIfAbsent(JsonLDNamespace.dcterms.getPrefix(), JsonLDNamespace.dcterms.getUrl());
         localContext.putIfAbsent(JsonLDNamespace.dvcore.getPrefix(), JsonLDNamespace.dvcore.getUrl());
@@ -49,12 +50,11 @@ public class OREMap_Export {
 
         Dataset dataset = version.getDataset();
         String id = dataset.getGlobalId().asString();
-        // json.getString("protocol") + ":" + json.getString("authority") + "/" +
-        // json.getString("identifier");
         JsonArrayBuilder fileArray = Json.createArrayBuilder();
-
+        //The map describes an aggregation
         JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
         List<DatasetField> fields = version.getDatasetFields();
+        //That has it's own metadata
         for (DatasetField field : fields) {
             if (!field.isEmpty()) {
                 DatasetFieldType dfType = field.getDatasetFieldType();
@@ -78,7 +78,8 @@ public class OREMap_Export {
                         vals.add(val);
                     }
                 } else {
-                    // Needs to be recursive (as in JsonPrinter?)
+                    // ToDo: Needs to be recursive (as in JsonPrinter?)
+                    //Use metadatablock URI or define a URI for this filed based on the path
                     String subFieldNamespaceUri = dfType.getMetadataBlock().getNamespaceUri();
                     if (subFieldNamespaceUri == null) {
                         subFieldNamespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/"
@@ -96,7 +97,8 @@ public class OREMap_Export {
                             DatasetFieldType dsft = dsf.getDatasetFieldType();
                             // which may have multiple values
                             if (!dsf.isEmpty()) {
-                                // Add context entry - also needs to recurse
+                                // Add context entry 
+                                //ToDo - also needs to recurse here?
                                 JsonLDTerm subFieldName = null;
                                 if (dsft.getUri() != null) {
                                     subFieldName = new JsonLDTerm(dsft.getTitle(), dsft.getUri());
@@ -120,12 +122,12 @@ public class OREMap_Export {
                         vals.add(child);
                     }
                 }
-                // Add value, suppress array when only one value
+                // Add metadata value to aggregation, suppress array when only one value
                 JsonArray valArray = vals.build();
                 aggBuilder.add(fieldName.getLabel(), (valArray.size() != 1) ? valArray : valArray.get(0));
             }
         }
-
+        //Add metadata related to the Dataset/DatasetVersion
         aggBuilder.add("@id", id)
                 .add("@type",
                         Json.createArrayBuilder().add(JsonLDTerm.ore("Aggregation").getLabel())
@@ -150,6 +152,7 @@ public class OREMap_Export {
         addIfNotNull(aggBuilder, JsonLDTerm.conditions, terms.getConditions());
         addIfNotNull(aggBuilder, JsonLDTerm.disclaimer, terms.getDisclaimer());
 
+        //Add fileTermsofAccess as an object since it is compound
         JsonObjectBuilder fAccess = Json.createObjectBuilder();
         addIfNotNull(fAccess, JsonLDTerm.termsOfAccess, terms.getTermsOfAccess());
         addIfNotNull(fAccess, JsonLDTerm.fileRequestAccess, terms.isFileAccessRequest());
@@ -167,6 +170,7 @@ public class OREMap_Export {
         aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
                 dataset.getDataverseContext().getDisplayName());
 
+        //The aggregation aggregates aggregatedresources (Datafiles) which each have their own entry and metadata
         JsonArrayBuilder aggResArrayBuilder = Json.createArrayBuilder();
 
         for (FileMetadata fmd : version.getFileMetadatas()) {
@@ -217,12 +221,10 @@ public class OREMap_Export {
             addIfNotNull(aggRes, JsonLDTerm.originalFileFormat, df.getOriginalFileFormat());
             addIfNotNull(aggRes, JsonLDTerm.originalFormatLabel, df.getOriginalFormatLabel());
             addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
-            // ---------------------------------------------
-            // For file replace: rootDataFileId, previousDataFileId
-            // ---------------------------------------------
             addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
             addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
             JsonObject checksum = null;
+            //Add checksum. RDA recommends SHA-512
             if (df.getChecksumType() != null && df.getChecksumValue() != null) {
                 checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
                         .add("@value", df.getChecksumValue()).build();
@@ -234,32 +236,38 @@ public class OREMap_Export {
                 tabTags = jab.build();
             }
             addIfNotNull(aggRes, JsonLDTerm.tabularTags, tabTags);
-
+            //Add lates resource to the array
             aggResArrayBuilder.add(aggRes.build());
         }
+        //Build the '@context' object for json-ld based on the localContext entries 
         JsonObjectBuilder contextBuilder = Json.createObjectBuilder();
         for (Entry<String, String> e : localContext.entrySet()) {
             contextBuilder.add(e.getKey(), e.getValue());
         }
+        //Now create the overall map object with it's metadata
         JsonObject oremap = Json.createObjectBuilder()
                 .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now().toString())
                 .add(JsonLDTerm.dcTerms("creator").getLabel(),
                         ResourceBundle.getBundle("Bundle").getString("institution.name"))
                 .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())
+                //Define an id for the map itself (separate from the @id of the dataset being described
                 .add("@id",
                         SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/export?exporter="
                                 + OAI_OREExporter.NAME + "&persistentId=" + id)
-
+                // Add the aggregation (Dataset) itself to the map.
                 .add(JsonLDTerm.ore("describes").getLabel(),
                         aggBuilder.add(JsonLDTerm.ore("aggregates").getLabel(), aggResArrayBuilder.build())
                                 .add(JsonLDTerm.schemaOrg("hasPart").getLabel(), fileArray.build()).build())
-
+                // and finally add the context
                 .add("@context", contextBuilder.build()).build();
 
         outputStream.write(oremap.toString().getBytes("UTF8"));
         outputStream.flush();
     }
 
+    /* Simple methods to only add an entry to JSON if the value of the term is non-null. 
+     * Methods created for string, JsonValue, boolean, and long */
+    
     private void addIfNotNull(JsonObjectBuilder builder, JsonLDTerm key, String value) {
         if (value != null) {
             builder.add(key.getLabel(), value);
