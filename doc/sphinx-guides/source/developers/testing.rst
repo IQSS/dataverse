@@ -188,6 +188,18 @@ Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)
 
 To see the full list of tests used by the Docker option mentioned above, see :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>`.
 
+Measuring Coverage of Integration Tests
+---------------------------------------
+Measuring the code coverage of integration tests with jacoco requires several steps:
+
+- Instrument the WAR file. Using an approach similar to :download:`this script <../_static/util/instrument_war_jacoco.bash>` is probably preferable to instrumenting the WAR directly (at least until the ``nu.xom.UnicodeUtil.decompose`` method too large exceptions get sorted).
+- Deploy the WAR file to a glassfish server with ``jacocoagent.jar`` in ``glassfish4/glassfish/lib/``
+- Run integration tests as usual
+- Use ``glassfish4/glassfish/domains/domain1/config/jacoco.exec`` to generate a report: ``java -jar ${JACOCO_HOME}/jacococli.jar report --classfiles ${DV_REPO}/target/classes --sourcefiles ${DV_REPO}/src/main/java --html ${DV_REPO}/target/coverage-it/ jacoco.exec``
+
+The same approach could be used to measure code paths exercised in normal use (by substituting the "run integration tests" step).
+There is obvious potential to improve automation of this process.
+
 Load/Performance Testing
 ------------------------
 

@@ -372,6 +372,7 @@ public class Admin extends AbstractApiBean {
 		return ok(json(authenticatedUser));
 	}
 
+        //TODO: Delete this endpoint after 4.9.3. Was updated with change in docs. --MAD
 	/**
 	 * curl -X PUT -d "shib@mailinator.com"
 	 * http://localhost:8080/api/admin/authenticatedUsers/id/11/convertShibToBuiltIn
@@ -385,8 +386,8 @@ public class Admin extends AbstractApiBean {
 	@Path("authenticatedUsers/id/{id}/convertShibToBuiltIn")
 	@Deprecated
 	public Response convertShibUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-		try {
-			AuthenticatedUser user = findAuthenticatedUserOrDie();
+                try {
+                        AuthenticatedUser user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -399,8 +400,9 @@ public class Admin extends AbstractApiBean {
 				return error(Response.Status.BAD_REQUEST, "User id " + id
 						+ " could not be converted from Shibboleth to BuiltIn. An Exception was not thrown.");
 			}
+                        AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
 			JsonObjectBuilder output = Json.createObjectBuilder();
-			output.add("email", builtinUser.getEmail());
+			output.add("email", authUser.getEmail());
 			output.add("username", builtinUser.getUserName());
 			return ok(output);
 		} catch (Throwable ex) {
@@ -420,7 +422,7 @@ public class Admin extends AbstractApiBean {
 	@PUT
 	@Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
 	public Response convertOAuthUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-		try {
+                try {
 			AuthenticatedUser user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
@@ -430,12 +432,14 @@ public class Admin extends AbstractApiBean {
 		}
 		try {
 			BuiltinUser builtinUser = authSvc.convertRemoteToBuiltIn(id, newEmailAddress);
+                        //AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
 			if (builtinUser == null) {
 				return error(Response.Status.BAD_REQUEST, "User id " + id
 						+ " could not be converted from remote to BuiltIn. An Exception was not thrown.");
 			}
+                        AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
 			JsonObjectBuilder output = Json.createObjectBuilder();
-			output.add("email", builtinUser.getEmail());
+			output.add("email", authUser.getEmail());
 			output.add("username", builtinUser.getUserName());
 			return ok(output);
 		} catch (Throwable ex) {
