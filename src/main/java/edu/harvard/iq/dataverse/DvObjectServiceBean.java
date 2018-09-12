@@ -83,7 +83,6 @@ public class DvObjectServiceBean implements java.io.Serializable {
                 query.setParameter("protocol", gid.getProtocol());
                 query.setParameter("authority", gid.getAuthority());
                 query.setParameter("dtype", typeString);
-                System.out.print(query.toString());
                 foundDvObject = (DvObject) query.getSingleResult();
             } catch (javax.persistence.NoResultException e) {
                 // (set to .info, this can fill the log file with thousands of

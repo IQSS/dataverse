@@ -485,6 +485,15 @@ public class Dataset extends DvObjectContainer {
         if (filesRootDirectory == null || filesRootDirectory.equals("")) {
             filesRootDirectory = "/tmp/files";
         }
+        
+        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
+            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
+                if (api.isLocalFileDirectory()) {
+                    studyDir = Paths.get(filesRootDirectory, api.getAuthority(), api.getIdentifier());
+                    return studyDir;
+                }
+            }
+        }
 
         if (this.getAuthority() != null && this.getIdentifier() != null) {
             studyDir = Paths.get(filesRootDirectory, this.getAuthority(), this.getIdentifier());

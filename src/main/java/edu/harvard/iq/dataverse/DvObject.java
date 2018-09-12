@@ -136,6 +136,15 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     
     @OneToMany(mappedBy = "dvObject", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<AlternativePersistentIdentifier> alternativePersistentIndentifiers;
+
+    public Set<AlternativePersistentIdentifier> getAlternativePersistentIndentifiers() {
+        return alternativePersistentIndentifiers;
+    }
+
+    public void setAlternativePersistentIndentifiers(Set<AlternativePersistentIdentifier> alternativePersistentIndentifiers) {
+        this.alternativePersistentIndentifiers = alternativePersistentIndentifiers;
+    }
+        
     
     /**
      * previewImageAvailable could also be thought of as "thumbnail has been
