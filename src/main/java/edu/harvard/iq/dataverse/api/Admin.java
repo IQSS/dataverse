@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
@@ -1023,6 +1024,31 @@ public class Admin extends AbstractApiBean {
 	@Path("/isOrcid")
 	public Response isOrcidEnabled() {
 		return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
+	}
+        
+        @GET
+        @Path("{id}/reregisterHDLToPID")
+        public Response reregisterHdlToPID(@PathParam("id") String id) {
+		logger.info("Starting to reregister  " + id + " Dataset Id. " + new Date());
+
+		try {
+			User u = findUserOrDie();
+			DataverseRequest r = createDataverseRequest(u);
+			Dataset ds = findDatasetOrDie(id);
+			if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(GlobalId.HDL_PROTOCOL)) {
+				execCommand(new RegisterDvObjectCommand(r, ds, true));
+			} else {
+				return ok("Dataset was not registered as a HDL. ");
+			}
+
+		} catch (WrappedResponse r) {
+			logger.info("Failed to migrate Dataset Handle id: " + id);
+                        return badRequest("Failed to migrate Dataset Handle id: " + id);
+		} catch (Exception e) {
+			logger.info("Failed to migrate Dataset Handle id: " + id + " Unexpecgted Exception " + e.getMessage());
+                        return badRequest("Failed to migrate Dataset Handle id: " + id + " Unexpecgted Exception " + e.getMessage());
+		}
+		return ok("Dataset migrate HDL registration complete. Dataset re-registered successfully.");
 	}
 
 	@GET
