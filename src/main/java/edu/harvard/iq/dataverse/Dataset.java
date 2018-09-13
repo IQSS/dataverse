@@ -501,6 +501,19 @@ public class Dataset extends DvObjectContainer {
 
         return studyDir;
     }
+    
+    public String getAlternativePersistentIdentifier(){
+        String retVal = null;            
+        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
+            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
+                retVal = retVal != null ? retVal + "; " : "";
+                retVal += api.getProtocol() + ":";
+                retVal += api.getAuthority() + "/";
+                retVal +=  api.getIdentifier();
+            }
+        }
+        return retVal;       
+    }
 
     public String getNextMajorVersionString() {
         // Never need to get the next major version for harvested studies.
