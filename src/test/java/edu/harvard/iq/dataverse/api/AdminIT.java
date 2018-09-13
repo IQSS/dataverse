@@ -269,7 +269,7 @@ public class AdminIT {
         createUserToConvert.prettyPrint();
 
         long idOfUserToConvert = createUserToConvert.body().jsonPath().getLong("data.authenticatedUser.id");
-        String emailOfUserToConvert = createUserToConvert.body().jsonPath().getString("data.user.email");
+        String emailOfUserToConvert = createUserToConvert.body().jsonPath().getString("data.authenticatedUser.email");
         String usernameOfUserToConvert = UtilIT.getUsernameFromResponse(createUserToConvert);
 
         String password = usernameOfUserToConvert;
@@ -356,7 +356,7 @@ public class AdminIT {
         createUserToConvert.prettyPrint();
 
         long idOfUserToConvert = createUserToConvert.body().jsonPath().getLong("data.authenticatedUser.id");
-        String emailOfUserToConvert = createUserToConvert.body().jsonPath().getString("data.user.email");
+        String emailOfUserToConvert = createUserToConvert.body().jsonPath().getString("data.authenticatedUser.email");
         String usernameOfUserToConvert = UtilIT.getUsernameFromResponse(createUserToConvert);
 
         String password = usernameOfUserToConvert;

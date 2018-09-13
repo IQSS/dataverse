@@ -36,7 +36,7 @@ public class UsersIT {
 //
         long AuthenticatedUserIdOfBcryptUserToConvert = createUserToConvert.body().jsonPath().getLong("data.authenticatedUser.id");
         long BuiltinUserIdOfBcryptUserToConvert = createUserToConvert.body().jsonPath().getLong("data.user.id");
-        String emailOfNonBcryptUserToConvert = createUserToConvert.body().jsonPath().getString("data.user.email");
+        String emailOfNonBcryptUserToConvert = createUserToConvert.body().jsonPath().getString("data.authenticatedUser.email");
         String usernameOfNonBcryptUserToConvert = UtilIT.getUsernameFromResponse(createUserToConvert);
         System.out.println("usernameOfBcryptUserToConvert: " + usernameOfNonBcryptUserToConvert);
         String newEmailAddressToUse = "builtin2shib." + UUID.randomUUID().toString().substring(0, 8) + "@mailinator.com";

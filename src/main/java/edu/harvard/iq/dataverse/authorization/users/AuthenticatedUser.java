@@ -97,7 +97,7 @@ public class AuthenticatedUser implements User, Serializable {
     
     @Column(nullable = true)
     private Timestamp emailConfirmed;
-    //TODO: add the word time after next 3 columns   
+ 
     @Column(nullable=false)
     private Timestamp createdTime;
     
@@ -224,8 +224,9 @@ public class AuthenticatedUser implements User, Serializable {
         return email;
     }
 
+    //Stripping spaces to continue support of #2945
     public void setEmail(String email) {
-        this.email = email;
+        this.email = email.trim();
     }
 
     public String getAffiliation() {
