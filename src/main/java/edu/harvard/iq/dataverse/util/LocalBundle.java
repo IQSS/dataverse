@@ -31,18 +31,25 @@ public class LocalBundle extends ResourceBundle {
         if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
             filesRootDirectory = "/tmp/lang";
         }
+        File bundleFileDir = new File(filesRootDirectory);
 
-        File file = new File(filesRootDirectory);
-        URL[] urls = null;
-        try {
-            urls = new URL[]{file.toURI().toURL()};
-        }
-        catch (Exception e)
+        if (!bundleFileDir.exists())
         {
-            e.printStackTrace();
+            bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale);
         }
-        ClassLoader loader = new URLClassLoader(urls);
-        bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale, loader);
+        else {
+
+            URL[] urls = null;
+            try {
+                urls = new URL[]{bundleFileDir.toURI().toURL()};
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            ClassLoader loader = new URLClassLoader(urls);
+            bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale, loader);
+        }
+
         setParent(bundle);
     }
 

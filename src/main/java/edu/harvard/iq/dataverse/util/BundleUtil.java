@@ -6,10 +6,7 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.MessageFormat;
-import java.util.List;
-import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class BundleUtil {
@@ -26,25 +23,32 @@ public class BundleUtil {
     public static String getStringFromBundle(String key, List<String> arguments) {
 
         DataverseLocaleBean d = new DataverseLocaleBean();
+        ResourceBundle bundle ;
         bundle_locale= new Locale(d.getLocaleCode());
 
-        logger.info("dataverselocalebean   : **** : " + d.getLocaleCode() );
         String filesRootDirectory = System.getProperty("dataverse.lang.directory");
         if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
             filesRootDirectory = "/tmp/lang";
         }
 
-        File file = new File(filesRootDirectory);
-        URL[] urls = null;
-        try {
-            urls = new URL[]{file.toURI().toURL()};
-        }
-        catch (Exception e)
+        File bundleFileDir = new File(filesRootDirectory);
+
+        if (!bundleFileDir.exists())
         {
-            e.printStackTrace();
+            bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale);
         }
-        ClassLoader loader = new URLClassLoader(urls);
-        ResourceBundle bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale, loader);
+        else {
+
+            URL[] urls = null;
+            try {
+                urls = new URL[]{bundleFileDir.toURI().toURL()};
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            ClassLoader loader = new URLClassLoader(urls);
+            bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale, loader);
+        }
         return getStringFromBundle(key, arguments, bundle);
     }
 
