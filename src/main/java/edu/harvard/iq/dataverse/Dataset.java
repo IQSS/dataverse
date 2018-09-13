@@ -514,6 +514,36 @@ public class Dataset extends DvObjectContainer {
         }
         return retVal;       
     }
+    
+    public String getProtocolForFileStorage(){
+         String retVal = getProtocol();            
+        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
+            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
+                retVal = api.getProtocol();
+            }
+        }
+        return retVal;         
+    }
+    
+    public String getAuthorityForFileStorage(){
+         String retVal = getAuthority();            
+        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
+            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
+                retVal = api.getAuthority();
+            }
+        }
+        return retVal;         
+    }
+    
+    public String getIdentifierForFileStorage(){
+         String retVal = getIdentifier();            
+        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
+            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
+                retVal = api.getIdentifier();
+            }
+        }
+        return retVal;         
+    }
 
     public String getNextMajorVersionString() {
         // Never need to get the next major version for harvested studies.
@@ -649,7 +679,7 @@ public class Dataset extends DvObjectContainer {
                 String nServerURLencoded = nServerURL;
 
                 nServerURLencoded = nServerURLencoded.replace(":", "%3A").replace("/", "%2F");
-
+                //SEK 09/13/18
                 String NesstarWebviewPage = nServerURL
                         + "/webview/?mode=documentation&submode=abstract&studydoc="
                         + nServerURLencoded + "%2Fobj%2FfStudy%2F"
