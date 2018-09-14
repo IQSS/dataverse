@@ -47,7 +47,7 @@ fi
 #The AMI ID only works for region us-east-1, for now just forcing that
 #Using this image ID a 1-time requires subscription per root account, which was done through the UI
 echo "*Creating ec2 instance"
-INSTACE_ID=$(aws ec2 run-instances --image-id ami-9887c6e7 --security-groups devenv-sg --count 1 --instance-type t2.nano --key-name devenv-key --query 'Instances[0].InstanceId' --block-device-mappings '[ { "DeviceName": "/dev/sda1", "Ebs": { "DeleteOnTermination": true } } ]' | tr -d \")
+INSTACE_ID=$(aws ec2 run-instances --image-id ami-9887c6e7 --security-groups devenv-sg --count 1 --instance-type t2.small --key-name devenv-key --query 'Instances[0].InstanceId' --block-device-mappings '[ { "DeviceName": "/dev/sda1", "Ebs": { "DeleteOnTermination": true } } ]' | tr -d \")
 echo "Instance ID: "$INSTACE_ID
 echo "*End creating EC2 instance"
 
@@ -61,6 +61,18 @@ rm -rf $DEPLOY_FILE
 
 echo "New EC2 instance created at $PUBLIC_DNS"
 
+#ssh into instance now and run ansible stuff
+ssh -i devenv-key.pem -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' centos@${PUBLIC_DNS} << EOF
+sudo yum -y install git nano ansible
+git clone https://github.com/IQSS/dataverse-ansible.git dataverse
+export ANSIBLE_ROLES_PATH=.
+
+EOF
+
+echo "New EC2 instance created at $PUBLIC_DNS"
+
+#ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local -vvv
+#echo -e "[dataverse]\nlocalhost" >> hosts
 #Outstanding needs:
 # - Delete Script
 # - Correct ec2 specs for our needs
