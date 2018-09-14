@@ -880,6 +880,10 @@ public class EditDatafilesPage implements java.io.Serializable {
                 removeDataFileFromList(dataset.getFiles(), markedForDelete.getDataFile());
                 removeDataFileFromList(newFiles, markedForDelete.getDataFile());
                 deleteTempFile(markedForDelete.getDataFile());
+                // Also remove checksum from the list of newly uploaded checksums (perhaps odd
+                // to delete and then try uploading the same file again, but it seems like it
+                // should be allowed/the checksum list is part of the state to clean-up
+                checksumMapNew.remove(markedForDelete.getDataFile().getChecksumValue());
 
             }
         }
@@ -914,10 +918,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"
                     + dataFile.getStorageIdentifier());
         }
-        // Also remove checksum from the list of newly uploaded checksums (perhaps odd
-        // to delete and then try uploading the same file again, but it seems like it
-        // should be allowed/the checksum list is part of the state to clean-up
-        checksumMapNew.remove(dataFile.getChecksumValue());
     }
 
     private void removeFileMetadataFromList(List<FileMetadata> fmds, FileMetadata fmToDelete) {
@@ -1813,7 +1813,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                     dupeFileNamesExisting = dupeFileNamesExisting.concat(", " + dataFile.getFileMetadata().getLabel());
                     multipleDupesExisting = true;
                 }
-                // skip
+                // remove temp file
+                deleteTempFile(dataFile);
             } else if (isFileAlreadyUploaded(dataFile)) {
                 if (dupeFileNamesNew == null) {
                     dupeFileNamesNew = dataFile.getFileMetadata().getLabel();
@@ -1821,7 +1822,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                     dupeFileNamesNew = dupeFileNamesNew.concat(", " + dataFile.getFileMetadata().getLabel());
                     multipleDupesNew = true;
                 }
-                // skip
+                // remove temp file
+                deleteTempFile(dataFile);
             } else {
                 // OK, this one is not a duplicate, we want it.
                 // But let's check if its filename is a duplicate of another
