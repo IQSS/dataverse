@@ -29,3 +29,4 @@ These "superuser" tasks are managed via the new page called the Dashboard. A use
    maintenance
    backups
    troubleshooting
+   scaling
