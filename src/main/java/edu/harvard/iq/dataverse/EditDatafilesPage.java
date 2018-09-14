@@ -945,8 +945,20 @@ public class EditDatafilesPage implements java.io.Serializable {
                 Iterator<DataFile> dfIt = dataset.getFiles().iterator();
                 while (dfIt.hasNext()) {
                     DataFile dfn = dfIt.next();
+                    String storageIdentifier =dfn.getStorageIdentifier(); 
                     logger.info("dfn); " + dfn.getStorageIdentifier());
-                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
+                    if(storageIdentifier.matches("^[a-z][a-z0-9]*://.*"))  {
+                        /* IO providers other than the FileAccessIO add a prefix onto the storageidentifier
+                         * which is not used for the temp file that is to be deleted. So - we need to strip the prefix.
+                         * Nominally, the structure of the prefix could be IO provider specific and not follow a pattern,
+                         * so it would be best if finding the temporary storageidentifier was the job of the 
+                         * specific provider being used. However, since all providers currently follow the patte above and it is 
+                         * hardcoded in DataAccess.java as well, we'll use the pattern here.
+                         */
+                        storageIdentifier = storageIdentifier.substring(storageIdentifier.lastIndexOf(':')+1);
+                        logger.info("temp si: " + storageIdentifier);
+                    }
+                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(storageIdentifier)) {
                         
                         // Before we remove the file from the list and forget about 
                         // it:
@@ -964,10 +976,10 @@ public class EditDatafilesPage implements java.io.Serializable {
                         // local filesystem: 
 
                         try {
-                            Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dfn.getStorageIdentifier()));
+                            Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + storageIdentifier));
                         } catch (IOException ioEx) {
                             // safe to ignore - it's just a temp file. 
-                            logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/" + dfn.getStorageIdentifier());
+                            logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/" + storageIdentifier);
                         }
                         
                         dfIt.remove();
