@@ -47,18 +47,20 @@ fi
 
 #The AMI ID only works for region us-east-1, for now just forcing that
 #Using this image ID a 1-time requires subscription per root account, which was done through the UI
+#Also, change the instance size as your own peril. Previous attempts of setting it smaller than medium have caused solr and maven to crash weirdly during install
 echo "*Creating ec2 instance"
-INSTACE_ID=$(aws ec2 run-instances --image-id ami-9887c6e7 --security-groups devenv-sg --count 1 --instance-type t2.small --key-name devenv-key --query 'Instances[0].InstanceId' --block-device-mappings '[ { "DeviceName": "/dev/sda1", "Ebs": { "DeleteOnTermination": true } } ]' | tr -d \")
+INSTACE_ID=$(aws ec2 run-instances --image-id ami-9887c6e7 --security-groups devenv-sg --count 1 --instance-type t2.medium --key-name devenv-key --query 'Instances[0].InstanceId' --block-device-mappings '[ { "DeviceName": "/dev/sda1", "Ebs": { "DeleteOnTermination": true } } ]' | tr -d \")
 echo "Instance ID: "$INSTACE_ID
 echo "*End creating EC2 instance"
 
 PUBLIC_DNS=$(aws ec2 describe-instances --instance-ids $INSTACE_ID --query "Reservations[*].Instances[*].[PublicDnsName]" --output text)
+PUBLIC_IP=$(aws ec2 describe-instances --instance-ids $INSTACE_ID --query "Reservations[*].Instances[*].[PublicIpAddress]" --output text)
 
-echo $BRANCH_NAME > $DEPLOY_FILE
+#echo $BRANCH_NAME > $DEPLOY_FILE
 echo "Connecting to the instance. This may take a minute as it is being spun up"
 #MAD: I'm a bit confused, this says its adding it to a file even though I don't think it should. At least its passing without me pressing enter
-scp -i devenv-key.pem -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' $DEPLOY_FILE centos@${PUBLIC_DNS}:~
-rm -rf $DEPLOY_FILE
+#scp -i devenv-key.pem -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' $DEPLOY_FILE centos@${PUBLIC_DNS}:~
+#rm -rf $DEPLOY_FILE
 
 echo "New EC2 instance created at $PUBLIC_DNS"
 
@@ -67,13 +69,11 @@ ssh -i devenv-key.pem -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/
 sudo yum -y install git nano ansible
 git clone https://github.com/IQSS/dataverse-ansible.git dataverse
 export ANSIBLE_ROLES_PATH=.
-
+ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local -vvv --extra-vars "dataverse.branch=$BRANCH_NAME"
 EOF
 
-echo "New EC2 instance created at $PUBLIC_DNS"
+echo "New EC2 instance created at $PUBLIC_DNS (Public IP $PUBLIC_IP )"
 
-#ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local -vvv
-#echo -e "[dataverse]\nlocalhost" >> hosts
 #Outstanding needs:
 # - Delete Script
 # - Correct ec2 specs for our needs
