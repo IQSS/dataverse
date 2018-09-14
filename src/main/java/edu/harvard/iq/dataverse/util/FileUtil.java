@@ -932,18 +932,6 @@ public class FileUtil implements java.io.Serializable {
             // Delete the temp directory used for unzipping
             deleteDirectory(rezipFolder);
 
-            // Delete rezipped files
-            for (File finalFile : shpIngestHelper.getFinalRezippedFiles()) {
-                if (finalFile.isFile()) {
-                    try {
-                        finalFile.delete();
-                    } catch (SecurityException se) {
-                        logger.warning("Unable to delete: " + finalFile.getName() + "due to Security Exception: "
-                                + se.getMessage());
-                    }
-                }
-            }
-
             if (datafiles.size() > 0) {
                 // remove the uploaded zip file:
                 try {
