@@ -903,7 +903,7 @@ public class FileUtil implements java.io.Serializable  {
                         logger.severe("Could not add part of rezipped shapefile. new_datafile was null: " + finalFile.getName());
                     }
                     finalFileInputStream.close();
-
+//FIXME - delete initial zip?
                 }
             } catch (FileExceedsMaxSizeException femsx) {
                 logger.severe("One of the unzipped shape files exceeded the size limit; giving up. " + femsx.getMessage());
@@ -943,7 +943,6 @@ public class FileUtil implements java.io.Serializable  {
                 datafile.SetIngestProblem();
             }
             datafiles.add(datafile);
-            
             return datafiles;
         }
         

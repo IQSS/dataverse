@@ -941,10 +941,11 @@ public class EditDatafilesPage implements java.io.Serializable {
                         break;
                     }
                 }
-                
+                logger.info("MFD: " + markedForDelete.getDataFile().getStorageIdentifier());
                 Iterator<DataFile> dfIt = dataset.getFiles().iterator();
                 while (dfIt.hasNext()) {
                     DataFile dfn = dfIt.next();
+                    logger.info("dfn); " + dfn.getStorageIdentifier());
                     if (markedForDelete.getDataFile().getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
                         
                         // Before we remove the file from the list and forget about 
