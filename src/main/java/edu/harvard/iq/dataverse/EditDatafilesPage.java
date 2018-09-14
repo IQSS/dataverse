@@ -555,12 +555,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         System.out.println(s);
     }
 
-    private void msgt(String s) {
-        msg("-------------------------------");
-        msg(s);
-        msg("-------------------------------");
-    }
-
     /**
      * For single file replacement, load the file to replace
      * 
@@ -815,7 +809,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public void deleteFiles() {
-        logger.info("entering bulk file delete (EditDataFilesPage)");
         if (isFileReplaceOperation()) {
             try {
                 deleteReplacementFile();
@@ -827,7 +820,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         String fileNames = null;
         for (FileMetadata fmd : this.getSelectedFiles()) {
-            // collect the names of the newly-restrticted files,
+            // collect the names of the files,
             // to show in the success message:
             if (fileNames == null) {
                 fileNames = fmd.getLabel();
@@ -836,152 +829,60 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
 
-        for (FileMetadata markedForDelete : selectedFiles) {
+        for (FileMetadata markedForDelete : this.getSelectedFiles()) {
             logger.fine("delete requested on file " + markedForDelete.getLabel());
             logger.fine("file metadata id: " + markedForDelete.getId());
             logger.fine("datafile id: " + markedForDelete.getDataFile().getId());
             logger.fine("page is in edit mode " + mode.name());
 
-            // TODO:
-            // some duplicated code below... needs to be refactored as follows:
-            // 1. check if the filemetadata has the id; if not - remove
-            // from the appropriate lists using the iterators;
-            // then 2. check if the file has the id; if not - remove it quietly
-            // (as specified below; otherwise - do the quick .remoove() of the
-            // filemetadata from the appropriate lists, and add the file to the
-            // "filestobedeleted" list... as it is now, the code for step 1.
-            // is duplicated in 2 places below. I just don't have time to
-            // rewrite it now. -- L.A. Sep. 15, 4.2
-
-            if (markedForDelete.getDataFile().getId() != null) {
-                logger.fine("this is an existing (saved) file.");
-                // the file already exists as part of this dataset
+            // has this filemetadata been saved already? (or is it a brand new
+            // filemetadata, created as part of a brand new version, created when
+            // the user clicked 'delete', that hasn't been saved in the db yet?)
+            if (markedForDelete.getId() != null) {
+                logger.fine("this is a filemetadata from an existing draft version");
                 // so all we remove is the file from the fileMetadatas (from the
                 // file metadatas attached to the editVersion, and from the
                 // display list of file metadatas that are being edited)
                 // and let the delete be handled in the command (by adding it to the
                 // filesToBeDeleted list):
 
-                // has this filemetadata been saved already? (or is it a brand new
-                // filemetadata, created as part of a brand new version, created when
-                // the user clicked 'delete', that hasn't been saved in the db yet?)
-                if (markedForDelete.getId() != null) {
-                    logger.fine("this is a filemetadata from an existing draft version");
-                    dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
-                    fileMetadatas.remove(markedForDelete);
-                    filesToBeDeleted.add(markedForDelete);
-                } else {
-                    logger.fine("this is a brand-new (unsaved) filemetadata");
-                    // ok, this is a brand-new DRAFT version.
-                    // 1. delete the filemetadata from the local display list:
-                    Iterator<FileMetadata> fmit = fileMetadatas.iterator();
-                    while (fmit.hasNext()) {
-                        FileMetadata fmd = fmit.next();
-                        if (markedForDelete.getDataFile().getStorageIdentifier()
-                                .equals(fmd.getDataFile().getStorageIdentifier())) {
-                            fmit.remove();
-                            break;
-                        }
-                    }
-                    // 2. delete the filemetadata from the version:
-                    fmit = dataset.getEditVersion().getFileMetadatas().iterator();
-                    while (fmit.hasNext()) {
-                        FileMetadata fmd = fmit.next();
-                        if (markedForDelete.getDataFile().getStorageIdentifier()
-                                .equals(fmd.getDataFile().getStorageIdentifier())) {
-                            fmit.remove();
-                            break;
-                        }
-                    }
-                }
+                dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+                fileMetadatas.remove(markedForDelete);
+                filesToBeDeleted.add(markedForDelete);
             } else {
-                logger.fine("this is a brand new file.");
-                // the file was just added during this step, so in addition to
-                // removing it from the fileMetadatas list, we also remove it from
-                // the newFiles list and the dataset's files, so it never gets saved.
+                logger.fine("this is a brand-new (unsaved) filemetadata");
+                // ok, this is a brand-new DRAFT version.
 
                 // if (mode != FileEditMode.CREATE) {
                 // If the bean is in the 'CREATE' mode, the page is using
                 // dataset.getEditVersion().getFileMetadatas() directly,
                 // so there's no need to delete this meta from the local
-                // fileMetadatas list.
+                // fileMetadatas list. (but doing both just adds a no-op and won't cause an
+                // error)
 
-                // (we can't just do
-                // fileMetadatas.remove(markedForDelete);
-                // - because the filemetadata doesn't have the id yet!)
-                logger.info("Local MD loop");
-                Iterator<FileMetadata> fmitlocal = fileMetadatas.iterator();
-                while (fmitlocal.hasNext()) {
-                    FileMetadata fmd = fmitlocal.next();
-                    String storageIdentifier = getTempStorageIdentifier(fmd.getDataFile().getStorageIdentifier());
-                    
-                    if (markedForDelete.getDataFile().getStorageIdentifier()
-                            .equals(storageIdentifier)) {
-                        fmitlocal.remove();
-                        break;
-                    }
-                }
-                // }
-                logger.info("dataset edit version loop:");
-                Iterator<FileMetadata> fmit = dataset.getEditVersion().getFileMetadatas().iterator();
-                while (fmit.hasNext()) {
-                    FileMetadata fmd = fmit.next();
-                    String storageIdentifier = getTempStorageIdentifier(fmd.getDataFile().getStorageIdentifier());
+                // 1. delete the filemetadata from the local display list:
+                removeFileMetadataFromList(fileMetadatas, markedForDelete);
+                // 2. delete the filemetadata from the version:
+                removeFileMetadataFromList(dataset.getEditVersion().getFileMetadatas(), markedForDelete);
+            }
+            // if (markedForDelete.getDataFile().getId() != null) {
+            // logger.fine("this is an existing (saved) file.");
+            // the file already exists as part of this dataset and we're done having added
+            // the files to the filesToBeDeleted list
+            // }
 
-                    if (markedForDelete.getDataFile().getStorageIdentifier()
-                            .equals(storageIdentifier)) {
-                        fmit.remove();
-                        break;
-                    }
-                }
-                logger.info("MFD: " + markedForDelete.getDataFile().getStorageIdentifier());
-                Iterator<DataFile> dfIt = dataset.getFiles().iterator();
-                while (dfIt.hasNext()) {
-                    DataFile dfn = dfIt.next();
-                    String storageIdentifier = getTempStorageIdentifier(dfn.getStorageIdentifier());
-                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(storageIdentifier)) {
+            if (markedForDelete.getDataFile().getId() == null) {
+                logger.fine("this is a brand new file.");
+                // the file was just added during this step, so in addition to
+                // removing it from the fileMetadatas lists (above), we also remove it from
+                // the newFiles list and the dataset's files, so it never gets saved.
 
-                        // Before we remove the file from the list and forget about
-                        // it:
-                        // The physical uploaded file is still sitting in the temporary
-                        // directory. If it were saved, it would be moved into its
-                        // permanent location. But since the user chose not to save it,
-                        // we have to delete the temp file too.
-                        //
-                        // Eventually, we will likely add a dedicated mechanism
-                        // for managing temp files, similar to (or part of) the storage
-                        // access framework, that would allow us to handle specialized
-                        // configurations - highly sensitive/private data, that
-                        // has to be kept encrypted even in temp files, and such.
-                        // But for now, we just delete the file directly on the
-                        // local filesystem:
-
-                        try {
-                            Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + storageIdentifier));
-                        } catch (IOException ioEx) {
-                            // safe to ignore - it's just a temp file.
-                            logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"
-                                    + storageIdentifier);
-                        }
-
-                        dfIt.remove();
-
-                    }
-                }
-
-                Iterator<DataFile> nfIt = newFiles.iterator();
-                logger.info("Starting new file list");
-                while (nfIt.hasNext()) {
-                    DataFile dfn = nfIt.next();
-                    String storageIdentifier = getTempStorageIdentifier(dfn.getStorageIdentifier());
-                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(storageIdentifier)) {
-                        nfIt.remove();
-                    }
-                }
+                removeDataFileFromList(dataset.getFiles(), markedForDelete.getDataFile());
+                removeDataFileFromList(newFiles, markedForDelete.getDataFile());
+                deleteTempFile(markedForDelete.getDataFile());
 
             }
         }
-
         if (fileNames != null) {
             String successMessage = getBundleString("file.deleted.success");
             logger.fine(successMessage);
@@ -990,24 +891,55 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
     }
 
-    private String getTempStorageIdentifier(String storageIdentifier) {
-        logger.info("full si " + storageIdentifier);
-        if (storageIdentifier.matches("^[a-z][a-z0-9]*://.*")) {
-            /*
-             * IO providers other than the FileAccessIO add a prefix onto the
-             * storageidentifier which is not used for the temp file that is to be deleted.
-             * So - we need to strip the prefix. Nominally, the structure of the prefix
-             * could be IO provider specific and not follow a pattern, so it would be best
-             * if finding the temporary storageidentifier was the job of the specific
-             * provider being used (or if the storageidentifier weren't updated until the
-             * temp file is moved/copied?). However, since all providers currently follow
-             * the patte above and it is hardcoded in DataAccess.java as well, we'll use the
-             * pattern here.
-             */
-            storageIdentifier = storageIdentifier.substring(storageIdentifier.lastIndexOf(':') + 1);
-            logger.info("temp si: " + storageIdentifier);
+    private void deleteTempFile(DataFile dataFile) {
+        // Before we remove the file from the list and forget about
+        // it:
+        // The physical uploaded file is still sitting in the temporary
+        // directory. If it were saved, it would be moved into its
+        // permanent location. But since the user chose not to save it,
+        // we have to delete the temp file too.
+        //
+        // Eventually, we will likely add a dedicated mechanism
+        // for managing temp files, similar to (or part of) the storage
+        // access framework, that would allow us to handle specialized
+        // configurations - highly sensitive/private data, that
+        // has to be kept encrypted even in temp files, and such.
+        // But for now, we just delete the file directly on the
+        // local filesystem:
+
+        try {
+            Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier()));
+        } catch (IOException ioEx) {
+            // safe to ignore - it's just a temp file.
+            logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"
+                    + dataFile.getStorageIdentifier());
         }
-        return storageIdentifier;
+        // Also remove checksum from the list of newly uploaded checksums (perhaps odd
+        // to delete and then try uploading the same file again, but it seems like it
+        // should be allowed/the checksum list is part of the state to clean-up
+        checksumMapNew.remove(dataFile.getChecksumValue());
+    }
+
+    private void removeFileMetadataFromList(List<FileMetadata> fmds, FileMetadata fmToDelete) {
+        Iterator<FileMetadata> fmit = fmds.iterator();
+        while (fmit.hasNext()) {
+            FileMetadata fmd = fmit.next();
+            if (fmToDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
+                fmit.remove();
+                break;
+            }
+        }
+    }
+
+    private void removeDataFileFromList(List<DataFile> dfs, DataFile dfToDelete) {
+        Iterator<DataFile> dfit = dfs.iterator();
+        while (dfit.hasNext()) {
+            DataFile df = dfit.next();
+            if (dfToDelete.getStorageIdentifier().equals(df.getStorageIdentifier())) {
+                dfit.remove();
+                break;
+            }
+        }
     }
 
     public String saveWithTermsOfUse() {
@@ -1343,8 +1275,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (mode == FileEditMode.SINGLE || mode == FileEditMode.SINGLE_REPLACE) {
             return returnToFileLandingPage();
         }
-        for(DataFile df: newFiles) {
-            logger.info("Should delete: " + df.getStorageIdentifier());
+        for (DataFile newFile : newFiles) {
+            deleteTempFile(newFile);
         }
         if (workingVersion.getId() != null) {
             return returnToDraftVersion();
