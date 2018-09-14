@@ -300,12 +300,12 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             setName = "";
         }
         
-        String queryString ="SELECT object(h) from OAIRecord h where h.id is not null";
-            if (excludeSet) {
-                queryString += " and h.setName is not null and h.setName != '' and h.setName != :setName";
-            } else {
-                queryString += " and h.setName = :setName";
-            } 
+        String queryString = "SELECT object(h) from OAIRecord h where h.id is not null";
+        if (excludeSet) {
+            queryString += " and h.setName is not null and h.setName != '' and h.setName != :setName";
+        } else {
+            queryString += " and h.setName = :setName";
+        }
         
         queryString += from != null ? " and h.lastUpdateTime >= :from" : "";
         queryString += until != null ? " and h.lastUpdateTime<=:until" : "";
