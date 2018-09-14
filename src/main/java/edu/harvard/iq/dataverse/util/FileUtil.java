@@ -928,19 +928,21 @@ public class FileUtil implements java.io.Serializable {
                         "One of the unzipped shape files exceeded the size limit; giving up. " + femsx.getMessage());
                 datafiles.clear();
             }
-            //TODO: Why are these commented out - 
-            // Delete the temp directory used for unzipping
 
-            // logger.fine("Delete temp shapefile unzip directory: " +
-            // rezipFolder.getAbsolutePath());
+            // Delete the temp directory used for unzipping
             deleteDirectory(rezipFolder);
 
-            //// Delete rezipped files
-            // for (File finalFile : shpIngestHelper.getFinalRezippedFiles()){
-            // if (finalFile.isFile()){
-            // finalFile.delete();
-            // }
-            // }
+            // Delete rezipped files
+            for (File finalFile : shpIngestHelper.getFinalRezippedFiles()) {
+                if (finalFile.isFile()) {
+                    try {
+                        finalFile.delete();
+                    } catch (SecurityException se) {
+                        logger.warning("Unable to delete: " + finalFile.getName() + "due to Security Exception: "
+                                + se.getMessage());
+                    }
+                }
+            }
 
             if (datafiles.size() > 0) {
                 // remove the uploaded zip file:
@@ -949,6 +951,9 @@ public class FileUtil implements java.io.Serializable {
                 } catch (IOException ioex) {
                     // do nothing - it's just a temp file.
                     logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
+                } catch (SecurityException se) {
+                    logger.warning("Unable to delete: " + tempFile.toString() + "due to Security Exception: "
+                            + se.getMessage());
                 }
                 return datafiles;
             } else {
@@ -977,27 +982,30 @@ public class FileUtil implements java.io.Serializable {
         return null;
     } // end createDataFiles
 
-    
-    public static boolean deleteDirectory(File dir){
-        
-        if (dir==null){
+    public static boolean deleteDirectory(File dir) {
+        try {
+            if (dir == null) {
+                return false;
+            }
+            if (!(dir.exists())) {
+                return true;
+            }
+            File[] entries = dir.listFiles();
+            if (entries == null) {
+                return true;
+            }
+            for (File f : entries) {
+                f.delete();
+            }
+            dir.delete();
+        } catch (SecurityException se) {
+            logger.warning("Unable to delete: " + dir.getName() + "due to Security Exception: " + se.getMessage());
             return false;
         }
-        if (!(dir.exists())){
-            return true;
-        }
-       File[] entries = dir.listFiles();
-       if (entries==null){
-           return true;
-       }
-       for(File f: entries){
-          f.delete();
-       }
-       dir.delete();
-       return true;
-        
+        return true;
+
     }
-    
+
     private static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit)
             throws IOException, FileExceedsMaxSizeException {
         Path tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
