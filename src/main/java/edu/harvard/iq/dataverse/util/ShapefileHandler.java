@@ -263,27 +263,6 @@ public class ShapefileHandler{
     }
     
     
-    private boolean deleteDirectory(String dirname){
-        
-        if (dirname==null){
-            return false;
-        }
-        File dir_obj = new File(dirname);
-        if (!(dir_obj.exists())){
-            return true;
-        }
-       File[] entries = dir_obj.listFiles();
-       msgt("deleteDirectory");
-       if (entries==null){
-           return true;
-       }
-       for(File f: entries){
-          f.delete();
-       }
-       dir_obj.delete();
-       return true;
-        
-    }
     
     private String getFileBasename(String fileName){
         if (fileName==null){
@@ -437,9 +416,8 @@ public class ShapefileHandler{
         String target_dirname = rezippedFolder.getAbsolutePath();
         boolean redistribute_success = this.redistributeFilesFromZip(dirname_for_unzipping, target_dirname);
 
-        //logger.fine("About to delete: " + dir_for_unzipping);               
         // Delete unzipped files in scratch directory
-        //FileUtils.deleteDirectory(dir_for_unzipping);
+        FileUtils.deleteDirectory(dir_for_unzipping);
         
         logger.fine("Post redistribute:)");
         for (File f : new File(target_dirname).listFiles()){
