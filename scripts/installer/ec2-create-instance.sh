@@ -21,6 +21,7 @@ if [[ "$?" -ne 0 ]]; then
   echo "*Creating security group"
   aws ec2 create-security-group --group-name devenv-sg --description "security group for development environment"
   aws ec2 authorize-security-group-ingress --group-name devenv-sg --protocol tcp --port 22 --cidr 0.0.0.0/0
+  aws ec2 authorize-security-group-ingress --group-name devenv-sg --protocol tcp --port 8080 --cidr 0.0.0.0/0
   echo "*End creating security group"
 else
   echo "*Security group already exists."
