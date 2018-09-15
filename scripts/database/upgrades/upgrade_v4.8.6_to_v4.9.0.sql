@@ -63,7 +63,7 @@ ALTER TABLE dvobject DROP COLUMN doiseparator;
 --Add new setting into content for shoulder if needed
 
 INSERT INTO setting(name, content)
-SELECT ':Shoulder2', substring(content, strpos(content,'/')+1) || '/' from setting where name = ':Authority' and strpos(content,'/')>0;
+SELECT ':Shoulder', substring(content, strpos(content,'/')+1) || '/' from setting where name = ':Authority' and strpos(content,'/')>0;
 
 --strip shoulder from authority setting if the shoulder exists
 SET content= case when (strpos(content,'/')>0) then substring(content from 0 for strpos(content,'/'))
