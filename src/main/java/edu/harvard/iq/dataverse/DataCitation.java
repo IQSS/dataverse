@@ -313,11 +313,12 @@ public class DataCitation {
             out.write("T3  - " + seriesTitle + "\r\n");
         }
         if(description!=null) {
-        out.write("AB  - " + flattenHtml(description) + "\r\n");
+            out.write("AB  - " + flattenHtml(description) + "\r\n");
         }
         for (String author : authors) {
             out.write("AU  - " + author + "\r\n");
         }
+        
         if (!producers.isEmpty()) {
             for (String author : producers) {
                 out.write("A2  - " + author + "\r\n");
@@ -499,7 +500,7 @@ public class DataCitation {
 
         xmlw.writeStartElement("abstract");
         if(description!=null) {
-        xmlw.writeCharacters(flattenHtml(description));
+            xmlw.writeCharacters(flattenHtml(description));
         }
         xmlw.writeEndElement(); // abstract
 
