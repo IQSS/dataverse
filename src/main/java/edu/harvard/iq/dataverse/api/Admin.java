@@ -1217,13 +1217,22 @@ public class Admin extends AbstractApiBean {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
             if (au.isSuperuser()) {
                 DatasetVersion dv = datasetversionService.retrieveDatasetVersionByVersionId(dvid).getDatasetVersion();
-                SubmitToArchiveCommand cmd = new SubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
-                try {
-                    commandEngine.submit(cmd);
-                    return ok("DatasetVersion id=" + dvid + " submitted to DPN/Duracloud");
-                } catch (CommandException ex) {
-                    logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
-                    return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
+                if (dv.getArchivalCopyLocation() == null) {
+                    SubmitToArchiveCommand cmd = new SubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
+                    try {
+                        dv = commandEngine.submit(cmd);
+                        if (dv.getArchivalCopyLocation() != null) {
+                            return ok("DatasetVersion id=" + dvid + " submitted to DPN/Duracloud at: "
+                                    + dv.getArchivalCopyLocation());
+                        } else {
+                            return error(Status.CONFLICT, "Error submitting version due to conflict/error at DPN");
+                        }
+                    } catch (CommandException ex) {
+                        logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
+                        return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
+                    }
+                } else {
+                    return error(Status.BAD_REQUEST, "Version already archived at: " + dv.getArchivalCopyLocation());
                 }
             } else {
                 return error(Status.UNAUTHORIZED, "must be superuser");
