@@ -60,14 +60,13 @@ ALTER TABLE dataset DROP COLUMN protocol;
 
 ALTER TABLE dvobject DROP COLUMN doiseparator;
 
---Add new setting into content for shoulder
-INSERT INTO setting(name, content)
-VALUES (':Shoulder', (SELECT substring(content, strpos(content,'/')+1) || '/' from setting  where name = ':Authority'));
+--Add new setting into content for shoulder if needed
 
- --strip shoulder from authority setting
- UPDATE setting
- SET content=(SELECT substring(content from 0 for strpos(content,'/'))
- FROM setting
- WHERE name=':Authority' and strpos(content,'/')>0) where name=':Authority';
+INSERT INTO setting(name, content)
+SELECT ':Shoulder', substring(content, strpos(content,'/')+1) || '/' from setting where name = ':Authority' and strpos(content,'/')>0;
+
+--strip shoulder from authority setting if the shoulder exists
+SET content= case when (strpos(content,'/')>0) then substring(content from 0 for strpos(content,'/'))
+else content end where name=':Authority';
 
 update datasetfieldtype set displayformat = '<a href="#VALUE" target="_blank">#VALUE</a>' where name in ('alternativeURL', 'keywordVocabularyURI', 'topicClassVocabURI', 'publicationURL', 'producerURL', 'distributorURL');
