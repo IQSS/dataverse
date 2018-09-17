@@ -65,18 +65,15 @@ echo "Connecting to the instance. This may take a minute as it is being spun up"
 echo "New EC2 instance created at $PUBLIC_DNS"
 
 #ssh into instance now and run ansible stuff
-ssh -i devenv-key.pem -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' centos@${PUBLIC_DNS} << EOF
+#Note: an attempt was made to pass the branch name in the ansible-playbook call
+# via -e "dataverse.branch=$BRANCH_NAME", but it gets overwritten due to the order 
+# of operations for where ansible looks for variables.
+ssh -i devenv-key.pem -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' -o 'ConnectTimeout=300' centos@${PUBLIC_DNS} << EOF
 sudo yum -y install git nano ansible
 git clone https://github.com/IQSS/dataverse-ansible.git dataverse
 export ANSIBLE_ROLES_PATH=.
-ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local -vvv --extra-vars "dataverse.branch=$BRANCH_NAME"
+sed -i "s/branch:/branch: $BRANCH_NAME/" dataverse/defaults/main.yml
+ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local
 EOF
 
 echo "New EC2 instance created at $PUBLIC_DNS (Public IP $PUBLIC_IP )"
-
-#Outstanding needs:
-# - Delete Script
-# - Correct ec2 specs for our needs
-# - better error handling
-# - maybe less verbose messaging?
-# - force region? --region us-east-1 
