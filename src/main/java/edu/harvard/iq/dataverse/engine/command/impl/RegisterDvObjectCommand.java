@@ -131,7 +131,6 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         }
         if(this.migrateHandle){
             //Only continue if you can successfully migrate the handle
-            if (!processMigrateHandle(ctxt)) return;
                     boolean doNormalSolrDocCleanUp = true;
                 ctxt.index().indexDataset((Dataset) target, doNormalSolrDocCleanUp);
                 ctxt.solrIndex().indexPermissionsForOneDvObject((Dataset)target);

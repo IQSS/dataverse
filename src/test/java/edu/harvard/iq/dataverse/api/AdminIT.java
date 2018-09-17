@@ -7,6 +7,7 @@ import static edu.harvard.iq.dataverse.api.UtilIT.getRandomString;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static java.lang.Thread.sleep;
 import java.util.ArrayList;
 import java.util.List;
@@ -506,6 +507,45 @@ public class AdminIT {
 
         Response deleteSuperuser = UtilIT.deleteUser(username);
         assertEquals(200, deleteSuperuser.getStatusCode());
+    }
+    
+    @Test
+    public void testMigrateHDLToDOI() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+
+
+        // change this to register new dataset witha handle
+        UtilIT.setSetting(SettingsServiceBean.Key.Protocol, "hdl");
+        UtilIT.setSetting(SettingsServiceBean.Key.Authority, "20.500.12050");
+                UtilIT.setSetting(SettingsServiceBean.Key.Shoulder, "");
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = JsonPath.from(createDataverse.body().asString()).getString("data.alias");
+
+        String pathToJsonFile = "src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-hdl.json";
+        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        System.out.print("in test identifier datasetId before dataset as json: " + datasetId );
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        UtilIT.setSetting(SettingsServiceBean.Key.Protocol, "doi");
+        UtilIT.setSetting(SettingsServiceBean.Key.Authority, "10.5072");
+        UtilIT.setSetting(SettingsServiceBean.Key.Shoulder, "FK2/");
+        System.out.print("in test identifier datasetId AFTER dataset as json: " + datasetId.toString() );
+        Response migrateIdentifierResponse = UtilIT.migrateDatasetIdentifierFromHDLToPId( datasetId.toString());
+                migrateIdentifierResponse.prettyPrint();
+        migrateIdentifierResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());     
     }
 
 }

@@ -1030,11 +1030,10 @@ public class Admin extends AbstractApiBean {
 		return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
 	}
         
-        @GET
+        @POST
         @Path("{id}/reregisterHDLToPID")
         public Response reregisterHdlToPID(@PathParam("id") String id) {
-		logger.info("Starting to reregister  " + id + " Dataset Id. " + new Date());
-
+		logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
 		try {
 			User u = findUserOrDie();
 			DataverseRequest r = createDataverseRequest(u);
