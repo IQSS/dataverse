@@ -51,3 +51,10 @@ Unlink a Dataset
 Removes a link between a dataset and a dataverse. Only accessible to superusers. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$linked-dataset-id/deleteLink/$linking-dataverse-alias
+
+Mint new PID for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Mints a new identifier for a dataset previously registered with a handle. Only accessible to superusers. ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/admin/$dataset-id/reregisterHDLToPID
