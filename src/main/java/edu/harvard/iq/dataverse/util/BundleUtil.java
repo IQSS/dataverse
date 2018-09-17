@@ -48,4 +48,11 @@ public class BundleUtil {
         }
     }
 
+    public static String getStringFromPropertyFile(String key, String propertyFileName  ) {
+        DataverseLocaleBean d = new DataverseLocaleBean();
+        bundle_locale= new Locale(d.getLocaleCode());
+        ResourceBundle bundle = ResourceBundle.getBundle(propertyFileName, bundle_locale);
+        return getStringFromBundle(key, null, bundle);
+    }
+
 }

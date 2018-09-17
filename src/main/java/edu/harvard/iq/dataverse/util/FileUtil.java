@@ -195,10 +195,7 @@ public class FileUtil implements java.io.Serializable  {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
             try {
-                DataverseLocaleBean d = new DataverseLocaleBean();
-                Locale bundle_locale= new Locale(d.getLocaleCode());
-                ResourceBundle bundle = ResourceBundle.getBundle("MimeTypeDisplay", bundle_locale);
-                return bundle.getString(fileType);
+                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeDisplay" );
             } catch (MissingResourceException e) {
                 return fileType;
             }
@@ -216,7 +213,7 @@ public class FileUtil implements java.io.Serializable  {
             }
 
             try {
-                return ResourceBundle.getBundle("MimeTypeFacets").getString(fileType);
+                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeFacets"  );
             } catch (MissingResourceException e) {
                 // if there's no defined "facet-friendly" form of this mime type
                 // we'll truncate the available type by "/", e.g., all the 
