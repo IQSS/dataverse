@@ -57,11 +57,7 @@ echo "*End creating EC2 instance"
 PUBLIC_DNS=$(aws ec2 describe-instances --instance-ids $INSTACE_ID --query "Reservations[*].Instances[*].[PublicDnsName]" --output text)
 PUBLIC_IP=$(aws ec2 describe-instances --instance-ids $INSTACE_ID --query "Reservations[*].Instances[*].[PublicIpAddress]" --output text)
 
-#echo $BRANCH_NAME > $DEPLOY_FILE
 echo "Connecting to the instance. This may take a minute as it is being spun up"
-#MAD: I'm a bit confused, this says its adding it to a file even though I don't think it should. At least its passing without me pressing enter
-#scp -i devenv-key.pem -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' $DEPLOY_FILE centos@${PUBLIC_DNS}:~
-#rm -rf $DEPLOY_FILE
 
 echo "New EC2 instance created at $PUBLIC_DNS"
 
