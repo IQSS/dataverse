@@ -192,6 +192,13 @@ Publish the Dataverse pointed by ``identifier``, which can either by the dataver
 
   POST http://$SERVER/api/dataverses/$identifier/actions/:publish?key=$apiKey
 
+Link a Dataverse
+~~~~~~~~~~~~~~~~
+
+Creates a link between a dataverse and another dataverse (see the Linked Dataverses + Linked Datasets section of the :doc:`/user/dataverse-management` guide for more information). ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/dataverses/$linked-dataverse-alias/link/$linking-dataverse-alias
+
 Datasets
 --------
 
@@ -500,6 +507,13 @@ In the example below, the curator has saved the JSON file as :download:`reason-f
     curl -H "Content-type:application/json" -d @reason-for-return.json -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/returnToAuthor?persistentId=$DOI_OR_HANDLE_OF_DATASET"
 
 The review process can sometimes resemble a tennis match, with the authors submitting and resubmitting the dataset over and over until the curators are satisfied. Each time the curators send a "reason for return" via API, that reason is persisted into the database, stored at the dataset version level.
+
+Link a Dataset
+~~~~~~~~~~~~~~
+
+Creates a link between a dataset and a dataverse (see the Linked Dataverses + Linked Datasets section of the :doc:`/user/dataverse-management` guide for more information). ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/datasets/$linked-dataset-id/link/$linking-dataverse-alias
 
 Dataset Locks
 ~~~~~~~~~~~~~
