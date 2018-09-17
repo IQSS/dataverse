@@ -184,7 +184,7 @@
                                 </ui:fragment>
                                 <!-- END: Publish/Submit for Review/Return to Author Button Group -->
                                 
-                                <p:commandLink rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned}"
+                                <p:commandLink rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released}"
                                                type="button" styleClass="btn btn-default btn-access"                                              
                                                oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"
                                                update="linkDatasetForm">
