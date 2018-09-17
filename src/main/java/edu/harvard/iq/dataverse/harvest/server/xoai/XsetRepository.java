@@ -43,7 +43,7 @@ public class XsetRepository implements SetRepository {
     @Override
     public boolean supportSets() {
         logger.fine("calling supportSets()");
-        List<OAISet> dataverseOAISets = setService.findAll();
+        List<OAISet> dataverseOAISets = setService.findAllNamedSets();
         
         if (dataverseOAISets == null || dataverseOAISets.isEmpty()) {
             return false;
@@ -54,7 +54,7 @@ public class XsetRepository implements SetRepository {
     @Override
     public ListSetsResult retrieveSets(int offset, int length) {
         logger.fine("calling retrieveSets()");
-        List<OAISet> dataverseOAISets = setService.findAll();
+        List<OAISet> dataverseOAISets = setService.findAllNamedSets();
         List<Set> XOAISets = new ArrayList<Set>();
         
         if (dataverseOAISets != null) {
