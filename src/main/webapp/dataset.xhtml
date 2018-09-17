@@ -698,11 +698,11 @@
                         <div class="button-block">
                             <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.downloadUnrestricted']}</p>
                             <ui:fragment rendered="#{!DatasetPage.downloadPopupRequired}">
-                                <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload(false)}" />
+                                <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload()}" />
                             </ui:fragment>
                             <ui:fragment rendered="#{DatasetPage.downloadPopupRequired and !settingsWrapper.rsyncDownload}">
                                 <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()"
-                                                 action="#{DatasetPage.modifyGuestbookMultipleResponse()}" update="@form" />
+                                                 action="#{DatasetPage.openDownloadPopupForMultipleFileDownload()}" update="@form" />
                             </ui:fragment>
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadMixed').hide();" type="button" />
                         </div>

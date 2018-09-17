@@ -568,6 +568,48 @@ public class UtilIT {
                 .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
     }
 
+    static Response downloadFileOriginal(Integer fileId) {
+        return given()
+                .get("/api/access/datafile/" + fileId + "?format=original");
+    }
+    
+    static Response downloadFileOriginal(Integer fileId, String apiToken) {
+        return given()
+                .get("/api/access/datafile/" + fileId + "?format=original&key=" + apiToken);
+    }
+    
+    static Response downloadFiles(Integer[] fileIds) {
+        String getString = "/api/access/datafiles/";
+        for(Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        return given().get(getString);
+    }
+    
+    static Response downloadFiles(Integer[] fileIds, String apiToken) {
+        String getString = "/api/access/datafiles/";
+        for(Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        return given().get(getString + "?key=" + apiToken);
+    }
+    
+    static Response downloadFilesOriginal(Integer[] fileIds) {
+        String getString = "/api/access/datafiles/";
+        for(Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        return given().get(getString + "?format=original");
+    }
+    
+    static Response downloadFilesOriginal(Integer[] fileIds, String apiToken) {
+        String getString = "/api/access/datafiles/";
+        for(Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        return given().get(getString + "?format=original&key=" + apiToken);
+    }
+
     static Response subset(String fileId, String variables, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
