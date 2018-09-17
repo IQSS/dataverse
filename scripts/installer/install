@@ -14,7 +14,8 @@ my $hostname;
 my $gfuser;
 my $gfdir;
 my $mailserver;
-my $yes;
+my $noninteractive;
+my $skipdatabasesetup;
 my $force;
 my $nogfpasswd;
 my $admin_email;
@@ -24,11 +25,12 @@ my ($rez) = GetOptions(
     #"file=s"   => \$data,      # string
     "verbose"      => \$verbose,
     "pg_only"      => \$postgresonly,
+    "skip_db_setup" => \$skipdatabasesetup,
     "hostname=s"   => \$hostname,
     "gfuser=s"     => \$gfuser,
     "gfdir=s"      => \$gfdir,
     "mailserver=s" => \$mailserver,
-    "y|yes"        => \$yes,
+    "y|yes"        => \$noninteractive,
     "f|force"      => \$force,
     "nogfpasswd"   => \$nogfpasswd,
     "admin_email=s" => \$admin_email,
@@ -197,7 +199,7 @@ elsif ( $uname_tokens[0] eq "Linux" ) {
 
     my $yesnocont;
 
-    unless ($yes) {
+    unless ($noninteractive) {
         exit 0;
     }
 
@@ -385,7 +387,7 @@ unless ($postgresonly)
     my $sys_path = $ENV{'PATH'};
     my @sys_path_dirs = split( ":", $sys_path );
 
-    if ( $pod_name ne "start-glassfish")
+    if ( $pod_name ne "start-glassfish") # Why is that again? 
     {
 	for my $sys_path_dir (@sys_path_dirs) {
 	    if ( -x $sys_path_dir . "/jq" ) {
@@ -440,9 +442,9 @@ for my $ENTRY (@CONFIG_VARIABLES)
 
     my $user_entry = "";
 
-    # ($yes means the installer is being run in the non-interactive mode; it will use 
+    # ($noninteractive means the installer is being run in the non-interactive mode; it will use 
     # the default values specified so far, without prompting the user for alternative values)\
-    unless ($yes) 
+    unless ($noninteractive) 
     {
         $user_entry = <>;
         chop $user_entry;
@@ -539,7 +541,7 @@ for my $ENTRY (@CONFIG_VARIABLES) {
 }
 
 my $yesno;
-if ($yes) {
+if ($noninteractive) {
     $yesno = "y";
 }
 else {
@@ -561,9 +563,9 @@ if ( $yesno eq "n" ) {
 
 # 3. SET UP POSTGRES USER AND DATABASE
 
-unless($ENV{"MY_POD_NAME"} eq "start-glassfish" || $ENV{"MY_POD_NAME"} eq "dataverse-glassfish-0") {
+unless($pod_name eq "start-glassfish" || $pod_name eq "dataverse-glassfish-0" || $skipdatabasesetup) {
     &setup_postgres(); 
-# (there's no return code - if anything goes wrong, the method will exit the script)
+# (there's no return code - if anything goes wrong, the method will exit the script, with some diagnostic messages for the user)
     print "\nOK, done.\n";
 
     if ($postgresonly) 
@@ -710,6 +712,16 @@ chdir($cwd);
 print "\n\nYou should now have a running Dataverse instance at\n";
 print "  http://" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . ":8080\n\n\n";
 
+if ($WARFILE_LOCATION =~/([0-9]\.[0-9]\.[0-9])\.war$/) 
+{
+    my $version = $1;
+    print "If this is a personal development installation, we recommend that you undeploy the currently-running copy \n"; 
+    print "of the application, with the following asadmin command:\n\n";
+    print "\t" . $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . '/bin/asadmin undeploy dataverse-' . $version . "\n\n";
+    print "before attempting to deploy from your development environment in NetBeans.\n\n";
+}
+    
+
 # (going to skip the Rserve check; it's no longer a required, or even a recommended component)
 
 exit 0;
@@ -759,21 +771,16 @@ unless ( socket( SOCK, PF_INET, SOCK_STREAM, $rserve_proto )
 close(SOCK);
 print "\nOK!\n";
 
-sub setup_glassfish {
 # 5. CONFIGURE GLASSFISH
+sub setup_glassfish {
     my $success = 1;
     my $failure = 0;
-
-    # We are going to run a standalone shell script with a bunch of asadmin
-    # commands to set up all the glassfish components for the application.
-    # All the parameters must be passed to that script as environmental
-    # variables:
 
     my $glassfish_dir = $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'};
 
     print "\nProceeding with the Glassfish setup.\n";
 
-# 5b. DETERMINE HOW MUCH MEMORY TO GIVE TO GLASSFISH AS HEAP:
+# 5a. DETERMINE HOW MUCH MEMORY TO GIVE TO GLASSFISH AS HEAP:
 
     my $gf_heap_default = "2048m";
     my $sys_mem_total   = 0;
@@ -796,15 +803,16 @@ sub setup_glassfish {
 # ingest a large file or perform other memory-intensive operations? For more
 # context, see https://github.com/IQSS/dataverse/issues/4040#issuecomment-331282286
 	if ( -e "/sys/fs/cgroup/memory/memory.limit_in_bytes" && open CGROUPMEM, "/sys/fs/cgroup/memory/memory.limit_in_bytes" ) {
+	    print "INFO: This system has the CGROUP file /sys/fs/cgroup/memory/memory.limit_in_bytes\n";
 	    while ( my $limitline = <CGROUPMEM> ) {
-		# TODO: NO, WE ARE NOT NECESSARILY IN DOCKER!
-		print "We must be running in Docker! Fancy!\n";
+		### TODO: NO, WE ARE NOT NECESSARILY IN DOCKER!
+		###print "We must be running in Docker! Fancy!\n";
 		# The goal of this cgroup check is for
 		# "Setting the heap limit for Glassfish to 750MB"
 		# to change to some other value, based on memory available.
-		print "/sys/fs/cgroup/memory/memory.limit_in_bytes: $limitline\n";
+		print "INFO: /sys/fs/cgroup/memory/memory.limit_in_bytes: $limitline\n";
 		my $limit_in_kb = $limitline / 1024;
-		print "Docker limit_in_kb =  $limit_in_kb but ignoring\n";
+		print "INFO: CGROUP limit_in_kb =  $limit_in_kb [ignoring]\n";
 		# In openshift.json, notice how PostgreSQL and Solr have
 		# resources.limits.memory set to "256Mi".
 		# If you try to give the Dataverse/Glassfish container twice
@@ -879,10 +887,10 @@ sub setup_glassfish {
 
     print "\nPress any key to continue...\n\n";
     
-    unless ($yes)
+    unless ($noninteractive)
     {
 	system "stty cbreak </dev/tty >/dev/tty 2>&1";
-	unless ($yes) {
+	unless ($noninteractive) {
 	    my $key = getc(STDIN);
 	}
 	system "stty -cbreak </dev/tty >/dev/tty 2>&1";
@@ -890,7 +898,7 @@ sub setup_glassfish {
 	
     print "\n";
 
-# start domain, if not running:
+# 5b. start domain, if not running:
     
     my $javacheck = `java -version`;
     my $exitcode  = $?;
@@ -914,13 +922,13 @@ sub setup_glassfish {
 	print "domain appears to be up...\n";
     }
 
-# create asadmin login, so that the user doesn't have to enter
+# 5c. create asadmin login, so that the user doesn't have to enter
 # the username and password for every asadmin command, if
 # access to :4848 is password-protected:
 
     system( $glassfish_dir. "/bin/asadmin login" );
-
-# configure glassfish using ASADMIN commands:
+    
+# 5d. configure glassfish using ASADMIN commands:
   
     $success = &run_asadmin_script();
 
@@ -934,7 +942,7 @@ sub setup_glassfish {
 	exit 1;
     }
     
-# Additional config files:
+# 5e. Additional config files:
     
     my $JHOVE_CONFIG = "jhove.conf";
     my $JHOVE_CONF_SCHEMA = "jhoveConfig.xsd";
@@ -980,10 +988,10 @@ sub setup_glassfish {
 
     print "done!\n";
     
-# check if glassfish is running:
+# 5f. check if glassfish is running:
 # TODO.
     
-# 6. DEPLOY THE APPLICATION:
+# 5g. DEPLOY THE APPLICATION:
 
     print "\nAttempting to deploy the application.\n";
     print "Command line: " . $glassfish_dir . "/bin/asadmin deploy " . $WARFILE_LOCATION . "\n";
@@ -1136,7 +1144,7 @@ sub setup_postgres {
 
 # We'll need to do a few things as the Postgres admin user; 
 # We'll assume the name of the admin user is "postgres". 
-    my $POSTGRES_ADMIN_NAME = "postgres";
+    my $POSTGRES_ADMIN_USER = "postgres";
 
 
 
@@ -1257,7 +1265,7 @@ sub setup_postgres {
 
     if ( $psql_exec_path eq "" ) 
     { 
-	if ( $pg_local_connection || $yes) 
+	if ( $pg_local_connection || $noninteractive) 
 	{
 	    print STDERR "\nERROR: I haven't been able to find the psql command in your PATH!\n";
 	    print STDERR "Please make sure PostgresQL is properly installed; if necessary, add\n";
@@ -1275,7 +1283,7 @@ sub setup_postgres {
 	}
     } else {
 
-	print "(We'll be Using psql version " . $pg_major_version . "." . $pg_minor_version . ")\n";
+	print "(Using psql version " . $pg_major_version . "." . $pg_minor_version . ": " . $psql_exec_path . "/psql)\n";
 
 
 	$psql_admin_exec = "PGPASSWORD=" . $CONFIG_DEFAULTS{'POSTGRES_ADMIN_PASSWORD'} . "; export PGPASSWORD; " . $psql_exec_path; 
@@ -1286,10 +1294,10 @@ sub setup_postgres {
     
 # 3d. CHECK IF WE CAN TALK TO POSTGRES AS THE ADMIN:
 
-    if ($psql_exec_path eq "" || system( $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $POSTGRES_ADMIN_NAME . " -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
+    if ($psql_exec_path eq "" || system( $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $POSTGRES_ADMIN_USER . " -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
     {
 	# No, we can't. :(
-	if ($pg_local_connection || $yes) 
+	if ($pg_local_connection || $noninteractive) 
 	{
 	    # If Postgres is running locally, this is a fatal condition. 
 	    # We'll give them some (potentially) helpful pointers and exit.
@@ -1319,7 +1327,7 @@ sub setup_postgres {
 	    # without opening remote access for the admin user. They will simply 
 	    # have to run this script in the "postgres-only" mode on that server, locally, 
 	    # then resume the installation here: 
-	    print ($psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1 \n" );
+	    print ($psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $POSTGRES_ADMIN_USER . " -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1 \n" );
 	    print "Haven't been able to connect to the remote Postgres server as the admin user.\n";
 	    print "(Or you simply don't have psql installed on this server)\n";
 	    print "It IS possible to configure a database for your Dataverse on a remote server,\n";
@@ -1348,7 +1356,7 @@ sub setup_postgres {
 	# 4c. CHECK IF THIS DB ALREADY EXISTS:
     
 	my $psql_command_dbcheck =
-	    $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -c '' -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . ">/dev/null 2>&1";
+	    $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $POSTGRES_ADMIN_USER . " -c '' -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . ">/dev/null 2>&1";
 
 	if ( ( my $exitcode = system($psql_command_dbcheck) ) == 0 ) 
 	{    
@@ -1362,7 +1370,7 @@ sub setup_postgres {
 	    {
 		print "WARNING! Database " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " already exists!\n";
 
-		if ($yes)
+		if ($noninteractive)
 		{
 		    exit 1;
 		}
@@ -1411,7 +1419,7 @@ sub setup_postgres {
 	    print TMPCMD $sql_command;
 	    close TMPCMD;
         
-	    my $psql_commandline = $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U postgres -d postgres -f /tmp/pgcmd.$$.tmp >/dev/null 2>&1";
+	    my $psql_commandline = $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $POSTGRES_ADMIN_USER . " -d postgres -f /tmp/pgcmd.$$.tmp >/dev/null 2>&1";
 
 	    my $out      = qx($psql_commandline 2>&1);
 	    $exitcode = $?;
@@ -1496,7 +1504,7 @@ sub import_reference_data {
         
         print "Press any key to continue... ";
         
-	unless ($yes) 
+	unless ($noninteractive) 
 	{
 	    system "stty cbreak </dev/tty >/dev/tty 2>&1";
 	    my $key = getc(STDIN);
