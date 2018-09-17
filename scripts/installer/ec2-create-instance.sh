@@ -76,4 +76,4 @@ sed -i "s/branch:/branch: $BRANCH_NAME/" dataverse/defaults/main.yml
 ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local
 EOF
 
-echo "New EC2 instance created at $PUBLIC_DNS (Public IP $PUBLIC_IP )"
+echo "New EC2 instance created at $PUBLIC_DNS (Public IP $PUBLIC_IP ). When you are done, please terminate your instance with: aws ec2 terminate-instances --instance-ids $INSTACE_ID"
