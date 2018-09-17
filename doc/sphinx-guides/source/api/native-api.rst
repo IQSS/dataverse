@@ -192,13 +192,6 @@ Publish the Dataverse pointed by ``identifier``, which can either by the dataver
 
   POST http://$SERVER/api/dataverses/$identifier/actions/:publish?key=$apiKey
 
-Link a Dataverse
-~~~~~~~~~~~~~~~~
-
-Creates a link between a dataverse and another dataverse (see the Linked Dataverses + Linked Datasets section of the :doc:`/user/dataverse-management` guide for more information). ::
-
-    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/dataverses/$linked-dataverse-alias/link/$linking-dataverse-alias
-
 Datasets
 --------
 
