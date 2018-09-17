@@ -77,135 +77,6 @@ public class DataFileZipper {
         return this.fileManifest; 
     }
     
-    /* 
-    The following 4 methods are no longer in use - should be removed.
-    
-    public void zipFiles(List<DataFile> files, OutputStream outstream) throws IOException {
-        zipFiles(files, outstream, null, DEFAULT_ZIPFILE_LIMIT); 
-    }
-    
-    public void zipFiles(List<DataFile> files, OutputStream outstream, long sizelimit) throws IOException {
-        zipFiles(files, outstream, null, sizelimit);
-    }
-    
-    public void zipFiles(List<DataFile> files, OutputStream outstream, String fileManifest) throws IOException {
-        zipFiles(files, outstream, fileManifest, DEFAULT_ZIPFILE_LIMIT);
-    }
-    
-    
-    public void zipFiles(List<DataFile> files, OutputStream outstream, String fileManifest, long sizeLimit) throws IOException {
-        boolean createManifest = fileManifest != null;
-
-        if (files.size() < 1) {
-            throw new IOException("Empty files list.");
-        }
-
-        long sizeTotal = 0L;
-
-        ZipOutputStream zout = new ZipOutputStream(outstream);
-
-        List nameList = new ArrayList(); // to check for duplicates
-        List successList = new ArrayList(); // to update download counts (not yet implemented)
-
-        Iterator iter = files.iterator();
-
-        while (iter.hasNext()) {
-            DataFile file = (DataFile) iter.next();
-
-            DataAccessRequest daReq = new DataAccessRequest();
-            StorageIO accessObject = DataAccess.createDataAccessObject(file, daReq);
-
-            if (accessObject != null) {
-                accessObject.open();
-                long fileSize = accessObject.getSize();
-
-                String fileName = accessObject.getFileName();
-                String mimeType = accessObject.getMimeType();
-                if (mimeType == null || mimeType.equals("")) {
-                    mimeType = "application/octet-stream";
-                }
-
-                if (sizeTotal + fileSize < sizeLimit) {
-
-                    Boolean Success = true;
-
-                    InputStream instream = accessObject.getInputStream();
-                    if (instream == null) {
-                        if (createManifest) {
-                            fileManifest = fileManifest + fileName
-                                    + " (" + mimeType
-                                    + ") COULD NOT be downloaded because an I/O error has occured. \r\n";
-                        }
-
-                        Success = false;
-                    } else {
-                        String zipEntryName = checkZipEntryName(fileName); //, nameList);
-                        ZipEntry e = new ZipEntry(zipEntryName);
-                        logger.fine("created new zip entry for " + zipEntryName);
-                        // support for categories: (not yet implemented)
-                        //String zipEntryDirectoryName = file.getCategory(versionNum);
-                        //ZipEntry e = new ZipEntry(zipEntryDirectoryName + "/" + zipEntryName);
-
-                        zout.putNextEntry(e);
-
-                        // before writing out any bytes from the input stream, flush
-                        // any extra content, such as the variable header for the 
-                        // subsettable files:
-                        String varHeaderLine = accessObject.getVarHeader();
-                        if (varHeaderLine != null) {
-                            zout.write(varHeaderLine.getBytes());
-                            fileSize += (varHeaderLine.getBytes().length);
-                        }
-
-                        byte[] data = new byte[8192];
-
-                        int i = 0;
-                        long byteSize = 0; 
-                        while ((i = instream.read(data)) > 0) {
-                            zout.write(data, 0, i);
-                            logger.fine("wrote " + i + " bytes;");
-
-                            byteSize += i;
-                            //zout.flush();
-                        }
-                        instream.close();
-                        zout.closeEntry();
-                        logger.fine("closed zip entry for " + zipEntryName);
-
-                        if (createManifest) {
-                            fileManifest = fileManifest + zipEntryName + " (" + mimeType + ") " + fileSize + " bytes.\r\n";
-                        }
-
-                        if (byteSize > 0) {
-                            successList.add(file.getId());
-                            if (fileSize != byteSize) {
-                                logger.warning("File size mismatch: "+fileSize+" in the database, "+byteSize+" on disk.");
-                            }
-                            sizeTotal += Long.valueOf(byteSize);
-                        }
-                    }
-                } else {
-                    if (createManifest) {
-                        fileManifest = fileManifest + fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + sizeLimit + " bytes.\r\n";
-                    }
-                }
-            }
-        }
-
-        // finally, let's create the manifest entry (if requested):
-        if (createManifest) {
-            ZipEntry e = new ZipEntry("MANIFEST.TXT");
-
-            zout.putNextEntry(e);
-            zout.write(fileManifest.getBytes());
-            zout.closeEntry();
-        }
-
-        zout.close();
-
-    }
-    */
-    
     public void openZipStream() throws IOException {
         if (outputStream == null) {
             throw new IOException("Attempted to create a ZipOutputStream from a NULL OutputStream.");
@@ -214,17 +85,33 @@ public class DataFileZipper {
     }
     
     public long addFileToZipStream(DataFile dataFile) throws IOException {
+        return addFileToZipStream(dataFile, false);
+    }
+    
+    public long addFileToZipStream(DataFile dataFile, boolean getOriginal) throws IOException {
         if (zipOutputStream == null) {
             openZipStream();
         }
-        
+
         boolean createManifest = fileManifest != null;
         
         DataAccessRequest daReq = new DataAccessRequest();
         StorageIO<DataFile> accessObject = DataAccess.getStorageIO(dataFile, daReq);
 
         if (accessObject != null) {
-            accessObject.open();
+            Boolean gotOriginal = false;
+            if(getOriginal) {
+                StoredOriginalFile sof = new StoredOriginalFile();
+                StorageIO<DataFile> tempAccessObject = sof.retreive(accessObject);
+                if(null != tempAccessObject) { //If there is an original, use it
+                    gotOriginal = true;
+                    accessObject = tempAccessObject; 
+                } 
+            }
+            if(!gotOriginal) { //if we didn't get this from sof.retreive we have to open it
+                accessObject.open();
+            }
+
             long byteSize = 0;
 
             String fileName = accessObject.getFileName();
