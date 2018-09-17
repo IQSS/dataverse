@@ -1,6 +1,7 @@
 #!/bin/bash -x
 #Initially Referred to this doc: https://docs.aws.amazon.com/cli/latest/userguide/tutorial-ec2-ubuntu.html
 
+#TODO: allow arbitrary repo, not just IQSS. Will require changing it on the ansible side as well
 DEPLOY_FILE=dataverse_deploy_info.txt
 
 if [ "$1" = "" ]; then
