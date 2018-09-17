@@ -57,9 +57,10 @@ Launch Netbeans and click "File" and then "Open Project". Navigate to where you 
 
 If you installed Maven instead of Netbeans, run ``mvn package``.
 
-NOTE: Do you use a locale different than ``en_US.UTF-8`` and a timezone different to ``UTC`` on your development machine?
-You might experience issues while running tests that were written with these settings in mind. The Maven  ``pom.xml``
-tries to handle this for you, but more, not yet discovered building or testing problems might lurk in the shadows.
+NOTE: Do you use a locale different than ``en_US.UTF-8`` on your development machine? Are you in a different timezone
+than Harvard (Eastern Time)? You might experience issues while running tests that were written with these settings
+in mind. The Maven  ``pom.xml`` tries to handle this for you by setting the locale to ``en_US.UTF-8`` and timezone
+``UTC``, but more, not yet discovered building or testing problems might lurk in the shadows.
 
 Install jq
 ~~~~~~~~~~
