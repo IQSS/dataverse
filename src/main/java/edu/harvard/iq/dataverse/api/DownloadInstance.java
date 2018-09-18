@@ -84,7 +84,7 @@ public class DownloadInstance {
     }
 
     // Move this method into the DownloadInfo instead -- ?
-    public Boolean isDownloadServiceSupported(String serviceArg, String serviceArgValue) {
+    public Boolean checkIfServiceSupportedAndSetConverter(String serviceArg, String serviceArgValue) {
         if (downloadInfo == null || serviceArg == null) {
             return false;
         }
