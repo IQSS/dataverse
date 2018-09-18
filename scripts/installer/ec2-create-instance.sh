@@ -5,14 +5,14 @@
 DEPLOY_FILE=dataverse_deploy_info.txt
 
 if [ "$1" = "" ]; then
-    echo "No branch name provided"
-    exit 1
+  echo "No branch name provided"
+  exit 1
 else
-	BRANCH_NAME=$1
-	if [[ $(git ls-remote --heads https://github.com/IQSS/dataverse.git $BRANCH_NAME | wc -l) -eq 0 ]]; then
-		echo "Branch does not exist on the Dataverse github repo"
-		exit 1
-	fi
+  BRANCH_NAME=$1
+  if [[ $(git ls-remote --heads https://github.com/IQSS/dataverse.git $BRANCH_NAME | wc -l) -eq 0 ]]; then
+    echo "Branch does not exist on the Dataverse github repo"
+    exit 1
+  fi
 fi
 
 #Create security group if it doesn't already exist
@@ -30,16 +30,16 @@ fi
 
 echo "*Checking for existing key pair"
 if ! [ -f devenv-key.pem ]; then
-	echo "*Creating key pair"
-	PRIVATE_KEY=$(aws ec2 create-key-pair --key-name devenv-key --query 'KeyMaterial' --output text)
-	if [[ $PRIVATE_KEY = '-----BEGIN RSA PRIVATE KEY-----'* ]]; then
-		printf -- "$PRIVATE_KEY">devenv-key.pem
-		chmod 400 devenv-key.pem
-		echo "*New key pair created"
-	fi
-	echo "*End creating key pair"
+  echo "*Creating key pair"
+  PRIVATE_KEY=$(aws ec2 create-key-pair --key-name devenv-key --query 'KeyMaterial' --output text)
+  if [[ $PRIVATE_KEY == '-----BEGIN RSA PRIVATE KEY-----'* ]]; then
+    printf -- "$PRIVATE_KEY" >devenv-key.pem
+    chmod 400 devenv-key.pem
+    echo "*New key pair created"
+  fi
+  echo "*End creating key pair"
 else
-	echo "*Key pair alraedy exists."
+  echo "*Key pair alraedy exists."
 fi
 
 #AMI ID for centos7 acquired by this (very slow) query Sept 10th 2018

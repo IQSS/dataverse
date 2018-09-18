@@ -93,6 +93,20 @@ If you just downloaded Netbeans and are using the out-of-the-box settings, you s
 
 If you know of a way to easily share Netbeans configuration across a team, please get in touch.
 
+Bash
+----
+
+Generally, Google's Shell Style Guide at https://google.github.io/styleguide/shell.xml seems to have good advice.
+
+Formatting Code
+~~~~~~~~~~~~~~~
+
+Tabs vs. Spaces
+^^^^^^^^^^^^^^^
+
+Don't use tabs. Use 2 spaces.
+
+shfmt from https://github.com/mvdan/sh seems like a decent way to enforce indentation of two spaces (i.e. ``shfmt -i 2 -w path/to/script.sh``) but be aware that it makes other changes.
 
 Bike Shedding
 -------------
