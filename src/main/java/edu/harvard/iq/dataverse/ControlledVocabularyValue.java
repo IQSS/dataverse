@@ -6,6 +6,8 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,6 +43,7 @@ public class ControlledVocabularyValue implements Serializable  {
     }
 
     public ControlledVocabularyValue(Long id, String strValue, DatasetFieldType datasetFieldType) {
+
         this.id = id;
         this.strValue = strValue;
         this.datasetFieldType = datasetFieldType;
@@ -61,9 +64,12 @@ public class ControlledVocabularyValue implements Serializable  {
     @Column(columnDefinition="TEXT", nullable=false) 
     private String strValue;
 
-    public String getStrValue() {
-        return strValue;
+    public String getStrValue()
+    {
+        String key = strValue.toLowerCase().replace(" " , "_");
+        return BundleUtil.getStringFromPropertyFile( "controlledvocabulary." +this.datasetFieldType.getName() + "." +key ,  getDatasetFieldType().getMetadataBlock().getName() ) ;
     }
+
     public void setStrValue(String strValue) {
         this.strValue = strValue;
         

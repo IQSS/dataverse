@@ -2,6 +2,9 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.DataverseLocaleBean;
 
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
@@ -21,9 +24,7 @@ public class BundleUtil {
     }
 
     public static String getStringFromBundle(String key, List<String> arguments) {
-        DataverseLocaleBean d = new DataverseLocaleBean();
-        bundle_locale= new Locale(d.getLocaleCode());
-        ResourceBundle bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale);
+        ResourceBundle bundle = getResourceBundle(defaultBundleFile );
         return getStringFromBundle(key, arguments, bundle);
     }
 
@@ -48,4 +49,39 @@ public class BundleUtil {
         }
     }
 
+    public static String getStringFromPropertyFile(String key, String propertyFileName  ) {
+        ResourceBundle bundle = getResourceBundle(propertyFileName);
+        return getStringFromBundle(key, null, bundle);
+    }
+
+    public static ResourceBundle getResourceBundle(String propertyFileName)
+    {
+        DataverseLocaleBean d = new DataverseLocaleBean();
+        bundle_locale= new Locale(d.getLocaleCode());
+        ResourceBundle bundle ;
+        String filesRootDirectory = System.getProperty("dataverse.lang.directory");
+        if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
+            filesRootDirectory = "/tmp/lang";
+        }
+
+        File bundleFileDir = new File(filesRootDirectory);
+
+        if (!bundleFileDir.exists())
+        {
+            bundle = ResourceBundle.getBundle(propertyFileName, bundle_locale);
+        }
+        else {
+
+            URL[] urls = null;
+            try {
+                urls = new URL[]{bundleFileDir.toURI().toURL()};
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            ClassLoader loader = new URLClassLoader(urls);
+            bundle = ResourceBundle.getBundle(BundleUtil.defaultBundleFile, bundle_locale, loader);
+        }
+        return bundle ;
+    }
 }
