@@ -61,7 +61,7 @@ import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.solr.common.util.IOUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
@@ -1127,6 +1127,7 @@ public class Admin extends AbstractApiBean {
 		Integer successes = 0;
 		Integer alreadyUpdated = 0;
 		Integer rehashed = 0;
+		Integer harvested=0;
 		
 		if (num <= 0)
 			num = Integer.MAX_VALUE;
@@ -1153,44 +1154,61 @@ public class Admin extends AbstractApiBean {
 			InputStream in = null;
 			InputStream in2 = null; 
 			try {
-				if (!df.getChecksumType().equals(cType)) {
-					rehashed++;
-					logger.fine(
-							rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", " + df.getIdentifier());
-					// verify hash and calc new one to replace it
-					StorageIO<DataFile> storage = df.getStorageIO();
-					storage.open(DataAccessOption.READ_ACCESS);
-					in = storage.getInputStream();
-					if (in == null)
-						logger.warning("Cannot retrieve file.");
-					String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
-					if (currentChecksum.equals(df.getChecksumValue())) {
-						logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
-								+ df.getIdentifier() + " is valid");
-						storage.open(DataAccessOption.READ_ACCESS);
-						in2 = storage.getInputStream();
-						if (in2 == null)
-							logger.warning("Cannot retrieve file to calculate new checksum.");
-						String newChecksum = FileUtil.CalculateChecksum(in2, cType);
-
-						df.setChecksumType(cType);
-						df.setChecksumValue(newChecksum);
-						successes++;
-					} else {
-						logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
-								+ ", " + df.getIdentifier() + " is INVALID");
-					}
+				if (df.isHarvested()) {
+					harvested++;
 				} else {
-					alreadyUpdated++;
-					if (alreadyUpdated % 100 == 0) {
-						logger.info(alreadyUpdated + " of  " + count
-								+ " files are already have hashes with the new algorithm. " + new Date());
+					if (!df.getChecksumType().equals(cType)) {
+
+						rehashed++;
+						logger.fine(rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", "
+								+ df.getIdentifier());
+						// verify hash and calc new one to replace it
+						StorageIO<DataFile> storage = df.getStorageIO();
+						storage.open(DataAccessOption.READ_ACCESS);
+						if (!df.isTabularData()) {
+							in = storage.getInputStream();
+						} else {
+							// if this is a tabular file, read the preserved original "auxiliary file"
+							// instead:
+							in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+						}
+						if (in == null)
+							logger.warning("Cannot retrieve file.");
+						String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
+						if (currentChecksum.equals(df.getChecksumValue())) {
+							logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
+									+ df.getIdentifier() + " is valid");
+							storage.open(DataAccessOption.READ_ACCESS);
+							if (!df.isTabularData()) {
+								in2 = storage.getInputStream();
+							} else {
+								// if this is a tabular file, read the preserved original "auxiliary file"
+								// instead:
+								in2 = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+							}
+							if (in2 == null)
+								logger.warning("Cannot retrieve file to calculate new checksum.");
+							String newChecksum = FileUtil.CalculateChecksum(in2, cType);
+
+							df.setChecksumType(cType);
+							df.setChecksumValue(newChecksum);
+							successes++;
+							if (successes % 100 == 0) {
+								logger.info(
+										successes + " of  " + count + " files rehashed successfully. " + new Date());
+							}
+						} else {
+							logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
+									+ ", " + df.getIdentifier() + " is INVALID");
+						}
+					} else {
+						alreadyUpdated++;
+						if (alreadyUpdated % 100 == 0) {
+							logger.info(alreadyUpdated + " of  " + count
+									+ " files are already have hashes with the new algorithm. " + new Date());
+						}
 					}
 				}
-				if (successes % 100 == 0) {
-					logger.info(successes + " of  " + count + " files rehashed successfully. " + new Date());
-				}
-
 			} catch (Exception e) {
 				logger.warning("Unexpected Exception: " + e.getMessage());
 
@@ -1200,6 +1218,7 @@ public class Admin extends AbstractApiBean {
 			}
 		}
 		logger.info("Final Results:");
+		logger.info(harvested + " harvested files skipped.");
 		logger.info(
 				alreadyUpdated + " of  " + count + " files already had hashes with the new algorithm. " + new Date());
 		logger.info(rehashed + " of  " + count + " files to rehash. " + new Date());
