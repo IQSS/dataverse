@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
@@ -48,7 +49,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 
 import java.io.InputStream;
@@ -65,6 +65,8 @@ import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.io.IOUtils;
+
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -80,11 +82,6 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.JsfHelper;
-import edu.harvard.iq.dataverse.workflow.internalspi.DPNSubmissionWorkflowStep;
-import edu.harvard.iq.dataverse.workflow.step.Failure;
-import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
-
 import java.util.Date;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
@@ -414,8 +411,9 @@ public class Admin extends AbstractApiBean {
 	@Path("authenticatedUsers/id/{id}/convertShibToBuiltIn")
 	@Deprecated
 	public Response convertShibUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
+		AuthenticatedUser user;
 		try {
-			AuthenticatedUser user = findAuthenticatedUserOrDie();
+			user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -429,7 +427,7 @@ public class Admin extends AbstractApiBean {
 						+ " could not be converted from Shibboleth to BuiltIn. An Exception was not thrown.");
 			}
 			JsonObjectBuilder output = Json.createObjectBuilder();
-			output.add("email", builtinUser.getEmail());
+			output.add("email", user.getEmail());
 			output.add("username", builtinUser.getUserName());
 			return ok(output);
 		} catch (Throwable ex) {
@@ -449,8 +447,9 @@ public class Admin extends AbstractApiBean {
 	@PUT
 	@Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
 	public Response convertOAuthUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
+		AuthenticatedUser user;
 		try {
-			AuthenticatedUser user = findAuthenticatedUserOrDie();
+			user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -464,7 +463,7 @@ public class Admin extends AbstractApiBean {
 						+ " could not be converted from remote to BuiltIn. An Exception was not thrown.");
 			}
 			JsonObjectBuilder output = Json.createObjectBuilder();
-			output.add("email", builtinUser.getEmail());
+			output.add("email", user.getEmail());
 			output.add("username", builtinUser.getUserName());
 			return ok(output);
 		} catch (Throwable ex) {
@@ -1136,7 +1135,8 @@ public class Admin extends AbstractApiBean {
 		Integer successes = 0;
 		Integer alreadyUpdated = 0;
 		Integer rehashed = 0;
-		logger.info("Num = " + num);
+		Integer harvested=0;
+		
 		if (num <= 0)
 			num = Integer.MAX_VALUE;
 		DataFile.ChecksumType cType = null;
@@ -1159,30 +1159,51 @@ public class Admin extends AbstractApiBean {
 		for (DataFile df : fileService.findAll()) {
 			if (rehashed.intValue() >= num)
 				break;
+			InputStream in = null;
+			InputStream in2 = null; 
 			try {
+				if (df.isHarvested()) {
+					harvested++;
+				} else {
 				if (!df.getChecksumType().equals(cType)) {
 					rehashed++;
-					logger.info(
-							rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", " + df.getIdentifier());
+						logger.fine(rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", "
+								+ df.getIdentifier());
 					// verify hash and calc new one to replace it
 					StorageIO<DataFile> storage = df.getStorageIO();
 					storage.open(DataAccessOption.READ_ACCESS);
-					InputStream in = storage.getInputStream();
+						if (!df.isTabularData()) {
+							in = storage.getInputStream();
+						} else {
+							// if this is a tabular file, read the preserved original "auxiliary file"
+							// instead:
+							in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+						}
 					if (in == null)
-						logger.warning("Null stream");
+							logger.warning("Cannot retrieve file.");
 					String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
 					if (currentChecksum.equals(df.getChecksumValue())) {
-						logger.info("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
+							logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
 								+ df.getIdentifier() + " is valid");
 						storage.open(DataAccessOption.READ_ACCESS);
-						InputStream in2 = storage.getInputStream();
+							if (!df.isTabularData()) {
+								in2 = storage.getInputStream();
+							} else {
+								// if this is a tabular file, read the preserved original "auxiliary file"
+								// instead:
+								in2 = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+							}
 						if (in2 == null)
-							logger.warning("Null stream");
+								logger.warning("Cannot retrieve file to calculate new checksum.");
 						String newChecksum = FileUtil.CalculateChecksum(in2, cType);
 
 						df.setChecksumType(cType);
 						df.setChecksumValue(newChecksum);
 						successes++;
+							if (successes % 100 == 0) {
+								logger.info(
+										successes + " of  " + count + " files rehashed successfully. " + new Date());
+							}
 					} else {
 						logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
 								+ ", " + df.getIdentifier() + " is INVALID");
@@ -1194,16 +1215,18 @@ public class Admin extends AbstractApiBean {
 								+ " files are already have hashes with the new algorithm. " + new Date());
 					}
 				}
-				if (successes % 100 == 0) {
-					logger.info(successes + " of  " + count + " files rehashed successfully. " + new Date());
 				}
 
 			} catch (Exception e) {
-				logger.info("Unexpected Exception: " + e.getMessage());
+				logger.warning("Unexpected Exception: " + e.getMessage());
 
+			} finally {
+				IOUtils.closeQuietly(in);
+				IOUtils.closeQuietly(in2);
 			}
 		}
 		logger.info("Final Results:");
+		logger.info(harvested + " harvested files skipped.");
 		logger.info(
 				alreadyUpdated + " of  " + count + " files already had hashes with the new algorithm. " + new Date());
 		logger.info(rehashed + " of  " + count + " files to rehash. " + new Date());
