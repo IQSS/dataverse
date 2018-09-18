@@ -200,7 +200,7 @@ public class WorkflowServiceBean {
         }
         
         logger.log( Level.INFO, "Removing workflow lock");
-        try {
+   /*     try {
             unlockDataset(ctxt);
 /*            engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow) );
             
@@ -209,10 +209,12 @@ public class WorkflowServiceBean {
             deleteQuery.setParameter("id", ctxt.getDataset().getId() );
             deleteQuery.setParameter("reason", DatasetLock.Reason.Workflow );
             deleteQuery.executeUpdate();
-  */          
+  */ 
+        /*
         } catch (CommandException ex) {
             logger.log(Level.SEVERE, "Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
         }
+        */
     }
     
     /**
@@ -329,7 +331,7 @@ public class WorkflowServiceBean {
                 if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
                 engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest()) );
                 } else {
-                    unlockDataset(ctxt);
+                    //unlockDataset(ctxt);
                 }
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
