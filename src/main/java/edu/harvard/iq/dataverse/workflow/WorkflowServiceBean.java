@@ -200,8 +200,8 @@ public class WorkflowServiceBean {
         }
         
         logger.log( Level.INFO, "Removing workflow lock");
-   //     try {
-           // unlockDataset(ctxt);
+        try {
+            unlockDataset(ctxt);
 /*            engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow) );
             
             // Corner case - delete locks generated within this same transaction.
@@ -210,9 +210,9 @@ public class WorkflowServiceBean {
             deleteQuery.setParameter("reason", DatasetLock.Reason.Workflow );
             deleteQuery.executeUpdate();
   */          
-   //     } catch (CommandException ex) {
-    //        logger.log(Level.SEVERE, "Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
-     //   }
+        } catch (CommandException ex) {
+            logger.log(Level.SEVERE, "Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
+        }
     }
     
     /**
@@ -286,15 +286,9 @@ public class WorkflowServiceBean {
          * made in a calling command (e.g. for a PostPublication workflow, the fact that the latest version is 'released' is not yet in the 
          * database. 
          */
-        DatasetLock newDatasetLock = engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
-        ctxt = new WorkflowContext( ctxt.getRequest(), 
-                em.merge(newDatasetLock.getDataset()), ctxt.getNextVersionNumber(), 
-                ctxt.getNextMinorVersionNumber(), ctxt.getType(), ctxt.getSettings(), ctxt.getApiToken());
-        /*
         datasetLock.setDataset(ctxt.getDataset());
         em.persist(datasetLock);
         em.flush();
-        */
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -335,7 +329,7 @@ public class WorkflowServiceBean {
                 if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
                 engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest()) );
                 } else {
-                    //unlockDataset(ctxt);
+                    unlockDataset(ctxt);
                 }
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
