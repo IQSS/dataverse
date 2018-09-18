@@ -286,7 +286,10 @@ public class WorkflowServiceBean {
          * made in a calling command (e.g. for a PostPublication workflow, the fact that the latest version is 'released' is not yet in the 
          * database. 
          */
-        engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
+        DatasetLock newDatasetLock = engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
+        ctxt = new WorkflowContext( ctxt.getRequest(), 
+                em.merge(newDatasetLock.getDataset()), ctxt.getNextVersionNumber(), 
+                ctxt.getNextMinorVersionNumber(), ctxt.getType(), ctxt.getSettings(), ctxt.getApiToken());
         /*
         datasetLock.setDataset(ctxt.getDataset());
         em.persist(datasetLock);
