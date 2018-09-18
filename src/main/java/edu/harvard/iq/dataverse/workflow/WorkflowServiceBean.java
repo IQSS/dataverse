@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.AddLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -200,14 +201,15 @@ public class WorkflowServiceBean {
         
         logger.log( Level.INFO, "Removing workflow lock");
         try {
-            engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow) );
+            unlockDataset(ctxt);
+/*            engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow) );
             
             // Corner case - delete locks generated within this same transaction.
             Query deleteQuery = em.createQuery("DELETE from DatasetLock l WHERE l.dataset.id=:id AND l.reason=:reason");
             deleteQuery.setParameter("id", ctxt.getDataset().getId() );
             deleteQuery.setParameter("reason", DatasetLock.Reason.Workflow );
             deleteQuery.executeUpdate();
-            
+  */          
         } catch (CommandException ex) {
             logger.log(Level.SEVERE, "Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
         }
@@ -284,17 +286,21 @@ public class WorkflowServiceBean {
          * made in a calling command (e.g. for a PostPublication workflow, the fact that the latest version is 'released' is not yet in the 
          * database. 
          */
+        engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
+        /*
         datasetLock.setDataset(ctxt.getDataset());
         em.persist(datasetLock);
         em.flush();
+        */
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    void unlockDataset( WorkflowContext ctxt ) {
+    void unlockDataset( WorkflowContext ctxt ) throws CommandException {
     	/* Since the lockDataset command above directly persists a lock to the database, 
     	 * the ctxt.getDataset() is not updated and its list of locks can't be used. Using the named query below will find the workflow
     	 * lock and remove it (actually all workflow locks for this Dataset but only one workflow should be active). 
     	 */
+        /*
         TypedQuery<DatasetLock> lockCounter = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
         lockCounter.setParameter("datasetId", ctxt.getDataset().getId());
         List<DatasetLock> locks = lockCounter.getResultList();
@@ -305,6 +311,8 @@ public class WorkflowServiceBean {
         	}
         }
         em.flush();
+        */
+        engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow) );
     }
     
     //
@@ -319,16 +327,17 @@ public class WorkflowServiceBean {
 
     private void workflowCompleted(Workflow wf, WorkflowContext ctxt) {
         logger.log(Level.INFO, "Workflow {0} completed.", ctxt.getInvocationId());
-        if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
+        
             try {
+                if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
                 engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest()) );
-                                
+                } else {
+                    unlockDataset(ctxt);
+                }
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
                 rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size()-1);
             }
-        }
-        unlockDataset(ctxt);
         
     }
 
