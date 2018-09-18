@@ -58,7 +58,7 @@ import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.solr.common.util.IOUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
@@ -379,22 +379,22 @@ public class Admin extends AbstractApiBean {
 		return ok(json(authenticatedUser));
 	}
 
+        //TODO: Delete this endpoint after 4.9.3. Was updated with change in docs. --MAD
 	/**
 	 * curl -X PUT -d "shib@mailinator.com"
 	 * http://localhost:8080/api/admin/authenticatedUsers/id/11/convertShibToBuiltIn
 	 *
 	 * @deprecated We have documented this API endpoint so we'll keep in around for
-	 *			 a while but we should encourage everyone to switch to the
-	 *			 "convertRemoteToBuiltIn" endpoint and then remove this
-	 *			 Shib-specfic one.
+	 *             a while but we should encourage everyone to switch to the
+	 *             "convertRemoteToBuiltIn" endpoint and then remove this
+	 *             Shib-specfic one.
 	 */
 	@PUT
 	@Path("authenticatedUsers/id/{id}/convertShibToBuiltIn")
 	@Deprecated
 	public Response convertShibUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-		AuthenticatedUser user;
-				try {
-			user = findAuthenticatedUserOrDie();
+                try {
+                        AuthenticatedUser user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -407,8 +407,9 @@ public class Admin extends AbstractApiBean {
 				return error(Response.Status.BAD_REQUEST, "User id " + id
 						+ " could not be converted from Shibboleth to BuiltIn. An Exception was not thrown.");
 			}
+                        AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
 			JsonObjectBuilder output = Json.createObjectBuilder();
-			output.add("email", user.getEmail());
+			output.add("email", authUser.getEmail());
 			output.add("username", builtinUser.getUserName());
 			return ok(output);
 		} catch (Throwable ex) {
@@ -428,9 +429,8 @@ public class Admin extends AbstractApiBean {
 	@PUT
 	@Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
 	public Response convertOAuthUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-		AuthenticatedUser user;
-				try {
-			user = findAuthenticatedUserOrDie();
+                try {
+			AuthenticatedUser user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -439,12 +439,14 @@ public class Admin extends AbstractApiBean {
 		}
 		try {
 			BuiltinUser builtinUser = authSvc.convertRemoteToBuiltIn(id, newEmailAddress);
+                        //AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
 			if (builtinUser == null) {
 				return error(Response.Status.BAD_REQUEST, "User id " + id
 						+ " could not be converted from remote to BuiltIn. An Exception was not thrown.");
 			}
+                        AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
 			JsonObjectBuilder output = Json.createObjectBuilder();
-			output.add("email", user.getEmail());
+			output.add("email", authUser.getEmail());
 			output.add("username", builtinUser.getUserName());
 			return ok(output);
 		} catch (Throwable ex) {
@@ -532,7 +534,7 @@ public class Admin extends AbstractApiBean {
 		}
 		/**
 		 * @todo If affiliation is not null, put it in RoleAssigneeDisplayInfo
-		 *	   constructor.
+		 *       constructor.
 		 */
 		/**
 		 * Here we are exercising (via an API test) shibService.getAffiliation with the
@@ -544,7 +546,7 @@ public class Admin extends AbstractApiBean {
 		logger.info("overwriteAffiliation: " + overwriteAffiliation);
 		/**
 		 * @todo Find a place to put "position" in the authenticateduser table:
-		 *	   https://github.com/IQSS/dataverse/issues/1444#issuecomment-74134694
+		 *       https://github.com/IQSS/dataverse/issues/1444#issuecomment-74134694
 		 */
 		String overwritePosition = "staff;student";
 		AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(overwriteFirstName,
@@ -567,7 +569,7 @@ public class Admin extends AbstractApiBean {
 					if (convertedUser != null) {
 						/**
 						 * @todo Display name is not being overwritten. Logic must be in Shib backing
-						 *	   bean
+						 *       bean
 						 */
 						AuthenticatedUser updatedInfoUser = authSvc.updateAuthenticatedUser(convertedUser, displayInfo);
 						if (updatedInfoUser != null) {
@@ -587,7 +589,7 @@ public class Admin extends AbstractApiBean {
 				problems.add(message);
 				/**
 				 * @todo Someday we should make a errorResponse method that takes JSON arrays
-				 *	   and objects.
+				 *       and objects.
 				 */
 				return error(Status.BAD_REQUEST, problems.build().toString());
 			}
@@ -685,7 +687,7 @@ public class Admin extends AbstractApiBean {
 		}
 		/**
 		 * @todo If affiliation is not null, put it in RoleAssigneeDisplayInfo
-		 *	   constructor.
+		 *       constructor.
 		 */
 		/**
 		 * Here we are exercising (via an API test) shibService.getAffiliation with the
@@ -698,7 +700,7 @@ public class Admin extends AbstractApiBean {
 		logger.info("overwriteAffiliation: " + overwriteAffiliation);
 		/**
 		 * @todo Find a place to put "position" in the authenticateduser table:
-		 *	   https://github.com/IQSS/dataverse/issues/1444#issuecomment-74134694
+		 *       https://github.com/IQSS/dataverse/issues/1444#issuecomment-74134694
 		 */
 		String overwritePosition = "staff;student";
 		AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(overwriteFirstName,
@@ -721,7 +723,7 @@ public class Admin extends AbstractApiBean {
 					if (convertedUser != null) {
 						/**
 						 * @todo Display name is not being overwritten. Logic must be in Shib backing
-						 *	   bean
+						 *       bean
 						 */
 						AuthenticatedUser updatedInfoUser = authSvc.updateAuthenticatedUser(convertedUser, displayInfo);
 						if (updatedInfoUser != null) {
@@ -741,7 +743,7 @@ public class Admin extends AbstractApiBean {
 				problems.add(message);
 				/**
 				 * @todo Someday we should make a errorResponse method that takes JSON arrays
-				 *	   and objects.
+				 *       and objects.
 				 */
 				return error(Status.BAD_REQUEST, problems.build().toString());
 			}
@@ -863,7 +865,7 @@ public class Admin extends AbstractApiBean {
 	 * This method is used in integration tests.
 	 *
 	 * @param userId
-	 *			The database id of an AuthenticatedUser.
+	 *            The database id of an AuthenticatedUser.
 	 * @return The confirm email token.
 	 */
 	@Path("confirmEmail/{userId}")
@@ -883,7 +885,7 @@ public class Admin extends AbstractApiBean {
 	 * This method is used in integration tests.
 	 *
 	 * @param userId
-	 *			The database id of an AuthenticatedUser.
+	 *            The database id of an AuthenticatedUser.
 	 */
 	@Path("confirmEmail/{userId}")
 	@POST
@@ -1016,7 +1018,7 @@ public class Admin extends AbstractApiBean {
 	 * Validate a password with an API call
 	 *
 	 * @param password
-	 *			The password
+	 *            The password
 	 * @return A response with the validation result.
 	 */
 	@Path("validatePassword")

@@ -14,6 +14,9 @@
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	<additionalparam>-Xdoclint:none</additionalparam>
         <aws.version>1.11.172</aws.version>
+        <project.timezone>UTC</project.timezone>
+        <project.language>en</project.language>
+        <project.region>US</project.region>
     </properties>
 
     <repositories>
@@ -635,6 +638,7 @@
                 <configuration>
                    <!-- testsToExclude come from the profile-->
                    <excludedGroups>${testsToExclude}</excludedGroups>
+                    <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
                 </configuration>
             </plugin>
         </plugins>

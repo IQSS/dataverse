@@ -52,6 +52,9 @@ We are aware that there are newer testing tools such as TestNG, but we use `JUni
 
 If writing tests is new to you, poke around existing unit tests which all end in ``Test.java`` and live under ``src/test``. Each test is annotated with ``@Test`` and should have at least one assertion which specifies the expected result. In Netbeans, you can run all the tests in it by clicking "Run" -> "Test File". From the test file, you should be able to navigate to the code that's being tested by right-clicking on the file and clicking "Navigate" -> "Go to Test/Tested class". Likewise, from the code, you should be able to use the same "Navigate" menu to go to the tests.
 
+NOTE: Please remember when writing tests checking possibly localized outputs to check against ``en_US.UTF-8`` and ``UTC``
+l10n strings!
+
 Refactoring Code to Make It Unit-Testable
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -187,6 +190,18 @@ Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)
   ``mvn test -Dtest=FileMetadataIT -Ddataverse.test.baseurl='http://localhost:8080'``
 
 To see the full list of tests used by the Docker option mentioned above, see :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>`.
+
+Measuring Coverage of Integration Tests
+---------------------------------------
+Measuring the code coverage of integration tests with jacoco requires several steps:
+
+- Instrument the WAR file. Using an approach similar to :download:`this script <../_static/util/instrument_war_jacoco.bash>` is probably preferable to instrumenting the WAR directly (at least until the ``nu.xom.UnicodeUtil.decompose`` method too large exceptions get sorted).
+- Deploy the WAR file to a glassfish server with ``jacocoagent.jar`` in ``glassfish4/glassfish/lib/``
+- Run integration tests as usual
+- Use ``glassfish4/glassfish/domains/domain1/config/jacoco.exec`` to generate a report: ``java -jar ${JACOCO_HOME}/jacococli.jar report --classfiles ${DV_REPO}/target/classes --sourcefiles ${DV_REPO}/src/main/java --html ${DV_REPO}/target/coverage-it/ jacoco.exec``
+
+The same approach could be used to measure code paths exercised in normal use (by substituting the "run integration tests" step).
+There is obvious potential to improve automation of this process.
 
 Load/Performance Testing
 ------------------------
