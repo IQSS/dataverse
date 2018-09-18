@@ -201,7 +201,7 @@ public class WorkflowServiceBean {
         
         logger.log( Level.INFO, "Removing workflow lock");
         try {
-            unlockDataset(ctxt);
+           // unlockDataset(ctxt);
 /*            engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow) );
             
             // Corner case - delete locks generated within this same transaction.
@@ -332,7 +332,7 @@ public class WorkflowServiceBean {
                 if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
                 engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest()) );
                 } else {
-                    unlockDataset(ctxt);
+                    //unlockDataset(ctxt);
                 }
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
