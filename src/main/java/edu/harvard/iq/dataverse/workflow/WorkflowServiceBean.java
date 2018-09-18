@@ -200,7 +200,7 @@ public class WorkflowServiceBean {
         }
         
         logger.log( Level.INFO, "Removing workflow lock");
-        try {
+   //     try {
            // unlockDataset(ctxt);
 /*            engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow) );
             
@@ -210,9 +210,9 @@ public class WorkflowServiceBean {
             deleteQuery.setParameter("reason", DatasetLock.Reason.Workflow );
             deleteQuery.executeUpdate();
   */          
-        } catch (CommandException ex) {
-            logger.log(Level.SEVERE, "Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
-        }
+   //     } catch (CommandException ex) {
+    //        logger.log(Level.SEVERE, "Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
+     //   }
     }
     
     /**
