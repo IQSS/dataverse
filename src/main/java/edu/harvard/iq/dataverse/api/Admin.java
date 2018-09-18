@@ -384,16 +384,16 @@ public class Admin extends AbstractApiBean {
 	 * http://localhost:8080/api/admin/authenticatedUsers/id/11/convertShibToBuiltIn
 	 *
 	 * @deprecated We have documented this API endpoint so we'll keep in around for
-	 *             a while but we should encourage everyone to switch to the
-	 *             "convertRemoteToBuiltIn" endpoint and then remove this
-	 *             Shib-specfic one.
+	 *			 a while but we should encourage everyone to switch to the
+	 *			 "convertRemoteToBuiltIn" endpoint and then remove this
+	 *			 Shib-specfic one.
 	 */
 	@PUT
 	@Path("authenticatedUsers/id/{id}/convertShibToBuiltIn")
 	@Deprecated
 	public Response convertShibUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
 		AuthenticatedUser user;
-                try {
+				try {
 			user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
@@ -429,7 +429,7 @@ public class Admin extends AbstractApiBean {
 	@Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
 	public Response convertOAuthUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
 		AuthenticatedUser user;
-                try {
+				try {
 			user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
@@ -532,7 +532,7 @@ public class Admin extends AbstractApiBean {
 		}
 		/**
 		 * @todo If affiliation is not null, put it in RoleAssigneeDisplayInfo
-		 *       constructor.
+		 *	   constructor.
 		 */
 		/**
 		 * Here we are exercising (via an API test) shibService.getAffiliation with the
@@ -544,7 +544,7 @@ public class Admin extends AbstractApiBean {
 		logger.info("overwriteAffiliation: " + overwriteAffiliation);
 		/**
 		 * @todo Find a place to put "position" in the authenticateduser table:
-		 *       https://github.com/IQSS/dataverse/issues/1444#issuecomment-74134694
+		 *	   https://github.com/IQSS/dataverse/issues/1444#issuecomment-74134694
 		 */
 		String overwritePosition = "staff;student";
 		AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(overwriteFirstName,
@@ -567,7 +567,7 @@ public class Admin extends AbstractApiBean {
 					if (convertedUser != null) {
 						/**
 						 * @todo Display name is not being overwritten. Logic must be in Shib backing
-						 *       bean
+						 *	   bean
 						 */
 						AuthenticatedUser updatedInfoUser = authSvc.updateAuthenticatedUser(convertedUser, displayInfo);
 						if (updatedInfoUser != null) {
@@ -587,7 +587,7 @@ public class Admin extends AbstractApiBean {
 				problems.add(message);
 				/**
 				 * @todo Someday we should make a errorResponse method that takes JSON arrays
-				 *       and objects.
+				 *	   and objects.
 				 */
 				return error(Status.BAD_REQUEST, problems.build().toString());
 			}
@@ -685,7 +685,7 @@ public class Admin extends AbstractApiBean {
 		}
 		/**
 		 * @todo If affiliation is not null, put it in RoleAssigneeDisplayInfo
-		 *       constructor.
+		 *	   constructor.
 		 */
 		/**
 		 * Here we are exercising (via an API test) shibService.getAffiliation with the
@@ -698,7 +698,7 @@ public class Admin extends AbstractApiBean {
 		logger.info("overwriteAffiliation: " + overwriteAffiliation);
 		/**
 		 * @todo Find a place to put "position" in the authenticateduser table:
-		 *       https://github.com/IQSS/dataverse/issues/1444#issuecomment-74134694
+		 *	   https://github.com/IQSS/dataverse/issues/1444#issuecomment-74134694
 		 */
 		String overwritePosition = "staff;student";
 		AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(overwriteFirstName,
@@ -721,7 +721,7 @@ public class Admin extends AbstractApiBean {
 					if (convertedUser != null) {
 						/**
 						 * @todo Display name is not being overwritten. Logic must be in Shib backing
-						 *       bean
+						 *	   bean
 						 */
 						AuthenticatedUser updatedInfoUser = authSvc.updateAuthenticatedUser(convertedUser, displayInfo);
 						if (updatedInfoUser != null) {
@@ -741,7 +741,7 @@ public class Admin extends AbstractApiBean {
 				problems.add(message);
 				/**
 				 * @todo Someday we should make a errorResponse method that takes JSON arrays
-				 *       and objects.
+				 *	   and objects.
 				 */
 				return error(Status.BAD_REQUEST, problems.build().toString());
 			}
@@ -863,7 +863,7 @@ public class Admin extends AbstractApiBean {
 	 * This method is used in integration tests.
 	 *
 	 * @param userId
-	 *            The database id of an AuthenticatedUser.
+	 *			The database id of an AuthenticatedUser.
 	 * @return The confirm email token.
 	 */
 	@Path("confirmEmail/{userId}")
@@ -883,7 +883,7 @@ public class Admin extends AbstractApiBean {
 	 * This method is used in integration tests.
 	 *
 	 * @param userId
-	 *            The database id of an AuthenticatedUser.
+	 *			The database id of an AuthenticatedUser.
 	 */
 	@Path("confirmEmail/{userId}")
 	@POST
@@ -1016,7 +1016,7 @@ public class Admin extends AbstractApiBean {
 	 * Validate a password with an API call
 	 *
 	 * @param password
-	 *            The password
+	 *			The password
 	 * @return A response with the validation result.
 	 */
 	@Path("validatePassword")
@@ -1114,6 +1114,7 @@ public class Admin extends AbstractApiBean {
 		Integer successes = 0;
 		Integer alreadyUpdated = 0;
 		Integer rehashed = 0;
+		Integer harvested=0;
 		
 		if (num <= 0)
 			num = Integer.MAX_VALUE;
@@ -1140,44 +1141,61 @@ public class Admin extends AbstractApiBean {
 			InputStream in = null;
 			InputStream in2 = null; 
 			try {
-				if (!df.getChecksumType().equals(cType)) {
-					rehashed++;
-					logger.fine(
-							rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", " + df.getIdentifier());
-					// verify hash and calc new one to replace it
-					StorageIO<DataFile> storage = df.getStorageIO();
-					storage.open(DataAccessOption.READ_ACCESS);
-					in = storage.getInputStream();
-					if (in == null)
-						logger.warning("Cannot retrieve file.");
-					String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
-					if (currentChecksum.equals(df.getChecksumValue())) {
-						logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
-								+ df.getIdentifier() + " is valid");
-						storage.open(DataAccessOption.READ_ACCESS);
-						in2 = storage.getInputStream();
-						if (in2 == null)
-							logger.warning("Cannot retrieve file to calculate new checksum.");
-						String newChecksum = FileUtil.CalculateChecksum(in2, cType);
-
-						df.setChecksumType(cType);
-						df.setChecksumValue(newChecksum);
-						successes++;
-					} else {
-						logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
-								+ ", " + df.getIdentifier() + " is INVALID");
-					}
+				if (df.isHarvested()) {
+					harvested++;
 				} else {
-					alreadyUpdated++;
-					if (alreadyUpdated % 100 == 0) {
-						logger.info(alreadyUpdated + " of  " + count
-								+ " files are already have hashes with the new algorithm. " + new Date());
+					if (!df.getChecksumType().equals(cType)) {
+
+						rehashed++;
+						logger.fine(rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", "
+								+ df.getIdentifier());
+						// verify hash and calc new one to replace it
+						StorageIO<DataFile> storage = df.getStorageIO();
+						storage.open(DataAccessOption.READ_ACCESS);
+						if (!df.isTabularData()) {
+							in = storage.getInputStream();
+						} else {
+							// if this is a tabular file, read the preserved original "auxiliary file"
+							// instead:
+							in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+						}
+						if (in == null)
+							logger.warning("Cannot retrieve file.");
+						String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
+						if (currentChecksum.equals(df.getChecksumValue())) {
+							logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
+									+ df.getIdentifier() + " is valid");
+							storage.open(DataAccessOption.READ_ACCESS);
+							if (!df.isTabularData()) {
+								in2 = storage.getInputStream();
+							} else {
+								// if this is a tabular file, read the preserved original "auxiliary file"
+								// instead:
+								in2 = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+							}
+							if (in2 == null)
+								logger.warning("Cannot retrieve file to calculate new checksum.");
+							String newChecksum = FileUtil.CalculateChecksum(in2, cType);
+
+							df.setChecksumType(cType);
+							df.setChecksumValue(newChecksum);
+							successes++;
+							if (successes % 100 == 0) {
+								logger.info(
+										successes + " of  " + count + " files rehashed successfully. " + new Date());
+							}
+						} else {
+							logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
+									+ ", " + df.getIdentifier() + " is INVALID");
+						}
+					} else {
+						alreadyUpdated++;
+						if (alreadyUpdated % 100 == 0) {
+							logger.info(alreadyUpdated + " of  " + count
+									+ " files are already have hashes with the new algorithm. " + new Date());
+						}
 					}
 				}
-				if (successes % 100 == 0) {
-					logger.info(successes + " of  " + count + " files rehashed successfully. " + new Date());
-				}
-
 			} catch (Exception e) {
 				logger.warning("Unexpected Exception: " + e.getMessage());
 
@@ -1187,6 +1205,7 @@ public class Admin extends AbstractApiBean {
 			}
 		}
 		logger.info("Final Results:");
+		logger.info(harvested + " harvested files skipped.");
 		logger.info(
 				alreadyUpdated + " of  " + count + " files already had hashes with the new algorithm. " + new Date());
 		logger.info(rehashed + " of  " + count + " files to rehash. " + new Date());
