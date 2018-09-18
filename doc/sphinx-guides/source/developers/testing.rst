@@ -75,6 +75,17 @@ You might find studying the following test classes helpful in writing tests for 
 
 In addition, there is a writeup on "The Testable Command" at https://github.com/IQSS/dataverse/blob/develop/doc/theTestableCommand/TheTestableCommand.md .
 
+Running Non-Essential (Excluded) Unit Tests
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You should be aware that some unit tests have been deemed "non-essential" and have been annotated with ``@Category(NonEssentialTests.class)`` and are excluded from the "dev" Maven profile, which is the default profile. All unit tests (that have not been annotated with ``@Ignore``), including these non-essential tests, are run from continuous integration systems such as Jenkins and Travis CI with the following ``mvn`` command that invokes a non-default profile:
+
+``mvn test -P all-unit-tests``
+
+Typically https://travis-ci.org/IQSS/dataverse will show a higher number of unit tests executed because it uses the profile above.
+
+Generally speaking, unit tests have been flagged as non-essential because they are slow or because they require an Internet connection. You should not feel obligated to run these tests continuously but you can use the ``mvn`` command above to run them. To iterate on the unit test in Netbeans and execute it with "Run -> Test File", you must temporarily comment out the annotation flagging the test as non-essential.
+
 Integration Tests
 -----------------
 
@@ -176,6 +187,18 @@ Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)
   ``mvn test -Dtest=FileMetadataIT -Ddataverse.test.baseurl='http://localhost:8080'``
 
 To see the full list of tests used by the Docker option mentioned above, see :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>`.
+
+Measuring Coverage of Integration Tests
+---------------------------------------
+Measuring the code coverage of integration tests with jacoco requires several steps:
+
+- Instrument the WAR file. Using an approach similar to :download:`this script <../_static/util/instrument_war_jacoco.bash>` is probably preferable to instrumenting the WAR directly (at least until the ``nu.xom.UnicodeUtil.decompose`` method too large exceptions get sorted).
+- Deploy the WAR file to a glassfish server with ``jacocoagent.jar`` in ``glassfish4/glassfish/lib/``
+- Run integration tests as usual
+- Use ``glassfish4/glassfish/domains/domain1/config/jacoco.exec`` to generate a report: ``java -jar ${JACOCO_HOME}/jacococli.jar report --classfiles ${DV_REPO}/target/classes --sourcefiles ${DV_REPO}/src/main/java --html ${DV_REPO}/target/coverage-it/ jacoco.exec``
+
+The same approach could be used to measure code paths exercised in normal use (by substituting the "run integration tests" step).
+There is obvious potential to improve automation of this process.
 
 Load/Performance Testing
 ------------------------

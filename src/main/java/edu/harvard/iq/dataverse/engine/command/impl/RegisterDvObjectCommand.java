@@ -32,7 +32,8 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         String nonNullDefaultIfKeyNotFound = "";
         String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(target.getProtocol(), ctxt);
+        // Get the idServiceBean that is configured to mint new IDs
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
         try {
             //Test to see if identifier already present
             //if so, leave.
@@ -56,15 +57,20 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             }
             String doiRetString = idServiceBean.createIdentifier(target);
             if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
+                if (!idServiceBean.registerWhenPublished()) {
+                    // Should register ID before publicize() is called
+                    // For example, DOIEZIdServiceBean tries to recreate the id if the identifier isn't registered before
+                    // publicizeIdentifier is called
+                    target.setIdentifierRegistered(true);
+                    target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                }
                 if (target.isReleased()) {
                     idServiceBean.publicizeIdentifier(target);
                 }
-
-                if (!idServiceBean.registerWhenPublished() || target.isReleased()) {
+                if (idServiceBean.registerWhenPublished() && target.isReleased()) {
                     target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                     target.setIdentifierRegistered(true);
                 }
-
                 ctxt.em().merge(target);
                 ctxt.em().flush();
                 if (target.isInstanceofDataset()) {
@@ -81,10 +87,17 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                         }
                         doiRetString = idServiceBean.createIdentifier(df);
                         if (doiRetString != null && doiRetString.contains(df.getIdentifier())) {
+                            if (!idServiceBean.registerWhenPublished()) {
+                                // Should register ID before publicize() is called
+                                // For example, DOIEZIdServiceBean tries to recreate the id if the identifier isn't registered before
+                                // publicizeIdentifier is called
+                                df.setIdentifierRegistered(true);
+                                df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                            }
                             if (df.isReleased()) {
                                 idServiceBean.publicizeIdentifier(df);
                             }
-                            if (!idServiceBean.registerWhenPublished() || df.isReleased()) {
+                            if (idServiceBean.registerWhenPublished() && df.isReleased()) {
                                 df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                                 df.setIdentifierRegistered(true);
                             }

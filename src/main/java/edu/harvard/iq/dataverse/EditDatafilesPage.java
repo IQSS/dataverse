@@ -56,6 +56,7 @@ import javax.json.JsonObject;
 import javax.json.JsonArray;
 import javax.json.JsonReader;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.httpclient.methods.GetMethod;
 import java.text.DateFormat;
 import java.util.Arrays;
@@ -1347,7 +1348,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution:
         if (mode == FileEditMode.UPLOAD) {
-            ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
+            ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) session.getUser());
         }
 
         if (mode == FileEditMode.SINGLE && fileMetadatas.size() > 0) {
@@ -2636,21 +2637,11 @@ public class EditDatafilesPage implements java.io.Serializable {
                 output.write(buffer, 0, bytesRead);
             }
         } catch (IOException ioex) {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                }
-            }
-            if (output != null) {
-                try {
-                    output.close();
-                } catch (IOException e) {
-                }
-            }
             return null;
+        } finally {
+            IOUtils.closeQuietly(input);
+            IOUtils.closeQuietly(output);
         }
-
         if (labelsFile != null) {
             return labelsFile.getAbsolutePath();
         }
