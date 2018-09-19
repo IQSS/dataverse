@@ -48,6 +48,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
+        logger.info("Exec FDPC");
         Dataset theDataset = getDataset();
         
         if ( theDataset.getGlobalIdCreateTime() == null ) {
@@ -130,6 +131,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
   	
     		ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
+                logger.info("Starting WF");
                 ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset));
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);

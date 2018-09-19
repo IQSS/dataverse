@@ -2024,9 +2024,11 @@ public class DatasetPage implements java.io.Serializable {
     private String releaseDataset(boolean minor) {
         if (session.getUser() instanceof AuthenticatedUser) {
             try {
+                logger.info("Sending PDC");
                 final PublishDatasetResult result = commandEngine.submit(
                     new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor)
                 );
+                logger.info("Back from PDC");
                 dataset = result.getDataset();
                 // Sucessfully executing PublishDatasetCommand does not guarantee that the dataset 
                 // has been published. If a publishing workflow is configured, this may have sent the 
