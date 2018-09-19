@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.workflow;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
@@ -288,9 +289,18 @@ public class WorkflowServiceBean {
          * made in a calling command (e.g. for a PostPublication workflow, the fact that the latest version is 'released' is not yet in the 
          * database. 
          */
-        datasetLock.setDataset(ctxt.getDataset());
-        em.persist(datasetLock);
-        em.flush();
+        Dataset ds = em.find(Dataset.class,ctxt.getDataset().getId());
+        engine.submit(new AddLockCommand(ctxt.getRequest(), ds, datasetLock));
+        logger.info("Num Locks: "  + ds.getLocks().size());
+        logger.info("Num Locks local: "  + ctxt.getDataset().getLocks().size());
+        //datasetLock.setDataset(ctxt.getDataset());
+        //em.persist(datasetLock);
+        //em.flush();
+        DatasetLock dsl = engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
+        logger.info("Num Locks local2: "  + ctxt.getDataset().getLocks().size());
+        
+        logger.info("Num Locks dsl: "  + dsl.getDataset().getLocks().size());
+        
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -310,8 +320,10 @@ public class WorkflowServiceBean {
         	}
         }
         em.flush();
-        */
+        */Dataset ds = em.find(Dataset.class,ctxt.getDataset().getId());
         engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow) );
+        logger.info("Num Locks: "  + ds.getLocks().size());
+        logger.info("Num Locks local: "  + ctxt.getDataset().getLocks().size());
     }
     
     //
@@ -331,6 +343,7 @@ public class WorkflowServiceBean {
                 if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
                 engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest()) );
                 } else {
+                    logger.info("Num Locks: "  + ctxt.getDataset().getLocks().size());
                     //unlockDataset(ctxt);
                 }
             } catch (CommandException ex) {
