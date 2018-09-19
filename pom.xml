@@ -13,6 +13,8 @@
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	<additionalparam>-Xdoclint:none</additionalparam>
+        <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
+        <compilerArgument></compilerArgument>
         <aws.version>1.11.172</aws.version>
         <project.timezone>UTC</project.timezone>
         <project.language>en</project.language>
