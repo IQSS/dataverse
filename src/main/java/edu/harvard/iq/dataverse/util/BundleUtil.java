@@ -110,7 +110,7 @@ public class BundleUtil {
             }
 
             ClassLoader loader = new URLClassLoader(urls);
-            bundle = ResourceBundle.getBundle(BundleUtil.defaultBundleFile, bundle_locale, loader);
+            bundle = ResourceBundle.getBundle(propertyFileName, bundle_locale, loader);
         }
         return bundle ;
     }
