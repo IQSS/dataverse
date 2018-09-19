@@ -3,6 +3,13 @@
 
 #TODO: allow arbitrary repo, not just IQSS. Will require changing it on the ansible side as well
 
+#Make sure "aws" binary is available
+AWS_CLI_VERSION=$(aws --version)
+if [[ "$?" -ne 0 ]]; then
+  echo 'The "aws" program could not be executed. Is it in your $PATH?'
+  exit 1
+fi
+
 if [ "$1" = "" ]; then
   echo "No branch name provided"
   exit 1
