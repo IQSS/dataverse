@@ -38,6 +38,11 @@ import org.hamcrest.Matcher;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.path.xml.XmlPath.from;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class UtilIT {
 
@@ -211,6 +216,13 @@ public class UtilIT {
     }
 
     static String getDatasetPersistentIdFromResponse(Response createDatasetResponse) {
+        JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
+        String persistentDatasetId = createdDataset.getString("data.persistentId");
+        logger.info("Persistent id found in create dataset response: " + persistentDatasetId);
+        return persistentDatasetId;
+    }
+    
+    static String getDatasetPersistentIdFromSwordResponse(Response createDatasetResponse) {
         String xml = createDatasetResponse.body().asString();
         String datasetSwordIdUrl = from(xml).get("entry.id");
         /**
@@ -557,6 +569,48 @@ public class UtilIT {
                  */
                 //.header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
+    }
+
+    static Response downloadFileOriginal(Integer fileId) {
+        return given()
+                .get("/api/access/datafile/" + fileId + "?format=original");
+    }
+    
+    static Response downloadFileOriginal(Integer fileId, String apiToken) {
+        return given()
+                .get("/api/access/datafile/" + fileId + "?format=original&key=" + apiToken);
+    }
+    
+    static Response downloadFiles(Integer[] fileIds) {
+        String getString = "/api/access/datafiles/";
+        for(Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        return given().get(getString);
+    }
+    
+    static Response downloadFiles(Integer[] fileIds, String apiToken) {
+        String getString = "/api/access/datafiles/";
+        for(Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        return given().get(getString + "?key=" + apiToken);
+    }
+    
+    static Response downloadFilesOriginal(Integer[] fileIds) {
+        String getString = "/api/access/datafiles/";
+        for(Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        return given().get(getString + "?format=original");
+    }
+    
+    static Response downloadFilesOriginal(Integer[] fileIds, String apiToken) {
+        String getString = "/api/access/datafiles/";
+        for(Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        return given().get(getString + "?format=original&key=" + apiToken);
     }
 
     static Response subset(String fileId, String variables, String apiToken) {
@@ -1614,5 +1668,20 @@ public class UtilIT {
             .header(API_TOKEN_HTTP_HEADER, apiToken)
             .delete("api/datasets/" + datasetId + "/locks" + (lockType == null ? "" : "?type="+lockType));
         return response;       
+    }
+    
+    static Response exportOaiSet(String setName) {
+        String apiPath = String.format("/api/admin/metadata/exportOAI/%s", setName);
+        return given().put(apiPath);
+    }
+    
+    static Response getOaiRecord(String datasetPersistentId, String metadataFormat) {
+        String apiPath = String.format("/oai?verb=GetRecord&identifier=%s&metadataPrefix=%s", datasetPersistentId, metadataFormat);
+        return given().get(apiPath);
+    }
+    
+    static Response getOaiListIdentifiers(String setName, String metadataFormat) {
+        String apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        return given().get(apiPath);
     }
 }

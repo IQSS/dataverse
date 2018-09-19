@@ -28,6 +28,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.util.Date;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /**
  * REST API bean for managing {@link BuiltinUser}s.
@@ -40,13 +43,6 @@ public class BuiltinUsers extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(BuiltinUsers.class.getName());
 
     private static final String API_KEY_IN_SETTINGS = "BuiltinUsers.KEY";
-    /**
-     * Users have not requested the ability to retrieve their API token using
-     * their email address but we could. Here's the issue for which we are
-     * enabling login via email address:
-     * https://github.com/IQSS/dataverse/issues/2115
-     */
-    public static boolean retrievingApiTokenViaEmailEnabled = false;
 
     @EJB
     protected BuiltinUserServiceBean builtinUserSvc;
@@ -63,11 +59,9 @@ public class BuiltinUsers extends AbstractApiBean {
             return error(Status.FORBIDDEN, "This API endpoint has been disabled.");
         }
         BuiltinUser u = null;
-        if (retrievingApiTokenViaEmailEnabled) {
-            u = builtinUserSvc.findByUsernameOrEmail(username);
-        } else {
-            u = builtinUserSvc.findByUserName(username);
-        }
+
+        u = builtinUserSvc.findByUserName(username);
+
         if ( u == null ) return badRequest("Bad username or password");
         
         boolean passwordOk = PasswordEncryption.getVersion(u.getPasswordEncryptionVersion())
@@ -81,6 +75,19 @@ public class BuiltinUsers extends AbstractApiBean {
         return (t != null ) ? ok(t.getTokenString()) : notFound("User " + username + " does not have an API token");
     }
     
+    
+    //These two endpoints take in a BuiltinUser as json. To support these endpoints
+    //with the removal of attributes from BuiltinUser in 4565, BuiltinUser supports
+    //the extended attributes as transient (not stored to the database). They are
+    //immediately used to create an AuthenticatedUser.
+    //If this proves to be too confusing, we can parse the json more manually
+    //and use the values to create BuiltinUser/AuthenticatedUser.
+    //--MAD 4.9.3
+    @POST
+    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key) {
+        return internalSave(user, password, key);
+    }
+
     /**
      * Created this new API command because the save method could not be run
      * from the RestAssured API. RestAssured doesn't allow a Post request to
@@ -98,11 +105,6 @@ public class BuiltinUsers extends AbstractApiBean {
         return internalSave(user, password, key);
     }
     
-    @POST
-    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key) {
-        return internalSave(user, password, key);
-    }
-
     private Response internalSave(BuiltinUser user, String password, String key) {
         String expectedKey = settingsSvc.get(API_KEY_IN_SETTINGS);
         
@@ -131,7 +133,7 @@ public class BuiltinUsers extends AbstractApiBean {
             AuthenticatedUser au = authSvc.createAuthenticatedUser(
                     new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, user.getUserName()),
                     user.getUserName(), 
-                    user.getDisplayInfo(),
+                    user.getDisplayInfoForApiCreation(),
                     false);
 
             /**
