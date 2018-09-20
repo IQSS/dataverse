@@ -43,6 +43,8 @@ import java.util.Random;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 
+import javax.validation.constraints.NotNull;
+
 /**
  *
  * @author Matthew A Dunlap
@@ -76,6 +78,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     "Cannot instantiate a S3 client using; check your AWS credentials and region",
                     e);
         }
+    }
+    
+    public S3AccessIO(T dvObject, DataAccessRequest req, @NotNull AmazonS3 s3client) {
+        super(dvObject, req);
+        this.setIsLocalFile(false);
+        this.s3 = s3client;
     }
 
     public static String S3_IDENTIFIER_PREFIX = "s3";
@@ -630,7 +638,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
-    private String getDestinationKey(String auxItemTag) throws IOException {
+    String getDestinationKey(String auxItemTag) throws IOException {
         if (dvObject instanceof DataFile) {
             return getMainFileKey() + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
@@ -643,7 +651,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
-    private String getMainFileKey() throws IOException {
+    /**
+     * TODO: this function is not side effect free (sets instance variables key and bucketName).
+     *       Is this good or bad? Need to ask @landreev
+     *
+     * Extract the file key from a file stored on S3.
+     * Follows template: "owner authority name"/"owner identifier"/"storage identifier without bucketname and protocol"
+     * @return Main File Key
+     * @throws IOException
+     */
+    String getMainFileKey() throws IOException {
         if (key == null) {
             String baseKey = this.getDataFile().getOwner().getAuthorityForFileStorage() + "/" + this.getDataFile().getOwner().getIdentifierForFileStorage();
             String storageIdentifier = dvObject.getStorageIdentifier();
@@ -723,7 +740,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
-    private int getUrlExpirationMinutes() {
+    int getUrlExpirationMinutes() {
         String optionValue = System.getProperty("dataverse.files.s3-url-expiration-minutes"); 
         if (optionValue != null) {
             Integer num; 
