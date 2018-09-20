@@ -1029,12 +1029,12 @@ public class Admin extends AbstractApiBean {
     }
 
     @GET
-    @Path("/dataverse/{id}/addAdminsToChildren")
-    public Response addAdminsToChildren(@PathParam("id") Long idSupplied) throws WrappedResponse {
-        Dataverse owner = dataverseSvc.find(idSupplied);
+    @Path("/dataverse/{alias}/addAdminsToChildren")
+    public Response addAdminsToChildren(@PathParam("alias") String alias) throws WrappedResponse {
+        Dataverse owner = dataverseSvc.findByAlias(alias);
         if (owner == null) {
             return error(Response.Status.NOT_FOUND,
-                    "Could not find dataverse based on id supplied: " + idSupplied + ".");
+                    "Could not find dataverse based on alias supplied: " + alias + ".");
         }
         try {
             AuthenticatedUser user = findAuthenticatedUserOrDie();
@@ -1061,7 +1061,7 @@ public class Admin extends AbstractApiBean {
 
             if (childIds == null || childIds.size() < 1) {
                 return error(Response.Status.NOT_FOUND,
-                        "Could not find any child dataverses based on id supplied: " + idSupplied + ".");
+                        "Could not find any child dataverses based on alias supplied: " + alias + ".");
             }
             JsonArrayBuilder usedNames = Json.createArrayBuilder();
             JsonArrayBuilder unusedNames = Json.createArrayBuilder();
@@ -1144,7 +1144,7 @@ public class Admin extends AbstractApiBean {
                 return ok(Json.createObjectBuilder().add("Dataverses Updated", dataverseIds)
                         .add("Admins added", usedNames).add("Admins not added", unusedNames));
             } catch (Exception e) {
-                logger.warning("Some Admin Roles may not have been assigned for Dataverse id: " + idSupplied);
+                logger.warning("Some Admin Roles may not have been assigned for Dataverse alias: " + alias);
                 logger.warning(Json.createObjectBuilder().add("Dataverses Updated", dataverseIds)
                         .add("Admins added", usedNames).add("Admins not added", unusedNames).build().toString());
                 return error(Response.Status.INTERNAL_SERVER_ERROR,
