@@ -374,11 +374,12 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.7</version>
-	</dependency>
+        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>1.10.19</version>
+            <version>2.22.0</version>
+            <scope>test</scope>
         </dependency>
         <!-- Added for DataCite -->
         <!--dependency>
