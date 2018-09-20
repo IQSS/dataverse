@@ -1259,58 +1259,58 @@
                             </ui:include>
                         </div>
                     </p:dialog>
-                   
-                    
-                    
-                    
-                    
-                    <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
-                        
-                            <div class="form-horizontal">
-                                <div class="form-group">
-                                    <label class="col-xs-3 control-label">
-                                        <h:outputText value="#{bundle['dataverse.link.yourDataverses']}"/>
-                                    </label>
-                                    <div class="col-xs-8">
 
-                                        <p class="help-block">#{bundle['dataverse.link.dataset.choose']}</p>
-                                        
-                                        <p:autoComplete id="dataverseLinkName" style="width:75%;"
-                                                        binding="#{DatasetPage.selectedDataverseMenu}"
-                                                        placeholder="#{bundle['dataverse.link.yourDataverses.inputPlaceholder']}"
-                                                        emptyMessage="#{bundle['dataverse.link.dataset.none']}"
-                                                         scrollHeight="180" forceSelection="true" 
-                                                        minQueryLength="1" queryDelay="1000"                                                                                  
-                                                        value="#{DatasetPage.selectedDataverseForLinking}" 
-                                                         multiple="false"
-                                                        completeMethod="#{DatasetPage.completeLinkingDataverse}"
-                                                        var="dataverseLk" itemLabel="#{dataverseLk.displayName}" itemValue="#{dataverseLk}" converter="dataverseConverter">
-                                            <p:column>
-                                                <h:outputText value="#{dataverseLk.displayName}"/> 
-                                            </p:column>
-                                            <p:column>
-                                                <h:outputText value="#{dataverseLk.alias}"/> 
-                                            </p:column>
-                                            <p:ajax process="@this" event="itemSelect" />
-                                            <p:ajax process="@this" event="itemUnselect" />
-                                        </p:autoComplete>
-                                        
-                                        <p:message for="dataverseLinkName"/>
-                                    </div>
+                    <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
+                        <div class="form-horizontal">
+                            <p class="help-block">
+                                <h:outputFormat value="#{bundle['dataverse.link.dataset.choose']}" escape="false">
+                                    <o:param>
+                                        <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('linkDatasetForm').hide();PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                        </p:commandLink>                                
+                                    </o:param>
+                                </h:outputFormat>
+                            </p>
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label">
+                                    <h:outputText value="#{bundle['dataverse.link.yourDataverses']}"/>
+                                </label>
+                                <div class="col-xs-8">
+                                    <p:autoComplete id="dataverseLinkName" style="width:75%;"
+                                                    binding="#{DatasetPage.selectedDataverseMenu}"
+                                                    placeholder="#{bundle['dataverse.link.yourDataverses.inputPlaceholder']}"
+                                                    emptyMessage="#{bundle['dataverse.link.dataset.none']}"
+                                                    scrollHeight="180" forceSelection="true" 
+                                                    minQueryLength="1" queryDelay="1000"
+                                                    value="#{DatasetPage.selectedDataverseForLinking}" 
+                                                    multiple="false"
+                                                    completeMethod="#{DatasetPage.completeLinkingDataverse}"
+                                                    var="dataverseLk" itemLabel="#{dataverseLk.displayName}" itemValue="#{dataverseLk}" converter="dataverseConverter">
+                                        <p:column>
+                                            <h:outputText value="#{dataverseLk.displayName}"/> 
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{dataverseLk.alias}"/> 
+                                        </p:column>
+                                        <p:ajax process="@this" event="itemSelect" />
+                                        <p:ajax process="@this" event="itemUnselect" />
+                                    </p:autoComplete>
+                                    <p:message for="dataverseLinkName"/>
                                 </div>
                             </div>
-                        
+                        </div>
                         <div class="button-block">
                             <p:commandLink type="button" styleClass="btn btn-default"  update=":messagePanel,linkDatasetForm"
-                                           value="#{bundle['dataset.link.save']}" action="#{DatasetPage.saveLinkingDataverses()}"
-                                           />
+                                           value="#{bundle['dataset.link.save']}" action="#{DatasetPage.saveLinkingDataverses()}"/>
                             <button type="button" class="btn btn-default" onclick="PF('linkDatasetForm').hide();PF('blockDatasetForm').hide();">
                                 #{bundle.cancel}
                             </button>
                         </div>
                     </p:dialog>
-                                        
-                    
+
                     <p:dialog id="computeBatchListPopup" header="#{bundle['dataset.compute.computeBatchListHeader']}" widgetVar="computeBatchListPopup" modal="true">
                         <div class="text-right">
                             <!-- Clear link -->

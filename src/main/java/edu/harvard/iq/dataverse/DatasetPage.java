@@ -2263,7 +2263,6 @@ public class DatasetPage implements java.io.Serializable {
         arguments.add(StringEscapeUtils.escapeHtml(dataset.getDisplayName()));
         dataverseString += " <a href=\"/dataverse/" + selectedDataverseForLinking.getAlias() + "\">" + StringEscapeUtils.escapeHtml(selectedDataverseForLinking.getDisplayName()) + "</a>";
         arguments.add(dataverseString);
-        arguments.add(settingsWrapper.getSupportTeamEmail());
         return arguments;
     }
     
