@@ -10,12 +10,17 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.api.UtilIT;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.junit.jupiter.api.Assertions.*;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import static org.mockito.Mockito.*;
+import static org.mockito.BDDMockito.*;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,8 +55,69 @@ public class S3AccessIOTest {
     getWriteChannel
     getOutputStream
     getDestinationKey
+    
+    DONE
+    ---------------------
     getMainFileKey
     getUrlExpirationMinutes
      */
+    
+    @Test
+    void keyNull_getMainFileKey() throws IOException {
+        // given
+        String authOwner = dataSet.getAuthority();
+        String idOwner = dataSet.getIdentifier();
+        
+        // when
+        String key = dataFileAccess.getMainFileKey();
+        
+        // then
+        assertEquals(authOwner+"/"+idOwner+"/"+dataFileId, key);
+    }
+    
+    @Test
+    void keyNullstorageIdNullOrEmpty_getMainFileKey() throws IOException {
+        // given
+        dataFile.setStorageIdentifier(null);
+        // when & then
+        assertThrows(FileNotFoundException.class, () -> {dataFileAccess.getMainFileKey(); });
+    
+        // given
+        dataFile.setStorageIdentifier("");
+        // when & then
+        assertThrows(FileNotFoundException.class, () -> {dataFileAccess.getMainFileKey(); });
+    }
+    
+    @Test
+    void keyNullstorageIdNull_getMainFileKey() throws IOException {
+        // given
+        dataFile.setStorageIdentifier("invalid://abcd");
+        // when & then
+        assertThrows(IOException.class, () -> {dataFileAccess.getMainFileKey(); });
+    }
+    
+    @Test
+    void default_getUrlExpirationMinutes() {
+        // given
+        System.clearProperty("dataverse.files.s3-url-expiration-minutes");
+        // when & then
+        assertEquals(60, dataFileAccess.getUrlExpirationMinutes());
+    }
+    
+    @Test
+    void validSetting_getUrlExpirationMinutes() {
+        // given
+        System.setProperty("dataverse.files.s3-url-expiration-minutes", "120");
+        // when & then
+        assertEquals(120, dataFileAccess.getUrlExpirationMinutes());
+    }
+    
+    @Test
+    void invalidSetting_getUrlExpirationMinutes() {
+        // given
+        System.setProperty("dataverse.files.s3-url-expiration-minutes", "NaN");
+        // when & then
+        assertEquals(60, dataFileAccess.getUrlExpirationMinutes());
+    }
     
 }
