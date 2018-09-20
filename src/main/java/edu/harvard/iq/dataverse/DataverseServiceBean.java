@@ -452,7 +452,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         List<Dataverse> dataverseList = new ArrayList<>();
 
         List<Dataverse> results = em.createNamedQuery("Dataverse.filterByName", Dataverse.class)
-                .setParameter("name", "%" + query + "%")
+                .setParameter("name", "%" + query.toLowerCase() + "%")
                 .getResultList();
 
         List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
