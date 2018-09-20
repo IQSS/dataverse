@@ -488,7 +488,7 @@ public class Dataset extends DvObjectContainer {
         
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
             for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
-                if (api.isLocalFileDirectory()) {
+                if (api.isStorageLocationDesignator()) {
                     studyDir = Paths.get(filesRootDirectory, api.getAuthority(), api.getIdentifier());
                     return studyDir;
                 }

@@ -41,7 +41,7 @@ public class AlternativePersistentIdentifier implements Serializable {
     
     private boolean identifierRegistered;
     
-    private boolean localFileDirectory;
+    private boolean storageLocationDesignator;
     
     public Long getId() {
         return id;
@@ -99,12 +99,12 @@ public class AlternativePersistentIdentifier implements Serializable {
         this.identifierRegistered = identifierRegistered;
     }
     
-    public boolean isLocalFileDirectory() {
-        return localFileDirectory;
+    public boolean isStorageLocationDesignator() {
+        return storageLocationDesignator;
     }
 
-    public void setLocalFileDirectory(boolean localFileDirectory) {
-        this.localFileDirectory = localFileDirectory;
+    public void setStorageLocationDesignator(boolean localFileDirectory) {
+        this.storageLocationDesignator = localFileDirectory;
     }
     
 }
