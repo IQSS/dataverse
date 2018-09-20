@@ -22,16 +22,15 @@ else
 fi
 
 #Create security group if it doesn't already exist
-echo "*Checking for existing security group"
-GROUP_CHECK=$(aws ec2 describe-security-groups --group-name devenv-sg)
+SECURITY_GROUP='dataverse-sg'
+GROUP_CHECK=$(aws ec2 describe-security-groups --group-name $SECURITY_GROUP)
 if [[ "$?" -ne 0 ]]; then
-  echo "*Creating security group"
-  aws ec2 create-security-group --group-name devenv-sg --description "security group for development environment"
-  aws ec2 authorize-security-group-ingress --group-name devenv-sg --protocol tcp --port 22 --cidr 0.0.0.0/0
-  aws ec2 authorize-security-group-ingress --group-name devenv-sg --protocol tcp --port 8080 --cidr 0.0.0.0/0
-  echo "*End creating security group"
-else
-  echo "*Security group already exists."
+  echo "Creating security group \"$SECURITY_GROUP\"."
+  aws ec2 create-security-group --group-name $SECURITY_GROUP --description "security group for Dataverse"
+  aws ec2 authorize-security-group-ingress --group-name $SECURITY_GROUP --protocol tcp --port 22 --cidr 0.0.0.0/0
+  aws ec2 authorize-security-group-ingress --group-name $SECURITY_GROUP --protocol tcp --port 80 --cidr 0.0.0.0/0
+  aws ec2 authorize-security-group-ingress --group-name $SECURITY_GROUP --protocol tcp --port 443 --cidr 0.0.0.0/0
+  aws ec2 authorize-security-group-ingress --group-name $SECURITY_GROUP --protocol tcp --port 8080 --cidr 0.0.0.0/0
 fi
 
 RANDOM_STRING="$(uuidgen | cut -c-8)"
@@ -56,7 +55,7 @@ fi
 #Using this image ID a 1-time requires subscription per root account, which was done through the UI
 #Also, change the instance size as your own peril. Previous attempts of setting it smaller than medium have caused solr and maven to crash weirdly during install
 echo "*Creating ec2 instance"
-INSTANCE_ID=$(aws ec2 run-instances --image-id ami-9887c6e7 --security-groups devenv-sg --count 1 --instance-type t2.medium --key-name $KEY_NAME --query 'Instances[0].InstanceId' --block-device-mappings '[ { "DeviceName": "/dev/sda1", "Ebs": { "DeleteOnTermination": true } } ]' | tr -d \")
+INSTANCE_ID=$(aws ec2 run-instances --image-id ami-9887c6e7 --security-groups $SECURITY_GROUP --count 1 --instance-type t2.medium --key-name $KEY_NAME --query 'Instances[0].InstanceId' --block-device-mappings '[ { "DeviceName": "/dev/sda1", "Ebs": { "DeleteOnTermination": true } } ]' | tr -d \")
 echo "Instance ID: "$INSTANCE_ID
 echo "*End creating EC2 instance"
 
@@ -83,5 +82,6 @@ EOF
 
 echo "To ssh into the new instance:"
 echo "ssh -i $PEM_FILE $USER_AT_HOST"
+echo "Branch \"$BRANCH_NAME\" has been deployed to http://${PUBLIC_DNS}"
 echo "When you are done, please terminate your instance with:"
 echo "aws ec2 terminate-instances --instance-ids $INSTANCE_ID"
