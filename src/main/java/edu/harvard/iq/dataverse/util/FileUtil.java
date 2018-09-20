@@ -218,7 +218,7 @@ public class FileUtil implements java.io.Serializable  {
     public static String getFacetFileType(DataFile dataFile) {
         String fileType = dataFile.getContentType();
         
-        if (fileType != null) {
+        if (!StringUtil.isEmpty(fileType)) {
             if (fileType.contains(";")) {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
@@ -239,11 +239,12 @@ public class FileUtil implements java.io.Serializable  {
                 // we are going to try to add capitalization here to this function
                 // in order to capitalize all the unknown types that are not called
                 // out in MimeTypeFacets.properties
-                return fileType.split("/")[0];
+                String typeClass = fileType.split("/")[0];
+                return Character.toUpperCase(typeClass.charAt(0)) + typeClass.substring(1);
             }
         }
         
-        return "unknown"; 
+        return "Unknown"; 
     }
     
     public static String getUserFriendlyOriginalType(DataFile dataFile) {
