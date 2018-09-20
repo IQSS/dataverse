@@ -11,8 +11,8 @@
 	author	Author	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		none	7		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation	http://purl.org/dc/terms/creator
 	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this Dataset.	FamilyName, GivenName or Organization	text	8	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	citation		http://purl.org/dc/terms/creator
 	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	9	(#VALUE)	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	author	citation
-	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	10	- #VALUE:	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation
-	authorIdentifier	Identifier	Uniquely identifies an individual author or organization, according to various schemes.		text	11	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation
+	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	10	- #VALUE:	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation	http://purl.org/spar/datacite/AgentIdentifierScheme
+	authorIdentifier	Identifier	Uniquely identifies an individual author or organization, according to various schemes.		text	11	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation	http://purl.org/spar/datacite/AgentIdentifier
 	datasetContact	Contact	The contact(s) for this Dataset.		none	12		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	13	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
 	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	14	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
@@ -31,8 +31,8 @@
 	topicClassVocabURI	Vocabulary URL	Specifies the URL location for the full controlled vocabulary.	Enter full URL, starting with http://	url	27	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	citation
 	publication	Related Publication	Publications that use the data from this Dataset.		none	28		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation	http://purl.org/dc/terms/isReferencedBy
 	publicationCitation	Citation	The full bibliographic citation for this related publication.		textbox	29	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation	http://purl.org/dc/terms/bibliographicCitation
-	publicationIDType	ID Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	30	#VALUE: 	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	publication	citation
-	publicationIDNumber	ID Number	The identifier for the selected ID type.		text	31	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation		http://purl.org/dc/terms/identifier
+	publicationIDType	ID Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	30	#VALUE: 	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	publication	citation	http://purl.org/spar/datacite/ResourceIdentifierScheme
+	publicationIDNumber	ID Number	The identifier for the selected ID type.		text	31	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation		http://purl.org/spar/datacite/ResourceIdentifier
 	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).	Enter full URL, starting with http://	url	32	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation	https://schema.org/distribution
 	notesText	Notes	Additional important information about the Dataset.		textbox	33		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation
 	language	Language	Language of the Dataset		text	34		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		citation	http://purl.org/dc/terms/language
