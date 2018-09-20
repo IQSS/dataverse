@@ -658,7 +658,7 @@
                 <configuration>
                    <!-- testsToExclude come from the profile-->
                    <excludedGroups>${testsToExclude}</excludedGroups>
-                    <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
+                    <argLine>${argLine} -Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
                 </configuration>
             </plugin>
         </plugins>
