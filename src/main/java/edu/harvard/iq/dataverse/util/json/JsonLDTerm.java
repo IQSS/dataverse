@@ -48,7 +48,7 @@ public class JsonLDTerm {
     public static JsonLDTerm contact = JsonLDTerm.DVCore("contact");
     public static JsonLDTerm affiliation = JsonLDTerm.DVCore("affiliation");
     public static JsonLDTerm email = JsonLDTerm.DVCore("email");
-    public static JsonLDTerm description = JsonLDTerm.DVCore("description");
+    public static JsonLDTerm description = JsonLDTerm.DVCore("dsDescription");
     public static JsonLDTerm text = JsonLDTerm.DVCore("text");
     public static JsonLDTerm totalSize = JsonLDTerm.DVCore("totalSize");
     public static JsonLDTerm fileCount = JsonLDTerm.DVCore("fileCount");
