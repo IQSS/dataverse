@@ -12,5 +12,6 @@ cd /opt/dv/testdata
 ./post # modified from phoenix
 
 # necessary for HarvestingServerIT as of dd4ba227c50507989ed011de7b1ef69432a6a96c
-curl -X PUT -d 'true' "http://localhost:8080/api/admin/settings/:OAIServerEnabled"
+# switched this to HarvestingServerIT; clean this up when this test switches it back when done (or we decide that's not necessary)
+#curl -X PUT -d 'true' "http://localhost:8080/api/admin/settings/:OAIServerEnabled"
 
