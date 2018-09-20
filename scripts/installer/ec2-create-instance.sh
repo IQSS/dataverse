@@ -80,8 +80,12 @@ sed -i "s/branch:/branch: $BRANCH_NAME/" dataverse/defaults/main.yml
 ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local
 EOF
 
+#Port 8080 has been added because Ansible puts a redirect in place
+#from HTTP to HTTPS and the cert is invalid (self-signed), forcing
+#the user to click through browser warnings.
+CLICKABLE_LINK="http://${PUBLIC_DNS}:8080"
 echo "To ssh into the new instance:"
 echo "ssh -i $PEM_FILE $USER_AT_HOST"
-echo "Branch \"$BRANCH_NAME\" has been deployed to http://${PUBLIC_DNS}"
+echo "Branch \"$BRANCH_NAME\" has been deployed to $CLICKABLE_LINK"
 echo "When you are done, please terminate your instance with:"
 echo "aws ec2 terminate-instances --instance-ids $INSTANCE_ID"
