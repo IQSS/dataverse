@@ -75,9 +75,14 @@ echo "Please wait at least 15 minutes while the branch \"$BRANCH_NAME\" is being
 ssh -T -i $PEM_FILE -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' -o 'ConnectTimeout=300' $USER_AT_HOST <<EOF
 sudo yum -y install git nano ansible
 git clone https://github.com/IQSS/dataverse-ansible.git dataverse
+# FIXME: remove these lines to check out the "extra-vars-travis" branch
+# after https://github.com/IQSS/dataverse-ansible/pull/27 has been merged.
+cd dataverse
+git checkout extra-vars-travis
+cd ..
+# FIXME: The lines to remove are above.
 export ANSIBLE_ROLES_PATH=.
-sed -i "s/branch:/branch: $BRANCH_NAME/" dataverse/defaults/main.yml
-ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local
+ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local --extra-vars "branch=$BRANCH_NAME repo=https://github.com/IQSS/dataverse.git"
 EOF
 
 #Port 8080 has been added because Ansible puts a redirect in place
