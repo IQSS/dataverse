@@ -1518,26 +1518,3 @@ sub import_reference_data {
     }
 }
 
-sub create_pg_hash {
-    my $pg_username = shift @_;
-    my $pg_password = shift @_;
-
-    my $encode_line = $pg_password . $pg_username;
-
-    # for Redhat:
-
-    ##print STDERR "executing /bin/echo -n $encode_line | md5sum\n";
-
-    my $hash;
-    $hash = `/bin/echo -n $encode_line | md5sum`;
-
-    chop $hash;
-
-    $hash =~ s/  \-$//;
-
-    if ( ( length($hash) != 32 ) || ( $hash !~ /^[0-9a-f]*$/ ) ) {
-        print STDERR "Failed to generate a MD5-encrypted password hash for the Postgres database.\n";
-        exit 1;
-    }
-    return $hash;
-}
