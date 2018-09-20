@@ -37,7 +37,8 @@ public class HarvestingServerIT {
 
     @AfterClass
     public static void afterClass() {
-        //intentional no-op until there's cleanup to be done
+	// disable harvesting server (default value)
+	Response enableHarvestingServerResponse = UtilIT.setSetting(SettingsServiceBean.Key.OAIServerEnabled,"false");
     }
 
     private void setupUsers() {
