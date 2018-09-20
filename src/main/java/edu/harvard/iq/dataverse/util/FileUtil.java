@@ -233,6 +233,12 @@ public class FileUtil implements java.io.Serializable  {
                 // but it is probably still better than to tag them all as 
                 // "uknown". 
                 // -- L.A. 4.0 alpha 1
+                //
+                // UPDATE, MH 4.9.2
+                // Since production is displaying both "tabulardata" and "Tabular Data"
+                // we are going to try to add capitalization here to this function
+                // in order to capitalize all the unknown types that are not called
+                // out in MimeTypeFacets.properties
                 return fileType.split("/")[0];
             }
         }
