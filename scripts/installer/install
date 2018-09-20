@@ -1294,15 +1294,15 @@ sub setup_postgres {
     
 # 3d. CHECK IF WE CAN TALK TO POSTGRES AS THE ADMIN:
 
-    if ($psql_exec_path eq "" || system( $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $POSTGRES_ADMIN_USER . " -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
+    if ($psql_exec_path eq "" || system( $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -p " . $CONFIG_DEFAULTS{'POSTGRES_PORT'} . " -U " . $POSTGRES_ADMIN_USER . " -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
     {
 	# No, we can't. :(
 	if ($pg_local_connection || $noninteractive) 
 	{
 	    # If Postgres is running locally, this is a fatal condition. 
 	    # We'll give them some (potentially) helpful pointers and exit.
-	    print $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . "\n"; 
 
+	    print "(Tried executing: " . $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -p " . $CONFIG_DEFAULTS{'POSTGRES_PORT'} . " -U " . $POSTGRES_ADMIN_USER . " -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1) \n";
 	    print "Nope, I haven't been able to connect to the local instance of PostgresQL as the admin user.\n";
 	    print "\nIs postgresql running? \n";
 	    print "   On a RedHat-like system, you can check the status of the daemon with\n\n";
@@ -1327,7 +1327,7 @@ sub setup_postgres {
 	    # without opening remote access for the admin user. They will simply 
 	    # have to run this script in the "postgres-only" mode on that server, locally, 
 	    # then resume the installation here: 
-	    print ($psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $POSTGRES_ADMIN_USER . " -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1 \n" );
+	    print "(Tried executing: " . $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -p " . $CONFIG_DEFAULTS{'POSTGRES_PORT'} . " -U " . $POSTGRES_ADMIN_USER . " -d postgres -c 'SELECT * FROM pg_roles' > /dev/null 2>&1)\n\n";
 	    print "Haven't been able to connect to the remote Postgres server as the admin user.\n";
 	    print "(Or you simply don't have psql installed on this server)\n";
 	    print "It IS possible to configure a database for your Dataverse on a remote server,\n";
@@ -1356,7 +1356,7 @@ sub setup_postgres {
 	# 4c. CHECK IF THIS DB ALREADY EXISTS:
     
 	my $psql_command_dbcheck =
-	    $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $POSTGRES_ADMIN_USER . " -c '' -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . ">/dev/null 2>&1";
+	    $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -p " . $CONFIG_DEFAULTS{'POSTGRES_PORT'} . " -U " . $POSTGRES_ADMIN_USER . " -c '' -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . ">/dev/null 2>&1";
 
 	if ( ( my $exitcode = system($psql_command_dbcheck) ) == 0 ) 
 	{    
@@ -1419,7 +1419,7 @@ sub setup_postgres {
 	    print TMPCMD $sql_command;
 	    close TMPCMD;
         
-	    my $psql_commandline = $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $POSTGRES_ADMIN_USER . " -d postgres -f /tmp/pgcmd.$$.tmp >/dev/null 2>&1";
+	    my $psql_commandline = $psql_admin_exec . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -p " . $CONFIG_DEFAULTS{'POSTGRES_PORT'} . " -U " . $POSTGRES_ADMIN_USER . " -d postgres -f /tmp/pgcmd.$$.tmp >/dev/null 2>&1";
 
 	    my $out      = qx($psql_commandline 2>&1);
 	    $exitcode = $?;
@@ -1442,7 +1442,7 @@ sub setup_postgres {
     
 	my $psql_command =
 	    $psql_exec_path
-	    . "/createdb -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U $CONFIG_DEFAULTS{'POSTGRES_USER'} "
+	    . "/createdb -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -p " . $CONFIG_DEFAULTS{'POSTGRES_PORT'} . " -U $CONFIG_DEFAULTS{'POSTGRES_USER'} "
 	    . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " --owner="
 	    . $CONFIG_DEFAULTS{'POSTGRES_USER'};
 
@@ -1470,7 +1470,7 @@ sub setup_postgres {
 # verify that we can talk to that database, with the credentials of the database
 # user that we want the Dataverse application to be using: 
 
-    if ( $psql_exec_path ne "" && system( $psql_exec_path . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
+    if ( $psql_exec_path ne "" && system( $psql_exec_path . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -p " . $CONFIG_DEFAULTS{'POSTGRES_PORT'} . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " -c 'SELECT * FROM pg_roles' > /dev/null 2>&1" ) ) 
     {
 	print STDERR "Oops, haven't been able to connect to the database " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . ",\n";
 	print STDERR "running on " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . ", as user " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . ".\n\n";
@@ -1485,8 +1485,11 @@ sub import_reference_data {
     # (we have already verified that the referenceData.sql file exists)
 
     my $psql_command = $psql_exec_path . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'}
-        . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " -d "
-        . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " -f" . $REFERENCE_DATA_SQL;
+        . " -p " . $CONFIG_DEFAULTS{'POSTGRES_PORT'}
+        . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'}
+        . " -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " -f " . $REFERENCE_DATA_SQL;
+
+    print "EXECUTING PSQL COMMAND: $psql_command\n";
     unless ( ( my $exitcode = system("$psql_command") ) == 0 )
     {
         print "WARNING: Could not pre-populate Postgres database for the Dataverse application!\n";
