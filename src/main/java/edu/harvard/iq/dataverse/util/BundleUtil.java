@@ -49,36 +49,6 @@ public class BundleUtil {
         }
     }
 
-    /*
-    public static String getStringFromMetadataBlocks(String metadatablock_bundle, String key) {
-
-
-        DataverseLocaleBean d = new DataverseLocaleBean();
-        bundle_locale= d.getLocale();
-
-
-        String filesRootDirectory = System.getProperty("dataverse.lang.directory");
-        if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
-            filesRootDirectory = "/tmp/lang";
-        }
-
-        File file = new File(filesRootDirectory);
-        URL[] urls = null;
-        try {
-            urls = new URL[]{file.toURI().toURL()};
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        ClassLoader loader = new URLClassLoader(urls);
-        bundle = ResourceBundle.getBundle(metadatablock_bundle, bundle_locale, loader);
-        return getStringFromBundle(key, null, bundle);
-
-    }
-    */
-
     public static String getStringFromPropertyFile(String key, String propertyFileName  ) {
         ResourceBundle bundle = getResourceBundle(propertyFileName);
         return getStringFromBundle(key, null, bundle);
