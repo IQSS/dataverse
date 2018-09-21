@@ -694,25 +694,26 @@
       <str name="echoParams">explicit</str>
       <int name="rows">10</int>
       <str name="defType">edismax</str>
+      <float name="tie">0.1</float>
 <str name="qf">
-dvName^170
-dvSubject^160
-dvDescription^150
-dvAffiliation^140
-title^130
-subject^120
-keyword^110
-topicClassValue^100
-dsDescriptionValue^90
-authorName^80
-authorAffiliation^70
-publicationCitation^60
-producerName^50
-fileName^40
-fileDescription^30
-variableLabel^20
-variableName^10
-text^1.0
+dvName^9500
+dvSubject^8500
+dvAffiliation^7500
+dvDescription^6500
+title^900
+subject^800
+keyword^750
+topicClassValue^700
+authorName^600
+authorAffiliation^600
+dsDescriptionValue^700
+publicationCitation^600
+producerName^550
+fileName^175
+fileDescription^100
+variableLabel^75
+variableName^75
+text^1
 </str>
       <!-- Default search field
          <str name="df">text</str> 
