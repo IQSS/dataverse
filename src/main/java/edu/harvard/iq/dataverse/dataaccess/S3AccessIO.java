@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.dataaccess;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -71,12 +72,20 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public S3AccessIO(T dvObject, DataAccessRequest req) {
         super(dvObject, req);
         this.setIsLocalFile(false);
+        
         try {
-            s3 = AmazonS3ClientBuilder.standard().defaultClient();
+            // get a standard client, using the standard way of configuration the credentials, etc.
+            AmazonS3ClientBuilder s3CB = AmazonS3ClientBuilder.standard();
+            // if the admin has set a system property (see below) we use this endpoint URL instead of the standard ones.
+            if (!s3url.isEmpty()) {
+                s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3url, s3region));
+            }
+            // let's build the client :-)
+            this.s3 = s3CB.build();
         } catch (Exception e) {
             throw new AmazonClientException(
-                    "Cannot instantiate a S3 client using; check your AWS credentials and region",
-                    e);
+                        "Cannot instantiate a S3 client using; check your AWS credentials and region",
+                        e);
         }
     }
     
@@ -89,6 +98,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public static String S3_IDENTIFIER_PREFIX = "s3";
     
     private AmazonS3 s3 = null;
+    /**
+     * Pass in a URL pointing to your S3 compatible storage.
+     * For possible values see https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/client/builder/AwsClientBuilder.EndpointConfiguration.html
+     */
+    private String s3url = System.getProperty("dataverse.files.s3-url", "");
+    /**
+     * Pass in a region to use for SigV4 signing of requests.
+     * Defaults to "dataverse" as it is not relevant for custom S3 implementations.
+     */
+    private String s3region = System.getProperty("dataverse.files.s3-region", "dataverse");
     private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
     private String key;
 
