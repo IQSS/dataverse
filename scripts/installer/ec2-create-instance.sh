@@ -94,9 +94,11 @@ echo "ssh -i $PEM_FILE $USER_AT_HOST"
 
 echo "Please wait at least 15 minutes while the branch \"$BRANCH_NAME\" from $REPO_URL is being deployed."
 
+# epel-release is installed first to ensure the latest ansible is installed after
 # TODO: Add some error checking for this ssh command.
 ssh -T -i $PEM_FILE -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' -o 'ConnectTimeout=300' $USER_AT_HOST <<EOF
-sudo yum -y install git nano ansible epel-release
+sudo yum -y install epel-release
+sudo yum -y install git nano ansible
 git clone https://github.com/IQSS/dataverse-ansible.git dataverse
 export ANSIBLE_ROLES_PATH=.
 ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local --extra-vars "dataverse_branch=$BRANCH_NAME dataverse_repo=$REPO_URL"
