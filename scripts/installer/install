@@ -483,8 +483,6 @@ for my $ENTRY (@CONFIG_VARIABLES)
 
 	    unless ( -d $g_dir . "/glassfish/domains/domain1" ) 
 	    {
-		# TODO: need better check than this
-
 		while ( !( -d $g_dir . "/glassfish/domains/domain1" ) ) 
 		{
 		    print "\nInvalid Glassfish directory " . $g_dir . "!\n";
@@ -509,7 +507,7 @@ for my $ENTRY (@CONFIG_VARIABLES)
 
 	    }
 
-	    print "OK!\n";
+	    print "$g_dir looks OK!\n";
 	    $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} = $g_dir; 
 
 	}
@@ -869,7 +867,15 @@ sub setup_glassfish {
 # add a check.
 
     print "\nInstalling the Glassfish PostgresQL driver... ";
-    system( "/bin/cp", "pgdriver/" . $postgres_jdbc, $glassfish_dir . "/glassfish/lib" );
+#    system( "/bin/cp", "pgdriver/" . $postgres_jdbc, $glassfish_dir . "/glassfish/lib" );
+    my $pgdriver_success = copy("pgdriver/" . $postgres_jdbc, $glassfish_dir . "/glassfish/lib" );
+
+    unless ($pgdriver_success) 
+    {
+	print "\n*********************\n";
+	print "ERROR! Failed to copy the postgres driver into " . $glassfish_dir . "/glassfish/lib - check the directory permissions!\n";
+	exit 1;
+    }
 
 # more diagnostics needed?
 
@@ -972,7 +978,14 @@ sub setup_glassfish {
 
     print "\nCopying additional configuration files... ";
 
-    system( "/bin/cp -f " . $JHOVE_CONF_SCHEMA_DIST . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
+    #system( "/bin/cp -f " . $JHOVE_CONF_SCHEMA_DIST . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
+    my $jhove_success = copy ($JHOVE_CONF_SCHEMA_DIST, $glassfish_dir . "/glassfish/domains/domain1/config");
+    unless ($jhove_success) 
+    {
+	print "\n*********************\n";
+	print "ERROR: failed to copy jhove config file into " . $glassfish_dir . "/glassfish/domains/domain1/config - do you have write permission in that directory?";
+	exit 1;
+    }
 
 # The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
 # - so it may need to be readjusted here: 
