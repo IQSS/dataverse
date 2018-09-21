@@ -1,7 +1,29 @@
 #!/bin/bash -x
 #Initially Referred to this doc: https://docs.aws.amazon.com/cli/latest/userguide/tutorial-ec2-ubuntu.html
 
-#TODO: allow arbitrary repo, not just IQSS. Will require changing it on the ansible side as well
+SUGGESTED_REPO_URL='https://github.com/IQSS/dataverse.git'
+SUGGESTED_BRANCH='develop'
+
+usage() {
+  echo "Usage: $0 -r $REPO_URL -b $SUGGESTED_BRANCH" 1>&2
+  exit 1
+}
+
+REPO_URL=$SUGGESTED_REPO_URL
+
+while getopts ":r:b:" o; do
+  case "${o}" in
+  r)
+    REPO_URL=${OPTARG}
+    ;;
+  b)
+    BRANCH_NAME=${OPTARG}
+    ;;
+  *)
+    usage
+    ;;
+  esac
+done
 
 #Make sure "aws" binary is available
 AWS_CLI_VERSION=$(aws --version)
@@ -10,15 +32,16 @@ if [[ "$?" -ne 0 ]]; then
   exit 1
 fi
 
-if [ "$1" = "" ]; then
-  echo "No branch name provided"
+if [ "$BRANCH_NAME" = "" ]; then
+  echo "No branch name provided. You could try adding \"-b $SUGGESTED_BRANCH\" or other branches listed at $SUGGESTED_REPO_URL"
+  usage
   exit 1
-else
-  BRANCH_NAME=$1
-  if [[ $(git ls-remote --heads https://github.com/IQSS/dataverse.git $BRANCH_NAME | wc -l) -eq 0 ]]; then
-    echo "Branch does not exist on the Dataverse github repo"
-    exit 1
-  fi
+fi
+
+if [[ $(git ls-remote --heads $REPO_URL $BRANCH_NAME | wc -l) -eq 0 ]]; then
+  echo "Branch \"$BRANCH_NAME\" does not exist at $REPO_URL"
+  usage
+  exit 1
 fi
 
 #Create security group if it doesn't already exist
@@ -66,7 +89,7 @@ USER_AT_HOST="centos@${PUBLIC_DNS}"
 echo "New instance created with ID \"$INSTANCE_ID\". To ssh into it:"
 echo "ssh -i $PEM_FILE $USER_AT_HOST"
 
-echo "Please wait at least 15 minutes while the branch \"$BRANCH_NAME\" is being deployed."
+echo "Please wait at least 15 minutes while the branch \"$BRANCH_NAME\" from $REPO_URL is being deployed."
 
 #ssh into instance now and run ansible stuff
 #Note: an attempt was made to pass the branch name in the ansible-playbook call
@@ -82,7 +105,7 @@ git checkout extra-vars-travis
 cd ..
 # FIXME: The lines to remove are above.
 export ANSIBLE_ROLES_PATH=.
-ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local --extra-vars "branch=$BRANCH_NAME repo=https://github.com/IQSS/dataverse.git"
+ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local --extra-vars "branch=$BRANCH_NAME repo=$REPO_URL"
 EOF
 
 #Port 8080 has been added because Ansible puts a redirect in place
@@ -91,6 +114,6 @@ EOF
 CLICKABLE_LINK="http://${PUBLIC_DNS}:8080"
 echo "To ssh into the new instance:"
 echo "ssh -i $PEM_FILE $USER_AT_HOST"
-echo "Branch \"$BRANCH_NAME\" has been deployed to $CLICKABLE_LINK"
+echo "Branch \"$BRANCH_NAME\" from $REPO_URL has been deployed to $CLICKABLE_LINK"
 echo "When you are done, please terminate your instance with:"
 echo "aws ec2 terminate-instances --instance-ids $INSTANCE_ID"
