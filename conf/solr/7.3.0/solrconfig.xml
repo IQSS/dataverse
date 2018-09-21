@@ -693,6 +693,27 @@
     <lst name="defaults">
       <str name="echoParams">explicit</str>
       <int name="rows">10</int>
+      <str name="defType">edismax</str>
+<str name="qf">
+dvName^170
+dvSubject^160
+dvDescription^150
+dvAffiliation^140
+title^130
+subject^120
+keyword^110
+topicClassValue^100
+dsDescriptionValue^90
+authorName^80
+authorAffiliation^70
+publicationCitation^60
+producerName^50
+fileName^40
+fileDescription^30
+variableLabel^20
+variableName^10
+text^1.0
+</str>
       <!-- Default search field
          <str name="df">text</str> 
         -->
@@ -924,27 +945,6 @@
       <str name="spellcheck.collateExtendedResults">true</str>
       <str name="spellcheck.maxCollationTries">10</str>
       <str name="spellcheck.maxCollations">5</str>
-      <str name="defType">edismax</str>
-<str name="qf">
-dvName^170
-dvSubject^160
-dvDescription^150
-dvAffiliation^140
-title^130
-subject^120
-keyword^110
-topicClassValue^100
-dsDescriptionValue^90
-authorName^80
-authorAffiliation^70
-publicationCitation^60
-producerName^50
-fileName^40
-fileDescription^30
-variableLabel^20
-variableName^10
-text^1.0
-</str>
     </lst>
     <arr name="last-components">
       <str>spellcheck</str>
