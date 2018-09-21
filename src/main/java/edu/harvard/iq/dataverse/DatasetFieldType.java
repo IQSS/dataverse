@@ -191,6 +191,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     public String getTitle() {
+        System.out.println(("   ----------------   "+ getMetadataBlock().getName()));
         return BundleUtil.getStringFromPropertyFile( "datasetfieldtype."+getName()+".title" ,  getMetadataBlock().getName() );
     }
 
