@@ -492,20 +492,25 @@ for my $ENTRY (@CONFIG_VARIABLES)
 		    $g_dir = <>;
 		    chop $g_dir;
 		}
-
-		# TODO: 
-		# verify that we can write in the Glassfish directory 
-		# (now that we are no longer requiring to run the installer as root)
-
-		my $g_testdir = $g_dir . "/glassfish/domains/domain1";
-		my $g_libdir = $g_dir . "/glassfish/lib";
-		if (!(-w $g_testdir)) {
-		   die("$g_testdir not writable. Have you created a glassfish user, and given it write permission on $g_testdir?\n");
-		} elsif (!(-w $g_libdir)) {
-		   die("$g_libdir not writable. Have you created a glassfish user, and given it write permission on $g_libdir?\n");
-		}
-
 	    }
+
+	    # verify that we can write in the Glassfish directory 
+	    # (now that we are no longer requiring to run the installer as root)
+
+	    my @g_testdirs = ( "/glassfish/domains/domain1",
+			       "/glassfish/domains/domain1/config",
+			       "/glassfish/lib");
+
+	    for my $test_dir (@g_testdirs)
+	    {
+		if (!(-w ($g_dir . $test_dir))) 
+		{
+		    print "\n";
+		    die("ERROR: " . $g_dir . $test_dir . " not writable. Have you created a glassfish user, and given it write permission on the glassfish hierarchy?\n");
+		}
+	    }
+
+
 
 	    print "$g_dir looks OK!\n";
 	    $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} = $g_dir; 
