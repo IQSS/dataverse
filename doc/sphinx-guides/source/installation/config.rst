@@ -262,59 +262,130 @@ if your installation's :ref:`:PublicInstall` setting is true, or:
 
 You can configure this redirect properly in your cloud environment to generate a temporary URL for access to the Swift objects for computing.
 
-Amazon S3 Storage
-+++++++++++++++++
+Amazon S3 Storage (or compatible)
++++++++++++++++++++++++++++++++++
 
-For institutions and organizations looking to use Amazon's S3 cloud storage for their installation, this can be set up manually through creation of the credentials and config files or automatically via the AWS console commands. 
+For institutions and organizations looking to use some kind of S3-based object storage for files uploaded to Dataverse,
+this is entirely possible. You can either use the services offered by Amazon or use some other, even on-site S3-compatible
+storage (like Minio, Ceph RADOS S3 Gateway and many more).
 
-You'll need an AWS account with an associated S3 bucket for your installation to use. From the S3 management console (e.g. `<https://console.aws.amazon.com/>`_), you can poke around and get familiar with your bucket. We recommend using IAM (Identity and Access Management) to create a user with full S3 access and nothing more, for security reasons. See `<http://docs.aws.amazon.com/IAM/latest/UserGuide/id_users.html>`_ for more info on this process.
+First: setup accounts and access credentials
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Make note of the bucket's name and the region its data is hosted in. Dataverse and the AWS SDK make use of "AWS credentials profile file" and "AWS config profile file" located in ``~/.aws/`` where ``~`` is the home directory of the user you run Glassfish as. This file can be generated via either of two methods described below. It's also possible to use IAM Roles rather than the credentials file. Please note that in this case you will need anyway the config file to specify the region.
+Dataverse and the AWS SDK make use of "AWS credentials profile file" and "AWS config profile file" located in
+``~/.aws/`` where ``~`` is the home directory of the user you run Glassfish as. This file can be generated via either
+of two methods described below:
 
-Set Up credentials File Manually
+1. manually through creation of the credentials and config files or
+2. automatically via the AWS console commands.
+
+Preparation when using Amazon's S3 service
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You'll need an AWS account with an associated S3 bucket for your installation to use. From the S3 management console
+(e.g. `<https://console.aws.amazon.com/>`_), you can poke around and get familiar with your bucket.
+
+**Make note** of the **bucket's name** and the **region** its data is hosted in.
+
+To **create a user** with full S3 access and nothing more for security reasons, we recommend using IAM
+(Identity and Access Management). See `IAM User Guide <http://docs.aws.amazon.com/IAM/latest/UserGuide/id_users.html>`_
+for more info on this process.
+
+**Generate the user keys** needed for Dataverse afterwards by clicking on the created user.
+(You can skip this step when running on EC2, see below.)
+
+.. TIP::
+  If you are hosting Dataverse on an AWS EC2 instance alongside storage in S3, it is possible to use IAM Roles instead
+  of the credentials file (the file at ``~/.aws/credentials`` mentioned below). Please note that you will still need the
+  ``~/.aws/config`` file to specify the region. For more information on this option, see
+  http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
+
+Preparation when using custom S3-compatible service
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We assume you have your S3-compatible custom storage in place, up and running, ready for service.
+
+Please make note of the following details:
+
+- | Endpoint URL. Consult the documentation of your service how to find that.
+  | Example: https://play.minio.io:9000
+- | Region. Optional, but some services might use it. Consult your service documentation!
+  | Example: *us-east-1*
+- | Access key ID and secret access key. Usually you can generate access keys within the user profile of your service.
+  | Example:
+  |   ID: *3AM3UQ867SPQQA43P2F*
+  |   Key: *zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG*
+- | Bucket name. Dataverse will fail opening and uploading files on S3 if you don't create one.
+  | Example: *dataverse*
+
+
+Reported working S3-compatible storage
+######################################
+
+
+- None yet :-(
+
+.. HINT::
+  If you are successfully using an S3 storage implementation not yet listed above, please feel free to
+  `open an issue at Github <https://github.com/IQSS/dataverse/issues/new>`_ and describe your setup.
+  We will be glad to add it here.
+
+
+Manually set up credentials file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To create the ``credentials`` file manually, you will need to generate a key/secret key. The first step is to log onto your AWS web console (e.g. `<https://console.aws.amazon.com/>`_). If you have created a user in AWS IAM, you can click on that user and generate the keys needed for Dataverse.
+To create the ``~/.aws/credentials`` file manually, you will need to generate a key/secret key (see above). Once you have
+acquired the keys, they need to be added to the ``credentials`` file. The format for credentials is as follows:
 
-Once you have acquired the keys, they need to be added to the ``credentials`` file. The format for credentials is as follows:
+::
 
-| ``[default]``
-| ``aws_access_key_id = <insert key, no brackets>``
-| ``aws_secret_access_key = <insert secret key, no brackets>``
+  [default]
+  aws_access_key_id = <insert key, no brackets>
+  aws_secret_access_key = <insert secret key, no brackets>
 
-You must also specify the AWS region in the ``config`` file, for example:
+While using Amazon's service, you must also specify the AWS region in the ``~/.aws/config`` file, for example:
 
-| ``[default]``
-| ``region = us-east-1``
+::
 
-Place these two files in a folder named ``.aws`` under the home directory for the user running your Dataverse Glassfish instance. (From the `AWS Command Line Interface Documentation <http://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html>`_: "In order to separate credentials from less sensitive options, region and output format are stored in a separate file named config in the same folder")
+  [default]
+  region = us-east-1
 
-Set Up Access Configuration Via Command Line Tools
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Place these two files in a folder named ``.aws`` under the home directory for the user running your Dataverse Glassfish
+instance. (From the `AWS Command Line Interface Documentation <http://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html>`_:
+"In order to separate credentials from less sensitive options, region and output format are stored in a separate file
+named config in the same folder")
 
-Begin by installing the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the `AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
+Console commands set up access configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First, we'll get our access keys set up. If you already have your access keys configured, skip this step. From the command line, run:
+Begin by installing the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the
+`AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
 
-``pip install awscli``
+First, we'll get our access keys set up. If you already have your access keys configured, skip this step.
+From the command line, run:
 
-``aws configure``
+- ``pip install awscli``
+- ``aws configure``
 
-You'll be prompted to enter your Access Key ID and secret key, which should be issued to your AWS account. The subsequent config steps after the access keys are up to you. For reference, the keys will be stored in ``~/.aws/credentials``, and your AWS access region in ``~/.aws/config``. 
+You'll be prompted to enter your Access Key ID and secret key, which should be issued to your AWS account.
+The subsequent config steps after the access keys are up to you. For reference, the keys will be stored in
+``~/.aws/credentials``, and your AWS access region in ``~/.aws/config``.
 
-Using an IAM Role with EC2
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. TIP::
+  When using a custom S3 URL endpoint, you need to add it to every ``aws`` call: ``aws --endpoint-url <URL> s3 ...``
+  (may omit it while configuring).
 
-If you are hosting Dataverse on an AWS EC2 instance alongside storage in S3, it is possible to use IAM Roles instead of the credentials file (the file at ``~/.aws/credentials`` mentioned above). Please note that you will still need the ``~/.aws/config`` file to specify the region. For more information on this option, see http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
+Second: configure Dataverse to use S3 storage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Configure Dataverse to Use AWS/S3
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+With access to your bucket in place, we'll want to navigate to ``/usr/local/glassfish4/glassfish/bin/``
+and execute the following ``asadmin`` commands to set up the proper JVM options. Recall that out of the box, Dataverse
+is configured to use local file storage. You'll need to delete the existing storage driver before setting the new one.
 
-With your access to your bucket in place, we'll want to navigate to ``/usr/local/glassfish4/glassfish/bin/`` and execute the following ``asadmin`` commands to set up the proper JVM options. Recall that out of the box, Dataverse is configured to use local file storage. You'll need to delete the existing storage driver before setting the new one.
+::
 
-``./asadmin $ASADMIN_OPTS delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
-
-``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=s3"``
+  ./asadmin $ASADMIN_OPTS delete-jvm-options "-Ddataverse.files.storage-driver-id=file"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=s3"
 
 Then, we'll need to identify which S3 bucket we're using. Replace ``your_bucket_name`` with, of course, your bucket:
 
@@ -326,9 +397,23 @@ Optionally, you can have users download files from S3 directly rather than havin
 
 If you enable ``dataverse.files.s3-download-redirect`` as described above, note that the S3 URLs expire after an hour by default but you can configure the expiration time using the ``dataverse.files.s3-url-expiration-minutes`` JVM option. Here's an example of setting the expiration time to 120 minutes:
 
-``./asadmin create-jvm-options "-D dataverse.files.s3-url-expiration-minutes=120"``
+``./asadmin create-jvm-options "-Ddataverse.files.s3-url-expiration-minutes=120"``
 
 Lastly, go ahead and restart your glassfish server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
+
+S3 storage options
+^^^^^^^^^^^^^^^^^^
+
+=========================================  ==================  ==================================================================  =============
+System Property                            Value               Description                                                         Default value
+=========================================  ==================  ==================================================================  =============
+dataverse.files.storage-driver-id          s3                  Enable S3 storage driver.                                           ``file``
+dataverse.files.s3-bucket-name             <?>                 The bucket name. See above.                                         (none)
+dataverse.files.s3-download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                  ``false``
+dataverse.files.s3-url-expiration-minutes  <?>                 If direct downloads: time until links expire. Optional.             60
+dataverse.files.s3-url                     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
+dataverse.files.s3-region                  <?>                 Only used when using custom endpoint. Optional.                     ``dataverse``
+=========================================  ==================  ==================================================================  =============
 
 .. _Branding Your Installation:
 
