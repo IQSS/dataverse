@@ -506,7 +506,7 @@ for my $ENTRY (@CONFIG_VARIABLES)
 		if (!(-w ($g_dir . $test_dir))) 
 		{
 		    print "\n";
-		    die("ERROR: " . $g_dir . $test_dir . " not writable. Have you created a glassfish user, and given it write permission on the glassfish hierarchy?\n");
+		    die("ERROR: " . $g_dir . $test_dir . " not writable to the user running the installer! Check permissions on the glassfish hierarchy.\n");
 		}
 	    }
 
