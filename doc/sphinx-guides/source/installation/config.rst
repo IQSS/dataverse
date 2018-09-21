@@ -616,10 +616,23 @@ dataverse.handlenet.index
 +++++++++++++++++++++++++++++++++
 If you want to use different index than the default 300
 
+.. _dataverse.timerServer:
+
 dataverse.timerServer
 +++++++++++++++++++++
 
 This JVM option is only relevant if you plan to run multiple Glassfish servers for redundancy. Only one Glassfish server can act as the dedicated timer server and for details on promoting or demoting a Glassfish server to handle this responsibility, see :doc:`/admin/timers`.
+
+.. _dataverse.lang.directory:
+
+dataverse.lang.directory
+++++++++++++++++++++++++
+
+This JVM option is used to configure the path where all the language specific property files are to be stored.  If this option is set then the english property file must be present in the path along with any other language property file.
+
+``./asadmin create-jvm-options '-Ddataverse.lang.directory=PATH_LOCATION_HERE'``
+
+If this value is not set, by default, a Dataverse installation will read the English language property files from the Java Application.
 
 Database Settings
 -----------------
