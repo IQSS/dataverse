@@ -1288,7 +1288,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (mode == FileEditMode.SINGLE || mode == FileEditMode.SINGLE_REPLACE) {
             return returnToFileLandingPage();
         }
+        //Files that have been finished and are now in the lower list on the page
         for (DataFile newFile : newFiles) {
+            deleteTempFile(newFile);
+        }
+        //Files in the upload process but not yet finished
+        for (DataFile newFile : uploadedFiles) {
             deleteTempFile(newFile);
         }
         if (workingVersion.getId() != null) {
