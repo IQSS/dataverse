@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -912,6 +913,18 @@ public class EditDatafilesPage implements java.io.Serializable {
         // local filesystem:
 
         try {
+            List<Path> generatedTempFiles = ingestService.listGeneratedTempFiles(
+                    Paths.get(FileUtil.getFilesTempDirectory()), dataFile.getStorageIdentifier());
+            if (generatedTempFiles != null) {
+                for (Path generated : generatedTempFiles) {
+                    logger.fine("(Deleting generated thumbnail file " + generated.toString() + ")");
+                    try {
+                        Files.delete(generated);
+                    } catch (IOException ioex) {
+                        logger.warning("Failed to delete generated file " + generated.toString());
+                    }
+                }
+            }
             Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier()));
         } catch (IOException ioEx) {
             // safe to ignore - it's just a temp file.
