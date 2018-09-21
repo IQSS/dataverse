@@ -378,7 +378,7 @@ public class IngestServiceBean {
         return ret;
     }
     
-    private List<Path> listGeneratedTempFiles(Path tempDirectory, String baseName) {
+    public List<Path> listGeneratedTempFiles(Path tempDirectory, String baseName) {
         List<Path> generatedFiles = new ArrayList<>();
 
         // for example, <filename>.thumb64 or <filename>.thumb400.

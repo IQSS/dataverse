@@ -35,13 +35,13 @@ import java.util.logging.Logger;
 public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 
     private static final Logger logger = Logger.getLogger(CreateDataverseCommand.class.getName());
-    
+
     private final Dataverse created;
     private final List<DataverseFieldTypeInputLevel> inputLevelList;
     private final List<DatasetFieldType> facetList;
 
-    public CreateDataverseCommand(Dataverse created,
-            DataverseRequest aRequest, List<DatasetFieldType> facetList, List<DataverseFieldTypeInputLevel> inputLevelList) {
+    public CreateDataverseCommand(Dataverse created, DataverseRequest aRequest, List<DatasetFieldType> facetList,
+            List<DataverseFieldTypeInputLevel> inputLevelList) {
         super(aRequest, created.getOwner());
         this.created = created;
         if (facetList != null) {
@@ -69,10 +69,10 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         if (created.getCreateDate() == null) {
             created.setCreateDate(new Timestamp(new Date().getTime()));
         }
-        
+
         if (created.getCreator() == null) {
             final User user = getRequest().getUser();
-            if ( user.isAuthenticated() ) {
+            if (user.isAuthenticated()) {
                 created.setCreator((AuthenticatedUser) user);
             } else {
                 throw new IllegalCommandException("Guest users cannot create a Dataverse.", this);
@@ -82,57 +82,50 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         if (created.getDataverseType() == null) {
             created.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED);
         }
-        
+
         if (created.getDefaultContributorRole() == null) {
             created.setDefaultContributorRole(ctxt.roles().findBuiltinRoleByAlias(DataverseRole.EDITOR));
         }
-        
+
         // @todo for now we are saying all dataverses are permission root
         created.setPermissionRoot(true);
-        
-        if ( ctxt.dataverses().findByAlias( created.getAlias()) != null ) {
-            throw new IllegalCommandException("A dataverse with alias " + created.getAlias() + " already exists", this );
+
+        if (ctxt.dataverses().findByAlias(created.getAlias()) != null) {
+            throw new IllegalCommandException("A dataverse with alias " + created.getAlias() + " already exists", this);
         }
-        
+
         // Save the dataverse
         Dataverse managedDv = ctxt.dataverses().save(created);
 
         // Find the built in admin role (currently by alias)
         DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias(DataverseRole.ADMIN);
         String privateUrlToken = null;
-        
+
         ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv, privateUrlToken));
-        //Add additional admins if inheritance is set
+        // Add additional admins if inheritance is set
         if (ctxt.settings().isTrueForKey(SettingsServiceBean.Key.InheritParentAdmins, false)) {
             List<RoleAssignment> assignedRoles = ctxt.roles().directRoleAssignments(owner);
             for (RoleAssignment role : assignedRoles) {
-                try {
-                    if ((role.getRole().equals(adminRole))
-                            && !role.getAssigneeIdentifier().equals(getRequest().getUser().getIdentifier())) {
-                        String identifier = role.getAssigneeIdentifier();
-                        if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
-                            identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
-                            ctxt.roles()
-                                    .save(new RoleAssignment(adminRole,
-                                            ctxt.authentication().getAuthenticatedUser(identifier), managedDv,
-                                            privateUrlToken));
-                        } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
-                            identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
-                            String[] comps = identifier.split(Group.PATH_SEPARATOR, 2);
-                            if (ctxt.explicitGroups().getProvider().getGroupProviderAlias().equals(comps[0])) {
-                                ctxt.roles().save(new RoleAssignment(adminRole,
-                                        ctxt.explicitGroups().getProvider().get(comps[2]), managedDv, privateUrlToken));
-                            }
+
+                if ((role.getRole().equals(adminRole))
+                        && !role.getAssigneeIdentifier().equals(getRequest().getUser().getIdentifier())) {
+                    String identifier = role.getAssigneeIdentifier();
+                    if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
+                        identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
+                        ctxt.roles().save(new RoleAssignment(adminRole,
+                                ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken));
+                    } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
+                        identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
+                        String[] comps = identifier.split(Group.PATH_SEPARATOR, 2);
+                        if (ctxt.explicitGroups().getProvider().getGroupProviderAlias().equals(comps[0])) {
+                            ctxt.roles().save(new RoleAssignment(adminRole,
+                                    ctxt.explicitGroups().getProvider().get(comps[2]), managedDv, privateUrlToken));
                         }
                     }
-                } catch (Exception e) {
-                    logger.warning("Unable to assign " + role.getAssigneeIdentifier()
-                            + "as an admin for new Dataverse: " + managedDv.getName());
-                    logger.warning(e.getMessage());
                 }
             }
         }
-        
+
         managedDv.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         managedDv = ctxt.dataverses().save(managedDv);
 
