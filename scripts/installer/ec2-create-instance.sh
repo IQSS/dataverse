@@ -91,21 +91,12 @@ echo "ssh -i $PEM_FILE $USER_AT_HOST"
 
 echo "Please wait at least 15 minutes while the branch \"$BRANCH_NAME\" from $REPO_URL is being deployed."
 
-#ssh into instance now and run ansible stuff
-#Note: an attempt was made to pass the branch name in the ansible-playbook call
-# via -e "dataverse.branch=$BRANCH_NAME", but it gets overwritten due to the order
-# of operations for where ansible looks for variables.
 ssh -T -i $PEM_FILE -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' -o 'ConnectTimeout=300' $USER_AT_HOST <<EOF
+sudo yum -y install epel-release
 sudo yum -y install git nano ansible
 git clone https://github.com/IQSS/dataverse-ansible.git dataverse
-# FIXME: remove these lines to check out the "extra-vars-travis" branch
-# after https://github.com/IQSS/dataverse-ansible/pull/27 has been merged.
-cd dataverse
-git checkout extra-vars-travis
-cd ..
-# FIXME: The lines to remove are above.
 export ANSIBLE_ROLES_PATH=.
-ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local --extra-vars "branch=$BRANCH_NAME repo=$REPO_URL"
+ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local --extra-vars "dataverse_branch=$BRANCH_NAME dataverse_repo=$REPO_URL"
 EOF
 
 #Port 8080 has been added because Ansible puts a redirect in place
