@@ -10,7 +10,7 @@ Developers often only deploy Dataverse to their :doc:`dev-environment` but it ca
 Deploying Dataverse to Amazon Web Services (AWS)
 ------------------------------------------------
 
-We have written some scripts to deploy Dataverse to Amazon Web Services (AWS) but they require some setup.
+We have written scripts to deploy Dataverse to Amazon Web Services (AWS) but they require some setup.
 
 Install AWS CLI
 ~~~~~~~~~~~~~~~
@@ -60,7 +60,7 @@ You must specify the branch with ``-b`` but you can also specify a non-IQSS git 
 
 ``bash ~/Downloads/ec2-create-instance.sh -b develop -r https://github.com/scholarsportal/dataverse.git``
 
-Now you will need to wait at least 5 or 10 minutes until the deployment is finished. Eventually, the output should tell you how to access the installation of Dataverse in a web browser or via ssh. It will also provide instructions on how to delete the instance when you are finished with it. Please be aware that AWS charges per minute for a running instance. You can also delete your instance from https://console.aws.amazon.com/console/home?region=us-east-1 .
+Now you will need to wait around 10 minutes until the deployment is finished. Eventually, the output should tell you how to access the installation of Dataverse in a web browser or via ssh. It will also provide instructions on how to delete the instance when you are finished with it. Please be aware that AWS charges per minute for a running instance. You can also delete your instance from https://console.aws.amazon.com/console/home?region=us-east-1 .
 
 Caveats
 ~~~~~~~

@@ -92,11 +92,10 @@ USER_AT_HOST="centos@${PUBLIC_DNS}"
 echo "New instance created with ID \"$INSTANCE_ID\". To ssh into it:"
 echo "ssh -i $PEM_FILE $USER_AT_HOST"
 
-echo "Please wait at least 15 minutes while the branch \"$BRANCH_NAME\" from $REPO_URL is being deployed."
+echo "Please wait at least 10 minutes while the branch \"$BRANCH_NAME\" from $REPO_URL is being deployed."
 
 # TODO: Add some error checking for this ssh command.
 ssh -T -i $PEM_FILE -o 'StrictHostKeyChecking no' -o 'UserKnownHostsFile=/dev/null' -o 'ConnectTimeout=300' $USER_AT_HOST <<EOF
-sudo yum -y install epel-release
 sudo yum -y install git nano ansible
 git clone https://github.com/IQSS/dataverse-ansible.git dataverse
 export ANSIBLE_ROLES_PATH=.
