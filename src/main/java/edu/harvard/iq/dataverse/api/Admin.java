@@ -1051,7 +1051,7 @@ public class Admin extends AbstractApiBean {
                     + " SELECT o.id, o.dtype FROM path_elements p, dvobject o WHERE o.owner_id = p.id and o.dtype='Dataverse') "
                     + "SELECT id FROM path_elements WHERE id !=" + owner.getId() + ";"; // ORDER by id ASC;";
 
-            List<Long> childIds;
+            List<Integer> childIds;
 
             try {
                 childIds = em.createNativeQuery(qstr).getResultList();
@@ -1066,14 +1066,17 @@ public class Admin extends AbstractApiBean {
             JsonArrayBuilder usedNames = Json.createArrayBuilder();
             JsonArrayBuilder unusedNames = Json.createArrayBuilder();
             JsonArrayBuilder dataverseIds = Json.createArrayBuilder();
+            JsonArrayBuilder dataverseAliases = Json.createArrayBuilder();
             try {
                 List<Dataverse> children = new ArrayList<Dataverse>();
 
-                for (Long childId : childIds) {
-                    Dataverse child = dataverseSvc.find(childId);
+                for (int i=0; i < childIds.size(); i++) {
+                    Integer childId = childIds.get(i);
+                    Dataverse child = dataverseSvc.find(new Long(childId.longValue()));
                     if (child != null) {
                         children.add(child);
-                        dataverseIds.add(childId);
+                        dataverseIds.add(childId.longValue());
+                        dataverseAliases.add(child.getAlias());
                     }
                 }
 
@@ -1141,12 +1144,15 @@ public class Admin extends AbstractApiBean {
                         }
                     }
                 }
-                return ok(Json.createObjectBuilder().add("Dataverses Updated", dataverseIds)
+                logger.info(Json.createObjectBuilder().add("Dataverses Updated", dataverseIds).add("Updated Dataverse Aliases", dataverseAliases)
+                        .add("Admins added", usedNames).add("Admins not added", unusedNames).build().toString());
+                return ok(Json.createObjectBuilder().add("Dataverses Updated", dataverseAliases)
                         .add("Admins added", usedNames).add("Admins not added", unusedNames));
             } catch (Exception e) {
                 logger.warning("Some Admin Roles may not have been assigned for Dataverse alias: " + alias);
-                logger.warning(Json.createObjectBuilder().add("Dataverses Updated", dataverseIds)
+                logger.warning(Json.createObjectBuilder().add("Dataverses Updated", dataverseIds).add("Updated Dataverse Aliases", dataverseAliases)
                         .add("Admins added", usedNames).add("Admins not added", unusedNames).build().toString());
+                e.printStackTrace();
                 return error(Response.Status.INTERNAL_SERVER_ERROR,
                         "Error in assigning admin roles: " + e.getMessage());
             }
