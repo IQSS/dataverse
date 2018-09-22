@@ -1285,6 +1285,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public String cancel() {
+        uploadInProgress = false;
         if (mode == FileEditMode.SINGLE || mode == FileEditMode.SINGLE_REPLACE) {
             return returnToFileLandingPage();
         }
@@ -1292,6 +1293,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         for (DataFile newFile : newFiles) {
             deleteTempFile(newFile);
         }
+
         //Files in the upload process but not yet finished
         for (DataFile newFile : uploadedFiles) {
             deleteTempFile(newFile);
@@ -1594,8 +1596,10 @@ public class EditDatafilesPage implements java.io.Serializable {
             fileMetadatas.add(dataFile.getFileMetadata());
             newFiles.add(dataFile);
         }
-
-        uploadedFiles = new ArrayList<>();
+        //uploadInProgress may be set false in cancel, in which case this array shouldn't be deleted (since it is being used to clean up temp files)
+        if(uploadInProgress) {
+          uploadedFiles = new ArrayList<>();
+        }
         uploadInProgress = false;
 
         // refresh the warning message below the upload component, if exists:
@@ -1773,6 +1777,13 @@ public class EditDatafilesPage implements java.io.Serializable {
             // save the component id of the p:upload widget, so that we could
             // send an info message there, from elsewhere in the code:
             uploadComponentId = event.getComponent().getClientId();
+        }
+        
+        if(!uploadInProgress) {
+            logger.warning("Upload in progress cancelled");
+            for (DataFile newFile : dFileList) {
+                deleteTempFile(newFile);
+            }
         }
     }
 
