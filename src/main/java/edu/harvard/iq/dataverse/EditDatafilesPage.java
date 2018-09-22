@@ -1508,7 +1508,9 @@ public class EditDatafilesPage implements java.io.Serializable {
      * @param event
      */
     public void handleDropBoxUpload(ActionEvent event) {
-        
+        if (!uploadInProgress) {
+            uploadInProgress = true;
+        }
         logger.fine("handleDropBoxUpload");
         uploadComponentId = event.getComponent().getClientId();
         
@@ -1636,6 +1638,12 @@ public class EditDatafilesPage implements java.io.Serializable {
                      }
                 }*/
             }
+            if(!uploadInProgress) {
+                logger.warning("Upload in progress cancelled");
+                for (DataFile newFile : datafiles) {
+                    deleteTempFile(newFile);
+                }
+            }
         }
         
         if (localWarningMessage != null) {
@@ -1645,6 +1653,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 uploadWarningMessage = localWarningMessage.concat("; " + uploadWarningMessage);
             }
         }
+
     }
     
     public void uploadStarted() {
