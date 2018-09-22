@@ -365,7 +365,12 @@ public class SettingsServiceBean {
         /**
          * 
          */
-        FilePIDsEnabled
+        FilePIDsEnabled,
+        /**
+         * Whether new dataverses should inherit the set of admins of the parent dataverse (along with the dataverse creator).
+         */
+        InheritParentAdmins
+        
         ;
 
         @Override

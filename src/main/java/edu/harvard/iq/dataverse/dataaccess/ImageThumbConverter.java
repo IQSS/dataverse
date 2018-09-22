@@ -223,7 +223,7 @@ public class ImageThumbConverter {
             }
 
             File tempFile;
-            FileChannel tempFileChannel;
+            FileChannel tempFileChannel = null;
             try {
                 tempFile = File.createTempFile("tempFileToRescale", ".tmp");
                 tempFileChannel = new FileOutputStream(tempFile).getChannel();
@@ -232,6 +232,8 @@ public class ImageThumbConverter {
             } catch (IOException ioex) {
                 logger.warning("GenerateImageThumb: failed to save pdf bytes in a temporary file.");
                 return false;
+            } finally {
+            	IOUtils.closeQuietly(tempFileChannel);
             }
             sourcePdfFile = tempFile;
         }

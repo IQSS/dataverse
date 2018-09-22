@@ -44,6 +44,7 @@ import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.IOUtils;
 import org.ocpsoft.common.util.Strings;
 
 /**
@@ -1058,7 +1059,9 @@ public class AddReplaceFileHelper{
             logger.severe(ex.toString());
             this.runMajorCleanup(); 
             return false;
-        } 
+        } finally {
+            IOUtils.closeQuietly(this.newFileInputStream);
+        }
         
         
         /**
