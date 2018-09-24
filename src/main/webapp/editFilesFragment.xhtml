@@ -44,34 +44,27 @@
                       id="fileUploadFragment" jsf:rendered="#{datasetPage || EditDatafilesPage.showFileUploadFragment()}">
                     
                     <div jsf:id="httpPanel" jsf:rendered="#{settingsWrapper.HTTPUpload}" class="panel panel-default">
-                        <div class="panel-heading" role="tab" id="headingHTTP">
-                            <h4 class="panel-title">
-                              <a role="button" data-toggle="collapse" data-parent="#fileUploadFragment" href="#collapseHTTP" aria-expanded="true" aria-controls="collapseHTTP">
-                                #{bundle['file.fromHTTP']}
-                              </a>
-                            </h4>
+                        <div role="tab" id="headingHTTP" data-toggle="collapse" data-target="#panelCollapseHTTP" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseHTTP">
+                            #{bundle['file.fromHTTP']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
                         </div>
-                        <div class="panel-body" jsf:id="httpUploadDisabledDueToExistingRsyncPackage" jsf:rendered="#{EditDatafilesPage.workingVersion.hasPackageFile and !EditDatafilesPage.dataset.released}">
-                            <p class="help-block">
-                                <span class="glyphicon glyphicon-warning-sign text-danger"></span>
-                                <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.httpUploadDisabledDueToRsyncFileExisting']}">
-                                    <f:param value="#{settingsWrapper.supportTeamEmail}"/>
-                                </h:outputFormat>
-                            </p>
-                        </div>
-                        <div class="panel-body" jsf:id="httpUploadDisabledDueToExistingRsyncPackagePublished" jsf:rendered="#{EditDatafilesPage.workingVersion.hasPackageFile and EditDatafilesPage.dataset.released}">
-                            <p class="help-block">
-                                <span class="glyphicon glyphicon-warning-sign text-danger"></span>
-                                <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.httpUploadDisabledDueToRsyncFileExistingAndPublished']}">
-                                    
-                                </h:outputFormat>
-                            </p>
-                        </div>
-                        <div jsf:id="contentOfHttpPanel" jsf:rendered="#{!EditDatafilesPage.workingVersion.hasPackageFile}">
-                            <!-- FIXME: Indent content of HTTP Upload panel below.-->
+                        <div id="panelCollapseHTTP" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingHTTP">
+                            <div class="panel-body" jsf:id="httpUploadDisabledDueToExistingRsyncPackage" jsf:rendered="#{EditDatafilesPage.workingVersion.hasPackageFile and !EditDatafilesPage.dataset.released}">
+                                <p class="help-block">
+                                    <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+                                    <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.httpUploadDisabledDueToRsyncFileExisting']}">
+                                        <f:param value="#{settingsWrapper.supportTeamEmail}"/>
+                                    </h:outputFormat>
+                                </p>
+                            </div>
+                            <div class="panel-body" jsf:id="httpUploadDisabledDueToExistingRsyncPackagePublished" jsf:rendered="#{EditDatafilesPage.workingVersion.hasPackageFile and EditDatafilesPage.dataset.released}">
+                                <p class="help-block">
+                                    <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+                                    <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.httpUploadDisabledDueToRsyncFileExistingAndPublished']}">
 
-                        <div id="collapseHTTP" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingHTTP">
-                            <div class="panel-body">
+                                    </h:outputFormat>
+                                </p>
+                            </div>
+                            <div class="panel-body" jsf:id="contentOfHttpPanel" jsf:rendered="#{!EditDatafilesPage.workingVersion.hasPackageFile}">
                                 <p class="help-block">
                                     <span class="glyphicon glyphicon-info-sign"/>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false" 
@@ -258,32 +251,32 @@
                     
                             </div>
                         </div>
-                    </div>
-                    <!-- FIXME: Indent content of HTTP Upload panel below.-->
+                    
                     </div>
                     
                     <div jsf:id="rsyncPanel" jsf:rendered="#{settingsWrapper.rsyncUpload}" class="panel panel-default">
-                        <div class="panel-heading" role="tab" id="headingRsync">
-                            <h4 class="panel-title">
-                                <a class="collapsed" role="button" data-toggle="collapse" data-parent="#fileUploadFragment" href="#collapseRsync" aria-expanded="false" aria-controls="collapseRsync">
-                                    #{bundle['file.fromRsync']}
-                                </a>
-                            </h4>
+                        <!-- NOTE: conditional logic for 'glyphicon-chevron-up' icon in rsync header if HTTP is off, but isn't scalable when a third upload mode is added -->
+                        <div role="tab" id="headingRsync" data-toggle="collapse" data-target="#panelCollapseRsync" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseRsync">
+                            #{bundle['file.fromRsync']} &#160;<span class="glyphicon #{!settingsWrapper.HTTPUpload ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
                         </div>
-
                         <!-- NOTE: conditional logic for 'in' style class opens the rsync panel if HTTP is off, but isn't scalable when a third upload mode is added -->
-                        <div id="collapseRsync" class="panel-collapse collapse #{!settingsWrapper.HTTPUpload ? 'in' : ''}" role="tabpanel" aria-labelledby="headingRsync">
-                        <!-- TODO: The non-collapsed version below is to make development easier. -->
-                        <!--<div id="collapseRsync" class="" role="tabpanel" aria-labelledby="headingRsync">-->
+                        <div id="panelCollapseRsync" class="panel-collapse collapse #{!settingsWrapper.HTTPUpload ? 'in' : ''}" role="tabpanel" aria-labelledby="headingRsync">
                             <div class="panel-body">
                                 <ui:fragment rendered="#{createDataset}">
-                                    <p class="help-block">
-                                        <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.createUploadDisabled']}
-                                    </p>
+                                    <ui:fragment rendered="#{empty EditDatafilesPage.fileMetadatas}">
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.createUploadDisabled']}
+                                        </p>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['file.rsyncUpload.rsyncUploadDisabledDueFileUploadedViaHttp']}</span>
+                                        </p>
+                                    </ui:fragment>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{!createDataset}"> 
                                     <!-- NO RSYNC/PACKAGE FILE YET. PROVIDE INSTRUCTIONS: DOWNLOAD TO UPLOAD. -->
-                                    <ui:fragment rendered="#{empty EditDatafilesPage.workingVersion.fileMetadatas and EditDatafilesPage.isHasRsyncScript()}">
+                                    <ui:fragment rendered="#{empty EditDatafilesPage.fileMetadatas and EditDatafilesPage.isHasRsyncScript()}">
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-info-sign"></span>
                                             <h:outputFormat value=" #{bundle['file.rsyncUpload.info']}" escape="false">
@@ -314,33 +307,50 @@
                                     <!-- RSYNC/PACKAGE FILE ALREADY EXISTS. THERE CAN BE ONLY ONE. -->
                                     <ui:fragment rendered="#{EditDatafilesPage.workingVersion.hasPackageFile}">
                                         <p class="help-block">
-                                            <span class="glyphicon glyphicon-info-sign text-info"></span>
-                                            <h:outputFormat class="text-info" value=" #{bundle['file.rsyncUpload.filesExist']}">
-                                                <f:param value="#{settingsWrapper.supportTeamEmail}"/>
+                                            <span class="glyphicon glyphicon-warning-sign text-warning"></span>
+                                            <h:outputFormat class="text-warning" value=" #{bundle['file.rsyncUpload.filesExist']}" escape="false">
+                                                <o:param>
+                                                    <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                                    </p:commandLink>                                
+                                                </o:param>
                                             </h:outputFormat>
                                         </p>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{EditDatafilesPage.workingVersion.hasNonPackageFile and !EditDatafilesPage.workingVersion.dataset.released}">
                                         <p class="help-block">
-                                            <span class="glyphicon glyphicon-info-sign text-info"></span>
-                                            <h:outputFormat class="text-info" value=" #{bundle['file.rsyncUpload.rsyncUploadDisabledDueFileUploadedViaHttp']}">
-                                                <f:param value="#{settingsWrapper.supportTeamEmail}"/>
-                                            </h:outputFormat>
+                                            <span class="glyphicon glyphicon-warning-sign text-warning"></span>
+                                            <h:outputText class="text-warning" value=" #{bundle['file.rsyncUpload.rsyncUploadDisabledDueFileUploadedViaHttp']}"/>
                                         </p>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{EditDatafilesPage.workingVersion.hasNonPackageFile and EditDatafilesPage.workingVersion.dataset.released}">
                                         <p class="help-block">
-                                            <span class="glyphicon glyphicon-info-sign text-info"></span>
-                                            <h:outputFormat class="text-info" value=" #{bundle['file.rsyncUpload.rsyncUploadDisabledDueFileUploadedViaHttpAndPublished']}">
-                                            </h:outputFormat>
+                                            <span class="glyphicon glyphicon-warning-sign text-warning"></span>
+                                            <h:outputText class="text-warning" value=" #{bundle['file.rsyncUpload.rsyncUploadDisabledDueFileUploadedViaHttpAndPublished']}"/>
+                                        </p>
+                                    </ui:fragment>
+                                    <!-- HTTP FILE ALREADY EXISTS. THERE CAN BE ONLY ONE. -->
+                                    <ui:fragment rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                                        <p class="help-block">
+                                            <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['file.rsyncUpload.rsyncUploadDisabledDueFileUploadedViaHttp']}</span>
                                         </p>
                                     </ui:fragment>
                                     <!-- CAN'T DOWNLOAD RSYNC SCRIPT DUE to DCM BACKEND BROKEN. -->
                                     <ui:fragment rendered="#{empty EditDatafilesPage.workingVersion.fileMetadatas and !EditDatafilesPage.isHasRsyncScript()}">
                                         <p class="help-block">
                                             <span class="glyphicon glyphicon-warning-sign text-danger"></span>
-                                            <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.noScriptBroken']}">
-                                                <f:param value="#{settingsWrapper.supportTeamName}"/>
+                                            <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.noScriptBroken']}" escape="false">
+                                                <o:param>
+                                                    <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                                    </p:commandLink>                                
+                                                </o:param>
                                             </h:outputFormat>
                                         </p>
                                     </ui:fragment>
@@ -348,9 +358,16 @@
                                     <!-- TODO: Figure out if we can detect the difference between the DCM being down and the DCM being busy. -->
                                     <ui:fragment rendered="#{false}">
                                         <p class="help-block">
-                                            <span class="glyphicon glyphicon-warning-sign text-danger"></span>
-                                            <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.noScriptBusy']}">
-                                                <f:param value="#{settingsWrapper.supportTeamName}"/>
+                                            <span class="glyphicon glyphicon-warning-sign text-warning"></span>
+                                            <h:outputFormat class="text-warning" value=" #{bundle['file.rsyncUpload.noScriptBusy']}" escape="false">
+                                                <o:param>
+                                                    <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                                    </p:commandLink>                                
+                                                </o:param>
                                             </h:outputFormat>
                                         </p>
                                     </ui:fragment>
