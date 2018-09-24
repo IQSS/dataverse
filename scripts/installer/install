@@ -91,7 +91,7 @@ my %CONFIG_DEFAULTS = (
     'GLASSFISH_DIRECTORY', '/usr/local/glassfish4',
     'GLASSFISH_USER',	   '',
     'ADMIN_EMAIL',         '',
-    'MAIL_SERVER',         'mail.hmdc.harvard.edu',
+    'MAIL_SERVER',         'mail.hmdc.harvard.edu:25',
 
     'POSTGRES_ADMIN_PASSWORD', 'secret',
     'POSTGRES_SERVER',   '127.0.0.1',
@@ -114,7 +114,7 @@ my %CONFIG_PROMPTS = (
     'GLASSFISH_USER',	   'Glassfish service account username',
     'GLASSFISH_DIRECTORY', 'Glassfish Directory',
     'ADMIN_EMAIL',         'Administrator email address for this Dataverse',
-    'MAIL_SERVER',         'SMTP (mail) server to relay notification messages',
+    'MAIL_SERVER',         'SMTP (mail) server (and port) to relay notification messages',
 
     'POSTGRES_SERVER',   'Postgres Server Address',
     'POSTGRES_PORT',     'Postgres Server Port',
@@ -725,6 +725,21 @@ if ($WARFILE_LOCATION =~/([0-9]\.[0-9]\.[0-9])\.war$/)
 }
     
 
+print "\nYour Dataverse has been configured to use DataCite, to register DOI global identifiers in the \n";
+print "test name space \"10.5072\" with the \"shoulder\" \"FK2\"\n";
+print "However, you have to contact DataCite (support\@datacite.org) and request a test account, before you \n";
+print "can publish datasets. Once you receive the account name and password, add them to your domain.xml,\n";
+print "as the following two JVM options:\n";
+print "\t<jvm-options>-Ddoi.username=...</jvm-options>\n";
+print "\t<jvm-options>-Ddoi.password=...</jvm-options>\n";
+print "and restart glassfish\n";
+print "If this is a production Dataverse and you are planning to register datasets as \n";
+print "\"real\", non-test DOIs or Handles, consult the \"Persistent Identifiers and Publishing Datasets\"\n";
+print "section of the Installataion guide, on how to configure your Dataverse with the proper registration\n";
+print "credentials.\n\n";
+
+
+
 # (going to skip the Rserve check; it's no longer a required, or even a recommended component)
 
 exit 0;
@@ -1104,14 +1119,18 @@ sub validate_smtp_server {
 
     $mail_server_status = 1;
 
-    unless ( $mail_server_iaddr = inet_aton( $CONFIG_DEFAULTS{'MAIL_SERVER'} ) ) {
-	print STDERR "Could not look up $CONFIG_DEFAULTS{'MAIL_SERVER'},\n";
+    my $userentry = $CONFIG_DEFAULTS{'MAIL_SERVER'};
+    my ($testserver, $testport) = split (":", $userentry);
+
+    unless ( $mail_server_iaddr = inet_aton( $testserver ) ) {
+	print STDERR "Could not look up $testserver,\n";
 	print STDERR "the host you specified as your mail server\n";
 	$mail_server_status = 0;
     }
 
     if ($mail_server_status) {
-	my $mail_server_paddr = sockaddr_in( 25, $mail_server_iaddr );
+	$testport = 25 unless $testport; 
+	my $mail_server_paddr = sockaddr_in( $testport, $mail_server_iaddr );
 	$mail_server_proto = getprotobyname('tcp');
 
        unless ( socket( SOCK, PF_INET, SOCK_STREAM, $mail_server_proto )

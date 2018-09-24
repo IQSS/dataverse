@@ -66,10 +66,11 @@ function preliminary_setup()
   # password reset token timeout in minutes
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.auth.password-reset-timeout-in-minutes=60"
 
-  # EZID DOI Settings
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.password=apitest"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=apitest"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=https\://ezid.cdlib.org"
+  # DataCite DOI Settings
+  # (we can no longer offer EZID with their shared test account)
+  #./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.password=apitest"
+  #./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=apitest"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=https\://mds.test.datacite.org"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
   # enable comet support
