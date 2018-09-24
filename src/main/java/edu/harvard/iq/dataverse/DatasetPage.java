@@ -1839,14 +1839,19 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String submitDataset() {
+        logger.info("Trying to submit: " + dataset.getId());
         try {
             Command<Dataset> cmd = new SubmitDatasetForReviewCommand( dvRequestService.getDataverseRequest(), dataset);
             dataset = commandEngine.submit(cmd);
+            logger.info("Done");
             //JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.submit.success"));
         } catch (CommandException ex) {
             String message = ex.getMessage();
             logger.log(Level.SEVERE, "submitDataset: {0}", message);
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.submit.failure", Collections.singletonList(message)));
+        } catch (Exception e) {
+            logger.warning(e.getMessage());
+            e.printStackTrace();
         }
         return returnToLatestVersion();
     }

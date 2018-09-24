@@ -17,17 +17,20 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.logging.Logger;
 
 @RequiredPermissions(Permission.EditDataset)
 public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Dataset> {
 
+    private static final Logger logger = Logger.getLogger(SubmitDatasetForReviewCommand.class.getName());
+    
     public SubmitDatasetForReviewCommand(DataverseRequest aRequest, Dataset dataset) {
         super(aRequest, dataset);
     }
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-
+        logger.info("Executing");
         if (getDataset().getLatestVersion().isReleased()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.submit.failure.isReleased"), this);
         }
@@ -35,12 +38,15 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
         if (getDataset().getLatestVersion().isInReview()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.submit.failure.inReview"), this);
         }
-
+        logger.info("Creating lock");
+        
         //SEK 9-1 Add Lock before saving dataset
         DatasetLock inReviewLock = new DatasetLock(DatasetLock.Reason.InReview, getRequest().getAuthenticatedUser());
-        ctxt.engine().submit(new AddLockCommand(getRequest(), getDataset(), inReviewLock));       
+        logger.info("Call AddlockCommand");
+        ctxt.engine().submit(new AddLockCommand(getRequest(), getDataset(), inReviewLock));    
+        logger.info("Returned form AddLockCommand");
         Dataset updatedDataset = save(ctxt);
-        
+        logger.info("Save complete");
         return updatedDataset;
     }
 
