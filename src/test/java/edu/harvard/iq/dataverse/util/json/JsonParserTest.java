@@ -121,30 +121,24 @@ public class JsonParserTest {
     
     @Test 
     public void testCompoundRepeatsRoundtrip() throws JsonParseException {
-        try {
-            DatasetField expected = new DatasetField();
-            expected.setDatasetFieldType(datasetFieldTypeSvc.findByName("coordinate"));
-            List<DatasetFieldCompoundValue> vals = new LinkedList<>();
-            for (int i = 0; i < 5; i++) {
-                DatasetFieldCompoundValue val = new DatasetFieldCompoundValue();
-                val.setParentDatasetField(expected);
-                val.setChildDatasetFields(Arrays.asList(latLonField("lat", Integer.toString(i * 10)), latLonField("lon", Integer.toString(3 + i * 10))));
-                vals.add(val);
-            }
-            expected.setDatasetFieldCompoundValues(vals);
-
-            JsonObject json = JsonPrinter.json(expected);
-
-            System.out.println("json = " + json);
-
-            DatasetField actual = sut.parseField(json);
-
-            assertFieldsEqual(expected, actual);
+        DatasetField expected = new DatasetField();
+        expected.setDatasetFieldType(datasetFieldTypeSvc.findByName("coordinate"));
+        List<DatasetFieldCompoundValue> vals = new LinkedList<>();
+        for (int i = 0; i < 5; i++) {
+            DatasetFieldCompoundValue val = new DatasetFieldCompoundValue();
+            val.setParentDatasetField(expected);
+            val.setChildDatasetFields(Arrays.asList(latLonField("lat", Integer.toString(i * 10)), latLonField("lon", Integer.toString(3 + i * 10))));
+            vals.add(val);
         }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-        }
+        expected.setDatasetFieldCompoundValues(vals);
+
+        JsonObject json = JsonPrinter.json(expected);
+
+        System.out.println("json = " + json);
+
+        DatasetField actual = sut.parseField(json);
+
+        assertFieldsEqual(expected, actual);
     }
     
     DatasetField latLonField( String latLon, String value ) {
