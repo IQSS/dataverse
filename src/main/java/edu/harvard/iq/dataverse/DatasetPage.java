@@ -93,6 +93,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
 import java.util.Collections;
+import javax.faces.component.UIInput;
 
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.servlet.ServletOutputStream;
@@ -238,7 +239,6 @@ public class DatasetPage implements java.io.Serializable {
     
     private boolean stateChanged = false;
 
-    private List<Dataverse> dataversesForLinking = new ArrayList<>();
     private Long linkingDataverseId;
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
@@ -738,13 +738,7 @@ public class DatasetPage implements java.io.Serializable {
         this.linkingDataverseId = linkingDataverseId;
     }
 
-    public List<Dataverse> getDataversesForLinking() {
-        return dataversesForLinking;
-    }
 
-    public void setDataversesForLinking(List<Dataverse> dataversesForLinking) {
-        this.dataversesForLinking = dataversesForLinking;
-    }
     
     public void updateReleasedVersions(){
         
@@ -752,45 +746,6 @@ public class DatasetPage implements java.io.Serializable {
         
     }
 
-    public void updateLinkableDataverses() {
-        dataversesForLinking = new ArrayList<>();
-        linkingDVSelectItems = new ArrayList<>();
-        
-        //Since this is a super user we are getting all dataverses
-        dataversesForLinking = dataverseService.findAll();
-        if (dataversesForLinking.isEmpty()) {
-            setNoDVsAtAll(true);
-            return;
-        }
-        
-        dataversesForLinking.remove(dataset.getOwner());
-        Dataverse testDV = dataset.getOwner();
-        while(testDV.getOwner() != null){
-            dataversesForLinking.remove(testDV.getOwner());
-            testDV = testDV.getOwner();
-        }                      
-        
-        for (Dataverse removeLinked : dsLinkingService.findLinkingDataverses(dataset.getId())) {
-            dataversesForLinking.remove(removeLinked);
-        }
-        for (Dataverse removeLinked : dvLinkingService.findLinkingDataverses(dataset.getOwner().getId())) {
-            dataversesForLinking.remove(removeLinked);
-        }
-
-        if (dataversesForLinking.isEmpty()) {
-            setNoDVsRemaining(true);            
-            return;
-        }
-
-        for (Dataverse selectDV : dataversesForLinking) {
-            linkingDVSelectItems.add(new SelectItem(selectDV.getId(), selectDV.getDisplayName()));
-        }
-
-        if (!dataversesForLinking.isEmpty() && dataversesForLinking.size() == 1 && dataversesForLinking.get(0) != null) {
-            linkingDataverse = dataversesForLinking.get(0);
-            linkingDataverseId = linkingDataverse.getId();
-        }
-    }
 
     public void updateSelectedLinkingDV(ValueChangeEvent event) {
         linkingDataverseId = (Long) event.getNewValue();
@@ -2129,6 +2084,16 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedFiles = selectedFiles;
     }
     
+    private Dataverse selectedDataverseForLinking;
+
+    public Dataverse getSelectedDataverseForLinking() {
+        return selectedDataverseForLinking;
+    }
+
+    public void setSelectedDataverseForLinking(Dataverse sdvfl) {
+        this.selectedDataverseForLinking = sdvfl;
+    }
+    
     private List<FileMetadata> selectedRestrictedFiles; // = new ArrayList<>();
 
     public List<FileMetadata> getSelectedRestrictedFiles() {
@@ -2295,26 +2260,62 @@ public class DatasetPage implements java.io.Serializable {
 
     private List<String> getSuccessMessageArguments() {
         List<String> arguments = new ArrayList<>();
+        String dataverseString = "";
         arguments.add(StringEscapeUtils.escapeHtml(dataset.getDisplayName()));
-        String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
-        arguments.add(linkString);
+        dataverseString += " <a href=\"/dataverse/" + selectedDataverseForLinking.getAlias() + "\">" + StringEscapeUtils.escapeHtml(selectedDataverseForLinking.getDisplayName()) + "</a>";
+        arguments.add(dataverseString);
         return arguments;
     }
     
-    public String saveLinkedDataset() {
-        if (linkingDataverseId == null) {
-            JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataverse.link.select"));
-            return "";
+        
+    public void saveLinkingDataverses() {
+
+        if (selectedDataverseForLinking == null) {
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dataverse.link.select"));
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            return;
+        }     
+
+        if(saveLink(selectedDataverseForLinking)){
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", getSuccessMessageArguments()));
+        } else{           
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), linkingDataverseErrorMessage);
+            FacesContext.getCurrentInstance().addMessage(null, message);
         }
-        linkingDataverse = dataverseService.find(linkingDataverseId);
+    } 
+    
+    private String linkingDataverseErrorMessage = "";
+
+
+    public String getLinkingDataverseErrorMessage() {
+        return linkingDataverseErrorMessage;
+    }
+
+    public void setLinkingDataverseErrorMessage(String linkingDataverseErrorMessage) {
+        this.linkingDataverseErrorMessage = linkingDataverseErrorMessage;
+    }
+    
+    UIInput selectedLinkingDataverseMenu;
+    
+    public UIInput getSelectedDataverseMenu() {
+        return selectedLinkingDataverseMenu;
+    }
+
+    public void setSelectedDataverseMenu(UIInput selectedDataverseMenu) {
+        this.selectedLinkingDataverseMenu = selectedDataverseMenu;
+    }
+    
+    
+    private Boolean saveLink(Dataverse dataverse){
+        boolean retVal = true;
         if (readOnly) {
             // Pass a "real", non-readonly dataset the the LinkDatasetCommand: 
             dataset = datasetService.find(dataset.getId());
         }
-        LinkDatasetCommand cmd = new LinkDatasetCommand(dvRequestService.getDataverseRequest(), linkingDataverse, dataset);
+        LinkDatasetCommand cmd = new LinkDatasetCommand(dvRequestService.getDataverseRequest(), dataverse, dataset);
+        linkingDataverse = dataverse;
         try {
-            commandEngine.submit(cmd);
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", getSuccessMessageArguments()));
+            commandEngine.submit(cmd);           
         } catch (CommandException ex) {
             String msg = "There was a problem linking this dataset to yours: " + ex;
             logger.severe(msg);
@@ -2322,10 +2323,20 @@ public class DatasetPage implements java.io.Serializable {
             /**
              * @todo how do we get this message to show up in the GUI?
              */
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), msg);
-            FacesContext.getCurrentInstance().addMessage(null, message);
+            linkingDataverseErrorMessage = msg;
+            retVal = false;
         }
-        return returnToLatestVersion();
+        return retVal;
+    }
+
+    
+    public List<Dataverse> completeLinkingDataverse(String query) {
+        dataset = datasetService.find(dataset.getId());
+        if (session.getUser().isAuthenticated()) {
+            return dataverseService.filterDataversesForLinking(query, dvRequestService.getDataverseRequest(), dataset);
+        } else {
+            return null;
+        }
     }
 
     List<FileMetadata> previouslyRestrictedFiles = null;
