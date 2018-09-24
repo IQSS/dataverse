@@ -1603,6 +1603,11 @@ public class UtilIT {
         return requestSpecification.delete("/api/admin/clearMetricsCache");
     }
 
+    static Response updateSiteMap() {
+        return given()
+                .post("/api/admin/sitemap");
+    }
+
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {
         String swordStatementWithNoFiles = "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n"

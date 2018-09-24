@@ -444,6 +444,10 @@ Adjust the URL https://demo.dataverse.org/sitemap.xml for your installation of D
 
 .. _Google's "submit a sitemap" instructions: https://support.google.com/webmasters/answer/183668
 
+To update your sitemap, run this curl command:
+
+``curl -X POST http://localhost:8080/api/admin/sitemap``
+
 Putting Your Dataverse Installation on the Map at dataverse.org
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
