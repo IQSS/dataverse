@@ -23,22 +23,19 @@ public class BundleUtil {
     public static String getStringFromBundle(String key, List<String> arguments) {
 
         DataverseLocaleBean d = new DataverseLocaleBean();
-        ResourceBundle bundle ;
-        bundle_locale= new Locale(d.getLocaleCode());
+        ResourceBundle bundle;
+        bundle_locale = new Locale(d.getLocaleCode());
+        File bundleFileDir = null; 
 
         String filesRootDirectory = System.getProperty("dataverse.lang.directory");
-        if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
-            filesRootDirectory = "/tmp/lang";
+        
+        if (filesRootDirectory != null && !filesRootDirectory.isEmpty()) {
+            bundleFileDir = new File(filesRootDirectory);
         }
 
-        File bundleFileDir = new File(filesRootDirectory);
-
-        if (!bundleFileDir.exists())
-        {
+        if (bundleFileDir == null || !bundleFileDir.exists()) {
             bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale);
-        }
-        else {
-
+        } else {
             URL[] urls = null;
             try {
                 urls = new URL[]{bundleFileDir.toURI().toURL()};
