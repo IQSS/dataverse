@@ -405,7 +405,7 @@
                 <!-- Files Table -->                       
                 <p:dataTable id="filesTable" 
                              value="#{EditDatafilesPage.fileMetadatas}"
-                             rendered="#{!empty EditDatafilesPage.fileMetadatas and (datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset)))}"
+                             rendered="#{(datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset)))}"
                              rowIndexVar="rowNum" 
                              rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                              selection="#{EditDatafilesPage.selectedFiles}" 
