@@ -80,6 +80,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             if (!s3url.isEmpty()) {
                 s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3url, s3region));
             }
+            // some custom S3 implementations require "PathStyleAccess" as they us a path, not a subdomain. default = false
+            s3CB.withPathStyleAccessEnabled(s3pathStyleAccess);
             // let's build the client :-)
             this.s3 = s3CB.build();
         } catch (Exception e) {
@@ -108,6 +110,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
      * Defaults to "dataverse" as it is not relevant for custom S3 implementations.
      */
     private String s3region = System.getProperty("dataverse.files.s3-region", "dataverse");
+    /**
+     * Pass in a boolean value if path style access should be used within the S3 client.
+     * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
+     */
+    private boolean s3pathStyleAccess = Boolean.parseBoolean(System.getProperty("dataverse.files.s3-path-style-access", "false"));
     private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
     private String key;
 

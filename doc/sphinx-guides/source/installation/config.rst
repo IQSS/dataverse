@@ -413,6 +413,7 @@ dataverse.files.s3-download-redirect       ``true``/``false``  Enable direct dow
 dataverse.files.s3-url-expiration-minutes  <?>                 If direct downloads: time until links expire. Optional.             60
 dataverse.files.s3-url                     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
 dataverse.files.s3-region                  <?>                 Only used when using custom endpoint. Optional.                     ``dataverse``
+dataverse.files.s3-path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.             ``false``
 =========================================  ==================  ==================================================================  =============
 
 .. _Branding Your Installation:
