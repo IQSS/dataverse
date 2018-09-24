@@ -244,7 +244,7 @@ public class FileUtil implements java.io.Serializable  {
             }
         }
         
-        return "Unknown"; 
+        return ResourceBundle.getBundle("MimeTypeFacets").getString("application/octet-stream");
     }
     
     public static String getUserFriendlyOriginalType(DataFile dataFile) {
