@@ -144,16 +144,6 @@ To install Solr, execute the following commands:
 
 ``bin/solr create_core -c collection1 -d server/solr/collection1/conf``
 
-Quick Fix for Bundle Problem
-----------------------------
-
-Please see https://github.com/IQSS/dataverse/issues/5078 for what this is about. We hope to remove this quick fix soon.
-
-``mkdir /tmp/lang``
-
-``cp src/main/java/Bundle.properties /tmp/lang``
-
-
 Run the Dataverse Installer Script
 ----------------------------------
 
