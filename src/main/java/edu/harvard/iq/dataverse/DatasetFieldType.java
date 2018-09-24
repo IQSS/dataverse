@@ -191,7 +191,12 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     public String getTitle() {
-        return BundleUtil.getStringFromPropertyFile( "datasetfieldtype."+getName()+".title" ,  getMetadataBlock().getName() );
+        if(getMetadataBlock() == null){
+            return title;
+        }
+        else {
+            return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".title", getMetadataBlock().getName());
+        }
     }
 
     public void setTitle(String title) {
@@ -199,7 +204,12 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     public String getDescription() {
-        return BundleUtil.getStringFromPropertyFile( "datasetfieldtype."+getName()+".description" ,  getMetadataBlock().getName() );
+        if(getMetadataBlock()  == null){
+            return description;
+        }
+        else {
+            return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".description", getMetadataBlock().getName());
+        }
     }
 
     public void setDescription(String description) {
@@ -238,8 +248,14 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     
     public String getWatermark()
     {
-        return BundleUtil.getStringFromPropertyFile( "datasetfieldtype."+getName()+".watermark" ,  getMetadataBlock().getName() );
+        if(getMetadataBlock()  == null){
+            return watermark;
+        }
+        else {
+            return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".watermark", getMetadataBlock().getName());
+        }
     }
+
     public void setWatermark(String watermark) {
         this.watermark = watermark;
     }
@@ -494,8 +510,13 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
     
     public String getDisplayName() {
-        String s = BundleUtil.getStringFromPropertyFile( "datasetfieldtype."+getName()+".title" ,  getMetadataBlock().getName() );
-
+        String s = "";
+        if(getMetadataBlock()  == null){
+            s = title;
+        }
+        else {
+            s = BundleUtil.getStringFromPropertyFile( "datasetfieldtype."+getName()+".title" ,  getMetadataBlock().getName() );
+        }
         if (isHasParent() && !parentDatasetFieldType.getTitle().equals(s)) {
             return parentDatasetFieldType.getTitle() + " " + s;
         } else {

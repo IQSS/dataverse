@@ -43,7 +43,6 @@ public class ControlledVocabularyValue implements Serializable  {
     }
 
     public ControlledVocabularyValue(Long id, String strValue, DatasetFieldType datasetFieldType) {
-
         this.id = id;
         this.strValue = strValue;
         this.datasetFieldType = datasetFieldType;
@@ -67,7 +66,12 @@ public class ControlledVocabularyValue implements Serializable  {
     public String getStrValue()
     {
         String key = strValue.toLowerCase().replace(" " , "_");
-        return BundleUtil.getStringFromPropertyFile( "controlledvocabulary." +this.datasetFieldType.getName() + "." +key ,  getDatasetFieldType().getMetadataBlock().getName() ) ;
+        if(getDatasetFieldType().getMetadataBlock()  == null){
+            return strValue;
+        }
+        else {
+            return BundleUtil.getStringFromPropertyFile("controlledvocabulary." + this.datasetFieldType.getName() + "." + key, getDatasetFieldType().getMetadataBlock().getName());
+        }
     }
 
     public void setStrValue(String strValue) {
