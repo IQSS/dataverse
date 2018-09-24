@@ -1426,6 +1426,13 @@ public class DatasetsIT {
         
         // This should fail, because we are attempting to link the dataset 
         // to its own dataverse:
+        Response publishTargetDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias,  apiToken);
+        publishTargetDataverse.prettyPrint();
+                        publishTargetDataverse.then().assertThat()
+                        .statusCode(OK.getStatusCode());
+                        
+        Response publishDatasetForLinking = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        
         Response createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
         createLinkingDatasetResponse.prettyPrint();
         createLinkingDatasetResponse.then().assertThat()
@@ -1436,7 +1443,7 @@ public class DatasetsIT {
         createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        
+        publishTargetDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias,  apiToken);        
         
         // And link the dataset to this new dataverse:
         createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
