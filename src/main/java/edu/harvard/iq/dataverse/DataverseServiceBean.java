@@ -5,8 +5,11 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -49,12 +52,15 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     @EJB
     DatasetServiceBean datasetService;
-
+    
     @EJB
     DataverseLinkingServiceBean dataverseLinkingService;
 
     @EJB
     DatasetLinkingServiceBean datasetLinkingService;
+    
+    @EJB
+    PermissionServiceBean permissionService;
     
     @EJB
     SystemConfig systemConfig;
@@ -179,7 +185,7 @@ public class DataverseServiceBean implements java.io.Serializable {
             return null;
         }
     }
-	
+    
 	public boolean hasData( Dataverse dv ) {
 		TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
 								.setParameter("id", dv.getId());
@@ -439,6 +445,34 @@ public class DataverseServiceBean implements java.io.Serializable {
             logger.info("results list: "+ret.size()+" results.");
         }
         return ret;
+    }
+    
+    public List<Dataverse> filterDataversesForLinking(String query, DataverseRequest req, Dataset dataset) {
+
+        List<Dataverse> dataverseList = new ArrayList<>();
+
+        List<Dataverse> results = em.createNamedQuery("Dataverse.filterByName", Dataverse.class)
+                .setParameter("name", "%" + query.toLowerCase() + "%")
+                .getResultList();
+
+        List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
+        List<Dataverse> remove = new ArrayList<>();
+
+        if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
+            alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((removeIt) -> {
+                remove.add(removeIt);
+            });
+        }
+        
+        for (Dataverse res : results) {
+            if (!remove.contains(res)) {
+                if (this.permissionService.requestOn(req, res).has(Permission.PublishDataset)) {
+                    dataverseList.add(res);
+                }
+            }
+        }
+
+        return dataverseList;
     }
     
     /**
