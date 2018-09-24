@@ -322,8 +322,9 @@ Please make note of the following details:
 Reported working S3-compatible storage
 ######################################
 
-
-- None yet :-(
+`Minio v2018-09-12 <http://minio.io>`_
+  Set ``dataverse.files.s3-path-style-access=true``, as Minio works path-based.
+  Works pretty smooth, easy to setup.
 
 .. HINT::
   If you are successfully using an S3 storage implementation not yet listed above, please feel free to
