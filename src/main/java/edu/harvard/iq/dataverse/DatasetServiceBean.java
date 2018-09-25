@@ -333,21 +333,11 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
-        logger.info("In add DatasetLock()" );
         lock.setDataset(dataset);
-        logger.info("lock has dataset" );
-        
         dataset.addLock(lock);
-        logger.info("dataset has lock" );
-        
         lock.setStartTime( new Date() );
-        
         em.persist(lock);
-        logger.info("persisted" );
-        
         em.merge(dataset); 
-        logger.info("merged" );
-        
         return lock;
     }
     
