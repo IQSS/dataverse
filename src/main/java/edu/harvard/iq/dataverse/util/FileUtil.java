@@ -70,6 +70,9 @@ import javax.ejb.EJBException;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
+import org.apache.commons.io.FileUtils;
+
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -896,7 +899,7 @@ public class FileUtil implements java.io.Serializable  {
             }
             
             // Delete the temp directory used for unzipping
-            deleteDirectory(rezipFolder);
+            FileUtils.deleteDirectory(rezipFolder);
             
             if (datafiles.size() > 0) {
                 // remove the uploaded zip file:
@@ -936,29 +939,6 @@ public class FileUtil implements java.io.Serializable  {
         return null;
     }   // end createDataFiles
     
-    public static boolean deleteDirectory(File dir) {
-        try {
-            if (dir == null) {
-                return false;
-            }
-            if (!(dir.exists())) {
-                return true;
-            }
-            File[] entries = dir.listFiles();
-            if (entries == null) {
-                return true;
-            }
-            for (File f : entries) {
-                f.delete();
-            }
-            dir.delete();
-        } catch (SecurityException se) {
-            logger.warning("Unable to delete: " + dir.getName() + "due to Security Exception: " + se.getMessage());
-            return false;
-        }
-        return true;
-
-    }
 
     private static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit)
             throws IOException, FileExceedsMaxSizeException {
