@@ -3,11 +3,11 @@
               xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
         http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd"
               version="2.2">
-    <application>   
+    <application>
         <resource-bundle>
-            <base-name>Bundle</base-name>
+            <base-name>edu.harvard.iq.dataverse.util.LocalBundle</base-name>
             <var>bundle</var>
-        </resource-bundle>     
+        </resource-bundle>
         <locale-config>
             <default-locale>en</default-locale>
             <supported-locale>fr</supported-locale>
