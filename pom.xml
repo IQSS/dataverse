@@ -18,6 +18,10 @@
         <project.language>en</project.language>
         <project.region>US</project.region>
     
+        <!-- testing properties -->
+        <checkstyle.version>3.0.0</checkstyle.version>
+        <checkstyle.allowInvalid>30</checkstyle.allowInvalid>
+        <checkstyle.headerLocation>doc/java.header</checkstyle.headerLocation>
         <junit.version>4.12</junit.version>
         <junit.jupiter.version>5.3.1</junit.jupiter.version>
         <junit.vintage.version>5.3.1</junit.vintage.version>
@@ -518,6 +522,30 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${checkstyle.version}</version>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <configLocation>checkstyle.xml</configLocation>
+                    <encoding>UTF-8</encoding>
+                    <!--<headerLocation>${checkstyle.headerLocation}</headerLocation>-->
+                    <consoleOutput>true</consoleOutput>
+                    <!-- <failsOnError>true</failsOnError> -->
+                    <!--<failOnViolation>true</failOnViolation>-->
+                    <!--<maxAllowedViolations>${checkstyle.allowInvalid}</maxAllowedViolations>-->
+                    <linkXRef>false</linkXRef>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.1</version>
                 <configuration>
@@ -680,5 +708,36 @@
         <id>all-unit-tests</id>
       </profile>
       <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
+        <profile>
+            <id>validate</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <version>${checkstyle.version}</version>
+                        <executions>
+                            <execution>
+                                <id>validate</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <configLocation>checkstyle.xml</configLocation>
+                            <encoding>UTF-8</encoding>
+                            <!--<headerLocation>${checkstyle.headerLocation}</headerLocation>-->
+                            <consoleOutput>true</consoleOutput>
+                            <!-- <failsOnError>true</failsOnError> -->
+                            <!--<failOnViolation>true</failOnViolation>-->
+                            <!--<maxAllowedViolations>${checkstyle.allowInvalid}</maxAllowedViolations>-->
+                            <linkXRef>false</linkXRef>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
