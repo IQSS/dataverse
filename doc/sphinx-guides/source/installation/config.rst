@@ -440,7 +440,7 @@ Provide Sitemap URL to Search Engines
 
 Search engines have an easier time indexing content when you provide them a sitemap.
 
-Adjust the URL https://demo.dataverse.org/sitemap/sitemap.xml for your installation of Dataverse when following `Google's "submit a sitemap" instructions`_ or similar instructions for other search engines.
+Adjust the URL https://demo.dataverse.org/sitemap.xml for your installation of Dataverse when following `Google's "submit a sitemap" instructions`_ or similar instructions for other search engines.
 
 .. _Google's "submit a sitemap" instructions: https://support.google.com/webmasters/answer/183668
 

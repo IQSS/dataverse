@@ -32,10 +32,7 @@ public class SiteMapUtil {
         // i.e. /usr/local/glassfish4/glassfish/domains/domain1
         String domainRoot = System.getProperty("com.sun.aas.instanceRoot");
         if (domainRoot != null) {
-            // TODO: Is it possible to remove the "sitemap" directory? In glassfish-web.xml
-            // we added a directory because it seems to be required. If you add just a file, the war
-            // will fail to deploy if the file doesn't exist.
-            // http://harkiran-howtos.blogspot.com/2009/08/map-external-directory-into-glassfish.html
+            // Note that we write to a directory called "sitemap" but we serve just "/sitemap.xml" using PrettyFaces.
             sitemapPath = domainRoot + File.separator + "docroot" + File.separator + "sitemap";
         }
         sitemapPathAndFile = sitemapPath + File.separator + SITEMAP_FILENAME;
