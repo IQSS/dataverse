@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.search.FileView;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -110,6 +111,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     SystemConfig systemConfig;
     @EJB
     DataverseLinkingServiceBean dvLinkingService;
+    @EJB
+    IndexServiceBean indexService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject PermissionsWrapper permissionsWrapper;
@@ -1333,7 +1336,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         //if (newDraftVersion) {
         //    return returnToDraftVersionById();
         //}
-        
+        indexService.indexDataset(dataset, true);
         logger.fine("Redirecting to the dataset page, from the edit/upload page.");
         return returnToDraftVersion();
     }
