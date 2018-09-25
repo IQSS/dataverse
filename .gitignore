@@ -1,5 +1,6 @@
 nb-configuration.xml
 target
+infer-out
 nbactions.xml
 michael-local
 GPATH

@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.search.FileView;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -56,6 +57,7 @@ import javax.json.JsonObject;
 import javax.json.JsonArray;
 import javax.json.JsonReader;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.httpclient.methods.GetMethod;
 import java.text.DateFormat;
 import java.util.Arrays;
@@ -108,6 +110,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     SystemConfig systemConfig;
     @EJB
     DataverseLinkingServiceBean dvLinkingService;
+    @EJB
+    IndexServiceBean indexService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject PermissionsWrapper permissionsWrapper;
@@ -1362,7 +1366,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         //if (newDraftVersion) {
         //    return returnToDraftVersionById();
         //}
-        
+        indexService.indexDataset(dataset, true);
         logger.fine("Redirecting to the dataset page, from the edit/upload page.");
         return returnToDraftVersion();
     }
@@ -2636,21 +2640,11 @@ public class EditDatafilesPage implements java.io.Serializable {
                 output.write(buffer, 0, bytesRead);
             }
         } catch (IOException ioex) {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                }
-            }
-            if (output != null) {
-                try {
-                    output.close();
-                } catch (IOException e) {
-                }
-            }
             return null;
+        } finally {
+            IOUtils.closeQuietly(input);
+            IOUtils.closeQuietly(output);
         }
-
         if (labelsFile != null) {
             return labelsFile.getAbsolutePath();
         }

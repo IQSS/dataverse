@@ -201,20 +201,21 @@ In OpenShift, the first Solr pod, dataverse-solr-0, will be the master node, and
 Configuring Persistent Volumes and Solr master node recovery 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Solr requires backing up the search index to persistent storage. For our proof of concept, we configure a hostPath, which allows solr containers to access the hosts' file system, for our Solr containers backups. To read more about OpenShift/Kubernetes' persistent volumes, please visit https://kubernetes.io/docs/concepts/storage/persistent-volumes
-To allow containers to use a host's storage, we need to allow access to that directory first. In this example, we expose /tmp/share to the containers:
-```
-mkdir /tmp/share           # Create a directory that could be mounted in the container. This is mounted as /share in container.
-chcon -R -t svirt_sandbox_file_t /tmp/share/ # Change selinux label so that containers can read/write from/to directory.
-chgrp root -R /tmp/share
-oc login -u system:admin
-oc edit scc restricted     # Update allowHostDirVolumePlugin to true and runAsUser type to RunAsAny
-```
+Solr requires backing up the search index to persistent storage. For our proof of concept, we configure a hostPath, which allows Solr containers to access the hosts' file system, for our Solr containers backups. To read more about OpenShift/Kubernetes' persistent volumes, please visit: https://kubernetes.io/docs/concepts/storage/persistent-volumes
+
+To allow containers to use a host's storage, we need to allow access to that directory first. In this example, we expose /tmp/share to the containers::
+
+# mkdir /tmp/share            
+# chcon -R -t svirt_sandbox_file_t 
+# chgrp root -R /tmp/share 
+# oc login -u system:admin 
+# oc edit scc restricted     # Update allowHostDirVolumePlugin to true and runAsUser type to RunAsAny
+
 
 To add a persistent volume and persistent volume claim, in conf/docker/openshift/openshift.json, add the following to objects in openshift.json.
 Here, we are using hostPath for development purposes. Since OpenShift supports many types of cluster storages, 
-if the administrator wishes to use any cluster storage like EBS, Google Cloud Storage, etc, they would have to use a different type of Persistent Storage 
-```
+if the administrator wishes to use any cluster storage like EBS, Google Cloud Storage, etc, they would have to use a different type of Persistent Storage::
+
     {
       "kind" : "PersistentVolume",
       "apiVersion" : "v1",
@@ -260,10 +261,10 @@ if the administrator wishes to use any cluster storage like EBS, Google Cloud St
           }
         }
       }
-```
 
-To make solr container mount the hostPath, add the following part under .spec.spec (for Solr StatefulSet):
-```
+
+To make solr container mount the hostPath, add the following part under .spec.spec (for Solr StatefulSet)::
+
     {
       "kind": "StatefulSet",
       "apiVersion": "apps/v1beta1",
@@ -294,16 +295,15 @@ To make solr container mount the hostPath, add the following part under .spec.sp
                     "name" : "solr-index-backup"
                   }  
 
-```
 
-Solr is now ready for backup and recovery. In order to backup:
 
-```
-	oc rsh dataverse-solr-0
-	curl 'http://localhost:8983/solr/collection1/replication?command=backup&location=/var/share'  
-```
+Solr is now ready for backup and recovery. In order to backup::
 
-In solr entrypoint.sh, it's configured so that if dataverse-solr-0 failed, it will get the latest version of the index in the backup and restore. All backups are store in /tmp/share in the host, or /home/share in solr containers
+  oc rsh dataverse-solr-0
+  curl 'http://localhost:8983/solr/collection1/replication?command=backup&location=/var/share'  
+
+
+In solr entrypoint.sh, it's configured so that if dataverse-solr-0 failed, it will get the latest version of the index in the backup and restore. All backups are stored in /tmp/share in the host, or /home/share in solr containers.
 
 Running Containers to Run as Root in Minishift
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

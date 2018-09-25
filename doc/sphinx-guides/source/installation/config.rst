@@ -614,10 +614,23 @@ dataverse.handlenet.index
 +++++++++++++++++++++++++++++++++
 If you want to use different index than the default 300
 
+.. _dataverse.timerServer:
+
 dataverse.timerServer
 +++++++++++++++++++++
 
 This JVM option is only relevant if you plan to run multiple Glassfish servers for redundancy. Only one Glassfish server can act as the dedicated timer server and for details on promoting or demoting a Glassfish server to handle this responsibility, see :doc:`/admin/timers`.
+
+.. _dataverse.lang.directory:
+
+dataverse.lang.directory
+++++++++++++++++++++++++
+
+This JVM option is used to configure the path where all the language specific property files are to be stored.  If this option is set then the english property file must be present in the path along with any other language property file.
+
+``./asadmin create-jvm-options '-Ddataverse.lang.directory=PATH_LOCATION_HERE'``
+
+If this value is not set, by default, a Dataverse installation will read the English language property files from the Java Application.
 
 Database Settings
 -----------------
@@ -815,6 +828,12 @@ Otherwise, if ``:DataFilePIDFormat`` is set to *INDEPENDENT*, then each file wil
 
 Note that in either case, when using the ``sequentialNumber`` option, datasets and files share the same database sequence that was created as part of the setup described in ``:IdentifierGenerationStyle`` above.
 
+:FilePIDsEnabled
+++++++++++++++++
+
+Enable/disable the publishing of file based PIDs for the whole installation. This is enabled by default
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
 :ApplicationTermsOfUse
 ++++++++++++++++++++++
@@ -1083,7 +1102,16 @@ This sets the base name (without dot and extension), if not set it defaults to '
 
 Dataverse calculates checksums for uploaded files so that users can determine if their file was corrupted via upload or download. This is sometimes called "file fixity": https://en.wikipedia.org/wiki/File_Fixity
 
-The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1" is an experimental alternate value for this setting.
+The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1", "SHA-256" and "SHA-512" are alternate values for this setting. For example:
+
+``curl -X PUT -d 'SHA-512' http://localhost:8080/api/admin/settings/:FileFixityChecksumAlgorithm``
+
+The fixity algorithm used on existing files can be changed by a superuser using the API. An optional query parameter (num) can be used to limit the number of updates attempted.
+The API call will only update the algorithm and checksum for a file if the existing checksum can be validated against the file.
+Statistics concerning the updates are returned in the response to the API call with details in the log.
+
+``curl http://localhost:8080/api/admin/updateHashValues/{alg}``
+``curl http://localhost:8080/api/admin/updateHashValues/{alg}?num=1``
 
 .. _:PVMinLength:
 
@@ -1297,3 +1325,11 @@ Enable the collection of provenance metadata on Dataverse via the provenance pop
 Sets how long a cached metrics result is used before re-running the query for a request. Note this only effects queries on the current month, previous months queries are cached indefinitely. The default timeout is 7 days (10080 minutes).
 
 ``curl -X PUT -d 10080 http://localhost:8080/api/admin/settings/:MetricsCacheTimeoutMinutes``
+
+:Languages
+++++++++++
+
+Sets which languages should be available. If there is more than one, a dropdown is displayed
+in the header. This should be formated as a JSON array as shown below.
+
+``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{  "locale":"en", "title":"English"},  {  "locale":"fr", "title":"Français"}]'``

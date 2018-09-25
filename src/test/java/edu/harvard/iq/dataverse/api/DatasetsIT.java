@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -1425,6 +1426,16 @@ public class DatasetsIT {
         
         // This should fail, because we are attempting to link the dataset 
         // to its own dataverse:
+        Response publishTargetDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishTargetDataverse.prettyPrint();
+        publishTargetDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDatasetForLinking = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetForLinking.prettyPrint();
+        publishDatasetForLinking.then().assertThat()
+                .statusCode(OK.getStatusCode());
+                        
         Response createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
         createLinkingDatasetResponse.prettyPrint();
         createLinkingDatasetResponse.then().assertThat()
@@ -1435,7 +1446,10 @@ public class DatasetsIT {
         createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        
+        publishTargetDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDatasetForLinking.prettyPrint();
+        publishTargetDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
         
         // And link the dataset to this new dataverse:
         createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
@@ -1452,4 +1466,70 @@ public class DatasetsIT {
                 .body("data.message", equalTo("Link from Dataset " + datasetId + " to linked Dataverse " + dataverseAlias + " deleted"))
                 .statusCode(200);
     }
+    
+    @Test
+    public void testDatasetLocksApi() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        Response superuserResponse = UtilIT.makeSuperUser(username);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        
+        // This should return an empty list, as the dataset should have no locks just yet:
+        Response checkDatasetLocks = UtilIT.checkDatasetLocks(datasetId.longValue(), null, apiToken);
+        checkDatasetLocks.prettyPrint();
+        JsonArray emptyArray = Json.createArrayBuilder().build();
+        checkDatasetLocks.then().assertThat()
+                .body("data", equalTo(emptyArray))
+                .statusCode(200);
+        
+        // Lock the dataset with an ingest lock: 
+        Response lockDatasetResponse = UtilIT.lockDataset(datasetId.longValue(), "Ingest", apiToken);
+        lockDatasetResponse.prettyPrint();
+        lockDatasetResponse.then().assertThat()
+                .body("data.message", equalTo("dataset locked with lock type Ingest"))
+                .statusCode(200);
+        
+        // Check again: 
+        // This should return an empty list, as the dataset should have no locks just yet:
+        checkDatasetLocks = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
+        checkDatasetLocks.prettyPrint();
+        checkDatasetLocks.then().assertThat()
+                .body("data[0].lockType", equalTo("Ingest"))
+                .statusCode(200);
+        
+        // Try to lock the dataset with the same type lock, AGAIN 
+        // (this should fail, of course!)
+        lockDatasetResponse = UtilIT.lockDataset(datasetId.longValue(), "Ingest", apiToken);
+        lockDatasetResponse.prettyPrint();
+        lockDatasetResponse.then().assertThat()
+                .body("message", equalTo("dataset already locked with lock type Ingest"))
+                .statusCode(FORBIDDEN.getStatusCode());
+             
+        // And now test deleting the lock:
+        Response unlockDatasetResponse = UtilIT.unlockDataset(datasetId.longValue(), "Ingest", apiToken);
+        unlockDatasetResponse.prettyPrint();
+        
+        unlockDatasetResponse.then().assertThat()
+                .body("data.message", equalTo("lock type Ingest removed"))
+                .statusCode(200);
+        
+        // ... and check for the lock on the dataset again, this time by specific lock type: 
+        // (should return an empty list, now that we have unlocked it)
+        checkDatasetLocks = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
+        checkDatasetLocks.prettyPrint();
+        checkDatasetLocks.then().assertThat()
+                .body("data", equalTo(emptyArray))
+                .statusCode(200);
+    }
+    
 }
