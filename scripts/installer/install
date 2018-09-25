@@ -529,6 +529,12 @@ for my $ENTRY (@CONFIG_VARIABLES)
 
 		$CONFIG_DEFAULTS{'MAIL_SERVER'} = $smtp_server unless $smtp_server eq ''; 
 	    }
+
+	    print "\nOK, we were able to establish connection to the SMTP server you have specified.\n";
+	    print "Please note that you *may* need to configure some extra settings before your \n";
+	    print "Dataverse can send email. Please consult the \"Mail Host Configuration & Authentication\"\n";
+	    print "section of the installation guide (http://guides.dataverse.org/en/latest/installation/installation-main.html)\n";
+	    print "for more information.\n";
 	}
     }
 
@@ -1072,7 +1078,16 @@ sub run_asadmin_script {
     $ENV{'RSERVE_PASS'} = $CONFIG_DEFAULTS{'RSERVE_PASSWORD'};
 
     $ENV{'HOST_ADDRESS'} = $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'};
-    $ENV{'SMTP_SERVER'}  = $CONFIG_DEFAULTS{'MAIL_SERVER'};
+
+    my ($mail_server_host, $mail_server_port) = split (":", $CONFIG_DEFAULTS{'MAIL_SERVER'});
+
+    $ENV{'SMTP_SERVER'}  = $mail_server_host;
+
+    if ($mail_server_port) 
+    {
+	$ENV{'SMTP_SERVER_PORT'} = $mail_server_port; 
+    }
+
     $ENV{'FILES_DIR'} =
       $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/glassfish/domains/" . $ENV{'GLASSFISH_DOMAIN'} . "/files";
     
