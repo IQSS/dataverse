@@ -27,7 +27,6 @@ import javax.inject.Named;
 
 import org.apache.commons.io.IOUtils;
 import org.passay.CharacterRule;
-import org.apache.commons.io.IOUtils;
 
 /**
  * System-wide configuration
@@ -185,11 +184,7 @@ public class SystemConfig {
                         } catch (IOException ioex) {
                             logger.warning("caught IOException trying to read and parse the pom properties file.");
                         } finally {
-<<<<<<< HEAD
                             IOUtils.closeQuietly(mavenPropertiesInputStream);
-=======
-                        	IOUtils.closeQuietly(mavenPropertiesInputStream);
->>>>>>> refs/heads/v4.9.2-tdl
                         }
                     }
                     
