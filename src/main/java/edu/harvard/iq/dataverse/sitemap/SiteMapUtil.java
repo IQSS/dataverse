@@ -2,8 +2,10 @@ package edu.harvard.iq.dataverse.sitemap;
 
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -16,11 +18,27 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+// We are aware of https://github.com/dfabulich/sitemapgen4j but haven't tried it.
 public class SiteMapUtil {
 
-    static final String SITEMAP_OUTFILE = "/tmp/out.xml";
+    private static final Logger logger = Logger.getLogger(SiteMapUtil.class.getCanonicalName());
 
-    public static void updateSiteMap() throws ParserConfigurationException, TransformerException {
+    static final String SITEMAP_FILENAME = "sitemap.xml";
+
+    public static void updateSiteMap() throws ParserConfigurationException, TransformerException, IOException {
+
+        String sitemapPath = "/tmp";
+        String sitemapPathAndFile;
+        // i.e. /usr/local/glassfish4/glassfish/domains/domain1
+        String domainRoot = System.getProperty("com.sun.aas.instanceRoot");
+        if (domainRoot != null) {
+            // TODO: Is it possible to remove the "sitemap" directory? In glassfish-web.xml
+            // we added a directory because it seems to be required. If you add just a file, the war
+            // will fail to deploy if the file doesn't exist.
+            // http://harkiran-howtos.blogspot.com/2009/08/map-external-directory-into-glassfish.html
+            sitemapPath = domainRoot + File.separator + "docroot" + File.separator + "sitemap";
+        }
+        sitemapPathAndFile = sitemapPath + File.separator + SITEMAP_FILENAME;
 
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -51,7 +69,12 @@ public class SiteMapUtil {
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
         DOMSource source = new DOMSource(document);
-        StreamResult result = new StreamResult(new File(SITEMAP_OUTFILE));
+        File directory = new File(sitemapPath);
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+        logger.info("Writing sitemap to  " + sitemapPathAndFile);
+        StreamResult result = new StreamResult(new File(sitemapPathAndFile));
         transformer.transform(source, result);
 
         // TODO: Remove this once there's a lot of data.
