@@ -170,14 +170,14 @@
                                     <!-- END: Return to Author Button -->
 
                                     <!-- Submit for Review Button -->
-                                    <button type="button" class="btn btn-default btn-access #{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" onclick="PF('inreview').show()"
-                                            jsf:rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                    <p:commandLink type="button" class="btn btn-default btn-access #{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" onclick="PF('inreview').show()"
+                                            rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                             and !DatasetPage.datasetLockedInWorkflow
                                                             and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                             and DatasetPage.canUpdateDataset()
                                                             and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                         <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
-                                    </button>
+                                    </p:commandLink>
                                     <!-- End: Submit for Review Button -->
                                 </ui:fragment>
                                 <!-- END: Publish/Submit for Review/Return to Author Button Group -->
