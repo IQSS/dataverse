@@ -32,7 +32,7 @@
                     <f:viewAction action="#{EditDatafilesPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(EditDatafilesPage.dataset, (datasetPage || EditDatafilesPage.showFileUploadFragment() ? (EditDatafilesPage.mode == 'SINGLE_REPLACE' ? bundle['file.replaceFile'] : bundle['file.uploadFiles']) : bundle['file.editFiles']))}"
                                   if="#{!(param.mode == 'SINGLE' || param.mode == 'SINGLE_REPLACE')}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(EditDatafilesPage.singleFile, bundle['file.editFiles'])}"
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(EditDatafilesPage.singleFile, (EditDatafilesPage.mode == 'SINGLE_REPLACE' ? bundle['file.replaceFile'] : bundle['file.editFiles']))}"
                                   if="#{(param.mode == 'SINGLE' || param.mode == 'SINGLE_REPLACE')  }" />
                 </f:metadata>
                 <h:form id="datasetForm">

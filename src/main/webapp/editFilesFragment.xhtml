@@ -254,7 +254,7 @@
                     
                     </div>
                     
-                    <div jsf:id="rsyncPanel" jsf:rendered="#{settingsWrapper.rsyncUpload}" class="panel panel-default">
+                    <div jsf:id="rsyncPanel" jsf:rendered="#{settingsWrapper.rsyncUpload and !EditDatafilesPage.fileReplaceOperation}" class="panel panel-default">
                         <!-- NOTE: conditional logic for 'glyphicon-chevron-up' icon in rsync header if HTTP is off, but isn't scalable when a third upload mode is added -->
                         <div role="tab" id="headingRsync" data-toggle="collapse" data-target="#panelCollapseRsync" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseRsync">
                             #{bundle['file.fromRsync']} &#160;<span class="glyphicon #{!settingsWrapper.HTTPUpload ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
