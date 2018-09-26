@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -1261,11 +1262,14 @@ public class Admin extends AbstractApiBean {
             return wr.getResponse();
         }
         if (settingsSvc.isTrueForKey(SettingsServiceBean.Key.InheritParentAdmins, false)) {
-
+            /*This query recursively finds all Dataverses that are inside/children of the specified one.
+             * It recursively finds dvobjects of dtype 'Dataverse' whose owner_id equals an id already in the list
+             * and then returns the list of ids found, excluding the id of the original specified Dataverse. 
+             */
             String qstr = "WITH RECURSIVE path_elements AS ((" + " SELECT id, dtype FROM dvobject WHERE id in ("
                     + owner.getId() + "))" + " UNION\n"
                     + " SELECT o.id, o.dtype FROM path_elements p, dvobject o WHERE o.owner_id = p.id and o.dtype='Dataverse') "
-                    + "SELECT id FROM path_elements WHERE id !=" + owner.getId() + ";"; // ORDER by id ASC;";
+                    + "SELECT id FROM path_elements WHERE id !=" + owner.getId() + ";"; 
 
             List<Integer> childIds;
 
@@ -1279,10 +1283,13 @@ public class Admin extends AbstractApiBean {
                 return error(Response.Status.NOT_FOUND,
                         "Could not find any child dataverses based on alias supplied: " + alias + ".");
             }
+            //Set up to track the set of users/groups that get assigned an admin role and those that don't
             JsonArrayBuilder usedNames = Json.createArrayBuilder();
             JsonArrayBuilder unusedNames = Json.createArrayBuilder();
+            //Set up to track the list of dataverses, by id and alias, that are traversed.
             JsonArrayBuilder dataverseIds = Json.createArrayBuilder();
             JsonArrayBuilder dataverseAliases = Json.createArrayBuilder();
+            //Get the Dataverses for the returned ids
             try {
                 List<Dataverse> children = new ArrayList<Dataverse>();
 
@@ -1290,17 +1297,28 @@ public class Admin extends AbstractApiBean {
                     Integer childId = childIds.get(i);
                     Dataverse child = dataverseSvc.find(new Long(childId.longValue()));
                     if (child != null) {
+                        //Add to the list of Dataverses
                         children.add(child);
+                        //Add ids and aliases to the tracking arrays
                         dataverseIds.add(childId.longValue());
                         dataverseAliases.add(child.getAlias());
                     }
                 }
-
+                //Find the role assignments on the specified Dataverse
                 List<RoleAssignment> assignedRoles = rolesSvc.directRoleAssignments(owner);
                 // Find the built in admin role (currently by alias)
                 DataverseRole adminRole = rolesSvc.findBuiltinRoleByAlias(DataverseRole.ADMIN);
-                String privateUrlToken = null;
+                
+                //Create a list of just the admin roleassignments on the original dataverse
+                List<RoleAssignment> adminRAsOnOwner = new ArrayList<RoleAssignment>();
+                for (RoleAssignment role : assignedRoles) {
+                    if (role.getRole().equals(adminRole)) {
+                        adminRAsOnOwner.add(role);
+                    }
+                }
 
+                String privateUrlToken = null;
+                //Create lists of the existing admin roles for each child Dataverse
                 Map<Long, List<RoleAssignment>> existingRAs = new HashMap<Long, List<RoleAssignment>>();
                 for (Dataverse childDv : children) {
                     List<RoleAssignment> roles = rolesSvc.directRoleAssignments(childDv);
@@ -1313,17 +1331,42 @@ public class Admin extends AbstractApiBean {
                     existingRAs.put(childDv.getId(), adminRoles);
                 }
 
-                for (RoleAssignment role : assignedRoles) {
-
-                    if (role.getRole().equals(adminRole)) {
-                        String identifier = role.getAssigneeIdentifier();
-                        if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
-                            usedNames.add(identifier);
-                            identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
+                for (RoleAssignment role : adminRAsOnOwner) {
+                    String identifier = role.getAssigneeIdentifier();
+                    if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
+                        //The RoleAssignment is for an individual user
+                        //Add their name to the tracking list
+                        usedNames.add(identifier);
+                        //Strip the Identifier prefix so we can retrieve the user
+                        identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
+                        AuthenticatedUser roleUser = authSvc.getAuthenticatedUser(identifier);
+                        //Now loop over all children and add the roleUser as a new admin if they don't yet have this role
+                        for (Dataverse childDv : children) {
+                            try {
+                                RoleAssignment ra = new RoleAssignment(adminRole,
+                                        roleUser, childDv, privateUrlToken);
+                                if (!existingRAs.get(childDv.getId()).contains(ra)) {
+                                    rolesSvc.save(ra);
+                                }
+                            } catch (Exception e) {
+                                logger.warning("Unable to assign " + role.getAssigneeIdentifier()
+                                        + "as an admin for new Dataverse: " + childDv.getName());
+                                logger.warning(e.getMessage());
+                                throw (e);
+                            }
+                        }
+                    } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
+                        //The role assignment is for a group
+                        usedNames.add(identifier);
+                        identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
+                        String[] comps = identifier.split(Group.PATH_SEPARATOR, 2);
+                        if (explicitGroupService.getProvider().getGroupProviderAlias().equals(comps[0])) {
+                            //If it's an explicit group, loop through all child Dataverses and give the group an admin role if it doesn't yet have it
+                            ExplicitGroup roleGroup = explicitGroupService.getProvider().get(comps[2]);
                             for (Dataverse childDv : children) {
                                 try {
                                     RoleAssignment ra = new RoleAssignment(adminRole,
-                                            authSvc.getAuthenticatedUser(identifier), childDv, privateUrlToken);
+                                            roleGroup, childDv, privateUrlToken);
                                     if (!existingRAs.get(childDv.getId()).contains(ra)) {
                                         rolesSvc.save(ra);
                                     }
@@ -1334,38 +1377,25 @@ public class Admin extends AbstractApiBean {
                                     throw (e);
                                 }
                             }
-                        } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
-                            usedNames.add(identifier);
-                            identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
-                            String[] comps = identifier.split(Group.PATH_SEPARATOR, 2);
-                            if (explicitGroupService.getProvider().getGroupProviderAlias().equals(comps[0])) {
-                                for (Dataverse childDv : children) {
-                                    try {
-                                        RoleAssignment ra = new RoleAssignment(adminRole,
-                                                explicitGroupService.getProvider().get(comps[2]), childDv,
-                                                privateUrlToken);
-                                        if (!existingRAs.get(childDv.getId()).contains(ra)) {
-                                            rolesSvc.save(ra);
-                                        }
-                                    } catch (Exception e) {
-                                        logger.warning("Unable to assign " + role.getAssigneeIdentifier()
-                                                + "as an admin for new Dataverse: " + childDv.getName());
-                                        logger.warning(e.getMessage());
-                                        throw (e);
-                                    }
-                                }
-                            }
                         } else {
+                            //Add any groups of types not yet supported
                             unusedNames.add(identifier);
                         }
+                    } else {
+                        //Add any other types of entity found (not user or group) that aren't supported
+                        unusedNames.add(identifier);
                     }
                 }
+                /*Report the list of Dataverses affected and the set of users/groups that should now have admin roles on them 
+                 * (they may already have had them) and any entities that had an admin role on the specified dataverse which were not handled.
+                 * Add this to the log and the API return message. 
+                 */
                 logger.info(Json.createObjectBuilder().add("Dataverses Updated", dataverseIds).add("Updated Dataverse Aliases", dataverseAliases)
                         .add("Admins added", usedNames).add("Admins not added", unusedNames).build().toString());
                 return ok(Json.createObjectBuilder().add("Dataverses Updated", dataverseAliases)
                         .add("Admins added", usedNames).add("Admins not added", unusedNames));
             } catch (Exception e) {
-                logger.warning("Some Admin Roles may not have been assigned for Dataverse alias: " + alias);
+                logger.warning("Some Admin Roles may not have been assigned for the children of the Dataverse: alias= " + alias);
                 logger.warning(Json.createObjectBuilder().add("Dataverses Updated", dataverseIds).add("Updated Dataverse Aliases", dataverseAliases)
                         .add("Admins added", usedNames).add("Admins not added", unusedNames).build().toString());
                 e.printStackTrace();
