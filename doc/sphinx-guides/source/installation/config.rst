@@ -107,8 +107,7 @@ By default, the installer configures a test DOI namespace (10.5072) with DataCit
       <jvm-options>-Ddoi.username=...</jvm-options>
       <jvm-options>-Ddoi.password=...</jvm-options>
 
-
-and restart glassfish. Once this is done, you will be able to publish datasets and files, but they will not be citable, or guaranteed to be preserved. Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured. 
+and restart Glassfish. Once this is done, you will be able to publish datasets and files, but the persistent identifiers will not be citable or guaranteed to be preserved. Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured. 
 
 To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider: **EZID** (http://ezid.cdlib.org), **DataCite** (https://www.datacite.org), **Handle.Net** (https://www.handle.net). 
 
