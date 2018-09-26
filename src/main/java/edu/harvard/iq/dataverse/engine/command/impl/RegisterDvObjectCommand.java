@@ -87,7 +87,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                 }
                 ctxt.em().merge(target);
                 ctxt.em().flush();
-                if (target.isInstanceofDataset()) {
+                if (target.isInstanceofDataset() && target.isReleased()) {
                     Dataset dataset = (Dataset) target;
                     for (DataFile df : dataset.getFiles()) {
                         if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
@@ -129,11 +129,11 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         } catch (Throwable ex) {
             //do nothing - we'll know it failed because the global id create time won't have been updated.
         }
-        if(this.migrateHandle){
+        if (this.migrateHandle) {
             //Only continue if you can successfully migrate the handle
-                    boolean doNormalSolrDocCleanUp = true;
-                ctxt.index().indexDataset((Dataset) target, doNormalSolrDocCleanUp);
-                ctxt.solrIndex().indexPermissionsForOneDvObject((Dataset)target);
+            boolean doNormalSolrDocCleanUp = true;
+            ctxt.index().indexDataset((Dataset) target, doNormalSolrDocCleanUp);
+            ctxt.solrIndex().indexPermissionsForOneDvObject((Dataset) target);
         }
     }
     
