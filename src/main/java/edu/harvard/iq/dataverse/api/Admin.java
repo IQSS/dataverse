@@ -1136,7 +1136,7 @@ public class Admin extends AbstractApiBean {
 		Integer alreadyUpdated = 0;
 		Integer rehashed = 0;
 		Integer harvested=0;
-		
+		//ToDo - num parameter is not working
 		if (num <= 0)
 			num = Integer.MAX_VALUE;
 		DataFile.ChecksumType cType = null;
