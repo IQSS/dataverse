@@ -8,7 +8,7 @@ ExecStart = /usr/bin/java -jar /usr/local/glassfish4/glassfish/lib/client/appser
 ExecStop = /usr/bin/java -jar /usr/local/glassfish4/glassfish/lib/client/appserver-cli.jar stop-domain
 ExecReload = /usr/bin/java -jar /usr/local/glassfish4/glassfish/lib/client/appserver-cli.jar restart-domain
 LimitNOFILE=32768
-DefaultTimeoutStartSec=120s
+DefaultTimeoutStartSec=120s # current default is 90s
 Type = forking
 
 [Install]
