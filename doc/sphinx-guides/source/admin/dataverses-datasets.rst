@@ -57,4 +57,4 @@ Mint new PID for a Dataset
 
 Mints a new identifier for a dataset previously registered with a handle. Only accessible to superusers. ::
 
-    curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/admin/$dataset-id/reregisterHDLToPID
+    curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/admin/$dataset-id/reregisterHDLToPID
