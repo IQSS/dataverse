@@ -14,8 +14,10 @@ public class SiteMapIT {
 
     @Test
     public void testSiteMap() {
-        Response response = UtilIT.updateSiteMap();
+        Response response = UtilIT.sitemapUpdate();
         response.prettyPrint();
+        Response download = UtilIT.sitemapDownload();
+        download.prettyPrint();
     }
 
 }

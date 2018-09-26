@@ -1603,9 +1603,14 @@ public class UtilIT {
         return requestSpecification.delete("/api/admin/clearMetricsCache");
     }
 
-    static Response updateSiteMap() {
+    static Response sitemapUpdate() {
         return given()
                 .post("/api/admin/sitemap");
+    }
+
+    static Response sitemapDownload() {
+        return given()
+                .get("/sitemap.xml");
     }
 
     @Test
