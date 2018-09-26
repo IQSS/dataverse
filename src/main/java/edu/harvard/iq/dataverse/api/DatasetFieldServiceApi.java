@@ -309,9 +309,6 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             mdb.setOwner(dataverseService.findByAlias(values[2]));
         }
         mdb.setDisplayName(values[3]);
-        if (values.length>4) {
-            logger.info("mdblock uri: " + values[4]);
-        }
         if (values.length>4 && !StringUtils.isEmpty(values[4])) {
             mdb.setNamespaceUri(values[4]);
         }
@@ -348,10 +345,6 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             dsf.setParentDatasetFieldType(null);
         }
         dsf.setMetadataBlock(dataverseService.findMDBByName(values[15]));
-        if (values.length>16) {
-            logger.info("field uri for " + dsf.getName() + " : " + values[16]);
-        }
-
         if(values.length>16 && !StringUtils.isEmpty(values[16])) {
           dsf.setUri(values[16]);
         }

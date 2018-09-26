@@ -74,9 +74,11 @@ public class OREMap {
                 JsonLDTerm fieldName = null;
                 if (dfType.getUri() != null) {
                     fieldName = new JsonLDTerm(dfType.getTitle(), dfType.getUri());
+                    localContext.putIfAbsent(fieldName.getLabel(), fieldName.getUrl());
                 } else {
                     fieldName = new JsonLDTerm(blockNamespace, dfType.getTitle());
                 }
+                
                 JsonArrayBuilder vals = Json.createArrayBuilder();
                 if (!dfType.isCompound()) {
                     for (String val : field.getValues_nondisplay()) {
@@ -84,12 +86,12 @@ public class OREMap {
                     }
                 } else {
                     // ToDo: Needs to be recursive (as in JsonPrinter?)
-                    // Use metadatablock URI or define a URI for this filed based on the path
+                    // Use metadatablock URI or custom URI for this field based on the path
                     String subFieldNamespaceUri = dfType.getMetadataBlock().getNamespaceUri();
                     if (subFieldNamespaceUri == null) {
-                        subFieldNamespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/"
-                                + dfType.getMetadataBlock().getName() + "/" + dfType.getName() + "#";
+                        subFieldNamespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/"+ dfType.getMetadataBlock().getName();
                     }
+                    subFieldNamespaceUri = subFieldNamespaceUri  + "/" + dfType.getName() + "#";
                     JsonLDNamespace fieldNamespace = new JsonLDNamespace(dfType.getName(), subFieldNamespaceUri);
                     // Add context entry for metadata block
                     localContext.putIfAbsent(fieldNamespace.getPrefix(), fieldNamespace.getUrl());
@@ -107,6 +109,7 @@ public class OREMap {
                                 JsonLDTerm subFieldName = null;
                                 if (dsft.getUri() != null) {
                                     subFieldName = new JsonLDTerm(dsft.getTitle(), dsft.getUri());
+                                    localContext.putIfAbsent(subFieldName.getLabel(), subFieldName.getUrl());
                                 } else {
                                     subFieldName = new JsonLDTerm(fieldNamespace, dsft.getTitle());
                                 }
