@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -40,6 +41,11 @@ public class OREMap {
     }
 
     public void writeOREMap(OutputStream outputStream) throws Exception {
+        outputStream.write(getOREMap().toString().getBytes("UTF8"));
+        outputStream.flush();
+    }
+
+    public JsonObject getOREMap() throws Exception {
 
         // Add namespaces we'll definitely use to Context
         // Additional namespaces are added as needed below
@@ -58,19 +64,11 @@ public class OREMap {
         for (DatasetField field : fields) {
             if (!field.isEmpty()) {
                 DatasetFieldType dfType = field.getDatasetFieldType();
-                String namespaceUri = dfType.getMetadataBlock().getNamespaceUri();
-                if (namespaceUri == null) {
-                    namespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/"
-                            + dfType.getMetadataBlock().getName() + "#";
-                }
-                JsonLDNamespace blockNamespace = new JsonLDNamespace(dfType.getMetadataBlock().getName(), namespaceUri);
-                // Add context entry for metadata block
-                localContext.putIfAbsent(blockNamespace.getPrefix(), blockNamespace.getUrl());
-                JsonLDTerm fieldName = null;
-                if (dfType.getUri() != null) {
-                    fieldName = new JsonLDTerm(dfType.getTitle(), dfType.getUri());
+                JsonLDTerm fieldName = getTermFor(dfType);
+                if (fieldName.inNamespace()) {
+                    localContext.putIfAbsent(fieldName.getNamespace().getPrefix(), fieldName.getNamespace().getUrl());
                 } else {
-                    fieldName = new JsonLDTerm(blockNamespace, dfType.getTitle());
+                    localContext.putIfAbsent(fieldName.getLabel(), fieldName.getUrl());
                 }
                 JsonArrayBuilder vals = Json.createArrayBuilder();
                 if (!dfType.isCompound()) {
@@ -79,16 +77,6 @@ public class OREMap {
                     }
                 } else {
                     // ToDo: Needs to be recursive (as in JsonPrinter?)
-                    //Use metadatablock URI or define a URI for this filed based on the path
-                    String subFieldNamespaceUri = dfType.getMetadataBlock().getNamespaceUri();
-                    if (subFieldNamespaceUri == null) {
-                        subFieldNamespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/"
-                                + dfType.getMetadataBlock().getName() + "/" + dfType.getName() + "#";
-                    }
-                    JsonLDNamespace fieldNamespace = new JsonLDNamespace(dfType.getName(), subFieldNamespaceUri);
-                    // Add context entry for metadata block
-                    localContext.putIfAbsent(fieldNamespace.getPrefix(), fieldNamespace.getUrl());
-
                     for (DatasetFieldCompoundValue dscv : field.getDatasetFieldCompoundValues()) {
                         // compound values are of different types
                         JsonObjectBuilder child = Json.createObjectBuilder();
@@ -99,11 +87,12 @@ public class OREMap {
                             if (!dsf.isEmpty()) {
                                 // Add context entry 
                                 //ToDo - also needs to recurse here?
-                                JsonLDTerm subFieldName = null;
-                                if (dsft.getUri() != null) {
-                                    subFieldName = new JsonLDTerm(dsft.getTitle(), dsft.getUri());
+                                JsonLDTerm subFieldName = getTermFor(dfType, dsft);
+                                if (subFieldName.inNamespace()) {
+                                    localContext.putIfAbsent(subFieldName.getNamespace().getPrefix(),
+                                            subFieldName.getNamespace().getUrl());
                                 } else {
-                                    subFieldName = new JsonLDTerm(fieldNamespace, dsft.getTitle());
+                                    localContext.putIfAbsent(subFieldName.getLabel(), subFieldName.getUrl());
                                 }
 
                                 List<String> values = dsf.getValues_nondisplay();
@@ -170,7 +159,8 @@ public class OREMap {
         aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
                 dataset.getDataverseContext().getDisplayName());
 
-        //The aggregation aggregates aggregatedresources (Datafiles) which each have their own entry and metadata
+        // The aggregation aggregates aggregatedresources (Datafiles) which each have
+        // their own entry and metadata
         JsonArrayBuilder aggResArrayBuilder = Json.createArrayBuilder();
 
         for (FileMetadata fmd : version.getFileMetadatas()) {
@@ -250,7 +240,8 @@ public class OREMap {
                 .add(JsonLDTerm.dcTerms("creator").getLabel(),
                         ResourceBundle.getBundle("Bundle").getString("institution.name"))
                 .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())
-                //Define an id for the map itself (separate from the @id of the dataset being described
+                // Define an id for the map itself (separate from the @id of the dataset being
+                // described
                 .add("@id",
                         SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/export?exporter="
                                 + OAI_OREExporter.NAME + "&persistentId=" + id)
@@ -260,13 +251,13 @@ public class OREMap {
                                 .add(JsonLDTerm.schemaOrg("hasPart").getLabel(), fileArray.build()).build())
                 // and finally add the context
                 .add("@context", contextBuilder.build()).build();
-
-        outputStream.write(oremap.toString().getBytes("UTF8"));
-        outputStream.flush();
+        return oremap;
     }
 
-    /* Simple methods to only add an entry to JSON if the value of the term is non-null. 
-     * Methods created for string, JsonValue, boolean, and long */
+    /*
+     * Simple methods to only add an entry to JSON if the value of the term is
+     * non-null. Methods created for string, JsonValue, boolean, and long
+     */
     
     private void addIfNotNull(JsonObjectBuilder builder, JsonLDTerm key, String value) {
         if (value != null) {
@@ -300,6 +291,83 @@ public class OREMap {
         if (!key.inNamespace()) {
             localContext.putIfAbsent(key.getLabel(), key.getUrl());
         }
+    }
+
+    public JsonLDTerm getContactTerm() {
+        return getTermFor(DatasetFieldConstant.datasetContact);
+    }
+
+    public JsonLDTerm getContactNameTerm() {
+        return getTermFor(DatasetFieldConstant.datasetContact, DatasetFieldConstant.datasetContactName);
+    }
+
+    public JsonLDTerm getContactEmailTerm() {
+        return getTermFor(DatasetFieldConstant.datasetContact, DatasetFieldConstant.datasetContactEmail);
+    }
+
+    public JsonLDTerm getDescriptionTerm() {
+        return getTermFor(DatasetFieldConstant.description);
+    }
+
+    public JsonLDTerm getDescriptionTextTerm() {
+        return getTermFor(DatasetFieldConstant.description, DatasetFieldConstant.descriptionText);
+    }
+
+    private JsonLDTerm getTermFor(String fieldTypeName) {
+        for (DatasetField dsf : version.getDatasetFields()) {
+            DatasetFieldType dsft = dsf.getDatasetFieldType();
+            if (dsft.getName().equals(fieldTypeName)) {
+                return getTermFor(dsft);
+            }
+        }
+        return null;
+    }
+
+    private JsonLDTerm getTermFor(DatasetFieldType dsft) {
+        if (dsft.getUri() != null) {
+            return new JsonLDTerm(dsft.getTitle(), dsft.getUri());
+        } else {
+            String namespaceUri = dsft.getMetadataBlock().getNamespaceUri();
+            if (namespaceUri == null) {
+                namespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/" + dsft.getMetadataBlock().getName()
+                        + "#";
+            }
+            JsonLDNamespace blockNamespace = new JsonLDNamespace(dsft.getMetadataBlock().getName(), namespaceUri);
+            return new JsonLDTerm(blockNamespace, dsft.getTitle());
+        }
+    }
+
+    private JsonLDTerm getTermFor(DatasetFieldType dfType, DatasetFieldType dsft) {
+        if (dsft.getUri() != null) {
+            return new JsonLDTerm(dsft.getTitle(), dsft.getUri());
+        } else {
+            // Use metadatablock URI or custom URI for this field based on the path
+            String subFieldNamespaceUri = dfType.getMetadataBlock().getNamespaceUri();
+            if (subFieldNamespaceUri == null) {
+                subFieldNamespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/"
+                        + dfType.getMetadataBlock().getName() + "/";
+            }
+            subFieldNamespaceUri = subFieldNamespaceUri + dfType.getName() + "#";
+            JsonLDNamespace fieldNamespace = new JsonLDNamespace(dfType.getName(), subFieldNamespaceUri);
+            return new JsonLDTerm(fieldNamespace, dsft.getTitle());
+        }
+    }
+
+    private JsonLDTerm getTermFor(String type, String subType) {
+        for (DatasetField dsf : version.getDatasetFields()) {
+            DatasetFieldType dsft = dsf.getDatasetFieldType();
+            if (dsft.getName().equals(type)) {
+                for (DatasetFieldCompoundValue dscv : dsf.getDatasetFieldCompoundValues()) {
+                    for (DatasetField subField : dscv.getChildDatasetFields()) {
+                        DatasetFieldType subFieldType = subField.getDatasetFieldType();
+                        if (subFieldType.getName().equals(subType)) {
+                            return getTermFor(dsft, subFieldType);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
 }

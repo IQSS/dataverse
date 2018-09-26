@@ -45,11 +45,6 @@ public class JsonLDTerm {
     public static JsonLDTerm checksum = JsonLDTerm.DVCore("checksum");
     public static JsonLDTerm tabularTags = JsonLDTerm.DVCore("tabularTags");
 
-    public static JsonLDTerm contact = JsonLDTerm.DVCore("contact");
-    public static JsonLDTerm affiliation = JsonLDTerm.DVCore("affiliation");
-    public static JsonLDTerm email = JsonLDTerm.DVCore("email");
-    public static JsonLDTerm description = JsonLDTerm.DVCore("dsDescription");
-    public static JsonLDTerm text = JsonLDTerm.DVCore("text");
     public static JsonLDTerm totalSize = JsonLDTerm.DVCore("totalSize");
     public static JsonLDTerm fileCount = JsonLDTerm.DVCore("fileCount");
     public static JsonLDTerm maxFileSize = JsonLDTerm.DVCore("maxFileSize");
@@ -98,6 +93,10 @@ public class JsonLDTerm {
 
     public boolean inNamespace() {
         return (namespace != null);
+    }
+    
+    public JsonLDNamespace getNamespace() {
+        return namespace;
     }
 
 }
