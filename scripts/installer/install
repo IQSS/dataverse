@@ -843,7 +843,7 @@ sub setup_glassfish {
 		# as much memory (512 MB) and allow $sys_mem_total to
 		# be set below, you should see the following:
 		# "Setting the heap limit for Glassfish to 192MB."
-		# FIXME: dataverse.war will not deploy with only 512 GB of memory.
+		# FIXME: dataverse.war will not deploy with only 512 MB of memory.
 		# Again, the goal is 1 GB total (512MB + 256MB + 256MB) for
 		# Glassfish, PostgreSQL, and Solr to fit in the free OpenShift tier.
 		#print "setting sys_mem_total to: $limit_in_kb\n";
