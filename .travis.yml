@@ -1,5 +1,17 @@
 language: java
 jdk:
   - oraclejdk8
-script: mvn -DcompilerArgument=-Xlint:unchecked test -P all-unit-tests
-after_success: mvn jacoco:report coveralls:report 
+install: mvn dependency:resolve
+cache:
+  directories:
+    - $HOME/.m2
+
+jobs:
+  include:
+    - stage: validate
+      name: Validation
+      script: mvn -Pvalidate validate
+    - stage: test
+      name: Unit Testing
+      script: mvn -DcompilerArgument=-Xlint:unchecked test -P all-unit-tests
+      after_success: mvn jacoco:report coveralls:report
