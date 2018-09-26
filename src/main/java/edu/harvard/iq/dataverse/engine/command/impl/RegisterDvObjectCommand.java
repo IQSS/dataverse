@@ -87,7 +87,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                 }
                 ctxt.em().merge(target);
                 ctxt.em().flush();
-                if (target.isInstanceofDataset() && target.isReleased()) {
+                if (target.isInstanceofDataset() && target.isReleased() && !this.migrateHandle) {
                     Dataset dataset = (Dataset) target;
                     for (DataFile df : dataset.getFiles()) {
                         if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {

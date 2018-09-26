@@ -21,7 +21,7 @@
             "typeName": "title",
             "multiple": false,
             "typeClass": "primitive",
-            "value": "Handle Dataset re-resgister to DOI"
+            "value": "Handle Dataset re-register to DOI"
           },
           {
             "typeName": "author",

@@ -514,11 +514,10 @@ public class AdminIT {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
 
-
         // change this to register new dataset witha handle
         UtilIT.setSetting(SettingsServiceBean.Key.Protocol, "hdl");
         UtilIT.setSetting(SettingsServiceBean.Key.Authority, "20.500.12050");
-                UtilIT.setSetting(SettingsServiceBean.Key.Shoulder, "");
+        UtilIT.setSetting(SettingsServiceBean.Key.Shoulder, "");
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
@@ -533,19 +532,22 @@ public class AdminIT {
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
-        System.out.print("in test identifier datasetId before dataset as json: " + datasetId );
         Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
         datasetAsJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         UtilIT.setSetting(SettingsServiceBean.Key.Protocol, "doi");
         UtilIT.setSetting(SettingsServiceBean.Key.Authority, "10.5072");
         UtilIT.setSetting(SettingsServiceBean.Key.Shoulder, "FK2/");
-        System.out.print("in test identifier datasetId AFTER dataset as json: " + datasetId.toString() );
-        Response migrateIdentifierResponse = UtilIT.migrateDatasetIdentifierFromHDLToPId( datasetId.toString());
-                migrateIdentifierResponse.prettyPrint();
+        Response pubdv = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        Response publishDSViaNative = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDSViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response migrateIdentifierResponse = UtilIT.migrateDatasetIdentifierFromHDLToPId(datasetId.toString());
+        migrateIdentifierResponse.prettyPrint();
         migrateIdentifierResponse.then().assertThat()
-                .statusCode(OK.getStatusCode());     
+                .statusCode(OK.getStatusCode());
     }
 
 }
