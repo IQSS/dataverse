@@ -291,7 +291,7 @@ public class BagGenerator {
         // Serialize oremap itself
         // FixMe - add missing hash values if needed and update context
         // (read and cache files or read twice?)
-        createFileFromString("metadata/ore-ore.jsonld", oremapObject.toString());
+        createFileFromString("metadata/oai-ore.jsonld", oremapObject.toString());
 
         createFileFromString("metadata/datacite.xml", dataciteXml);
 
