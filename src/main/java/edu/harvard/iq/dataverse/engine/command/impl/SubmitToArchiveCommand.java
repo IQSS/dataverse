@@ -178,9 +178,11 @@ public class SubmitToArchiveCommand implements Command<DatasetVersion> {
                             public void run() {
                                 try {
                                     //Get OREmap, convert from javax.json.JsonObject to com.google.gson.JsonObject
-                                    JsonObject oremap = (JsonObject) new JsonParser().parse(new OREMap(dv).getOREMap().toString());
+                                    OREMap oreMap = new OREMap(dv);
+                                    JsonObject jsonOreMap = (JsonObject) new JsonParser().parse(oreMap.getOREMap().toString());
+                                    
                                     //Generate bag
-                                    BagGenerator bagger = new BagGenerator(oremap, dataciteXml);
+                                    BagGenerator bagger = new BagGenerator(new OREMap(dv), dataciteXml);
                                     bagger.setAuthenticationKey(token.getTokenString());
                                     bagger.generateBag(out);
                                 } catch (Exception e) {
