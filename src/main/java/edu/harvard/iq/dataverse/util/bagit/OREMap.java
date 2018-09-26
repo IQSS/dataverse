@@ -89,9 +89,9 @@ public class OREMap {
                     // Use metadatablock URI or custom URI for this field based on the path
                     String subFieldNamespaceUri = dfType.getMetadataBlock().getNamespaceUri();
                     if (subFieldNamespaceUri == null) {
-                        subFieldNamespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/"+ dfType.getMetadataBlock().getName();
+                        subFieldNamespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/"+ dfType.getMetadataBlock().getName() + "/";
                     }
-                    subFieldNamespaceUri = subFieldNamespaceUri  + "/" + dfType.getName() + "#";
+                    subFieldNamespaceUri = subFieldNamespaceUri + dfType.getName() + "#";
                     JsonLDNamespace fieldNamespace = new JsonLDNamespace(dfType.getName(), subFieldNamespaceUri);
                     // Add context entry for metadata block
                     localContext.putIfAbsent(fieldNamespace.getPrefix(), fieldNamespace.getUrl());
