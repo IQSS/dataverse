@@ -398,14 +398,12 @@
                 <!-- END: Upload -->
                 
                 <div jsf:id="filesCounts">
+                <!-- TODO: ADDED filesCounts id to commandButtons above in Line 291-292, is there a better way to do this other than listing out 5-6 elements to update? -->
                 
-                    <!-- TODO: ADDED filesCounts id to commandButtons above in Line 291-292, is there a better way to do this other than listing out 5-6 elements to update? -->
-                
-
-                <!-- Files Table -->                       
+                <!-- Files Table -->
                 <p:dataTable id="filesTable" 
                              value="#{EditDatafilesPage.fileMetadatas}"
-                             rendered="#{(datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset)))}"
+                             rendered="#{!empty EditDatafilesPage.fileMetadatas or !EditDatafilesPage.showFileUploadFragment()}"
                              rowIndexVar="rowNum" 
                              rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                              selection="#{EditDatafilesPage.selectedFiles}" 
@@ -424,7 +422,6 @@
                             </div>
                         </div>
                     </f:facet>
-                    <!-- TODO: do we still need the selection at all?? or is it all going to be handled on the "view" page?? -->
                     <p:column selectionMode="multiple" class="col-select-width text-center" style="width:40px !important;"/>
                     <p:column class="col-file-thumb text-center" style="width:73px !important;padding:4px 10px;">
                         <div class="thumbnail-block">
@@ -471,7 +468,6 @@
                             </div>
                         </div>
                         <!-- UNF + Variables, Obsersvations -->
-                        
                         <div class="text-muted small" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
                             <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, " rendered="#{fileMetadata.dataFile.tabularData}"/>
                             <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty fileMetadata.dataFile.unf ? ' - ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
@@ -612,9 +608,7 @@
                     </p:column>
                 </p:dataTable>
                 
-                
                 </div>
-                
                 
             </div>
         </div>
@@ -622,7 +616,6 @@
     <!-- END: Static Tab Layout -->
     <p:remoteCommand  name="returnToDatasetPage" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.returnToDatasetOnly()}"  />
     <!-- TODO: a message panel informing the unauthorized, or unauthenticated user that they don't have permission - should it be here? L.A. 4.2 -->
-    <!-- authentication and authorization: #dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) -->
 
     <!-- Popups -->
     <p:dialog styleClass="smallPopUp" header="#{bundle['file.addreplace.content_type.header']}" widgetVar="fileTypeDifferentPopup" id="fileTypeDifferentPopup" modal="true">
