@@ -14,6 +14,9 @@
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	<additionalparam>-Xdoclint:none</additionalparam>
         <aws.version>1.11.172</aws.version>
+        <project.timezone>UTC</project.timezone>
+        <project.language>en</project.language>
+        <project.region>US</project.region>
     </properties>
 
     <repositories>
@@ -650,7 +653,43 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <!-- https://stackoverflow.com/questions/46177921/how-to-run-unit-tests-in-excludedgroups-in-maven -->
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.0</version>
+                <configuration>
+                   <!-- testsToExclude come from the profile-->
+                   <excludedGroups>${testsToExclude}</excludedGroups>
+                    <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <configLocation>checkstyle.xml</configLocation>
+                    <encoding>UTF-8</encoding>
+                    <consoleOutput>true</consoleOutput>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
-
+    <profiles>
+      <profile>
+        <id>dev</id>
+        <activation>
+            <!-- https://stackoverflow.com/questions/11824328/default-build-profile-for-maven -->
+            <!-- We set dev to true to developers don't have to run non-essential tests over and over. -->
+          <activeByDefault>true</activeByDefault>
+        </activation>
+        <properties>
+            <testsToExclude>edu.harvard.iq.dataverse.NonEssentialTests</testsToExclude>
+        </properties>
+      </profile>
+      <profile>
+        <id>all-unit-tests</id>
+      </profile>
+      <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
+    </profiles>
 </project>
