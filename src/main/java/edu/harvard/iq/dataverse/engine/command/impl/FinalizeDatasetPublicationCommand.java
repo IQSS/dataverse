@@ -46,7 +46,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     /**
      * mirror field from {@link PublishDatasetCommand} of same name
      */
-    final boolean datasetExternallyReleased;
+    final boolean isPidPrePublished;
     
     public FinalizeDatasetPublicationCommand(Dataset aDataset, String aDoiProvider, DataverseRequest aRequest) {
         this( aDataset, aDoiProvider, aRequest, false );
@@ -54,7 +54,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     public FinalizeDatasetPublicationCommand(Dataset aDataset, String aDoiProvider, DataverseRequest aRequest, boolean isPidPrePublished) {
         super(aDataset, aRequest);
         doiProvider = aDoiProvider;
-	datasetExternallyReleased = isPidPrePublished;
+        this.isPidPrePublished = isPidPrePublished;
     }
 
     @Override
@@ -105,7 +105,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         ctxt.em().merge(ddu);
         
         updateParentDataversesSubjectsField(theDataset, ctxt);
-	if (!datasetExternallyReleased){
+	if (!isPidPrePublished){
 		publicizeExternalIdentifier(theDataset, ctxt);
 	}
 
@@ -116,7 +116,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
 	if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
 		// some imported datasets may already be released.
-		if (!datasetExternallyReleased){
+		if (!isPidPrePublished){
 			publicizeExternalIdentifier(theDataset, ctxt);
 		}
 		theDataset.getLatestVersion().setVersionState(RELEASED);

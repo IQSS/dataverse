@@ -476,6 +476,19 @@
                                 </p:commandButton>
                             </div>
                         </div>
+                        <div class="form-group" jsf:rendered="#{DatasetPage.editMode == 'CREATE'}">
+                            <label for="metadata_globalId" class="col-sm-3 control-label">
+                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.doi']}">
+                                    #{bundle.doi}
+                                </span>
+                            </label>
+                            <div class="col-sm-9">
+                                <!-- input text start -->
+                                <span id="pre-input-doi" class="pre-input-tag"/>
+                                <p:inputText value="#{DatasetPage.providedDOI}" styleClass="form-control" id="inputText" placeholder="#{bundle['dataset.doi.placeholder']}" />
+
+                            </div>
+                        </div>
                         <div class="form-group">
                             <div class="col-sm-12">
                                 <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText value="#{bundle['dataset.asterisk.tip']}"/>
