@@ -100,7 +100,7 @@ fi
 #
 # Build init-container
 #
-cp ../../scripts/installer/postgres-setup dataverse-glassfish/init-container
+cp ../../scripts/installer/install dataverse-glassfish/init-container
 docker build -t $HUBORG/init-container:$TAG dataverse-glassfish/init-container
 if [ "$1" == 'internal' ]; then
   echo "Skipping docker push because we're using the internal Minishift registry."

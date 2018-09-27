@@ -615,7 +615,8 @@
                                     <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
                                     <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
                                     <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
-                                    <ui:param name="globalId" value="#{DatasetPage.globalId}"/>
+                                    <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
+                                    <ui:param name="altPID" value="#{DatasetPage.dataset.alternativePersistentIdentifier}"/>
                                 </ui:include>
                             </p:tab>
 
