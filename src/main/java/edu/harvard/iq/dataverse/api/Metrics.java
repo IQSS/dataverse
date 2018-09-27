@@ -32,6 +32,8 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 @Path("info/metrics")
 public class Metrics extends AbstractApiBean {
 
+    /** Dataverses */
+    
     @GET
     @Path("dataverses/toMonth")
     public Response getDataversesToMonthCurrent() {
@@ -62,6 +64,54 @@ public class Metrics extends AbstractApiBean {
     }
 
     @GET
+    @Path("dataverses/byCategory")
+    public Response getDataversesByCategory() {
+        String metricName = "dataversesByCategory";
+
+        try {
+            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName);
+
+            if (null == jsonArrayString) { //run query and save
+                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesByCategoryToJson(metricsSvc.dataversesByCategory());
+                jsonArrayString = jsonArrayBuilder.build().toString();
+                metricsSvc.save(new Metric(metricName, jsonArrayString), false);
+            }
+
+            return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
+        } catch (Exception ex) {
+            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+        }
+    }
+    
+    @GET
+    @Path("dataverses/bySubject")
+    public Response getDataversesBySubject() {
+        return null;
+    }
+    
+    /** Datasets */
+    
+    @GET
+    @Path("datasets/bySubject")
+    public Response getDatasetsBySubject() {
+        String metricName = "datasetsBySubject";
+
+        try {
+            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName);
+
+            if (null == jsonArrayString) { //run query and save
+                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubject());
+                jsonArrayString = jsonArrayBuilder.build().toString();
+                metricsSvc.save(new Metric(metricName, jsonArrayString), false);
+            }
+
+            return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
+        } catch (Exception ex) {
+            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+        }
+    }
+    
+    @GET
     @Path("datasets/toMonth")
     public Response getDatasetsToMonthCurrent() {
         return getDatasetsToMonth(MetricsUtil.getCurrentMonth());
@@ -90,6 +140,8 @@ public class Metrics extends AbstractApiBean {
         }
     }
 
+    /** Files */
+    
     @GET
     @Path("files/toMonth")
     public Response getFilesToMonthCurrent() {
@@ -118,6 +170,8 @@ public class Metrics extends AbstractApiBean {
         }
     }
 
+    /** Downloads */
+    
     @GET
     @Path("downloads/toMonth")
     public Response getDownloadsToMonthCurrent() {
@@ -146,43 +200,4 @@ public class Metrics extends AbstractApiBean {
         }
     }
 
-    @GET
-    @Path("dataverses/byCategory")
-    public Response getDataversesByCategory() {
-        String metricName = "dataversesByCategory";
-
-        try {
-            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName);
-
-            if (null == jsonArrayString) { //run query and save
-                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesByCategoryToJson(metricsSvc.dataversesByCategory());
-                jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, jsonArrayString), false);
-            }
-
-            return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
-        } catch (Exception ex) {
-            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
-        }
-    }
-
-    @GET
-    @Path("datasets/bySubject")
-    public Response getDatasetsBySubject() {
-        String metricName = "datasetsBySubject";
-
-        try {
-            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName);
-
-            if (null == jsonArrayString) { //run query and save
-                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubject());
-                jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, jsonArrayString), false);
-            }
-
-            return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
-        } catch (Exception ex) {
-            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
-        }
-    }
 }
