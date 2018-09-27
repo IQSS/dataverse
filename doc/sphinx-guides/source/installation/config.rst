@@ -262,25 +262,23 @@ if your installation's :ref:`:PublicInstall` setting is true, or:
 
 You can configure this redirect properly in your cloud environment to generate a temporary URL for access to the Swift objects for computing.
 
-Amazon S3 Storage (or compatible)
+Amazon S3 Storage (or Compatible)
 +++++++++++++++++++++++++++++++++
 
-For institutions and organizations looking to use some kind of S3-based object storage for files uploaded to Dataverse,
-this is entirely possible. You can either use the services offered by Amazon or use some other, even on-site S3-compatible
-storage (like Minio, Ceph RADOS S3 Gateway and many more).
+For institutions and organizations looking to use Amazon's S3 cloud storage for their installation, this can be set up manually through creation of the credentials and config files or automatically via the AWS console commands. Alternatively, you may instead use other, even on-site S3-compatible storage (like Minio, Ceph RADOS S3 Gateway and many more).
 
-First: setup accounts and access credentials
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+First: Set Up Accounts and Access Credentials
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Dataverse and the AWS SDK make use of "AWS credentials profile file" and "AWS config profile file" located in
+Dataverse and the AWS SDK make use of the "AWS credentials profile file" and "AWS config profile file" located in
 ``~/.aws/`` where ``~`` is the home directory of the user you run Glassfish as. This file can be generated via either
 of two methods described below:
 
-1. manually through creation of the credentials and config files or
-2. automatically via the AWS console commands.
+1. Manually through creation of the credentials and config files or
+2. Automatically via the AWS console commands.
 
-Preparation when using Amazon's S3 service
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Preparation When Using Amazon's S3 Service
+##########################################
 
 You'll need an AWS account with an associated S3 bucket for your installation to use. From the S3 management console
 (e.g. `<https://console.aws.amazon.com/>`_), you can poke around and get familiar with your bucket.
@@ -300,40 +298,39 @@ for more info on this process.
   ``~/.aws/config`` file to specify the region. For more information on this option, see
   http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
 
-Preparation when using custom S3-compatible service
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Preparation When Using Custom S3-Compatible Service
+###################################################
 
 We assume you have your S3-compatible custom storage in place, up and running, ready for service.
 
 Please make note of the following details:
 
-- | Endpoint URL. Consult the documentation of your service how to find that.
-  | Example: https://play.minio.io:9000
-- | Region. Optional, but some services might use it. Consult your service documentation!
-  | Example: *us-east-1*
-- | Access key ID and secret access key. Usually you can generate access keys within the user profile of your service.
-  | Example:
-  |   ID: *3AM3UQ867SPQQA43P2F*
-  |   Key: *zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG*
-- | Bucket name. Dataverse will fail opening and uploading files on S3 if you don't create one.
-  | Example: *dataverse*
+- **Endpoint URL** - consult the documentation of your service on how to find it.
+  - Example: https://play.minio.io:9000
+- **Region:** Optional, but some services might use it. Consult your service documentation.
+  - Example: *us-east-1*
+- **Access key ID and secret access key:** Usually you can generate access keys within the user profile of your service.
+  - Example:
+    - ID: *3AM3UQ867SPQQA43P2F*
+    - Key: *zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG*
+- **Bucket name:** Dataverse will fail opening and uploading files on S3 if you don't create one.
+  - Example: *dataverse*
 
 
-Reported working S3-compatible storage
+Reported Working S3-Compatible Storage
 ######################################
 
 `Minio v2018-09-12 <http://minio.io>`_
   Set ``dataverse.files.s3-path-style-access=true``, as Minio works path-based.
   Works pretty smooth, easy to setup.
 
-.. HINT::
-  If you are successfully using an S3 storage implementation not yet listed above, please feel free to
+  **HINT:** If you are successfully using an S3 storage implementation not yet listed above, please feel free to
   `open an issue at Github <https://github.com/IQSS/dataverse/issues/new>`_ and describe your setup.
   We will be glad to add it here.
 
 
-Manually set up credentials file
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Manually Set Up Credentials File
+################################
 
 To create the ``~/.aws/credentials`` file manually, you will need to generate a key/secret key (see above). Once you have
 acquired the keys, they need to be added to the ``credentials`` file. The format for credentials is as follows:
@@ -356,8 +353,8 @@ instance. (From the `AWS Command Line Interface Documentation <http://docs.aws.a
 "In order to separate credentials from less sensitive options, region and output format are stored in a separate file
 named config in the same folder")
 
-Console commands set up access configuration
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Console Commands to Set Up Access Configuration
+###############################################
 
 Begin by installing the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the
 `AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
@@ -372,11 +369,10 @@ You'll be prompted to enter your Access Key ID and secret key, which should be i
 The subsequent config steps after the access keys are up to you. For reference, the keys will be stored in
 ``~/.aws/credentials``, and your AWS access region in ``~/.aws/config``.
 
-.. TIP::
-  When using a custom S3 URL endpoint, you need to add it to every ``aws`` call: ``aws --endpoint-url <URL> s3 ...``
-  (may omit it while configuring).
+**TIP:** When using a custom S3 URL endpoint, you need to add it to every ``aws`` call: ``aws --endpoint-url <URL> s3 ...``
+  (you may omit it while configuring).
 
-Second: configure Dataverse to use S3 storage
+Second: Configure Dataverse to use S3 Storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 With access to your bucket in place, we'll want to navigate to ``/usr/local/glassfish4/glassfish/bin/``
@@ -402,8 +398,8 @@ If you enable ``dataverse.files.s3-download-redirect`` as described above, note 
 
 Lastly, go ahead and restart your glassfish server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
 
-S3 storage options
-^^^^^^^^^^^^^^^^^^
+S3 Storage Options
+##################
 
 =========================================  ==================  ==================================================================  =============
 System Property                            Value               Description                                                         Default value
