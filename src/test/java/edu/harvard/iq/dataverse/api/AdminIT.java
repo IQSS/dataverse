@@ -26,6 +26,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.junit.Ignore;
 
 public class AdminIT {
 
@@ -511,7 +512,14 @@ public class AdminIT {
     }
     
     @Test
+    @Ignore
     public void testMigrateHDLToDOI() {
+        /*
+        This test is set to ignore because it requires a setup that will
+        mint both handles and doi identifiers        
+        Can re-enable when if test environments are running handle servers.        
+        SEK 09/27/2018
+        */
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
 
