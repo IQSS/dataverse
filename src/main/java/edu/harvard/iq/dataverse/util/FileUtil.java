@@ -233,7 +233,7 @@ public class FileUtil implements java.io.Serializable  {
             }
         }
         
-        return ResourceBundle.getBundle("MimeTypeFacets").getString("application/octet-stream");
+        return BundleUtil.getStringFromPropertyFile("application/octet-stream","MimeTypeFacets"  );
     }
     
     public static String getUserFriendlyOriginalType(DataFile dataFile) {
@@ -244,7 +244,7 @@ public class FileUtil implements java.io.Serializable  {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
             try {
-                return ResourceBundle.getBundle("MimeTypeDisplay").getString(fileType);
+                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeDisplay" );
             } catch (MissingResourceException e) {
                 return fileType;
             }
