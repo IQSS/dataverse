@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
+import edu.harvard.iq.dataverse.util.xml.XmlValidator;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
@@ -56,6 +58,15 @@ public class SiteMapUtilTest {
         datasets.add(deaccessioned);
 
         SiteMapUtil.updateSiteMap(datasets);
+
+        Exception wellFormedXmlException = null;
+        try {
+            assertTrue(XmlValidator.validateXmlWellFormed("/tmp/sitemap.xml"));
+        } catch (Exception ex) {
+            System.out.println("Exception caught checking that XML is well formed: " + ex);
+            wellFormedXmlException = ex;
+        }
+        assertNull(wellFormedXmlException);
 
         File sitemapFile = new File("/tmp/sitemap.xml");
         String sitemapString = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(sitemapFile.getAbsolutePath()))));
