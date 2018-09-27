@@ -37,6 +37,7 @@ public class SiteMapUtilTest {
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date dvModifiedDate = dateFmt.parse("1955-11-12 22:04:00");
         publishedDataverse.setModificationTime(new Timestamp(dvModifiedDate.getTime()));
+        publishedDataverse.setPublicationDate(new Timestamp(dvModifiedDate.getTime()));
         dataverses.add(publishedDataverse);
 
         List<Dataset> datasets = new ArrayList<>();
