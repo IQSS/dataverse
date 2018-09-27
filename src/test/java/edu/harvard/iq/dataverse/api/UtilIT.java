@@ -43,6 +43,14 @@ import static com.jayway.restassured.path.xml.XmlPath.from;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static com.jayway.restassured.RestAssured.given;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static com.jayway.restassured.RestAssured.given;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class UtilIT {
 
@@ -1585,10 +1593,16 @@ public class UtilIT {
         return requestSpecification.get("/api/info/metrics/downloads/toMonth" + optionalYyyyMm);
     }
 
-    static Response metricsDataverseByCategory() {
+    static Response metricsDataversesByCategory() {
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/dataverses/byCategory");
+    }
+    
+    static Response metricsDataversesBySubject() {
+        RequestSpecification requestSpecification = given();
+        requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/dataverses/bySubject");
     }
 
     static Response metricsDatasetsBySubject() {

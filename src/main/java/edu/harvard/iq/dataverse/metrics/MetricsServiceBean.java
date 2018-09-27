@@ -60,35 +60,45 @@ public class MetricsServiceBean implements Serializable {
         return query.getResultList();
     }
     
+    //MAD: Currently copypasta from dataset
     public List<Object[]> dataversesBySubject() {
-        return null;
+        Query query = em.createNativeQuery(""
+                + "select cvv.strvalue, count(dataverse_id) from dataversesubjects\n"
+                + "join controlledvocabularyvalue cvv ON cvv.id = controlledvocabularyvalue_id\n"
+                + "group by cvv.strvalue\n"
+                + "order by count desc;"
+              
+        );
+        logger.info("query: " + query);
+
+        return query.getResultList();
     }
     
     /** Datasets */
 
     public List<Object[]> datasetsBySubject() {
         Query query = em.createNativeQuery(""
-               + "SELECT strvalue, count(dataset.id)\n"
-               + "FROM datasetfield_controlledvocabularyvalue \n"
-               + "JOIN controlledvocabularyvalue ON controlledvocabularyvalue.id = datasetfield_controlledvocabularyvalue.controlledvocabularyvalues_id\n"
-               + "JOIN datasetfield ON datasetfield.id = datasetfield_controlledvocabularyvalue.datasetfield_id\n"
-               + "JOIN datasetfieldtype ON datasetfieldtype.id = controlledvocabularyvalue.datasetfieldtype_id\n"
-               + "JOIN datasetversion ON datasetversion.id = datasetfield.datasetversion_id\n"
-               + "JOIN dvobject ON dvobject.id = datasetversion.dataset_id\n"
-               + "JOIN dataset ON dataset.id = datasetversion.dataset_id\n"
-               + "WHERE\n"
-               + "datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n"
-               + "(\n"
-               + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
-               + "from datasetversion\n"
-               + "join dataset on dataset.id = datasetversion.dataset_id\n"
-               + "where versionstate='RELEASED'\n"
-               + "and dataset.harvestingclient_id is null\n"
-               + "group by dataset_id \n"
-               + ")\n"
-               + "AND datasetfieldtype.name = 'subject'\n"
-               + "GROUP BY strvalue\n"
-               + "ORDER BY count(dataset.id) desc;"
+                + "SELECT strvalue, count(dataset.id)\n"
+                + "FROM datasetfield_controlledvocabularyvalue \n"
+                + "JOIN controlledvocabularyvalue ON controlledvocabularyvalue.id = datasetfield_controlledvocabularyvalue.controlledvocabularyvalues_id\n"
+                + "JOIN datasetfield ON datasetfield.id = datasetfield_controlledvocabularyvalue.datasetfield_id\n"
+                + "JOIN datasetfieldtype ON datasetfieldtype.id = controlledvocabularyvalue.datasetfieldtype_id\n"
+                + "JOIN datasetversion ON datasetversion.id = datasetfield.datasetversion_id\n"
+                + "JOIN dvobject ON dvobject.id = datasetversion.dataset_id\n"
+                + "JOIN dataset ON dataset.id = datasetversion.dataset_id\n"
+                + "WHERE\n"
+                + "datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n"
+                + "(\n"
+                + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
+                + "from datasetversion\n"
+                + "join dataset on dataset.id = datasetversion.dataset_id\n"
+                + "where versionstate='RELEASED'\n"
+                + "and dataset.harvestingclient_id is null\n"
+                + "group by dataset_id \n"
+                + ")\n"
+                + "AND datasetfieldtype.name = 'subject'\n"
+                + "GROUP BY strvalue\n"
+                + "ORDER BY count(dataset.id) desc;"
         );
         logger.info("query: " + query);
 
