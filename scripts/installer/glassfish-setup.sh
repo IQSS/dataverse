@@ -66,10 +66,11 @@ function preliminary_setup()
   # password reset token timeout in minutes
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.auth.password-reset-timeout-in-minutes=60"
 
-  # EZID DOI Settings
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.password=apitest"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=apitest"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=https\://ezid.cdlib.org"
+  # DataCite DOI Settings
+  # (we can no longer offer EZID with their shared test account)
+  #./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.password=apitest"
+  #./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=apitest"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=https\://mds.test.datacite.org"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
   # enable comet support
@@ -120,7 +121,18 @@ function final_setup(){
 
         ./asadmin $ASADMIN_OPTS create-jvm-options "\-Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl"
 
-        ./asadmin $ASADMIN_OPTS create-javamail-resource --mailhost "$SMTP_SERVER" --mailuser "dataversenotify" --fromaddress "do-not-reply@${HOST_ADDRESS}" mail/notifyMailSession
+	### 
+	# Mail server setup: 
+	# delete any existing mail/notifyMailSession; configure port, if provided:
+
+	./asadmin delete-javamail-resource mail/notifyMailSession
+
+	if [ $SMTP_SERVER_PORT"x" != "x" ]
+	then
+            ./asadmin $ASADMIN_OPTS create-javamail-resource --mailhost "$SMTP_SERVER" --mailuser "dataversenotify" --fromaddress "do-not-reply@${HOST_ADDRESS}" --property mail.smtp.port="${SMTP_SERVER_PORT}" mail/notifyMailSession
+	else
+	    ./asadmin $ASADMIN_OPTS create-javamail-resource --mailhost "$SMTP_SERVER" --mailuser "dataversenotify" --fromaddress "do-not-reply@${HOST_ADDRESS}" mail/notifyMailSession
+	fi
 
 }
 
