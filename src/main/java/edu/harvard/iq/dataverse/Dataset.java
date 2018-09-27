@@ -485,12 +485,64 @@ public class Dataset extends DvObjectContainer {
         if (filesRootDirectory == null || filesRootDirectory.equals("")) {
             filesRootDirectory = "/tmp/files";
         }
+        
+        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
+            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
+                if (api.isStorageLocationDesignator()) {
+                    studyDir = Paths.get(filesRootDirectory, api.getAuthority(), api.getIdentifier());
+                    return studyDir;
+                }
+            }
+        }
 
         if (this.getAuthority() != null && this.getIdentifier() != null) {
             studyDir = Paths.get(filesRootDirectory, this.getAuthority(), this.getIdentifier());
         }
 
         return studyDir;
+    }
+    
+    public String getAlternativePersistentIdentifier(){
+        String retVal = null;            
+        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
+            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
+                retVal = retVal != null ? retVal + "; " : "";
+                retVal += api.getProtocol() + ":";
+                retVal += api.getAuthority() + "/";
+                retVal +=  api.getIdentifier();
+            }
+        }
+        return retVal;       
+    }
+    
+    public String getProtocolForFileStorage(){
+         String retVal = getProtocol();            
+        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
+            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
+                retVal = api.getProtocol();
+            }
+        }
+        return retVal;         
+    }
+    
+    public String getAuthorityForFileStorage(){
+         String retVal = getAuthority();            
+        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
+            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
+                retVal = api.getAuthority();
+            }
+        }
+        return retVal;         
+    }
+    
+    public String getIdentifierForFileStorage(){
+         String retVal = getIdentifier();            
+        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
+            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
+                retVal = api.getIdentifier();
+            }
+        }
+        return retVal;         
     }
 
     public String getNextMajorVersionString() {
@@ -627,7 +679,7 @@ public class Dataset extends DvObjectContainer {
                 String nServerURLencoded = nServerURL;
 
                 nServerURLencoded = nServerURLencoded.replace(":", "%3A").replace("/", "%2F");
-
+                //SEK 09/13/18
                 String NesstarWebviewPage = nServerURL
                         + "/webview/?mode=documentation&submode=abstract&studydoc="
                         + nServerURLencoded + "%2Fobj%2FfStudy%2F"
