@@ -59,10 +59,20 @@ Format Code You Changed with Netbeans
 
 As you probably gathered from the :doc:`dev-environment` section, IQSS has standardized on Netbeans. It is much appreciated when you format your code (but only the code you touched!) using the out-of-the-box Netbeans configuration. If you have created an entirely new Java class, you can just click Source -> Format. If you are adjusting code in an existing class, highlight the code you changed and then click Source -> Format. Keeping the "diff" in your pull requests small makes them easier to code review.
 
-The Netbeans formatting syntax appears not to be documented anywhere, however from an initial approximation `astyle --mode=java --style=attach --add-braces ${source_file}` is reasonably close.
-If `astyle` is not installed on your system, it is available from `<http://astyle.sourceforge.net>`_.
+Checking Your Formatting With Checkstyle
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We would like to someday automate the detection and possibly correction of code that hasn't been formatted using our house style (the default Netbeans style). We've heard that https://maven.apache.org/plugins/maven-checkstyle-plugin/ can do this but we would be happy to see a pull request in this area, especially if it also hooks up to our builds at https://travis-ci.org/IQSS/dataverse .
+The easiest way to adopt Dataverse coding style is to use Netbeans as your IDE, avoid change the default Netbeans formatting settings, and only reformat code you've changed, as described above.
+
+If you do not use Netbeans, you are encouraged to check the formatting of your code using Checkstyle.
+
+To check the entire project:
+
+``mvn checkstyle:checkstyle``
+
+To check a single file:
+
+``mvn checkstyle:checkstyle -Dcheckstyle.includes=**\/SystemConfig*.java``
 
 Logging
 ~~~~~~~
