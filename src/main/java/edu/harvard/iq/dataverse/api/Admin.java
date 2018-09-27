@@ -71,9 +71,12 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
@@ -1038,29 +1041,41 @@ public class Admin extends AbstractApiBean {
 		return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
 	}
         
-        @POST
-        @Path("{id}/reregisterHDLToPID")
-        public Response reregisterHdlToPID(@PathParam("id") String id) {
-		logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
-		try {
-			User u = findUserOrDie();
-			DataverseRequest r = createDataverseRequest(u);
-			Dataset ds = findDatasetOrDie(id);
-			if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(GlobalId.HDL_PROTOCOL)) {
-				execCommand(new RegisterDvObjectCommand(r, ds, true));
-			} else {
-				return ok("Dataset was not registered as a HDL. ");
-			}
+    @POST
+    @Path("{id}/reregisterHDLToPID")
+    public Response reregisterHdlToPID(@PathParam("id") String id) {
+        logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
+        try {
+            if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(GlobalId.HDL_PROTOCOL)) {
+                logger.info("Bad Request protocol set to handle  " );
+                return error(Status.BAD_REQUEST, ResourceBundle.getBundle("Bundle").getString("admin.api.migrateHDL.failure.must.be.set.for.doi"));
+            }
+            
+            User u = findUserOrDie();
+            if (!u.isSuperuser()) {
+                logger.info("Bad Request Unauthor " );
+                return error(Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
+            }
 
-		} catch (WrappedResponse r) {
-			logger.info("Failed to migrate Dataset Handle id: " + id);
-                        return badRequest("Failed to migrate Dataset Handle id: " + id);
-		} catch (Exception e) {
-			logger.info("Failed to migrate Dataset Handle id: " + id + " Unexpecgted Exception " + e.getMessage());
-                        return badRequest("Failed to migrate Dataset Handle id: " + id + " Unexpecgted Exception " + e.getMessage());
-		}
-		return ok("Dataset migrate HDL registration complete. Dataset re-registered successfully.");
-	}
+            DataverseRequest r = createDataverseRequest(u);
+            Dataset ds = findDatasetOrDie(id);
+            if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(GlobalId.HDL_PROTOCOL)) {
+                execCommand(new RegisterDvObjectCommand(r, ds, true));
+            } else {
+                return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.hdl.dataset"));
+            }
+
+        } catch (WrappedResponse r) {
+            logger.info("Failed to migrate Dataset Handle id: " + id);
+            return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure", Arrays.asList(id)));
+        } catch (Exception e) {
+            logger.info("Failed to migrate Dataset Handle id: " + id + " Unexpected Exception " + e.getMessage());
+            List<String> args = Arrays.asList(id,e.getMessage());
+            return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failureWithException", args));
+        }
+        System.out.print("before the return ok...");
+        return ok(BundleUtil.getStringFromBundle("admin.api.migrateHDL.success"));
+    }
 
 	@GET
 	@Path("{id}/registerDataFile")

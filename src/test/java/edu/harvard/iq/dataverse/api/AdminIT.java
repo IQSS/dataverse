@@ -20,6 +20,7 @@ import java.util.UUID;
 import javax.validation.constraints.AssertTrue;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -536,15 +537,32 @@ public class AdminIT {
         datasetAsJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        UtilIT.setSetting(SettingsServiceBean.Key.Protocol, "doi");
-        UtilIT.setSetting(SettingsServiceBean.Key.Authority, "10.5072");
-        UtilIT.setSetting(SettingsServiceBean.Key.Shoulder, "FK2/");
         Response pubdv = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         Response publishDSViaNative = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishDSViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response migrateIdentifierResponse = UtilIT.migrateDatasetIdentifierFromHDLToPId(datasetId.toString());
+        Response migrateIdentifierResponseStillHDL = UtilIT.migrateDatasetIdentifierFromHDLToPId(datasetId.toString(), apiToken);
+        migrateIdentifierResponseStillHDL.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("May not migrate while installation protocol set to \"hdl\". Protocol must be \"doi\""))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        UtilIT.setSetting(SettingsServiceBean.Key.Protocol, "doi");
+        UtilIT.setSetting(SettingsServiceBean.Key.Authority, "10.5072");
+        UtilIT.setSetting(SettingsServiceBean.Key.Shoulder, "FK2/");
+        Response migrateIdentifierResponseMustBeSuperUser = UtilIT.migrateDatasetIdentifierFromHDLToPId(datasetId.toString(), apiToken);
+        migrateIdentifierResponseMustBeSuperUser.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("Forbidden. You must be a superuser."))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+        
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        UtilIT.makeSuperUser(superuserUsername);
+        
+        Response migrateIdentifierResponse = UtilIT.migrateDatasetIdentifierFromHDLToPId(datasetId.toString(), superuserApiToken);
         migrateIdentifierResponse.prettyPrint();
         migrateIdentifierResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());

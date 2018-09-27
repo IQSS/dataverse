@@ -130,12 +130,12 @@ public class UtilIT {
         return response;
     }
     
-    public static Response migrateDatasetIdentifierFromHDLToPId(String datasetIdentifier) {
+    public static Response migrateDatasetIdentifierFromHDLToPId(String datasetIdentifier, String apiToken) {
         System.out.print(datasetIdentifier);
         Response response = given()
                 .body(datasetIdentifier)
                 .contentType(ContentType.JSON)
-                .post("/api/admin/" + datasetIdentifier + "/reregisterHDLToPID");
+                .post("/api/admin/" + datasetIdentifier + "/reregisterHDLToPID?key=" + apiToken);
         return response;
     }
 
