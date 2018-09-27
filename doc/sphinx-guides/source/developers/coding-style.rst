@@ -16,7 +16,7 @@ Formatting Code
 Tabs vs. Spaces
 ^^^^^^^^^^^^^^^
 
-Don't use tabs. Use spaces.
+Don't use tabs. Use 4 spaces.
 
 Braces Placement
 ^^^^^^^^^^^^^^^^
