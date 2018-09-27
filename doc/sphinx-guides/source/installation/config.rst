@@ -102,7 +102,12 @@ Persistent Identifiers and Publishing Datasets
 
 Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets or files they represent. Dataverse currently supports creating identifiers using DOI and Handle.
 
-By default and for testing convenience, the installer configures a temporary DOI test namespace through EZID. This is sufficient to create and publish datasets and files, but they are not citable nor guaranteed to be preserved. Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured. 
+By default, the installer configures a test DOI namespace (10.5072) with DataCite as the registration provider. Please note that as of the release 4.9.3, we can no longer use EZID as the provider. Unlike EZID, DataCite requires that you register for a test account (please contact support@datacite.org). Once you receive the login name and password for the account, configure it in your domain.xml, as the following two JVM options::
+
+      <jvm-options>-Ddoi.username=...</jvm-options>
+      <jvm-options>-Ddoi.password=...</jvm-options>
+
+and restart Glassfish. Once this is done, you will be able to publish datasets and files, but the persistent identifiers will not be citable or guaranteed to be preserved. Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured. 
 
 To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider: **EZID** (http://ezid.cdlib.org), **DataCite** (https://www.datacite.org), **Handle.Net** (https://www.handle.net). 
 
@@ -614,10 +619,23 @@ dataverse.handlenet.index
 +++++++++++++++++++++++++++++++++
 If you want to use different index than the default 300
 
+.. _dataverse.timerServer:
+
 dataverse.timerServer
 +++++++++++++++++++++
 
 This JVM option is only relevant if you plan to run multiple Glassfish servers for redundancy. Only one Glassfish server can act as the dedicated timer server and for details on promoting or demoting a Glassfish server to handle this responsibility, see :doc:`/admin/timers`.
+
+.. _dataverse.lang.directory:
+
+dataverse.lang.directory
+++++++++++++++++++++++++
+
+This JVM option is used to configure the path where all the language specific property files are to be stored.  If this option is set then the english property file must be present in the path along with any other language property file.
+
+``./asadmin create-jvm-options '-Ddataverse.lang.directory=PATH_LOCATION_HERE'``
+
+If this value is not set, by default, a Dataverse installation will read the English language property files from the Java Application.
 
 Database Settings
 -----------------
@@ -1089,7 +1107,16 @@ This sets the base name (without dot and extension), if not set it defaults to '
 
 Dataverse calculates checksums for uploaded files so that users can determine if their file was corrupted via upload or download. This is sometimes called "file fixity": https://en.wikipedia.org/wiki/File_Fixity
 
-The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1" is an experimental alternate value for this setting.
+The default checksum algorithm used is MD5 and should be sufficient for establishing file fixity. "SHA-1", "SHA-256" and "SHA-512" are alternate values for this setting. For example:
+
+``curl -X PUT -d 'SHA-512' http://localhost:8080/api/admin/settings/:FileFixityChecksumAlgorithm``
+
+The fixity algorithm used on existing files can be changed by a superuser using the API. An optional query parameter (num) can be used to limit the number of updates attempted.
+The API call will only update the algorithm and checksum for a file if the existing checksum can be validated against the file.
+Statistics concerning the updates are returned in the response to the API call with details in the log.
+
+``curl http://localhost:8080/api/admin/updateHashValues/{alg}``
+``curl http://localhost:8080/api/admin/updateHashValues/{alg}?num=1``
 
 .. _:PVMinLength:
 

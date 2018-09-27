@@ -19,7 +19,7 @@ Dataverse is a trademark of President and Fellows of Harvard College and is regi
 
 [![Waffle.io - Columns and their card count](https://badge.waffle.io/IQSS/dataverse.svg?columns=all)](https://waffle.io/IQSS/dataverse)
 
-[![Build Status](https://travis-ci.com/scholarsportal/dataverse.svg?branch=develop)](https://travis-ci.com/scholarsportal/dataverse) [![Coverage Status](https://coveralls.io/repos/IQSS/dataverse/badge.svg?branch=develop&service=github)](https://coveralls.io/github/IQSS/dataverse?branch=develop)
+[![Build Status](https://travis-ci.org/IQSS/dataverse.svg?branch=develop)](https://travis-ci.org/IQSS/dataverse) [![Coverage Status](https://coveralls.io/repos/IQSS/dataverse/badge.svg?branch=develop&service=github)](https://coveralls.io/github/IQSS/dataverse?branch=develop)
 
 [dataverse.org]: https://dataverse.org
 [demo.dataverse.org]: https://demo.dataverse.org
