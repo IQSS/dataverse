@@ -8,6 +8,8 @@ import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlValidator;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
@@ -18,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 public class SiteMapUtilTest {
 
@@ -67,6 +70,15 @@ public class SiteMapUtilTest {
             wellFormedXmlException = ex;
         }
         assertNull(wellFormedXmlException);
+
+        Exception notValidAgainstSchemaException = null;
+        try {
+            assertTrue(XmlValidator.validateXmlSchema("/tmp/sitemap.xml", new URL("https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd")));
+        } catch (MalformedURLException | SAXException ex) {
+            System.out.println("Exception caught validating XML against the sitemap schema: " + ex);
+            notValidAgainstSchemaException = ex;
+        }
+        assertNull(notValidAgainstSchemaException);
 
         File sitemapFile = new File("/tmp/sitemap.xml");
         String sitemapString = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(sitemapFile.getAbsolutePath()))));

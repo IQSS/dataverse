@@ -50,6 +50,8 @@ public class SiteMapUtil {
         Document document = documentBuilder.newDocument();
 
         Element urlSet = document.createElement("urlset");
+        urlSet.setAttribute("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9");
+        urlSet.setAttribute("xmlns:xhtml", "http://www.w3.org/1999/xhtml");
         document.appendChild(urlSet);
 
         for (Dataset dataset : datasets) {
