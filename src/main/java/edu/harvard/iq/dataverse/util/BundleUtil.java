@@ -6,10 +6,7 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.MessageFormat;
-import java.util.List;
-import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class BundleUtil {
@@ -24,7 +21,27 @@ public class BundleUtil {
     }
 
     public static String getStringFromBundle(String key, List<String> arguments) {
-        ResourceBundle bundle = getResourceBundle(defaultBundleFile );
+
+        DataverseLocaleBean d = new DataverseLocaleBean();
+        ResourceBundle bundle;
+        bundle_locale = new Locale(d.getLocaleCode());
+
+        String filesRootDirectory = System.getProperty("dataverse.lang.directory");
+
+        if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
+            bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale);
+        } else {
+            File bundleFileDir  = new File(filesRootDirectory);
+            URL[] urls = null;
+            try {
+                urls = new URL[]{bundleFileDir.toURI().toURL()};
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            ClassLoader loader = new URLClassLoader(urls);
+            bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale, loader);
+        }
         return getStringFromBundle(key, arguments, bundle);
     }
 
@@ -49,39 +66,4 @@ public class BundleUtil {
         }
     }
 
-    public static String getStringFromPropertyFile(String key, String propertyFileName  ) {
-        ResourceBundle bundle = getResourceBundle(propertyFileName);
-        return getStringFromBundle(key, null, bundle);
-    }
-
-    public static ResourceBundle getResourceBundle(String propertyFileName)
-    {
-        DataverseLocaleBean d = new DataverseLocaleBean();
-        bundle_locale= new Locale(d.getLocaleCode());
-        ResourceBundle bundle ;
-        String filesRootDirectory = System.getProperty("dataverse.lang.directory");
-        if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
-            filesRootDirectory = "/tmp/lang";
-        }
-
-        File bundleFileDir = new File(filesRootDirectory);
-
-        if (!bundleFileDir.exists())
-        {
-            bundle = ResourceBundle.getBundle(propertyFileName, bundle_locale);
-        }
-        else {
-
-            URL[] urls = null;
-            try {
-                urls = new URL[]{bundleFileDir.toURI().toURL()};
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            ClassLoader loader = new URLClassLoader(urls);
-            bundle = ResourceBundle.getBundle(propertyFileName, bundle_locale, loader);
-        }
-        return bundle ;
-    }
 }
