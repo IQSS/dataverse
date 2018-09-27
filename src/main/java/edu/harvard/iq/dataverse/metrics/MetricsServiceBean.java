@@ -28,6 +28,8 @@ public class MetricsServiceBean implements Serializable {
     @EJB
     SystemConfig systemConfig;
 
+    /** Dataverses */
+    
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
@@ -43,67 +45,7 @@ public class MetricsServiceBean implements Serializable {
 
         return (long) query.getSingleResult();
     }
-
-    /**
-     * @param yyyymm Month in YYYY-MM format.
-     */
-    public long datasetsToMonth(String yyyymm) throws Exception {
-        Query query = em.createNativeQuery(""
-                + "select count(*)\n"
-                + "from datasetversion\n"
-                + "where datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n"
-                + "(\n"
-                + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
-                + "from datasetversion\n"
-                + "join dataset on dataset.id = datasetversion.dataset_id\n"
-                + "where versionstate='RELEASED' \n"
-                + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + "and dataset.harvestingclient_id is null\n"
-                + "group by dataset_id \n"
-                + ");"
-        );
-        logger.fine("query: " + query);
-
-        return (long) query.getSingleResult();
-    }
-
-    /**
-     * @param yyyymm Month in YYYY-MM format.
-     */
-    public long filesToMonth(String yyyymm) throws Exception {
-        Query query = em.createNativeQuery(""
-                + "select count(*)\n"
-                + "from filemetadata\n"
-                + "join datasetversion on datasetversion.id = filemetadata.datasetversion_id\n"
-                + "where datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n"
-                + "(\n"
-                + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
-                + "from datasetversion\n"
-                + "join dataset on dataset.id = datasetversion.dataset_id\n"
-                + "where versionstate='RELEASED'\n"
-                //                + "and date_trunc('month', releasetime) <=  to_date('2018-03','YYYY-MM')\n"
-                + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + "and dataset.harvestingclient_id is null\n"
-                + "group by dataset_id \n"
-                + ");"
-        );
-        logger.fine("query: " + query);
-        return (long) query.getSingleResult();
-    }
-
-    /**
-     * @param yyyymm Month in YYYY-MM format.
-     */
-    public long downloadsToMonth(String yyyymm) throws Exception {
-        Query query = em.createNativeQuery(""
-                + "select count(id)\n"
-                + "from guestbookresponse\n"
-                + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM');"
-        );
-        logger.fine("query: " + query);
-        return (long) query.getSingleResult();
-    }
-
+    
     public List<Object[]> dataversesByCategory() throws Exception {
 
         Query query = em.createNativeQuery(""
@@ -117,6 +59,12 @@ public class MetricsServiceBean implements Serializable {
         logger.fine("query: " + query);
         return query.getResultList();
     }
+    
+    public List<Object[]> dataversesBySubject() {
+        return null;
+    }
+    
+    /** Datasets */
 
     public List<Object[]> datasetsBySubject() {
         Query query = em.createNativeQuery(""
@@ -146,8 +94,73 @@ public class MetricsServiceBean implements Serializable {
 
         return query.getResultList();
     }
+    
+    /**
+     * @param yyyymm Month in YYYY-MM format.
+     */
+    public long datasetsToMonth(String yyyymm) throws Exception {
+        Query query = em.createNativeQuery(""
+                + "select count(*)\n"
+                + "from datasetversion\n"
+                + "where datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n"
+                + "(\n"
+                + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
+                + "from datasetversion\n"
+                + "join dataset on dataset.id = datasetversion.dataset_id\n"
+                + "where versionstate='RELEASED' \n"
+                + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
+                + "and dataset.harvestingclient_id is null\n"
+                + "group by dataset_id \n"
+                + ");"
+        );
+        logger.fine("query: " + query);
 
-    /* Helper functions for metric caching */
+        return (long) query.getSingleResult();
+    }
+
+    /** Files */
+    
+    /**
+     * @param yyyymm Month in YYYY-MM format.
+     */
+    public long filesToMonth(String yyyymm) throws Exception {
+        Query query = em.createNativeQuery(""
+                + "select count(*)\n"
+                + "from filemetadata\n"
+                + "join datasetversion on datasetversion.id = filemetadata.datasetversion_id\n"
+                + "where datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n"
+                + "(\n"
+                + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
+                + "from datasetversion\n"
+                + "join dataset on dataset.id = datasetversion.dataset_id\n"
+                + "where versionstate='RELEASED'\n"
+                //                + "and date_trunc('month', releasetime) <=  to_date('2018-03','YYYY-MM')\n"
+                + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
+                + "and dataset.harvestingclient_id is null\n"
+                + "group by dataset_id \n"
+                + ");"
+        );
+        logger.fine("query: " + query);
+        return (long) query.getSingleResult();
+    }
+
+    /** Downloads */
+    
+    /**
+     * @param yyyymm Month in YYYY-MM format.
+     */
+    public long downloadsToMonth(String yyyymm) throws Exception {
+        Query query = em.createNativeQuery(""
+                + "select count(id)\n"
+                + "from guestbookresponse\n"
+                + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM');"
+        );
+        logger.fine("query: " + query);
+        return (long) query.getSingleResult();
+    }
+
+    /** Helper functions for metric caching */
+
     public String returnUnexpiredCacheMonthly(String metricName, String yyyymm) throws Exception {
         Metric queriedMetric = getMetric(metricName, yyyymm);
 

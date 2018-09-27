@@ -86,7 +86,21 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("dataverses/bySubject")
     public Response getDataversesBySubject() {
-        return null;
+        String metricName = "dataversesBySubject";
+        
+        try {
+            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName);
+
+            if (null == jsonArrayString) { //run query and save
+                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesBySubjectToJson(metricsSvc.dataversesBySubject());
+                jsonArrayString = jsonArrayBuilder.build().toString();
+                metricsSvc.save(new Metric(metricName, jsonArrayString), false);
+            }
+
+            return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
+        } catch (Exception ex) {
+            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+        }
     }
     
     /** Datasets */
