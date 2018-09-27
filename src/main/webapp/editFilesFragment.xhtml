@@ -21,23 +21,17 @@
         <div class="ui-tabs-panels">
             <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
                 <!-- Create dataset workflow info msg + user guide link -->
-                <ui:fragment rendered="#{createDataset and settingsWrapper.uploadMethodsCount == 1}">
-                <div >
+                <ui:fragment rendered="#{createDataset}">
                     <p class="help-block">
-                        <h:outputFormat value="#{bundle['dataset.message.uploadFilesSingle.message']}" escape="false">
+                        <h:outputFormat value="#{bundle['dataset.message.uploadFilesSingle.message']}" escape="false"
+                                        rendered="#{settingsWrapper.uploadMethodsCount == 1}">
                             <f:param value="#{systemConfig.guidesBaseUrl}"/>
                             <f:param value="#{systemConfig.guidesVersion}"/>
                         </h:outputFormat>
+                        
+                        <h:outputText value="#{bundle['dataset.message.uploadFilesMultiple.message']}" escape="false"
+                                        rendered="#{settingsWrapper.uploadMethodsCount > 1}"/>
                     </p>
-                </div>
-                </ui:fragment>
-                 <ui:fragment rendered="#{createDataset and settingsWrapper.uploadMethodsCount > 1}">
-                <div >
-                    <p class="help-block">
-                        <h:outputFormat value="#{bundle['dataset.message.uploadFilesMultiple.message']}" escape="false">
-                        </h:outputFormat>
-                    </p>
-                </div>
                 </ui:fragment>
                 <!-- Upload -->
                 <div class="panel-group" role="tablist" aria-multiselectable="true"
@@ -50,7 +44,7 @@
                         <div id="panelCollapseHTTP" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingHTTP">
                             <div class="panel-body" jsf:id="httpUploadDisabledDueToExistingRsyncPackage" jsf:rendered="#{EditDatafilesPage.workingVersion.hasPackageFile and !EditDatafilesPage.dataset.released}">
                                 <p class="help-block">
-                                    <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+                                    <span class="glyphicon glyphicon-warning-sign text-warning"></span>
                                     <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.httpUploadDisabledDueToRsyncFileExisting']}">
                                         <f:param value="#{settingsWrapper.supportTeamEmail}"/>
                                     </h:outputFormat>
@@ -58,10 +52,8 @@
                             </div>
                             <div class="panel-body" jsf:id="httpUploadDisabledDueToExistingRsyncPackagePublished" jsf:rendered="#{EditDatafilesPage.workingVersion.hasPackageFile and EditDatafilesPage.dataset.released}">
                                 <p class="help-block">
-                                    <span class="glyphicon glyphicon-warning-sign text-danger"></span>
-                                    <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.httpUploadDisabledDueToRsyncFileExistingAndPublished']}">
-
-                                    </h:outputFormat>
+                                    <span class="glyphicon glyphicon-warning-sign text-warning"></span>
+                                    <h:outputText class="text-danger" value=" #{bundle['file.rsyncUpload.httpUploadDisabledDueToRsyncFileExistingAndPublished']}"/>
                                 </p>
                             </div>
                             <div class="panel-body" jsf:id="contentOfHttpPanel" jsf:rendered="#{!EditDatafilesPage.workingVersion.hasPackageFile}">
