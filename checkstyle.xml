@@ -3,26 +3,6 @@
           "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
           "http://checkstyle.sourceforge.net/dtds/configuration_1_3.dtd">
 
-<!--
-
-  Checkstyle configuration that checks the sun coding conventions from:
-
-    - the Java Language Specification at
-      http://java.sun.com/docs/books/jls/second_edition/html/index.html
-
-    - the Sun Code Conventions at http://java.sun.com/docs/codeconv/
-
-    - the Javadoc guidelines at
-      http://java.sun.com/j2se/javadoc/writingdoccomments/index.html
-
-    - the JDK Api documentation http://java.sun.com/j2se/docs/api/index.html
-
-    - some best practices
-
-  The sun_checks.xml was used as a template for our project.
-
--->
-
 <module name="Checker">
     <!--
         If you set the basedir property below, then all reported file
