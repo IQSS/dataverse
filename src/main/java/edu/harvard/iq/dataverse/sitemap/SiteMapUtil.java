@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.sitemap;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.sql.Timestamp;
@@ -27,7 +28,7 @@ public class SiteMapUtil {
 
     static final String SITEMAP_FILENAME = "sitemap.xml";
 
-    public static void updateSiteMap(List<Dataset> datasets) {
+    public static void updateSiteMap(List<Dataverse> dataverses, List<Dataset> datasets) {
 
         String sitemapPath = "/tmp";
         String sitemapPathAndFile;
@@ -53,6 +54,28 @@ public class SiteMapUtil {
         urlSet.setAttribute("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9");
         urlSet.setAttribute("xmlns:xhtml", "http://www.w3.org/1999/xhtml");
         document.appendChild(urlSet);
+
+        for (Dataverse dataverse : dataverses) {
+            if (!dataverse.isReleased()) {
+                continue;
+            }
+            Element url = document.createElement("url");
+            urlSet.appendChild(url);
+
+            Element loc = document.createElement("loc");
+            String dataverseAlias = dataverse.getAlias();
+            loc.appendChild(document.createTextNode(SystemConfig.getDataverseSiteUrlStatic() + "/dataverse/" + dataverseAlias));
+            url.appendChild(loc);
+
+            Element lastmod = document.createElement("lastmod");
+            Timestamp lastModified = dataverse.getModificationTime();
+            // TODO: Decide if YYYY-MM-DD is enough. https://www.sitemaps.org/protocol.html
+            // says "The date of last modification of the file. This date should be in W3C Datetime format.
+            // This format allows you to omit the time portion, if desired, and use YYYY-MM-DD."
+            String date = new SimpleDateFormat("yyyy-MM-dd").format(lastModified);
+            lastmod.appendChild(document.createTextNode(date));
+            url.appendChild(lastmod);
+        }
 
         for (Dataset dataset : datasets) {
             if (!dataset.isReleased()) {

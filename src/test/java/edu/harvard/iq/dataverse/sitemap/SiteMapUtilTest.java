@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.sitemap;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
@@ -13,6 +14,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,7 +28,16 @@ import org.xml.sax.SAXException;
 public class SiteMapUtilTest {
 
     @Test
-    public void testUpdateSiteMap() throws IOException {
+    public void testUpdateSiteMap() throws IOException, ParseException {
+
+        List<Dataverse> dataverses = new ArrayList<>();
+        String publishedDvString = "publishedDv1";
+        Dataverse publishedDataverse = new Dataverse();
+        publishedDataverse.setAlias(publishedDvString);
+        SimpleDateFormat dateFmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date dvModifiedDate = dateFmt.parse("1955-11-12 22:04:00");
+        publishedDataverse.setModificationTime(new Timestamp(dvModifiedDate.getTime()));
+        dataverses.add(publishedDataverse);
 
         List<Dataset> datasets = new ArrayList<>();
 
@@ -60,7 +72,7 @@ public class SiteMapUtilTest {
         deaccessioned.setVersions(datasetVersions);
         datasets.add(deaccessioned);
 
-        SiteMapUtil.updateSiteMap(datasets);
+        SiteMapUtil.updateSiteMap(dataverses, datasets);
 
         Exception wellFormedXmlException = null;
         try {
@@ -84,6 +96,7 @@ public class SiteMapUtilTest {
         String sitemapString = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(sitemapFile.getAbsolutePath()))));
         System.out.println("sitemap: " + sitemapString);
 
+        assertTrue(sitemapString.contains("1955-11-12"));
         assertTrue(sitemapString.contains(publishedPid));
         assertFalse(sitemapString.contains(unpublishedPid));
         assertFalse(sitemapString.contains(harvestedPid));

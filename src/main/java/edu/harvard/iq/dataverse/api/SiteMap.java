@@ -16,7 +16,7 @@ public class SiteMap extends AbstractApiBean {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateSiteMap() {
         try {
-            SiteMapUtil.updateSiteMap(datasetSvc.findAll());
+            SiteMapUtil.updateSiteMap(dataverseSvc.findAll(), datasetSvc.findAll());
             return ok("Sitemap updated.");
         } catch (Exception ex) {
             return error(Response.Status.BAD_REQUEST, "Sitemap could not be updated. Exception: " + ex.getLocalizedMessage());
