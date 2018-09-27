@@ -57,21 +57,15 @@ public class BundleUtil {
     public static ResourceBundle getResourceBundle(String propertyFileName)
     {
         DataverseLocaleBean d = new DataverseLocaleBean();
-        bundle_locale= new Locale(d.getLocaleCode());
-        ResourceBundle bundle ;
+        ResourceBundle bundle;
+        bundle_locale = new Locale(d.getLocaleCode());
+
         String filesRootDirectory = System.getProperty("dataverse.lang.directory");
+
         if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
-            filesRootDirectory = "/tmp/lang";
-        }
-
-        File bundleFileDir = new File(filesRootDirectory);
-
-        if (!bundleFileDir.exists())
-        {
             bundle = ResourceBundle.getBundle(propertyFileName, bundle_locale);
-        }
-        else {
-
+        } else {
+            File bundleFileDir  = new File(filesRootDirectory);
             URL[] urls = null;
             try {
                 urls = new URL[]{bundleFileDir.toURI().toURL()};
@@ -82,6 +76,7 @@ public class BundleUtil {
             ClassLoader loader = new URLClassLoader(urls);
             bundle = ResourceBundle.getBundle(propertyFileName, bundle_locale, loader);
         }
+
         return bundle ;
     }
 }
