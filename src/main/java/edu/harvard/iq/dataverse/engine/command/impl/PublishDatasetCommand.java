@@ -81,11 +81,10 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         }
         
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
-        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, "");
         if ( prePubWf.isPresent() ) {
             // We start a workflow
             theDataset = ctxt.em().merge(theDataset);
-            ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.PrePublishDataset) );
+            ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased));
             return new PublishDatasetResult(theDataset, false);
             
         } else{
@@ -120,7 +119,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 lock.setDataset(theDataset);
                 lock.setInfo(info);
                 ctxt.datasets().addDatasetLock(theDataset, lock);
-                ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, , datasetExternallyReleased);
+                ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
                 return new PublishDatasetResult(theDataset, false);
                 
             } else {

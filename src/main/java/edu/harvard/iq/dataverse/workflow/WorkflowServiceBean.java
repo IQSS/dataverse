@@ -342,7 +342,7 @@ public class WorkflowServiceBean {
         
             try {
                 if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
-                engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest()) );
+                engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest(), ctxt.getDatasetExternallyReleased()) );
                 } else {
                     logger.info("Num Locks: "  + ctxt.getDataset().getLocks().size());
                     //unlockDataset(ctxt);
@@ -457,7 +457,7 @@ public class WorkflowServiceBean {
     	 */
         return new WorkflowContext( ctxt.getRequest(), 
                        em.merge(ctxt.getDataset()), ctxt.getNextVersionNumber(), 
-                       ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken);
+                       ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken, ctxt.getDatasetExternallyReleased());
     }
 
 }

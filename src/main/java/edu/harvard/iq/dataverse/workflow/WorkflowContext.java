@@ -29,19 +29,20 @@ public class WorkflowContext {
     private final long    nextMinorVersionNumber;
     private final TriggerType    type;
     private final ApiToken apiToken;
+    private final boolean datasetExternallyReleased;
     private Map<String, Object> settings;
     
     private String invocationId = UUID.randomUUID().toString();
 
-    public WorkflowContext( DataverseRequest aRequest, Dataset aDataset, TriggerType aTriggerType ) {
+    public WorkflowContext( DataverseRequest aRequest, Dataset aDataset, TriggerType aTriggerType, boolean datasetExternallyReleased ) {
         this( aRequest, aDataset,
                 aDataset.getLatestVersion().getVersionNumber(), 
                 aDataset.getLatestVersion().getMinorVersionNumber(),
-                aTriggerType, null, null);
+                aTriggerType, null, null, datasetExternallyReleased);
     }
     
     public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber, 
-                            long nextMinorVersionNumber, TriggerType type, Map<String, Object> settings, ApiToken apiToken) {
+                            long nextMinorVersionNumber, TriggerType type, Map<String, Object> settings, ApiToken apiToken, boolean datasetExternallyReleased) {
         this.request = request;
         this.dataset = dataset;
         this.nextVersionNumber = nextVersionNumber;
@@ -49,6 +50,7 @@ public class WorkflowContext {
         this.type = type;
         this.settings = settings;
         this.apiToken = apiToken;
+        this.datasetExternallyReleased = datasetExternallyReleased;
     }
 
     public Dataset getDataset() {
@@ -89,6 +91,10 @@ public class WorkflowContext {
 
     public ApiToken getApiToken() {
         return apiToken;
+    }
+
+    public boolean getDatasetExternallyReleased() {
+       return datasetExternallyReleased;
     }
     
 }

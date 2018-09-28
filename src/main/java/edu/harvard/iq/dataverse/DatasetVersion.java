@@ -845,6 +845,74 @@ public class DatasetVersion implements Serializable {
  
  
     /**
+     * @return List of Strings containing the version's Kind Of Data entries
+     */
+    public List<String> getKindOfData() {
+        List<String> kod = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.kindOfData)) {
+                kod.addAll(dsf.getValues());
+            }
+        }
+        return kod;
+    }
+    
+    /**
+     * @return List of Strings containing the version's language entries
+     */
+    public List<String> getLanguages() {
+        List<String> languages = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.language)) {
+                languages.addAll(dsf.getValues());
+            }
+        }
+        return languages;
+    }
+    
+    public List<String> getSpatialCoverages() {
+        List<String> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.geographicCoverage)) {
+                for (DatasetFieldCompoundValue geoValue : dsf.getDatasetFieldCompoundValues()) {
+                    List<String> coverage = new ArrayList<String>();
+                    for (DatasetField subField : geoValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.country)) {
+                            if (!subField.isEmptyForDisplay()) {
+                            } else {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.state)) {
+                            if (!subField.isEmptyForDisplay()) {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.city)) {
+                            if (!subField.isEmptyForDisplay()) {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.otherGeographicCoverage)) {
+                            if (!subField.isEmptyForDisplay()) {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                    }
+                    if (!coverage.isEmpty()) {
+                        retList.add(String.join(",", coverage));
+                    }
+                }
+            }
+        }
+        return retList;
+    }
+    
+    /**
      * @return List of Strings containing the version's Keywords
      */
     public List<String> getKeywords() {
@@ -874,17 +942,6 @@ public class DatasetVersion implements Serializable {
      */
     public String getSeriesTitle() {
 
-		List<String> seriesNames = getCompoundChildFieldValues(DatasetFieldConstant.series,
-				DatasetFieldConstant.seriesName);
-		if (seriesNames.size() > 1) {
-			logger.warning("More than one series title found for datasetVersion: " + this.id);
-		}
-		if (!seriesNames.isEmpty()) {
-			return seriesNames.get(0);
-		} else {
-			return null;
-		}
-	}
         List<String> seriesNames = getCompoundChildFieldValues(DatasetFieldConstant.series,
                 DatasetFieldConstant.seriesName);
         if (seriesNames.size() > 1) {
