@@ -20,6 +20,7 @@ Developer Guide
    documentation
    debugging
    coding-style
+   deployment
    containers
    making-releases
    tools

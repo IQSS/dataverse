@@ -308,13 +308,12 @@ public class DataverseUserPage implements java.io.Serializable {
             // Create a new built-in user.
             BuiltinUser builtinUser = new BuiltinUser();
             builtinUser.setUserName( getUsername() );
-            builtinUser.applyDisplayInfo(userDisplayInfo);
             builtinUser.updateEncryptedPassword(PasswordEncryption.get().encrypt(inputPassword),
                                                 PasswordEncryption.getLatestVersionNumber());
             
             AuthenticatedUser au = authenticationService.createAuthenticatedUser(
                     new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName()),
-                    builtinUser.getUserName(), builtinUser.getDisplayInfo(), false);
+                    builtinUser.getUserName(), userDisplayInfo, false);
             if ( au == null ) {
                 // Username already exists, show an error message
                 getUsernameField().setValid(false);

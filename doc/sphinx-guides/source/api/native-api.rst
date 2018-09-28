@@ -501,6 +501,71 @@ In the example below, the curator has saved the JSON file as :download:`reason-f
 
 The review process can sometimes resemble a tennis match, with the authors submitting and resubmitting the dataset over and over until the curators are satisfied. Each time the curators send a "reason for return" via API, that reason is persisted into the database, stored at the dataset version level.
 
+Link a Dataset
+~~~~~~~~~~~~~~
+
+Creates a link between a dataset and a dataverse (see the Linked Dataverses + Linked Datasets section of the :doc:`/user/dataverse-management` guide for more information). ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/datasets/$linked-dataset-id/link/$linking-dataverse-alias
+
+Dataset Locks
+~~~~~~~~~~~~~
+
+To check if a dataset is locked:: 
+
+    curl -H "$SERVER_URL/api/datasets/{database_id}/locks
+
+Optionally, you can check if there's a lock of a specific type on the dataset:: 
+
+    curl -H "$SERVER_URL/api/datasets/{database_id}/locks?type={lock_type}
+
+Currently implemented lock types are ``Ingest, Workflow, InReview, DcmUpload and pidRegister``. 
+
+The API will output the list of locks, for example:: 
+
+    {"status":"OK","data":
+	[
+		{
+		 "lockType":"Ingest",
+		 "date":"Fri Aug 17 15:05:51 EDT 2018",
+		 "user":"dataverseAdmin"
+		},
+		{
+		 "lockType":"Workflow",
+		 "date":"Fri Aug 17 15:02:00 EDT 2018",
+		 "user":"dataverseAdmin"
+		}
+	]
+    }
+
+If the dataset is not locked (or if there is no lock of the requested type), the API will return an empty list. 
+
+The following API end point will lock a Dataset with a lock of specified type::
+
+    POST /api/datasets/{database_id}/lock/{lock_type}
+
+For example::
+
+    curl -X POST "$SERVER_URL/api/datasets/1234/lock/Ingest?key=$ADMIN_API_TOKEN"
+    or 
+    curl -X POST -H "X-Dataverse-key: $ADMIN_API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/lock/Ingest?persistentId=$DOI_OR_HANDLE_OF_DATASET"
+
+Use the following API to unlock the dataset, by deleting all the locks currently on the dataset::
+
+    DELETE /api/datasets/{database_id}/locks
+
+Or, to delete a lock of the type specified only::
+
+    DELETE /api/datasets/{database_id}/locks?type={lock_type}
+
+For example::
+
+    curl -X DELETE -H "X-Dataverse-key: $ADMIN_API_TOKEN" "$SERVER_URL/api/datasets/1234/locks?type=pidRegister"
+
+If the dataset is not locked (or if there is no lock of the specified type), the API will exit with a warning message. 
+
+(Note that the API calls above all support both the database id and persistent identifier notation for referencing the dataset)
+
 
 Files
 -----

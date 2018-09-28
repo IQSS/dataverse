@@ -349,17 +349,19 @@ public class SettingsServiceBean {
          * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
          */
         PVCustomPasswordResetAlertMessage,
-        /**
-        String to describe DOI format for data files. Default is INDEPENDENT. (That is independent 
-        from the Dataset DOI
-        If 'DEPENEDENT' then the DOI will be the Dataset DOI plus a file DOI with a slash in between.
+        /*
+        String to describe DOI format for data files. Default is DEPENDENT. 
+        'DEPENEDENT' means the DOI will be the Dataset DOI plus a file DOI with a slash in between.
+        'INDEPENDENT' means a new global id, completely independent from the dataset-level global id.
         */
         DataFilePIDFormat, 
-        /**
+        /* Json array of supported languages
+        */
+        Languages,
+        /*
         Number for the minimum number of files to send PID registration to asynchronous workflow
         */
         PIDAsynchRegFileCount,
-        
         /**
          * QDR Custom settings
          * 
@@ -371,7 +373,10 @@ public class SettingsServiceBean {
         /** Url of integrated Drupal Site */
         QDRDrupalSiteURL,
         /** Base Url of this Dataverse Site */
-        QDRDataverseBaseURL;
+        QDRDataverseBaseURL,
+        
+		FilePIDsEnabled
+        ;
         
         @Override
         public String toString() {

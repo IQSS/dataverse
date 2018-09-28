@@ -9,6 +9,7 @@
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:c="http://java.sun.com/jsp/jstl/core"      
       lang="en">
+<f:view locale="#{dataverseLocaleBean.localeCode}">
     <h:head>
 	<o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <f:facet name="first">
@@ -116,4 +117,5 @@
         <ui:include src="google-analytics-snippet.xhtml"></ui:include>
         <ui:include src="piwik-analytics-snippet.xhtml"></ui:include>
     </h:body>
+</f:view>
 </html>

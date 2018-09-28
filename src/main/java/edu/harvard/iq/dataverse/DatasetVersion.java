@@ -729,7 +729,8 @@ public class DatasetVersion implements Serializable {
                     String start = "";
                     String end = "";
                     for (DatasetField subField : timePeriodValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.timePeriodCoveredStart)) {
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.timePeriodCoveredStart)) {
                             if (subField.isEmptyForDisplay()) {
                                 start = null;
                             } else {
@@ -738,7 +739,8 @@ public class DatasetVersion implements Serializable {
                                 start = subField.getValue();
                             }
                         }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.timePeriodCoveredEnd)) {
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.timePeriodCoveredEnd)) {
                             if (subField.isEmptyForDisplay()) {
                                 end = null;
                             } else {
@@ -758,43 +760,43 @@ public class DatasetVersion implements Serializable {
     }
     
     
-	public List<String> getDatesOfCollection() {
-		List<String> retList = new ArrayList<>();
-		for (DatasetField dsf : this.getDatasetFields()) {
-			if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfCollection)) {
-				for (DatasetFieldCompoundValue timePeriodValue : dsf.getDatasetFieldCompoundValues()) {
-					String start = "";
-					String end = "";
-					for (DatasetField subField : timePeriodValue.getChildDatasetFields()) {
-						if (subField.getDatasetFieldType().getName()
-								.equals(DatasetFieldConstant.dateOfCollectionStart)) {
-							if (subField.isEmptyForDisplay()) {
-								start = null;
-							} else {
-								// we want to use "getValue()", as opposed to "getDisplayValue()" here -
-								// as the latter method prepends the value with the word "Start:"!
-								start = subField.getValue();
-							}
-						}
-						if (subField.getDatasetFieldType().getName()
-								.equals(DatasetFieldConstant.dateOfCollectionEnd)) {
-							if (subField.isEmptyForDisplay()) {
-								end = null;
-							} else {
-								// see the comment above
-								end = subField.getValue();
-							}
-						}
+    public List<String> getDatesOfCollection() {
+        List<String> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfCollection)) {
+                for (DatasetFieldCompoundValue timePeriodValue : dsf.getDatasetFieldCompoundValues()) {
+                    String start = "";
+                    String end = "";
+                    for (DatasetField subField : timePeriodValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.dateOfCollectionStart)) {
+                            if (subField.isEmptyForDisplay()) {
+                                start = null;
+                            } else {
+                                // we want to use "getValue()", as opposed to "getDisplayValue()" here -
+                                // as the latter method prepends the value with the word "Start:"!
+                                start = subField.getValue();
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.dateOfCollectionEnd)) {
+                            if (subField.isEmptyForDisplay()) {
+                                end = null;
+                            } else {
+                                // see the comment above
+                                end = subField.getValue();
+                            }
+                        }
 
-					}
-					if (start != null && end != null) {
-						retList.add(start + "/" + end);
-					}
-				}
-			}
-		}
-		return retList;
-	}
+                    }
+                    if (start != null && end != null) {
+                        retList.add(start + "/" + end);
+                    }
+                }
+            }
+        }
+        return retList;
+    }
     
     
     /**
@@ -825,78 +827,79 @@ public class DatasetVersion implements Serializable {
      * @return List of Strings containing the version's Topic Classifications
      */
     public List<String> getTopicClassifications() {
-        return getCompoundChildFieldValues(DatasetFieldConstant.topicClassification, DatasetFieldConstant.topicClassValue);
+        return getCompoundChildFieldValues(DatasetFieldConstant.topicClassification,
+                DatasetFieldConstant.topicClassValue);
     }
  
  
-	/**
-	 * @return List of Strings containing the version's Kind Of Data entries
-	 */
-	public List<String> getKindOfData() {
-		List<String> kod = new ArrayList<>();
-		for (DatasetField dsf : this.getDatasetFields()) {
-			if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.kindOfData)) {
-				kod.addAll(dsf.getValues());
-			}
-		}
-		return kod;
-	}
-	
-	/**
-	 * @return List of Strings containing the version's language entries
-	 */
-	public List<String> getLanguages() {
-		List<String> languages = new ArrayList<>();
-		for (DatasetField dsf : this.getDatasetFields()) {
-			if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.language)) {
-				languages.addAll(dsf.getValues());
-			}
-		}
-		return languages;
-	}
-	
-	public List<String> getSpatialCoverages() {
-		List<String> retList = new ArrayList<>();
-		for (DatasetField dsf : this.getDatasetFields()) {
-			if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.geographicCoverage)) {
-				for (DatasetFieldCompoundValue geoValue : dsf.getDatasetFieldCompoundValues()) {
-					List<String> coverage = new ArrayList<String>();
-					for (DatasetField subField : geoValue.getChildDatasetFields()) {
-						if (subField.getDatasetFieldType().getName()
-								.equals(DatasetFieldConstant.country)) {
-							if (!subField.isEmptyForDisplay()) {
-							} else {
-								coverage.add(subField.getValue());
-							}
-						}
-						if (subField.getDatasetFieldType().getName()
-								.equals(DatasetFieldConstant.state)) {
-							if (!subField.isEmptyForDisplay()) {
-								coverage.add(subField.getValue());
-							}
-						}
-						if (subField.getDatasetFieldType().getName()
-								.equals(DatasetFieldConstant.city)) {
-							if (!subField.isEmptyForDisplay()) {
-								coverage.add(subField.getValue());
-							}
-						}
-						if (subField.getDatasetFieldType().getName()
-								.equals(DatasetFieldConstant.otherGeographicCoverage)) {
-							if (!subField.isEmptyForDisplay()) {
-								coverage.add(subField.getValue());
-							}
-						}
-					}
-					if (!coverage.isEmpty()) {
-						retList.add(String.join(",", coverage));
-					}
-				}
-			}
-		}
-		return retList;
-	}
-	
+    /**
+     * @return List of Strings containing the version's Kind Of Data entries
+     */
+    public List<String> getKindOfData() {
+        List<String> kod = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.kindOfData)) {
+                kod.addAll(dsf.getValues());
+            }
+        }
+        return kod;
+    }
+    
+    /**
+     * @return List of Strings containing the version's language entries
+     */
+    public List<String> getLanguages() {
+        List<String> languages = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.language)) {
+                languages.addAll(dsf.getValues());
+            }
+        }
+        return languages;
+    }
+    
+    public List<String> getSpatialCoverages() {
+        List<String> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.geographicCoverage)) {
+                for (DatasetFieldCompoundValue geoValue : dsf.getDatasetFieldCompoundValues()) {
+                    List<String> coverage = new ArrayList<String>();
+                    for (DatasetField subField : geoValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.country)) {
+                            if (!subField.isEmptyForDisplay()) {
+                            } else {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.state)) {
+                            if (!subField.isEmptyForDisplay()) {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.city)) {
+                            if (!subField.isEmptyForDisplay()) {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.otherGeographicCoverage)) {
+                            if (!subField.isEmptyForDisplay()) {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                    }
+                    if (!coverage.isEmpty()) {
+                        retList.add(String.join(",", coverage));
+                    }
+                }
+            }
+        }
+        return retList;
+    }
+    
     /**
      * @return List of Strings containing the version's Keywords
      */
@@ -911,37 +914,39 @@ public class DatasetVersion implements Serializable {
         return getCompoundChildFieldValues(DatasetFieldConstant.publication, DatasetFieldConstant.publicationCitation);
     }
     
-    	/**
-	 * @return List of Strings containing the version's Grant Agency(ies)
-	 */
-	public List<String> getUniqueGrantAgencyValues() {
+        /**
+     * @return List of Strings containing the version's Grant Agency(ies)
+     */
+    public List<String> getUniqueGrantAgencyValues() {
 
-		// Since only grant agency names are returned, use distinct() to avoid repeats
-		// (e.g. if there are two grants from the same agency)
-		return getCompoundChildFieldValues(DatasetFieldConstant.grantNumber, DatasetFieldConstant.grantNumberAgency)
-				.stream().distinct().collect(Collectors.toList());
-	}
+        // Since only grant agency names are returned, use distinct() to avoid repeats
+        // (e.g. if there are two grants from the same agency)
+        return getCompoundChildFieldValues(DatasetFieldConstant.grantNumber, DatasetFieldConstant.grantNumberAgency)
+                .stream().distinct().collect(Collectors.toList());
+    }
 
-	/**
-	 * @return String containing the version's series title
-	 */
-	public String getSeriesTitle() {
+    /**
+     * @return String containing the version's series title
+     */
+    public String getSeriesTitle() {
 
-		List<String> seriesNames = getCompoundChildFieldValues(DatasetFieldConstant.series,
-				DatasetFieldConstant.seriesName);
-		if (seriesNames.size() > 1) {
-			logger.warning("More than one series title found for datasetVersion: " + this.id);
-		}
-		if (!seriesNames.isEmpty()) {
-			return seriesNames.get(0);
-		} else {
-			return null;
-		}
-	}
+        List<String> seriesNames = getCompoundChildFieldValues(DatasetFieldConstant.series,
+                DatasetFieldConstant.seriesName);
+        if (seriesNames.size() > 1) {
+            logger.warning("More than one series title found for datasetVersion: " + this.id);
+        }
+        if (!seriesNames.isEmpty()) {
+            return seriesNames.get(0);
+        } else {
+            return null;
+        }
+    }
     
     /**
-     * @param parentFieldName compound dataset field A (from DatasetFieldConstant.*)
-     * @param childFieldName dataset field B, child field of A (from DatasetFieldConstant.*)
+     * @param parentFieldName
+     *            compound dataset field A (from DatasetFieldConstant.*)
+     * @param childFieldName
+     *            dataset field B, child field of A (from DatasetFieldConstant.*)
      * @return List of values of the child field
      */
     public List<String> getCompoundChildFieldValues(String parentFieldName, String childFieldName) {
@@ -966,20 +971,20 @@ public class DatasetVersion implements Serializable {
         return keywords;
     }
     
-	public List<String> getDatasetProducerNames() {
-		List<String> producerNames = new ArrayList<String>();
+    public List<String> getDatasetProducerNames(){
+        List<String> producerNames = new ArrayList<String>();
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.producer)) {
                 for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
                     for (DatasetField subField : authorValue.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerName)) {
-							producerNames.add(subField.getDisplayValue().trim());
+                            producerNames.add(subField.getDisplayValue().trim());
                             }                           
                         }
                     }
                 }
             }
-		return producerNames;
+        return producerNames;
         }
 
     public String getCitation() {
@@ -1493,10 +1498,12 @@ public class DatasetVersion implements Serializable {
                 .add("url", SystemConfig.getDataverseSiteUrlStatic())
         );
 
-		job.add("provider", Json.createObjectBuilder().add("@type", "Organization").add("name",
-				ResourceBundle.getBundle("Bundle").getString("institution.name")));
-		jsonLd = job.build().toString();
-		return jsonLd;
-	}
+        job.add("provider", Json.createObjectBuilder()
+                .add("@type", "Organization")
+                .add("name",ResourceBundle.getBundle("Bundle").getString("institution.name"))
+        );
+        jsonLd = job.build().toString();
+        return jsonLd;
+    }
 
 }

@@ -113,7 +113,7 @@ public class AuthenticationServiceBean {
         
         // First, set up the factories
         try {
-            registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean, passwordValidatorService) );
+            registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean, passwordValidatorService, this) );
             registerProviderFactory( new ShibAuthenticationProviderFactory() );
             registerProviderFactory( new OAuth2AuthenticationProviderFactory() );
         
@@ -337,7 +337,7 @@ public class AuthenticationServiceBean {
      * @return The authenticated user for the passed provider id and authentication request.
      * @throws AuthenticationFailedException 
      */
-    public AuthenticatedUser getCreateAuthenticatedUser( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
+    public AuthenticatedUser getUpdateAuthenticatedUser( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
         AuthenticationProvider prv = getAuthenticationProvider(authenticationProviderId);
         if ( prv == null ) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );
         if ( ! (prv instanceof CredentialsAuthenticationProvider) ) {
@@ -354,8 +354,9 @@ public class AuthenticationServiceBean {
             }
             
             if ( user == null ) {
-                return createAuthenticatedUser(
-                        new UserRecordIdentifier(authenticationProviderId, resp.getUserId()), resp.getUserId(), resp.getUserDisplayInfo(), true );
+                throw new IllegalStateException("Authenticated user does not exist. The functionality to support creating one at this point in authentication has been removed.");
+                //return createAuthenticatedUser(
+                //        new UserRecordIdentifier(authenticationProviderId, resp.getUserId()), resp.getUserId(), resp.getUserDisplayInfo(), true );
             } else {
                 if (BuiltinAuthenticationProvider.PROVIDER_ID.equals(user.getAuthenticatedUserLookup().getAuthenticationProviderId())) {
                     return user;
@@ -734,10 +735,6 @@ public class AuthenticationServiceBean {
         }
         BuiltinUser builtinUser = new BuiltinUser();
         builtinUser.setUserName(authenticatedUser.getUserIdentifier());
-        builtinUser.setFirstName(authenticatedUser.getFirstName());
-        builtinUser.setLastName(authenticatedUser.getLastName());
-        // Bean Validation will check for null and invalid email addresses
-        builtinUser.setEmail(newEmailAddress);
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         Set<ConstraintViolation<BuiltinUser>> violations = validator.validate(builtinUser);
@@ -796,7 +793,7 @@ public class AuthenticationServiceBean {
 
         String credentialsAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
         try {
-            AuthenticatedUser au = getCreateAuthenticatedUser(credentialsAuthProviderId, authReq);
+            AuthenticatedUser au = getUpdateAuthenticatedUser(credentialsAuthProviderId, authReq);
             logger.fine("User authenticated:" + au.getEmail());
             return au;
         } catch (AuthenticationFailedException ex) {
@@ -808,7 +805,7 @@ public class AuthenticationServiceBean {
                  * AuthenticationServiceBean.convertBuiltInToShib
                  */
                 logger.info("AuthenticationFailedException caught in canLogInAsBuiltinUser: The username and/or password entered is invalid: " + ex.getResponse().getMessage() + " - Maybe the user (" + username + ") hasn't upgraded their password? Checking the old password...");
-                BuiltinUser builtinUser = builtinUserServiceBean.findByUsernameOrEmail(username);
+                BuiltinUser builtinUser = builtinUserServiceBean.findByUserName(username);
                 if (builtinUser != null) {
                     boolean userAuthenticated = PasswordEncryption.getVersion(builtinUser.getPasswordEncryptionVersion()).check(password, builtinUser.getEncryptedPassword());
                     if (userAuthenticated == true) {

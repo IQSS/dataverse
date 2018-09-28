@@ -560,7 +560,7 @@ public class Index extends AbstractApiBean {
 
         User user = findUserByApiToken(apiToken);
         if (user == null) {
-            return error(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
+            return error(Response.Status.UNAUTHORIZED, "Invalid apikey ");
         }
 
         Dataverse subtreeScope = dataverseService.findRootDataverse();
@@ -597,7 +597,7 @@ public class Index extends AbstractApiBean {
 
         User user = findUserByApiToken(apiToken);
         if (user == null) {
-            return error(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
+            return error(Response.Status.UNAUTHORIZED, "Invalid apikey");
         }
 
         DvObject dvObjectToLookUp = dvObjectService.findDvObject(dvObjectId);
