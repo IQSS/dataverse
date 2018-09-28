@@ -16,7 +16,43 @@ Formatting Code
 Tabs vs. Spaces
 ^^^^^^^^^^^^^^^
 
-Don't use tabs. Use spaces.
+Don't use tabs. Use 4 spaces.
+
+Braces Placement
+^^^^^^^^^^^^^^^^
+
+Place curly braces according to the style below, which is an example you can see from Netbeans.
+
+.. code-block:: java
+
+    public class ClassA {
+
+        private String letters[] = new String[]{"A", "B"};
+
+        public int meth(String text, int number) {
+            BinaryOperator plus = (a, b) -> {
+                return a + b;
+            };
+            if (text != null) {
+                try {
+                    meth("Some text", text.length());
+                } catch (Throwable t) {
+                } finally {
+                }
+            } else if (number >= 0) {
+                text = number == 0 ? "empty" : "nonempty";
+            }
+            do {
+                number = number + 1;
+            } while (number < 2);
+            for (int i = 1; i < 100; i++) {
+                number = number + i;
+            }
+            while (number > 0) {
+                number--;
+            }
+        }
+    }
 
 Braces Placement
 ^^^^^^^^^^^^^^^^
@@ -103,6 +139,20 @@ If you just downloaded Netbeans and are using the out-of-the-box settings, you s
 
 If you know of a way to easily share Netbeans configuration across a team, please get in touch.
 
+Bash
+----
+
+Generally, Google's Shell Style Guide at https://google.github.io/styleguide/shell.xml seems to have good advice.
+
+Formatting Code
+~~~~~~~~~~~~~~~
+
+Tabs vs. Spaces
+^^^^^^^^^^^^^^^
+
+Don't use tabs. Use 2 spaces.
+
+shfmt from https://github.com/mvdan/sh seems like a decent way to enforce indentation of two spaces (i.e. ``shfmt -i 2 -w path/to/script.sh``) but be aware that it makes other changes.
 
 Bike Shedding
 -------------
@@ -113,4 +163,4 @@ Come debate with us about coding style in this Google doc that has public commen
 
 ----
 
-Previous: :doc:`debugging` | Next: :doc:`containers`
+Previous: :doc:`debugging` | Next: :doc:`deployment`

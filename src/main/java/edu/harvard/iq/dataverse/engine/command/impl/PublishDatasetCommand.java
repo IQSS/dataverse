@@ -88,9 +88,31 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.PrePublishDataset) );
             return new PublishDatasetResult(theDataset, false);
             
-        } else {
-            //if there are more than required size files  then call Finalize asychronously (default is 10)
-            if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount()) {     
+        } else{
+            // We will skip trying to register the global identifiers for datafiles 
+            // if "dependent" file-level identifiers are requested, AND the naming 
+            // protocol of the dataset global id is different from the 
+            // one currently configured for the Dataverse. This is to specifically 
+            // address the issue with the datasets with handle ids registered, 
+            // that are currently configured to use DOI.
+            // If we are registering file-level identifiers, and there are more 
+            // than the configured limit number of files, then call Finalize 
+            // asychronously (default is 10)
+            // ...
+            // Additionaly in 4.9.3 we have added a system variable to disable 
+            // registering file PIDs on the installation level.
+            String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
+            String currentGlobalAuthority= ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
+            String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+            boolean registerGlobalIdsForFiles = 
+                    (currentGlobalIdProtocol.equals(theDataset.getProtocol()) || dataFilePIDFormat.equals("INDEPENDENT")) 
+                    && ctxt.systemConfig().isFilePIDsEnabled();
+            
+            if ( registerGlobalIdsForFiles ){
+                registerGlobalIdsForFiles = currentGlobalAuthority.equals( theDataset.getAuthority() );
+	    }
+
+            if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount() && registerGlobalIdsForFiles) {     
                 String info = "Adding File PIDs asynchronously";
                 AuthenticatedUser user = request.getAuthenticatedUser();
                 
@@ -98,14 +120,14 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 lock.setDataset(theDataset);
                 lock.setInfo(info);
                 ctxt.datasets().addDatasetLock(theDataset, lock);
-                ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request);
+                ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, , datasetExternallyReleased);
                 return new PublishDatasetResult(theDataset, false);
                 
             } else {
                 // Synchronous publishing (no workflow involved)
                 logger.info("Submit FDPC");
                 
-                theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(theDataset, getRequest()));
+                theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(theDataset, getRequest(),datasetExternallyReleased));
                 logger.info("Back from FDPC");
                 return new PublishDatasetResult(theDataset, true);
             }

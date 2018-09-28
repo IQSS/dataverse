@@ -141,12 +141,12 @@ public class HarvestingSetsPage implements java.io.Serializable {
             return navigationWrapper.notAuthorized();
         }
         
-        
         configuredHarvestingSets = oaiSetService.findAll();
         pageMode = PageMode.VIEW;
         
         if (isHarvestingServerEnabled()) {
             oaiServerStatusRadio = oaiServerStatusRadioEnabled;
+            checkIfDefaultSetExists();
         } else {
             oaiServerStatusRadio = oaiServerStatusRadioDisabled;
         }
@@ -155,12 +155,24 @@ public class HarvestingSetsPage implements java.io.Serializable {
         return null; 
     }
     
+    private void checkIfDefaultSetExists() {
+        OAISet defaultSet = oaiSetService.findDefaultSet();
+        if (defaultSet == null) {
+            createDefaultSet();
+        }
+    }
+    
     public List<OAISet> getConfiguredOAISets() {
         return configuredHarvestingSets; 
     }
     
     public void setConfiguredOAISets(List<OAISet> oaiSets) {
         configuredHarvestingSets = oaiSets; 
+    }
+    
+    public boolean isHasNamedOAISets() {
+        List<OAISet> namedSets = oaiSetService.findAllNamedSets();
+        return namedSets != null && namedSets.size() > 0;
     }
     
     public boolean isHarvestingServerEnabled() {
@@ -173,6 +185,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         } else {
             systemConfig.enableOAIServer();
             JsfHelper.addSuccessMessage(JH.localize("harvestserver.service.enable.success"));
+            checkIfDefaultSetExists();
         }
     }
     
@@ -228,6 +241,10 @@ public class HarvestingSetsPage implements java.io.Serializable {
         this.setSpecValidated = false;
         this.setQueryValidated = false;
         this.setQueryResult = -1;
+        
+        if (oaiSet.isDefaultSet()) {
+            setSetQueryValidated(true);
+        }
         
         setSelectedSet(oaiSet);
     }
@@ -290,7 +307,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         try {
             oaiSetService.save(oaiSet);
             configuredHarvestingSets = oaiSetService.findAll(); 
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("harvest.oaiupdate.success",   Arrays.asList(oaiSet.getSpec())));
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("harvest.oaiupdate.success",   Arrays.asList(oaiSet.isDefaultSet() ? "default" : oaiSet.getSpec())));
             success = true;
 
         } catch (Exception ex) {
@@ -329,6 +346,42 @@ public class HarvestingSetsPage implements java.io.Serializable {
             logger.warning("Delete called, with a null selected harvesting set!");
         }
         
+    }
+    
+    private void createDefaultSet() {
+        
+        OAISet newOaiSet = new OAISet();
+        
+        
+        newOaiSet.setSpec("");
+        newOaiSet.setName("");
+        // The default description of the default set. The admin will be  
+        // able to modify it later, if necessary.
+        newOaiSet.setDescription(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setdescription.default"));
+        newOaiSet.setDefinition("");
+        
+        boolean success = false;
+        
+        try {
+            oaiSetService.save(newOaiSet);
+            configuredHarvestingSets = oaiSetService.findAll();  
+            success = true;
+
+        } catch (Exception ex) {
+            // should be a warning perhaps??
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("harvest.oaicreate.defaultset.fail"));
+            logger.log(Level.SEVERE, "Failed to create the Default OAI set" + ex.getMessage(), ex);
+        }
+        
+        if (success) {
+            OAISet savedSet = oaiSetService.findBySpec(getNewSetSpec());
+            if (savedSet != null) {
+                runSetExport(savedSet);
+                configuredHarvestingSets = oaiSetService.findAll(); 
+            }
+        }
+        
+        setPageMode(HarvestingSetsPage.PageMode.VIEW);        
     }
     
     public boolean isSetSpecValidated() {
@@ -393,6 +446,10 @@ public class HarvestingSetsPage implements java.io.Serializable {
     }
     
     public int getSetInfoNumOfDatasets(OAISet oaiSet) {
+        if (oaiSet.isDefaultSet()) {
+            return getSetInfoNumOfExported(oaiSet);
+        }
+        
         String query = oaiSet.getDefinition();
         
         try {

@@ -194,7 +194,13 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     public Dataset findByGlobalId(String globalId) {
-        return (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset");
+        Dataset retVal = (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset");
+        if (retVal != null){
+            return retVal;
+        } else {
+            //try to find with alternative PID
+            return (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset", true);
+        }        
     }
 
     public String generateDatasetIdentifier(Dataset dataset, GlobalIdServiceBean idServiceBean) {
@@ -712,7 +718,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     @Asynchronous
-    public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request) throws CommandException {
+    public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request, boolean isPidPrePublished) throws CommandException {
 
         // Since we are calling the next command asynchronously anyway - sleep here 
         // for a few seconds, just in case, to make sure the database update of 
@@ -725,7 +731,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
         Dataset theDataset = find(datasetId);
-        commandEngine.submit(new FinalizeDatasetPublicationCommand(ctxt.em().merge(theDataset), request));
+        commandEngine.submit(new FinalizeDatasetPublicationCommand(ctxt.em().merge(theDataset), request,, isPidPrePublished));
     }
     
     /*

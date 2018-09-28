@@ -24,17 +24,6 @@ public class MockBuiltinUserServiceBean extends BuiltinUserServiceBean {
         return "http://upgrade/" + aUser.getUserName();
     }
 
-    
-    
-    @Override
-    public BuiltinUser findByUsernameOrEmail(String usernameOrEmail) {
-        BuiltinUser u = findByUserName(usernameOrEmail);
-        if ( u != null ) return u;
-        return users.values().stream()
-                .filter( usr -> usr.getEmail().equals(usernameOrEmail))
-                .findFirst().orElse(null);
-    }
-
     @Override
     public BuiltinUser save(BuiltinUser aUser) {
         if ( aUser.getId() == null ) {

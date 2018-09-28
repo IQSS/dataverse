@@ -3,11 +3,6 @@ package edu.harvard.iq.dataverse.dataaccess;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -19,7 +14,6 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.MultiObjectDeleteException;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
 import com.amazonaws.services.s3.model.S3Object;
@@ -30,9 +24,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -46,7 +38,6 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -161,7 +152,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 }
 
             } else if (isWriteAccess) {
-                key = dataFile.getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
+                key = dataFile.getOwner().getAuthorityForFileStorage() + "/" + this.getDataFile().getOwner().getIdentifierForFileStorage();
 
                 if (storageIdentifier.startsWith(S3_IDENTIFIER_PREFIX + "://")) {
                     key += "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
@@ -181,7 +172,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
         } else if (dvObject instanceof Dataset) {
             Dataset dataset = this.getDataset();
-            key = dataset.getAuthority() + "/" + dataset.getIdentifier();
+            key = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage();
             dataset.setStorageIdentifier(S3_IDENTIFIER_PREFIX + "://" + key);
         } else if (dvObject instanceof Dataverse) {
             throw new IOException("Data Access: Invalid DvObject type : Dataverse");
@@ -654,7 +645,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     
     private String getMainFileKey() throws IOException {
         if (key == null) {
-            String baseKey = this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
+            String baseKey = this.getDataFile().getOwner().getAuthorityForFileStorage() + "/" + this.getDataFile().getOwner().getIdentifierForFileStorage();
             String storageIdentifier = dvObject.getStorageIdentifier();
 
             if (storageIdentifier == null || "".equals(storageIdentifier)) {

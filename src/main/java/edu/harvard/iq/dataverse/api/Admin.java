@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
@@ -81,7 +82,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.SubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
@@ -115,8 +118,6 @@ public class Admin extends AbstractApiBean {
 	DatasetServiceBean datasetService;
 	@EJB
 	DatasetVersionServiceBean datasetversionService;
-	@EJB
-	SettingsServiceBean settingsService;
 	@EJB
 	AuthenticationServiceBean authService;
     @Inject
@@ -398,6 +399,7 @@ public class Admin extends AbstractApiBean {
 		return ok(json(authenticatedUser));
 	}
 
+        //TODO: Delete this endpoint after 4.9.3. Was updated with change in docs. --MAD
 	/**
 	 * curl -X PUT -d "shib@mailinator.com"
 	 * http://localhost:8080/api/admin/authenticatedUsers/id/11/convertShibToBuiltIn
@@ -411,9 +413,8 @@ public class Admin extends AbstractApiBean {
 	@Path("authenticatedUsers/id/{id}/convertShibToBuiltIn")
 	@Deprecated
 	public Response convertShibUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-		AuthenticatedUser user;
-		try {
-			user = findAuthenticatedUserOrDie();
+       try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -426,8 +427,9 @@ public class Admin extends AbstractApiBean {
 				return error(Response.Status.BAD_REQUEST, "User id " + id
 						+ " could not be converted from Shibboleth to BuiltIn. An Exception was not thrown.");
 			}
+            AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
 			JsonObjectBuilder output = Json.createObjectBuilder();
-			output.add("email", user.getEmail());
+			output.add("email", authUser.getEmail());
 			output.add("username", builtinUser.getUserName());
 			return ok(output);
 		} catch (Throwable ex) {
@@ -447,9 +449,8 @@ public class Admin extends AbstractApiBean {
 	@PUT
 	@Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
 	public Response convertOAuthUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-		AuthenticatedUser user;
-		try {
-			user = findAuthenticatedUserOrDie();
+       try {
+			AuthenticatedUser user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -462,8 +463,9 @@ public class Admin extends AbstractApiBean {
 				return error(Response.Status.BAD_REQUEST, "User id " + id
 						+ " could not be converted from remote to BuiltIn. An Exception was not thrown.");
 			}
+            AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
 			JsonObjectBuilder output = Json.createObjectBuilder();
-			output.add("email", user.getEmail());
+			output.add("email", authUser.getEmail());
 			output.add("username", builtinUser.getUserName());
 			return ok(output);
 		} catch (Throwable ex) {
@@ -1053,6 +1055,42 @@ public class Admin extends AbstractApiBean {
 	public Response isOrcidEnabled() {
 		return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
 	}
+        
+    @POST
+    @Path("{id}/reregisterHDLToPID")
+    public Response reregisterHdlToPID(@PathParam("id") String id) {
+        logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
+        try {
+            if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(GlobalId.HDL_PROTOCOL)) {
+                logger.info("Bad Request protocol set to handle  " );
+                return error(Status.BAD_REQUEST, ResourceBundle.getBundle("Bundle").getString("admin.api.migrateHDL.failure.must.be.set.for.doi"));
+            }
+            
+            User u = findUserOrDie();
+            if (!u.isSuperuser()) {
+                logger.info("Bad Request Unauthor " );
+                return error(Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
+            }
+
+            DataverseRequest r = createDataverseRequest(u);
+            Dataset ds = findDatasetOrDie(id);
+            if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(GlobalId.HDL_PROTOCOL)) {
+                execCommand(new RegisterDvObjectCommand(r, ds, true));
+            } else {
+                return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.hdl.dataset"));
+            }
+
+        } catch (WrappedResponse r) {
+            logger.info("Failed to migrate Dataset Handle id: " + id);
+            return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure", Arrays.asList(id)));
+        } catch (Exception e) {
+            logger.info("Failed to migrate Dataset Handle id: " + id + " Unexpected Exception " + e.getMessage());
+            List<String> args = Arrays.asList(id,e.getMessage());
+            return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failureWithException", args));
+        }
+        System.out.print("before the return ok...");
+        return ok(BundleUtil.getStringFromBundle("admin.api.migrateHDL.success"));
+    }
 
 	@GET
 	@Path("{id}/registerDataFile")
@@ -1088,8 +1126,9 @@ public class Admin extends AbstractApiBean {
 		logger.info("Starting to register: analyzing " + count + " files. " + new Date());
 		logger.info("Only unregistered, published files will be registered.");
 		for (DataFile df : fileService.findAll()) {
-			if (released.intValue() > num)
+			if (released.intValue() > num) {
 				break;
+			}	
 			try {
 				if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
 					if (df.isReleased()) {

@@ -726,7 +726,7 @@ public class IndexServiceBean {
                     if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.EMAIL)) {
                         //no-op. we want to keep email address out of Solr per https://github.com/IQSS/dataverse/issues/759
                     } else if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.DATE)) {
-                        String dateAsString = dsf.getValues().get(0);
+                        String dateAsString = dsf.getValues_nondisplay().get(0);
                         logger.fine("date as string: " + dateAsString);
                         if (dateAsString != null && !dateAsString.isEmpty()) {
                             SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
@@ -1120,7 +1120,7 @@ public class IndexServiceBean {
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(dataverse.getPublicationDate().getTime());
             int YYYY = calendar.get(Calendar.YEAR);
-            solrInputDocument.addField(SearchFields.PUBLICATION_DATE, YYYY);
+            solrInputDocument.addField(SearchFields.PUBLICATION_YEAR, YYYY);
         }
     }
 
@@ -1129,7 +1129,7 @@ public class IndexServiceBean {
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(dataset.getPublicationDate().getTime());
             int YYYY = calendar.get(Calendar.YEAR);
-            solrInputDocument.addField(SearchFields.PUBLICATION_DATE, YYYY);
+            solrInputDocument.addField(SearchFields.PUBLICATION_YEAR, YYYY);
             solrInputDocument.addField(SearchFields.DATASET_PUBLICATION_DATE, YYYY);
         }
     }

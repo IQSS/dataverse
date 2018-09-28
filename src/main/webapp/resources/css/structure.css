@@ -95,11 +95,11 @@ td.col-select-width, th.col-select-width {width:36px;}
 .margin-top-half {margin-top:.5em;}
 .margin-bottom {margin-bottom:1em;}
 .margin-bottom-half {margin-bottom:.5em;}
-.no-margin-top {margin-top:0;}
-.no-margin-bottom {margin-bottom:0;}
+.no-margin-top {margin-top:0 !important;}
+.no-margin-bottom {margin-bottom:0 !important;}
 .margin-sides {margin-left:1em; margin-right:1em;}
 .padding-12 {padding: 12px;}
-.padding-none {padding: 0;}
+.padding-none {padding: 0 !important;}
 .clear-both {clear:both;}
 
 table.selectManyCheckboxBlock input {margin-right:4px;}
@@ -591,13 +591,14 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 
 #title {font-size:1.5em;font-weight:bold;}
 #author, #contact {display:block; margin-bottom:.5em;}
-#citation-block {margin-bottom:.5em;}
+.citation-block {margin-bottom:.5em; padding-right:0;}
 .bg-citation {background:#ECF6FB;}
+.bg-citation-file {background:#f5f5f5; border: 1px solid #DDD;}
 div.alert-info.bg-citation, div.alert-danger.bg-danger {padding-top:4px; padding-bottom:4px; border-radius:0; color:#333;}
-#citation-block > div.alert-info.bg-citation, #citation-block > div.alert-danger.bg-danger {padding-top:0; padding-bottom:0;}
-#citation-select {/*-- display:inline-block; --*/}
-#citation, #citation-download, #citation-standards {padding:.5em;}
-#citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
+.citation-block > div.alert-info.bg-citation, .citation-block > div.alert-danger.bg-danger {padding-top:0; padding-bottom:0;}
+.citation-select {/*-- display:inline-block; --*/}
+.citation, .citation-download, .citation-standards {padding:.5em;}
+.citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
 .waiver-CC0-inline {display:inline-block; margin-left:1em;}
 
 div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}

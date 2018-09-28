@@ -73,35 +73,78 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(FileDownloadServiceBean.class.getCanonicalName());   
     
+    public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse){ 
+        writeGuestbookAndStartBatchDownload(guestbookResponse, false);
+    }
     
-    public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse){
-        if (guestbookResponse.getSelectedFileIds() != null) {
-            String[] fileIds = guestbookResponse.getSelectedFileIds().split(",");
-            if (fileIds.length == 1) {
+    public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse, Boolean doNotSaveGuestbookRecord){
+        if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null) {
+            return;
+        }
+
+        // Let's intercept the case where a multiple download method was called, 
+        // with only 1 file on the list. We'll treat it like a single file download 
+        // instead:
+        String[] fileIds = guestbookResponse.getSelectedFileIds().split(",");
+        if (fileIds.length == 1) {
+            Long fileId;
+            try {
+                fileId = Long.parseLong(fileIds[0]);
+            } catch (NumberFormatException nfe) {
+                logger.warning("A file id passed to the writeGuestbookAndStartBatchDownload method as a string could not be converted back to Long: " + fileIds[0]);
+                return;
+            }
+            // If we need to create a GuestBookResponse record, we have to 
+            // look up the DataFile object for this file: 
+            if (!doNotSaveGuestbookRecord) {
                 DataFile df = datafileService.findCheapAndEasy(Long.parseLong(fileIds[0]));
                 guestbookResponse.setDataFile(df);
+                writeGuestbookResponseRecord(guestbookResponse);
             }
-        }
-        if (guestbookResponse != null && guestbookResponse.getDataFile() != null      ){
-            writeGuestbookResponseRecord(guestbookResponse);
-            // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
-            callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), true);
+        
+            redirectToDownloadAPI(guestbookResponse.getFileFormat(), fileId, true);
+            return;
         }
         
-        if (guestbookResponse != null && guestbookResponse.getDataFile() == null && guestbookResponse.getSelectedFileIds() != null     ){
+        // OK, this is a real batch (multi-file) download. 
+        // Do we need to write GuestbookRecord entries for the files? 
+        if (!doNotSaveGuestbookRecord) {
+
             List<String> list = new ArrayList<>(Arrays.asList(guestbookResponse.getSelectedFileIds().split(",")));
 
             for (String idAsString : list) {
-                DataFile df = datafileService.findCheapAndEasy(new Long(idAsString)) ;
+                DataFile df = datafileService.findCheapAndEasy(new Long(idAsString));
                 if (df != null) {
                     guestbookResponse.setDataFile(df);
                     writeGuestbookResponseRecord(guestbookResponse);
                 }
             }
-            callDownloadServlet(guestbookResponse.getSelectedFileIds(), true);
         }
+
+
+        redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(), "original".equals(guestbookResponse.getFileFormat()));
     }
     
+    public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
+        if(!fileMetadata.getDatasetVersion().isDraft()){
+            guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
+            writeGuestbookResponseRecord(guestbookResponse);
+        }
+        // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
+        redirectToDownloadAPI(format, fileMetadata.getDataFile().getId(), true);
+        logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
+    }
+    
+    public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse) {
+        if (guestbookResponse.getDataFile() == null) {
+            logger.warning("writeGuestbookAndStartFileDownload(GuestbookResponse) called without the DataFile in the GuestbookResponse.");
+            return;
+        }
+        writeGuestbookResponseRecord(guestbookResponse);
+        redirectToDownloadAPI(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId());
+        logger.fine("issued file download redirect for datafile "+guestbookResponse.getDataFile().getId());
+    }
+
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
 
         try {
@@ -112,37 +155,44 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         }
     }
-    public void callDownloadServlet(String multiFileString, Boolean gbRecordsWritten){
-        String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
-        if (gbRecordsWritten){
-            fileDownloadUrl += "?gbrecs=true";
-        }
-        try {
-        	FacesContext fc = FacesContext.getCurrentInstance();
-        	if(!fc.getResponseComplete()) {
-            fc.getExternalContext().redirect(fileDownloadUrl);
-        	} else {
-        		logger.info("Response complete before redirect call");
-        	}
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url.");
-        }
-
-        //return fileDownloadUrl;
-    }
-
-    // The "doNotWriteGuestBookRecord" parameter is passed to the API. 
-    // As of now (May 2018) we always set this flag to true when redirecting the 
+    
+    // The "guestBookRecord(s)AlreadyWritten" parameter in the 2 methods 
+    // below (redirectToBatchDownloadAPI() and redirectToDownloadAPI(), for the 
+    // multiple- and single-file downloads respectively) are passed to the 
+    // Download API, where it is treated as a "SKIP writing the GuestbookResponse 
+    // record for this download on the API side" flag. In other words, we want 
+    // to create and save this record *either* on the UI, or the API side - but 
+    // not both. 
+    // As of now (Aug. 2018) we always set this flag to true when redirecting the 
     // user to the Access API. That's because we have either just created the 
-    // record ourselves, on the application side; or we have skipped creating one, 
+    // record ourselves, on the UI side; or we have skipped creating one, 
     // because this was a draft file and we don't want to count the download. 
     // But either way, it is NEVER the API side's job to count the download that 
     // was initiated in the GUI. 
     // But note that this may change - there may be some future situations where it will 
     // become necessary again, to pass the job of creating the access record 
-    // to the API!
-    public void callDownloadServlet(String downloadType, Long fileId, boolean doNotWriteGuestBookRecord) {
-        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, doNotWriteGuestBookRecord);
+    // to the API.
+    private void redirectToBatchDownloadAPI(String multiFileString, Boolean guestbookRecordsAlreadyWritten, Boolean downloadOriginal){
+
+        String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
+        if (guestbookRecordsAlreadyWritten && !downloadOriginal){
+            fileDownloadUrl += "?gbrecs=true";
+        } else if (guestbookRecordsAlreadyWritten && downloadOriginal){
+            fileDownloadUrl += "?gbrecs=true&format=original";
+        } else if (!guestbookRecordsAlreadyWritten && downloadOriginal){
+            fileDownloadUrl += "?format=original";
+        }
+        
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to file download url.");
+        }
+
+    }
+
+    private void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten) {
+        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten);
         logger.fine("Redirecting to file download url: " + fileDownloadUrl);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
@@ -150,18 +200,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
         }
     }
-
     
-    public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
-        if(!fileMetadata.getDatasetVersion().isDraft()){
-           guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
-           writeGuestbookResponseRecord(guestbookResponse);
-        }
-        // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
-        callDownloadServlet(format, fileMetadata.getDataFile().getId(), true);
-        logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
+    private void redirectToDownloadAPI(String downloadType, Long fileId) {
+        redirectToDownloadAPI(downloadType, fileId, true);
+    }
+    
+    private void redirectToBatchDownloadAPI(String multiFileString, Boolean downloadOriginal){
+        redirectToBatchDownloadAPI(multiFileString, true, downloadOriginal);
     }
 
+    
     /**
      * Launch an "explore" tool which is a type of ExternalTool such as
      * TwoRavens or Data Explorer. This method may be invoked directly from the
