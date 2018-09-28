@@ -1,8 +1,10 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.AlternativePersistentIdentifier;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -21,14 +23,27 @@ import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 public class RegisterDvObjectCommand extends AbstractVoidCommand {
 
     private final DvObject target;
+    private final  Boolean migrateHandle;
 
     public RegisterDvObjectCommand(DataverseRequest aRequest, DvObject target) {
         super(aRequest, target);
         this.target = target;
+        this.migrateHandle = false;
+    }
+    
+    public RegisterDvObjectCommand(DataverseRequest aRequest, DvObject target, Boolean migrateHandle) {
+        super(aRequest, target);
+        this.target = target;
+        this.migrateHandle = migrateHandle;
     }
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
+        
+        if(this.migrateHandle){
+            //Only continue if you can successfully migrate the handle
+            if (!processMigrateHandle(ctxt)) return;
+        }
         String nonNullDefaultIfKeyNotFound = "";
         String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
@@ -51,7 +66,6 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                     target.setAuthority(authority);
                 }
             }
-
             if (idServiceBean.alreadyExists(target)) {
                 return;
             }
@@ -73,15 +87,15 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                 }
                 ctxt.em().merge(target);
                 ctxt.em().flush();
-                if (target.isInstanceofDataset()) {
+                if (target.isInstanceofDataset() && target.isReleased() && !this.migrateHandle) {
                     Dataset dataset = (Dataset) target;
                     for (DataFile df : dataset.getFiles()) {
                         if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
                             df.setIdentifier(ctxt.files().generateDataFileIdentifier(df, idServiceBean));
-                            if (df.getProtocol() == null) {
+                            if (df.getProtocol() == null || df.getProtocol().isEmpty()) {
                                 df.setProtocol(protocol);
                             }
-                            if (df.getAuthority() == null) {
+                            if (df.getAuthority() == null || df.getAuthority().isEmpty()) {
                                 df.setAuthority(authority);
                             }
                         }
@@ -115,6 +129,34 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         } catch (Throwable ex) {
             //do nothing - we'll know it failed because the global id create time won't have been updated.
         }
+        if (this.migrateHandle) {
+            //Only continue if you can successfully migrate the handle
+            boolean doNormalSolrDocCleanUp = true;
+            ctxt.index().indexDataset((Dataset) target, doNormalSolrDocCleanUp);
+            ctxt.solrIndex().indexPermissionsForOneDvObject((Dataset) target);
+        }
+    }
+    
+    private Boolean processMigrateHandle (CommandContext ctxt){
+        boolean retval = true;
+        if(!target.isInstanceofDataset()) return false;
+        if(!target.getProtocol().equals(GlobalId.HDL_PROTOCOL)) return false;
+        
+        AlternativePersistentIdentifier api = new AlternativePersistentIdentifier();
+        api.setProtocol(target.getProtocol());
+        api.setAuthority(target.getAuthority());
+        api.setIdentifier(target.getIdentifier());
+        api.setDvObject(target);
+        api.setIdentifierRegistered(target.isIdentifierRegistered());
+        api.setGlobalIdCreateTime(target.getGlobalIdCreateTime());
+        api.setStorageLocationDesignator(true);
+        ctxt.em().persist(api);
+        target.setProtocol(null);
+        target.setAuthority(null);
+        target.setIdentifier(null);
+        target.setIdentifierRegistered(false);
+        target.setGlobalIdCreateTime(null);
+        return retval;
     }
         
 }

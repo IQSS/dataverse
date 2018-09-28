@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
@@ -27,6 +28,8 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailInitResponse;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
 import javax.json.Json;
@@ -41,6 +44,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+
+import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Map;
 import java.util.logging.Level;
@@ -53,6 +58,9 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
+
+import org.apache.commons.io.IOUtils;
+
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -63,8 +71,12 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
@@ -371,6 +383,7 @@ public class Admin extends AbstractApiBean {
 		return ok(json(authenticatedUser));
 	}
 
+        //TODO: Delete this endpoint after 4.9.3. Was updated with change in docs. --MAD
 	/**
 	 * curl -X PUT -d "shib@mailinator.com"
 	 * http://localhost:8080/api/admin/authenticatedUsers/id/11/convertShibToBuiltIn
@@ -384,8 +397,8 @@ public class Admin extends AbstractApiBean {
 	@Path("authenticatedUsers/id/{id}/convertShibToBuiltIn")
 	@Deprecated
 	public Response convertShibUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-		try {
-			AuthenticatedUser user = findAuthenticatedUserOrDie();
+                try {
+                        AuthenticatedUser user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -398,8 +411,9 @@ public class Admin extends AbstractApiBean {
 				return error(Response.Status.BAD_REQUEST, "User id " + id
 						+ " could not be converted from Shibboleth to BuiltIn. An Exception was not thrown.");
 			}
+                        AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
 			JsonObjectBuilder output = Json.createObjectBuilder();
-			output.add("email", builtinUser.getEmail());
+			output.add("email", authUser.getEmail());
 			output.add("username", builtinUser.getUserName());
 			return ok(output);
 		} catch (Throwable ex) {
@@ -419,7 +433,7 @@ public class Admin extends AbstractApiBean {
 	@PUT
 	@Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
 	public Response convertOAuthUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-		try {
+                try {
 			AuthenticatedUser user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
@@ -429,12 +443,14 @@ public class Admin extends AbstractApiBean {
 		}
 		try {
 			BuiltinUser builtinUser = authSvc.convertRemoteToBuiltIn(id, newEmailAddress);
+                        //AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
 			if (builtinUser == null) {
 				return error(Response.Status.BAD_REQUEST, "User id " + id
 						+ " could not be converted from remote to BuiltIn. An Exception was not thrown.");
 			}
+                        AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
 			JsonObjectBuilder output = Json.createObjectBuilder();
-			output.add("email", builtinUser.getEmail());
+			output.add("email", authUser.getEmail());
 			output.add("username", builtinUser.getUserName());
 			return ok(output);
 		} catch (Throwable ex) {
@@ -1024,6 +1040,42 @@ public class Admin extends AbstractApiBean {
 	public Response isOrcidEnabled() {
 		return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
 	}
+        
+    @POST
+    @Path("{id}/reregisterHDLToPID")
+    public Response reregisterHdlToPID(@PathParam("id") String id) {
+        logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
+        try {
+            if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(GlobalId.HDL_PROTOCOL)) {
+                logger.info("Bad Request protocol set to handle  " );
+                return error(Status.BAD_REQUEST, ResourceBundle.getBundle("Bundle").getString("admin.api.migrateHDL.failure.must.be.set.for.doi"));
+            }
+            
+            User u = findUserOrDie();
+            if (!u.isSuperuser()) {
+                logger.info("Bad Request Unauthor " );
+                return error(Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
+            }
+
+            DataverseRequest r = createDataverseRequest(u);
+            Dataset ds = findDatasetOrDie(id);
+            if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(GlobalId.HDL_PROTOCOL)) {
+                execCommand(new RegisterDvObjectCommand(r, ds, true));
+            } else {
+                return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.hdl.dataset"));
+            }
+
+        } catch (WrappedResponse r) {
+            logger.info("Failed to migrate Dataset Handle id: " + id);
+            return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure", Arrays.asList(id)));
+        } catch (Exception e) {
+            logger.info("Failed to migrate Dataset Handle id: " + id + " Unexpected Exception " + e.getMessage());
+            List<String> args = Arrays.asList(id,e.getMessage());
+            return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failureWithException", args));
+        }
+        System.out.print("before the return ok...");
+        return ok(BundleUtil.getStringFromBundle("admin.api.migrateHDL.success"));
+    }
 
 	@GET
 	@Path("{id}/registerDataFile")
@@ -1097,6 +1149,115 @@ public class Admin extends AbstractApiBean {
 				+ " unregistered, published files registered successfully.");
 	}
 
+	@GET
+	@Path("/updateHashValues/{alg}")
+	public Response updateHashValues(@PathParam("alg") String alg, @QueryParam("num") int num) {
+		Integer count = fileService.findAll().size();
+		Integer successes = 0;
+		Integer alreadyUpdated = 0;
+		Integer rehashed = 0;
+		Integer harvested=0;
+		
+		if (num <= 0)
+			num = Integer.MAX_VALUE;
+		DataFile.ChecksumType cType = null;
+		try {
+			cType = DataFile.ChecksumType.fromString(alg);
+		} catch (IllegalArgumentException iae) {
+			return error(Status.BAD_REQUEST, "Unknown algorithm");
+		}
+		logger.info("Starting to rehash: analyzing " + count + " files. " + new Date());
+		logger.info("Hashes not created with " + alg + " will be verified, and, if valid, replaced with a hash using "
+				+ alg);
+		try {
+			User u = findAuthenticatedUserOrDie();
+			if (!u.isSuperuser())
+				return error(Status.UNAUTHORIZED, "must be superuser");
+		} catch (WrappedResponse e1) {
+			return error(Status.UNAUTHORIZED, "api key required");
+		}
+
+		for (DataFile df : fileService.findAll()) {
+			if (rehashed.intValue() >= num)
+				break;
+			InputStream in = null;
+			InputStream in2 = null; 
+			try {
+				if (df.isHarvested()) {
+					harvested++;
+				} else {
+					if (!df.getChecksumType().equals(cType)) {
+
+						rehashed++;
+						logger.fine(rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", "
+								+ df.getIdentifier());
+						// verify hash and calc new one to replace it
+						StorageIO<DataFile> storage = df.getStorageIO();
+						storage.open(DataAccessOption.READ_ACCESS);
+						if (!df.isTabularData()) {
+							in = storage.getInputStream();
+						} else {
+							// if this is a tabular file, read the preserved original "auxiliary file"
+							// instead:
+							in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+						}
+						if (in == null)
+							logger.warning("Cannot retrieve file.");
+						String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
+						if (currentChecksum.equals(df.getChecksumValue())) {
+							logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
+									+ df.getIdentifier() + " is valid");
+							storage.open(DataAccessOption.READ_ACCESS);
+							if (!df.isTabularData()) {
+								in2 = storage.getInputStream();
+							} else {
+								// if this is a tabular file, read the preserved original "auxiliary file"
+								// instead:
+								in2 = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+							}
+							if (in2 == null)
+								logger.warning("Cannot retrieve file to calculate new checksum.");
+							String newChecksum = FileUtil.CalculateChecksum(in2, cType);
+
+							df.setChecksumType(cType);
+							df.setChecksumValue(newChecksum);
+							successes++;
+							if (successes % 100 == 0) {
+								logger.info(
+										successes + " of  " + count + " files rehashed successfully. " + new Date());
+							}
+						} else {
+							logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
+									+ ", " + df.getIdentifier() + " is INVALID");
+						}
+					} else {
+						alreadyUpdated++;
+						if (alreadyUpdated % 100 == 0) {
+							logger.info(alreadyUpdated + " of  " + count
+									+ " files are already have hashes with the new algorithm. " + new Date());
+						}
+					}
+				}
+			} catch (Exception e) {
+				logger.warning("Unexpected Exception: " + e.getMessage());
+
+			} finally {
+				IOUtils.closeQuietly(in);
+				IOUtils.closeQuietly(in2);
+			}
+		}
+		logger.info("Final Results:");
+		logger.info(harvested + " harvested files skipped.");
+		logger.info(
+				alreadyUpdated + " of  " + count + " files already had hashes with the new algorithm. " + new Date());
+		logger.info(rehashed + " of  " + count + " files to rehash. " + new Date());
+		logger.info(
+				successes + " of  " + rehashed + " files successfully rehashed with the new algorithm. " + new Date());
+
+		return ok("Datafile rehashing complete." + successes + " of  " + rehashed + " files successfully rehashed.");
+	}
+
+	
 	@DELETE
 	@Path("/clearMetricsCache")
 	public Response clearMetricsCache() {

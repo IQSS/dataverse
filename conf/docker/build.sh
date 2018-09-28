@@ -50,8 +50,10 @@ echo Images are being built for registry org/username \"$HUBORG\" with the tag \
 #
 # Build dataverse-solr
 #
-# Use "conf" directory as context so we can copy schema.xml into Solr image.
-docker build -t $HUBORG/dataverse-solr:$TAG -f solr/Dockerfile ../../conf
+cp ../solr/7.3.0/schema.xml solr/
+# move solr*.tgz to the solr image
+cp ../../downloads/solr-7.3.0.tgz solr/
+docker build -t $HUBORG/dataverse-solr:$TAG  solr/
 if [ "$1" == 'internal' ]; then
   echo "Skipping docker push because we're using the internal Minishift registry."
 else
@@ -98,7 +100,7 @@ fi
 #
 # Build init-container
 #
-cp ../../scripts/installer/postgres-setup dataverse-glassfish/init-container
+cp ../../scripts/installer/install dataverse-glassfish/init-container
 docker build -t $HUBORG/init-container:$TAG dataverse-glassfish/init-container
 if [ "$1" == 'internal' ]; then
   echo "Skipping docker push because we're using the internal Minishift registry."

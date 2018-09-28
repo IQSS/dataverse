@@ -128,7 +128,7 @@ public class BuiltinUsersIT {
         Response createUserResponse = createUser(randomUsername, "firstName", "lastName", email);
         createUserResponse.prettyPrint();
         assertEquals(200, createUserResponse.statusCode());
-        String emailActual = JsonPath.from(createUserResponse.body().asString()).getString("data.user." + emailKey);
+        String emailActual = JsonPath.from(createUserResponse.body().asString()).getString("data.authenticatedUser." + emailKey);
         // the backend will trim the email address
         String emailExpected = email.trim();
         assertEquals(emailExpected, emailActual);
@@ -195,14 +195,6 @@ public class BuiltinUsersIT {
         Response failExpected = UtilIT.getApiTokenUsingUsername("junk", "junk");
         failExpected.prettyPrint();
         assertEquals(400, failExpected.getStatusCode());
-
-        if (BuiltinUsers.retrievingApiTokenViaEmailEnabled) {
-            Response getApiTokenUsingEmail = getApiTokenUsingEmail(usernameToCreate + "@mailinator.com", usernameToCreate);
-            getApiTokenUsingEmail.prettyPrint();
-            assertEquals(200, getApiTokenUsingEmail.getStatusCode());
-            String retrievedTokenUsingEmail = JsonPath.from(getApiTokenUsingEmail.asString()).getString("data.message");
-            assertEquals(createdToken, retrievedTokenUsingEmail);
-        }
 
         Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
         removeAllowApiTokenLookupViaApi.then().assertThat()
