@@ -334,12 +334,14 @@ Reported Working S3-Compatible Storage
 ######################################
 
 `Minio v2018-09-12 <http://minio.io>`_
-  Set ``dataverse.files.s3-path-style-access=true``, as Minio works path-based.
-  Works pretty smooth, easy to setup.
+  Set ``dataverse.files.s3-path-style-access=true``, as Minio works path-based. Works pretty smooth, easy to setup.
+  **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
+  possibly slow) http://play.minio.io:9000 service.
 
-  **HINT:** If you are successfully using an S3 storage implementation not yet listed above, please feel free to
-  `open an issue at Github <https://github.com/IQSS/dataverse/issues/new>`_ and describe your setup.
-  We will be glad to add it here.
+
+**HINT:** If you are successfully using an S3 storage implementation not yet listed above, please feel free to
+`open an issue at Github <https://github.com/IQSS/dataverse/issues/new>`_ and describe your setup.
+We will be glad to add it here.
 
 
 Manually Set Up Credentials File
