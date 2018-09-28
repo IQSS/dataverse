@@ -1860,7 +1860,13 @@ public class EditDatafilesPage implements java.io.Serializable {
                 FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.file.uploadWorked"), uploadSuccessMessage));
             }
         }
-        
+
+        if(isFileReplaceOperation() && fileReplacePageHelper.hasContentTypeWarning()){
+                    RequestContext context = RequestContext.getCurrentInstance();
+                    RequestContext.getCurrentInstance().update("datasetForm:fileTypeDifferentPopup");
+                    context.execute("PF('fileTypeDifferentPopup').show();");
+        }
+
         // We clear the following duplicate warning labels, because we want to 
         // only inform the user of the duplicates dropped in the current upload 
         // attempt - for ex., one batch of drag-and-dropped files, or a single 

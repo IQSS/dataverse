@@ -622,11 +622,11 @@
         </div>
     </p:dialog>
     
-    <p:dialog id="selectFilesForDelete" styleClass="smallPopUp"
-              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDelete" modal ="true">
+    <p:dialog id="selectFilesForDeleteFragment" styleClass="smallPopUp"
+              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDeleteFragment" modal ="true">
         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDelete']}</p>
         <div class="button-block">
-            <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForDelete').hide();"/>
+            <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForDeleteFragment').hide();"/>
         </div>
     </p:dialog>
     
@@ -989,7 +989,7 @@
             if (count > 0) {
                 PF('deleteFileConfirmation').show();
             } else {
-                PF('selectFilesForDelete').show();              
+                PF('selectFilesForDeleteFragment').show();              
             }
         }
         function checkNewlyRestricted() {
