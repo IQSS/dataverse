@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
@@ -57,7 +58,7 @@ public class Search extends AbstractApiBean {
     public Response search(
             @QueryParam("q") String query,
             @QueryParam("type") final List<String> types,
-            @QueryParam("subtree") String subtreeRequested,
+            @QueryParam("subtree") final List<String> subtrees,
             @QueryParam("sort") String sortField,
             @QueryParam("order") String sortOrder,
             @QueryParam("per_page") final int numResultsPerPageRequested,
@@ -83,35 +84,40 @@ public class Search extends AbstractApiBean {
             // sanity checking on user-supplied arguments
             SortBy sortBy;
             int numResultsPerPage;
-            Dataverse subtree;
+            Dataverse firstSubtree;
+
+
             try {
                 if (!types.isEmpty()) {
                     filterQueries.add(getFilterQueryFromTypes(types));
                 }
                 sortBy = SearchUtil.getSortBy(sortField, sortOrder);
                 numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
-                subtree = getSubtree(subtreeRequested);
-                if (!subtree.equals(dataverseService.findRootDataverse())) {
-                    String dataversePath = dataverseService.determineDataversePath(subtree);
-                    String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
-                    /**
-                     * @todo Should filterDownToSubtree logic be centralized in
-                     * SearchServiceBean?
-                     */
-                    filterQueries.add(filterDownToSubtree);
+                
+//MAD: this isn't really what we want. Instead we should be able to pass
+//multiple dataverses in
+//Looks like its used for permissions and as a facet in SearchServiceBean
+                firstSubtree = getSubtree(subtrees.get(0));
+                if (!subtrees.isEmpty()) {
+                    filterQueries.add(getFilterQueryFromSubtreeAliases(subtrees));
+                    //try {
+                    //} catch (Exception ex) {
+                    //    Logger.getLogger(Search.class.getName()).log(Level.SEVERE, null, ex);
+                    //}
                 }
+                
             } catch (Exception ex) {
                 return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
             }
 
             // users can't change these (yet anyway)
             boolean dataRelatedToMe = showMyData; //getDataRelatedToMe();
-
+            
             SolrQueryResponse solrQueryResponse;
             try {
                 solrQueryResponse = searchService.search(
                         createDataverseRequest(user),
-                        subtree,
+                        firstSubtree,
                         query,
                         filterQueries,
                         sortBy.getField(),
@@ -294,6 +300,38 @@ public class Search extends AbstractApiBean {
         }
         filterQuery = SearchFields.TYPE + ":(" + StringUtils.join(typeRequested, " OR ") + ")";
         return filterQuery;
+    }
+    
+    //Only called when there is content
+    /**
+    * @todo (old) Should filterDownToSubtree logic be centralized in
+    * SearchServiceBean?
+    */
+    private String getFilterQueryFromSubtreeAliases(List<String> subtrees) throws Exception {
+        String subtreesFilter = "";
+        
+        for(String subtree :subtrees) {
+            Dataverse dv = getSubtree(subtree);
+            if (!subtree.equals(dataverseService.findRootDataverse())) {
+                String dataversePath = dataverseService.determineDataversePath(dv);
+
+                subtreesFilter += "\"" + dataversePath + "\" OR ";
+
+            }
+        }
+        try{
+            subtreesFilter = subtreesFilter.substring(0, subtreesFilter.lastIndexOf("OR"));
+        } catch (StringIndexOutOfBoundsException ex) {
+            //This case should only happen the root subtree is searched 
+            //and there are no ORs in the string
+            subtreesFilter = "";
+        }
+        
+        if(!subtreesFilter.equals("")) {
+            subtreesFilter =  SearchFields.SUBTREE + ":(" + subtreesFilter + ")";
+        }
+        
+        return subtreesFilter;
     }
 
     private Dataverse getSubtree(String alias) throws Exception {
