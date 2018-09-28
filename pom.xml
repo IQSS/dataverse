@@ -17,7 +17,7 @@
         <project.timezone>UTC</project.timezone>
         <project.language>en</project.language>
         <project.region>US</project.region>
-    
+
         <junit.version>4.12</junit.version>
         <junit.jupiter.version>5.3.1</junit.jupiter.version>
         <junit.vintage.version>5.3.1</junit.vintage.version>
@@ -680,5 +680,37 @@
         <id>all-unit-tests</id>
       </profile>
       <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
+        <profile>
+            <id>java11</id>
+            <properties>
+                <java.version>11</java.version>
+                <maven.compiler.source>${java.version}</maven.compiler.source>
+                <maven.compiler.target>${java.version}</maven.compiler.target>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.0</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>2.22.0</version>
+                        <configuration>
+                            <argLine>
+                                -Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region} --illegal-access=permit
+                            </argLine>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.2</version>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
