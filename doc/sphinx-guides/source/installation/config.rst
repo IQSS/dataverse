@@ -396,6 +396,10 @@ If you enable ``dataverse.files.s3-download-redirect`` as described above, note 
 
 ``./asadmin create-jvm-options "-Ddataverse.files.s3-url-expiration-minutes=120"``
 
+In case you would like to configure Dataverse to use a custom S3 service instead of Amazon S3 services, please
+add the options for the custom URL and region as documented below. Please read above if your desired combination has
+been tested already and what other options have been set for a successful integration.
+
 Lastly, go ahead and restart your glassfish server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
 
 S3 Storage Options
@@ -408,8 +412,8 @@ dataverse.files.storage-driver-id          s3                  Enable S3 storage
 dataverse.files.s3-bucket-name             <?>                 The bucket name. See above.                                         (none)
 dataverse.files.s3-download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                  ``false``
 dataverse.files.s3-url-expiration-minutes  <?>                 If direct downloads: time until links expire. Optional.             60
-dataverse.files.s3-url                     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
-dataverse.files.s3-region                  <?>                 Only used when using custom endpoint. Optional.                     ``dataverse``
+dataverse.files.s3-custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
+dataverse.files.s3-custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                     ``dataverse``
 dataverse.files.s3-path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.             ``false``
 =========================================  ==================  ==================================================================  =============
 
