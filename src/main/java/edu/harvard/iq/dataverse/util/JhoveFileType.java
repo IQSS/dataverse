@@ -19,10 +19,13 @@
 */
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.hul.ois.jhove.*;
+import edu.harvard.hul.ois.jhove.App;
+import edu.harvard.hul.ois.jhove.JhoveBase;
+import edu.harvard.hul.ois.jhove.Module;
+import edu.harvard.hul.ois.jhove.RepInfo;
+
 import java.io.*;
 import java.util.*;
-import static java.lang.System.*;
 import java.util.logging.Logger;
 
 /**
@@ -69,7 +72,7 @@ public class JhoveFileType implements java.io.Serializable  {
         try {
             // initialize the application spec object
             // name, release number, build date, usage, Copyright infor
-            App jhoveApp = new App("Jhove", "1.11", 
+            App jhoveApp = new App("Jhove", "1.11",
                            ORIGINAL_RELEASE_DATE, "Java JhoveFileType", 
                            ORIGINAL_COPR_RIGHTS);
 
