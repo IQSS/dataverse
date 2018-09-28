@@ -49,6 +49,10 @@ Create a ``.aws`` directory in your home directory (which is called ``~``) like 
 
 ``mkdir ~/.aws``
 
+We will be creating two plain text files in the ``.aws`` directory and it is important that these files do not end in ".txt" or any other extension. After creating the files, you can verify their names with the following command:
+
+``ls ~/.aws``
+
 Create a plain text file at ``~/.aws/config`` with the following content::
 
         [default]
@@ -63,6 +67,8 @@ Create a plain text file at ``~/.aws/credentials`` with the following content::
         aws_secret_access_key = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 Then update the file and replace the values for "aws_access_key_id" and "aws_secret_access_key" with your actual credentials by following the instructions at https://aws.amazon.com/blogs/security/wheres-my-secret-access-key/
+
+If you are having trouble configuring the files manually as described above, see https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html which documents the ``aws configure`` command.
 
 Download and Run the "Create Instance" Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
