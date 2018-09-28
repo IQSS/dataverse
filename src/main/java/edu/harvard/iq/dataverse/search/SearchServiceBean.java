@@ -96,7 +96,7 @@ public class SearchServiceBean {
             solrServer = null;
         }
     }
-
+    
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
      * access to Private Data for the correct user
@@ -106,7 +106,7 @@ public class SearchServiceBean {
      *
      *
      * @param dataverseRequest
-     * @param dataverse
+     * @param dataverses
      * @param query
      * @param filterQueries
      * @param sortField
@@ -117,8 +117,8 @@ public class SearchServiceBean {
      * @return
      * @throws SearchException
      */
-    public SolrQueryResponse search(DataverseRequest dataverseRequest, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
-        return search(dataverseRequest, dataverse, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
+    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
+        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
     }
     
     /**
@@ -130,7 +130,7 @@ public class SearchServiceBean {
      *
      *
      * @param user
-     * @param dataverse
+     * @param dataverses
      * @param query
      * @param filterQueries
      * @param sortField
@@ -142,7 +142,7 @@ public class SearchServiceBean {
      * @return
      * @throws SearchException
      */
-    public SolrQueryResponse search(DataverseRequest dataverseRequest, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities) throws SearchException {
+    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities) throws SearchException {
 
         if (paginationStart < 0) {
             throw new IllegalArgumentException("paginationStart must be 0 or greater");
@@ -220,9 +220,14 @@ public class SearchServiceBean {
         // -----------------------------------
         // PERMISSION FILTER QUERY
         // -----------------------------------
-        String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
-        if (permissionFilterQuery != null) {
-            solrQuery.addFilterQuery(permissionFilterQuery);
+//MAD: I am unsure if adding multiple permissions filters makes this more strict like we want
+//Also should this have a null check like facet?
+//MAD later: actually, it looks like dataverse isn't used at all... I'm not sure this needs to be run multiple times
+        for(Dataverse dataverse : dataverses) {
+            String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
+            if (permissionFilterQuery != null) {
+                solrQuery.addFilterQuery(permissionFilterQuery);
+            }
         }
 
         // -----------------------------------
@@ -249,12 +254,15 @@ public class SearchServiceBean {
          * if advancedSearchField is true or false
          *
          */
-        if (dataverse != null) {
-            for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
-                DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
-                solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
+        for(Dataverse dataverse : dataverses) {
+            if (dataverse != null) {
+                for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
+                    DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
+                    solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
+                }
             }
         }
+        
         solrQuery.addFacetField(SearchFields.FILE_TYPE);
         /**
          * @todo: hide the extra line this shows in the GUI... at least it's

@@ -84,8 +84,7 @@ public class Search extends AbstractApiBean {
             // sanity checking on user-supplied arguments
             SortBy sortBy;
             int numResultsPerPage;
-            Dataverse firstSubtree;
-
+            List<Dataverse> dataverseSubtrees = new ArrayList<>();
 
             try {
                 if (!types.isEmpty()) {
@@ -97,9 +96,12 @@ public class Search extends AbstractApiBean {
 //MAD: this isn't really what we want. Instead we should be able to pass
 //multiple dataverses in
 //Looks like its used for permissions and as a facet in SearchServiceBean
-                firstSubtree = getSubtree(subtrees.get(0));
+
+                for(String subtree : subtrees) {
+                    dataverseSubtrees.add(getSubtree(subtree));
+                }
                 if (!subtrees.isEmpty()) {
-                    filterQueries.add(getFilterQueryFromSubtreeAliases(subtrees));
+                    filterQueries.add(getFilterQueryFromSubtrees(dataverseSubtrees));
                     //try {
                     //} catch (Exception ex) {
                     //    Logger.getLogger(Search.class.getName()).log(Level.SEVERE, null, ex);
@@ -117,7 +119,7 @@ public class Search extends AbstractApiBean {
             try {
                 solrQueryResponse = searchService.search(
                         createDataverseRequest(user),
-                        firstSubtree,
+                        dataverseSubtrees,
                         query,
                         filterQueries,
                         sortBy.getField(),
@@ -307,12 +309,11 @@ public class Search extends AbstractApiBean {
     * @todo (old) Should filterDownToSubtree logic be centralized in
     * SearchServiceBean?
     */
-    private String getFilterQueryFromSubtreeAliases(List<String> subtrees) throws Exception {
+    private String getFilterQueryFromSubtrees(List<Dataverse> subtrees) throws Exception {
         String subtreesFilter = "";
         
-        for(String subtree :subtrees) {
-            Dataverse dv = getSubtree(subtree);
-            if (!subtree.equals(dataverseService.findRootDataverse())) {
+        for(Dataverse dv : subtrees) {
+            if (!dv.equals(dataverseService.findRootDataverse())) {
                 String dataversePath = dataverseService.determineDataversePath(dv);
 
                 subtreesFilter += "\"" + dataversePath + "\" OR ";
