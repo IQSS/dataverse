@@ -265,7 +265,11 @@ You can configure this redirect properly in your cloud environment to generate a
 Amazon S3 Storage (or Compatible)
 +++++++++++++++++++++++++++++++++
 
-For institutions and organizations looking to use Amazon's S3 cloud storage for their installation, this can be set up manually through creation of the credentials and config files or automatically via the AWS console commands. Alternatively, you may instead use other, even on-site S3-compatible storage (like Minio, Ceph RADOS S3 Gateway and many more).
+For institutions and organizations looking to use some kind of S3-based object storage for files uploaded to Dataverse,
+this is entirely possible. You can either use Amazon Web Services or use some other, even on-site S3-compatible
+storage (like Minio, Ceph RADOS S3 Gateway and many more). 
+
+**Note:** The Dataverse Team is most familiar with AWS S3, and can provide support on its usage with Dataverse. Thanks to community contributions, the application's architecture also allows non-AWS S3 providers. The Dataverse Team can provide very limited support on these other providers. We recommend reaching out to the wider Dataverse community if you have questions.
 
 First: Set Up Accounts and Access Credentials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -306,15 +310,24 @@ We assume you have your S3-compatible custom storage in place, up and running, r
 Please make note of the following details:
 
 - **Endpoint URL** - consult the documentation of your service on how to find it.
-  - Example: https://play.minio.io:9000
+
+    * Example: https://play.minio.io:9000
+    
 - **Region:** Optional, but some services might use it. Consult your service documentation.
-  - Example: *us-east-1*
+
+    * Example: *us-east-1*
+    
 - **Access key ID and secret access key:** Usually you can generate access keys within the user profile of your service.
-  - Example:
-    - ID: *3AM3UQ867SPQQA43P2F*
-    - Key: *zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG*
+
+    * Example:
+    
+      - ID: *3AM3UQ867SPQQA43P2F*
+      
+      - Key: *zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG*
+      
 - **Bucket name:** Dataverse will fail opening and uploading files on S3 if you don't create one.
-  - Example: *dataverse*
+
+    * Example: *dataverse*
 
 
 Reported Working S3-Compatible Storage
