@@ -184,9 +184,8 @@
                                 </ui:fragment>
                                 <!-- END: Publish/Submit for Review/Return to Author Button Group -->
                                 
-                                <p:commandLink rendered="#{dataverseSession.user.superuser and !DatasetPage.workingVersion.deaccessioned}"
-                                               type="button" styleClass="btn btn-default btn-access"
-                                               action="#{DatasetPage.updateLinkableDataverses()}"
+                                <p:commandLink rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released}"
+                                               type="button" styleClass="btn btn-default btn-access"                                              
                                                oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"
                                                update="linkDatasetForm">
                                     <span class="glyphicon glyphicon-link"/> #{bundle['link']}
@@ -632,7 +631,8 @@
                                     <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
                                     <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
                                     <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
-                                    <ui:param name="globalId" value="#{DatasetPage.globalId}"/>
+                                    <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
+                                    <ui:param name="altPID" value="#{DatasetPage.dataset.alternativePersistentIdentifier}"/>
                                 </ui:include>
                             </p:tab>
 
@@ -697,11 +697,11 @@
                         <div class="button-block">
                             <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.downloadUnrestricted']}</p>
                             <ui:fragment rendered="#{!DatasetPage.downloadPopupRequired}">
-                                <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload(false)}" />
+                                <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload()}" />
                             </ui:fragment>
                             <ui:fragment rendered="#{DatasetPage.downloadPopupRequired and !settingsWrapper.rsyncDownload}">
                                 <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()"
-                                                 action="#{DatasetPage.modifyGuestbookMultipleResponse()}" update="@form" />
+                                                 action="#{DatasetPage.openDownloadPopupForMultipleFileDownload()}" update="@form" />
                             </ui:fragment>
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadMixed').hide();" type="button" />
                         </div>
@@ -998,7 +998,7 @@
                             <p:commandButton value="#{bundle.done}" onclick="PF('detailsBlocks').hide();PF('blockDatasetForm').hide();" type="button" />
                         </div>
                     </p:dialog>
-
+                    
                     <p:dialog id="selectFilesForDownload" styleClass="smallPopUp"
                               header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDownload" modal ="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDownload']}</p>
@@ -1260,55 +1260,58 @@
                             </ui:include>
                         </div>
                     </p:dialog>
-                   
-                    <p:dialog id="linkDatasetForm" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
-                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 0}">
-                            <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
-                                <p class="help-block">#{bundle['dataverse.link.no.choice']}</p>
-                            </ui:fragment>
-                            <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 1}">
-                                <p class="help-block">#{bundle['dataverse.link.dataset.choose']}</p>
-                            </ui:fragment>
-                            <div class="form-horizontal">
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">
-                                        <h:outputFormat value="#{bundle['dataverse.link.yourDataverses']}">
-                                            <f:param value="#{DatasetPage.dataversesForLinking.size()}"/>
-                                        </h:outputFormat>
-                                    </label>
-                                    <div class="col-sm-7">
-                                        <h:selectOneMenu styleClass="form-control" value="#{DatasetPage.linkingDataverseId}"
-                                                         rendered="#{DatasetPage.dataversesForLinking.size() > 1}">
-                                            <f:selectItems value="#{DatasetPage.linkingDVSelectItems}" />
-                                        </h:selectOneMenu>
-                                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
-                                            <p class="form-control-static">#{DatasetPage.linkingDataverse.displayName}</p>
-                                        </ui:fragment>
-                                    </div>
+
+                    <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
+                        <div class="form-horizontal">
+                            <p class="help-block">
+                                <h:outputFormat value="#{bundle['dataverse.link.dataset.choose']}" escape="false">
+                                    <o:param>
+                                        <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('linkDatasetForm').hide();PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                        </p:commandLink>                                
+                                    </o:param>
+                                </h:outputFormat>
+                            </p>
+                            <div class="form-group">
+                                <label class="col-xs-3 control-label">
+                                    <h:outputText value="#{bundle['dataverse.link.yourDataverses']}"/>
+                                </label>
+                                <div class="col-xs-8">
+                                    <p:autoComplete id="dataverseLinkName" style="width:75%;"
+                                                    binding="#{DatasetPage.selectedDataverseMenu}"
+                                                    placeholder="#{bundle['dataverse.link.yourDataverses.inputPlaceholder']}"
+                                                    emptyMessage="#{bundle['dataverse.link.dataset.none']}"
+                                                    scrollHeight="180" forceSelection="true" 
+                                                    minQueryLength="1" queryDelay="1000"
+                                                    value="#{DatasetPage.selectedDataverseForLinking}" 
+                                                    multiple="false"
+                                                    completeMethod="#{DatasetPage.completeLinkingDataverse}"
+                                                    var="dataverseLk" itemLabel="#{dataverseLk.displayName}" itemValue="#{dataverseLk}" converter="dataverseConverter">
+                                        <p:column>
+                                            <h:outputText value="#{dataverseLk.displayName}"/> 
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{dataverseLk.alias}"/> 
+                                        </p:column>
+                                        <p:ajax process="@this" event="itemSelect" />
+                                        <p:ajax process="@this" event="itemUnselect" />
+                                    </p:autoComplete>
+                                    <p:message for="dataverseLinkName"/>
                                 </div>
                             </div>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 0}">
-                            <ui:fragment rendered="#{DatasetPage.noDVsAtAll }">
-                                <p>#{bundle['dataverse.link.no.linkable']}</p>
-                            </ui:fragment>
-                            <ui:fragment rendered="#{ DatasetPage.noDVsRemaining }">
-                                <p>#{bundle['dataverse.link.no.linkable.remaining']}</p>
-                            </ui:fragment>
-                        </ui:fragment>
+                        </div>
                         <div class="button-block">
-                            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle['dataset.link.save']}"
-                                           action="#{DatasetPage.saveLinkedDataset}"
-                                           rendered="#{DatasetPage.dataversesForLinking.size() > 1}" />
-                            <p:commandLink type="button" styleClass="btn btn-default" onclick="PF('linkDatasetForm').hide()"
-                                           value="#{bundle['dataset.link.save']}" actionListener="#{DatasetPage.saveLinkedDataset()}"
-                                           rendered="#{DatasetPage.dataversesForLinking.size() == 1}" />
+                            <p:commandLink type="button" styleClass="btn btn-default"  update=":messagePanel,linkDatasetForm"
+                                           value="#{bundle['dataset.link.save']}" action="#{DatasetPage.saveLinkingDataverses()}"/>
                             <button type="button" class="btn btn-default" onclick="PF('linkDatasetForm').hide();PF('blockDatasetForm').hide();">
                                 #{bundle.cancel}
                             </button>
                         </div>
                     </p:dialog>
-                    
+
                     <p:dialog id="computeBatchListPopup" header="#{bundle['dataset.compute.computeBatchListHeader']}" widgetVar="computeBatchListPopup" modal="true">
                         <div class="text-right">
                             <!-- Clear link -->
