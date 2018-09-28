@@ -46,6 +46,7 @@ public class SiteMapUtilTest {
         String publishedPid = "doi:10.666/FAKE/published1";
         published.setGlobalId(new GlobalId(publishedPid));
         published.setPublicationDate(new Timestamp(new Date().getTime()));
+        published.setModificationTime(new Timestamp(new Date().getTime()));
         datasets.add(published);
 
         Dataset unpublished = new Dataset();

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.sitemap;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.sql.Timestamp;
@@ -68,12 +69,7 @@ public class SiteMapUtil {
             url.appendChild(loc);
 
             Element lastmod = document.createElement("lastmod");
-            Timestamp lastModified = dataverse.getModificationTime();
-            // TODO: Decide if YYYY-MM-DD is enough. https://www.sitemaps.org/protocol.html
-            // says "The date of last modification of the file. This date should be in W3C Datetime format.
-            // This format allows you to omit the time portion, if desired, and use YYYY-MM-DD."
-            String date = new SimpleDateFormat("yyyy-MM-dd").format(lastModified);
-            lastmod.appendChild(document.createTextNode(date));
+            lastmod.appendChild(document.createTextNode(getLastModDate(dataverse)));
             url.appendChild(lastmod);
         }
 
@@ -97,12 +93,7 @@ public class SiteMapUtil {
             url.appendChild(loc);
 
             Element lastmod = document.createElement("lastmod");
-            Timestamp publicationDate = dataset.getPublicationDate();
-            // TODO: Decide if YYYY-MM-DD is enough. https://www.sitemaps.org/protocol.html
-            // says "The date of last modification of the file. This date should be in W3C Datetime format.
-            // This format allows you to omit the time portion, if desired, and use YYYY-MM-DD."
-            String date = new SimpleDateFormat("yyyy-MM-dd").format(publicationDate);
-            lastmod.appendChild(document.createTextNode(date));
+            lastmod.appendChild(document.createTextNode(getLastModDate(dataset)));
             url.appendChild(lastmod);
         }
 
@@ -141,5 +132,12 @@ public class SiteMapUtil {
             logger.warning("Unable to write sitemap to " + sitemapPathAndFile + ". TransformerException: " + ex.getLocalizedMessage());
         }
 
+    }
+
+    private static String getLastModDate(DvObjectContainer dvObjectContainer) {
+        // TODO: Decide if YYYY-MM-DD is enough. https://www.sitemaps.org/protocol.html
+        // says "The date of last modification of the file. This date should be in W3C Datetime format.
+        // This format allows you to omit the time portion, if desired, and use YYYY-MM-DD."
+        return new SimpleDateFormat("yyyy-MM-dd").format(dvObjectContainer.getModificationTime());
     }
 }
