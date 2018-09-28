@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.logging.Logger;
@@ -22,13 +21,28 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-// We are aware of https://github.com/dfabulich/sitemapgen4j but haven't tried it.
 public class SiteMapUtil {
 
     private static final Logger logger = Logger.getLogger(SiteMapUtil.class.getCanonicalName());
 
     static final String SITEMAP_FILENAME = "sitemap.xml";
 
+    /**
+     * TODO: Handle more than 50,000 entries in the sitemap.
+     *
+     * (As of this writing Harvard Dataverse only has ~3000 dataverses and
+     * ~30,000 datasets.)
+     *
+     * "each Sitemap file that you provide must have no more than 50,000 URLs"
+     * https://www.sitemaps.org/protocol.html
+     *
+     * Consider using a third party library: "One sitemap can contain a maximum
+     * of 50,000 URLs. (Some sitemaps, like Google News sitemaps, can contain
+     * only 1,000 URLs.) If you need to put more URLs than that in a sitemap,
+     * you'll have to use a sitemap index file. Fortunately, WebSitemapGenerator
+     * can manage the whole thing for you."
+     * https://github.com/dfabulich/sitemapgen4j
+     */
     public static void updateSiteMap(List<Dataverse> dataverses, List<Dataset> datasets) {
 
         String sitemapPath = "/tmp";
