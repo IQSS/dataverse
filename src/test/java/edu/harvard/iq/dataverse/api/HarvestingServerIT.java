@@ -5,7 +5,7 @@ import com.jayway.restassured.RestAssured;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
-
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import com.jayway.restassured.response.Response;
 import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.path.json.JsonPath;
@@ -30,11 +30,15 @@ public class HarvestingServerIT {
     @BeforeClass
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+	// enable harvesting server
+	//  Gave some thought to storing the original response, and resetting afterwards - but that appears to be more complexity than it's worth
+	Response enableHarvestingServerResponse = UtilIT.setSetting(SettingsServiceBean.Key.OAIServerEnabled,"true");
     }
 
     @AfterClass
     public static void afterClass() {
-        //intentional no-op until there's cleanup to be done
+	// disable harvesting server (default value)
+	Response enableHarvestingServerResponse = UtilIT.setSetting(SettingsServiceBean.Key.OAIServerEnabled,"false");
     }
 
     private void setupUsers() {
