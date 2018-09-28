@@ -29,12 +29,6 @@
                         <h:graphicImage rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}"
                             url="#{settingsWrapper.get(':LogoCustomizationFile')}" styleClass="navbar-brand custom-logo"/>
                     </a>
-                    <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
-                        <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
-                    </h:outputLink>
-                    <ui:fragment rendered="#{empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader')}">
-                        <span class="label label-default status">#{settingsWrapper.get(':StatusMessageHeader')}</span>
-                    </ui:fragment>
                 </div>
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
@@ -187,6 +181,14 @@
                 </div>
             </div>
         </nav>
+        <div id="statusbar">
+            <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
+                <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
+            </h:outputLink>
+            <ui:fragment rendered="#{empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader')}">
+                <span class="label label-default status">#{settingsWrapper.get(':StatusMessageHeader')}</span>
+            </ui:fragment>
+        </div>
         <!-- Header Panel -->
         <!-- FIXME: Rather than hard-coding "FFFFFF", get it from the backend (ThemeWidgetFragment.DEFAULT_BACKGROUND_COLOR). -->
         <div id="dataverseHeader" class="container bg-muted"

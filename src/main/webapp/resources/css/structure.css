@@ -38,6 +38,8 @@ body .ui-widget {font-size: inherit;}
 #navbarFixed .dropdown.accountName .logout a {clear: both; color: #333333; display: block; font-weight: normal; line-height: 1.42857; padding: 3px 20px; white-space: nowrap; text-decoration: none;}
 #navbarFixed li.dropdown.open > span.dropdown-toggle {background-color: #e7e7e7;}
 
+#statusbar .label.status {display:block; float:left; margin-top:16px; background:#C55B28; font-size:14px; font-weight:normal;}
+
 #footer {margin-top:3em; padding-bottom:4em; color:#808080;}
 #footer.widget-view {position:fixed; left:0px; bottom:0px; margin:0; padding:4px 0 0 0; min-height:44px; width:100%; background:#fff;}
 #footer .poweredbylogo {text-align:right;}
