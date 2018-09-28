@@ -19,7 +19,26 @@ First, you need to have AWS Command Line Interface (AWS CLI) installed, which is
 
 ``aws --version``
 
-If you have not yet installed AWS CLI you should install it by following the instructions at https://docs.aws.amazon.com/cli/latest/userguide/installing.html . Afterwards, you should re-run the "version" command above to verify that AWS CLI has been properly installed.
+If you have not yet installed AWS CLI you should install it by following the instructions at https://docs.aws.amazon.com/cli/latest/userguide/installing.html
+
+Afterwards, you should re-run the "version" command above to verify that AWS CLI has been properly installed. If "version" still doesn't work, read on for troubleshooting advice. If "version" works, you can skip down to the "Configure AWS CLI" step.
+
+Troubleshooting "aws: command not found"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Please note that as of this writing the AWS docs are not especially clear about how to fix errors such as ``aws: command not found``. If the AWS CLI cannot be found after you followed the AWS installation docs, it is very likely that the ``aws`` program is not in your ``$PATH``. ``$PATH`` is an "environment variable" that tells your shell (usually Bash) where to look for programs.
+
+To see what ``$PATH`` is set to, run the following command:
+
+``echo $PATH``
+
+On Mac, to update your ``$PATH`` to include the location where the current AWS docs install AWS CLI on the version of Python included with your Mac, run the following command:
+
+``export PATH=$PATH:$HOME/Library/Python/2.7/bin``
+
+After all this, you can try the "version" command again.
+
+Note that it's possible to add an ``export`` line like the one above to your ``~/.bash_profile`` file so you don't have to run it yourself when you open a new terminal.
 
 Configure AWS CLI
 ~~~~~~~~~~~~~~~~~
