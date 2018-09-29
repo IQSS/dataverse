@@ -179,11 +179,11 @@ public class DataCitation {
     public String toString() {
         return toString(false);
     }
-
+    // QDRCustom: Use period to join values, not comma
+    static String separator = ". ";
+    
     public String toString(boolean html) {
         // first add comma separated parts
-		// QDRCustom: Use period to join values, not comma        
-        String separator = ". ";
         List<String> citationList = new ArrayList<>();
         citationList.add(formatString(getAuthorsString(), html));
         citationList.add(year);
@@ -194,20 +194,20 @@ public class DataCitation {
         citationList.add(formatString(title, html, "\""));
         }
 
-		// QDRCustom: Use "Qualitative Data Repository" as distributor name
-		citationList.add(formatString("Qualitative Data Repository", html));
-		// QDRCustom: Show persistentID after distributor name
-		if (persistentId != null) {
-			citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html)); // always
-																													// show
-																													// url
-																													// format
-		}
-		citationList.add(formatString(publisher, html));
-		citationList.add(version);
+        // QDRCustom: Use "Qualitative Data Repository" as distributor name
+        citationList.add(formatString("Qualitative Data Repository", html));
+        // QDRCustom: Show persistentID after distributor name
+        if (persistentId != null) {
+            citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html)); // always
+                                                                                                                 // show
+                                                                                                                 // url
+                                                                                                                 // format
+        }
+        citationList.add(formatString(publisher, html));
+        citationList.add(version);
 
-		StringBuilder citation = new StringBuilder(citationList.stream().filter(value -> !StringUtils.isEmpty(value))
-				.collect(Collectors.joining(separator)));
+        StringBuilder citation = new StringBuilder(citationList.stream().filter(value -> !StringUtils.isEmpty(value))
+                .collect(Collectors.joining(separator)));
         if ((fileTitle != null) && !isDirect()) {
             citation.append("; " + formatString(fileTitle, html, "") + " [fileName]");
         }
