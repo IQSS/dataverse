@@ -101,7 +101,7 @@ You may also find https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/
 DataCite
 --------
 
-If you've reconfigured from EZID to DataCite and are seeing ``Response code: 400, [url] domain of URL is not allowed`` it's probably because your ``dataverse.siteUrl`` JVM option is unset or set to localhost (``-Ddataverse.siteUrl=http://localhost:8080``). You can try something like this:
+If you are seeing ``Response code: 400, [url] domain of URL is not allowed`` it's probably because your ``dataverse.siteUrl`` JVM option is unset or set to localhost (``-Ddataverse.siteUrl=http://localhost:8080``). You can try something like this:
 
 ``./asadmin delete-jvm-options '-Ddataverse.siteUrl=http\://localhost\:8080'``
 
