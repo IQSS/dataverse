@@ -738,8 +738,7 @@ public class DataCitation {
 
     private String getPublisherFrom(DatasetVersion dsv) {
         if (!dsv.getDataset().isHarvested()) {
-            // QDR use name rather than root Dataverse name
-            return ResourceBundle.getBundle("Bundle").getString("institution.name");
+            return dsv.getRootDataverseNameforCitation();
         } else {
             return dsv.getDistributorName();
             // remove += [distributor] SEK 8-18-2016

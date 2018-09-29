@@ -149,7 +149,7 @@ public class DDIExporterTest {
         String citation = version.getCitation();
         System.out.println("citation: " + citation);
         int currentYear = Year.now().getValue();
-        assertEquals("Finch, Fiona. "+ currentYear + ". \"Darwin's Finches\". Qualitative Data Repository. Qualitative Data Repository. DRAFT VERSION", citation);
+        assertEquals("Finch, Fiona. "+ currentYear + ". \"Darwin's Finches\". Qualitative Data Repository. DRAFT VERSION", citation);
     }
 
     @Test
