@@ -45,7 +45,6 @@
                                 </form>
                             </ul>
                         </li>
-<<<<<<< HEAD
                         <form class="navbar-form navbar-left" role="search" style="display:none;">
                             <div class="form-group">
                                 <label class="sr-only" for="navbarsearch">#{bundle.search}</label>
@@ -57,7 +56,7 @@
                             </button>
                         </form>
 
-						<!-- QDR - replace :NavbarAboutUrl section with About menu/submenu -->	                        
+                        <!-- QDR - replace :NavbarAboutUrl section with About menu/submenu -->                            
                         <li class="dropdown">
                             <div style="padding-top:15px; padding-bottom:15px; margin-left:20px;">
                                 <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/about">
@@ -77,7 +76,7 @@
                                             Institutional Membership
                                         </h:outputLink>
                                     </li>
-					<li>
+                    <li>
                                         <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/contact">
                                             Contact
                                         </h:outputLink>
@@ -111,15 +110,7 @@
                                     </li>
                                 </ul>
                             </div>
-=======
-                        
-                        <li jsf:rendered="#{!empty settingsWrapper.get(':NavbarAboutUrl')}">
-                            <h:outputLink value="#{settingsWrapper.get(':NavbarAboutUrl')}" target="_blank">
-                                <h:outputText value="#{bundle['header.about']}"/>
-                            </h:outputLink>
->>>>>>> refs/remotes/IQSS/develop
                         </li>
-<<<<<<< HEAD
                         <li class="dropdown">
                             <div style="padding-top:15px; padding-bottom:15px; margin-left:10px;">
                                 <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/discover">
@@ -133,12 +124,12 @@
                                         <h:outputLink value="/">
                                             Search and Browse Data
                                         </h:outputLink>
-					<h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/discover/pilots">
+                    <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/discover/pilots">
                                             Pilot Projects
                                         </h:outputLink>
                                     </li>
-  <!--these will return eventually
-				<li>
+                                    <!--these will return eventually
+                                    <li>
                                         <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/discover/pilots">
                                             Pilot Projects
                                         </h:outputLink>
@@ -241,52 +232,6 @@
                             <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}">
                                 <h:outputText value="#{bundle['header.dashboard']}" />
                             </h:outputLink>
-=======
-
-                        <li>
-                            <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{systemConfig.guidesVersion}/user" target="_blank">
-                                <h:outputText value="#{bundle['header.guides.user']}"/>
-                            </h:outputLink>
-                        </li>
-                        
-                        <li jsf:rendered="#{!empty settingsWrapper.get(':NavbarSupportUrl')}">
-                            <h:outputLink value="#{settingsWrapper.get(':NavbarSupportUrl')}" target="_blank">
-                                <h:outputText value="#{bundle['header.support']}"/>
-                            </h:outputLink>
-                        </li>
-                        
-                        <ui:fragment rendered="#{empty settingsWrapper.get(':NavbarSupportUrl')}">
-                            <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
-                                <p:commandLink oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                    <h:outputText value="#{bundle['header.support']}"/>
-                                </p:commandLink>
-                            </o:form>
-                        </ui:fragment>
-                        
-                        <li class="dropdown" jsf:rendered="#{dataverseLocaleBean.useLocale()}">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="#{bundle.language}">#{dataverseLocaleBean.localeTitle} <b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <h:form class="form-inline">
-                                    <ui:repeat value="#{dataverseLocaleBean.dataverseLocales.entrySet().toArray()}" var="language">
-                                        <li class="#{dataverseLocaleBean.localeTitle == language.value ? 'active' : ''}">
-                                            <h:commandLink value="#{language.value}" actionListener="#{dataverseLocaleBean.countryLocaleCodeChanged(language.key)}" action="submit()"
-                                                           style="padding: 3px 20px;
-                                                                    clear: both;
-                                                                    font-weight: 400;
-                                                                    line-height: 1.42857143;
-                                                                    color: rgb(51, 51, 51);
-                                                                    white-space: nowrap;
-                                                                    text-decoration: none;
-                                                                    display: block;"/>
-                                        </li>
-                                    </ui:repeat>
-                                </h:form>
-                            </ul>
->>>>>>> refs/remotes/IQSS/develop
                         </li>
 
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
