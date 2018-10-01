@@ -233,7 +233,7 @@ public class ImageThumbConverter {
                 logger.warning("GenerateImageThumb: failed to save pdf bytes in a temporary file.");
                 return false;
             } finally {
-            	IOUtils.closeQuietly(tempFileChannel);
+                IOUtils.closeQuietly(tempFileChannel);
             }
             sourcePdfFile = tempFile;
         }

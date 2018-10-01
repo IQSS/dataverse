@@ -57,7 +57,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.poi.util.IOUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.FileReader;
 import java.io.IOException;

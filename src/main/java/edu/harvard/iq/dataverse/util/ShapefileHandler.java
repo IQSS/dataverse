@@ -262,8 +262,6 @@ public class ShapefileHandler{
         return shp_cnt;
     }
     
-    
-    
     private String getFileBasename(String fileName){
         if (fileName==null){
             return null;
