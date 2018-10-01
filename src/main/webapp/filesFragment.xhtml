@@ -112,7 +112,7 @@
                         <!-- DOWNLOAD DCM SCRIPT BUTTON -->
                         <h:commandLink id="rsyncDL" actionListener="#{DatasetPage.downloadRsyncScript()}" styleClass="btn btn-default"
                                        rendered="#{DatasetPage.sessionUserAuthenticated
-                                                                                    and DatasetPage.canUpdateDataset()
+                                                                                    and DatasetPage.canUpdateDataset() and empty DatasetPage.workingVersion.fileMetadatas
                                                                                     and !widgetWrapper.widgetView and DatasetPage.lockedDueToDcmUpload}">
                             <span class="glyphicon glyphicon-download-alt"/> <h:outputText value=" #{bundle['file.rsyncUpload.step2.downloadScriptButton']}"/>
                         </h:commandLink>
