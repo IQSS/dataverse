@@ -694,27 +694,92 @@
       <str name="echoParams">explicit</str>
       <int name="rows">10</int>
       <str name="defType">edismax</str>
-      <float name="tie">0.1</float>
-<str name="qf">
-dvName^9500
-dvSubject^8500
-dvAffiliation^7500
-dvDescription^6500
-title^900
-subject^800
-keyword^750
-topicClassValue^700
-authorName^600
-authorAffiliation^600
-dsDescriptionValue^700
-publicationCitation^600
-producerName^550
-fileName^175
-fileDescription^100
-variableLabel^75
-variableName^75
-text^1
-</str>
+      <float name="tie">0.075</float>
+        <str name="qf">
+            dvName^200
+            dvSubject^190
+            dvDescription^180
+            dvAffiliation^170
+            title^130
+            authorName^120
+            subject^120
+            keyword^110
+            topicClassValue^100
+            dsDescriptionValue^90
+            authorAffiliation^80
+            publicationCitation^60
+            producerName^50
+            fileName^40
+            fileDescription^30
+            variableLabel^20
+            variableName^10
+            text^1.0
+        </str>
+        <str name="pf">
+            dvName^100
+            dvSubject^100
+            dvDescription^100
+            dvAffiliation^100
+            title^75
+            subject^75
+            keyword^75
+            topicClassValue^75
+            dsDescriptionValue^75
+            authorName^75
+            authorAffiliation^75
+            publicationCitation^75
+            producerName^75
+            fileName^50
+            fileDescription^50
+            variableLabel^40
+            variableName^40
+        </str>
+        
+
+<!--<str name="qf">
+dvName^170
+dvSubject^160
+dvDescription^150
+dvAffiliation^140
+title^130
+subject^120
+keyword^110
+topicClassValue^100
+dsDescriptionValue^90
+authorName^80
+authorAffiliation^70
+publicationCitation^60
+producerName^50
+fileName^40
+fileDescription^30
+variableLabel^20
+variableName^10
+text^1.0
+</str>-->
+<!--<str name="qf">
+dvName^1
+dvSubject^1
+dvDescription^1
+dvAffiliation^1
+title^1
+subject^1
+keyword^1
+topicClassValue^1
+dsDescriptionValue^1
+authorName^1
+authorAffiliation^1
+publicationCitation^1
+producerName^1
+fileName^1
+fileDescription^1
+variableLabel^1
+variableName^1
+text^1.0
+</str>-->
+
+
+
+
       <!-- Default search field
          <str name="df">text</str> 
         -->
