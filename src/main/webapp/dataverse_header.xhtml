@@ -181,13 +181,23 @@
                 </div>
             </div>
         </nav>
-        <div id="statusbar">
-            <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
-                <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
-            </h:outputLink>
+        <!-- Status Alert -->
+        <div id="status-alert" class="container" jsf:rendered="#{!empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader')}">
+            
+            <div class="alert alert-warning">
+                <h:outputText styleClass="highlightBold" value="#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}"/>
+                <h:outputText rendered="#{!empty settingsWrapper.get(':StatusMessageText')}" value=" – #{settingsWrapper.get(':StatusMessageText')}"/>
+                
+                <ui:remove>
+                    <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{settingsWrapper.get(':StatusMessageText').length() gt 5000}">Read More</h:outputLink>
+                </ui:remove>
+            </div>
+            
+            <ui:remove>
             <ui:fragment rendered="#{empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader')}">
-                <span class="label label-default status">#{settingsWrapper.get(':StatusMessageHeader')}</span>
+                <div class="alert alert-warning status">#{settingsWrapper.get(':StatusMessageHeader')}</div>
             </ui:fragment>
+            </ui:remove>
         </div>
         <!-- Header Panel -->
         <!-- FIXME: Rather than hard-coding "FFFFFF", get it from the backend (ThemeWidgetFragment.DEFAULT_BACKGROUND_COLOR). -->
