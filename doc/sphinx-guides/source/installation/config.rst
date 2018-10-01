@@ -102,9 +102,14 @@ Persistent Identifiers and Publishing Datasets
 
 Persistent identifiers are a required and integral part of the Dataverse platform. They provide a URL that is guaranteed to resolve to the datasets or files they represent. Dataverse currently supports creating identifiers using DOI and Handle.
 
-By default and for testing convenience, the installer configures a temporary DOI test namespace through EZID. This is sufficient to create and publish datasets and files, but they are not citable nor guaranteed to be preserved. Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured. 
+By default, the installer configures a test DOI namespace (10.5072) with DataCite as the registration provider. Please note that as of the release 4.9.3, we can no longer use EZID as the provider. Unlike EZID, DataCite requires that you register for a test account (please contact support@datacite.org). Once you receive the login name and password for the account, configure it in your domain.xml, as the following two JVM options::
 
-To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider: **EZID** (http://ezid.cdlib.org), **DataCite** (https://www.datacite.org), **Handle.Net** (https://www.handle.net). 
+      <jvm-options>-Ddoi.username=...</jvm-options>
+      <jvm-options>-Ddoi.password=...</jvm-options>
+
+and restart Glassfish. Once this is done, you will be able to publish datasets and files, but the persistent identifiers will not be citable or guaranteed to be preserved. Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured. 
+
+To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider. **DataCite** (https://www.datacite.org) is the recommended DOI provider (see https://dataverse.org/global-dataverse-community-consortium for more on joining DataCite) but **EZID** (http://ezid.cdlib.org) is an option for the University of California according to https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/ . **Handle.Net** (https://www.handle.net) is the HDL provider.
 
 Once you have your DOI or Handle account credentials and a namespace, configure Dataverse to use them using the JVM options and database settings below.
 
@@ -544,17 +549,17 @@ For limiting the size (in bytes) of thumbnail images generated from files.
 doi.baseurlstring
 +++++++++++++++++
 
-As of this writing, "https://ezid.cdlib.org" (EZID) and "https://mds.datacite.org" (DataCite) are the main valid values. 
+As of this writing, "https://mds.datacite.org" (DataCite) and "https://ezid.cdlib.org" (EZID) are the main valid values.
 
 While the above two options are recommended because they have been tested by the Dataverse team, it is also possible to use a DataCite Client API as a proxy to DataCite. In this case, requests made to the Client API are captured and passed on to DataCite for processing. The application will interact with the DataCite Client API exactly as if it were interacting directly with the DataCite API, with the only difference being the change to the base endpoint URL.
 
-For example, the Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through Dataverse using a ``doi.baseurlstring`` value of "https://researchdata.ands.org.au/api/doi/datacite" as documented at https://documentation.ands.org.au/display/DOC/ANDS+DataCite+Client+API . As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite and EZID must be tested with Dataverse to establish whether or not it will function properly.
+For example, the Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through Dataverse using a ``doi.baseurlstring`` value of "https://researchdata.ands.org.au/api/doi/datacite" as documented at https://documentation.ands.org.au/display/DOC/ANDS+DataCite+Client+API . As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite must be tested with Dataverse to establish whether or not it will function properly.
 
-Out of the box, Dataverse is configured to use base URL string from EZID. You can delete it like this:
+Out of the box, Dataverse is configured to use a test MDS DataCite base URL string. You can delete it like this:
 
-``./asadmin delete-jvm-options '-Ddoi.baseurlstring=https\://ezid.cdlib.org'``
+``./asadmin delete-jvm-options '-Ddoi.baseurlstring=https\://mds.test.datacite.org'``
 
-Then, to switch to DataCite, you can issue the following command:
+Then, to switch to production DataCite, you can issue the following command:
 
 ``./asadmin create-jvm-options '-Ddoi.baseurlstring=https\://mds.datacite.org'``
 
@@ -572,10 +577,6 @@ doi.username
 
 Used in conjuction with ``doi.baseurlstring``.
 
-Out of the box, Dataverse is configured with a test username from EZID. You can delete it with the following command:
-
-``./asadmin delete-jvm-options '-Ddoi.username=apitest'``
-
 Once you have a username from your provider, you can enter it like this:
 
 ``./asadmin create-jvm-options '-Ddoi.username=YOUR_USERNAME_HERE'``
@@ -585,11 +586,7 @@ Once you have a username from your provider, you can enter it like this:
 doi.password
 ++++++++++++
 
-Out of the box, Dataverse is configured with a test password from EZID. You can delete it with the following command:
-
 Used in conjuction with ``doi.baseurlstring``.
-
-``./asadmin delete-jvm-options '-Ddoi.password=apitest'``
 
 Once you have a password from your provider, you can enter it like this:
 
@@ -737,9 +734,9 @@ By default the footer says "Copyright © [YYYY]" but you can add text after the 
 :DoiProvider
 ++++++++++++
 
-As of this writing "EZID" and "DataCite" are the only valid options. DoiProvider is only needed if you are using DOI.
+As of this writing "DataCite" and "EZID" are the only valid options. ``:DoiProvider`` is only needed if you are using DOI.
 
-``curl -X PUT -d EZID http://localhost:8080/api/admin/settings/:DoiProvider``
+``curl -X PUT -d DataCite http://localhost:8080/api/admin/settings/:DoiProvider``
 
 This setting relates to the ``:Protocol``, ``:Authority``, ``:Shoulder``, and ``:IdentifierGenerationStyle`` database settings below as well as the following JVM options:
 

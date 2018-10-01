@@ -70,6 +70,9 @@ import javax.ejb.EJBException;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
+import org.apache.commons.io.FileUtils;
+
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -218,7 +221,7 @@ public class FileUtil implements java.io.Serializable  {
     public static String getFacetFileType(DataFile dataFile) {
         String fileType = dataFile.getContentType();
         
-        if (fileType != null) {
+        if (!StringUtil.isEmpty(fileType)) {
             if (fileType.contains(";")) {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
@@ -233,11 +236,18 @@ public class FileUtil implements java.io.Serializable  {
                 // but it is probably still better than to tag them all as 
                 // "uknown". 
                 // -- L.A. 4.0 alpha 1
-                return fileType.split("/")[0];
+                //
+                // UPDATE, MH 4.9.2
+                // Since production is displaying both "tabulardata" and "Tabular Data"
+                // we are going to try to add capitalization here to this function
+                // in order to capitalize all the unknown types that are not called
+                // out in MimeTypeFacets.properties
+                String typeClass = fileType.split("/")[0];
+                return Character.toUpperCase(typeClass.charAt(0)) + typeClass.substring(1);
             }
         }
         
-        return "unknown"; 
+        return ResourceBundle.getBundle("MimeTypeFacets").getString("application/octet-stream");
     }
     
     public static String getUserFriendlyOriginalType(DataFile dataFile) {
@@ -896,18 +906,19 @@ public class FileUtil implements java.io.Serializable  {
             }
             
             // Delete the temp directory used for unzipping
+            FileUtils.deleteDirectory(rezipFolder);
             
-            //logger.fine("Delete temp shapefile unzip directory: " + rezipFolder.getAbsolutePath());
-            //FileUtils.deleteDirectory(rezipFolder);
-
-            //// Delete rezipped files
-            //for (File finalFile : shpIngestHelper.getFinalRezippedFiles()){
-            //    if (finalFile.isFile()){
-            //        finalFile.delete();
-            //    }
-            //}
-             
             if (datafiles.size() > 0) {
+                // remove the uploaded zip file:
+                try {
+                    Files.delete(tempFile);
+                } catch (IOException ioex) {
+                    // do nothing - it's just a temp file.
+                    logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
+                } catch (SecurityException se) {
+                    logger.warning("Unable to delete: " + tempFile.toString() + "due to Security Exception: "
+                            + se.getMessage());
+                }
                 return datafiles;
             }else{
                 logger.severe("No files added from directory of rezipped shapefiles");
@@ -935,7 +946,9 @@ public class FileUtil implements java.io.Serializable  {
         return null;
     }   // end createDataFiles
     
-    private static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit) throws IOException, FileExceedsMaxSizeException {
+
+    private static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit)
+            throws IOException, FileExceedsMaxSizeException {
         Path tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
         
         if (inputStream != null && tempFile != null) {

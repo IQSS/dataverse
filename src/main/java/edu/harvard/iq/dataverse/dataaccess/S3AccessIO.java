@@ -152,7 +152,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 }
 
             } else if (isWriteAccess) {
-                key = dataFile.getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
+                key = dataFile.getOwner().getAuthorityForFileStorage() + "/" + this.getDataFile().getOwner().getIdentifierForFileStorage();
 
                 if (storageIdentifier.startsWith(S3_IDENTIFIER_PREFIX + "://")) {
                     key += "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
@@ -172,7 +172,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
         } else if (dvObject instanceof Dataset) {
             Dataset dataset = this.getDataset();
-            key = dataset.getAuthority() + "/" + dataset.getIdentifier();
+            key = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage();
             dataset.setStorageIdentifier(S3_IDENTIFIER_PREFIX + "://" + key);
         } else if (dvObject instanceof Dataverse) {
             throw new IOException("Data Access: Invalid DvObject type : Dataverse");
@@ -645,7 +645,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     
     private String getMainFileKey() throws IOException {
         if (key == null) {
-            String baseKey = this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
+            String baseKey = this.getDataFile().getOwner().getAuthorityForFileStorage() + "/" + this.getDataFile().getOwner().getIdentifierForFileStorage();
             String storageIdentifier = dvObject.getStorageIdentifier();
 
             if (storageIdentifier == null || "".equals(storageIdentifier)) {
