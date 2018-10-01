@@ -13,6 +13,8 @@ The Manage Users table gives the network administrator a list of all user accoun
 
 Users are listed alphabetically by username. The search bar above the table allows you to search for a specific user. It performs a right-truncated wildcard search of the Username, Name, and Email columns. This means, if you search "baseba" then it will search those three columns for any string of text that begins with "baseba", e.g. "baseball" or "baseballfan".
 
+If you would like to assign or remove a user's Superuser status, then you can do so by checking or unchecking their checkbox under the "Superuser" column.
+
 If you would like to remove all roles/permissions from a user's account (in the event of their leaving your organization, for example) then you can do so by clicking the "Remove All" button under the Roles column. This will keep the user's account active, but will revert it to put the account on the level of a default user with default permissions.
 
 List Users via API
