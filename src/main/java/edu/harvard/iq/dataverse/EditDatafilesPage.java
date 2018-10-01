@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -590,13 +591,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         System.out.println(s);
     }
     
-   
-    private void msgt(String s){
-        msg("-------------------------------");
-        msg(s);
-        msg("-------------------------------");
-    }
-    
     /**
      * For single file replacement, load the file to replace
      * 
@@ -860,7 +854,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
         
     public void deleteFiles() {
-        logger.info("entering bulk file delete (EditDataFilesPage)");
+        logger.fine("entering bulk file delete (EditDataFilesPage)");
         if (isFileReplaceOperation()){
             try {
                 deleteReplacementFile();
@@ -872,7 +866,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         String fileNames = null;
         for (FileMetadata fmd : this.getSelectedFiles()) {
-                // collect the names of the newly-restrticted files, 
+                // collect the names of the files, 
             // to show in the success message:
             if (fileNames == null) {
                 fileNames = fmd.getLabel();
@@ -881,102 +875,69 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
 
-        for (FileMetadata markedForDelete : selectedFiles) {
+        for (FileMetadata markedForDelete : this.getSelectedFiles()) {
             logger.fine("delete requested on file "+markedForDelete.getLabel());
             logger.fine("file metadata id: "+markedForDelete.getId());
             logger.fine("datafile id: "+markedForDelete.getDataFile().getId());
             logger.fine("page is in edit mode "+mode.name());
             
-            
-            // TODO: 
-            // some duplicated code below... needs to be refactored as follows: 
-            // 1. check if the filemetadata has the id; if not - remove 
-            // from the appropriate lists using the iterators; 
-            // then 2. check if the file has the id; if not - remove it quietly 
-            // (as specified below; otherwise - do the quick .remoove() of the 
-            // filemetadata from the appropriate lists, and add the file to the
-            // "filestobedeleted" list... as it is now, the code for step 1. 
-            // is duplicated in 2 places below. I just don't have time to 
-            // rewrite it now. -- L.A. Sep. 15, 4.2
-            
-            if (markedForDelete.getDataFile().getId() != null) {
-                logger.fine("this is an existing (saved) file.");
-                // the file already exists as part of this dataset
-                // so all we remove is the file from the fileMetadatas (from the 
-                // file metadatas attached to the editVersion, and from the
-                // display list of file metadatas that are being edited)
-                // and let the delete be handled in the command (by adding it to the filesToBeDeleted list):
-                
                 // has this filemetadata been saved already? (or is it a brand new
                 // filemetadata, created as part of a brand new version, created when 
                 // the user clicked 'delete', that hasn't been saved in the db yet?)
                 if (markedForDelete.getId() != null) {
                     logger.fine("this is a filemetadata from an existing draft version");
+                // so all we remove is the file from the fileMetadatas (from the
+                // file metadatas attached to the editVersion, and from the
+                // display list of file metadatas that are being edited)
+                // and let the delete be handled in the command (by adding it to the
+                // filesToBeDeleted list):
+
                     dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
                     fileMetadatas.remove(markedForDelete);
                     filesToBeDeleted.add(markedForDelete);
                 } else {
                     logger.fine("this is a brand-new (unsaved) filemetadata");
                     // ok, this is a brand-new DRAFT version. 
+
+                // if (mode != FileEditMode.CREATE) {
+                // If the bean is in the 'CREATE' mode, the page is using
+                // dataset.getEditVersion().getFileMetadatas() directly,
+                // so there's no need to delete this meta from the local
+                // fileMetadatas list. (but doing both just adds a no-op and won't cause an
+                // error)
+
                     // 1. delete the filemetadata from the local display list: 
-                    Iterator<FileMetadata> fmit = fileMetadatas.iterator();
-                    while (fmit.hasNext()) {
-                        FileMetadata fmd = fmit.next();
-                        if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
-                            fmit.remove();
-                            break;
-                        }
-                    }
+                removeFileMetadataFromList(fileMetadatas, markedForDelete);
                     // 2. delete the filemetadata from the version: 
-                    fmit = dataset.getEditVersion().getFileMetadatas().iterator();
-                    while (fmit.hasNext()) {
-                        FileMetadata fmd = fmit.next();
-                        if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
-                            fmit.remove();
-                            break;
+                removeFileMetadataFromList(dataset.getEditVersion().getFileMetadatas(), markedForDelete);
                         }
-                    }
-                }
-            } else {
+
+
+            if (markedForDelete.getDataFile().getId() == null) {
                 logger.fine("this is a brand new file.");
                 // the file was just added during this step, so in addition to 
-                // removing it from the fileMetadatas list, we also remove it from 
+                // removing it from the fileMetadatas lists (above), we also remove it from
                 // the newFiles list and the dataset's files, so it never gets saved.
                 
-                //if (mode != FileEditMode.CREATE) {
-                    // If the bean is in the 'CREATE' mode, the page is using
-                    // dataset.getEditVersion().getFileMetadatas() directly, 
-                    // so there's no need to delete this meta from the local
-                    // fileMetadatas list. 
+                removeDataFileFromList(dataset.getFiles(), markedForDelete.getDataFile());
+                removeDataFileFromList(newFiles, markedForDelete.getDataFile());
+                deleteTempFile(markedForDelete.getDataFile());
+                // Also remove checksum from the list of newly uploaded checksums (perhaps odd
+                // to delete and then try uploading the same file again, but it seems like it
+                // should be allowed/the checksum list is part of the state to clean-up
+                checksumMapNew.remove(markedForDelete.getDataFile().getChecksumValue());
                     
-                    // (we can't just do 
-                    // fileMetadatas.remove(markedForDelete);
-                    // - because the filemetadata doesn't have the id yet!)
-                    
-                    Iterator<FileMetadata> fmitlocal = fileMetadatas.iterator();
-                    while (fmitlocal.hasNext()) {
-                        FileMetadata fmd = fmitlocal.next();
-                        if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
-                            fmitlocal.remove();
-                            break;
                         }
                     }
-                //}
-                
-                Iterator<FileMetadata> fmit = dataset.getEditVersion().getFileMetadatas().iterator();
-                while (fmit.hasNext()) {
-                    FileMetadata fmd = fmit.next();
-                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
-                        fmit.remove();
-                        break;
+        if (fileNames != null) {
+            String successMessage = getBundleString("file.deleted.success");
+            logger.fine(successMessage);
+            successMessage = successMessage.replace("{0}", fileNames);
+            JsfHelper.addFlashMessage(successMessage);
                     }
                 }
                 
-                Iterator<DataFile> dfIt = dataset.getFiles().iterator();
-                while (dfIt.hasNext()) {
-                    DataFile dfn = dfIt.next();
-                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
-                        
+    private void deleteTempFile(DataFile dataFile) {
                         // Before we remove the file from the list and forget about 
                         // it:
                         // The physical uploaded file is still sitting in the temporary
@@ -993,42 +954,46 @@ public class EditDatafilesPage implements java.io.Serializable {
                         // local filesystem: 
 
                         try {
-                            Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dfn.getStorageIdentifier()));
+            List<Path> generatedTempFiles = ingestService.listGeneratedTempFiles(
+                    Paths.get(FileUtil.getFilesTempDirectory()), dataFile.getStorageIdentifier());
+            if (generatedTempFiles != null) {
+                for (Path generated : generatedTempFiles) {
+                    logger.fine("(Deleting generated thumbnail file " + generated.toString() + ")");
+                    try {
+                        Files.delete(generated);
+                    } catch (IOException ioex) {
+                        logger.warning("Failed to delete generated file " + generated.toString());
+                    }
+                }
+            }
+            Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier()));
                         } catch (IOException ioEx) {
                             // safe to ignore - it's just a temp file. 
-                            logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/" + dfn.getStorageIdentifier());
+            logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"
+                    + dataFile.getStorageIdentifier());
+        }
                         }
                         
-                        dfIt.remove();
-
+    private void removeFileMetadataFromList(List<FileMetadata> fmds, FileMetadata fmToDelete) {
+        Iterator<FileMetadata> fmit = fmds.iterator();
+        while (fmit.hasNext()) {
+            FileMetadata fmd = fmit.next();
+            if (fmToDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
+                fmit.remove();
+                break;
                     }
                 }
+                }                
                 
-                
-
-                Iterator<DataFile> nfIt = newFiles.iterator();
-                while (nfIt.hasNext()) {
-                    DataFile dfn = nfIt.next();
-                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
-                        nfIt.remove();
-                    }
-                }
-                
+    private void removeDataFileFromList(List<DataFile> dfs, DataFile dfToDelete) {
+        Iterator<DataFile> dfit = dfs.iterator();
+        while (dfit.hasNext()) {
+            DataFile df = dfit.next();
+            if (dfToDelete.getStorageIdentifier().equals(df.getStorageIdentifier())) {
+                dfit.remove();
+                break;
             }
         }
-
-     
-        if (fileNames != null) {
-            if(newFiles.isEmpty()){
-                fileMetadatas = new ArrayList<>();
-            }
-            String successMessage = getBundleString("file.deleted.success");
-            logger.fine(successMessage);
-            successMessage = successMessage.replace("{0}", fileNames);
-            JsfHelper.addFlashMessage(successMessage);
-
-        }
-        
     }
 
     public String saveWithTermsOfUse() {
@@ -1457,8 +1422,18 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     
     public String cancel() {
+        uploadInProgress = false;
         if (mode == FileEditMode.SINGLE || mode == FileEditMode.SINGLE_REPLACE ) {
             return returnToFileLandingPage();
+        }
+        //Files that have been finished and are now in the lower list on the page
+        for (DataFile newFile : newFiles) {
+            deleteTempFile(newFile);
+        }
+
+        //Files in the upload process but not yet finished
+        for (DataFile newFile : uploadedFiles) {
+            deleteTempFile(newFile);
         }
         if (workingVersion.getId() != null) {
             return returnToDraftVersion();
@@ -1582,7 +1557,9 @@ public class EditDatafilesPage implements java.io.Serializable {
      * @param event
      */
     public void handleDropBoxUpload(ActionEvent event) {
-        
+        if (!uploadInProgress) {
+            uploadInProgress = true;
+        }
         logger.fine("handleDropBoxUpload");
         uploadComponentId = event.getComponent().getClientId();
         
@@ -1709,6 +1686,12 @@ public class EditDatafilesPage implements java.io.Serializable {
                          uploadWarningMessage = uploadWarningMessage.concat("; "+warningMessage);
                      }
                 }*/
+            }
+            if(!uploadInProgress) {
+                logger.warning("Upload in progress cancelled");
+                for (DataFile newFile : datafiles) {
+                    deleteTempFile(newFile);
+                }
             }
         }
         
@@ -1844,10 +1827,10 @@ public class EditDatafilesPage implements java.io.Serializable {
             fileMetadatas.add(dataFile.getFileMetadata());
             newFiles.add(dataFile);
         }
-        
-        uploadedFiles = new ArrayList<>();
-        uploadInProgress = false;
-
+        if(uploadInProgress) {
+            uploadedFiles = new ArrayList<>();
+            uploadInProgress = false;
+        }
         // refresh the warning message below the upload component, if exists:
         if (uploadComponentId != null) {
             if (uploadWarningMessage != null) {
@@ -2036,6 +2019,13 @@ public class EditDatafilesPage implements java.io.Serializable {
             // send an info message there, from elsewhere in the code:
             uploadComponentId = event.getComponent().getClientId();
         }
+        
+        if(!uploadInProgress) {
+            logger.warning("Upload in progress cancelled");
+            for (DataFile newFile : dFileList) {
+                deleteTempFile(newFile);
+            }
+        }
     }
 
     /**
@@ -2092,7 +2082,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                     dupeFileNamesExisting = dupeFileNamesExisting.concat(", " + dataFile.getFileMetadata().getLabel());
                     multipleDupesExisting = true;
                 }
-                // skip
+                // remove temp file
+                deleteTempFile(dataFile);
             } else if (isFileAlreadyUploaded(dataFile)) {
                 if (dupeFileNamesNew == null) {
                     dupeFileNamesNew = dataFile.getFileMetadata().getLabel();
@@ -2100,7 +2091,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                     dupeFileNamesNew = dupeFileNamesNew.concat(", " + dataFile.getFileMetadata().getLabel());
                     multipleDupesNew = true;
                 }
-                // skip
+                // remove temp file
+                deleteTempFile(dataFile);
             } else {
                 // OK, this one is not a duplicate, we want it. 
                 // But let's check if its filename is a duplicate of another 
