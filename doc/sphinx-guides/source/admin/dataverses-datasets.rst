@@ -28,6 +28,11 @@ Removes a link between a dataverse and another dataverse. Only accessible to sup
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/dataverses/$linked-dataverse-alias/deleteLink/$linking-dataverse-alias
 
+FIXME: addAdminsToChildren heading
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+FIXME: document ``addAdminsToChildren``
+
 Datasets
 --------
 

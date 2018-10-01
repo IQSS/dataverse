@@ -1333,3 +1333,10 @@ Sets which languages should be available. If there is more than one, a dropdown 
 in the header. This should be formated as a JSON array as shown below.
 
 ``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{  "locale":"en", "title":"English"},  {  "locale":"fr", "title":"Français"}]'``
+
+:InheritParentAdmins
+++++++++++++++++++++
+
+FIXME: Explain what setting ``:InheritParentAdmins`` to true does. Also mention that it's set to false by default.
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:InheritParentAdmins``
