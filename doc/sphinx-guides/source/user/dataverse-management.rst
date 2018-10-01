@@ -112,7 +112,7 @@ When you access a dataverse's permissions page, you will see three sections:
 
 **Roles:** Here you can reference a full list of roles that can be assigned to users of your dataverse. Each role lists the permissions that it offers.
 
-FIXME: Improve this note: Please note that even on a newly created dataverse, you may see user and groups have already been granted a role if your installation has ``:InheritParentAdmins`` set to true. For more on this setting, see the :doc:`/installation/config` section of the Installation Guide.
+Please note that even on a newly created dataverse, you may see user and groups have already been granted the Admininstrator role if your installation has ``:InheritParentAdmins`` set to true. For more on this setting, see the :doc:`/installation/config` section of the Installation Guide.
 
 Setting Access Configurations
 ---------------------------------------------

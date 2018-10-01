@@ -1337,6 +1337,7 @@ in the header. This should be formated as a JSON array as shown below.
 :InheritParentAdmins
 ++++++++++++++++++++
 
-FIXME: Explain what setting ``:InheritParentAdmins`` to true does. Also mention that it's set to false by default.
+Setting ``:InheritParentAdmins`` to true causes newly created Dataverses to inherit the set of users and/or internal groups who have an Administrator role on their parent Dataverse, i.e. those users/groups will be assigned the Administrator role on the new Dataverse (in addition to the creator of the new Dataverse). 
+This can be helpful in situations where multiple organizations are sharing one Dataverse instance. The default, if ``:InheritParentAdmins`` is not set or is false is for the creator of the new Dataverse to be the only one assigned an Administrator role.
 
 ``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:InheritParentAdmins``

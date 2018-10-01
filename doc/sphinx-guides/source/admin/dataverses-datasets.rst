@@ -28,10 +28,12 @@ Removes a link between a dataverse and another dataverse. Only accessible to sup
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/dataverses/$linked-dataverse-alias/deleteLink/$linking-dataverse-alias
 
-FIXME: addAdminsToChildren heading
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Add Dataverse Admins to Child Dataverses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-FIXME: document ``addAdminsToChildren``
+Recursively assigns the admins (individuals or internal groups) of a specified dataverse as admins to all of the dataverses that have been created within it. The response indicates success or failure and lists the individuals/groups and dataverses involved in the update. Only accessible to superusers. ::
+ 
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/addAdminsToChildren
 
 Datasets
 --------
