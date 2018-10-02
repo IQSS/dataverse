@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
@@ -21,8 +20,7 @@ import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
-import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
-import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -117,7 +115,7 @@ public class Admin extends AbstractApiBean {
 	@EJB
 	DatasetServiceBean datasetService;
     @EJB
-    ExplicitGroupServiceBean explicitGroupService;
+    GroupServiceBean groupService;
 
 	// Make the session available
 	@Inject
@@ -1398,14 +1396,12 @@ public class Admin extends AbstractApiBean {
                         //The role assignment is for a group
                         usedNames.add(identifier);
                         identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
-                        String[] comps = identifier.split(Group.PATH_SEPARATOR, 2);
-                        if (explicitGroupService.getProvider().getGroupProviderAlias().equals(comps[0])) {
-                            //If it's an explicit group, loop through all child Dataverses and give the group an admin role if it doesn't yet have it
-                            ExplicitGroup roleGroup = explicitGroupService.getProvider().get(comps[2]);
+                        Group roleGroup = groupService.getGroup(identifier);
+                        if (roleGroup != null) {
                             for (Dataverse childDv : children) {
                                 try {
-                                    RoleAssignment ra = new RoleAssignment(adminRole,
-                                            roleGroup, childDv, privateUrlToken);
+                                    RoleAssignment ra = new RoleAssignment(adminRole, roleGroup, childDv,
+                                            privateUrlToken);
                                     if (!existingRAs.get(childDv.getId()).contains(ra)) {
                                         rolesSvc.save(ra);
                                     }
