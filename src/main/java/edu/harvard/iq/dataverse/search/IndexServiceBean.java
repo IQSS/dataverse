@@ -915,83 +915,48 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileEntityId);
                     datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
                     datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
-                    String fileSolrDocId = solrDocIdentifierFile + fileEntityId;
-                    if (state.equals(DatasetState.PUBLISHED)) {
-                        fileSolrDocId = solrDocIdentifierFile + fileEntityId;
-                        datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
-                        // datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
-                        addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
-                    } else if (state.equals(DatasetState.WORKING_COPY)) {
-                        fileSolrDocId = solrDocIdentifierFile + fileEntityId
-                                + indexableDataset.getDatasetState().getSuffix();
-                        datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
-                    }
+
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
                         if (!fileMetadata.getDataFile().isRestricted()) {
-                            String fulltext = null;
-                            if (fileMetadata.getDataFile().getFileMetadatas().size() > 1) {
-                                /*
-                                 * If there is more than 1 fileMetadata, it is possible that the prior solr doc
-                                 * has the full-text index in it already and we don't need to recompute.
-                                 */
-
-                                try {
-                                    SolrDocument fileDoc = solrServer.getById(fileSolrDocId);
-                                    if (fileDoc != null) {
-                                        fulltext = (String) fileDoc.get(SearchFields.FULL_TEXT);
+                            StorageIO<DataFile> accessObject = null;
+                            InputStream instream = null;
+                            ContentHandler textHandler = null;
+                            try {
+                                accessObject = DataAccess.getStorageIO(fileMetadata.getDataFile(),
+                                        new DataAccessRequest());
+                                if (accessObject != null) {
+                                    if (accessObject.getSize() <= maxSize) {
+                                        AutoDetectParser autoParser = new AutoDetectParser();
+                                        textHandler = new BodyContentHandler(-1);
+                                        Metadata metadata = new Metadata();
+                                        ParseContext context = new ParseContext();
+                                        accessObject.open();
+                                        instream = accessObject.getInputStream();
+                                        /*
+                                         * Try parsing the file. Note that, other than by limiting size, there's been no
+                                         * check see whether this file is a good candidate for text extraction (e.g.
+                                         * based on type).
+                                         */
+                                        autoParser.parse(instream, textHandler, metadata, context);
+                                        datafileSolrInputDocument.addField(SearchFields.FULL_TEXT,
+                                                textHandler.toString());
                                     }
-                                } catch (SolrServerException e) {
-                                    // TODO Auto-generated catch block
-                                    e.printStackTrace();
-                                } catch (IOException e) {
-                                    // TODO Auto-generated catch block
-                                    e.printStackTrace();
                                 }
-                            }
-                            if (fulltext == null) {
-                                StorageIO<DataFile> accessObject = null;
-                                InputStream instream = null;
-                                ContentHandler textHandler = null;
-                                try {
-                                    accessObject = DataAccess.getStorageIO(fileMetadata.getDataFile(),
-                                            new DataAccessRequest());
-                                    if (accessObject != null) {
-                                        if (accessObject.getSize() <= maxSize) {
-                                            AutoDetectParser autoParser = new AutoDetectParser();
-                                            textHandler = new BodyContentHandler(-1);
-                                            Metadata metadata = new Metadata();
-                                            ParseContext context = new ParseContext();
-                                            accessObject.open();
-                                            instream = accessObject.getInputStream();
-                                            /*
-                                             * Try parsing the file. Note that, other than by limiting size, there's
-                                             * been no check see whether this file is a good candidate for text
-                                             * extraction (e.g. based on type).
-                                             */
-                                            autoParser.parse(instream, textHandler, metadata, context);
-                                            fulltext = textHandler.toString();
-                                        }
-                                    }
-                                } catch (Exception e) {
-                                    // Needs better logging of what went wrong in order to
-                                    // track down "bad" documents.
-                                    logger.warning(String.format("Full-text indexing for %s failed",
-                                            fileMetadata.getDataFile().getDisplayName()));
-                                    e.printStackTrace();
-                                    continue;
-                                } catch (OutOfMemoryError e) {
-                                    textHandler = null;
-                                    logger.warning(
-                                            String.format("Full-text indexing for %s failed due to OutOfMemoryError",
-                                                    fileMetadata.getDataFile().getDisplayName()));
-                                    continue;
-                                } finally {
-                                    IOUtils.closeQuietly(instream);
-                                }
-                            }
-                            if (fulltext != null) {
-                                datafileSolrInputDocument.addField(SearchFields.FULL_TEXT, fulltext);
+                            } catch (Exception e) {
+                                // Needs better logging of what went wrong in order to
+                                // track down "bad" documents.
+                                logger.warning(String.format("Full-text indexing for %s failed",
+                                        fileMetadata.getDataFile().getDisplayName()));
+                                e.printStackTrace();
+                                continue;
+                            } catch (OutOfMemoryError e) {
+                                textHandler = null;
+                                logger.warning(String.format("Full-text indexing for %s failed due to OutOfMemoryError",
+                                        fileMetadata.getDataFile().getDisplayName()));
+                                continue;
+                            } finally {
+                                IOUtils.closeQuietly(instream);
                             }
                         }
                     }
@@ -1098,7 +1063,17 @@ public class IndexServiceBean {
                         datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
                     }
 
-
+                    String fileSolrDocId = solrDocIdentifierFile + fileEntityId;
+                    if (state.equals(DatasetState.PUBLISHED)) {
+                        fileSolrDocId = solrDocIdentifierFile + fileEntityId;
+                        datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
+                        // datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
+                        addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
+                    } else if (state.equals(DatasetState.WORKING_COPY)) {
+                        fileSolrDocId = solrDocIdentifierFile + fileEntityId
+                                + indexableDataset.getDatasetState().getSuffix();
+                        datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
+                    }
                     datafileSolrInputDocument.addField(SearchFields.ID, fileSolrDocId);
 
                     datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_FRIENDLY,
