@@ -58,6 +58,18 @@ COPY testscripts/* /opt/dv/testdata/
 COPY setupIT.bash /opt/dv
 WORKDIR /opt/dv
 
+# need to take DOI provider info from build args as of ec377d2a4e27424db8815c55ce544deee48fc5e0
+# Default to EZID; use built-args to switch to DataCite (or potentially handles)
+ARG DoiProvider=EZID
+ARG doi_baseurl=https://ezid.cdlib.org
+ARG doi_username=apitest
+ARG doi_password=apitest
+ENV DoiProvider=${DoiProvider}
+ENV doi_baseurl=${doi_baseurl}
+ENV doi_username=${doi_username}
+ENV doi_password=${doi_password}
+COPY configure_doi.bash /opt/dv
+
 # healthcheck for glassfish only (assumes modified domain.xml); 
 #  does not check dataverse application status.
 HEALTHCHECK CMD curl --fail http://localhost:4848/monitoring/domain/server.json || exit 1
