@@ -4,8 +4,11 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.xml.XmlValidator;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,6 +28,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 public class SiteMapUtil {
 
@@ -157,21 +161,42 @@ public class SiteMapUtil {
         try {
             transformer.transform(source, result);
         } catch (TransformerException ex) {
-            logger.warning("Unable to write staged sitemap to " + stagedSitemapPathAndFileString + ". TransformerException: " + ex.getLocalizedMessage());
+            logger.warning("Unable to update sitemap! Unable to write staged sitemap to " + stagedSitemapPathAndFileString + ". TransformerException: " + ex.getLocalizedMessage());
+            return;
+        }
+
+        logger.info("Checking staged sitemap for well-formedness. The staged file is " + stagedSitemapPathAndFileString);
+        try {
+            XmlValidator.validateXmlWellFormed(stagedSitemapPathAndFileString);
+        } catch (Exception ex) {
+            logger.warning("Unable to update sitemap! Staged sitemap file is not well-formed XML! The exception for " + stagedSitemapPathAndFileString + " is " + ex.getLocalizedMessage());
+            return;
+        }
+
+        logger.info("Checking staged sitemap against XML schema. The staged file is " + stagedSitemapPathAndFileString);
+        URL schemaUrl = null;
+        try {
+            schemaUrl = new URL("https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd");
+        } catch (MalformedURLException ex) {
+            // This URL is hard coded and it's fine. We should never get MalformedURLException so we just swallow the exception and carry on.
+        }
+        try {
+            XmlValidator.validateXmlSchema(stagedSitemapPathAndFileString, schemaUrl);
+        } catch (SAXException | IOException ex) {
+            logger.warning("Unable to update sitemap! Exception caught while checking XML staged file (" + stagedSitemapPathAndFileString + " ) against XML schema: " + ex.getLocalizedMessage());
             return;
         }
 
         Path finalPath = Paths.get(finalSitemapPathAndFileString);
         logger.info("Copying staged sitemap from " + stagedSitemapPathAndFileString + " to " + finalSitemapPathAndFileString);
         try {
-            Files.copy(stagedPath, finalPath, StandardCopyOption.REPLACE_EXISTING);
+            Files.move(stagedPath, finalPath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ex) {
-            logger.warning("Unable to copy staged sitemap from " + stagedSitemapPathAndFileString + " to " + finalSitemapPathAndFileString + ". IOException: " + ex.getLocalizedMessage());
+            logger.warning("Unable to update sitemap! Unable to copy staged sitemap from " + stagedSitemapPathAndFileString + " to " + finalSitemapPathAndFileString + ". IOException: " + ex.getLocalizedMessage());
             return;
         }
 
         logger.info("END updateSiteMap");
-
     }
 
     private static String getLastModDate(DvObjectContainer dvObjectContainer) {

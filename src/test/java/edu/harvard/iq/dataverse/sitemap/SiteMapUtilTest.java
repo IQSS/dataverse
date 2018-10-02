@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -74,6 +75,10 @@ public class SiteMapUtilTest {
         deaccessioned.setVersions(datasetVersions);
         datasets.add(deaccessioned);
 
+        File oldSitemapFile = new File("/tmp/sitemap.xml");
+        if (oldSitemapFile.exists()) {
+            oldSitemapFile.delete();
+        }
         SiteMapUtil.updateSiteMap(dataverses, datasets);
 
         Exception wellFormedXmlException = null;
