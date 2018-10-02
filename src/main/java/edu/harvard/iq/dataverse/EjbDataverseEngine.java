@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -131,6 +132,9 @@ public class EjbDataverseEngine {
 
     @EJB
     ExplicitGroupServiceBean explicitGroups;
+    
+    @EJB
+    GroupServiceBean groups;
     
     @EJB
     RoleAssigneeServiceBean roleAssignees;
@@ -410,6 +414,11 @@ public class EjbDataverseEngine {
                 @Override
                 public ExplicitGroupServiceBean explicitGroups() {
                     return explicitGroups;
+                }
+                
+                @Override
+                public GroupServiceBean groups() {
+                    return groups;
                 }
 
                 @Override
