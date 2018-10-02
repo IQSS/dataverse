@@ -10,7 +10,11 @@ Advanced installations are not officially supported but here we are at least doc
 Multiple Glassfish Servers
 --------------------------
 
-The main thing to know about running multiple Glassfish servers is that only one can be the dedicated timer server, as explained in the :doc:`/admin/timers` section of the Admin Guide.
+You should be conscious of the following when running multiple Glassfish servers.
+
+- Only one Glassfish server can be the dedicated timer server, as explained in the :doc:`/admin/timers` section of the Admin Guide.
+- When users upload a logo for their dataverse using the "theme" feature described in the :doc:`/user/dataverse-management` section of the User Guide, these logos are stored only on the Glassfish server the user happend to be on when uploading the logo. By default these logos are written to the directory ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos``.
+- When a sitemp is created by a Glassfish server it is written to the filesystem of just that Glassfish server. By default the sitemap is written to the directory ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos``.
 
 Detecting Which Glassfish Server a User Is On
 +++++++++++++++++++++++++++++++++++++++++++++
