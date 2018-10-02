@@ -6,7 +6,6 @@
 
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import java.io.Serializable;
 import java.util.Comparator;
@@ -107,7 +106,7 @@ public class DatasetFieldValue implements Serializable {
             // want any issues if the value itself has #NAME in it)
             String displayValue = format
                     .replace("#NAME",  this.datasetField.getDatasetFieldType().getTitle() == null ? "" : this.datasetField.getDatasetFieldType().getTitle())
-                    .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
+                    .replace("#EMAIL", ResourceBundle.getBundle("Bundle").getString("dataset.email.hiddenMessage"))
                     .replace("#VALUE", sanitizedValue);
             retVal = displayValue;
         }

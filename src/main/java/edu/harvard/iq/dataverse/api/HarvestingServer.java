@@ -19,7 +19,6 @@ import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -131,7 +130,7 @@ public class HarvestingServer extends AbstractApiBean {
             return wr.getResponse();
         }
         if (!dvUser.isSuperuser()) {            
-            return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.superUser.required"));
+            return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.superUser.required"));
         }
 
         StringReader rdr = new StringReader(jsonBody);
@@ -144,18 +143,18 @@ public class HarvestingServer extends AbstractApiBean {
 		//Validating spec 
 		if (!StringUtils.isEmpty(spec)) {
 			if (spec.length() > 30) {
-				return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.sizelimit"));
+				return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.sizelimit"));
 			}
 			if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", spec)) {
-				return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.invalid"));
+				return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.invalid"));
 				// If it passes the regex test, check 
 			}
 			if (oaiSetService.findBySpec(spec) != null) {
-				return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.alreadyused"));
+				return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.alreadyused"));
 			}
 
 		} else {
-			return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
+			return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.required"));
 		}
 		set.setSpec(spec);
 		String name, desc, defn;
@@ -163,7 +162,7 @@ public class HarvestingServer extends AbstractApiBean {
 		try {
 			name = json.getString("name");
 		} catch (NullPointerException npe_name) {
-			return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
+			return badRequest(ResourceBundle.getBundle("Bundle").getString("harvestserver.newSetDialog.setspec.required"));
 		}
 		try {
 			defn = json.getString("definition");

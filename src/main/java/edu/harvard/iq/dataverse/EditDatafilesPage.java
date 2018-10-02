@@ -826,7 +826,7 @@ public class EditDatafilesPage implements java.io.Serializable {
      */
     private String getBundleString(String msgName){
         
-       return BundleUtil.getStringFromBundle(msgName);
+       return ResourceBundle.getBundle("Bundle").getString(msgName);
     }
     
     

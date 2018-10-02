@@ -76,7 +76,6 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -1221,7 +1220,7 @@ public class Datasets extends AbstractApiBean {
             authUser = findUserOrDie();
         } catch (WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN,
-                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
+                    ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
                     );
         }
         //---------------------------------------
@@ -1294,7 +1293,7 @@ public class Datasets extends AbstractApiBean {
         if (addFileHelper.hasError()){
             return error(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
         }else{
-            String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
+            String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
             try {
                 //msgt("as String: " + addFileHelper.getSuccessResult());
                 /**
