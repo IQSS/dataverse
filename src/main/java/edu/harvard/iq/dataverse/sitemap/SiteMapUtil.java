@@ -45,6 +45,8 @@ public class SiteMapUtil {
      */
     public static void updateSiteMap(List<Dataverse> dataverses, List<Dataset> datasets) {
 
+        logger.info("BEGIN updateSiteMap");
+
         String sitemapPath = "/tmp";
         String sitemapPathAndFile;
         // i.e. /usr/local/glassfish4/glassfish/domains/domain1
@@ -145,6 +147,8 @@ public class SiteMapUtil {
         } catch (TransformerException ex) {
             logger.warning("Unable to write sitemap to " + sitemapPathAndFile + ". TransformerException: " + ex.getLocalizedMessage());
         }
+
+        logger.info("END updateSiteMap");
 
     }
 

@@ -453,6 +453,8 @@ This will create or update a file in the following location unless you have cust
 
 ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/sitemap/sitemap.xml``
 
+On an installation of Dataverse with many datasets, the creation or updating of the sitemap can take a while. You can check Glassfish's server.log file for "BEGIN updateSiteMap" and "END updateSiteMap" lines to know when the process is complete.
+
 https://demo.dataverse.org/sitemap.xml is the sitemap URL for the Dataverse Demo site and yours should be similar. Submit your sitemap URL to Google by following `Google's "submit a sitemap" instructions`_ or similar instructions for other search engines.
 
 .. _Google's "submit a sitemap" instructions: https://support.google.com/webmasters/answer/183668
