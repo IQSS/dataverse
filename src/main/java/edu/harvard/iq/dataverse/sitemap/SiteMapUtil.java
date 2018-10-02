@@ -57,15 +57,9 @@ public class SiteMapUtil {
 
         logger.info("BEGIN updateSiteMap");
 
-        String sitemapPath = "/tmp";
-        // i.e. /usr/local/glassfish4/glassfish/domains/domain1
-        String domainRoot = System.getProperty("com.sun.aas.instanceRoot");
-        if (domainRoot != null) {
-            // Note that we write to a directory called "sitemap" but we serve just "/sitemap.xml" using PrettyFaces.
-            sitemapPath = domainRoot + File.separator + "docroot" + File.separator + "sitemap";
-        }
-        String stagedSitemapPathAndFileString = sitemapPath + File.separator + SITEMAP_FILENAME_STAGED;
-        String finalSitemapPathAndFileString = sitemapPath + File.separator + SITEMAP_FILENAME_FINAL;
+        String sitemapPathString = getSitemapPathString();
+        String stagedSitemapPathAndFileString = sitemapPathString + File.separator + SITEMAP_FILENAME_STAGED;
+        String finalSitemapPathAndFileString = sitemapPathString + File.separator + SITEMAP_FILENAME_FINAL;
 
         Path stagedPath = Paths.get(stagedSitemapPathAndFileString);
         if (Files.exists(stagedPath)) {
@@ -140,7 +134,7 @@ public class SiteMapUtil {
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
         DOMSource source = new DOMSource(document);
-        File directory = new File(sitemapPath);
+        File directory = new File(sitemapPathString);
         if (!directory.exists()) {
             directory.mkdir();
         }
@@ -204,5 +198,28 @@ public class SiteMapUtil {
         // says "The date of last modification of the file. This date should be in W3C Datetime format.
         // This format allows you to omit the time portion, if desired, and use YYYY-MM-DD."
         return new SimpleDateFormat("yyyy-MM-dd").format(dvObjectContainer.getModificationTime());
+    }
+
+    public static boolean stageFileExists() {
+        String sitemapPathString = getSitemapPathString();
+        String stagedSitemapPathAndFileString = sitemapPathString + File.separator + SITEMAP_FILENAME_STAGED;
+        Path stagedPath = Paths.get(stagedSitemapPathAndFileString);
+        if (Files.exists(stagedPath)) {
+            logger.warning("Unable to update sitemap! The staged file from a previous run already existed. Delete " + stagedSitemapPathAndFileString + " and try again.");
+            return true;
+        }
+        return false;
+    }
+
+    private static String getSitemapPathString() {
+        String sitemapPathString = "/tmp";
+        // i.e. /usr/local/glassfish4/glassfish/domains/domain1
+        String domainRoot = System.getProperty("com.sun.aas.instanceRoot");
+        if (domainRoot != null) {
+            // Note that we write to a directory called "sitemap" but we serve just "/sitemap.xml" using PrettyFaces.
+            sitemapPathString = domainRoot + File.separator + "docroot" + File.separator + "sitemap";
+        }
+        return sitemapPathString;
+
     }
 }
