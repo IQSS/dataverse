@@ -137,6 +137,15 @@ public class UtilIT {
                 .post("/api/admin/authenticatedUsers");
         return response;
     }
+    
+    public static Response migrateDatasetIdentifierFromHDLToPId(String datasetIdentifier, String apiToken) {
+        System.out.print(datasetIdentifier);
+        Response response = given()
+                .body(datasetIdentifier)
+                .contentType(ContentType.JSON)
+                .post("/api/admin/" + datasetIdentifier + "/reregisterHDLToPID?key=" + apiToken);
+        return response;
+    }
 
     private static String getAuthenticatedUserAsJsonString(String persistentUserId, String firstName, String lastName, String authenticationProviderId, String identifier) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
