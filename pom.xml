@@ -4,7 +4,7 @@
 
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.9.2</version>
+    <version>4.9.3</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
@@ -672,6 +672,16 @@
                    <!-- testsToExclude come from the profile-->
                    <excludedGroups>${testsToExclude}</excludedGroups>
                     <argLine>${argLine} -Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <configLocation>checkstyle.xml</configLocation>
+                    <encoding>UTF-8</encoding>
+                    <consoleOutput>true</consoleOutput>
                 </configuration>
             </plugin>
         </plugins>

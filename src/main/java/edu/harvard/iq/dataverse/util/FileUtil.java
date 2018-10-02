@@ -70,6 +70,9 @@ import javax.ejb.EJBException;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
+import org.apache.commons.io.FileUtils;
+
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -903,18 +906,19 @@ public class FileUtil implements java.io.Serializable  {
             }
             
             // Delete the temp directory used for unzipping
+            FileUtils.deleteDirectory(rezipFolder);
             
-            //logger.fine("Delete temp shapefile unzip directory: " + rezipFolder.getAbsolutePath());
-            //FileUtils.deleteDirectory(rezipFolder);
-
-            //// Delete rezipped files
-            //for (File finalFile : shpIngestHelper.getFinalRezippedFiles()){
-            //    if (finalFile.isFile()){
-            //        finalFile.delete();
-            //    }
-            //}
-             
             if (datafiles.size() > 0) {
+                // remove the uploaded zip file:
+                try {
+                    Files.delete(tempFile);
+                } catch (IOException ioex) {
+                    // do nothing - it's just a temp file.
+                    logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
+                } catch (SecurityException se) {
+                    logger.warning("Unable to delete: " + tempFile.toString() + "due to Security Exception: "
+                            + se.getMessage());
+                }
                 return datafiles;
             }else{
                 logger.severe("No files added from directory of rezipped shapefiles");
@@ -942,7 +946,9 @@ public class FileUtil implements java.io.Serializable  {
         return null;
     }   // end createDataFiles
     
-    private static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit) throws IOException, FileExceedsMaxSizeException {
+
+    private static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit)
+            throws IOException, FileExceedsMaxSizeException {
         Path tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
         
         if (inputStream != null && tempFile != null) {
