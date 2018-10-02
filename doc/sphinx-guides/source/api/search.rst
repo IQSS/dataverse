@@ -107,7 +107,7 @@ Advanced Search Example
 
 https://demo.dataverse.org/api/search?q=finch&show_relevance=true&show_facets=true&fq=publicationDate:2016&subtree=birds
 
-In this example, ``show_relevance=true`` matches per field are shown. Available facets are shown with ``show_facets=true`` and of the facets is being used with ``fq=publication_date_s:2015``. The search is being narrowed to the dataverse with the identifier "birds" with the parameter ``subtree=birds``.
+In this example, ``show_relevance=true`` matches per field are shown. Available facets are shown with ``show_facets=true`` and of the facets is being used with ``fq=publicationDate:2016``. The search is being narrowed to the dataverse with the identifier "birds" with the parameter ``subtree=birds``.
 
 .. code-block:: json
 
