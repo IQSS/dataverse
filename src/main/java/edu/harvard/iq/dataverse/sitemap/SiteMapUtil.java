@@ -5,6 +5,11 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.logging.Logger;
@@ -25,7 +30,8 @@ public class SiteMapUtil {
 
     private static final Logger logger = Logger.getLogger(SiteMapUtil.class.getCanonicalName());
 
-    static final String SITEMAP_FILENAME = "sitemap.xml";
+    static final String SITEMAP_FILENAME_FINAL = "sitemap.xml";
+    static final String SITEMAP_FILENAME_STAGED = "sitemap.xml.staged";
 
     /**
      * TODO: Handle more than 50,000 entries in the sitemap.
@@ -48,14 +54,20 @@ public class SiteMapUtil {
         logger.info("BEGIN updateSiteMap");
 
         String sitemapPath = "/tmp";
-        String sitemapPathAndFile;
         // i.e. /usr/local/glassfish4/glassfish/domains/domain1
         String domainRoot = System.getProperty("com.sun.aas.instanceRoot");
         if (domainRoot != null) {
             // Note that we write to a directory called "sitemap" but we serve just "/sitemap.xml" using PrettyFaces.
             sitemapPath = domainRoot + File.separator + "docroot" + File.separator + "sitemap";
         }
-        sitemapPathAndFile = sitemapPath + File.separator + SITEMAP_FILENAME;
+        String stagedSitemapPathAndFileString = sitemapPath + File.separator + SITEMAP_FILENAME_STAGED;
+        String finalSitemapPathAndFileString = sitemapPath + File.separator + SITEMAP_FILENAME_FINAL;
+
+        Path stagedPath = Paths.get(stagedSitemapPathAndFileString);
+        if (Files.exists(stagedPath)) {
+            logger.warning("Unable to update sitemap! The staged file from a previous run already existed. Delete " + stagedSitemapPathAndFileString + " and try again.");
+            return;
+        }
 
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = null;
@@ -140,12 +152,22 @@ public class SiteMapUtil {
             }
         }
 
-        logger.info("Writing sitemap to " + sitemapPathAndFile);
-        StreamResult result = new StreamResult(new File(sitemapPathAndFile));
+        logger.info("Writing staged sitemap to " + stagedSitemapPathAndFileString);
+        StreamResult result = new StreamResult(new File(stagedSitemapPathAndFileString));
         try {
             transformer.transform(source, result);
         } catch (TransformerException ex) {
-            logger.warning("Unable to write sitemap to " + sitemapPathAndFile + ". TransformerException: " + ex.getLocalizedMessage());
+            logger.warning("Unable to write staged sitemap to " + stagedSitemapPathAndFileString + ". TransformerException: " + ex.getLocalizedMessage());
+            return;
+        }
+
+        Path finalPath = Paths.get(finalSitemapPathAndFileString);
+        logger.info("Copying staged sitemap from " + stagedSitemapPathAndFileString + " to " + finalSitemapPathAndFileString);
+        try {
+            Files.copy(stagedPath, finalPath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            logger.warning("Unable to copy staged sitemap from " + stagedSitemapPathAndFileString + " to " + finalSitemapPathAndFileString + ". IOException: " + ex.getLocalizedMessage());
+            return;
         }
 
         logger.info("END updateSiteMap");
