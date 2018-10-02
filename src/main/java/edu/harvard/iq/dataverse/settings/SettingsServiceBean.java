@@ -170,6 +170,9 @@ public class SettingsServiceBean {
         SearchRespectPermissionRoot,
         /** Solr hostname and port, such as "localhost:8983". */
         SolrHostColonPort,
+        /** Enable full-text indexing in solr up to max file size */
+        SolrFullTextIndexing, //true or false (default)
+        SolrMaxFileSizeForFullTextIndexing, //long - size in bytes (default unset/no limit)
         /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
         MaxFileUploadSizeInBytes,
         /** Key for if ScrubMigrationData is enabled or disabled. */
