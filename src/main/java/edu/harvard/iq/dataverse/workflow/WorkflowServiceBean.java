@@ -290,41 +290,29 @@ public class WorkflowServiceBean {
          * made in a calling command (e.g. for a PostPublication workflow, the fact that the latest version is 'released' is not yet in the 
          * database. 
          */
-        //Dataset ds = em.find(Dataset.class,ctxt.getDataset().getId());
-        //engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
-        //logger.info("Num Locks: "  + ctxt.getDataset().getLocks().size());
-        //datasetLock.setDataset(ctxt.getDataset());
-        //em.persist(datasetLock);
-        //em.flush();
-        DatasetLock dsl = engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
-        logger.info("Num Locks local2: "  + ctxt.getDataset().getLocks().size());
-        
-        logger.info("Num Locks dsl: "  + dsl.getDataset().getLocks().size());
+        datasetLock.setDataset(ctxt.getDataset());
+        em.persist(datasetLock);
+        em.flush();
         
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     void unlockDataset( WorkflowContext ctxt ) throws CommandException {
-    	/* Since the lockDataset command above directly persists a lock to the database, 
-    	 * the ctxt.getDataset() is not updated and its list of locks can't be used. Using the named query below will find the workflow
-    	 * lock and remove it (actually all workflow locks for this Dataset but only one workflow should be active). 
-    	 */
-        /*
+        /* Since the lockDataset command above directly persists a lock to the database, 
+         * the ctxt.getDataset() is not updated and its list of locks can't be used. Using the named query below will find the workflow
+         * lock and remove it (actually all workflow locks for this Dataset but only one workflow should be active). 
+         */
+        
         TypedQuery<DatasetLock> lockCounter = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
         lockCounter.setParameter("datasetId", ctxt.getDataset().getId());
         List<DatasetLock> locks = lockCounter.getResultList();
         for(DatasetLock lock: locks) {
-        	if(lock.getReason() == DatasetLock.Reason.Workflow) {
-        		logger.info("Removing lock");
-        		em.remove(lock);
-        	}
+            if(lock.getReason() == DatasetLock.Reason.Workflow) {
+                logger.info("Removing lock");
+                em.remove(lock);
+            }
         }
         em.flush();
-        */
-        Dataset ds = em.find(Dataset.class,ctxt.getDataset().getId());
-        engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow) );
-        logger.info("Num Locks: "  + ds.getLocks().size());
-        logger.info("Num Locks local: "  + ctxt.getDataset().getLocks().size());
     }
     
     //
@@ -444,17 +432,17 @@ public class WorkflowServiceBean {
     }
     
     private WorkflowContext refresh(WorkflowContext ctxt) {
-    	return refresh(ctxt, ctxt.getSettings(), ctxt.getApiToken());
+        return refresh(ctxt, ctxt.getSettings(), ctxt.getApiToken());
     }
     
     private WorkflowContext refresh( WorkflowContext ctxt, Map<String, Object> settings, ApiToken apiToken ) {
-    	/* An earlier version of this class used em.find() to 'refresh' the Dataset in the context. 
-    	 * For a PostPublication workflow, this had the consequence of hiding/removing changes to the Dataset 
-    	 * made in the FinalizeDatasetPublicationCommand (i.e. the fact that the draft version is now released and
-    	 * has a version number). It is not clear to me if the em.merge below is needed or if it handles the case of 
-    	 * resumed workflows. (The overall method is needed to allow the context to be updated in the start() method with the
-    	 * settings and APItoken retrieved by the WorkflowServiceBean).
-    	 */
+        /* An earlier version of this class used em.find() to 'refresh' the Dataset in the context. 
+         * For a PostPublication workflow, this had the consequence of hiding/removing changes to the Dataset 
+         * made in the FinalizeDatasetPublicationCommand (i.e. the fact that the draft version is now released and
+         * has a version number). It is not clear to me if the em.merge below is needed or if it handles the case of 
+         * resumed workflows. (The overall method is needed to allow the context to be updated in the start() method with the
+         * settings and APItoken retrieved by the WorkflowServiceBean).
+         */
         return new WorkflowContext( ctxt.getRequest(), 
                        em.merge(ctxt.getDataset()), ctxt.getNextVersionNumber(), 
                        ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken, ctxt.getDatasetExternallyReleased());
