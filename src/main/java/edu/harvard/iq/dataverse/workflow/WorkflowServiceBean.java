@@ -290,10 +290,9 @@ public class WorkflowServiceBean {
          * made in a calling command (e.g. for a PostPublication workflow, the fact that the latest version is 'released' is not yet in the 
          * database. 
          */
-        Dataset ds = em.find(Dataset.class,ctxt.getDataset().getId());
-        engine.submit(new AddLockCommand(ctxt.getRequest(), ds, datasetLock));
-        logger.info("Num Locks: "  + ds.getLocks().size());
-        logger.info("Num Locks local: "  + ctxt.getDataset().getLocks().size());
+        //Dataset ds = em.find(Dataset.class,ctxt.getDataset().getId());
+        //engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
+        //logger.info("Num Locks: "  + ctxt.getDataset().getLocks().size());
         //datasetLock.setDataset(ctxt.getDataset());
         //em.persist(datasetLock);
         //em.flush();
@@ -321,7 +320,8 @@ public class WorkflowServiceBean {
         	}
         }
         em.flush();
-        */Dataset ds = em.find(Dataset.class,ctxt.getDataset().getId());
+        */
+        Dataset ds = em.find(Dataset.class,ctxt.getDataset().getId());
         engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow) );
         logger.info("Num Locks: "  + ds.getLocks().size());
         logger.info("Num Locks local: "  + ctxt.getDataset().getLocks().size());
