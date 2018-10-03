@@ -734,51 +734,6 @@
         <str name="bq">
             isHarvested:false^25000
         </str>
-        
-
-<!--<str name="qf">
-dvName^170
-dvSubject^160
-dvDescription^150
-dvAffiliation^140
-title^130
-subject^120
-keyword^110
-topicClassValue^100
-dsDescriptionValue^90
-authorName^80
-authorAffiliation^70
-publicationCitation^60
-producerName^50
-fileName^40
-fileDescription^30
-variableLabel^20
-variableName^10
-text^1.0
-</str>-->
-<!--<str name="qf">
-dvName^1
-dvSubject^1
-dvDescription^1
-dvAffiliation^1
-title^1
-subject^1
-keyword^1
-topicClassValue^1
-dsDescriptionValue^1
-authorName^1
-authorAffiliation^1
-publicationCitation^1
-producerName^1
-fileName^1
-fileDescription^1
-variableLabel^1
-variableName^1
-text^1.0
-</str>-->
-
-
-
 
       <!-- Default search field
          <str name="df">text</str> 
