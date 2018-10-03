@@ -58,7 +58,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        logger.info("Exec FDPC");
         Dataset theDataset = getDataset();
         
         if ( theDataset.getGlobalIdCreateTime() == null ) {
@@ -121,7 +120,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             }
             theDataset.getLatestVersion().setVersionState(RELEASED);
         }
-        logger.info("Released version is: " + theDataset.getReleasedVersion().getFriendlyVersionNumber());
         
         exportMetadata(ctxt.settings());
         boolean doNormalSolrDocCleanUp = true;
@@ -141,11 +139,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     	if(ds == null) {
     		logger.severe("Null DS after merge");
     	}
-    	logger.info("Released ds version is: " + ds.getReleasedVersion().getFriendlyVersionNumber());
-  	
     		ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
-                logger.info("Starting WF");
                 ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased));
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);

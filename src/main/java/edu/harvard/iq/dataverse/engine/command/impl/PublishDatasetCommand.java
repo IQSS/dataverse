@@ -54,7 +54,6 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
 
     @Override
     public PublishDatasetResult execute(CommandContext ctxt) throws CommandException {
-        logger.info("Execing PDC");
         verifyCommandArguments();
         
         // Invariant 1: If we're here, publishing the dataset makes sense, from a "business logic" point of view.
@@ -124,10 +123,8 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 
             } else {
                 // Synchronous publishing (no workflow involved)
-                logger.info("Submit FDPC");
                 
                 theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(theDataset, getRequest(),datasetExternallyReleased));
-                logger.info("Back from FDPC");
                 return new PublishDatasetResult(theDataset, true);
             }
         }
