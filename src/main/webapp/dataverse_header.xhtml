@@ -182,22 +182,12 @@
             </div>
         </nav>
         <!-- Status Alert -->
-        <div id="status-alert" class="container" jsf:rendered="#{!empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader')}">
-            
-            <div class="alert alert-warning">
+        <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader')}">
+            <div class="alert alert-dismissible container text-warning">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
                 <h:outputText styleClass="highlightBold" value="#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}"/>
-                <h:outputText rendered="#{!empty settingsWrapper.get(':StatusMessageText')}" value=" – #{settingsWrapper.get(':StatusMessageText')}"/>
-                
-                <ui:remove>
-                    <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{settingsWrapper.get(':StatusMessageText').length() gt 5000}">Read More</h:outputLink>
-                </ui:remove>
+                <h:outputText rendered="#{!empty settingsWrapper.get(':StatusMessageText')}" value=" – #{settingsWrapper.get(':StatusMessageText')}" escape="false"/>
             </div>
-            
-            <ui:remove>
-            <ui:fragment rendered="#{empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader')}">
-                <div class="alert alert-warning status">#{settingsWrapper.get(':StatusMessageHeader')}</div>
-            </ui:fragment>
-            </ui:remove>
         </div>
         <!-- Header Panel -->
         <!-- FIXME: Rather than hard-coding "FFFFFF", get it from the backend (ThemeWidgetFragment.DEFAULT_BACKGROUND_COLOR). -->
@@ -301,6 +291,9 @@
             </div>
         </ui:remove>
 
+        
+
+        
         <!-- Message Panel -->
         <p:fragment id="messagePanel" rendered="#{showMessagePanel}">
             <div class="container messagePanel">
