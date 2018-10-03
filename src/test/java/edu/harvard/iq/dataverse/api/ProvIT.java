@@ -168,6 +168,7 @@ public class ProvIT {
         assertEquals(200, publishDataset.getStatusCode());
         
         //We want to publish a 2nd version to confirm metadata is being passed over between version
+        //Note: this UI file is just being used as an arbitrary file for upload testing
         String pathToFile2 = "src/main/webapp/resources/images/dataverseproject_logo.png";
         Response authorAddsFile2 = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile2, apiTokenForDepositor);
         authorAddsFile2.prettyPrint();
