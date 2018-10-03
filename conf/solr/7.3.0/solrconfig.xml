@@ -734,6 +734,10 @@
             variableLabel^40
             variableName^40
         </str>
+        <!-- Even though this number is huge it only seems to apply a boost of ~3x to final result -MAD 4.9.3 -->
+        <str name="bq">
+            isHarvested:false^100000
+        </str>
         
 
 <!--<str name="qf">
