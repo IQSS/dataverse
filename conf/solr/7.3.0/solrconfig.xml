@@ -696,12 +696,12 @@
       <str name="defType">edismax</str>
       <float name="tie">0.075</float>
         <str name="qf">
-            dvName^200
+            dvName^400
+            authorName^180
             dvSubject^190
             dvDescription^180
             dvAffiliation^170
             title^130
-            authorName^120
             subject^120
             keyword^110
             topicClassValue^100
@@ -709,14 +709,15 @@
             authorAffiliation^80
             publicationCitation^60
             producerName^50
-            fileName^40
+            fileName^30
             fileDescription^30
             variableLabel^20
             variableName^10
             text^1.0
         </str>
         <str name="pf">
-            dvName^100
+            dvName^200
+            authorName^100
             dvSubject^100
             dvDescription^100
             dvAffiliation^100
@@ -725,18 +726,13 @@
             keyword^75
             topicClassValue^75
             dsDescriptionValue^75
-            authorName^75
             authorAffiliation^75
             publicationCitation^75
             producerName^75
-            fileName^50
-            fileDescription^50
-            variableLabel^40
-            variableName^40
         </str>
-        <!-- Even though this number is huge it only seems to apply a boost of ~3x to final result -MAD 4.9.3 -->
+        <!-- Even though this number is huge it only seems to apply a boost of ~1.5x to final result -MAD 4.9.3 -->
         <str name="bq">
-            isHarvested:false^100000
+            isHarvested:false^25000
         </str>
         
 
