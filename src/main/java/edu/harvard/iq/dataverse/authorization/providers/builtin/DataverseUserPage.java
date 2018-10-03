@@ -680,4 +680,16 @@ public class DataverseUserPage implements java.io.Serializable {
     public String getPasswordRequirements() {
         return passwordValidatorService.getGoodPasswordDescription(passwordErrors);
     }
+    
+    public String getRequestorName(UserNotification notification) {
+        if(notification == null) return "Unavailable";
+        if(notification.getRequestor() == null) return "Unavailable";
+        return (notification.getRequestor().getLastName() != null && notification.getRequestor().getLastName() != null) ? notification.getRequestor().getFirstName() + " " + notification.getRequestor().getLastName() : "Unavailable";
+    }
+    
+    public String getRequestorEmail(UserNotification notification) {
+        if(notification == null) return "Unavailable";
+        if(notification.getRequestor() == null) return "Unavailable";
+        return notification.getRequestor().getEmail() != null ? notification.getRequestor().getEmail() : "Unavailable";
+    }
 }
