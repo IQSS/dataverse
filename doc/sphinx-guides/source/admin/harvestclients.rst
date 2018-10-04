@@ -18,7 +18,7 @@ Managing Harvesting Clients
 
 To start harvesting metadata from a remote OAI repository, you first create and configure a *Harvesting Client*. 
 
-Clients are managed on the "Harvesting Clients" page accessible via the Dashboard. Click on the *Add Client* button to get started. 
+Clients are managed on the "Harvesting Clients" page accessible via the :doc:`dashboard`. Click on the *Add Client* button to get started.
 
 The process of creating a new, or editing an existing client, is largely self-explanatory. It is split into logical steps, in a way that allows the user to go back and correct the entries made earlier. The process is interactive and guidance text is provided. For example, the user is required to enter the URL of the remote OAI server. When they click *Next*, the application will try to establish a connection to the server in order to verify that it is working, and to obtain the information about the sets of metadata records and the metadata formats it supports. The choices offered to the user on the next page will be based on this extra information. If the application fails to establish a connection to the remote archive at the address specified, or if an invalid response is received, the user is given an opportunity to check and correct the URL they entered. 
 
