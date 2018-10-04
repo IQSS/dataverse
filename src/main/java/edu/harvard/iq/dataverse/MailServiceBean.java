@@ -120,7 +120,6 @@ public class MailServiceBean implements java.io.Serializable {
         InternetAddress systemAddress = getSystemAddress();
         String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName)));
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
-        System.out.print(body);
         try {
             MimeMessage msg = new MimeMessage(session);
             if (systemAddress != null) {
