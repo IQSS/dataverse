@@ -180,10 +180,6 @@ public class TestCommandContext implements CommandContext {
     }
 
     @Override
-    public GroupServiceBean groups() {
-        return null;
-    }
-    @Override
     public RoleAssigneeServiceBean roleAssignees() {
         return null;
     }
