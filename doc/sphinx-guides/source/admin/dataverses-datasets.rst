@@ -28,12 +28,12 @@ Removes a link between a dataverse and another dataverse. Only accessible to sup
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/dataverses/$linked-dataverse-alias/deleteLink/$linking-dataverse-alias
 
-Add Dataverse Admins to Child Dataverses
+Add Dataverse RoleAssignments to Child Dataverses
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Recursively assigns the admins (individuals or internal groups) of a specified dataverse as admins to all of the dataverses that have been created within it. The response indicates success or failure and lists the individuals/groups and dataverses involved in the update. Only accessible to superusers. ::
+Recursively assigns the users and groups having a role(s),that are in the set configured to be inheritable via the :InheritParentRoleAssignments setting, on a specified dataverse to have the same role assignments on all of the dataverses that have been created within it. The response indicates success or failure and lists the individuals/groups and dataverses involved in the update. Only accessible to superusers. ::
  
-    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/addAdminsToChildren
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias//addRoleAssignmentsToChildren
 
 Datasets
 --------
