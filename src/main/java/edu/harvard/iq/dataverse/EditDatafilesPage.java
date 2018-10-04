@@ -1657,6 +1657,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 uploadWarningMessage = localWarningMessage.concat("; " + uploadWarningMessage);
             }
         }
+
     }
     
     public void uploadStarted() {

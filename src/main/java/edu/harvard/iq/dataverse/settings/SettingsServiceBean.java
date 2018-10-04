@@ -367,9 +367,12 @@ public class SettingsServiceBean {
          */
         FilePIDsEnabled,
         /**
-         * Whether new dataverses should inherit the set of admins of the parent dataverse (along with the dataverse creator).
+         * A comma-separated list of roles for which new dataverses should inherit the
+         * corresponding role assignments from the parent dataverse. Also affects
+         * /api/admin/dataverse/{alias}/addRolesToChildren. Default is "", no
+         * inheritance. "*" means inherit assignments for all roles
          */
-        InheritParentAdmins
+        InheritParentRoleAssignments
         
         ;
 

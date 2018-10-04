@@ -59,9 +59,6 @@ public class EjbDataverseEngine {
     DataverseServiceBean dataverseService;
 
     @EJB
-    DataverseRoleServiceBean roleService;
-
-    @EJB
     DataverseRoleServiceBean rolesService;
 
     @EJB
@@ -132,10 +129,10 @@ public class EjbDataverseEngine {
 
     @EJB
     ExplicitGroupServiceBean explicitGroups;
-    
+
     @EJB
     GroupServiceBean groups;
-    
+
     @EJB
     RoleAssigneeServiceBean roleAssignees;
     
