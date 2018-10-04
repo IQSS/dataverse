@@ -166,7 +166,7 @@ public class Files extends AbstractApiBean {
             authUser = findUserOrDie();
         } catch (AbstractApiBean.WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN, 
-                    ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
+                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
                     );
         }
 
@@ -254,7 +254,7 @@ public class Files extends AbstractApiBean {
         
         }else{
             msg("no error");
-            String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.replace");        
+            String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.replace");
 
             try {
                 msgt("as String: " + addFileHelper.getSuccessResult());
