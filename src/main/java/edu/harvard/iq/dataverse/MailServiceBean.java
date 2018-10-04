@@ -451,14 +451,13 @@ public class MailServiceBean implements java.io.Serializable {
                 */
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasSubmittedForReview");
                 
-                String requestorName = (requestor.getLastName() != null && requestor.getLastName() != null) ? requestor.getFirstName() + " " + requestor.getLastName() : "Unavailable";
-                String requestorEmail = requestor.getEmail() != null ? requestor.getEmail() : "Unavailable";
+                String requestorName = (requestor.getLastName() != null && requestor.getLastName() != null) ? requestor.getFirstName() + " " + requestor.getLastName() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+                String requestorEmail = requestor.getEmail() != null ? requestor.getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
                 
                 String[] paramArraySubmittedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
                     version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()),
                    requestorName, requestorEmail  };
                 messageText += MessageFormat.format(pattern, paramArraySubmittedDataset);
-                System.out.print(messageText);
                 return messageText;
             case PUBLISHEDDS:
                 version =  (DatasetVersion) targetObject;
