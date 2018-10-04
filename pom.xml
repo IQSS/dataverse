@@ -4,7 +4,7 @@
 
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.9.3-tdl</version>
+    <version>4.9.4-tdl</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
@@ -17,6 +17,11 @@
         <project.timezone>UTC</project.timezone>
         <project.language>en</project.language>
         <project.region>US</project.region>
+        <!--
+            Moving this from plugin config to global config, because of GH-5122.
+            This seems to play well with NetBeans 8.2, IDEA 2018.1 and mvn including compatibility with JaCoCo.
+        -->
+        <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
         <junit.version>4.12</junit.version>
         <junit.jupiter.version>5.3.1</junit.jupiter.version>
@@ -657,9 +662,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.0</version>
                 <configuration>
-                   <!-- testsToExclude come from the profile-->
-                   <excludedGroups>${testsToExclude}</excludedGroups>
-                    <argLine>${argLine} -Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
+                    <!-- testsToExclude come from the profile-->
+                    <excludedGroups>${testsToExclude}</excludedGroups>
                 </configuration>
             </plugin>
             <plugin>
