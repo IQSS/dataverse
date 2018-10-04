@@ -123,13 +123,13 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
                     String identifier = role.getAssigneeIdentifier();
                     if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
                         identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
-                        ctxt.roles().save(new RoleAssignment(adminRole,
+                        ctxt.roles().save(new RoleAssignment(role.getRole(),
                                 ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken));
                     } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
                         identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
                         Group roleGroup = ctxt.groups().getGroup(identifier); 
                         if (roleGroup!=null) {
-                            ctxt.roles().save(new RoleAssignment(adminRole,
+                            ctxt.roles().save(new RoleAssignment(role.getRole(),
                                     roleGroup, managedDv, privateUrlToken));
                         }
                     }
