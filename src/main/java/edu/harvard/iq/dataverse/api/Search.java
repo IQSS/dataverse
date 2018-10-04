@@ -67,8 +67,8 @@ public class Search extends AbstractApiBean {
             @QueryParam("show_facets") boolean showFacets,
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("show_entity_ids") boolean showEntityIds,
-            @QueryParam("show_api_urls") boolean showApiUrls,
-            @QueryParam("show_my_data") boolean showMyData,
+            @QueryParam("show_api_urls") boolean showApiUrls, //MAD: not documented, not used in dataverse code
+            @QueryParam("show_my_data") boolean showMyData, //MAD: not documented, not used in dataverse code
             @Context HttpServletResponse response
     ) {
 
@@ -253,7 +253,7 @@ public class Search extends AbstractApiBean {
         /**
          * @todo should maxLimit be configurable?
          */
-        int maxLimit = 1000;
+        int maxLimit = 1000000; //MAD: I upped this to test realistic max results
         if (numResultsPerPage == 0) {
             /**
              * @todo should defaultLimit be configurable?
