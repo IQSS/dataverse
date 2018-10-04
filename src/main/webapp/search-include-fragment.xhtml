@@ -627,7 +627,6 @@
         <p class="help-block">
             <span class="glyphicon glyphicon-warning-sign text-danger"/>
             <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.dialog.addDataGuest.msg.signup'] : bundle['dataverse.results.dialog.addDataGuest.msg']}" escape="false">
-                <f:param value="#{navigationWrapper.redirectPage}"/>
                 <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}"/>
                 <f:param value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/user/register"/>
             </h:outputFormat>

@@ -197,6 +197,7 @@ public class DataCitation {
         } else {
         citationList.add(formatString(title, html, "\""));
         }
+
         // QDRCustom: Use "Qualitative Data Repository" as distributor name
         citationList.add(formatString("Qualitative Data Repository", html));
         // QDRCustom: Show persistentID after distributor name
@@ -211,7 +212,6 @@ public class DataCitation {
 
         StringBuilder citation = new StringBuilder(citationList.stream().filter(value -> !StringUtils.isEmpty(value))
                 .collect(Collectors.joining(separator)));
-
         if ((fileTitle != null) && !isDirect()) {
             citation.append("; " + formatString(fileTitle, html, "") + " [fileName]");
         }
