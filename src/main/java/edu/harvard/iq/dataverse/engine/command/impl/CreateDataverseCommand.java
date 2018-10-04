@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -102,13 +103,23 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         String privateUrlToken = null;
 
         ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv, privateUrlToken));
-        // Add additional admins if inheritance is set
-        if (ctxt.settings().isTrueForKey(SettingsServiceBean.Key.InheritParentAdmins, false)) {
+        // Add additional role assignments if inheritance is set
+        boolean inheritAllRoles = false;
+        String rolesString = ctxt.settings().getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
+        ArrayList<String> rolesToInherit = new ArrayList<String>(Arrays.asList(rolesString.split("\\s+,\\s+")));
+        if (!rolesToInherit.isEmpty()) {
+            if (rolesToInherit.contains("*")) {
+                inheritAllRoles = true;
+            }
+
             List<RoleAssignment> assignedRoles = ctxt.roles().directRoleAssignments(owner);
             for (RoleAssignment role : assignedRoles) {
-
-                if ((role.getRole().equals(adminRole))
-                        && !role.getAssigneeIdentifier().equals(getRequest().getUser().getIdentifier())) {
+                // If all roles are to be inherited, or this role is in the list, and, in both
+                // cases, this is not an admin role for the current user which was just created
+                // above...
+                if ((inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias()))
+                        && !(role.getAssigneeIdentifier().equals(getRequest().getUser().getIdentifier())
+                                && role.getRole().equals(adminRole))) {
                     String identifier = role.getAssigneeIdentifier();
                     if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
                         identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
@@ -116,10 +127,10 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
                                 ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken));
                     } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
                         identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
-                        String[] comps = identifier.split(Group.PATH_SEPARATOR, 2);
-                        if (ctxt.explicitGroups().getProvider().getGroupProviderAlias().equals(comps[0])) {
+                        Group roleGroup = ctxt.groups().getGroup(identifier); 
+                        if (roleGroup!=null) {
                             ctxt.roles().save(new RoleAssignment(adminRole,
-                                    ctxt.explicitGroups().getProvider().get(comps[2]), managedDv, privateUrlToken));
+                                    roleGroup, managedDv, privateUrlToken));
                         }
                     }
                 }

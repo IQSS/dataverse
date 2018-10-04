@@ -21,7 +21,7 @@ import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
-import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -117,8 +117,8 @@ public class Admin extends AbstractApiBean {
 	@EJB
 	DatasetServiceBean datasetService;
     @EJB
-    ExplicitGroupServiceBean explicitGroupService;
-
+    GroupServiceBean groupService;
+    
 	// Make the session available
 	@Inject
 	DataverseSession session;
@@ -1285,12 +1285,11 @@ public class Admin extends AbstractApiBean {
 	}
 
     @GET
-    @Path("/dataverse/{alias}/addAdminsToChildren")
-    public Response addAdminsToChildren(@PathParam("alias") String alias) throws WrappedResponse {
+    @Path("/dataverse/{alias}/addRoleAssignmentsToChildren")
+    public Response addRoleAssignementsToChildren(@PathParam("alias") String alias) throws WrappedResponse {
         Dataverse owner = dataverseSvc.findByAlias(alias);
         if (owner == null) {
-            return error(Response.Status.NOT_FOUND,
-                    "Could not find dataverse based on alias supplied: " + alias + ".");
+            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
         }
         try {
             AuthenticatedUser user = findAuthenticatedUserOrDie();
@@ -1300,119 +1299,17 @@ public class Admin extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        if (settingsSvc.isTrueForKey(SettingsServiceBean.Key.InheritParentAdmins, false)) {
-
-            String qstr = "WITH RECURSIVE path_elements AS ((" + " SELECT id, dtype FROM dvobject WHERE id in ("
-                    + owner.getId() + "))" + " UNION\n"
-                    + " SELECT o.id, o.dtype FROM path_elements p, dvobject o WHERE o.owner_id = p.id and o.dtype='Dataverse') "
-                    + "SELECT id FROM path_elements WHERE id !=" + owner.getId() + ";"; // ORDER by id ASC;";
-
-            List<Integer> childIds;
-
-            try {
-                childIds = em.createNativeQuery(qstr).getResultList();
-            } catch (Exception ex) {
-                childIds = null;
+        boolean inheritAllRoles = false;
+        String rolesString = settingsSvc.getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
+        ArrayList<String> rolesToInherit = new ArrayList<String>(Arrays.asList(rolesString.split("\\s+,\\s+")));
+        if (!rolesToInherit.isEmpty()) {
+            if (rolesToInherit.contains("*")) {
+                inheritAllRoles = true;
             }
-
-            if (childIds == null || childIds.size() < 1) {
-                return error(Response.Status.NOT_FOUND,
-                        "Could not find any child dataverses based on alias supplied: " + alias + ".");
-            }
-            JsonArrayBuilder usedNames = Json.createArrayBuilder();
-            JsonArrayBuilder unusedNames = Json.createArrayBuilder();
-            JsonArrayBuilder dataverseIds = Json.createArrayBuilder();
-            JsonArrayBuilder dataverseAliases = Json.createArrayBuilder();
-            try {
-                List<Dataverse> children = new ArrayList<Dataverse>();
-
-                for (int i=0; i < childIds.size(); i++) {
-                    Integer childId = childIds.get(i);
-                    Dataverse child = dataverseSvc.find(new Long(childId.longValue()));
-                    if (child != null) {
-                        children.add(child);
-                        dataverseIds.add(childId.longValue());
-                        dataverseAliases.add(child.getAlias());
-                    }
-                }
-
-                List<RoleAssignment> assignedRoles = rolesSvc.directRoleAssignments(owner);
-                // Find the built in admin role (currently by alias)
-                DataverseRole adminRole = rolesSvc.findBuiltinRoleByAlias(DataverseRole.ADMIN);
-                String privateUrlToken = null;
-
-                Map<Long, List<RoleAssignment>> existingRAs = new HashMap<Long, List<RoleAssignment>>();
-                for (Dataverse childDv : children) {
-                    List<RoleAssignment> roles = rolesSvc.directRoleAssignments(childDv);
-                    List<RoleAssignment> adminRoles = new ArrayList<RoleAssignment>();
-                    for (RoleAssignment role : roles) {
-                        if (role.getRole() == adminRole) {
-                            adminRoles.add(role);
-                        }
-                    }
-                    existingRAs.put(childDv.getId(), adminRoles);
-                }
-
-                for (RoleAssignment role : assignedRoles) {
-
-                    if (role.getRole().equals(adminRole)) {
-                        String identifier = role.getAssigneeIdentifier();
-                        if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
-                            usedNames.add(identifier);
-                            identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
-                            for (Dataverse childDv : children) {
-                                try {
-                                    RoleAssignment ra = new RoleAssignment(adminRole,
-                                            authSvc.getAuthenticatedUser(identifier), childDv, privateUrlToken);
-                                    if (!existingRAs.get(childDv.getId()).contains(ra)) {
-                                        rolesSvc.save(ra);
-                                    }
-                                } catch (Exception e) {
-                                    logger.warning("Unable to assign " + role.getAssigneeIdentifier()
-                                            + "as an admin for new Dataverse: " + childDv.getName());
-                                    logger.warning(e.getMessage());
-                                    throw (e);
-                                }
-                            }
-                        } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
-                            usedNames.add(identifier);
-                            identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
-                            String[] comps = identifier.split(Group.PATH_SEPARATOR, 2);
-                            if (explicitGroupService.getProvider().getGroupProviderAlias().equals(comps[0])) {
-                                for (Dataverse childDv : children) {
-                                    try {
-                                        RoleAssignment ra = new RoleAssignment(adminRole,
-                                                explicitGroupService.getProvider().get(comps[2]), childDv,
-                                                privateUrlToken);
-                                        if (!existingRAs.get(childDv.getId()).contains(ra)) {
-                                            rolesSvc.save(ra);
-                                        }
-                                    } catch (Exception e) {
-                                        logger.warning("Unable to assign " + role.getAssigneeIdentifier()
-                                                + "as an admin for new Dataverse: " + childDv.getName());
-                                        logger.warning(e.getMessage());
-                                        throw (e);
-                                    }
-                                }
-                            }
-                        } else {
-                            unusedNames.add(identifier);
-                        }
-                    }
-                }
-                logger.info(Json.createObjectBuilder().add("Dataverses Updated", dataverseIds).add("Updated Dataverse Aliases", dataverseAliases)
-                        .add("Admins added", usedNames).add("Admins not added", unusedNames).build().toString());
-                return ok(Json.createObjectBuilder().add("Dataverses Updated", dataverseAliases)
-                        .add("Admins added", usedNames).add("Admins not added", unusedNames));
-            } catch (Exception e) {
-                logger.warning("Some Admin Roles may not have been assigned for Dataverse alias: " + alias);
-                logger.warning(Json.createObjectBuilder().add("Dataverses Updated", dataverseIds).add("Updated Dataverse Aliases", dataverseAliases)
-                        .add("Admins added", usedNames).add("Admins not added", unusedNames).build().toString());
-                e.printStackTrace();
-                return error(Response.Status.INTERNAL_SERVER_ERROR,
-                        "Error in assigning admin roles: " + e.getMessage());
-            }
+            
+            return ok(dataverseSvc.addRoleAssignementsToChildren(owner, rolesToInherit, inheritAllRoles));
         }
-        return error(Response.Status.FORBIDDEN, "InheritParentAdmins is not enabled on this instance");
+        return error(Response.Status.BAD_REQUEST,
+                "InheritParentRoleAssignements does not list any roles on this instance");
     }
 }
