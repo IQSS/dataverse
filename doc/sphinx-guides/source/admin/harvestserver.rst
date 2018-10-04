@@ -25,7 +25,7 @@ that are harvested. Remote harvesters will generally not attempt to
 download the data files associated with the harvested datasets.
 
 Harvesting server can be enabled or disabled on the "Harvesting
-Server" page accessible via the Dashboard. Harvesting server is by
+Server" page accessible via the :doc:`dashboard`. Harvesting server is by
 default disabled on a brand new, "out of the box" Dataverse.
 
 OAI Sets
