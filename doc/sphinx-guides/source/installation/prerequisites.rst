@@ -216,15 +216,24 @@ Note: Dataverse has customized Solr to boost results that come from certain inde
 
 Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.3.0/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
 
-With the Dataverse-specific config in place, you can now start Solr and create the core that will be used to manage search information::
+Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script, and the following to ``/etc/security/limits.conf``:
+
+        solr soft nproc 65000
+        solr hard nproc 65000
+        solr soft nofile 65000
+        solr hard nofile 65000
+
+On operating systems which use systemd such as RHEL or CentOS 7, you may then add a line like LimitNOFILE=65000 to the systemd unit file, or adjust the limits on a running process using the prlimit tool:
+
+        # sudo prlimit --pid pid --nofile=65000:65000
+
+Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability. Installation of this package isn't required but will prevent a warning in the log at startup.
+
+Finally, you may now start Solr and create the core that will be used to manage search information::
 
         cd /usr/local/solr/solr-7.3.0
         bin/solr start
         bin/solr create_core -c collection1 -d server/solr/collection1/conf/
-	
-Please note: Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script and adding solr soft nproc 65000 to /etc/security/limits.conf. On operating systems which use systemd such as RHEL or CentOS 7, you may add a line like LimitNOFILE=65000 to the systemd unit file, or adjust the limits on a running process using the prlimit tool:
-
-	# sudo prlimit --pid pid --nofile=65000:65000
 	
 
 Solr Init Script
