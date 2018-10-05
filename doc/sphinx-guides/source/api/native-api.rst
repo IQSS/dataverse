@@ -513,11 +513,11 @@ Dataset Locks
 
 To check if a dataset is locked:: 
 
-    curl -H "$SERVER_URL/api/datasets/{database_id}/locks
+    curl "$SERVER_URL/api/datasets/{database_id}/locks
 
 Optionally, you can check if there's a lock of a specific type on the dataset:: 
 
-    curl -H "$SERVER_URL/api/datasets/{database_id}/locks?type={lock_type}
+    curl "$SERVER_URL/api/datasets/{database_id}/locks?type={lock_type}
 
 Currently implemented lock types are ``Ingest, Workflow, InReview, DcmUpload and pidRegister``. 
 
