@@ -106,7 +106,7 @@
                     <p:fragment  id="editDataFilesButtons">
                         <div  class="button-block">
                             <p:outputPanel id="filesButtons" >
-                                <div jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                                <div jsf:rendered="#{!(empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment()))}">
                                     <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockFileForm').show();" />
                                     <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                                     </p:commandButton>
@@ -116,8 +116,7 @@
                                                      oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
                                                      action="#{EditDatafilesPage.save}" />
                                 </div>
-
-
+                                <div jsf:rendered="#{empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment())}">
                                     <p:commandButton tabindex="1000" id="doneFilesButton" value="#{bundle.done}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                                     </p:commandButton>
 
