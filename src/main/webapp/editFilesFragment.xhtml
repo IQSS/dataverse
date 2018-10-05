@@ -289,7 +289,7 @@
                                             </li>
                                             <li>
                                                 <h:outputText value="#{bundle['file.rsyncUpload.step2']} &#158; " escape="false"/>
-                                                <h:commandLink id="rsyncDL" actionListener="#{EditDatafilesPage.downloadRsyncScript()}" styleClass="btn btn-default btn-xs">
+                                                <h:commandLink id="rsyncDLEff" actionListener="#{EditDatafilesPage.downloadRsyncScript()}" styleClass="btn btn-default btn-xs">
                                                     <span class="glyphicon glyphicon-download-alt"/> <h:outputText value=" #{bundle['file.rsyncUpload.step2.downloadScriptButton']}"/>
                                                 </h:commandLink>
                                             </li>
@@ -504,13 +504,11 @@
                                     <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFilesSelected']} <span class="caret"></span>
                                 </button>
                                 <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                                    <ui:fragment rendered="#{datasetPage || EditDatafilesPage.showFileUploadFragment()}">
                                     <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                         <p:commandLink  onclick="checkFilesSelected();" > 
                                             <h:outputText value="#{bundle['file.delete']}"/> 
                                         </p:commandLink>
                                     </li>
-                                    </ui:fragment>
                                     <li>
                                         <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(true)}">
                                             <h:outputText value="#{bundle['file.restrict']}"/>

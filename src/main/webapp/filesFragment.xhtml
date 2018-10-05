@@ -110,7 +110,7 @@
                                          or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
                         
                         <!-- DOWNLOAD DCM SCRIPT BUTTON -->
-                        <h:commandLink id="rsyncDL" actionListener="#{DatasetPage.downloadRsyncScript()}" styleClass="btn btn-default"
+                        <h:commandLink id="rsyncDLFF" actionListener="#{DatasetPage.downloadRsyncScript()}" styleClass="btn btn-default"
                                        rendered="#{DatasetPage.sessionUserAuthenticated
                                                                                     and DatasetPage.canUpdateDataset() and empty DatasetPage.workingVersion.fileMetadatas
                                                                                     and !widgetWrapper.widgetView and DatasetPage.lockedDueToDcmUpload}">
