@@ -116,7 +116,8 @@
                                             <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required  or dsf.datasetFieldType.hasRequiredChildren }" />
                                         </label>
                                         <!-- Primitive fields -->
-                                        <p:fragment autoUpdate="true" rendered="#{dsf.datasetFieldType.primitive}">
+                                        <p:fragment rendered="#{dsf.datasetFieldType.primitive}">
+                                            <p:autoUpdate/>
                                             <div class="form-group">
                                                 <ui:remove><!-- There is an issue with the dynamic +/- and the primefaces autoupdate where they are not working
                                                     well together for the primitive fields, but are for the compound fields. So as a workaround for the primitive,
@@ -172,7 +173,8 @@
                                             </div>
                                         </p:fragment>
                                         <!-- Compound fields -->
-                                        <p:fragment autoUpdate="true" rendered="#{dsf.datasetFieldType.compound}">
+                                        <p:fragment rendered="#{dsf.datasetFieldType.compound}">
+                                            <p:autoUpdate/>
                                             <div class="form-group form-col-container col-sm-9 dataset-field-values">
                                                 <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue" varStatus="valCount">
                                                     <div class="form-group form-col-container col-sm-9 edit-compound-field">
