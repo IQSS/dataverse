@@ -109,7 +109,7 @@ By default, the installer configures a test DOI namespace (10.5072) with DataCit
 
 and restart Glassfish. Once this is done, you will be able to publish datasets and files, but the persistent identifiers will not be citable or guaranteed to be preserved. Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured. 
 
-To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider: **EZID** (http://ezid.cdlib.org), **DataCite** (https://www.datacite.org), **Handle.Net** (https://www.handle.net). 
+To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider. **DataCite** (https://www.datacite.org) is the recommended DOI provider (see https://dataverse.org/global-dataverse-community-consortium for more on joining DataCite) but **EZID** (http://ezid.cdlib.org) is an option for the University of California according to https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/ . **Handle.Net** (https://www.handle.net) is the HDL provider.
 
 Once you have your DOI or Handle account credentials and a namespace, configure Dataverse to use them using the JVM options and database settings below.
 
@@ -423,6 +423,9 @@ Out of the box, Dataverse attempts to block search engines from crawling your in
 Letting Search Engines Crawl Your Installation
 ++++++++++++++++++++++++++++++++++++++++++++++
 
+Ensure robots.txt Is Not Blocking Search Engines
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 For a public production Dataverse installation, it is probably desired that search agents be able to index published pages (AKA - pages that are visible to an unauthenticated user).
 Polite crawlers usually respect the `Robots Exclusion Standard <https://en.wikipedia.org/wiki/Robots_exclusion_standard>`_; we have provided an example of a production robots.txt :download:`here </_static/util/robots.txt>`).
 
@@ -436,6 +439,25 @@ You have a couple of options for putting an updated robots.txt file into product
 For more of an explanation of ``ProxyPassMatch`` see the :doc:`shibboleth` section.
 
 If you are not fronting Glassfish with Apache you'll need to prevent Glassfish from serving the robots.txt file embedded in the war file by overwriting robots.txt after the war file has been deployed. The downside of this technique is that you will have to remember to overwrite robots.txt in the "exploded" war file each time you deploy the war file, which probably means each time you upgrade to a new version of Dataverse. Furthermore, since the version of Dataverse is always incrementing and the version can be part of the file path, you will need to be conscious of where on disk you need to replace the file. For example, for Dataverse 4.6.1 the path to robots.txt may be ``/usr/local/glassfish4/glassfish/domains/domain1/applications/dataverse-4.6.1/robots.txt`` with the version number ``4.6.1`` as part of the path.
+
+Creating a Sitemap and Submitting it to Search Engines
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Search engines have an easier time indexing content when you provide them a sitemap. The Dataverse sitemap includes URLs to all published dataverses and all published datasets that are not harvested or deaccessioned.
+
+Create or update your sitemap by adding the following curl command to cron to run nightly or as you see fit:
+
+``curl -X POST http://localhost:8080/api/admin/sitemap``
+
+This will create or update a file in the following location unless you have customized your installation directory for Glassfish:
+
+``/usr/local/glassfish4/glassfish/domains/domain1/docroot/sitemap/sitemap.xml``
+
+On an installation of Dataverse with many datasets, the creation or updating of the sitemap can take a while. You can check Glassfish's server.log file for "BEGIN updateSiteMap" and "END updateSiteMap" lines to know when the process started and stopped and any errors in between.
+
+https://demo.dataverse.org/sitemap.xml is the sitemap URL for the Dataverse Demo site and yours should be similar. Submit your sitemap URL to Google by following `Google's "submit a sitemap" instructions`_ or similar instructions for other search engines.
+
+.. _Google's "submit a sitemap" instructions: https://support.google.com/webmasters/answer/183668
 
 Putting Your Dataverse Installation on the Map at dataverse.org
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -549,17 +571,17 @@ For limiting the size (in bytes) of thumbnail images generated from files.
 doi.baseurlstring
 +++++++++++++++++
 
-As of this writing, "https://ezid.cdlib.org" (EZID) and "https://mds.datacite.org" (DataCite) are the main valid values. 
+As of this writing, "https://mds.datacite.org" (DataCite) and "https://ezid.cdlib.org" (EZID) are the main valid values.
 
 While the above two options are recommended because they have been tested by the Dataverse team, it is also possible to use a DataCite Client API as a proxy to DataCite. In this case, requests made to the Client API are captured and passed on to DataCite for processing. The application will interact with the DataCite Client API exactly as if it were interacting directly with the DataCite API, with the only difference being the change to the base endpoint URL.
 
-For example, the Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through Dataverse using a ``doi.baseurlstring`` value of "https://researchdata.ands.org.au/api/doi/datacite" as documented at https://documentation.ands.org.au/display/DOC/ANDS+DataCite+Client+API . As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite and EZID must be tested with Dataverse to establish whether or not it will function properly.
+For example, the Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through Dataverse using a ``doi.baseurlstring`` value of "https://researchdata.ands.org.au/api/doi/datacite" as documented at https://documentation.ands.org.au/display/DOC/ANDS+DataCite+Client+API . As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite must be tested with Dataverse to establish whether or not it will function properly.
 
-Out of the box, Dataverse is configured to use base URL string from EZID. You can delete it like this:
+Out of the box, Dataverse is configured to use a test MDS DataCite base URL string. You can delete it like this:
 
-``./asadmin delete-jvm-options '-Ddoi.baseurlstring=https\://ezid.cdlib.org'``
+``./asadmin delete-jvm-options '-Ddoi.baseurlstring=https\://mds.test.datacite.org'``
 
-Then, to switch to DataCite, you can issue the following command:
+Then, to switch to production DataCite, you can issue the following command:
 
 ``./asadmin create-jvm-options '-Ddoi.baseurlstring=https\://mds.datacite.org'``
 
@@ -577,10 +599,6 @@ doi.username
 
 Used in conjuction with ``doi.baseurlstring``.
 
-Out of the box, Dataverse is configured with a test username from EZID. You can delete it with the following command:
-
-``./asadmin delete-jvm-options '-Ddoi.username=apitest'``
-
 Once you have a username from your provider, you can enter it like this:
 
 ``./asadmin create-jvm-options '-Ddoi.username=YOUR_USERNAME_HERE'``
@@ -590,11 +608,7 @@ Once you have a username from your provider, you can enter it like this:
 doi.password
 ++++++++++++
 
-Out of the box, Dataverse is configured with a test password from EZID. You can delete it with the following command:
-
 Used in conjuction with ``doi.baseurlstring``.
-
-``./asadmin delete-jvm-options '-Ddoi.password=apitest'``
 
 Once you have a password from your provider, you can enter it like this:
 
@@ -742,9 +756,9 @@ By default the footer says "Copyright © [YYYY]" but you can add text after the 
 :DoiProvider
 ++++++++++++
 
-As of this writing "EZID" and "DataCite" are the only valid options. DoiProvider is only needed if you are using DOI.
+As of this writing "DataCite" and "EZID" are the only valid options. ``:DoiProvider`` is only needed if you are using DOI.
 
-``curl -X PUT -d EZID http://localhost:8080/api/admin/settings/:DoiProvider``
+``curl -X PUT -d DataCite http://localhost:8080/api/admin/settings/:DoiProvider``
 
 This setting relates to the ``:Protocol``, ``:Authority``, ``:Shoulder``, and ``:IdentifierGenerationStyle`` database settings below as well as the following JVM options:
 
