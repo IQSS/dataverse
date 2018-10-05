@@ -397,7 +397,8 @@ public class IndexServiceBean {
          */
         StringBuilder results = new StringBuilder();
         if (atLeastOnePublishedVersion == false) {
-            results.append("No published version, nothing will be indexed as ").append(solrIdPublished).append("\n");
+            results.append("No published version, nothing will be indexed as ")
+                    .append(solrIdPublished).append("\n");
             if (latestVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
 
                 desiredCards.put(DatasetVersion.VersionState.DRAFT, true);
@@ -463,8 +464,7 @@ public class IndexServiceBean {
                 desiredCards.put(DatasetVersion.VersionState.RELEASED, false);
                 if (doNormalSolrDocCleanUp) {
                     String deletePublishedResults = removePublished(dataset);
-                    results.append(
-                            "No published version. Attempting to delete traces of published version from index. Result: ").append(deletePublishedResults).append("\n");
+                    results.append("No published version. Attempting to delete traces of published version from index. Result: ").append(deletePublishedResults).append("\n");
                 }
 
                 desiredCards.put(DatasetVersion.VersionState.DRAFT, false);
@@ -472,7 +472,8 @@ public class IndexServiceBean {
                     List<String> solrDocIdsForDraftFilesToDelete = findSolrDocIdsForDraftFilesToDelete(dataset);
                     String deleteDraftDatasetVersionResult = removeSolrDocFromIndex(solrIdDraftDataset);
                     String deleteDraftFilesResults = deleteDraftFiles(solrDocIdsForDraftFilesToDelete);
-                    results.append("Attempting to delete traces of drafts. Result: ").append(deleteDraftDatasetVersionResult).append(deleteDraftFilesResults).append("\n");
+                    results.append("Attempting to delete traces of drafts. Result: ")
+                            .append(deleteDraftDatasetVersionResult).append(deleteDraftFilesResults).append("\n");
                 }
 
                 /**
@@ -507,8 +508,7 @@ public class IndexServiceBean {
             }
         } else if (atLeastOnePublishedVersion == true) {
             results.append("Published versions found. ")
-                    .append("Will attempt to index as ").append(solrIdPublished)
-                    .append(" (discoverable by anonymous)\n");
+                    .append("Will attempt to index as ").append(solrIdPublished).append(" (discoverable by anonymous)\n");
             if (latestVersionState.equals(DatasetVersion.VersionState.RELEASED)
                     || latestVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
 
@@ -700,8 +700,7 @@ public class IndexServiceBean {
             }
         }
         solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, datasetSortByDate);
-        solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT,
-                convertToFriendlyDate(datasetSortByDate));
+        solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(datasetSortByDate));
 
         if (state.equals(indexableDataset.getDatasetState().PUBLISHED)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
