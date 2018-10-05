@@ -114,7 +114,7 @@ It is not necessary for Glassfish to be running before you execute the Dataverse
 
 Please note that you must run Glassfish in an English locale. If you are using something like ``LANG=de_DE.UTF-8``, ingest of tabular data will fail with the message "RoundRoutines:decimal separator no in right place".
 
-Also note that Glassfish may utilize more than the default number of file descriptors, especially when running batch jobs such as harvesting. We have increased ours by adding ulimit -n 32768 to our glassfish init script. On operating systems which use systemd such as RHEL or CentOS 7, file descriptor limits may be increased by adding a line like LimitNOFILE=32768 to the systemd unit file. You may adjust the file descriptor limits on running processes by using the prlimit utility:
+Also note that Glassfish may utilize more than the default number of file descriptors, especially when running batch jobs such as harvesting. We have increased ours by adding ulimit -n 32768 to our glassfish init script. On operating systems which use systemd such as RHEL or CentOS 7, file descriptor limits may be increased by adding a line like LimitNOFILE=32768 to the systemd unit file. You may adjust the file descriptor limits on running processes by using the prlimit utility::
 
 	# sudo prlimit --pid pid --nofile=32768:32768
 
@@ -216,14 +216,14 @@ Note: Dataverse has customized Solr to boost results that come from certain inde
 
 Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.3.0/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
 
-Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script, and the following to ``/etc/security/limits.conf``:
+Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script, and the following to ``/etc/security/limits.conf``::
 
         solr soft nproc 65000
         solr hard nproc 65000
         solr soft nofile 65000
         solr hard nofile 65000
 
-On operating systems which use systemd such as RHEL or CentOS 7, you may then add a line like LimitNOFILE=65000 to the systemd unit file, or adjust the limits on a running process using the prlimit tool:
+On operating systems which use systemd such as RHEL or CentOS 7, you may then add a line like LimitNOFILE=65000 to the systemd unit file, or adjust the limits on a running process using the prlimit tool::
 
         # sudo prlimit --pid pid --nofile=65000:65000
 
