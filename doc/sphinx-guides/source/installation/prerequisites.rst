@@ -229,7 +229,7 @@ On operating systems which use systemd such as RHEL or CentOS 7, you may then ad
 
 Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability. Installation of this package isn't required but will prevent a warning in the log at startup.
 
-Finally, you may now start Solr and create the core that will be used to manage search information::
+Finally, you may start Solr and create the core that will be used to manage search information::
 
         cd /usr/local/solr/solr-7.3.0
         bin/solr start
