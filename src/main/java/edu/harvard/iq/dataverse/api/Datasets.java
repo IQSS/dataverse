@@ -1224,7 +1224,7 @@ public class Datasets extends AbstractApiBean {
             authUser = findUserOrDie();
         } catch (WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN,
-                    ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
+                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
                     );
         }
         
@@ -1303,7 +1303,7 @@ public class Datasets extends AbstractApiBean {
         if (addFileHelper.hasError()){
             return error(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
         }else{
-            String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+            String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
             try {
                 //msgt("as String: " + addFileHelper.getSuccessResult());
                 /**

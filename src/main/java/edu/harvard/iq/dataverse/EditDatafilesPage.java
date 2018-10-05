@@ -845,7 +845,7 @@ public class EditDatafilesPage implements java.io.Serializable {
      */
     private String getBundleString(String msgName){
         
-       return ResourceBundle.getBundle("Bundle").getString(msgName);
+       return BundleUtil.getStringFromBundle(msgName);
     }
     
     // This deleteFilesCompleted method is used in editFilesFragment.xhtml
