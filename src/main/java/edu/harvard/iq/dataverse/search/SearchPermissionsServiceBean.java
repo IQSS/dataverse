@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -84,19 +85,21 @@ public class SearchPermissionsServiceBean {
 
     public List<String> findDvObjectPerms(DvObject dvObject) {
         List<String> permStrings = new ArrayList<>();
-        resetRoleAssigneeCache();
-        Set<RoleAssignment> roleAssignments = rolesSvc.rolesAssignments(dvObject);
-        for (RoleAssignment roleAssignment : roleAssignments) {
-            logger.fine("role assignment on dvObject " + dvObject.getId() + ": " + roleAssignment.getAssigneeIdentifier());
-            if (roleAssignment.getRole().permissions().contains(getRequiredSearchPermission(dvObject))) {
-                RoleAssignee userOrGroup = getRoleAssignee(roleAssignment.getAssigneeIdentifier());
-                String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(userOrGroup);
-                if (indexableUserOrGroupPermissionString != null) {
-                    permStrings.add(indexableUserOrGroupPermissionString);
+        if (!((dvObject instanceof DataFile) && ((DataFile) dvObject).isRestricted())) {
+            resetRoleAssigneeCache();
+            Set<RoleAssignment> roleAssignments = rolesSvc.rolesAssignments(dvObject);
+            for (RoleAssignment roleAssignment : roleAssignments) {
+                logger.fine("role assignment on dvObject " + dvObject.getId() + ": " + roleAssignment.getAssigneeIdentifier());
+                if (roleAssignment.getRole().permissions().contains(getRequiredSearchPermission(dvObject))) {
+                    RoleAssignee userOrGroup = getRoleAssignee(roleAssignment.getAssigneeIdentifier());
+                    String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(userOrGroup);
+                    if (indexableUserOrGroupPermissionString != null) {
+                        permStrings.add(indexableUserOrGroupPermissionString);
+                    }
                 }
             }
+            resetRoleAssigneeCache();
         }
-        resetRoleAssigneeCache();
         return permStrings;
     }
 
