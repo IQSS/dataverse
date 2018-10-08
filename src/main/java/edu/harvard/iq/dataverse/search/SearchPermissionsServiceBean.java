@@ -72,6 +72,14 @@ public class SearchPermissionsServiceBean {
         return permStrings;
     }
 
+    public List<String> findDataFilePermsforDatasetVersion(DataFile dataFile, DatasetVersion version) {
+        if (dataFile.isRestricted()) {
+            return (findDvObjectPerms(version.getDataset()));
+        } else {
+            return findDatasetVersionPerms(version);
+        }
+    }
+    
     public List<String> findDatasetVersionPerms(DatasetVersion version) {
         List<String> perms = new ArrayList<>();
         if (version.isReleased()) {

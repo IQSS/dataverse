@@ -207,7 +207,7 @@ public class SolrIndexServiceBean {
                     // This should never be executed per the deprecation notice on the boolean.
                     //except in qdr test
                     logger.info("constructing doc for restricted file: " + dataFile.getId());
-                    perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
+                    perms = searchPermissionsService.findDataFilePermsforDatasetVersion(dataFile, datasetVersionFileIsAttachedTo);
                 }
                 DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(dataFile.getId().toString(), solrId, datasetVersionFileIsAttachedTo.getId(), dataFile.getDisplayName(), perms);
                 datafileSolrDocs.add(dataFileSolrDoc);
