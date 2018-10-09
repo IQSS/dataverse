@@ -8,14 +8,19 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
@@ -196,6 +201,22 @@ public class MoveDatasetCommandTest {
 
                 };
             }
+
+            @Override
+            public PermissionServiceBean permissions() {
+                return new PermissionServiceBean() {
+
+                    @Override
+                    public boolean isUserAllowedOn(RoleAssignee roleAssignee, Command<?> command, DvObject dvObject) {
+                        AuthenticatedUser authenticatedUser = (AuthenticatedUser) roleAssignee;
+                        if (authenticatedUser.getFirstName().equals("Super")) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                };
+            }
             
         });
     }
@@ -271,15 +292,31 @@ public class MoveDatasetCommandTest {
         fail();
     }
         
-        /**
-	 * Moving DS Without Being Super User
-         * Fails due to Permission Exception
-        * @throws java.lang.Exception
-	 */
+    /**
+     * Moving a dataset without having enough permission fails with
+     * PermissionException.
+     *
+     * @throws java.lang.Exception
+     */
     @Test(expected = PermissionException.class)
-    public void testNotSuperUser() throws Exception {
+    public void testAuthenticatedUserWithNoRole() throws Exception {
 
         DataverseRequest aRequest = new DataverseRequest(nobody, httpRequest);
+        testEngine.submit(
+                new MoveDatasetCommand(aRequest, moved, childA, null));
+        fail();
+    }
+
+    /**
+     * Moving a dataset without being an AuthenticatedUser fails with
+     * PermissionException.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(expected = PermissionException.class)
+    public void testNotAuthenticatedUser() throws Exception {
+
+        DataverseRequest aRequest = new DataverseRequest(GuestUser.get(), httpRequest);
         testEngine.submit(
                 new MoveDatasetCommand(aRequest, moved, root, null));
         fail();

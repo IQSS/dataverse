@@ -50,12 +50,15 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
         boolean removeGuestbook = false, removeLinkDs = false;
-       // first check if  user is a superuser
-        if ( (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser() ) ) {      
-            throw new PermissionException("Move Dataset can only be called by superusers.",
-                this,  Collections.singleton(Permission.DeleteDatasetDraft), moved);                
+        if (!(getUser() instanceof AuthenticatedUser)) {
+            throw new PermissionException("Move Dataset can only be called by authenticated users.", this, Collections.singleton(Permission.DeleteDatasetDraft), moved);
         }
-        
+
+        PublishDataverseCommand publishDataverseCommand = new PublishDataverseCommand(getRequest(), destination);
+        if (!ctxt.permissions().isUserAllowedOn(getUser(), publishDataverseCommand, destination)) {
+            String message = "Move Dataset requires permission to publish the destination dataverse.";
+            throw new PermissionException(message, this, Collections.singleton(Permission.PublishDataverse), moved);
+        }
         
         // validate the move makes sense
         if (moved.getOwner().equals(destination)) {
