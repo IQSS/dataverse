@@ -185,7 +185,7 @@
                                                                update=":#{p:resolveClientId('rolesPermissionsForm:editRolePanel', view)}"><span class="glyphicon glyphicon-duplicate"></span></p:commandLink>
                                                 <div>
                                                     <ui:repeat value="#{role.permissions().toArray()}" var="prm">
-                                                        <span class="label label-default">#{prm}</span>
+                                                        <span class="label label-default">#{bundle['roles.'.concat(prm)]}</span>
                                                     </ui:repeat>
                                                 </div>
                                             </div>

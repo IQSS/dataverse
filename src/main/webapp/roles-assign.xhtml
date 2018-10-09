@@ -71,7 +71,7 @@
                                         <div class="small" jsf:rendered="#{!empty managePermissionsPage.assignedRole.description}">#{managePermissionsPage.assignedRole.description}</div>
                                         <div class="margin-bottom">
                                             <ui:repeat value="#{managePermissionsPage.assignedRole.permissions().toArray()}" var="prm">
-                                                <span class="label label-default">#{prm}</span>
+                                                <span class="label label-default">#{bundle['roles.'.concat(prm)]}</span>
                                             </ui:repeat>
                                         </div>
                                         <p class="help-block">
