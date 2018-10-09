@@ -321,7 +321,7 @@ Please make note of the following details:
 
     * Example:
     
-      - ID: *3AM3UQ867SPQQA43P2F*
+      - ID: *Q3AM3UQ867SPQQA43P2F*
       
       - Key: *zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG*
       
@@ -336,7 +336,7 @@ Reported Working S3-Compatible Storage
 `Minio v2018-09-12 <http://minio.io>`_
   Set ``dataverse.files.s3-path-style-access=true``, as Minio works path-based. Works pretty smooth, easy to setup.
   **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
-  possibly slow) http://play.minio.io:9000 service.
+  possibly slow) https://play.minio.io:9000 service.
 
 
 **HINT:** If you are successfully using an S3 storage implementation not yet listed above, please feel free to
@@ -421,7 +421,7 @@ S3 Storage Options
 ##################
 
 =========================================  ==================  ==================================================================  =============
-System Property                            Value               Description                                                         Default value
+JVM Option                                 Value               Description                                                         Default value
 =========================================  ==================  ==================================================================  =============
 dataverse.files.storage-driver-id          s3                  Enable S3 storage driver.                                           ``file``
 dataverse.files.s3-bucket-name             <?>                 The bucket name. See above.                                         (none)
