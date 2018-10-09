@@ -2,15 +2,19 @@
 <script>
     var firstSearch = "http://localhost:8080/api/search?q=*:*&type=dataverse&per_page=1000"; //&fq=dvCategory:(Journal%20OR%20Laboratory)
     var secondSearch = "http://localhost:8080/api/search?q=*&type=dataset&per_page=6";
+    var thumbBaseURL = "http://localhost:8080/api/datasets/:persistentId/thumbnail" + "?persistentId=";
     $.get(firstSearch, function(jData) {
         jData.data.items.forEach(function(item){
             secondSearch += "&subtree=" + item.identifier;
         });
         $.get(secondSearch, function(jData2) {
             jData2.data.items.forEach(function(item){
+                document.write("<img src=\""+thumbBaseURL + item.global_id+"\" >");
                 document.write(item.name +"<br>");
             });
-            document.write(JSON.stringify(jData2));
+            
+ 
+            //document.write(JSON.stringify(jData2)+"<br>");
         });
     });
     
