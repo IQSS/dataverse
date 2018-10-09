@@ -394,12 +394,12 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 because permissions are not inherited
             
             if (dataverseRolePermissionHelper.hasDataversePermissions(selectedRoleId) && dvObject instanceof Dataverse){
-                String dvLabel = ResourceBundle.getBundle("Bundle").getString("dataverses");
+                String dvLabel = BundleUtil.getStringFromBundle("dataverses");
                 retString = dvLabel;
             }
             */
             if (dataverseRolePermissionHelper.hasDatasetPermissions(selectedRoleId) && dvObject instanceof Dataverse){
-                String dsLabel = ResourceBundle.getBundle("Bundle").getString("datasets");
+                String dsLabel = BundleUtil.getStringFromBundle("datasets");
                 if(!retString.isEmpty()) {
                     retString +=", " +  dsLabel;
                 } else {
@@ -408,7 +408,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 
             }
             if (dataverseRolePermissionHelper.hasFilePermissions(selectedRoleId)){
-                String filesLabel = ResourceBundle.getBundle("Bundle").getString("files");
+                String filesLabel = BundleUtil.getStringFromBundle("files");
                 if(!retString.isEmpty()) {
                     retString +=", " + filesLabel;
                 } else {
@@ -422,8 +422,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
     
     public String getDefinitionLevelString(){
         if (dvObject != null){
-            if (dvObject instanceof Dataverse) return ResourceBundle.getBundle("Bundle").getString("dataverse");
-            if (dvObject instanceof Dataset) return ResourceBundle.getBundle("Bundle").getString("dataset");
+            if (dvObject instanceof Dataverse) return BundleUtil.getStringFromBundle("dataverse");
+            if (dvObject instanceof Dataset) return BundleUtil.getStringFromBundle("dataset");
         }
         return null;
     }
