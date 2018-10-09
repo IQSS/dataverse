@@ -20,6 +20,7 @@
 
 package edu.harvard.iq.dataverse.util;
 
+
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
@@ -43,8 +44,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ResourceBundle;
-import java.util.MissingResourceException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
@@ -57,11 +56,12 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -209,7 +209,7 @@ public class FileUtil implements java.io.Serializable  {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
             try {
-                return ResourceBundle.getBundle("MimeTypeDisplay").getString(fileType);
+                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeDisplay" );
             } catch (MissingResourceException e) {
                 return fileType;
             }
@@ -227,7 +227,7 @@ public class FileUtil implements java.io.Serializable  {
             }
 
             try {
-                return ResourceBundle.getBundle("MimeTypeFacets").getString(fileType);
+                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeFacets"  );
             } catch (MissingResourceException e) {
                 // if there's no defined "facet-friendly" form of this mime type
                 // we'll truncate the available type by "/", e.g., all the 
@@ -247,7 +247,7 @@ public class FileUtil implements java.io.Serializable  {
             }
         }
         
-        return ResourceBundle.getBundle("MimeTypeFacets").getString("application/octet-stream");
+        return BundleUtil.getStringFromPropertyFile("application/octet-stream","MimeTypeFacets"  );
     }
     
     public static String getUserFriendlyOriginalType(DataFile dataFile) {
@@ -258,7 +258,7 @@ public class FileUtil implements java.io.Serializable  {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
             try {
-                return ResourceBundle.getBundle("MimeTypeDisplay").getString(fileType);
+                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeDisplay" );
             } catch (MissingResourceException e) {
                 return fileType;
             }

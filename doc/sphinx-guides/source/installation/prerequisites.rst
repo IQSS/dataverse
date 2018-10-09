@@ -212,7 +212,7 @@ You should already have a "dvinstall.zip" file that you downloaded from https://
         cp /tmp/dvinstall/schema.xml /usr/local/solr/solr-7.3.0/server/solr/collection1/conf
         cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.3.0/server/solr/collection1/conf
 
-Note: Dataverse has customized Solr to boost results that come from certain indexed elements inside Dataverse, for example results matching on the name of a dataset. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents.
+Note: Dataverse has customized Solr to boost results that come from certain indexed elements inside Dataverse, for example prioritizing results from Dataverses over Datasets. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents. If you have ideas about how this boosting could be improved, feel free to contact us through our Google Group https://groups.google.com/forum/#!forum/dataverse-dev .
 
 Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.3.0/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
 
