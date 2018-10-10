@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -93,19 +94,19 @@ public class Search extends AbstractApiBean {
                 sortBy = SearchUtil.getSortBy(sortField, sortOrder);
                 numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
                 
-//MAD: this isn't really what we want. Instead we should be able to pass
-//multiple dataverses in
-//Looks like its used for permissions and as a facet in SearchServiceBean
-
-                for(String subtree : subtrees) {
-                    dataverseSubtrees.add(getSubtree(subtree));
+                 // we have to add "" (root) otherwise there is no permissions check
+                if(subtrees.isEmpty()) {
+                    dataverseSubtrees.add(getSubtree(""));
                 }
-                if (!subtrees.isEmpty()) {
-                    filterQueries.add(getFilterQueryFromSubtrees(dataverseSubtrees));
-                    //try {
-                    //} catch (Exception ex) {
-                    //    Logger.getLogger(Search.class.getName()).log(Level.SEVERE, null, ex);
-                    //}
+                else {
+                    for(String subtree : subtrees) {
+                        dataverseSubtrees.add(getSubtree(subtree));
+                    }
+                }
+                filterQueries.add(getFilterQueryFromSubtrees(dataverseSubtrees));
+                
+                if(filterQueries.isEmpty()) { //Extra sanity check just in case someone else touches this
+                    throw new IOException("Filter is empty, which should never happen, as this allows unfettered searching of our index");
                 }
                 
             } catch (Exception ex) {

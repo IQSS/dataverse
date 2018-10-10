@@ -223,6 +223,9 @@ public class SearchServiceBean {
 //MAD: I am unsure if adding multiple permissions filters makes this more strict like we want
 //Also should this have a null check like facet?
 //MAD later: actually, it looks like dataverse isn't used at all... I'm not sure this needs to be run multiple times
+
+
+//MAD: Add an error to ensure there is a dataverse in dataverses, even if its root
         for(Dataverse dataverse : dataverses) {
             String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
             if (permissionFilterQuery != null) {
