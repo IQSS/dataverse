@@ -247,8 +247,8 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         // its destinations owners, remove the link
         logger.info("Checking linked datasets...");
         for (DatasetLinkingDataverse dsld : linkingDatasets) {
-            for (Dataverse owner : ownersToCheck){
-                if ((dsld.getLinkingDataverse()).equals(owner)){
+            for (Dataverse owner : ownersToCheck) {
+                if ((dsld.getLinkingDataverse()).equals(owner)) {
                     if (force == null || !force) {
                         removeLinkDs = true;
                         break;
@@ -259,13 +259,12 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
-        
+
         if (removeGuestbook || removeTemplate || removeFeatDv || removeMetadataBlock || removeLinkDv || removeLinkDs) {
             StringBuilder errorString = new StringBuilder();
             if (removeGuestbook) {
                 errorString.append("Dataset guestbook is not in target dataverse. ");
-            } 
+            }
             if (removeTemplate) {
                 errorString.append("Dataverse template is not in target dataverse. ");
             } 
@@ -292,6 +291,13 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         logger.info("Dataverse move took " + (moveDvEnd - moveDvStart) + " milliseconds");
         
         ctxt.indexBatch().indexDataverseRecursively(moved);
-
+        
+        //REindex datasets linked to moved dv
+        if (moved.getDatasetLinkingDataverses() != null &&  !moved.getDatasetLinkingDataverses().isEmpty()) {
+            for (DatasetLinkingDataverse dld : moved.getDatasetLinkingDataverses()) {
+                Dataset linkedDS = ctxt.datasets().find(dld.getDataset().getId());
+                ctxt.index().indexDataset(linkedDS, true);
+            }
+        }
     }
 }

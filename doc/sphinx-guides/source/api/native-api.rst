@@ -501,16 +501,23 @@ In the example below, the curator has saved the JSON file as :download:`reason-f
 
 The review process can sometimes resemble a tennis match, with the authors submitting and resubmitting the dataset over and over until the curators are satisfied. Each time the curators send a "reason for return" via API, that reason is persisted into the database, stored at the dataset version level.
 
+Link a Dataset
+~~~~~~~~~~~~~~
+
+Creates a link between a dataset and a dataverse (see the Linked Dataverses + Linked Datasets section of the :doc:`/user/dataverse-management` guide for more information). ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/datasets/$linked-dataset-id/link/$linking-dataverse-alias
+
 Dataset Locks
 ~~~~~~~~~~~~~
 
 To check if a dataset is locked:: 
 
-    curl -H "$SERVER_URL/api/datasets/{database_id}/locks
+    curl "$SERVER_URL/api/datasets/{database_id}/locks
 
 Optionally, you can check if there's a lock of a specific type on the dataset:: 
 
-    curl -H "$SERVER_URL/api/datasets/{database_id}/locks?type={lock_type}
+    curl "$SERVER_URL/api/datasets/{database_id}/locks?type={lock_type}
 
 Currently implemented lock types are ``Ingest, Workflow, InReview, DcmUpload and pidRegister``. 
 

@@ -41,7 +41,7 @@ Moves a dataset whose id is passed to a dataverse whose alias is passed. If the 
 Link a Dataset
 ^^^^^^^^^^^^^^
 
-Creates a link between a dataset and a dataverse (see the Linked Dataverses + Linked Datasets section of the :doc:`/user/dataverse-management` guide for more information). Only accessible to superusers. ::
+Creates a link between a dataset and a dataverse (see the Linked Dataverses + Linked Datasets section of the :doc:`/user/dataverse-management` guide for more information). ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/datasets/$linked-dataset-id/link/$linking-dataverse-alias
 
@@ -51,3 +51,10 @@ Unlink a Dataset
 Removes a link between a dataset and a dataverse. Only accessible to superusers. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$linked-dataset-id/deleteLink/$linking-dataverse-alias
+
+Mint new PID for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Mints a new identifier for a dataset previously registered with a handle. Only accessible to superusers. ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/admin/$dataset-id/reregisterHDLToPID
