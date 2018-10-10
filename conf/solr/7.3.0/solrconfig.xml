@@ -713,7 +713,7 @@
             fileDescription^30
             variableLabel^20
             variableName^10
-            text^1.0
+            _text_^1.0
         </str>
         <str name="pf">
             dvName^200
@@ -730,7 +730,7 @@
             publicationCitation^75
             producerName^75
         </str>
-        <!-- Even though this number is huge it only seems to apply a boost of ~1.5x to final result -MAD 4.9.3 -->
+         <!--Even though this number is huge it only seems to apply a boost of ~1.5x to final result -MAD 4.9.3--> 
         <str name="bq">
             isHarvested:false^25000
         </str>
