@@ -54,6 +54,7 @@ curl -X PUT -d "FK2/" "$SERVER/admin/settings/:Shoulder"
 curl -X PUT -d DataCite "$SERVER/admin/settings/:DoiProvider"
 curl -X PUT -d burrito $SERVER/admin/settings/BuiltinUsers.KEY
 curl -X PUT -d localhost-only $SERVER/admin/settings/:BlockedApiPolicy
+curl -X PUT -d 'native/http' $SERVER/admin/settings/:UploadMethods
 echo
 
 echo "Setting up the admin user (and as superuser)"
