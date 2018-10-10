@@ -25,7 +25,7 @@ Please note that S3 support for DCM is highly experimental. Files can be uploade
 Once you have installed a DCM, you will need to configure two database settings on the Dataverse side. These settings are documented in the :doc:`/installation/config` section of the Installation Guide:
 
 - ``:DataCaptureModuleUrl`` should be set to the URL of a DCM you installed.
-- ``:UploadMethods`` should be set to ``dcm/rsync+ssh``.
+- ``:UploadMethods`` should include ``dcm/rsync+ssh``.
   
 This will allow your Dataverse installation to communicate with your DCM, so that Dataverse can download rsync scripts for your users.
 
@@ -155,7 +155,7 @@ In order to see the rsync URLs, you must run this command:
 
 ``curl -X PUT -d 'rsal/rsync' http://localhost:8080/api/admin/settings/:DownloadMethods``
 
-TODO: Document these in the Installation Guide once they're final.
+..  TODO: Document these in the Installation Guide once they're final.
 
 To specify replication sites that appear in rsync URLs:
 
