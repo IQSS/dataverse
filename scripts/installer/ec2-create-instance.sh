@@ -52,8 +52,6 @@ while IFS='=' read -r name value; do
   fi
 done < <(env)
 
-exit 1
-
 AWS_CLI_VERSION=$(aws --version)
 if [[ "$?" -ne 0 ]]; then
   echo 'The "aws" program could not be executed. Is it in your $PATH?'
