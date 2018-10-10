@@ -349,12 +349,12 @@ public class Admin extends AbstractApiBean {
 			authUser = this.findUserOrDie();
 		} catch (AbstractApiBean.WrappedResponse ex) {
 			return error(Response.Status.FORBIDDEN,
-					ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.invalid_apikey"));
+					BundleUtil.getStringFromBundle("dashboard.list_users.api.auth.invalid_apikey"));
 		}
 
 		if (!authUser.isSuperuser()) {
 			return error(Response.Status.FORBIDDEN,
-					ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.not_superuser"));
+					BundleUtil.getStringFromBundle("dashboard.list_users.api.auth.not_superuser"));
 		}
 
 		UserListMaker userListMaker = new UserListMaker(userService);
@@ -1057,7 +1057,7 @@ public class Admin extends AbstractApiBean {
         try {
             if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(GlobalId.HDL_PROTOCOL)) {
                 logger.info("Bad Request protocol set to handle  " );
-                return error(Status.BAD_REQUEST, ResourceBundle.getBundle("Bundle").getString("admin.api.migrateHDL.failure.must.be.set.for.doi"));
+                return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
             }
             
             User u = findUserOrDie();
