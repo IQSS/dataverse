@@ -2,29 +2,57 @@
 
 # For docs, see the "Deployment" page in the Dev Guide.
 
-SUGGESTED_REPO_URL='https://github.com/IQSS/dataverse.git'
-SUGGESTED_BRANCH='develop'
+REPO_URL='https://github.com/IQSS/dataverse.git'
+BRANCH='develop'
 
 usage() {
-  echo "Usage: $0 -r $REPO_URL -b $SUGGESTED_BRANCH" 1>&2
+  echo "Usage: $0 -e <environment file>" 1>&2
+  echo "default conf file is ~/.dataverse/ec2.env"
   exit 1
 }
 
-REPO_URL=$SUGGESTED_REPO_URL
+REPO_URL=$REPO_URL
 
-while getopts ":r:b:" o; do
+while getopts ":e:" o; do
   case "${o}" in
-  r)
-    REPO_URL=${OPTARG}
-    ;;
-  b)
-    BRANCH_NAME=${OPTARG}
-    ;;
-  *)
-    usage
+  e)
+    EC2ENV=${OPTARG}
     ;;
   esac
 done
+
+# test for user-supplied conf files
+if [ ! -z "$EC2ENV" ]; then
+   CONF=$EC2ENV
+elif [ -f ~/.dataverse/ec2.env ]; then
+   echo "using environment variables specified in ~/.dataverse/ec2.env."
+   echo "override with -e <conf file>"
+   CONF="$HOME/.dataverse/ec2.env"
+else
+   echo "no conf file supplied (-e <file>) or found at ~/.dataverse/ec2.env."
+   echo "running script with defaults. this may or may not be what you want."
+fi
+   
+# read environment variables
+if [ ! -z "$CONF" ];then
+   set -a
+   echo "reading $CONF"
+   source $CONF
+   set +a
+fi
+
+# now build --extra-vars string from arbitrary env variables
+NL=$'\n'
+extra_vars='--extra-vars '
+while IFS='=' read -r name value; do
+  if [[ $name == *'dataverse'* ]]; then
+    extra_var="$name"=${!name}
+    extra_var=${extra_var%$NL}
+    extra_vars="$extra_vars $extra_var"
+  fi
+done < <(env)
+
+exit 1
 
 AWS_CLI_VERSION=$(aws --version)
 if [[ "$?" -ne 0 ]]; then
@@ -33,7 +61,7 @@ if [[ "$?" -ne 0 ]]; then
 fi
 
 if [ "$BRANCH_NAME" = "" ]; then
-  echo "No branch name provided. You could try adding \"-b $SUGGESTED_BRANCH\" or other branches listed at $SUGGESTED_REPO_URL"
+  echo "No branch name provided. You could try adding \"-b $BRANCH\" or other branches listed at $REPO_URL"
   usage
   exit 1
 fi
@@ -101,7 +129,7 @@ sudo yum -y install epel-release
 sudo yum -y install git nano ansible
 git clone https://github.com/IQSS/dataverse-ansible.git dataverse
 export ANSIBLE_ROLES_PATH=.
-ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local --extra-vars "dataverse_branch=$BRANCH_NAME dataverse_repo=$REPO_URL"
+ansible-playbook -i dataverse/inventory dataverse/dataverse.pb --connection=local "$extra_vars"
 EOF
 
 # Port 8080 has been added because Ansible puts a redirect in place
