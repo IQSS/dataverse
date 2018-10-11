@@ -46,39 +46,60 @@ public class RestrictFileCommand extends AbstractVoidCommand {
         // check if public install & don't allow
         boolean defaultValue = false;
         boolean publicInstall = ctxt.settings().isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
-
+        
         if (publicInstall) {
             throw new CommandExecutionException("Restricting files is not permitted on a public installation.", this);
         }
-        if (file.getOwner() == null) {
+        if (file.getOwner() == null){
             // this is a new file through upload, restrict
             file.getFileMetadata().setRestricted(restrict);
-            file.setRestricted(restrict);
+            file.setRestricted(restrict); 
         }
+        
         else {
             Dataset dataset = file.getOwner();
             DatasetVersion workingVersion = dataset.getEditVersion();
 
             // check if this file is already restricted or already unrestricted
-            if (restrict == file.getFileMetadata().isRestricted()) {
-                String text = restrict ? "restricted" : "unrestricted";
+            if ((restrict && file.getFileMetadata().isRestricted()) || (!restrict  && !file.getFileMetadata().isRestricted())) {
+                String text =  restrict ? "restricted" : "unrestricted";
                 throw new CommandExecutionException("File " + file.getDisplayName() + " is already " + text, this);
             }
-            // We need the FileMetadata for the file in the draft dataset version and the
-            // file we have may still reference the fmd from the prior released version
-            FileMetadata draftFmd = file.getFileMetadata();
-            if (dataset.isReleased()) {
-                for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
-                    if (file.equals(fmw.getDataFile())) {
-                        draftFmd = fmw;
-                        break;
+
+            // check if this dataset is a draft (should be), then we can update restrict
+            if (workingVersion.isDraft()) {
+                // required for updating from a published version to a draft
+                // because we must update the working version metadata
+                if (dataset.isReleased()){
+                    for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
+                        if (file.equals(fmw.getDataFile())) {
+                            fmw.setRestricted(restrict);
+                            if (!file.isReleased()) {
+                                file.setRestricted(restrict); 
+                            }
+
+                        }
+
+                    }
+                }
+                else {
+                    file.getFileMetadata().setRestricted(restrict);
+                    if (!file.isReleased()) {
+                        file.setRestricted(restrict);
+                    }
+                    if (file.getFileMetadata().isRestricted() != restrict) {
+                        throw new CommandExecutionException("Failed to update the file metadata", this);
                     }
                 }
             }
-            draftFmd.setRestricted(restrict);
-            if (!file.isReleased()) {
-                file.setRestricted(restrict);
+            else{
+                throw new CommandExecutionException("Working version must be a draft", this);
             }
+
+
         }
+   
     }
+
+    
 }
