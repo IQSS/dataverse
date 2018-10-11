@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -50,28 +52,28 @@ public class FileVersionDifference {
         
         if (newFileMetadata.getDataFile() == null && originalFileMetadata != null){
             //File Deleted
-            updateDifferenceSummary("", ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileGroupTitle"),  0, 0, 1, 0);
+            updateDifferenceSummary("", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"),  0, 0, 1, 0);
             return;
         }
         
         if (this.originalFileMetadata == null && this.newFileMetadata.getDataFile() != null ){
             //File Added
-            updateDifferenceSummary( "", ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileGroupTitle"), 1, 0, 0, 0);
+            updateDifferenceSummary( "", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"), 1, 0, 0, 0);
         }
         
         //Check to see if File replaced
         if (originalFileMetadata != null &&
                  newFileMetadata.getDataFile() != null && originalFileMetadata.getDataFile() != null &&!this.originalFileMetadata.getDataFile().equals(this.newFileMetadata.getDataFile())){
-            updateDifferenceSummary( "", ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileGroupTitle"), 0, 0, 0, 1);
+            updateDifferenceSummary( "", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"), 0, 0, 0, 1);
         }
         
         if ( originalFileMetadata != null) {
             if (!newFileMetadata.getLabel().equals(originalFileMetadata.getLabel())) {
                 if (details) {
-                    differenceDetailItems.add(new FileDifferenceDetailItem(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileNameDetailTitle"), originalFileMetadata.getLabel(), newFileMetadata.getLabel()));
+                    differenceDetailItems.add(new FileDifferenceDetailItem(BundleUtil.getStringFromBundle("file.versionDifferences.fileNameDetailTitle"), originalFileMetadata.getLabel(), newFileMetadata.getLabel()));
                 }
-                updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileMetadataGroupTitle"), 
-                        ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileNameDetailTitle"), 0, 1, 0, 0);
+                updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileMetadataGroupTitle"),
+                        BundleUtil.getStringFromBundle("file.versionDifferences.fileNameDetailTitle"), 0, 1, 0, 0);
             }
         }
 
@@ -81,28 +83,28 @@ public class FileVersionDifference {
                     && originalFileMetadata.getDescription() != null
                     && !newFileMetadata.getDescription().equals(originalFileMetadata.getDescription())) {
                 if (details) {
-                    differenceDetailItems.add(new FileDifferenceDetailItem(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.descriptionDetailTitle"), originalFileMetadata.getDescription(), newFileMetadata.getDescription()));
+                    differenceDetailItems.add(new FileDifferenceDetailItem(BundleUtil.getStringFromBundle("file.versionDifferences.descriptionDetailTitle"), originalFileMetadata.getDescription(), newFileMetadata.getDescription()));
                 }
-                updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileMetadataGroupTitle"), 
-                        ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.descriptionDetailTitle"), 0, 1, 0, 0);
+                updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileMetadataGroupTitle"),
+                        BundleUtil.getStringFromBundle("file.versionDifferences.descriptionDetailTitle"), 0, 1, 0, 0);
             }
             if (newFileMetadata.getDescription() != null
                     && originalFileMetadata.getDescription() == null
                     ) {
                 if (details) {
-                    differenceDetailItems.add(new FileDifferenceDetailItem(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.descriptionDetailTitle"), "", newFileMetadata.getDescription()));
+                    differenceDetailItems.add(new FileDifferenceDetailItem(BundleUtil.getStringFromBundle("file.versionDifferences.descriptionDetailTitle"), "", newFileMetadata.getDescription()));
                 }
-                updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileMetadataGroupTitle"), 
-                        ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.descriptionDetailTitle"), 1, 0, 0, 0);
+                updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileMetadataGroupTitle"),
+                        BundleUtil.getStringFromBundle("file.versionDifferences.descriptionDetailTitle"), 1, 0, 0, 0);
             }
             if (newFileMetadata.getDescription() == null
                     && originalFileMetadata.getDescription() != null
                     ) {
                 if (details) {
-                    differenceDetailItems.add(new FileDifferenceDetailItem(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.descriptionDetailTitle"), originalFileMetadata.getDescription(), "" ));
+                    differenceDetailItems.add(new FileDifferenceDetailItem(BundleUtil.getStringFromBundle("file.versionDifferences.descriptionDetailTitle"), originalFileMetadata.getDescription(), "" ));
                 }
-                updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileMetadataGroupTitle"), 
-                        ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.descriptionDetailTitle"), 0, 0, 1, 0);
+                updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileMetadataGroupTitle"),
+                        BundleUtil.getStringFromBundle("file.versionDifferences.descriptionDetailTitle"), 0, 0, 1, 0);
             }
         }  
         //Provenance Description differences
@@ -111,28 +113,28 @@ public class FileVersionDifference {
                     && (originalFileMetadata.getProvFreeForm() != null && !originalFileMetadata.getProvFreeForm().isEmpty())
                     && !newFileMetadata.getProvFreeForm().equals(originalFileMetadata.getProvFreeForm())) {
                 if (details) {
-                    differenceDetailItems.add(new FileDifferenceDetailItem(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.provenanceDetailTitle"), originalFileMetadata.getProvFreeForm(), newFileMetadata.getProvFreeForm()));
+                    differenceDetailItems.add(new FileDifferenceDetailItem(BundleUtil.getStringFromBundle("file.versionDifferences.provenanceDetailTitle"), originalFileMetadata.getProvFreeForm(), newFileMetadata.getProvFreeForm()));
                 }
-                updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileMetadataGroupTitle"), 
-                        ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.provenanceDetailTitle"), 0, 1, 0, 0);
+                updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileMetadataGroupTitle"),
+                        BundleUtil.getStringFromBundle("file.versionDifferences.provenanceDetailTitle"), 0, 1, 0, 0);
             }
             if ((newFileMetadata.getProvFreeForm() != null && !newFileMetadata.getProvFreeForm().isEmpty())
                     && (originalFileMetadata.getProvFreeForm() == null || originalFileMetadata.getProvFreeForm().isEmpty())
                     ) {
                 if (details) {
-                    differenceDetailItems.add(new FileDifferenceDetailItem(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.provenanceDetailTitle"), "", newFileMetadata.getProvFreeForm()));
+                    differenceDetailItems.add(new FileDifferenceDetailItem(BundleUtil.getStringFromBundle("file.versionDifferences.provenanceDetailTitle"), "", newFileMetadata.getProvFreeForm()));
                 }
-                updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileMetadataGroupTitle"), 
-                        ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.provenanceDetailTitle"), 1, 0, 0, 0);
+                updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileMetadataGroupTitle"),
+                        BundleUtil.getStringFromBundle("file.versionDifferences.provenanceDetailTitle"), 1, 0, 0, 0);
             }
             if ((newFileMetadata.getProvFreeForm() == null || newFileMetadata.getProvFreeForm().isEmpty())
                     && (originalFileMetadata.getProvFreeForm() != null && !originalFileMetadata.getProvFreeForm().isEmpty())
                     ) {
                 if (details) {
-                    differenceDetailItems.add(new FileDifferenceDetailItem(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.provenanceDetailTitle"), originalFileMetadata.getProvFreeForm(), "" ));
+                    differenceDetailItems.add(new FileDifferenceDetailItem(BundleUtil.getStringFromBundle("file.versionDifferences.provenanceDetailTitle"), originalFileMetadata.getProvFreeForm(), "" ));
                 }
-                updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileMetadataGroupTitle"), 
-                        ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.provenanceDetailTitle"), 0, 0, 1, 0);
+                updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileMetadataGroupTitle"),
+                        BundleUtil.getStringFromBundle("file.versionDifferences.provenanceDetailTitle"), 0, 0, 1, 0);
             }
         }
         if (originalFileMetadata != null) {
@@ -177,10 +179,10 @@ public class FileVersionDifference {
                     }
                 }
                 if (added > 0){
-                    updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileTagsGroupTitle"), "", added, 0, 0, 0, true);
+                    updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileTagsGroupTitle"), "", added, 0, 0, 0, true);
                 }
                 if (deleted > 0){
-                    updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileTagsGroupTitle"), "", 0, 0, deleted, 0, true);
+                    updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileTagsGroupTitle"), "", 0, 0, deleted, 0, true);
                 }
                 
             }
@@ -188,11 +190,11 @@ public class FileVersionDifference {
             /*
             Get Restriction Differences
             */
-            value1 = originalFileMetadata.isRestricted() ? ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileRestricted") : ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileUnrestricted");
-            value2 = newFileMetadata.isRestricted() ? ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileRestricted") : ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileUnrestricted");
+            value1 = originalFileMetadata.isRestricted() ? BundleUtil.getStringFromBundle("file.versionDifferences.fileRestricted") : BundleUtil.getStringFromBundle("file.versionDifferences.fileUnrestricted");
+            value2 = newFileMetadata.isRestricted() ? BundleUtil.getStringFromBundle("file.versionDifferences.fileRestricted") : BundleUtil.getStringFromBundle("file.versionDifferences.fileUnrestricted");
             if (!value1.equals(value2)) {
                 if (!value1.equals(value2)) {
-                    updateDifferenceSummary(ResourceBundle.getBundle("Bundle").getString("file.versionDifferences.fileAccessTitle"), value2, 0, 0, 0, 0);
+                    updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileAccessTitle"), value2, 0, 0, 0, 0);
                 }
             }
         }

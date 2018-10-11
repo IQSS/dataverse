@@ -834,15 +834,21 @@ public class SystemConfig {
      *
      * - TransferProtocols
      *
-     * There is a good chance these will be consolidated in the future. The word
-     * "NATIVE" is a bit of placeholder term to mean how Dataverse has
-     * traditionally handled files, which tends to involve users uploading and
-     * downloading files using a browser or APIs.
+     * There is a good chance these will be consolidated in the future.
      */
     public enum FileUploadMethods {
 
+        /**
+         * DCM stands for Data Capture Module. Right now it supports upload over
+         * rsync+ssh but DCM may support additional methods in the future.
+         */
         RSYNC("dcm/rsync+ssh"),
-        NATIVE("NATIVE");
+        /**
+         * Traditional Dataverse file handling, which tends to involve users
+         * uploading and downloading files using a browser or APIs.
+         */
+        NATIVE("native/http");
+
 
         private final String text;
 
@@ -969,16 +975,53 @@ public class SystemConfig {
     }
     
     public boolean isRsyncUpload(){
+        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
+    }
+    
+    // Controls if HTTP upload is enabled for both GUI and API.
+    public boolean isHTTPUpload(){       
+        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());       
+    }
+    
+    public boolean isRsyncOnly(){       
+        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
+        if(downloadMethods == null){
+            return false;
+        }
+        if (!downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString())){
+            return false;
+        }
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
-        return uploadMethods != null &&  uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+        if (uploadMethods==null){
+            return false;
+        } else {
+           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+        }        
     }
     
     public boolean isRsyncDownload()
     {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-        return downloadMethods !=null && downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString());
+        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
     }
     
+    private Boolean getUploadMethodAvailable(String method){
+        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
+        if (uploadMethods==null){
+            return false;
+        } else {
+           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+        }
+    }
+    
+    public Integer getUploadMethodCount(){
+        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
+        if (uploadMethods==null){
+            return 0;
+        } else {
+           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
+        }       
+    }
     public boolean isDataFilePIDSequentialDependent(){
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
