@@ -151,6 +151,26 @@ public class SchemaDotOrgExporterTest {
         }
         contributorType.setChildDatasetFieldTypes(contributorChildTypes);
 
+        DatasetFieldType geographicCoverageType = datasetFieldTypeSvc.add(new DatasetFieldType("geographicCoverage", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> geographicCoverageChildTypes = new HashSet<>();
+        DatasetFieldType countries = datasetFieldTypeSvc.add(new DatasetFieldType("country", DatasetFieldType.FieldType.TEXT, false));
+        countries.setAllowControlledVocabulary(true);
+        countries.setControlledVocabularyValues(Arrays.asList(
+                // Why aren't these enforced?
+                new ControlledVocabularyValue(1l, "Afghanistan", countries),
+                new ControlledVocabularyValue(2l, "Albania", countries)
+        // And many more countries.
+        ));
+        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(countries));
+        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("state", DatasetFieldType.FieldType.TEXT, false)));
+        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("city", DatasetFieldType.FieldType.TEXT, false)));
+        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("otherGeographicCoverage", DatasetFieldType.FieldType.TEXT, false)));
+        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("geographicUnit", DatasetFieldType.FieldType.TEXT, false)));
+        for (DatasetFieldType t : geographicCoverageChildTypes) {
+            t.setParentDatasetFieldType(geographicCoverageType);
+        }
+        geographicCoverageType.setChildDatasetFieldTypes(geographicCoverageChildTypes);
+
     }
 
     @After
@@ -222,6 +242,14 @@ public class SchemaDotOrgExporterTest {
         assertEquals("Organization", json2.getJsonArray("funder").getJsonObject(0).getString("@type"));
         assertEquals("National Science Foundation", json2.getJsonArray("funder").getJsonObject(0).getString("name"));
         assertEquals(1, json2.getJsonArray("funder").size());
+        assertEquals("Ohio", json2.getJsonArray("spatialCoverage").getString(0));
+        assertEquals("Columbus", json2.getJsonArray("spatialCoverage").getString(1));
+        assertEquals("GeographicCoverageOther1", json2.getJsonArray("spatialCoverage").getString(2));
+        assertEquals("GeographicCoverageStateProvince2", json2.getJsonArray("spatialCoverage").getString(3));
+        assertEquals("GeographicCoverageCity2", json2.getJsonArray("spatialCoverage").getString(4));
+        assertEquals("GeographicCoverageOther2", json2.getJsonArray("spatialCoverage").getString(5));
+        assertEquals("Afghanistan", json2.getJsonArray("spatialCoverage").getString(6));
+        assertEquals(7, json2.getJsonArray("spatialCoverage").size());
     }
 
     /**

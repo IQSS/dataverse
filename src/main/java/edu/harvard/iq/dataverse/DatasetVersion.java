@@ -903,7 +903,8 @@ public class DatasetVersion implements Serializable {
 		}
 		return languages;
 	}
-	
+
+        // TODO: consider calling the newer getSpatialCoverages method below with the commaSeparated boolean set to true.
 	public List<String> getSpatialCoverages() {
 		List<String> retList = new ArrayList<>();
 		for (DatasetField dsf : this.getDatasetFields()) {
@@ -944,6 +945,47 @@ public class DatasetVersion implements Serializable {
 			}
 		}
 		return retList;
+    }
+
+    public List<String> getSpatialCoverages(boolean commaSeparated) {
+        List<String> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.geographicCoverage)) {
+                for (DatasetFieldCompoundValue geoValue : dsf.getDatasetFieldCompoundValues()) {
+                    List<String> coverage = new ArrayList<>();
+                    for (DatasetField subField : geoValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.country)) {
+                            if (!subField.isEmptyForDisplay()) {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.state)) {
+                            if (!subField.isEmptyForDisplay()) {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.city)) {
+                            if (!subField.isEmptyForDisplay()) {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.otherGeographicCoverage)) {
+                            if (!subField.isEmptyForDisplay()) {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                    }
+                    if (!coverage.isEmpty()) {
+                        if (commaSeparated) {
+                            retList.add(String.join(",", coverage));
+                        } else {
+                            retList.addAll(coverage);
+                        }
+                    }
+                }
+            }
+        }
+        return retList;
     }
  
     /**
@@ -1520,14 +1562,7 @@ public class DatasetVersion implements Serializable {
             }
             job.add("temporalCoverage", temporalCoverage);
         }
-        
-        /**
-         * spatialCoverage (if available)
-         * TODO
-         * (punted, for now - see #2243)
-         * 
-         */
-        
+
         job.add("schemaVersion", "https://schema.org/version/3.3");
         
         TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess();
@@ -1569,6 +1604,16 @@ public class DatasetVersion implements Serializable {
                 funderArray.add(funder);
             }
             job.add("funder", funderArray);
+        }
+
+        boolean commaSeparated = false;
+        List<String> spatialCoverages = getSpatialCoverages(commaSeparated);
+        if (!spatialCoverages.isEmpty()) {
+            JsonArrayBuilder spatialArray = Json.createArrayBuilder();
+            for (String spatialCoverage : spatialCoverages) {
+                spatialArray.add(spatialCoverage);
+            }
+            job.add("spatialCoverage", spatialArray);
         }
 
         jsonLd = job.build().toString();
