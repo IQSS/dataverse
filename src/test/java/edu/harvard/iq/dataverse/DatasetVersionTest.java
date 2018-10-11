@@ -121,7 +121,9 @@ public class DatasetVersionTest {
         JsonObject obj = jsonReader.readObject();
         assertEquals("http://schema.org", obj.getString("@context"));
         assertEquals("Dataset", obj.getString("@type"));
+        assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("identifier"));
+        assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("url"));
         assertEquals("https://schema.org/version/3.3", obj.getString("schemaVersion"));
         assertEquals("1955-11-05", obj.getString("dateModified"));
         assertEquals("1955-11-05", obj.getString("datePublished"));
