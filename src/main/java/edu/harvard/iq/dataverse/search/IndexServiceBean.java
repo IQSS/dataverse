@@ -910,13 +910,17 @@ public class IndexServiceBean {
                                 accessObject = DataAccess.getStorageIO(fileMetadata.getDataFile(),
                                         new DataAccessRequest());
                                 if (accessObject != null) {
+                                    accessObject.open();
+                                    // If the size is >max, we don't use the stream. However, for S3, the stream is
+                                    // currently opened in the call above (see
+                                    // https://github.com/IQSS/dataverse/issues/5165), so we want to get a handle so
+                                    // we can close it below.
+                                    instream = accessObject.getInputStream();
                                     if (accessObject.getSize() <= maxSize) {
                                         AutoDetectParser autoParser = new AutoDetectParser();
                                         textHandler = new BodyContentHandler(-1);
                                         Metadata metadata = new Metadata();
                                         ParseContext context = new ParseContext();
-                                        accessObject.open();
-                                        instream = accessObject.getInputStream();
                                         /*
                                          * Try parsing the file. Note that, other than by limiting size, there's been no
                                          * check see whether this file is a good candidate for text extraction (e.g.
