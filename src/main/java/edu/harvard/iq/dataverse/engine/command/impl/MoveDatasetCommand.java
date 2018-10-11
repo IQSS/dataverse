@@ -30,9 +30,7 @@ import java.util.logging.Logger;
  * @author skraffmi
  */
 
-// the permission annotation is open, since this is a superuser-only command - 
-// and that's enforced in the command body:
-@RequiredPermissions({})
+@RequiredPermissions(Permission.EditDataset)
 public class MoveDatasetCommand extends AbstractVoidCommand {
 
     private static final Logger logger = Logger.getLogger(MoveDatasetCommand.class.getCanonicalName());

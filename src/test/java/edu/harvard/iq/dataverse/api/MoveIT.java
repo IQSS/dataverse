@@ -161,12 +161,11 @@ public class MoveIT {
                 .statusCode(CREATED.getStatusCode());
         String thiefDataverseAlias = UtilIT.getAliasFromResponse(createThiefDataverse);
 
-        // FIXME: Prevent thief from stealing the dataset.
         Response thiefAttemptToStealDataset = UtilIT.moveDataset(datasetId.toString(), thiefDataverseAlias, thiefApiToken);
         thiefAttemptToStealDataset.prettyPrint();
         thiefAttemptToStealDataset.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.message", equalTo("Dataset moved successfully"));
+                .statusCode(UNAUTHORIZED.getStatusCode())
+                .body("message", equalTo("User @" + thiefUsername + " is not permitted to perform requested action."));
 
     }
 
