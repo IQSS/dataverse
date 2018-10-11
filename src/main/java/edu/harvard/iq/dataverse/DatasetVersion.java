@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
@@ -1059,6 +1060,7 @@ public class DatasetVersion implements Serializable {
         return null;
     }
     
+    // TODO: Consider renaming this method since it's also used for getting the "provider" for Schema.org JSON-LD.
     public String getRootDataverseNameforCitation(){
                     //Get root dataverse name for Citation
         Dataverse root = this.getDataset().getOwner();
@@ -1513,9 +1515,10 @@ public class DatasetVersion implements Serializable {
                 .add("url", SystemConfig.getDataverseSiteUrlStatic())
         );
 
+        String installationBrandName = BrandingUtil.getInstallationBrandName(getRootDataverseNameforCitation());
         job.add("provider", Json.createObjectBuilder()
                 .add("@type", "Organization")
-                .add("name", "Dataverse")
+                .add("name", installationBrandName)
         );
         jsonLd = job.build().toString();
         return jsonLd;
