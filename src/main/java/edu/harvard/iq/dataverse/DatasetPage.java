@@ -466,6 +466,8 @@ public class DatasetPage implements java.io.Serializable {
     public void setFileLabelSearchTerm(String fileLabelSearchTerm) {
         if (fileLabelSearchTerm != null) {
             this.fileLabelSearchTerm = fileLabelSearchTerm.trim();
+        } else {
+            this.fileLabelSearchTerm="";
         }
     }
     
