@@ -415,7 +415,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
                         solrCardStart, //paginationStart,
                         true, // dataRelatedToMe
                         SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
-
                 );
                 
                 //msgt("getResultsStart: " + this.solrQueryResponse.getResultsStart());

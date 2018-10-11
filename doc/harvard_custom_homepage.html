@@ -1,29 +1,63 @@
+<!DOCTYPE html>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 <script>
     var baseUrl = "http://localhost:8080";
     //var baseUrl = "https://dataverse.harvard.edu"
     
-    //This get slow and eventually the result is too long when querying 1000 results.
-    var firstSearch = baseUrl + "/api/search?q=*&type=dataverse&retrieve_entities=false&per_page=10000&fq=!dvCategory:(Journal%20OR%20Laboratory)"; //&fq=dvCategory:(Journal%20OR%20Laboratory)
-    var secondSearch = baseUrl + "/api/search?q=*&type=dataset&per_page=6";
+    //This get slow and eventually the resulting pile of substrings is too long if there are actually 1000 results
+    //For this search to be valid the results returned will need to be higher than 1000 even
+    var firstSearch = baseUrl + "/api/search?q=*&type=dataverse&per_page=1000";
+    var secondSearch = baseUrl + "/api/search?q=*&type=dataset&per_page=";
     var thumbBaseURL = baseUrl + "/api/datasets/:persistentId/thumbnail" + "?persistentId=";
-    //document.write("First search: " + firstSearch+"<br>");
-    $.get(firstSearch, function(jData) {
-        //document.write(JSON.stringify(jData)+"<br>");
-        jData.data.items.forEach(function(item){
-            secondSearch += "&subtree=" + item.identifier;
-            //document.write(item.identifier+"<br>");
-        });
-        document.write("Second search: " + secondSearch+"<br>");
-        $.get(secondSearch, function(jData2) {
-            jData2.data.items.forEach(function(item){
-                document.write("<img src=\""+thumbBaseURL + item.global_id+"\" >");
-                document.write(item.name +"<br>");
+    var metricBaseUrl = baseUrl + "/api/info/metrics/";
+    
+    function queryAndWrite(fqString, resultCount, div) {
+        var tempSecondSearch = secondSearch + resultCount;
+        
+        $.get(firstSearch + fqString, function(jData) {
+            jData.data.items.forEach(function(item){
+                tempSecondSearch += "&subtree=" + item.identifier;
             });
-            
- 
-            //document.write(JSON.stringify(jData2)+"<br>");
+
+            $.get(tempSecondSearch, function(jData2) {
+                var resultHtml = "";
+                jData2.data.items.forEach(function(item){
+                    resultHtml += "<img src=\""+thumbBaseURL + item.global_id+"\" >";
+                    resultHtml += item.name +"<br>";
+                });
+                document.getElementById(div).innerHTML = resultHtml;
+            });
         });
-    });
+    }
+    
+    function queryMetric(metricRelPath, month, div) {
+        $.get(metricBaseUrl+metricRelPath+month, function(jData) {
+            document.getElementById(div).innerHTML = JSON.stringify(jData);
+        });
+    }
+    
+    //queryAndWrite("&fq=dvCategory:(Journal%20OR%20Laboratory)",3, "Journal");
+    //queryAndWrite("&fq=dvCategory:(\"Research+Project\"%20OR%20Researcher)",3, "ResearchIndividual");
+    queryAndWrite("" , 3, "Journal");
+    queryAndWrite("" , 6, "ResearchIndividual");
+    
+    queryMetric("datasets/toMonth", "", "activityAllTimeDatasetsAdded")
     
 </script>
+
+<html>
+    <body>
+        <div id="JournalHead"><b>Journal</b></div>
+        <div id="Journal"></div>
+        <div id="ResearchIndividualHead"><b>Research Project or Individual</b></div>
+        <div id="ResearchIndividual"></div>
+        
+        <div id="activityHead"><b>Activity</b></div>
+        <div id="activityAllTimeHead"><b>All Time</b></div>
+        <div id="activityAllTimeDatasetsAdded"></div>
+        <div id="activityAllTimeFilesDownloaded"> </div>
+        <div id="activity30DaysHead"><b>30 Days</b></div>
+        <div id="activity30DaysDatasetsAdded"> </div>
+        <div id="activity30DaysFilesDownloaded"> </div>
+    </body>
+</html>
