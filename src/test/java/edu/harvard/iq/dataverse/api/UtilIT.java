@@ -129,6 +129,15 @@ public class UtilIT {
                 .post("/api/admin/authenticatedUsers");
         return response;
     }
+    
+    public static Response migrateDatasetIdentifierFromHDLToPId(String datasetIdentifier, String apiToken) {
+        System.out.print(datasetIdentifier);
+        Response response = given()
+                .body(datasetIdentifier)
+                .contentType(ContentType.JSON)
+                .post("/api/admin/" + datasetIdentifier + "/reregisterHDLToPID?key=" + apiToken);
+        return response;
+    }
 
     private static String getAuthenticatedUserAsJsonString(String persistentUserId, String firstName, String lastName, String authenticationProviderId, String identifier) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
@@ -1601,6 +1610,16 @@ public class UtilIT {
         RequestSpecification requestSpecification = given();
         requestSpecification = given();
         return requestSpecification.delete("/api/admin/clearMetricsCache");
+    }
+
+    static Response sitemapUpdate() {
+        return given()
+                .post("/api/admin/sitemap");
+    }
+
+    static Response sitemapDownload() {
+        return given()
+                .get("/sitemap.xml");
     }
 
     @Test
