@@ -13,6 +13,8 @@
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	<additionalparam>-Xdoclint:none</additionalparam>
+        <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
+        <compilerArgument></compilerArgument>
         <aws.version>1.11.172</aws.version>
         <project.timezone>UTC</project.timezone>
         <project.language>en</project.language>
@@ -27,6 +29,7 @@
         <junit.jupiter.version>5.3.1</junit.jupiter.version>
         <junit.vintage.version>5.3.1</junit.vintage.version>
         <junit.platform.version>1.3.1</junit.platform.version>
+        <mockito.version>2.22.0</mockito.version>
     </properties>
 
     <repositories>
@@ -383,7 +386,13 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>2.22.0</version>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
         <!-- Added for DataCite -->
