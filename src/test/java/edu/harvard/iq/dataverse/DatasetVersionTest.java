@@ -130,7 +130,7 @@ public class DatasetVersionTest {
         assertEquals("", obj.getString("name"));
         // TODO: If it ever becomes easier to mock authors, test them.
         JsonArray emptyArray = Json.createArrayBuilder().build();
-        assertEquals(emptyArray, obj.getJsonArray("author"));
+        assertEquals(emptyArray, obj.getJsonArray("creator"));
         // TODO: If it ever becomes easier to mock subjects, test them.
         assertEquals(emptyArray, obj.getJsonArray("keywords"));
         assertEquals("Dataverse", obj.getJsonObject("provider").getString("name"));

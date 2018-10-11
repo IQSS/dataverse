@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -161,8 +162,8 @@ public class SchemaDotOrgExporterTest {
         assertEquals("Dataset", json2.getString("@type"));
         assertEquals("https://doi.org/myAuthority/myIdentifier", json2.getString("identifier"));
         assertEquals("Darwin's Finches", json2.getString("name"));
-        assertEquals("Finch, Fiona", json2.getJsonArray("author").getJsonObject(0).getString("name"));
-        assertEquals("Birds Inc.", json2.getJsonArray("author").getJsonObject(0).getString("affiliation"));
+        assertEquals("Finch, Fiona", json2.getJsonArray("creator").getJsonObject(0).getString("name"));
+        assertEquals("Birds Inc.", json2.getJsonArray("creator").getJsonObject(0).getString("affiliation"));
         assertEquals("1955-11-05", json2.getString("dateModified"));
         assertEquals("1", json2.getString("version"));
         assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.", json2.getString("description"));

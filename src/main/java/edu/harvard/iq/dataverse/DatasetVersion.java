@@ -1405,7 +1405,7 @@ public class DatasetVersion implements Serializable {
             }
             authors.add(author);
         }
-        job.add("author", authors);
+        job.add("creator", authors);
         /**
          * We are aware that there is a "datePublished" field but it means "Date
          * of first broadcast/publication." This only makes sense for a 1.0
