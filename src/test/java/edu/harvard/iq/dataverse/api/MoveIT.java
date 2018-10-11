@@ -124,4 +124,50 @@ public class MoveIT {
 
     }
 
+    @Test
+    public void testMoveDatasetThief() {
+
+        Response createAuthor = UtilIT.createRandomUser();
+        createAuthor.prettyPrint();
+        createAuthor.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String authorUsername = UtilIT.getUsernameFromResponse(createAuthor);
+        String authorApiToken = UtilIT.getApiTokenFromResponse(createAuthor);
+
+        Response createThief = UtilIT.createRandomUser();
+        createThief.prettyPrint();
+        createThief.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String thiefUsername = UtilIT.getUsernameFromResponse(createThief);
+        String thiefApiToken = UtilIT.getApiTokenFromResponse(createThief);
+
+        Response createAuthorDataverse = UtilIT.createRandomDataverse(authorApiToken);
+        createAuthorDataverse.prettyPrint();
+        createAuthorDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String authorDataverseAlias = UtilIT.getAliasFromResponse(createAuthorDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(authorDataverseAlias, authorApiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        // Can the thief steal the dataset?
+        Response createThiefDataverse = UtilIT.createRandomDataverse(thiefApiToken);
+        createThiefDataverse.prettyPrint();
+        createThiefDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String thiefDataverseAlias = UtilIT.getAliasFromResponse(createThiefDataverse);
+
+        // FIXME: Prevent thief from stealing the dataset.
+        Response thiefAttemptToStealDataset = UtilIT.moveDataset(datasetId.toString(), thiefDataverseAlias, thiefApiToken);
+        thiefAttemptToStealDataset.prettyPrint();
+        thiefAttemptToStealDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Dataset moved successfully"));
+
+    }
+
 }
