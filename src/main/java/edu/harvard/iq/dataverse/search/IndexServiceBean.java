@@ -862,9 +862,8 @@ public class IndexServiceBean {
         boolean doFullTextIndexing = settingsService.isTrueForKey(SettingsServiceBean.Key.SolrFullTextIndexing, false);
         Long maxFTIndexingSize = settingsService
                 .getValueForKeyAsLong(SettingsServiceBean.Key.SolrMaxFileSizeForFullTextIndexing);
-        logger.info("max is: " + maxFTIndexingSize);
         long maxSize = maxFTIndexingSize != null ? maxFTIndexingSize.longValue() : Long.MAX_VALUE;
-        logger.info("maxsize is: " + maxSize);
+
         List<String> filesIndexed = new ArrayList<>();
         if (datasetVersion != null) {
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
@@ -928,7 +927,6 @@ public class IndexServiceBean {
                                         new DataAccessRequest());
                                 if (accessObject != null) {
                                     accessObject.open();
-                                    logger.info("object size is : " + accessObject.getSize());
                                     if (accessObject.getSize() <= maxSize) {
                                         AutoDetectParser autoParser = new AutoDetectParser();
                                         textHandler = new BodyContentHandler(-1);
