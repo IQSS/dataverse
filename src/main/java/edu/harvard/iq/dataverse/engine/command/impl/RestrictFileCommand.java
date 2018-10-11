@@ -74,6 +74,7 @@ public class RestrictFileCommand extends AbstractVoidCommand {
                     for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
                         if (file.equals(fmw.getDataFile())) {
                             fmw.setRestricted(restrict);
+                            logger.info("Released: " + file.isReleased() + " Restricted: " + file.isRestricted());
                             if (!file.isReleased()) {
                                 file.setRestricted(restrict); 
                             }
