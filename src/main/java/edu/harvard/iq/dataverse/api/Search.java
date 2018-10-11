@@ -128,7 +128,7 @@ public class Search extends AbstractApiBean {
                         paginationStart,
                         dataRelatedToMe,
                         numResultsPerPage,
-                        queryEntities//MAD: Make entities setable via api call
+                        queryEntities
                 );
             } catch (SearchException ex) {
                 Throwable cause = ex;

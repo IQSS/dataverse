@@ -114,6 +114,30 @@ public class SearchServiceBean {
      * @param paginationStart
      * @param onlyDatatRelatedToMe
      * @param numResultsPerPage
+     * @return
+     * @throws SearchException
+     */
+    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
+        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true); //MAD: Orig, entities searched
+    }
+    
+    /**
+     * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
+     * access to Private Data for the correct user
+     *
+     * In other words "onlyDatatRelatedToMe", negates other filter Queries
+     * related to permissions
+     *
+     *
+     * @param dataverseRequest
+     * @param dataverses
+     * @param query
+     * @param filterQueries
+     * @param sortField
+     * @param sortOrder
+     * @param paginationStart
+     * @param onlyDatatRelatedToMe
+     * @param numResultsPerPage
      * @param retrieveEntities - look up dvobject entities with .find() (potentially expensive!) 
      * @return
      * @throws SearchException

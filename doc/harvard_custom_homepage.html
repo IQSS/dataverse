@@ -1,12 +1,20 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 <script>
-    var firstSearch = "http://localhost:8080/api/search?q=*:*&type=dataverse&per_page=1000"; //&fq=dvCategory:(Journal%20OR%20Laboratory)
-    var secondSearch = "http://localhost:8080/api/search?q=*&type=dataset&per_page=6";
-    var thumbBaseURL = "http://localhost:8080/api/datasets/:persistentId/thumbnail" + "?persistentId=";
+    var baseUrl = "http://localhost:8080";
+    //var baseUrl = "https://dataverse.harvard.edu"
+    
+    //This get slow and eventually the result is too long when querying 1000 results.
+    var firstSearch = baseUrl + "/api/search?q=*&type=dataverse&retrieve_entities=false&per_page=10000&fq=!dvCategory:(Journal%20OR%20Laboratory)"; //&fq=dvCategory:(Journal%20OR%20Laboratory)
+    var secondSearch = baseUrl + "/api/search?q=*&type=dataset&per_page=6";
+    var thumbBaseURL = baseUrl + "/api/datasets/:persistentId/thumbnail" + "?persistentId=";
+    //document.write("First search: " + firstSearch+"<br>");
     $.get(firstSearch, function(jData) {
+        //document.write(JSON.stringify(jData)+"<br>");
         jData.data.items.forEach(function(item){
             secondSearch += "&subtree=" + item.identifier;
+            //document.write(item.identifier+"<br>");
         });
+        document.write("Second search: " + secondSearch+"<br>");
         $.get(secondSearch, function(jData2) {
             jData2.data.items.forEach(function(item){
                 document.write("<img src=\""+thumbBaseURL + item.global_id+"\" >");

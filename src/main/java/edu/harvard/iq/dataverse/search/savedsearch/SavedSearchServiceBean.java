@@ -217,8 +217,7 @@ public class SavedSearchServiceBean {
                 sortBy.getOrder(),
                 paginationStart,
                 dataRelatedToMe,
-                numResultsPerPage,
-                true //query_entities
+                numResultsPerPage
         );
         return solrQueryResponse;
     }
