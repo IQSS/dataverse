@@ -1248,14 +1248,18 @@ public class UtilIT {
                 //                .get("/api/datasets/:persistentId/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
                 .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
     }
-
-    static Response search(String query, String apiToken) {
+    
+    static Response search(String query, String apiToken, String parameterString) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
-        return requestSpecification.get("/api/search?q=" + query);
+        return requestSpecification.get("/api/search?q=" + query + parameterString);
+    }
+
+    static Response search(String query, String apiToken) {
+        return search(query, apiToken, "");
     }
 
     static Response searchAndShowFacets(String query, String apiToken) {
