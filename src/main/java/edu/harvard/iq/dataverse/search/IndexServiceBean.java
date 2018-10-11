@@ -927,13 +927,13 @@ public class IndexServiceBean {
                                 accessObject = DataAccess.getStorageIO(fileMetadata.getDataFile(),
                                         new DataAccessRequest());
                                 if (accessObject != null) {
+                                    accessObject.open();
                                     logger.info("object size is : " + accessObject.getSize());
                                     if (accessObject.getSize() <= maxSize) {
                                         AutoDetectParser autoParser = new AutoDetectParser();
                                         textHandler = new BodyContentHandler(-1);
                                         Metadata metadata = new Metadata();
                                         ParseContext context = new ParseContext();
-                                        accessObject.open();
                                         instream = accessObject.getInputStream();
                                         /*
                                          * Try parsing the file. Note that, other than by limiting size, there's been no
