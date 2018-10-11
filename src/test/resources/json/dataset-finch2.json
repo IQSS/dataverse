@@ -18,6 +18,18 @@
                   "multiple": false,
                   "typeName": "authorName"
                 },
+                "authorIdentifierScheme": {
+                  "typeName": "authorIdentifierScheme",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "ORCID"
+                },
+                "authorIdentifier": {
+                  "typeName": "authorIdentifier",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "https://orcid.org/0000-0002-1825-0097"
+                },
                 "authorAffiliation": {
                   "value": "Birds Inc.",
                   "typeClass": "primitive",

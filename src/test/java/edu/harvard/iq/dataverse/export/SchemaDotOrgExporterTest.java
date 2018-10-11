@@ -201,6 +201,9 @@ public class SchemaDotOrgExporterTest {
         assertEquals("Darwin's Finches", json2.getString("name"));
         assertEquals("Finch, Fiona", json2.getJsonArray("creator").getJsonObject(0).getString("name"));
         assertEquals("Birds Inc.", json2.getJsonArray("creator").getJsonObject(0).getString("affiliation"));
+        assertEquals("PropertyValue", json2.getJsonArray("creator").getJsonObject(0).getJsonObject("identifier").getString("@type"));
+        assertEquals("ORCID", json2.getJsonArray("creator").getJsonObject(0).getJsonObject("identifier").getString("propertyId"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getJsonObject("identifier").getString("value"));
         assertEquals("1955-11-05", json2.getString("dateModified"));
         assertEquals("1", json2.getString("version"));
         assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.", json2.getString("description"));
