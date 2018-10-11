@@ -89,6 +89,19 @@ public class SchemaDotOrgExporterTest {
         dsDescriptionType.setChildDatasetFieldTypes(dsDescriptionTypes);
 
         DatasetFieldType keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> keywordChildTypes = new HashSet<>();
+        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordValue", DatasetFieldType.FieldType.TEXT, false)));
+        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabulary", DatasetFieldType.FieldType.TEXT, false)));
+        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabularyURI", DatasetFieldType.FieldType.TEXT, false)));
+        keywordType.setChildDatasetFieldTypes(keywordChildTypes);
+
+        DatasetFieldType topicClassificationType = datasetFieldTypeSvc.add(new DatasetFieldType("topicClassification", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> topicClassificationTypes = new HashSet<>();
+        topicClassificationTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("topicClassValue", DatasetFieldType.FieldType.TEXT, false)));
+        topicClassificationTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("topicClassVocab", DatasetFieldType.FieldType.TEXT, false)));
+        topicClassificationTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("topicClassVocabURI", DatasetFieldType.FieldType.TEXT, false)));
+        topicClassificationType.setChildDatasetFieldTypes(topicClassificationTypes);
+
         DatasetFieldType descriptionType = datasetFieldTypeSvc.add(new DatasetFieldType("description", DatasetFieldType.FieldType.TEXTBOX, false));
 
         DatasetFieldType subjectType = datasetFieldTypeSvc.add(new DatasetFieldType("subject", DatasetFieldType.FieldType.TEXT, true));
@@ -128,7 +141,7 @@ public class SchemaDotOrgExporterTest {
     @Test
     public void testExportDataset() throws Exception {
         System.out.println("exportDataset");
-        File datasetVersionJson = new File("src/test/resources/json/dataset-finch1.json");
+        File datasetVersionJson = new File("src/test/resources/json/dataset-finch2.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
 
         JsonReader jsonReader1 = Json.createReader(new StringReader(datasetVersionAsJson));
@@ -168,6 +181,11 @@ public class SchemaDotOrgExporterTest {
         assertEquals("1", json2.getString("version"));
         assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.", json2.getString("description"));
         assertEquals("Medicine, Health and Life Sciences", json2.getJsonArray("keywords").getString(0));
+        assertEquals("tcTerm1", json2.getJsonArray("keywords").getString(1));
+        assertEquals("KeywordTerm1", json2.getJsonArray("keywords").getString(2));
+        assertEquals("KeywordTerm2", json2.getJsonArray("keywords").getString(3));
+        // This dataset, for example, has multiple keywords separated by commas: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/24034&version=2.0
+        assertEquals("keywords, with, commas", json2.getJsonArray("keywords").getString(4));
         assertEquals("https://schema.org/version/3.3", json2.getString("schemaVersion"));
         assertEquals("DataCatalog", json2.getJsonObject("includedInDataCatalog").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));
