@@ -114,30 +114,6 @@ public class SearchServiceBean {
      * @param paginationStart
      * @param onlyDatatRelatedToMe
      * @param numResultsPerPage
-     * @return
-     * @throws SearchException
-     */
-    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
-        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
-    }
-    
-    /**
-     * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
-     * access to Private Data for the correct user
-     *
-     * In other words "onlyDatatRelatedToMe", negates other filter Queries
-     * related to permissions
-     *
-     *
-     * @param user
-     * @param dataverses
-     * @param query
-     * @param filterQueries
-     * @param sortField
-     * @param sortOrder
-     * @param paginationStart
-     * @param onlyDatatRelatedToMe
-     * @param numResultsPerPage
      * @param retrieveEntities - look up dvobject entities with .find() (potentially expensive!) 
      * @return
      * @throws SearchException
@@ -217,21 +193,7 @@ public class SearchServiceBean {
             solrQuery.addFilterQuery(filterQuery);
         }
 
-        // -----------------------------------
-        // PERMISSION FILTER QUERY
-        // -----------------------------------
-//MAD: I am unsure if adding multiple permissions filters makes this more strict like we want
-//Also should this have a null check like facet?
-//MAD later: actually, it looks like dataverse isn't used at all... I'm not sure this needs to be run multiple times
 
-
-//MAD: Add an error to ensure there is a dataverse in dataverses, even if its root
-        for(Dataverse dataverse : dataverses) {
-            String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
-            if (permissionFilterQuery != null) {
-                solrQuery.addFilterQuery(permissionFilterQuery);
-            }
-        }
 
         // -----------------------------------
         // Facets to Retrieve
@@ -258,6 +220,13 @@ public class SearchServiceBean {
          *
          */
         for(Dataverse dataverse : dataverses) {
+            // -----------------------------------
+            // PERMISSION FILTER QUERY
+            // -----------------------------------
+            String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
+            if (permissionFilterQuery != null) {
+                solrQuery.addFilterQuery(permissionFilterQuery);
+            }
             if (dataverse != null) {
                 for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
                     DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();

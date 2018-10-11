@@ -68,8 +68,9 @@ public class Search extends AbstractApiBean {
             @QueryParam("show_facets") boolean showFacets,
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("show_entity_ids") boolean showEntityIds,
-            @QueryParam("show_api_urls") boolean showApiUrls, //MAD: not documented, not used in dataverse code
-            @QueryParam("show_my_data") boolean showMyData, //MAD: not documented, not used in dataverse code
+            @QueryParam("show_api_urls") boolean showApiUrls, //MAD: not documented
+            @QueryParam("show_my_data") boolean showMyData, //MAD: not documented
+            @QueryParam("query_entities") boolean queryEntities, //MAD: not documented
             @Context HttpServletResponse response
     ) {
 
@@ -118,8 +119,7 @@ public class Search extends AbstractApiBean {
             
             SolrQueryResponse solrQueryResponse;
             try {
-                solrQueryResponse = searchService.search(
-                        createDataverseRequest(user),
+                solrQueryResponse = searchService.search(createDataverseRequest(user),
                         dataverseSubtrees,
                         query,
                         filterQueries,
@@ -127,7 +127,8 @@ public class Search extends AbstractApiBean {
                         sortBy.getOrder(),
                         paginationStart,
                         dataRelatedToMe,
-                        numResultsPerPage
+                        numResultsPerPage,
+                        queryEntities//MAD: Make entities setable via api call
                 );
             } catch (SearchException ex) {
                 Throwable cause = ex;

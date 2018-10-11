@@ -46,7 +46,7 @@ public class SearchFilesServiceBean {
         dataverses.add(dataverse);
         try {
             HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            solrQueryResponse = searchService.search(new DataverseRequest(user, httpServletRequest), dataverses, finalQuery, filterQueries, sortField, sortOrder, paginationStart, onlyDataRelatedToMe, numResultsPerPage);
+            solrQueryResponse = searchService.search(new DataverseRequest(user, httpServletRequest), dataverses, finalQuery, filterQueries, sortField, sortOrder, paginationStart, onlyDataRelatedToMe, numResultsPerPage, true);
         } catch (SearchException ex) {
             logger.info(SearchException.class + " searching for files: " + ex);
             return null;

@@ -243,7 +243,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
                     //SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
                     0, //paginationStart,
                     true, // dataRelatedToMe
-                    SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                    SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE, //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                    true //query_entities
             );
         } catch (SearchException ex) {
             logger.severe("Search for total counts failed with filter query");
@@ -414,7 +415,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
                         SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
                         solrCardStart, //paginationStart,
                         true, // dataRelatedToMe
-                        SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                        SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE, //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                        true
                 );
                 
                 //msgt("getResultsStart: " + this.solrQueryResponse.getResultsStart());

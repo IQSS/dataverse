@@ -569,12 +569,13 @@ public class Index extends AbstractApiBean {
         String sortOrder = SortBy.ASCENDING;
         int paginationStart = 0;
         boolean dataRelatedToMe = false;
+        boolean queryEntities = true;
         int numResultsPerPage = Integer.MAX_VALUE;
         SolrQueryResponse solrQueryResponse;
         List<Dataverse> dataverses = new ArrayList<>();
         dataverses.add(subtreeScope);
         try {
-            solrQueryResponse = searchService.search(createDataverseRequest(user), dataverses, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
+            solrQueryResponse = searchService.search(createDataverseRequest(user), dataverses, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage, queryEntities);
         } catch (SearchException ex) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage() + ": " + ex.getCause().getLocalizedMessage());
         }

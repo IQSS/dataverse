@@ -35,6 +35,7 @@ show_relevance   boolean  Whether or not to show details of which fields were ma
 show_facets      boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default. See :ref:`advanced search example <advancedsearch-example>`.
 fq               string   A filter query on the search term. Multiple "fq" parameters can be used. See :ref:`advanced search example <advancedsearch-example>`.
 show_entity_ids  boolean  Whether or not to show the database IDs of the search results (for developer use).
+query_entities   boolean  Whether entities are queried via direct database calls (for developer use).
 ===============  =======  ===========
 
 Basic Search Example
