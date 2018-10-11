@@ -739,7 +739,37 @@ public class DatasetVersion implements Serializable {
         }
         return retList;
     }
-    
+
+    public List<String> getFunders() {
+        List<String> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            boolean addFunder = false;
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributor)) {
+                for (DatasetFieldCompoundValue contributorValue : dsf.getDatasetFieldCompoundValues()) {
+                    String contributorName = null;
+                    String contributorType = null;
+                    for (DatasetField subField : contributorValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributorName)) {
+                            contributorName = subField.getDisplayValue();
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributorType)) {
+                            contributorType = subField.getDisplayValue();
+                            // TODO: Consider how this will work in French, Chinese, etc.
+                            String funderString = "Funder";
+                            if (funderString.equals(contributorType)) {
+                                addFunder = true;
+                            }
+                        }
+                    }
+                    if (addFunder) {
+                        retList.add(contributorName);
+                    }
+                }
+            }
+        }
+        return retList;
+    }
+
     public List<String> getTimePeriodsCovered() {
         List <String> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -1486,12 +1516,6 @@ public class DatasetVersion implements Serializable {
          * 
          */
         
-        /**
-         * funder (if available)
-         * TODO
-         * (punted, for now - see #2243)
-         */
-        
         job.add("schemaVersion", "https://schema.org/version/3.3");
         
         TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess();
@@ -1522,6 +1546,19 @@ public class DatasetVersion implements Serializable {
                 .add("@type", "Organization")
                 .add("name", installationBrandName)
         );
+
+        List<String> funderNames = getFunders();
+        if (!funderNames.isEmpty()) {
+            JsonArrayBuilder funderArray = Json.createArrayBuilder();
+            for (String funderName : funderNames) {
+                JsonObjectBuilder funder = Json.createObjectBuilder();
+                funder.add("@type", "Organization");
+                funder.add("name", funderName);
+                funderArray.add(funder);
+            }
+            job.add("funder", funderArray);
+        }
+
         jsonLd = job.build().toString();
         return jsonLd;
     }

@@ -129,6 +129,28 @@ public class SchemaDotOrgExporterTest {
             t.setParentDatasetFieldType(compoundSingleType);
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
+
+        DatasetFieldType contributorType = datasetFieldTypeSvc.add(new DatasetFieldType("contributor", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> contributorChildTypes = new HashSet<>();
+        contributorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("contributorName", DatasetFieldType.FieldType.TEXT, false)));
+        DatasetFieldType contributorTypes = datasetFieldTypeSvc.add(new DatasetFieldType("contributorType", DatasetFieldType.FieldType.TEXT, false));
+        contributorTypes.setAllowControlledVocabulary(true);
+        contributorTypes.setControlledVocabularyValues(Arrays.asList(
+                // Why aren't these enforced?
+                new ControlledVocabularyValue(1l, "Data Collector", contributorTypes),
+                new ControlledVocabularyValue(2l, "Data Curator", contributorTypes),
+                new ControlledVocabularyValue(3l, "Data Manager", contributorTypes),
+                new ControlledVocabularyValue(3l, "Editor", contributorTypes),
+                new ControlledVocabularyValue(3l, "Funder", contributorTypes),
+                new ControlledVocabularyValue(3l, "Hosting Institution", contributorTypes)
+        // Etc. There are more.
+        ));
+        contributorChildTypes.add(datasetFieldTypeSvc.add(contributorTypes));
+        for (DatasetFieldType t : contributorChildTypes) {
+            t.setParentDatasetFieldType(contributorType);
+        }
+        contributorType.setChildDatasetFieldTypes(contributorChildTypes);
+
     }
 
     @After
@@ -194,6 +216,9 @@ public class SchemaDotOrgExporterTest {
         assertEquals("https://librascholar.org", json2.getJsonObject("includedInDataCatalog").getString("url"));
         assertEquals("Organization", json2.getJsonObject("provider").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("provider").getString("name"));
+        assertEquals("Organization", json2.getJsonArray("funder").getJsonObject(0).getString("@type"));
+        assertEquals("National Science Foundation", json2.getJsonArray("funder").getJsonObject(0).getString("name"));
+        assertEquals(1, json2.getJsonArray("funder").size());
     }
 
     /**
