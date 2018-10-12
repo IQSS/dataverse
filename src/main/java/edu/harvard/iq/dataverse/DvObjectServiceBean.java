@@ -67,14 +67,23 @@ public class DvObjectServiceBean implements java.io.Serializable {
 
     // FIXME This type-by-string has to go, in favor of passing a class parameter.
     public DvObject findByGlobalId(String globalIdString, String typeString) {
+        return findByGlobalId(globalIdString, typeString, false);
+    }
+    
+        // FIXME This type-by-string has to go, in favor of passing a class parameter.
+    public DvObject findByGlobalId(String globalIdString, String typeString, Boolean altId) {
 
         try {
             GlobalId gid = new GlobalId(globalIdString);
 
             DvObject foundDvObject = null;
             try {
-                Query query;
-                query = em.createNamedQuery("DvObject.findByGlobalId");
+                Query query;                                
+                if (altId) {
+                   query = em.createNamedQuery("DvObject.findByAlternativeGlobalId"); 
+                } else{
+                   query = em.createNamedQuery("DvObject.findByGlobalId");
+                }
                 query.setParameter("identifier", gid.getIdentifier());
                 query.setParameter("protocol", gid.getProtocol());
                 query.setParameter("authority", gid.getAuthority());

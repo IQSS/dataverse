@@ -521,10 +521,9 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 //swiftFolderPath = dataFile.getOwner().getDisplayName();
                 String swiftFolderPathSeparator = "-";
                 String authorityNoSlashes = owner.getAuthority().replace("/", swiftFolderPathSeparator);
-                swiftFolderPath = owner.getProtocol() + swiftFolderPathSeparator
+                swiftFolderPath = owner.getProtocolForFileStorage() + swiftFolderPathSeparator
                                   + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
-                                  + swiftFolderPathSeparator + owner.getIdentifier();
-
+                                  + swiftFolderPathSeparator + owner.getIdentifierForFileStorage();
                 swiftFileName = storageIdentifier;
                 //setSwiftContainerName(swiftFolderPath);
                 //swiftFileName = dataFile.getDisplayName();
@@ -570,10 +569,10 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 Properties p = getSwiftProperties();
                 swiftEndPoint = p.getProperty("swift.default.endpoint");
                 String swiftFolderPathSeparator = "-";
-                String authorityNoSlashes = dataset.getAuthority().replace("/", swiftFolderPathSeparator);
-                swiftFolderPath = dataset.getProtocol() + swiftFolderPathSeparator +
+                String authorityNoSlashes = dataset.getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
+                swiftFolderPath = dataset.getProtocolForFileStorage() + swiftFolderPathSeparator +
                     authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                    swiftFolderPathSeparator + dataset.getIdentifier();
+                    swiftFolderPathSeparator + dataset.getIdentifierForFileStorage();
 
                 swiftFileName = auxItemTag;
                 dvObject.setStorageIdentifier("swift://" + swiftEndPoint + ":" + swiftFolderPath);
@@ -830,10 +829,10 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             swiftFolderPathSeparator = "_";
         }
         if (dvObject instanceof DataFile) {
-            String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace("/", swiftFolderPathSeparator);
-            return this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator
+            String authorityNoSlashes = this.getDataFile().getOwner().getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
+            return this.getDataFile().getOwner().getProtocolForFileStorage() + swiftFolderPathSeparator
                    +            authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();
+                swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifierForFileStorage();
         }
         return null;
      }

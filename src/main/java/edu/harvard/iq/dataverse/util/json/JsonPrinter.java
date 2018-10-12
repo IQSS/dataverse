@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
@@ -40,6 +41,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Set;
 import javax.json.Json;
@@ -122,21 +124,30 @@ public class JsonPrinter {
                 .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
     
-    public static JsonObjectBuilder json( RoleAssignment ra ) {
-		return jsonObjectBuilder()
-				.add("id", ra.getId())
-				.add("assignee", ra.getAssigneeIdentifier() )
-				.add("roleId", ra.getRole().getId() )
-				.add("_roleAlias", ra.getRole().getAlias())
-				.add("privateUrlToken", ra.getPrivateUrlToken())
-				.add("definitionPointId", ra.getDefinitionPoint().getId() );
-	}
-	
-	public static JsonArrayBuilder json( Set<Permission> permissions ) {
-		JsonArrayBuilder bld = Json.createArrayBuilder();
-        permissions.forEach(p ->bld.add(p.name()));
-		return bld;
-	}
+    public static JsonObjectBuilder json(RoleAssignment ra) {
+        return jsonObjectBuilder()
+                .add("id", ra.getId())
+                .add("assignee", ra.getAssigneeIdentifier())
+                .add("roleId", ra.getRole().getId())
+                .add("_roleAlias", ra.getRole().getAlias())
+                .add("privateUrlToken", ra.getPrivateUrlToken())
+                .add("definitionPointId", ra.getDefinitionPoint().getId());
+    }
+
+    public static JsonArrayBuilder json(Set<Permission> permissions) {
+        JsonArrayBuilder bld = Json.createArrayBuilder();
+        permissions.forEach(p -> bld.add(p.name()));
+        return bld;
+    }
+
+    public static JsonObjectBuilder json(DatasetLock lock) {
+        return jsonObjectBuilder()
+                .add("lockType", lock.getReason().toString())
+                .add("date", lock.getStartTime().toString())
+                .add("user", lock.getUser().getUserIdentifier())
+                .add("message", lock.getInfo());
+
+    }
     
     public static JsonObjectBuilder json( RoleAssigneeDisplayInfo d ) {
         return jsonObjectBuilder()
@@ -281,12 +292,7 @@ public class JsonPrinter {
                 ? null
                 : jsonObjectBuilder()
                 .add("id", user.getId())
-                .add("firstName", user.getFirstName())
-                .add("lastName", user.getLastName())
-                .add("userName", user.getUserName())
-                .add("affiliation", user.getAffiliation())
-                .add("position", user.getPosition())
-                .add("email", user.getEmail());
+                .add("userName", user.getUserName());
     }
 
     public static JsonObjectBuilder json(Dataset ds) {
@@ -616,7 +622,7 @@ public class JsonPrinter {
         return fileCategories;
     }
 
-    private static JsonArrayBuilder getTabularFileTags(DataFile df) {
+    public static JsonArrayBuilder getTabularFileTags(DataFile df) {
         if (df == null) {
             return null;
         }
