@@ -7,11 +7,11 @@
     //This get slow and eventually the resulting pile of substrings is too long if there are actually 1000 results
     //For this search to be valid the results returned will need to be higher than 1000 even
     var firstSearch = baseUrl + "/api/search?q=*&type=dataverse&per_page=1000";
-    var secondSearch = baseUrl + "/api/search?q=*&type=dataset&per_page=";
+    var secondSearch = baseUrl + "/api/search?q=*&type=dataset&sort=date&order=desc&per_page=";
     var thumbBaseURL = baseUrl + "/api/datasets/:persistentId/thumbnail" + "?persistentId=";
     var metricBaseUrl = baseUrl + "/api/info/metrics/";
     
-    function queryAndWrite(fqString, resultCount, div) {
+    function queryAndWrite(fqString, resultCount, elm) {
         var tempSecondSearch = secondSearch + resultCount;
         
         $.get(firstSearch + fqString, function(jData) {
@@ -25,23 +25,33 @@
                     resultHtml += "<img src=\""+thumbBaseURL + item.global_id+"\" >";
                     resultHtml += item.name +"<br>";
                 });
-                document.getElementById(div).innerHTML = resultHtml;
+                document.getElementById(elm).innerHTML = resultHtml;
             });
         });
     }
     
-    function queryMetric(metricRelPath, month, div) {
+    function queryMetric(metricRelPath, month, elm) {
         $.get(metricBaseUrl+metricRelPath+month, function(jData) {
-            document.getElementById(div).innerHTML = JSON.stringify(jData);
+            document.getElementById(elm).innerHTML = JSON.stringify(jData);
         });
     }
     
+    //These are the correct searches, but commented out as I don't have enough results
     //queryAndWrite("&fq=dvCategory:(Journal%20OR%20Laboratory)",3, "Journal");
-    //queryAndWrite("&fq=dvCategory:(\"Research+Project\"%20OR%20Researcher)",3, "ResearchIndividual");
+    //queryAndWrite("&fq=dvCategory:(\"Research+Project\"%20OR%20Researcher)",6, "ResearchIndividual");
+    
     queryAndWrite("" , 3, "Journal");
     queryAndWrite("" , 6, "ResearchIndividual");
     
-    queryMetric("datasets/toMonth", "", "activityAllTimeDatasetsAdded")
+    queryMetric("dataverses/bySubject", "", "dataversesBySubject");
+    
+    queryMetric("datasets/toMonth", "", "activityAllTimeDatasetsValue");
+    queryMetric("files/toMonth", "", "activityAllTimeFilesValue");
+    
+    //These don't actually return the past 30 days, just the value up until September. Will need discussion
+    queryMetric("datasets/toMonth", "/2018-09", "activity30DaysDatasetsValue");
+    queryMetric("files/toMonth", "/2018-09", "activity30DaysFilesValue");
+
     
 </script>
 
@@ -51,13 +61,16 @@
         <div id="Journal"></div>
         <div id="ResearchIndividualHead"><b>Research Project or Individual</b></div>
         <div id="ResearchIndividual"></div>
-        
-        <div id="activityHead"><b>Activity</b></div>
+        <hr>
+        <div id="dataversesBySubjectHead"><b>Dataverses By Subject</b></div>
+        <div id="dataversesBySubject"></div>
+        <hr>
+        <div id="activityHead"><b><u>Activity</u></b></div>
         <div id="activityAllTimeHead"><b>All Time</b></div>
-        <div id="activityAllTimeDatasetsAdded"></div>
-        <div id="activityAllTimeFilesDownloaded"> </div>
+        <div id="activityAllTimeDatasets"> Datasets: <span id="activityAllTimeDatasetsValue"></span></div>
+        <div id="activityAllTimeFiles"> Files: <span id="activityAllTimeFilesValue"></span></div>
         <div id="activity30DaysHead"><b>30 Days</b></div>
-        <div id="activity30DaysDatasetsAdded"> </div>
-        <div id="activity30DaysFilesDownloaded"> </div>
+        <div id="activity30DaysDatasets"> Datasets: <span id="activity30DaysDatasetsValue"></span></div>
+        <div id="activity30DaysFiles"> Files: <span id="activity30DaysFilesValue"></span></div>
     </body>
 </html>
