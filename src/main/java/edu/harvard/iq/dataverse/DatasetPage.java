@@ -2409,6 +2409,37 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
     }
+
+    List<FileMetadata> previouslyRestrictedFiles = null;
+    
+    public boolean isShowAccessPopup() {
+        
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+
+            if (fmd.isRestricted()) {
+            
+                if (editMode == EditMode.CREATE) {
+                    // if this is a brand new file, it's definitely not 
+                    // of a previously restricted kind!
+                    return true; 
+                }
+            
+                if (previouslyRestrictedFiles != null) {
+                    // We've already checked whether we are in the CREATE mode, 
+                    // above; and that means we can safely assume this filemetadata
+                    // has an existing db id. So it is safe to use the .contains()
+                    // method below:
+                    if (!previouslyRestrictedFiles.contains(fmd)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
     
         
     public String restrictSelectedFiles(boolean restricted) throws CommandException{
@@ -2453,10 +2484,14 @@ public class DatasetPage implements java.io.Serializable {
 
     private void restrictFiles(boolean restricted) throws CommandException {
         Command<Void> cmd;
+        previouslyRestrictedFiles = new ArrayList<>();
         for (FileMetadata fmd : this.getSelectedFiles()) {
             if (restricted && !fmd.isRestricted()) {
                 cmd = new RestrictFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
                 commandEngine.submit(cmd);
+            }
+            if(fmd.isRestricted()) {
+                previouslyRestrictedFiles.add(fmd);
             }
         }
     }
