@@ -1034,7 +1034,7 @@ Make the metrics component on the root dataverse a clickable link to a website w
 :StatusMessageHeader
 ++++++++++++++++++++
 
-For dynamically adding information to the top of every page. For example, "For testing only..." at the top of https://demo.dataverse.org is set with this:
+For dynamically adding an informational header to the top of every page. StatusMessageText must also be set for a message to show. For example, "For testing only..." at the top of https://demo.dataverse.org is set with this:
 
 ``curl -X PUT -d "For testing only..." http://localhost:8080/api/admin/settings/:StatusMessageHeader``
 
@@ -1043,7 +1043,7 @@ You can make the text clickable and include an additional message in a pop up by
 :StatusMessageText
 ++++++++++++++++++
 
-After you've set ``:StatusMessageHeader`` you can also make it clickable to have it include text if a popup with this:
+Alongside the ``:StatusMessageHeader`` you need to add StatusMessageText for the message to show.:
 
 ``curl -X PUT -d "This appears in a popup." http://localhost:8080/api/admin/settings/:StatusMessageText``
 
