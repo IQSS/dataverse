@@ -19,6 +19,7 @@ my $skipdatabasesetup;
 my $force;
 my $nogfpasswd;
 my $admin_email;
+my $admin_pass;
 
 my ($rez) = GetOptions(
     #"length=i" => \$length,    # numeric
@@ -34,6 +35,7 @@ my ($rez) = GetOptions(
     "f|force"      => \$force,
     "nogfpasswd"   => \$nogfpasswd,
     "admin_email=s" => \$admin_email,
+    "admin_pass=s" => \$admin_pass,
 );
 
 # openshift/docker-specific - name of the "pod" executing the installer:
@@ -651,6 +653,13 @@ else
 	print "using default contact email for root dataverse\n";
 }
 
+# if there's an admin password from arguments, use it
+if ($admin_pass)
+{
+	printf("setting dataverseAdmin password to specified argument");
+	set_admin_pass( $admin_pass );
+}
+
 for my $script ( "setup-all.sh" ) {
     # (there's only 1 setup script to run now - it runs all the other required scripts)
     print "Executing post-deployment setup script " . $script . "... ";
@@ -1186,6 +1195,15 @@ sub set_root_contact_email
         search_replace_file($config_json,"\"email\":\"dataverse\@mailinator.com\"","\"email\":\"$contact_email\"",$config_json);
         return;
 }
+# if provided with a password for the dataverseAdmin account, use it
+sub set_admin_pass
+{
+        my ($p) = @_;
+        my $fn= "setup-all.sh"; # assume that we've got the path accurate
+        search_replace_file($fn,"password=admin&","password=$p&",$fn);
+        return;
+}
+
 
 
 sub setup_postgres {
