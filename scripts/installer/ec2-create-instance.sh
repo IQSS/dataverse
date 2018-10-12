@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # For docs, see the "Deployment" page in the Dev Guide.
 
