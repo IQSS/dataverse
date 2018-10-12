@@ -682,13 +682,15 @@ span.text-info.popoverHTML {display:inline-block;}
 /*div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}*/
 div[id$="versionsTable"] th.col-select-width * {display:none;}
 
+div[id$="filesTable"].ui-datatable.ui-widget div.ui-datatable-tablewrapper {overflow:visible;}
+
 div[id$="filesTable"].ui-datatable.ui-widget {margin-bottom:20px;}
 div[id$="filesTable"].ui-datatable.ui-widget table {table-layout: fixed;}
 div[id$="filesTable"].ui-datatable.ui-widget table th,
 div[id$="filesTable"].ui-datatable.ui-widget table td {box-sizing: content-box;}
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0; background:none; border:0;}
-div[id$="filesTable"] #filesHeaderCount {padding:10px 10px 4px 10px;}
-div[id$="filesTable"] #filesHeaderCount span.highlightBold {display:block; padding:0; line-height:1.65;}
+div[id$="filesHeaderCount"] {padding:6px 12px;}
+div[id$="filesHeaderCount"] span.highlightBold {display:block; padding:0; line-height:1.65;}
 div[id$="filesTable"] .col-file-thumb {border-right:0;}
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block {position:relative;width:64px;height:64px;margin:0 auto;}
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block span.file-thumbnail-icon {font-size:62px;line-height:1.05;}

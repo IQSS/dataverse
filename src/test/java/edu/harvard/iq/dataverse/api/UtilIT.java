@@ -1612,6 +1612,16 @@ public class UtilIT {
         return requestSpecification.delete("/api/admin/clearMetricsCache");
     }
 
+    static Response sitemapUpdate() {
+        return given()
+                .post("/api/admin/sitemap");
+    }
+
+    static Response sitemapDownload() {
+        return given()
+                .get("/sitemap.xml");
+    }
+
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {
         String swordStatementWithNoFiles = "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n"

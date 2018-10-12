@@ -47,15 +47,14 @@ public class TemplateServiceBean {
         return query.getSingleResult();
     }
 
-    
     public List<Dataverse> findDataversesByDefaultTemplateId(Long defaultTemplateId) {
         TypedQuery<Dataverse> query = em.createQuery("select object(o) from Dataverse as o where o.defaultTemplate.id =:defaultTemplateId order by o.name", Dataverse.class);
         query.setParameter("defaultTemplateId", defaultTemplateId);
         return query.getResultList();
     }
-    
+
     public void incrementUsageCount(Long templateId) {
-       
+
         Template toUpdate = em.find(Template.class, templateId);
         Long usage = toUpdate.getUsageCount();
         usage++;

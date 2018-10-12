@@ -829,9 +829,9 @@ public class AddReplaceFileHelper{
             throw new NullPointerException("msgName cannot be null");
         }
         if (isErr){        
-            return ResourceBundle.getBundle("Bundle").getString("file.addreplace.error." + msgName);
+            return BundleUtil.getStringFromBundle("file.addreplace.error." + msgName);
         }else{
-            return ResourceBundle.getBundle("Bundle").getString("file.addreplace.success." + msgName);
+            return BundleUtil.getStringFromBundle("file.addreplace.success." + msgName);
         }
        
     }
