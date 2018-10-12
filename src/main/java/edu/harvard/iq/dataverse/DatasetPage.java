@@ -2441,6 +2441,29 @@ public class DatasetPage implements java.io.Serializable {
     
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
     
+    public String testSelectedFilesForRestrict(){
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        if (selectedFiles.isEmpty()) {
+                requestContext.execute("PF('selectFilesForRestrict').show()");           
+            return "";
+        } else {           
+            boolean validSelection = true;
+            for (FileMetadata fmd : selectedFiles) {
+                if (fmd.isRestricted() == true) {
+                    validSelection = false;
+                    break;
+                }
+            }
+            if (!validSelection) {
+                requestContext.execute("PF('selectFilesForRestrict').show()");
+                return "";
+            }                       
+            testSelectedFilesForMapData();
+            requestContext.execute("PF('accessPopup').show()");
+            return "";
+        }        
+    }
+    
         
     public String restrictSelectedFiles(boolean restricted) throws CommandException{
         
@@ -2457,6 +2480,7 @@ public class DatasetPage implements java.io.Serializable {
             for (FileMetadata fmd : selectedFiles) {
                 if (fmd.isRestricted() == restricted) {
                     validSelection = false;
+                    break;
                 }
             }
             if (!validSelection) {
