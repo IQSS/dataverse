@@ -80,7 +80,11 @@ else
 	'RSERVE_HOST',
 	'RSERVE_PORT',
 	'RSERVE_USER',
-	'RSERVE_PASSWORD'
+	'RSERVE_PASSWORD',
+
+	'DATACITE_USERNAME',
+	'DATACITE_PASSWORD',
+	'DATACITE_BASEURL'
 
 	);
 }
@@ -105,7 +109,11 @@ my %CONFIG_DEFAULTS = (
     'RSERVE_HOST',     'localhost',
     'RSERVE_PORT',     6311,
     'RSERVE_USER',     'rserve',
-    'RSERVE_PASSWORD', 'rserve'
+    'RSERVE_PASSWORD', 'rserve',
+
+    'DATACITE_USERNAME',    'dataciteuser',
+    'DATACITE_PASSWORD',    'datacitepassword',
+    'DATACITE_BASEURL'    'https\://mds.test.datacite.org'
 
 );
 
@@ -128,7 +136,11 @@ my %CONFIG_PROMPTS = (
     'RSERVE_HOST',     'Rserve Server',
     'RSERVE_PORT',     'Rserve Server Port',
     'RSERVE_USER',     'Rserve User Name',
-    'RSERVE_PASSWORD', 'Rserve User Password'
+    'RSERVE_PASSWORD', 'Rserve User Password',
+
+    'DATACITE_USERNAME',    'Datacite username',
+    'DATACITE_PASSWORD',    'Datacite password',
+    'DATACITE_BASEURL',    'Datacite URL'
 
 );
 
@@ -152,7 +164,11 @@ my %CONFIG_COMMENTS = (
     'RSERVE_HOST',     '',
     'RSERVE_PORT',     '',
     'RSERVE_USER',     '',
-    'RSERVE_PASSWORD', ''
+    'RSERVE_PASSWORD', '',
+
+    'DATACITE_USERNAME',    'DataCite username. Only necessary for publishing / minting DOIs.',
+    'DATACITE_PASSWORD',    'DataCite password.',
+    'DATACITE_BASEURL',    'DataCite URL. Probably https://mds.datacite.org'
 
 );
 

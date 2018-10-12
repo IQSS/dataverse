@@ -24,6 +24,11 @@
 # RSERVE_USER
 # RSERVE_PASS
 #
+# DataCite configuration:
+# DATACITE_USERNAME
+# DATACITE_PASSWORD
+# DATACITE_BASEURL
+#
 # other local configuration:
 # HOST_ADDRESS
 # SMTP_SERVER
@@ -68,9 +73,9 @@ function preliminary_setup()
 
   # DataCite DOI Settings
   # (we can no longer offer EZID with their shared test account)
-  #./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.password=apitest"
-  #./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=apitest"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=https\://mds.test.datacite.org"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=${DATACITE_USERNAME}"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.password=${DATACITE_PASSWORD}"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=${DATACITE_BASEURL}"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
   # enable comet support
