@@ -699,10 +699,12 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
      
     //This function was reverted to its pre-commands state as the current command
-    //requires editDataset privlidges. If a non-admin user with only createDataset privlidges
+    //requires editDataset privileges. If a non-admin user with only createDataset privileges
     //attempts to restrict a datafile before the dataset is created, the operation
     //fails silently. This is because they are only granted editDataset permissions
     //for that scope after the creation is completed.  -Matthew 4.7.1
+    //This function is also not parallel with the DatasetPage.restrictFiles method in that it doesn't check for / report an error when
+    //files won't be changed (restricted=true and file restricted or restricted false and file unrestricted).
     public void restrictFiles(boolean restricted) throws UnsupportedOperationException{
 
         // since we are restricted files, first set the previously restricted file list, so we can compare for
@@ -717,7 +719,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         String fileNames = null;
         
         for (FileMetadata fmd : this.getSelectedFiles()) {
-            if (restricted && !fmd.isRestricted()) {
+            if (restricted != fmd.isRestricted()) {
                 // collect the names of the newly-restrticted files, 
                 // to show in the success message:
                 if (fileNames == null) {
@@ -741,7 +743,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
         if (fileNames != null) {
-            String successMessage = getBundleString("file.restricted.success");
+            String successMessage = restricted ? getBundleString("file.restricted.success"): getBundleString("file.unrestricted.success");
             logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);    
