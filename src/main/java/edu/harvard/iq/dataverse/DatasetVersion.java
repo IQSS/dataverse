@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -629,12 +628,41 @@ public class DatasetVersion implements Serializable {
         return "";
     }
 
+    public List<String> getDescriptions() {
+        List<String> descriptions = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.description)) {
+                String descriptionString = "";
+                if (dsf.getDatasetFieldCompoundValues() != null && !dsf.getDatasetFieldCompoundValues().isEmpty()) {
+                    for (DatasetFieldCompoundValue descriptionValue : dsf.getDatasetFieldCompoundValues()) {
+                        for (DatasetField subField : descriptionValue.getChildDatasetFields()) {
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText) && !subField.isEmptyForDisplay()) {
+                                descriptionString = subField.getValue();
+                            }
+                        }
+                        logger.log(Level.FINE, "pristine description: {0}", descriptionString);
+                        descriptions.add(descriptionString);
+                    }
+                }
+            }
+        }
+        return descriptions;
+    }
+
     /**
      * @return Strip out all A string with the description of the dataset that
      * has been passed through the stripAllTags method to remove all HTML tags.
      */
     public String getDescriptionPlainText() {
         return MarkupChecker.stripAllTags(getDescription());
+    }
+
+    public List<String> getDescriptionsPlainText() {
+        List<String> plainTextDescriptions = new ArrayList<>();
+        for (String htmlDescription : getDescriptions()) {
+            plainTextDescriptions.add(MarkupChecker.stripAllTags(htmlDescription));
+        }
+        return plainTextDescriptions;
     }
 
     /**
@@ -1511,7 +1539,14 @@ public class DatasetVersion implements Serializable {
          */
         job.add("dateModified", this.getPublicationDateAsString());
         job.add("version", this.getVersionNumber().toString());
-        job.add("description", this.getDescriptionPlainText());
+
+        JsonArrayBuilder descriptionsArray = Json.createArrayBuilder();
+        List<String> descriptions = this.getDescriptionsPlainText();
+        for (String description : descriptions) {
+            descriptionsArray.add(description);
+        }
+        job.add("description", descriptionsArray);
+
         /**
          * "keywords" - contains subject(s), datasetkeyword(s) and topicclassification(s)
          * metadata fields for the version. -- L.A. 

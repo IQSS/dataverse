@@ -66,6 +66,14 @@
                   "typeClass": "primitive",
                   "typeName": "dsDescriptionValue"
                 }
+              },
+              {
+                "dsDescriptionValue": {
+                  "value": "Bird is the word.",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "typeName": "dsDescriptionValue"
+                }
               }
             ],
             "typeClass": "compound",

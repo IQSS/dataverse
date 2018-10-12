@@ -226,7 +226,9 @@ public class SchemaDotOrgExporterTest {
         assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getJsonObject("identifier").getString("value"));
         assertEquals("1955-11-05", json2.getString("dateModified"));
         assertEquals("1", json2.getString("version"));
-        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.", json2.getString("description"));
+        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.", json2.getJsonArray("description").getString(0));
+        assertEquals("Bird is the word.", json2.getJsonArray("description").getString(1));
+        assertEquals(2, json2.getJsonArray("description").size());
         assertEquals("Medicine, Health and Life Sciences", json2.getJsonArray("keywords").getString(0));
         assertEquals("tcTerm1", json2.getJsonArray("keywords").getString(1));
         assertEquals("KeywordTerm1", json2.getJsonArray("keywords").getString(2));
