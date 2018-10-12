@@ -41,6 +41,7 @@ public class RestrictFileCommandTest {
     private DataFile file;
     private Dataset dataset;
     boolean restrict = true;
+    boolean unrestrict = false;
     static boolean publicInstall = false;
     
     
@@ -142,7 +143,7 @@ public class RestrictFileCommandTest {
         file.setOwner(dataset);
         file.setRestricted(true);
         file.getFileMetadata().setRestricted(true);
-        RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
+        RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), unrestrict);
         engine.submit(cmd);
         
         assertTrue(!file.isRestricted());
@@ -151,13 +152,13 @@ public class RestrictFileCommandTest {
     }
     
     @Test
-    public void testUnestrictPublishedFile() throws Exception{
+    public void testUnrestrictPublishedFile() throws Exception{
         file.setOwner(dataset);
         dataset.setPublicationDate(new Timestamp(new Date().getTime()));
         file.setPublicationDate(dataset.getPublicationDate());
         file.setRestricted(true);
         file.getFileMetadata().setRestricted(true);
-        RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
+        RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), unrestrict);
         engine.submit(cmd);
         //asserts
         assertTrue(file.isRestricted());
@@ -174,7 +175,7 @@ public class RestrictFileCommandTest {
     public void testUnrestrictNewFile() throws Exception {
         file.setRestricted(true);
         file.getFileMetadata().setRestricted(true);
-        RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
+        RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), unrestrict);
         engine.submit(cmd);
         assertTrue(!file.isRestricted());
         assertTrue(!file.getFileMetadata().isRestricted());
@@ -185,7 +186,7 @@ public class RestrictFileCommandTest {
         file.setOwner(dataset);
         String expected = "File " + file.getDisplayName() + " is already unrestricted";
         String actual = null;
-        RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
+        RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), unrestrict);
         try {
             engine.submit(cmd);
         } catch (CommandException ex) {
