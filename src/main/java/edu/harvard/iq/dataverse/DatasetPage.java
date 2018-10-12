@@ -2455,7 +2455,7 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             boolean validSelection = true;
             for (FileMetadata fmd : selectedFiles) {
-                if ((fmd.isRestricted() && restricted) || (!fmd.isRestricted() && !restricted)) {
+                if (fmd.isRestricted() == restricted) {
                     validSelection = false;
                 }
             }
@@ -2486,12 +2486,12 @@ public class DatasetPage implements java.io.Serializable {
         Command<Void> cmd;
         previouslyRestrictedFiles = new ArrayList<>();
         for (FileMetadata fmd : this.getSelectedFiles()) {
-            if (restricted && !fmd.isRestricted()) {
-                cmd = new RestrictFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
-                commandEngine.submit(cmd);
-            }
             if(fmd.isRestricted()) {
                 previouslyRestrictedFiles.add(fmd);
+            }
+            if (restricted  != fmd.isRestricted()) {
+                cmd = new RestrictFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
+                commandEngine.submit(cmd);
             }
         }
     }
