@@ -60,7 +60,6 @@ public class RestrictFileCommand extends AbstractVoidCommand {
             DatasetVersion workingVersion = dataset.getEditVersion();
 
             // check if this file is already restricted or already unrestricted
-            logger.info("Restrict command: " + restrict + " file state: " + file.getFileMetadata().isRestricted() );
             if (restrict == file.getFileMetadata().isRestricted()) {
                 String text = restrict ? "restricted" : "unrestricted";
                 throw new CommandExecutionException("File " + file.getDisplayName() + " is already " + text, this);

@@ -137,6 +137,23 @@ public class RestrictFileCommandTest {
         
     }
     
+    @Test
+    public void testRestrictRestrictedNewFile() throws Exception {
+        String expected = "File " + file.getDisplayName() + " is already restricted";
+        String actual = null;
+        file.setRestricted(true);
+        file.getFileMetadata().setRestricted(restrict);
+        RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
+        try {
+            engine.submit(cmd);
+        } catch (CommandException ex) {
+            actual = ex.getMessage();
+        }
+        
+        assertEquals(expected, actual);
+        
+    }
+
     
     @Test
     public void testUnrestrictUnpublishedFile() throws CommandException{
@@ -184,6 +201,22 @@ public class RestrictFileCommandTest {
     @Test
     public void testUnrestrictUnrestrictedFile() throws Exception {
         file.setOwner(dataset);
+        String expected = "File " + file.getDisplayName() + " is already unrestricted";
+        String actual = null;
+        RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), unrestrict);
+        try {
+            engine.submit(cmd);
+        } catch (CommandException ex) {
+            actual = ex.getMessage();
+        }
+        
+        assertEquals(expected, actual);
+        
+    }
+    
+    @Test
+    public void testUnrestrictUnrestrictedNewFile() throws Exception {
+        
         String expected = "File " + file.getDisplayName() + " is already unrestricted";
         String actual = null;
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), unrestrict);
