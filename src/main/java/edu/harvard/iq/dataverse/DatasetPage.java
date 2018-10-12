@@ -2379,7 +2379,7 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         } else {           
             boolean validSelection = true;
-            for (FileMetadata fmd : selectedFiles)
+            for (FileMetadata fmd : selectedFiles) {
                 if (fmd.isRestricted() == true) {
                     validSelection = false;
                     break;
