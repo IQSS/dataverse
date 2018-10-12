@@ -1,0 +1,235 @@
+    <style>
+        /* Custom CSS for the custom homepage... */
+        .lite-header {font-weight: 300;}
+
+        div.hmpg-action-block {padding-top:2em;}
+        div.search-widget {padding-bottom: 2em;}
+        div.browse-subjects a {color: #C55B28;}
+        div.browse-subjects a:focus, div.browse-subjects a:hover {color: #9F3502;}
+        div.hmpg-recent-col div.hmpg-recent-thumb span {font-size:38px;}
+        div.hmpg-activity-block .row .lite-header {margin-left:1em;}
+
+        .btn-harvard { 
+		  color: #A51C30;
+		  background: #FFFFFF;
+		  font-weight: bold;
+		}
+		.btn-harvard:hover, 
+		.btn-harvard:focus, 
+		.btn-harvard:active, 
+		.btn-harvard.active, 
+		.open .dropdown-toggle.btn-harvard { 
+		  color: #7F000A;
+		  background: #FFFFFF;
+		  font-weight: bold;
+		} 
+    </style>
+
+	<!-- ACTIONS -->
+	<div class="row hmpg-action-block">
+		<div class="col-xs-6">
+			<div class="h4 lite-header">Deposit and share your data. Get academic credit.</div>
+			<p class="text-muted small margin-bottom">Harvard Dataverse is a digital repository.</p>
+			<button class="btn btn-default btn-harvard margin-top margin-bottom">
+				Add data to Harvard Dataverse <span class="glyphicon glyphicon-plus"></span>
+			</button>
+		</div>
+		<div class="col-xs-6">
+			<div class="h4 lite-header">Organize datasets and gather metrics in your own virtual archive.</div>
+			<p class="text-muted small margin-bottom">A dataverse is a virtual archive. A dataverse can contain dataverses, datasets, files and metadata.</p>
+			<button class="btn btn-default btn-harvard margin-top margin-bottom">
+				Create my own dataverse <span class="glyphicon glyphicon-chevron-right"></span>
+			</button>
+		</div>
+	</div>
+
+	<hr/>
+
+	<!-- SEARCH + BROWSE + RECENT -->
+	<div class="row hmpg-browse-block">
+		<div class="col-xs-12">
+			<div class="h4 lite-header margin-bottom">Find data across research fields, preview metadata, and download files.</div>
+
+			<div class="row">
+				<div class="col-xs-4">
+					<div class="search-widget input-group">
+						<input id="inputDataverseSearch" class="form-control" type="text" placeholder="Search over 75,000 datasets..." onkeydown="if (event.keyCode == 13) document.getElementById('btnDataverseSearch').click();">
+						<span class="input-group-btn">
+							<button id="btnDataverseSearch" class="btn btn-default" type="button" onclick="window.location = '/dataverse/root?q=' + document.getElementById('inputDataverseSearch').value;return false;"><span class="glyphicon glyphicon-search"></span> Find</button>
+						</span>
+					</div>
+				</div>
+			</div>
+
+		</div>
+		<div class="col-xs-12">
+			<p class="text-muted small">Browse dataverses in this repository by subject.</p>
+			<div class="row margin-bottom">
+				<div class="col-xs-4 browse-subjects">
+					<p><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22" title="Subject Value">Subject Value</a> <span class="text-muted">000</span></p>
+					<p><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22" title="Subject Value">Subject Value</a> <span class="text-muted">000</span></p>
+					<p><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22" title="Subject Value">Subject Value</a> <span class="text-muted">000</span></p>
+					<p><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22" title="Subject Value">Subject Value</a> <span class="text-muted">000</span></p>
+					<p><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22" title="Subject Value">Subject Value</a> <span class="text-muted">000</span></p>
+				</div>
+				<div class="col-xs-4 browse-subjects">
+					<p><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22" title="Subject Value">Subject Value</a> <span class="text-muted">000</span></p>
+					<p><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22" title="Subject Value">Subject Value</a> <span class="text-muted">000</span></p>
+					<p><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22" title="Subject Value">Subject Value</a> <span class="text-muted">000</span></p>
+					<p><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22" title="Subject Value">Subject Value</a> <span class="text-muted">000</span></p>
+					<p><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22" title="Subject Value">Subject Value</a> <span class="text-muted">000</span></p>
+				</div>
+				<div class="col-xs-4 browse-subjects">
+					<p><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22" title="Subject Value">Subject Value</a> <span class="text-muted">000</span></p>
+					<p><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22" title="Subject Value">Subject Value</a> <span class="text-muted">000</span></p>
+					<p><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22" title="Subject Value">Subject Value</a> <span class="text-muted">000</span></p>
+					<p><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22" title="Subject Value">Subject Value</a> <span class="text-muted">000</span></p>
+					<p><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22" title="Subject Value">Subject Value</a> <span class="text-muted">000</span></p>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-xs-12">
+			<div class="row">
+				<div class="col-xs-4">
+					<div class="h4 lite-header margin-bottom">Datasets from journal articles</div>
+				</div>
+				<div class="col-xs-8">
+					<div class="h4 lite-header margin-bottom">Datasets from research projects, groups and researchers</div>
+				</div>
+			</div>
+			
+
+			<div class="row">
+				<div class="col-xs-4 hmpg-recent-col">
+					<hr class="col-xs-11 no-margin-top"/>
+
+					<!-- RESULT 1 -->
+					<div class="col-xs-2 text-center hmpg-recent-thumb">
+                        <a href="/dataset.xhtml?persistentId=doi:10.7910/DVN/P0OMNM" title="{TITLE}"><span class="icon-dataset"></span></a>
+                    </div>
+                    <div class="col-xs-10">
+                    	<p><a href="#" title="{TITLE}">Short Title</a><br/><span class="text-muted small"><a href="#" title="" class="highlightBold">Dataverse Name</a> - Publish Date</span></p>
+                    </div>
+                    <hr class="col-xs-11 no-margin-top"/>
+
+                    <!-- RESULT 2 -->
+                    <div class="col-xs-2 text-center">
+                        <a href="/dataset.xhtml?persistentId=doi:10.7910/DVN/P0OMNM" title="{TITLE}"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAAwCAYAAACMuVOlAAAEN0lEQVR42s2ZX0gUQRzHz0DpQSGELiGKKAkfDIKKzCQokTwJK3zIhEhQiQsuohTSUvyTKKYiZKb2TywI7Q9R2D98OjDSLrA/6ItZCoU+nGkUEdRN9x33N81te+fV7d24MMzuzO3sZ3//Z89i8T2YJbgj2N+Zf5Sda2XBAJTUNqqDxMM10IBSrGq6qA6y5vwllrxxw0LSZCfKz6qDLG/pZHXt3SyQOjG3as1qpswuDx0/zdWddbDALwTm62pLmVUVpC0nl0N63INcov5MAvPKJJmYvIlxiDkX7w1AxEuoDEOMJDXqvMyy9mUzvc2iYX75igR1kAgvkKTn6xufcAQbBODe/MN8Pm3nDsWQXkCAQP3kII7qFg75bvghn8uw2dRBcpvTIOfG+oTtAZ7sFfNaPFUH6Z4YEKBNXT2Mxrk9YtzblDvOkPPWvMS8DXAEiPi4KCARH9ubq4UkAUg5nVQ96epVlxZJrXAKkhhJsdBuF+D+An1EDqsGGRtv5UC/Zl5x9QNS2KliVXNIyjSk2orWLh+PVypFWZIFjpNCarHL4vgYpJqRmqQWkA7EQ3ISSBSVEerHtoYSdZWPUU0Jb0Z+pu2E0vrRn8oBWVSQx+0P0Bqgvqk9kGUclQ1ckqgxk7ft4uBwKphD8anSxQFK8fFoGd/PCC8H6IUrN1i/8xnzeDxqQSE52vOkpmdyIDQaA6z7y7f5cKXNadCRczCSJAVzGQSQMAkRU7VxQEdUurBJwBEsKnGCcb0e4ZAwATSMwW5laUY0j6MBhKRKksMYlXG4vnPvroB8OexiEXeelWvXs/GJ9z4q1zceW7VzvU3SONYIS2DXw6Ail1TK2rt7+HVbRwfva+vrjUD0zmWuygeeD7KxyU8+D6mKiWIO75xDevjM7OeFAMIDSYuiyED/6EGvgKNGD38x8oFLM5j1TE2PurcX5wT3s+YA70miC63Z9/iJ6d4voJBh9Lb5oyKffT+zn4MGCynfPzo2wUyR5Mep6YAefbX7Gnt7dDfrvHl/wSxjlV4a4YoCP+zdFIniAUtj4/m2Aj3GEpN4AczH4DT/YuP6DNXX7/wrrZpiFshIWORIcanIQoinge6pLK8x1MjmlBQOjPAlj5PDhhTkKSPJCwf6nK13wGDbf++DqGyj6l1eNMDnarYlLd1HtbL0pt1zrLkxLnQb3W7L8cnndG6kQv29efZiuQYIfz6nh9G1LM3xqVlDSFT1Qf7DEXo+JzAYNl2jxjQqOoxeMNx/sQh7lFVOvVGVjhehewlQ+234dpKQGH2rxDntfUj9emlibN2S+Y+z1OA811Msom1NiDIlVYrSjB5EkOhpi4GdpT7M0G9pp0nR4Hb2nxbSNjkzMYoNHYthT4uieU+QMqBso2SbyEoESf9oZOzJEdkKkjVVxdqCDMBJ1mghFQJF0zx58XzhQJzMLbRHFOo3uJqAWXt2qn4AAAAASUVORK5CYII=" alt="Dataset thumbnail"></a>
+                    </div>
+                    <div class="col-xs-10">
+                    	<p><a href="#" title="{TITLE}">Replication Data For: Long Dataset Title, Whatever the Median Dataset Title Length Is Currently in Production, I Should Probably Look That Up</a><br/><span class="text-muted small"><a href="#" title="" class="highlightBold">Dataverse Name</a> - Publish Date</span></p>
+                    </div>
+                    <hr class="col-xs-11 no-margin-top"/>
+
+                    <!-- RESULT 3 -->
+                    <div class="col-xs-2 text-center hmpg-recent-thumb">
+                        <a href="/dataset.xhtml?persistentId=doi:10.7910/DVN/P0OMNM" title="{TITLE}"><span class="icon-dataset"></span></a>
+                    </div>
+                    <div class="col-xs-10">
+                    	<p><a href="#" title="{TITLE}">Replication Data For: Long Dataset Title, Whatever the Median Dataset Title Length Is Currently in Production, I Should Probably Look That Up</a><br/><span class="text-muted small"><a href="#" title="" class="highlightBold">Dataverse Name</a> - Publish Date</span></p>
+                    </div>
+                    <hr class="col-xs-11 no-margin-top"/>
+
+                    <!-- VIEW ALL -->
+                    <div class="col-xs-11 text-center">
+                    	<p class="small text-muted"><a href="#" title="{TITLE}">ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                    </div>
+				</div>
+
+				<div class="col-xs-4 hmpg-recent-col">
+					<hr class="col-xs-11 no-margin-top"/>
+
+					<!-- RESULT 1 -->
+					<div class="col-xs-2 text-center hmpg-recent-thumb">
+                        <a href="/dataset.xhtml?persistentId=doi:10.7910/DVN/P0OMNM" title="{TITLE}"><span class="icon-dataset"></span></a>
+                    </div>
+                    <div class="col-xs-10">
+                    	<p><a href="#" title="{TITLE}">Replication Data For: Long Dataset Title, Whatever the Median Dataset Title Length Is Currently in Production, I Should Probably Look That Up</a><br/><span class="text-muted small"><a href="#" title="" class="highlightBold">Dataverse Name</a> - Publish Date</span></p>
+                    </div>
+                    <hr class="col-xs-11 no-margin-top"/>
+
+                    <!-- RESULT 2 -->
+                    <div class="col-xs-2 text-center hmpg-recent-thumb">
+                        <a href="/dataset.xhtml?persistentId=doi:10.7910/DVN/P0OMNM" title="{TITLE}"><span class="icon-dataset"></span></a>
+                    </div>
+                    <div class="col-xs-10">
+                    	<p><a href="#" title="{TITLE}">Short Title</a><br/><span class="text-muted small"><a href="#" title="" class="highlightBold">Dataverse Name</a> - Publish Date</span></p>
+                    </div>
+                    <hr class="col-xs-11 no-margin-top"/>
+
+                    <!-- RESULT 3 -->
+                    <div class="col-xs-2 text-center hmpg-recent-thumb">
+                        <a href="/dataset.xhtml?persistentId=doi:10.7910/DVN/P0OMNM" title="{TITLE}"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAAwCAYAAACMuVOlAAAEN0lEQVR42s2ZX0gUQRzHz0DpQSGELiGKKAkfDIKKzCQokTwJK3zIhEhQiQsuohTSUvyTKKYiZKb2TywI7Q9R2D98OjDSLrA/6ItZCoU+nGkUEdRN9x33N81te+fV7d24MMzuzO3sZ3//Z89i8T2YJbgj2N+Zf5Sda2XBAJTUNqqDxMM10IBSrGq6qA6y5vwllrxxw0LSZCfKz6qDLG/pZHXt3SyQOjG3as1qpswuDx0/zdWddbDALwTm62pLmVUVpC0nl0N63INcov5MAvPKJJmYvIlxiDkX7w1AxEuoDEOMJDXqvMyy9mUzvc2iYX75igR1kAgvkKTn6xufcAQbBODe/MN8Pm3nDsWQXkCAQP3kII7qFg75bvghn8uw2dRBcpvTIOfG+oTtAZ7sFfNaPFUH6Z4YEKBNXT2Mxrk9YtzblDvOkPPWvMS8DXAEiPi4KCARH9ubq4UkAUg5nVQ96epVlxZJrXAKkhhJsdBuF+D+An1EDqsGGRtv5UC/Zl5x9QNS2KliVXNIyjSk2orWLh+PVypFWZIFjpNCarHL4vgYpJqRmqQWkA7EQ3ISSBSVEerHtoYSdZWPUU0Jb0Z+pu2E0vrRn8oBWVSQx+0P0Bqgvqk9kGUclQ1ckqgxk7ft4uBwKphD8anSxQFK8fFoGd/PCC8H6IUrN1i/8xnzeDxqQSE52vOkpmdyIDQaA6z7y7f5cKXNadCRczCSJAVzGQSQMAkRU7VxQEdUurBJwBEsKnGCcb0e4ZAwATSMwW5laUY0j6MBhKRKksMYlXG4vnPvroB8OexiEXeelWvXs/GJ9z4q1zceW7VzvU3SONYIS2DXw6Ail1TK2rt7+HVbRwfva+vrjUD0zmWuygeeD7KxyU8+D6mKiWIO75xDevjM7OeFAMIDSYuiyED/6EGvgKNGD38x8oFLM5j1TE2PurcX5wT3s+YA70miC63Z9/iJ6d4voJBh9Lb5oyKffT+zn4MGCynfPzo2wUyR5Mep6YAefbX7Gnt7dDfrvHl/wSxjlV4a4YoCP+zdFIniAUtj4/m2Aj3GEpN4AczH4DT/YuP6DNXX7/wrrZpiFshIWORIcanIQoinge6pLK8x1MjmlBQOjPAlj5PDhhTkKSPJCwf6nK13wGDbf++DqGyj6l1eNMDnarYlLd1HtbL0pt1zrLkxLnQb3W7L8cnndG6kQv29efZiuQYIfz6nh9G1LM3xqVlDSFT1Qf7DEXo+JzAYNl2jxjQqOoxeMNx/sQh7lFVOvVGVjhehewlQ+234dpKQGH2rxDntfUj9emlibN2S+Y+z1OA811Msom1NiDIlVYrSjB5EkOhpi4GdpT7M0G9pp0nR4Hb2nxbSNjkzMYoNHYthT4uieU+QMqBso2SbyEoESf9oZOzJEdkKkjVVxdqCDMBJ1mghFQJF0zx58XzhQJzMLbRHFOo3uJqAWXt2qn4AAAAASUVORK5CYII=" alt="Dataset thumbnail"></a>
+                    </div>
+                    <div class="col-xs-10">
+                    	<p><a href="#" title="{TITLE}">Replication Data For: Long Dataset Title, Whatever the Median Dataset Title Length Is Currently in Production, I Should Probably Look That Up</a><br/><span class="text-muted small"><a href="#" title="" class="highlightBold">Dataverse Name</a> - Publish Date</span></p>
+                    </div>
+                    <hr class="col-xs-11 no-margin-top"/>
+
+                    <!-- VIEW ALL -->
+                    <div class="col-xs-11 text-center">
+                    	<p class="small text-muted"><a href="#" title="{TITLE}">ALL RECENT RESEARCHERS ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                    </div>
+				</div>
+
+				<div class="col-xs-4 hmpg-recent-col">
+					<hr class="col-xs-11 no-margin-top"/>
+
+					<!-- RESULT 1 -->
+					<div class="col-xs-2 text-center hmpg-recent-thumb">
+                        <a href="/dataset.xhtml?persistentId=doi:10.7910/DVN/P0OMNM" title="{TITLE}"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAAwCAYAAACMuVOlAAAEN0lEQVR42s2ZX0gUQRzHz0DpQSGELiGKKAkfDIKKzCQokTwJK3zIhEhQiQsuohTSUvyTKKYiZKb2TywI7Q9R2D98OjDSLrA/6ItZCoU+nGkUEdRN9x33N81te+fV7d24MMzuzO3sZ3//Z89i8T2YJbgj2N+Zf5Sda2XBAJTUNqqDxMM10IBSrGq6qA6y5vwllrxxw0LSZCfKz6qDLG/pZHXt3SyQOjG3as1qpswuDx0/zdWddbDALwTm62pLmVUVpC0nl0N63INcov5MAvPKJJmYvIlxiDkX7w1AxEuoDEOMJDXqvMyy9mUzvc2iYX75igR1kAgvkKTn6xufcAQbBODe/MN8Pm3nDsWQXkCAQP3kII7qFg75bvghn8uw2dRBcpvTIOfG+oTtAZ7sFfNaPFUH6Z4YEKBNXT2Mxrk9YtzblDvOkPPWvMS8DXAEiPi4KCARH9ubq4UkAUg5nVQ96epVlxZJrXAKkhhJsdBuF+D+An1EDqsGGRtv5UC/Zl5x9QNS2KliVXNIyjSk2orWLh+PVypFWZIFjpNCarHL4vgYpJqRmqQWkA7EQ3ISSBSVEerHtoYSdZWPUU0Jb0Z+pu2E0vrRn8oBWVSQx+0P0Bqgvqk9kGUclQ1ckqgxk7ft4uBwKphD8anSxQFK8fFoGd/PCC8H6IUrN1i/8xnzeDxqQSE52vOkpmdyIDQaA6z7y7f5cKXNadCRczCSJAVzGQSQMAkRU7VxQEdUurBJwBEsKnGCcb0e4ZAwATSMwW5laUY0j6MBhKRKksMYlXG4vnPvroB8OexiEXeelWvXs/GJ9z4q1zceW7VzvU3SONYIS2DXw6Ail1TK2rt7+HVbRwfva+vrjUD0zmWuygeeD7KxyU8+D6mKiWIO75xDevjM7OeFAMIDSYuiyED/6EGvgKNGD38x8oFLM5j1TE2PurcX5wT3s+YA70miC63Z9/iJ6d4voJBh9Lb5oyKffT+zn4MGCynfPzo2wUyR5Mep6YAefbX7Gnt7dDfrvHl/wSxjlV4a4YoCP+zdFIniAUtj4/m2Aj3GEpN4AczH4DT/YuP6DNXX7/wrrZpiFshIWORIcanIQoinge6pLK8x1MjmlBQOjPAlj5PDhhTkKSPJCwf6nK13wGDbf++DqGyj6l1eNMDnarYlLd1HtbL0pt1zrLkxLnQb3W7L8cnndG6kQv29efZiuQYIfz6nh9G1LM3xqVlDSFT1Qf7DEXo+JzAYNl2jxjQqOoxeMNx/sQh7lFVOvVGVjhehewlQ+234dpKQGH2rxDntfUj9emlibN2S+Y+z1OA811Msom1NiDIlVYrSjB5EkOhpi4GdpT7M0G9pp0nR4Hb2nxbSNjkzMYoNHYthT4uieU+QMqBso2SbyEoESf9oZOzJEdkKkjVVxdqCDMBJ1mghFQJF0zx58XzhQJzMLbRHFOo3uJqAWXt2qn4AAAAASUVORK5CYII=" alt="Dataset thumbnail"></a>
+                    </div>
+                    <div class="col-xs-10">
+                    	<p><a href="#" title="{TITLE}">Short Title</a><br/><span class="text-muted small"><a href="#" title="" class="highlightBold">Dataverse Name</a> - Publish Date</span></p>
+                    </div>
+                    <hr class="col-xs-11 no-margin-top"/>
+
+                    <!-- RESULT 2 -->
+                    <div class="col-xs-2 text-center hmpg-recent-thumb">
+                        <a href="/dataset.xhtml?persistentId=doi:10.7910/DVN/P0OMNM" title="{TITLE}"><span class="icon-dataset"></span></a>
+                    </div>
+                    <div class="col-xs-10">
+                    	<p><a href="#" title="{TITLE}">Replication Data For: Long Dataset Title, Whatever the Median Dataset Title Length Is Currently in Production, I Should Probably Look That Up</a><br/><span class="text-muted small"><a href="#" title="" class="highlightBold">Dataverse Name</a> - Publish Date</span></p>
+                    </div>
+                    <hr class="col-xs-11 no-margin-top"/>
+
+                    <!-- RESULT 3 -->
+                    <div class="col-xs-2 text-center hmpg-recent-thumb">
+                        <a href="/dataset.xhtml?persistentId=doi:10.7910/DVN/P0OMNM" title="{TITLE}"><span class="icon-dataset"></span></a>
+                    </div>
+                    <div class="col-xs-10">
+                    	<p><a href="#" title="{TITLE}">Replication Data For: Long Dataset Title, Whatever the Median Dataset Title Length Is Currently in Production, I Should Probably Look That Up</a><br/><span class="text-muted small"><a href="#" title="" class="highlightBold">Dataverse Name</a> - Publish Date</span></p>
+                    </div>
+                    <hr class="col-xs-11 no-margin-top"/>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<hr/>
+
+	<!-- ACTIVITY -->
+	<div class="row hmpg-activity-block">
+		<div class="col-xs-12">
+			<div class="h4 lite-header margin-bottom">Activity</div>
+		</div>
+		<div class="col-xs-12 row">
+			<div class="col-xs-6">
+				<p><span class="highlightBold">All Files</span> <span class="h4 lite-header">000,000</span> datasets added <span class="h4 lite-header">000,000,000</span> file downloads</p>
+			</div>
+			<div class="col-xs-6">
+				<p><span class="highlightBold">Past 30 Days</span> <span class="h4 lite-header">000,000</span> datasets added <span class="h4 lite-header">000,000,000</span> file downloads</p>
+			</div>
+		</div>
+	</div>
+
+	<hr/>
+
+	<!-- OTHER LINKS -->
+	<div class="row hmpg-other-block">
+		<div class="col-xs-12">
+			<div class="h4 lite-header margin-bottom">Looking for other online repositories at Harvard?</div>
+			<p class="text-muted"><a href="#" title="TITLE">Harvard DASH article repository</a> <span class="glyphicon glyphicon-chevron-right"></span> &nbsp; <a href="#" title="TITLE">All repositories at Harvard</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+		</div>
+	</div>
