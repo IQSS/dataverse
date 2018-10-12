@@ -19,6 +19,7 @@ import javax.inject.Named;
 @SessionScoped
 public class DataverseSession implements Serializable{
     
+    /* Note that on logout, variables must be cleared manually in DataverseHeaderFragment*/
     private User user;
 
     @EJB
@@ -52,8 +53,8 @@ public class DataverseSession implements Serializable{
         return statusDismissed;
     }
     
-    public void dismissStatus() {
-        statusDismissed = true; //MAD: Set to true to enable code!
+    public void setStatusDismissed(boolean status) {
+        statusDismissed = status; //MAD: Set to true to enable code!
     }
     
     public StaticPermissionQuery on( Dataverse d ) {
