@@ -101,7 +101,7 @@ public class RestrictFileCommandTest {
         engine.submit(cmd);
         logger.info("Released: " + file.isReleased() + " Restricted: " + file.isRestricted());
         //asserts
-        assertFalse(!file.isRestricted());
+        assertTrue(file.isRestricted());
         for (FileMetadata fmw : dataset.getEditVersion().getFileMetadatas()) {
             if (file.equals(fmw.getDataFile())) {
                 assertEquals(fmw, file.getFileMetadata());
