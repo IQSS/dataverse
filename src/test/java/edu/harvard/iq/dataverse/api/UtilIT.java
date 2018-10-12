@@ -102,7 +102,7 @@ public class UtilIT {
                 .post("/api/builtin-users?key=" + BUILTIN_USER_KEY + "&password=" + password);
         return response;
     }
-
+    
     public static Response createRandomUser() {
 
         return createRandomUser("user");
@@ -420,6 +420,14 @@ public class UtilIT {
                 .body(jsonIn)
                 .contentType("application/json")
                 .put("/api/datasets/:persistentId/editMetadata/?persistentId=" + persistentId + "&replace=true");
+        return response;
+    }
+    
+    static Response updateDatasetPIDMetadata(String persistentId,  String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/datasets/:persistentId/modifyRegistrationMetadata/?persistentId=" + persistentId);
         return response;
     }
 
@@ -847,6 +855,17 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .urlEncodingEnabled(false)
                 .get("/api/datasets/:persistentId/actions/:publish?type=" + majorOrMinor + "&persistentId=" + persistentId);
+    }
+    
+    static Response modifyDatasetPIDMetadataViaApi(String persistentId,  String apiToken) {
+        /**
+         * @todo This should be a POST rather than a GET:
+         * https://github.com/IQSS/dataverse/issues/2431
+         */
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .get("/api/datasets/:persistentId/&persistentId=" + persistentId);
     }
 
     static Response publishDatasetViaNativeApi(Integer datasetId, String majorOrMinor, String apiToken) {

@@ -319,7 +319,7 @@ public class DatasetsIT {
         // FIXME: It would be awesome if we could just get a JSON object back instead. :(
         Map<String, Object> datasetContactFromExport = with(exportDatasetAsJson.body().asString()).param("datasetContact", "datasetContact")
                 .getJsonObject("datasetVersion.metadataBlocks.citation.fields.find { fields -> fields.typeName == datasetContact }");
-        System.out.println("datasetContactFromExport: " + datasetContactFromExport);
+        logger.info("datasetContactFromExport: " + datasetContactFromExport);
 
         assertEquals("datasetContact", datasetContactFromExport.get("typeName"));
         List valuesArray = (ArrayList) datasetContactFromExport.get("value");
@@ -449,7 +449,7 @@ public class DatasetsIT {
         // FIXME: It would be awesome if we could just get a JSON object back instead. :(
         Map<String, Object> datasetContactFromExport = with(exportDatasetAsJson.body().asString()).param("datasetContact", "datasetContact")
                 .getJsonObject("datasetVersion.metadataBlocks.citation.fields.find { fields -> fields.typeName == datasetContact }");
-        System.out.println("datasetContactFromExport: " + datasetContactFromExport);
+        logger.info("datasetContactFromExport: " + datasetContactFromExport);
 
         assertEquals("datasetContact", datasetContactFromExport.get("typeName"));
         List valuesArray = (ArrayList) datasetContactFromExport.get("value");
@@ -636,7 +636,7 @@ public class DatasetsIT {
                 .statusCode(OK.getStatusCode());
 
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
-        System.out.println("identifier: " + identifier);
+        logger.info("identifier: " + identifier);
         String numericPart = identifier.replace("FK2/", ""); //remove shoulder from identifier
         assertTrue(StringUtils.isNumeric(numericPart));
 
@@ -680,7 +680,7 @@ public class DatasetsIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
-        System.out.println("dataset id: " + datasetId);
+        logger.info("dataset id: " + datasetId);
 
         Response createContributorResponse = UtilIT.createRandomUser();
         String contributorUsername = UtilIT.getUsernameFromResponse(createContributorResponse);
@@ -942,7 +942,7 @@ public class DatasetsIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
-        System.out.println("dataset id: " + datasetId);
+        logger.info("dataset id: " + datasetId);
 
         Response getDatasetJsonNoFiles = UtilIT.nativeGet(datasetId, apiToken);
         getDatasetJsonNoFiles.prettyPrint();
@@ -1544,6 +1544,62 @@ public class DatasetsIT {
         checkDatasetLocks.then().assertThat()
                 .body("data", equalTo(emptyArray))
                 .statusCode(200);
+    }
+    
+    /**
+     * This test requires the root dataverse to be published to pass.
+     */
+    @Test
+    public void testUpdatePIDMetadataAPI() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforePublishing.prettyPrint();
+        String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
+        String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
+        String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
+        String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
+
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+
+        Response getDatasetJsonAfterPublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonAfterPublishing.prettyPrint();
+        getDatasetJsonAfterPublishing.then().assertThat()
+                .body("data.latestVersion.versionNumber", equalTo(1))
+                .body("data.latestVersion.versionMinorNumber", equalTo(0))
+                .body("data.latestVersion.metadataBlocks.citation.fields[2].value[0].datasetContactEmail.value", equalTo("finch@mailinator.com"))
+                .statusCode(OK.getStatusCode());
+
+        String pathToJsonFilePostPub = "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
+        Response addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPub, apiToken);
+        addDataToPublishedVersion.prettyPrint();
+        addDataToPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response updatePIDMetadata = UtilIT.updateDatasetPIDMetadata(datasetPersistentId, apiToken);
+        updatePIDMetadata.prettyPrint();
+        updatePIDMetadata.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        logger.info("datasetPersistentId: " + datasetPersistentId);
+
     }
     
 }
