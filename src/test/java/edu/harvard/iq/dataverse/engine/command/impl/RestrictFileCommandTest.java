@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.api.DatasetsIT;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -17,6 +18,8 @@ import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.logging.Logger;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -31,6 +34,8 @@ import static org.junit.Assert.assertTrue;
  * @author sarahferry
  */
 public class RestrictFileCommandTest {
+    
+    private static final Logger logger = Logger.getLogger(RestrictFileCommandTest.class.getCanonicalName());
     
     TestDataverseEngine engine;
     private DataFile file;
@@ -92,8 +97,9 @@ public class RestrictFileCommandTest {
         file.setOwner(dataset);
         dataset.setPublicationDate(new Timestamp(new Date().getTime()));
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
+        logger.info("Released: " + file.isReleased() + " Restricted: " + file.isRestricted());
         engine.submit(cmd);
-
+        logger.info("Released: " + file.isReleased() + " Restricted: " + file.isRestricted());
         //asserts
         assertTrue(!file.isRestricted());
         for (FileMetadata fmw : dataset.getEditVersion().getFileMetadatas()) {
