@@ -1,23 +1,27 @@
 package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.FileMetadata;
 import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
+import static edu.harvard.iq.dataverse.util.SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -206,6 +210,28 @@ public class SchemaDotOrgExporterTest {
         dataverse.setName("LibraScholar");
         dataset.setOwner(dataverse);
         System.setProperty(SITE_URL, "https://librascholar.org");
+        boolean hideFileUrls = false;
+        if (hideFileUrls) {
+            System.setProperty(FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS, "true");
+        }
+
+        FileMetadata fmd = new FileMetadata();
+        DataFile dataFile = new DataFile();
+        dataFile.setId(42l);
+        dataFile.setFilesize(1234);
+        dataFile.setContentType("text/plain");
+        dataFile.setProtocol("doi");
+        dataFile.setAuthority("myAuthority");
+        dataFile.setIdentifier("myIdentifierFile1");
+        fmd.setDatasetVersion(version);
+        fmd.setDataFile(dataFile);
+        fmd.setLabel("README.md");
+        fmd.setDescription("README file.");
+        List<FileMetadata> fileMetadatas = new ArrayList<>();
+        fileMetadatas.add(fmd);
+        dataFile.setFileMetadatas(fileMetadatas);;
+        dataFile.setOwner(dataset);
+        version.setFileMetadatas(fileMetadatas);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         schemaDotOrgExporter.exportDataset(version, json1, byteArrayOutputStream);
@@ -252,6 +278,14 @@ public class SchemaDotOrgExporterTest {
         assertEquals("GeographicCoverageOther2", json2.getJsonArray("spatialCoverage").getString(5));
         assertEquals("Afghanistan", json2.getJsonArray("spatialCoverage").getString(6));
         assertEquals(7, json2.getJsonArray("spatialCoverage").size());
+        assertEquals("DataDownload", json2.getJsonArray("distribution").getJsonObject(0).getString("@type"));
+        assertEquals("README.md", json2.getJsonArray("distribution").getJsonObject(0).getString("name"));
+        assertEquals("text/plain", json2.getJsonArray("distribution").getJsonObject(0).getString("fileFormat"));
+        assertEquals(1234, json2.getJsonArray("distribution").getJsonObject(0).getInt("contentSize"));
+        assertEquals("README file.", json2.getJsonArray("distribution").getJsonObject(0).getString("description"));
+        assertEquals("https://doi.org/myAuthority/myIdentifierFile1", json2.getJsonArray("distribution").getJsonObject(0).getString("identifier"));
+        assertEquals("https://librascholar.org/api/access/datafile/42", json2.getJsonArray("distribution").getJsonObject(0).getString("contentUrl"));
+        assertEquals(1, json2.getJsonArray("distribution").size());
     }
 
     /**

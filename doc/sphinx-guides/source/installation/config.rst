@@ -755,6 +755,17 @@ This JVM option is used to configure the path where all the language specific pr
 
 If this value is not set, by default, a Dataverse installation will read the English language property files from the Java Application.
 
+dataverse.files.hide-schema-dot-org-download-urls
++++++++++++++++++++++++++++++++++++++++++++++++++
+
+By default, download URLs to files will be included in Schema.org JSON-LD output. To prevent these URLs from being included in the output, set ``dataverse.files.hide-schema-dot-org-download-urls`` to true as in the example below.
+
+``./asadmin create-jvm-options '-Ddataverse.files.hide-schema-dot-org-download-urls=true'``
+
+Please note that there are other reasons why download URLs may not be included for certain files such as if a guestbook entry is required or if the file is restricted.
+
+For more on Schema.org JSON-LD, see the :doc:`/admin/metadataexport` section of the Admin Guide.
+
 Database Settings
 -----------------
 

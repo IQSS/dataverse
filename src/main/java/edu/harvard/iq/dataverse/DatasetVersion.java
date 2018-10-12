@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
@@ -1651,6 +1652,31 @@ public class DatasetVersion implements Serializable {
             job.add("spatialCoverage", spatialArray);
         }
 
+        List<FileMetadata> fileMetadatasSorted = getFileMetadatasSorted();
+        if (fileMetadatasSorted != null && !fileMetadatasSorted.isEmpty()) {
+            JsonArrayBuilder fileArray = Json.createArrayBuilder();
+            String dataverseSiteUrl = SystemConfig.getDataverseSiteUrlStatic();
+            for (FileMetadata fileMetadata : fileMetadatasSorted) {
+                JsonObjectBuilder fileObject = Json.createObjectBuilder();
+                fileObject.add("@type", "DataDownload");
+                fileObject.add("name", fileMetadata.getLabel());
+                fileObject.add("fileFormat", fileMetadata.getDataFile().getContentType());
+                fileObject.add("contentSize", fileMetadata.getDataFile().getFilesize());
+                fileObject.add("description", fileMetadata.getDescription());
+                fileObject.add("identifier", fileMetadata.getDataFile().getGlobalId().toURL().toString());
+                String hideFilesBoolean = System.getProperty(SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS);
+                if (hideFilesBoolean != null && hideFilesBoolean.equals("true")) {
+                    // no-op
+                } else {
+                    if (FileUtil.isPubliclyDownloadable(fileMetadata)) {
+                        String nullDownloadType = null;
+                        fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false));
+                    }
+                }
+                fileArray.add(fileObject);
+            }
+            job.add("distribution", fileArray);
+        }
         jsonLd = job.build().toString();
         return jsonLd;
     }
