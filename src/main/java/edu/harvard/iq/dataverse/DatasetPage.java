@@ -2409,59 +2409,6 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
     }
-
-    List<FileMetadata> previouslyRestrictedFiles = null;
-    
-    public boolean isShowAccessPopup() {
-        
-        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-
-            if (fmd.isRestricted()) {
-            
-                if (editMode == EditMode.CREATE) {
-                    // if this is a brand new file, it's definitely not 
-                    // of a previously restricted kind!
-                    return true; 
-                }
-            
-                if (previouslyRestrictedFiles != null) {
-                    // We've already checked whether we are in the CREATE mode, 
-                    // above; and that means we can safely assume this filemetadata
-                    // has an existing db id. So it is safe to use the .contains()
-                    // method below:
-                    if (!previouslyRestrictedFiles.contains(fmd)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        
-        return false;
-    }
-    
-    public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
-    
-    public String testSelectedFilesForRestrict(){
-        RequestContext requestContext = RequestContext.getCurrentInstance();
-        if (selectedFiles.isEmpty()) {
-                requestContext.execute("PF('selectFilesForRestrict').show()");           
-            return "";
-        } else {           
-            boolean validSelection = false;
-            for (FileMetadata fmd : selectedFiles) {
-                if (!fmd.isRestricted() ){
-                    validSelection = true;
-                }
-            }
-            if (!validSelection) {
-                requestContext.execute("PF('selectFilesForRestrict').show()");
-                return "";
-            }                       
-            testSelectedFilesForMapData();
-            requestContext.execute("PF('accessPopup').show()");
-            return "";
-        }        
-    }
     
         
     public String restrictSelectedFiles(boolean restricted) throws CommandException{
@@ -2504,61 +2451,12 @@ public class DatasetPage implements java.io.Serializable {
         return  returnToDraftVersion();
     }
 
-    public void restrictFiles(boolean restricted) throws CommandException {
-   
-        //if (previouslyRestrictedFiles == null) {
-        // we don't need to buther with this "previously restricted" business 
-        // when in Create mode... because all the files are new, so none could 
-        // have been restricted previously;
-        // (well, it looks like the code below should never be called in the 
-        // CREATE mode in the first place... the edit files fragment uses
-        // its own restrictFiles() method there; also, the fmd.getDataFile().equals(fmw.getDataFile()))
-        // line is not going to work on a new file... so be mindful of all this
-        // when the code between the 2 beans is merged in 4.3.
-        if (editMode != EditMode.CREATE) {
-            previouslyRestrictedFiles = new ArrayList<>();
-            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                if (fmd.isRestricted()) {
-                    previouslyRestrictedFiles.add(fmd);
-                }
-            }
-            
-            Command cmd;
-            String fileNames = null;
-            for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
-                for (FileMetadata fmd : this.getSelectedFiles()) {
-                    if (restricted && !fmw.isRestricted()) {
-                    // collect the names of the newly-restrticted files, 
-                        // to show in the success message:
-                        // I don't think this does the right thing: 
-                        // (adds too many files to the message; good thing this 
-                        // message isn't used, normally)
-                        if (fileNames == null) {
-                            fileNames = fmd.getLabel();
-                        } else {
-                            fileNames = fileNames.concat(fmd.getLabel());
-                        }
-                    }
-                    if (fmd.getDataFile().equals(fmw.getDataFile())) {
-                        cmd = new RestrictFileCommand(fmw.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
-                        commandEngine.submit(cmd);
-                        
-                        
-//                        fmw.setRestricted(restricted);
-//                        if (workingVersion.isDraft() && !fmw.getDataFile().isReleased()) {
-//                            // We do not really need to check that the working version is 
-//                            // a draft here - it must be a draft, if we've gotten this
-//                            // far. But just in case. -- L.A. 4.2.1
-//                            fmw.getDataFile().setRestricted(restricted);
-//                        }
-                    }
-                }
-            }
-            if (fileNames != null) {
-                String successMessage = JH.localize("file.restricted.success");
-                logger.fine(successMessage);
-                successMessage = successMessage.replace("{0}", fileNames);
-                JsfHelper.addFlashMessage(successMessage);
+    private void restrictFiles(boolean restricted) throws CommandException {
+        Command<Void> cmd;
+        for (FileMetadata fmd : this.getSelectedFiles()) {
+            if (restricted && !fmd.isRestricted()) {
+                cmd = new RestrictFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
+                commandEngine.submit(cmd);
             }
         }
     }
