@@ -93,6 +93,7 @@ public class RestrictFileCommandTest {
         dataset.setPublicationDate(new Timestamp(new Date().getTime()));
         DataFile file = dataset.getFiles().get(0);
         file.setPublicationDate(dataset.getPublicationDate());
+        file.setOwner(dataset);
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
         engine.submit(cmd);
 
