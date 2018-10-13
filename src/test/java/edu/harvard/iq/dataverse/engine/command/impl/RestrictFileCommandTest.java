@@ -91,8 +91,13 @@ public class RestrictFileCommandTest {
     @Test
     public void testRestrictPublishedFile() throws Exception{
         dataset.setPublicationDate(new Timestamp(new Date().getTime()));
+        // Restrict on a published file will cause the creation of a new draft dataset version
+        // and should update only the FileMetadata in the draft version for the test file.
+        // So we need to make sure that we use one of the files in the dataset for the test 
         DataFile file = dataset.getFiles().get(0);
+        // And make sure is is file.isReleased() == true
         file.setPublicationDate(dataset.getPublicationDate());
+        // And set its owner, which is usually done automatically, but not in the test setup
         file.setOwner(dataset);
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
         engine.submit(cmd);
@@ -105,6 +110,7 @@ public class RestrictFileCommandTest {
                 fileFound=true;
                 assertEquals(fmw, file.getFileMetadata());
                 assertTrue(fmw.isRestricted());
+                assertTrue(!file.getFileMetadata().isRestricted());
                 break;
             }
         }
@@ -171,8 +177,10 @@ public class RestrictFileCommandTest {
     
     @Test
     public void testUnrestrictPublishedFile() throws Exception{
-        file.setOwner(dataset);
+        //see comments in testRestrictPublishedFile()
         dataset.setPublicationDate(new Timestamp(new Date().getTime()));
+        DataFile file = dataset.getFiles().get(0);
+        file.setOwner(dataset);
         file.setPublicationDate(dataset.getPublicationDate());
         file.setRestricted(true);
         file.getFileMetadata().setRestricted(true);
@@ -180,12 +188,17 @@ public class RestrictFileCommandTest {
         engine.submit(cmd);
         //asserts
         assertTrue(file.isRestricted());
+        boolean fileFound = false;
         for (FileMetadata fmw : dataset.getEditVersion().getFileMetadatas()) {
             if (file.equals(fmw.getDataFile())) {
+                fileFound = true;
                 assertEquals(fmw, file.getFileMetadata());
                 assertTrue(!fmw.isRestricted());
+                assertTrue(file.getFileMetadata().isRestricted());
+                break;
             }
         }
+        assertTrue(fileFound);
     }
     
     
