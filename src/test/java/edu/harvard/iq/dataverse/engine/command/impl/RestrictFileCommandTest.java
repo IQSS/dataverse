@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
@@ -99,6 +100,8 @@ public class RestrictFileCommandTest {
         file.setPublicationDate(dataset.getPublicationDate());
         // And set its owner, which is usually done automatically, but not in the test setup
         file.setOwner(dataset);
+        //And set the version state to released so that the RestrictFileCommand will create a draft version
+        dataset.getLatestVersion().setVersionState(VersionState.RELEASED);
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
         engine.submit(cmd);
 
@@ -184,6 +187,7 @@ public class RestrictFileCommandTest {
         file.setPublicationDate(dataset.getPublicationDate());
         file.setRestricted(true);
         file.getFileMetadata().setRestricted(true);
+        dataset.getLatestVersion().setVersionState(VersionState.RELEASED);
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), unrestrict);
         engine.submit(cmd);
         //asserts
