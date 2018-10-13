@@ -111,7 +111,7 @@ public class RestrictFileCommandTest {
         for (FileMetadata fmw : dataset.getEditVersion().getFileMetadatas()) {
             if (file.equals(fmw.getDataFile())) {
                 fileFound=true;
-                assertEquals(fmw, file.getFileMetadata());
+                //If it worked fmw is for the draft version and file.getFileMetadata() is for the published version
                 assertTrue(fmw.isRestricted());
                 assertTrue(!file.getFileMetadata().isRestricted());
                 break;
@@ -196,7 +196,6 @@ public class RestrictFileCommandTest {
         for (FileMetadata fmw : dataset.getEditVersion().getFileMetadatas()) {
             if (file.equals(fmw.getDataFile())) {
                 fileFound = true;
-                assertEquals(fmw, file.getFileMetadata());
                 assertTrue(!fmw.isRestricted());
                 assertTrue(file.getFileMetadata().isRestricted());
                 break;
