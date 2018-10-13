@@ -66,7 +66,7 @@ public class RestrictFileCommand extends AbstractVoidCommand {
             DatasetVersion workingVersion = dataset.getEditVersion();
             // We need the FileMetadata for the file in the draft dataset version and the
             // file we have may still reference the fmd from the prior released version
-            FileMetadata draftFmd = file.getFileMetadata();
+            FileMetadata draftFmd = null;
             if (dataset.isReleased()) {
                 for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
                     if (file.equals(fmw.getDataFile())) {
@@ -75,9 +75,11 @@ public class RestrictFileCommand extends AbstractVoidCommand {
                     }
                 }
             }
-            draftFmd.setRestricted(restrict);
-            if (!file.isReleased()) {
-                file.setRestricted(restrict);
+            if (draftFmd != null) {
+                draftFmd.setRestricted(restrict);
+                if (!file.isReleased()) {
+                    file.setRestricted(restrict);
+                }
             }
         }
     }
