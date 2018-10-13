@@ -90,20 +90,24 @@ public class RestrictFileCommandTest {
     
     @Test
     public void testRestrictPublishedFile() throws Exception{
-        file.setOwner(dataset);
         dataset.setPublicationDate(new Timestamp(new Date().getTime()));
+        DataFile file = dataset.getFiles().get(0);
         file.setPublicationDate(dataset.getPublicationDate());
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
         engine.submit(cmd);
 
         //asserts
         assertTrue(!file.isRestricted());
+        boolean fileFound = false;
         for (FileMetadata fmw : dataset.getEditVersion().getFileMetadatas()) {
             if (file.equals(fmw.getDataFile())) {
+                fileFound=true;
                 assertEquals(fmw, file.getFileMetadata());
                 assertTrue(fmw.isRestricted());
+                break;
             }
         }
+        assertTrue(fileFound);
     }
     
     
