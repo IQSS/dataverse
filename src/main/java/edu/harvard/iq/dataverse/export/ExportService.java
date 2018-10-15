@@ -70,6 +70,8 @@ public class ExportService {
 
     public static synchronized ExportService getInstance(SettingsServiceBean settingsService) {
         ExportService.settingsService = settingsService;
+        // We pass settingsService into the JsonPrinter so it can check the :ExcludeEmailFromExport setting in calls to JsonPrinter.jsonAsDatasetDto().
+        JsonPrinter.setSettingsService(settingsService);
         if (service == null) {
             service = new ExportService();
         }
@@ -159,9 +161,8 @@ public class ExportService {
             if (releasedVersion == null) {
                 throw new ExportException("No released version for dataset " + dataset.getGlobalId().toString());
             }
-            // We pass settingsService into the JsonPrinter constructor to check the :ExcludeEmailFromExport setting.
-            JsonPrinter jsonPrinter = new JsonPrinter(settingsService);
-            final JsonObjectBuilder datasetAsJsonBuilder = jsonPrinter.jsonAsDatasetDto(releasedVersion);
+
+            final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(releasedVersion);
             JsonObject datasetAsJson = datasetAsJsonBuilder.build();
 
             Iterator<Exporter> exporters = loader.iterator();
@@ -212,9 +213,7 @@ public class ExportService {
                     if (releasedVersion == null) {
                         throw new IllegalStateException("No Released Version");
                     }
-                    // We pass settingsService into the JsonPrinter constructor to check the :ExcludeEmailFromExport setting.
-                    JsonPrinter jsonPrinter = new JsonPrinter(settingsService);
-                    final JsonObjectBuilder datasetAsJsonBuilder = jsonPrinter.jsonAsDatasetDto(releasedVersion);
+                    final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(releasedVersion);
                     cacheExport(releasedVersion, formatName, datasetAsJsonBuilder.build(), e);
                 }
             }
