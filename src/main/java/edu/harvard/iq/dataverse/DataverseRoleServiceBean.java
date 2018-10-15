@@ -23,6 +23,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import org.ocpsoft.common.util.Strings;
 //import javax.validation.constraints.NotNull;
 
 /**
@@ -254,8 +255,8 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     //public List<RoleAssignment> directRoleAssignments(@NotNull Set<? extends RoleAssignee> roleAssignees, @NotNull Collection<DvObject> dvos) {
     public List<RoleAssignment> directRoleAssignments(Set<? extends RoleAssignee> roleAssignees, Collection<DvObject> dvos) {
         List<String> raIds = roleAssignees.stream().map(roas -> roas.getIdentifier()).collect(Collectors.toList());
-        List<Long> dvoIds = dvos.stream().map(dvo -> dvo.getId()).collect(Collectors.toList());
-        
+        List<Long> dvoIds = dvos.stream().filter(dvo -> !(dvo.getId() == null)).map(dvo -> dvo.getId()).collect(Collectors.toList());
+                
         return em.createNamedQuery("RoleAssignment.listByAssigneeIdentifiers", RoleAssignment.class)
                         .setParameter("assigneeIdentifiers", raIds)
                         .setParameter("definitionPointIds", dvoIds)
