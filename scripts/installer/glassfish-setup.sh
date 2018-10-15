@@ -24,10 +24,10 @@
 # RSERVE_USER
 # RSERVE_PASS
 #
-# DataCite configuration:
-# DATACITE_USERNAME
-# DATACITE_PASSWORD
-# DATACITE_BASEURL
+# DOI configuration:
+# DOI_USERNAME
+# DOI_PASSWORD
+# DOI_BASEURL
 #
 # other local configuration:
 # HOST_ADDRESS
@@ -74,10 +74,10 @@ function preliminary_setup()
   # DataCite DOI Settings
   # (we can no longer offer EZID with their shared test account)
   # jvm-options use colons as separators, escape as literal
-  DATACITE_BASEURL_ESC=`echo $DATACITE_BASEURL | sed -e 's/:/\\:/'`
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=${DATACITE_USERNAME}"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.password=${DATACITE_PASSWORD}"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=${DATACITE_BASEURL_ESC}"
+  DOI_BASEURL_ESC=`echo $DOI_BASEURL | sed -e 's/:/\\:/'`
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=${DOI_USERNAME}"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.password=${DOI_PASSWORD}"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=${DOI_BASEURL_ESC}"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
   # enable comet support

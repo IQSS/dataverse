@@ -82,9 +82,9 @@ else
 	'RSERVE_USER',
 	'RSERVE_PASSWORD',
 
-	'DATACITE_USERNAME',
-	'DATACITE_PASSWORD',
-	'DATACITE_BASEURL'
+	'DOI_USERNAME',
+	'DOI_PASSWORD',
+	'DOI_BASEURL'
 
 	);
 }
@@ -111,9 +111,9 @@ my %CONFIG_DEFAULTS = (
     'RSERVE_USER',     'rserve',
     'RSERVE_PASSWORD', 'rserve',
 
-    'DATACITE_USERNAME',    'dataciteuser',
-    'DATACITE_PASSWORD',    'datacitepassword',
-    'DATACITE_BASEURL'    'https://mds.test.datacite.org'
+    'DOI_USERNAME',    'dataciteuser',
+    'DOI_PASSWORD',    'datacitepassword',
+    'DOI_BASEURL'    'https://mds.test.datacite.org'
 
 );
 
@@ -138,9 +138,9 @@ my %CONFIG_PROMPTS = (
     'RSERVE_USER',     'Rserve User Name',
     'RSERVE_PASSWORD', 'Rserve User Password',
 
-    'DATACITE_USERNAME',    'Datacite username',
-    'DATACITE_PASSWORD',    'Datacite password',
-    'DATACITE_BASEURL',    'Datacite URL'
+    'DOI_USERNAME',    'Datacite username',
+    'DOI_PASSWORD',    'Datacite password',
+    'DOI_BASEURL',    'Datacite URL'
 
 );
 
@@ -166,9 +166,9 @@ my %CONFIG_COMMENTS = (
     'RSERVE_USER',     '',
     'RSERVE_PASSWORD', '',
 
-    'DATACITE_USERNAME',    'DataCite username. Only necessary for publishing / minting DOIs.',
-    'DATACITE_PASSWORD',    'DataCite password.',
-    'DATACITE_BASEURL',    'DataCite URL. Probably https://mds.datacite.org'
+    'DOI_USERNAME',    'DataCite or EZID username. Only necessary for publishing / minting DOIs.',
+    'DOI_PASSWORD',    'DataCite or EZID account password.',
+    'DOI_BASEURL',    'DataCite or EZID URL. Probably https://mds.datacite.org'
 
 );
 
