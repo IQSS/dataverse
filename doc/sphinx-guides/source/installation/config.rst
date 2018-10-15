@@ -1110,6 +1110,20 @@ By default Dataverse will attempt to connect to Solr on port 8983 on localhost. 
 
 ``curl -X PUT -d localhost:8983 http://localhost:8080/api/admin/settings/:SolrHostColonPort``
 
+:SolrFullTextIndexing
++++++++++++++++++++++
+
+Whether or not to index the content of files such as PDFs. The default is false.
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SolrFullTextIndexing``
+
+:SolrMaxFileSizeForFullTextIndexing
++++++++++++++++++++++++++++++++++++
+
+If ``:SolrFullTextIndexing`` is set to true, the content of files of any size will be indexed. To set a limit in bytes for which files to index in this way:
+
+``curl -X PUT -d 314572800 http://localhost:8080/api/admin/settings/:SolrMaxFileSizeForFullTextIndexing``
+
 :SignUpUrl
 ++++++++++
 
