@@ -154,7 +154,9 @@ public class ExportService {
             if (releasedVersion == null) {
                 throw new ExportException("No released version for dataset " + dataset.getGlobalId().toString());
             }
-            final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(releasedVersion);
+            // We pass settingsService into the JsonPrinter constructor to check the :ExcludeEmailFromExport setting.
+            JsonPrinter jsonPrinter = new JsonPrinter(settingsService);
+            final JsonObjectBuilder datasetAsJsonBuilder = jsonPrinter.jsonAsDatasetDto(releasedVersion);
             JsonObject datasetAsJson = datasetAsJsonBuilder.build();
 
             Iterator<Exporter> exporters = loader.iterator();
@@ -205,7 +207,9 @@ public class ExportService {
                     if (releasedVersion == null) {
                         throw new IllegalStateException("No Released Version");
                     }
-                    final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(releasedVersion);
+                    // We pass settingsService into the JsonPrinter constructor to check the :ExcludeEmailFromExport setting.
+                    JsonPrinter jsonPrinter = new JsonPrinter(settingsService);
+                    final JsonObjectBuilder datasetAsJsonBuilder = jsonPrinter.jsonAsDatasetDto(releasedVersion);
                     cacheExport(releasedVersion, formatName, datasetAsJsonBuilder.build(), e);
                 }
             }
