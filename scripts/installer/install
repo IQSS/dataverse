@@ -113,7 +113,7 @@ my %CONFIG_DEFAULTS = (
 
     'DATACITE_USERNAME',    'dataciteuser',
     'DATACITE_PASSWORD',    'datacitepassword',
-    'DATACITE_BASEURL'    'https\://mds.test.datacite.org'
+    'DATACITE_BASEURL'    'https://mds.test.datacite.org'
 
 );
 
