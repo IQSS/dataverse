@@ -78,12 +78,13 @@ public class JsonPrinter {
 
     static SettingsServiceBean settingsService;
 
-    public JsonPrinter(SettingsServiceBean settingsService) {
-        this.settingsService = settingsService;
+    // Passed to DatasetFieldWalker so it can check the :ExcludeEmailFromExport setting
+    public static void setSettingsService(SettingsServiceBean ssb) {
+            settingsService = ssb;
     }
 
     public JsonPrinter() {
-        this(null);
+   
     }
 
     public static final BriefJsonPrinter brief = new BriefJsonPrinter();
