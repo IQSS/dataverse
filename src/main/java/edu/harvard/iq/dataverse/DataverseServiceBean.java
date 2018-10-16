@@ -649,7 +649,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
     }
     
-    public JsonObjectBuilder addRoleAssignmentsToChildren(Dataverse owner, ArrayList<String> rolesToInherit,
+    public String addRoleAssignmentsToChildren(Dataverse owner, ArrayList<String> rolesToInherit,
             boolean inheritAllRoles) {
         /*
          * This query recursively finds all Dataverses that are inside/children of the
@@ -777,10 +777,10 @@ public class DataverseServiceBean implements java.io.Serializable {
          * entities that had an admin role on the specified dataverse which were not
          * handled. Add this to the log and the API return message.
          */
-        logger.info(Json.createObjectBuilder().add("Dataverses Updated", dataverseIds)
+        String result = Json.createObjectBuilder().add("Dataverses Updated", dataverseIds)
                 .add("Updated Dataverse Aliases", dataverseAliases).add("Assignments added for", usedNames)
-                .add("Assignments not added for", unusedNames).build().toString());
-        return Json.createObjectBuilder().add("Dataverses Updated", dataverseAliases).add("Assignments added for", usedNames)
-                .add("Assignments not added for", unusedNames);
+                .add("Assignments not added for", unusedNames).build().toString();
+        logger.info(result);
+        return (result);
     }
 }
