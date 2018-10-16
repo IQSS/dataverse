@@ -246,13 +246,14 @@ public class DataversesIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
-        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);//.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
         
         Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse2.prettyPrint();
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
-        Response publishDataverse2 = UtilIT.publishDataverseViaSword(dataverseAlias2, apiToken);
+        Response publishDataverse2 = UtilIT.publishDataverseViaNativeApi(dataverseAlias2, apiToken);
         assertEquals(200, publishDataverse2.getStatusCode());
         
         Response moveResponse = UtilIT.moveDataverse(dataverseAlias, dataverseAlias2, true, apiToken);
