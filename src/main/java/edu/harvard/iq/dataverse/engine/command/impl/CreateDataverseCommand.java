@@ -115,23 +115,26 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 
                 List<RoleAssignment> assignedRoles = ctxt.roles().directRoleAssignments(owner);
                 for (RoleAssignment role : assignedRoles) {
-                    // If all roles are to be inherited, or this role is in the list, and, in both
-                    // cases, this is not an admin role for the current user which was just created
-                    // above...
-                    if ((inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias()))
-                            && !(role.getAssigneeIdentifier().equals(getRequest().getUser().getIdentifier())
-                                    && role.getRole().equals(adminRole))) {
-                        String identifier = role.getAssigneeIdentifier();
-                        if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
-                            identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
-                            ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                    ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken));
-                        } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
-                            identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
-                            Group roleGroup = ctxt.groups().getGroup(identifier);
-                            if (roleGroup != null) {
+                    //Only supporting built-in/non-dataverse-specific custom roles. Custom roles all have an owner.
+                    if (role.getRole().getOwner() == null) {
+                        // And... If all roles are to be inherited, or this role is in the list, and, in both
+                        // cases, this is not an admin role for the current user which was just created
+                        // above...
+                        if ((inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias()))
+                                && !(role.getAssigneeIdentifier().equals(getRequest().getUser().getIdentifier())
+                                        && role.getRole().equals(adminRole))) {
+                            String identifier = role.getAssigneeIdentifier();
+                            if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
+                                identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
                                 ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                        roleGroup, managedDv, privateUrlToken));
+                                        ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken));
+                            } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
+                                identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
+                                Group roleGroup = ctxt.groups().getGroup(identifier);
+                                if (roleGroup != null) {
+                                    ctxt.roles().save(new RoleAssignment(role.getRole(),
+                                            roleGroup, managedDv, privateUrlToken));
+                                }
                             }
                         }
                     }
