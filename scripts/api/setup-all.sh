@@ -1,22 +1,39 @@
 #!/bin/bash
 
 SECURESETUP=1
+DV_SU_PASSWORD="admin"
 
-for opt in $*
-do
-  case $opt in
-      "--insecure")
-	  SECURESETUP=0
-	  ;;
-      "-insecure")
-	  SECURESETUP=0;
-	  ;;
-      *)
-	  echo "invalid option: $opt"
-	  exit 1 >&2
-	  ;;
+usage() {
+  echo "Usage: $0 --insecure -p admin1" 1>&2
+  exit 1
+}
+
+# Transform long options to short ones
+# https://stackoverflow.com/questions/12022592/how-can-i-use-long-options-with-the-bash-getopts-builtin/30026641#30026641
+# Transform long options to short ones
+# FIXME: Couldn't get --dv_su_password to pass argument
+# "--dv_su_password") set -- "$@" "-p" ;;
+for arg in "$@"; do
+  shift
+  case "$arg" in
+    "--insecure")       set -- "$@" "-i" ;;
+    "-insecure")        set -- "$@" "-i" ;;
+    *)                  set -- "$@" "$arg"
   esac
 done
+
+# Parse short options
+OPTIND=1
+while getopts "hip:" opt
+do
+  case "$opt" in
+    "h") usage; exit 0 ;;
+    "i") SECURESETUP=0 ;;
+    "p") DV_SU_PASSWORD=${OPTARG} ;;
+    "?") usage >&2; exit 1 ;;
+  esac
+done
+shift $(expr $OPTIND - 1) # remove options from positional parameters
 
 command -v jq >/dev/null 2>&1 || { echo >&2 '`jq` ("sed for JSON") is required, but not installed. Download the binary for your platform from http://stedolan.github.io/jq/ and make sure it is in your $PATH (/usr/bin/jq is fine) and executable with `sudo chmod +x /usr/bin/jq`. On Mac, you can install it with `brew install jq` if you use homebrew: http://brew.sh . Aborting.'; exit 1; }
 
@@ -58,7 +75,7 @@ curl -X PUT -d 'native/http' $SERVER/admin/settings/:UploadMethods
 echo
 
 echo "Setting up the admin user (and as superuser)"
-adminResp=$(curl -s -H "Content-type:application/json" -X POST -d @data/user-admin.json "$SERVER/builtin-users?password=admin&key=burrito")
+adminResp=$(curl -s -H "Content-type:application/json" -X POST -d @data/user-admin.json "$SERVER/builtin-users?password=$DV_SU_PASSWORD&key=burrito")
 echo $adminResp
 curl -X POST "$SERVER/admin/superuser/dataverseAdmin"
 echo
