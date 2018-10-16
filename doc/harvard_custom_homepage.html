@@ -38,7 +38,14 @@
     var thumbBaseURL = baseUrl + "/api/datasets/:persistentId/thumbnail" + "?persistentId=";
     var metricBaseUrl = baseUrl + "/api/info/metrics/";
     
-    function queryAndWrite(fqString, resultCount, elm) {
+    /**
+    * Runs two search queries, the first to get dataverses based on a certain filter, and the second to get recent datasets for those dataverses.
+    * The initial intent of the query is to get recent datasets based on dataverse subjects
+    * @param {string} fqString - the filter for the first query, which returns which dataverses to get recent datasets from. For example: "&fq=dvCategory:(Journal%20OR%20Laboratory)" To get dataverses that are a Journal or Laboratory.
+    * @param {number} resultCount - the number of results to write
+    * @param {string} elm - The id of the html element to write the result to
+    */
+    function writeRecentDatasetsInDataverses(fqString, resultCount, elm) {
         var tempSecondSearch = secondSearch + resultCount;
         
         $.get(firstSearch + fqString, function(jData) {
@@ -78,11 +85,11 @@
     }
 
     //These are the correct searches, but commented out as I don't have enough results
-    //queryAndWrite("&fq=dvCategory:(Journal%20OR%20Laboratory)",3, "journals");
-    //queryAndWrite("&fq=dvCategory:(\"Research+Project\"%20OR%20Researcher)",6, "researchers");
+    //writeRecentDatasetsInDataverses("&fq=dvCategory:(Journal%20OR%20Laboratory)",3, "journals");
+    //writeRecentDatasetsInDataverses("&fq=dvCategory:(\"Research+Project\"%20OR%20Researcher)",6, "researchers");
     
-    queryAndWrite("" , 3, "journals");
-    queryAndWrite("" , 6, "researchers");
+    writeRecentDatasetsInDataverses("" , 3, "journals");
+    writeRecentDatasetsInDataverses("" , 6, "researchers");
     
     queryMetric("datasets/toMonth", "", "activityAllTimeDatasetsValue");
     queryMetric("files/toMonth", "", "activityAllTimeFilesValue");
@@ -121,7 +128,7 @@
                     <hr class="col-xs-11 no-margin-top"/>
 
                     <!-- JOURNAL RESULTS -->
-                    <div id="journals"></div>
+                    <div id="journals">Should not see this</div>
 
                     <!-- VIEW ALL -->
                     <div class="col-xs-11 text-center">
@@ -133,7 +140,7 @@
                     <hr class="col-xs-11 no-margin-top"/>
 
                     <!-- RESEARCHERS RESULTS -->
-                    <div id="researchers"></div>
+                    <div id="researchers">Should not see this</div>
 
                     <!-- VIEW ALL -->
                     <div class="col-xs-11 text-center">
