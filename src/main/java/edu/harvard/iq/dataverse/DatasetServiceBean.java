@@ -731,9 +731,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
         Dataset theDataset = find(datasetId);
-        String nonNullDefaultIfKeyNotFound = "";
-        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, doiProvider, request, isPidPrePublished));
+        commandEngine.submit(new FinalizeDatasetPublicationCommand(ctxt.em().merge(theDataset), request, isPidPrePublished));
     }
     
     /*

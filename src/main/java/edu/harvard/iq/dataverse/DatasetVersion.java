@@ -120,14 +120,14 @@ public class DatasetVersion implements Serializable {
 
     @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("label") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category
-    private List<FileMetadata> fileMetadatas = new ArrayList();
+    private List<FileMetadata> fileMetadatas = new ArrayList<FileMetadata>();
     
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)
     @JoinColumn(name = "termsOfUseAndAccess_id")
     private TermsOfUseAndAccess termsOfUseAndAccess;
     
     @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<DatasetField> datasetFields = new ArrayList();
+    private List<DatasetField> datasetFields = new ArrayList<DatasetField>();
     
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column( nullable=false )
@@ -145,6 +145,10 @@ public class DatasetVersion implements Serializable {
     
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
     private String archiveNote;
+    
+    @Column(nullable=true, columnDefinition = "TEXT")
+    private String archivalCopyLocation;
+    
     
     private String deaccessionLink;
 
@@ -257,6 +261,14 @@ public class DatasetVersion implements Serializable {
                     + "  StudyVersion id=" + id + ", archiveNote=" + note);
         }
         this.archiveNote = note;
+    }
+    
+    public String getArchivalCopyLocation() {
+        return archivalCopyLocation;
+    }
+
+    public void setArchivalCopyLocation(String location) {
+        this.archivalCopyLocation = location;
     }
 
     public String getDeaccessionLink() {

@@ -38,6 +38,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.core.MediaType;
+
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -155,10 +157,9 @@ public class ExportService {
         try {
             DatasetVersion releasedVersion = dataset.getReleasedVersion();
             if (releasedVersion == null) {
-                throw new ExportException("No released version for dataset " + dataset.getGlobalIdString());
+                throw new ExportException("No released version for dataset " + dataset.getGlobalId().toString());
             }
-            JsonPrinter jsonPrinter = new JsonPrinter(settingsService);
-            final JsonObjectBuilder datasetAsJsonBuilder = jsonPrinter.jsonAsDatasetDto(releasedVersion);
+            final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(releasedVersion);
             JsonObject datasetAsJson = datasetAsJsonBuilder.build();
 
             Iterator<Exporter> exporters = loader.iterator();
@@ -209,17 +210,17 @@ public class ExportService {
                     if (releasedVersion == null) {
                         throw new IllegalStateException("No Released Version");
                     }
-                    JsonPrinter jsonPrinter = new JsonPrinter(settingsService);
-                    final JsonObjectBuilder datasetAsJsonBuilder = jsonPrinter.jsonAsDatasetDto(releasedVersion);
+                    final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(releasedVersion);
                     cacheExport(releasedVersion, formatName, datasetAsJsonBuilder.build(), e);
                 }
             }
         } catch (ServiceConfigurationError serviceError) {
             throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
         } catch (IllegalStateException e) {
-            throw new ExportException("No published version found during export. " + dataset.getGlobalIdString());
+            throw new ExportException("No published version found during export. " + dataset.getGlobalId().toString());
         }
     }
+    
 
     public Exporter getExporter(String formatName) throws ExportException {
         try {
@@ -364,5 +365,20 @@ public class ExportService {
         }
         return null;
     }
+
+	public String getMediaType(String provider) {
+		 try {
+	            Iterator<Exporter> exporters = loader.iterator();
+	            while (exporters.hasNext()) {
+	                Exporter e = exporters.next();
+	                if (e.getProviderName().equals(provider)) {
+	                    return e.getMediaType();
+	                }
+	            }
+	        } catch (ServiceConfigurationError serviceError) {
+	            serviceError.printStackTrace();
+	        }
+	        return MediaType.TEXT_PLAIN;
+	}
 
 }

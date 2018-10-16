@@ -74,17 +74,17 @@ public class DDIExporter implements Exporter {
     
     @Override
     public String getXMLNameSpace() throws ExportException {
-        return this.DEFAULT_XML_NAMESPACE;   
+        return DDIExporter.DEFAULT_XML_NAMESPACE;   
     }
     
     @Override
     public String getXMLSchemaLocation() throws ExportException {
-        return this.DEFAULT_XML_SCHEMALOCATION;
+        return DDIExporter.DEFAULT_XML_SCHEMALOCATION;
     }
     
     @Override
     public String getXMLSchemaVersion() throws ExportException {
-        return this.DEFAULT_XML_VERSION;
+        return DDIExporter.DEFAULT_XML_VERSION;
     }
     
     @Override

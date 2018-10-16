@@ -273,6 +273,15 @@ public class Dataset extends DvObjectContainer {
         return versions;
     }
 
+    public DatasetVersion getVersion(long majorVersion, long minorVersion) {
+        for(DatasetVersion version: versions) {
+            if((majorVersion == version.getVersionNumber())&&(minorVersion == version.getMinorVersionNumber())) {
+                return version;
+            }
+        }
+        return null;
+    }
+    
     public void setVersions(List<DatasetVersion> versions) {
         this.versions = versions;
     }
@@ -654,13 +663,13 @@ public class Dataset extends DvObjectContainer {
     public String getRemoteArchiveURL() {
         if (isHarvested()) {
             if (HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(this.getHarvestedFrom().getHarvestStyle())) {
-                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalIdString();
+                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId().asString();
             } else if (HarvestingClient.HARVEST_STYLE_VDC.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 String rootArchiveUrl = this.getHarvestedFrom().getHarvestingUrl();
                 int c = rootArchiveUrl.indexOf("/OAIHandler");
                 if (c > 0) {
                     rootArchiveUrl = rootArchiveUrl.substring(0, c);
-                    return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalIdString();
+                    return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId().asString();
                 }
             } else if (HarvestingClient.HARVEST_STYLE_ICPSR.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 // For the ICPSR, it turns out that the best thing to do is to 

@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -115,7 +116,7 @@ public class DOIDataCiteRegisterService {
         return retString;
     }
 
-    private String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
+    public static String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
 
         Dataset dataset = null;
 
@@ -145,7 +146,8 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
         metadataTemplate.setTitle(dvObject.getDisplayName());
-        String producerString = dataverseService.findRootDataverse().getName();
+        //QDR use institution name
+        String producerString = ResourceBundle.getBundle("Bundle").getString("institution.name");
         if (producerString.isEmpty()) {
             producerString = ":unav";
         }

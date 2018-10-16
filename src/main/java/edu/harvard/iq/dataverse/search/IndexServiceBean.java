@@ -918,7 +918,7 @@ public class IndexServiceBean {
 
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
-                        if (!fileMetadata.getDataFile().isRestricted()) {
+                        if (true /*!fileMetadata.getDataFile().isRestricted()*/) {
                             StorageIO<DataFile> accessObject = null;
                             InputStream instream = null;
                             ContentHandler textHandler = null;
@@ -926,12 +926,12 @@ public class IndexServiceBean {
                                 accessObject = DataAccess.getStorageIO(fileMetadata.getDataFile(),
                                         new DataAccessRequest());
                                 if (accessObject != null) {
+                                    accessObject.open();
                                     if (accessObject.getSize() <= maxSize) {
                                         AutoDetectParser autoParser = new AutoDetectParser();
                                         textHandler = new BodyContentHandler(-1);
                                         Metadata metadata = new Metadata();
                                         ParseContext context = new ParseContext();
-                                        accessObject.open();
                                         instream = accessObject.getInputStream();
                                         /*
                                          * Try parsing the file. Note that, other than by limiting size, there's been no

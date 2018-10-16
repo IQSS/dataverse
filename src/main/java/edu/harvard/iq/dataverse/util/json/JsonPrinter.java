@@ -230,7 +230,8 @@ public class JsonPrinter {
             for ( WorkflowStepData stp : wf.getSteps() ) {
                 arr.add( jsonObjectBuilder().add("stepType", stp.getStepType())
                                    .add("provider", stp.getProviderId())
-                                   .add("parameters", mapToObject(stp.getStepParameters())) );
+                                   .add("parameters", mapToObject(stp.getStepParameters()))
+                                   .add("requiredSettings", mapToObject(stp.getStepParameters())) );
             }
             bld.add("steps", arr );
         }
@@ -607,7 +608,7 @@ public class JsonPrinter {
         return (d == null) ? null : Util.getDateTimeFormat().format(d);
     }
 
-    private static JsonArrayBuilder getFileCategories(FileMetadata fmd) {
+    public static JsonArrayBuilder getFileCategories(FileMetadata fmd) {
         if (fmd == null) {
             return null;
         }
@@ -622,7 +623,7 @@ public class JsonPrinter {
         return fileCategories;
     }
 
-    private static JsonArrayBuilder getTabularFileTags(DataFile df) {
+    public static JsonArrayBuilder getTabularFileTags(DataFile df) {
         if (df == null) {
             return null;
         }

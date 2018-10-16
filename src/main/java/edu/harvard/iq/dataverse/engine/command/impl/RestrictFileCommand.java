@@ -46,7 +46,7 @@ public class RestrictFileCommand extends AbstractVoidCommand {
         // check if public install & don't allow
         boolean defaultValue = false;
         boolean publicInstall = ctxt.settings().isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
-        
+
         if (publicInstall) {
             throw new CommandExecutionException("Restricting files is not permitted on a public installation.", this);
         }

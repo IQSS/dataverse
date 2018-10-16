@@ -718,6 +718,12 @@ public class JsonParser {
             params.keySet().forEach(k -> paramMap.put(k,jsonValueToString(params.get(k))));
             wsd.setStepParameters(paramMap);
         }
+        if ( json.containsKey("requiredSettings") ) {
+            JsonObject settings = json.getJsonObject("requiredSettings");
+            Map<String,String> settingsMap = new HashMap<>();
+            settings.keySet().forEach(k -> settingsMap.put(k,jsonValueToString(settings.get(k))));
+            wsd.setStepSettings(settingsMap);
+        }
         return wsd;
     }
     

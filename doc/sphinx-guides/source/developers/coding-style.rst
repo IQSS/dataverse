@@ -54,6 +54,42 @@ Place curly braces according to the style below, which is an example you can see
         }
     }
 
+Braces Placement
+^^^^^^^^^^^^^^^^
+
+Place curly braces according to the style below, which is an example you can see from Netbeans.
+
+.. code-block:: java
+
+    public class ClassA {
+
+        private String letters[] = new String[]{"A", "B"};
+
+        public int meth(String text, int number) {
+            BinaryOperator plus = (a, b) -> {
+                return a + b;
+            };
+            if (text != null) {
+                try {
+                    meth("Some text", text.length());
+                } catch (Throwable t) {
+                } finally {
+                }
+            } else if (number >= 0) {
+                text = number == 0 ? "empty" : "nonempty";
+            }
+            do {
+                number = number + 1;
+            } while (number < 2);
+            for (int i = 1; i < 100; i++) {
+                number = number + i;
+            }
+            while (number > 0) {
+                number--;
+            }
+        }
+    }
+
 Format Code You Changed with Netbeans
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

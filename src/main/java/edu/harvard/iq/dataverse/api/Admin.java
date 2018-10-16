@@ -4,10 +4,14 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
@@ -15,6 +19,7 @@ import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
@@ -32,6 +37,8 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -69,9 +76,10 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -108,6 +116,14 @@ public class Admin extends AbstractApiBean {
 	DataFileServiceBean fileService;
 	@EJB
 	DatasetServiceBean datasetService;
+	@EJB
+	DatasetVersionServiceBean datasetversionService;
+	@EJB
+	AuthenticationServiceBean authService;
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
+    @EJB
+    EjbDataverseEngine commandEngine;
 
 	// Make the session available
 	@Inject
@@ -397,8 +413,8 @@ public class Admin extends AbstractApiBean {
 	@Path("authenticatedUsers/id/{id}/convertShibToBuiltIn")
 	@Deprecated
 	public Response convertShibUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-                try {
-                        AuthenticatedUser user = findAuthenticatedUserOrDie();
+       try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -411,7 +427,7 @@ public class Admin extends AbstractApiBean {
 				return error(Response.Status.BAD_REQUEST, "User id " + id
 						+ " could not be converted from Shibboleth to BuiltIn. An Exception was not thrown.");
 			}
-                        AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
+            AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
 			JsonObjectBuilder output = Json.createObjectBuilder();
 			output.add("email", authUser.getEmail());
 			output.add("username", builtinUser.getUserName());
@@ -433,7 +449,7 @@ public class Admin extends AbstractApiBean {
 	@PUT
 	@Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
 	public Response convertOAuthUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-                try {
+       try {
 			AuthenticatedUser user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
@@ -443,12 +459,11 @@ public class Admin extends AbstractApiBean {
 		}
 		try {
 			BuiltinUser builtinUser = authSvc.convertRemoteToBuiltIn(id, newEmailAddress);
-                        //AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
 			if (builtinUser == null) {
 				return error(Response.Status.BAD_REQUEST, "User id " + id
 						+ " could not be converted from remote to BuiltIn. An Exception was not thrown.");
 			}
-                        AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
+            AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
 			JsonObjectBuilder output = Json.createObjectBuilder();
 			output.add("email", authUser.getEmail());
 			output.add("username", builtinUser.getUserName());
@@ -1111,7 +1126,9 @@ public class Admin extends AbstractApiBean {
 		logger.info("Starting to register: analyzing " + count + " files. " + new Date());
 		logger.info("Only unregistered, published files will be registered.");
 		for (DataFile df : fileService.findAll()) {
-			if(released.intValue() > num) break;
+			if (released.intValue() > num) {
+				break;
+			}	
 			try {
 				if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
 					if (df.isReleased()) {
@@ -1158,7 +1175,7 @@ public class Admin extends AbstractApiBean {
 		Integer alreadyUpdated = 0;
 		Integer rehashed = 0;
 		Integer harvested=0;
-		
+		//ToDo - num parameter is not working
 		if (num <= 0)
 			num = Integer.MAX_VALUE;
 		DataFile.ChecksumType cType = null;
@@ -1187,14 +1204,13 @@ public class Admin extends AbstractApiBean {
 				if (df.isHarvested()) {
 					harvested++;
 				} else {
-					if (!df.getChecksumType().equals(cType)) {
-
-						rehashed++;
+				if (!df.getChecksumType().equals(cType)) {
+					rehashed++;
 						logger.fine(rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", "
 								+ df.getIdentifier());
-						// verify hash and calc new one to replace it
-						StorageIO<DataFile> storage = df.getStorageIO();
-						storage.open(DataAccessOption.READ_ACCESS);
+					// verify hash and calc new one to replace it
+					StorageIO<DataFile> storage = df.getStorageIO();
+					storage.open(DataAccessOption.READ_ACCESS);
 						if (!df.isTabularData()) {
 							in = storage.getInputStream();
 						} else {
@@ -1202,13 +1218,13 @@ public class Admin extends AbstractApiBean {
 							// instead:
 							in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
 						}
-						if (in == null)
+					if (in == null)
 							logger.warning("Cannot retrieve file.");
-						String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
-						if (currentChecksum.equals(df.getChecksumValue())) {
+					String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
+					if (currentChecksum.equals(df.getChecksumValue())) {
 							logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
-									+ df.getIdentifier() + " is valid");
-							storage.open(DataAccessOption.READ_ACCESS);
+								+ df.getIdentifier() + " is valid");
+						storage.open(DataAccessOption.READ_ACCESS);
 							if (!df.isTabularData()) {
 								in2 = storage.getInputStream();
 							} else {
@@ -1216,29 +1232,30 @@ public class Admin extends AbstractApiBean {
 								// instead:
 								in2 = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
 							}
-							if (in2 == null)
+						if (in2 == null)
 								logger.warning("Cannot retrieve file to calculate new checksum.");
-							String newChecksum = FileUtil.CalculateChecksum(in2, cType);
+						String newChecksum = FileUtil.CalculateChecksum(in2, cType);
 
-							df.setChecksumType(cType);
-							df.setChecksumValue(newChecksum);
-							successes++;
+						df.setChecksumType(cType);
+						df.setChecksumValue(newChecksum);
+						successes++;
 							if (successes % 100 == 0) {
 								logger.info(
 										successes + " of  " + count + " files rehashed successfully. " + new Date());
 							}
-						} else {
-							logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
-									+ ", " + df.getIdentifier() + " is INVALID");
-						}
 					} else {
-						alreadyUpdated++;
-						if (alreadyUpdated % 100 == 0) {
-							logger.info(alreadyUpdated + " of  " + count
-									+ " files are already have hashes with the new algorithm. " + new Date());
-						}
+						logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
+								+ ", " + df.getIdentifier() + " is INVALID");
+					}
+				} else {
+					alreadyUpdated++;
+					if (alreadyUpdated % 100 == 0) {
+						logger.info(alreadyUpdated + " of  " + count
+								+ " files are already have hashes with the new algorithm. " + new Date());
 					}
 				}
+				}
+
 			} catch (Exception e) {
 				logger.warning("Unexpected Exception: " + e.getMessage());
 
@@ -1258,7 +1275,30 @@ public class Admin extends AbstractApiBean {
 		return ok("Datafile rehashing complete." + successes + " of  " + rehashed + " files successfully rehashed.");
 	}
 
-	
+	@GET
+	@Path("/submitDataVersionToDPN/{dvid}")
+	public Response submitDatasetVersionToDPN(@PathParam("dvid") long dvid) {
+
+		try {
+			AuthenticatedUser au = findAuthenticatedUserOrDie();
+			if (au.isSuperuser()) {
+				DatasetVersion dv = datasetversionService.retrieveDatasetVersionByVersionId(dvid).getDatasetVersion();
+				SubmitToArchiveCommand cmd = new SubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
+				try {
+					commandEngine.submit(cmd);
+					return ok("DatasetVersion id=" + dvid + " submitted to DPN/Duracloud");
+				} catch (CommandException ex) {
+					logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
+					return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
+				}
+			} else {
+				return error(Status.UNAUTHORIZED, "must be superuser");
+			}
+		} catch (WrappedResponse e1) {
+			return error(Status.UNAUTHORIZED, "api key required");
+		}
+	}
+
 	@DELETE
 	@Path("/clearMetricsCache")
 	public Response clearMetricsCache() {

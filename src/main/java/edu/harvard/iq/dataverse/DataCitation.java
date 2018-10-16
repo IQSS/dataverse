@@ -13,11 +13,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -598,8 +602,29 @@ public class DataCitation {
         xmlw.writeEndElement(); // xml
     }
 
+	public Map<String, String> getDataCiteMetadata() {
+        Map<String, String> metadata = new HashMap<>();
+        String authorString = getAuthorsString();
 
-    // helper methods   
+        if (authorString.isEmpty()) {
+            authorString = ":unav";
+        }
+        // QDR - use institution name
+        String producerString = getPublisher();
+
+        if (producerString.isEmpty()) {
+            producerString = ":unav";
+        }
+
+        metadata.put("datacite.creator", authorString);
+        metadata.put("datacite.title", getTitle());
+        metadata.put("datacite.publisher", producerString);
+        metadata.put("datacite.publicationyear", getYear());
+        return metadata;
+	}
+
+	
+    // helper methods
     private String formatString(String value, boolean escapeHtml) {
         return formatString(value, escapeHtml, "");
     }

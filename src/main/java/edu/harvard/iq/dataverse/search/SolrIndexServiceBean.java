@@ -187,7 +187,7 @@ public class SolrIndexServiceBean {
                 String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
                 String solrId = solrIdStart + solrIdEnd;
                 List<String> perms = new ArrayList<>();
-                if (unpublishedDataRelatedToMeModeEnabled) {
+                if (unpublishedDataRelatedToMeModeEnabled && !dataFile.isRestricted()) {
                     List<String> cachedPerms = null;
                     if (permStringByDatasetVersion != null) {
                         cachedPerms = permStringByDatasetVersion.get(datasetVersionFileIsAttachedTo.getId());
@@ -205,7 +205,9 @@ public class SolrIndexServiceBean {
                     }
                 } else {
                     // This should never be executed per the deprecation notice on the boolean.
-                    perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
+                    //except in qdr test
+                    logger.info("constructing doc for restricted file: " + dataFile.getId());
+                    perms = searchPermissionsService.findDataFilePermsforDatasetVersion(dataFile, datasetVersionFileIsAttachedTo);
                 }
                 DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(dataFile.getId().toString(), solrId, datasetVersionFileIsAttachedTo.getId(), dataFile.getDisplayName(), perms);
                 datafileSolrDocs.add(dataFileSolrDoc);
