@@ -699,7 +699,10 @@ public class DataverseServiceBean implements java.io.Serializable {
         List<RoleAssignment> inheritableRAsOnOwner = new ArrayList<RoleAssignment>();
         for (RoleAssignment role : allRAsOnOwner) {
             if (inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias())) {
-                inheritableRAsOnOwner.add(role);
+                //Only supporting built-in/non-dataverse-specific custom roles. Custom roles all have an owner.
+                if(role.getRole().getOwner()==null) {
+                    inheritableRAsOnOwner.add(role);
+                }
             }
         }
 
