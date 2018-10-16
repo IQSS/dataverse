@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
@@ -110,6 +111,8 @@ public interface CommandContext {
     public SettingsServiceBean settings();
 
     public ExplicitGroupServiceBean explicitGroups();
+
+    public GroupServiceBean groups();
 
     public UserNotificationServiceBean notifications();
 
