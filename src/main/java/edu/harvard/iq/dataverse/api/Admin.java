@@ -1307,7 +1307,6 @@ public class Admin extends AbstractApiBean {
                 if (rolesToInherit.contains("*")) {
                     inheritAllRoles = true;
                 }
-
                 return ok(dataverseSvc.addRoleAssignmentsToChildren(owner, rolesToInherit, inheritAllRoles));
             }
         }
