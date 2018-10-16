@@ -649,7 +649,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
     }
     
-    public JsonObjectBuilder addRoleAssignementsToChildren(Dataverse owner, ArrayList<String> rolesToInherit,
+    public JsonObjectBuilder addRoleAssignmentsToChildren(Dataverse owner, ArrayList<String> rolesToInherit,
             boolean inheritAllRoles) {
         /*
          * This query recursively finds all Dataverses that are inside/children of the
@@ -778,9 +778,9 @@ public class DataverseServiceBean implements java.io.Serializable {
          * handled. Add this to the log and the API return message.
          */
         logger.info(Json.createObjectBuilder().add("Dataverses Updated", dataverseIds)
-                .add("Updated Dataverse Aliases", dataverseAliases).add("Admins added", usedNames)
-                .add("Admins not added", unusedNames).build().toString());
-        return Json.createObjectBuilder().add("Dataverses Updated", dataverseAliases).add("Admins added", usedNames)
-                .add("Admins not added", unusedNames);
+                .add("Updated Dataverse Aliases", dataverseAliases).add("Assignments added for", usedNames)
+                .add("Assignments not added for", unusedNames).build().toString());
+        return Json.createObjectBuilder().add("Dataverses Updated", dataverseAliases).add("Assignments added for", usedNames)
+                .add("Assignments not added for", unusedNames);
     }
 }

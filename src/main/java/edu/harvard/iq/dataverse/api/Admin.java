@@ -1301,15 +1301,17 @@ public class Admin extends AbstractApiBean {
         }
         boolean inheritAllRoles = false;
         String rolesString = settingsSvc.getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
-        ArrayList<String> rolesToInherit = new ArrayList<String>(Arrays.asList(rolesString.split("\\s*,\\s*")));
-        if (!rolesToInherit.isEmpty()) {
-            if (rolesToInherit.contains("*")) {
-                inheritAllRoles = true;
+        if (rolesString.length() > 0) {
+            ArrayList<String> rolesToInherit = new ArrayList<String>(Arrays.asList(rolesString.split("\\s*,\\s*")));
+            if (!rolesToInherit.isEmpty()) {
+                if (rolesToInherit.contains("*")) {
+                    inheritAllRoles = true;
+                }
+
+                return ok(dataverseSvc.addRoleAssignmentsToChildren(owner, rolesToInherit, inheritAllRoles));
             }
-            
-            return ok(dataverseSvc.addRoleAssignementsToChildren(owner, rolesToInherit, inheritAllRoles));
         }
         return error(Response.Status.BAD_REQUEST,
-                "InheritParentRoleAssignements does not list any roles on this instance");
+                "InheritParentRoleAssignments does not list any roles on this instance");
     }
 }

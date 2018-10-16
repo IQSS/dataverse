@@ -107,30 +107,32 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         boolean inheritAllRoles = false;
         String rolesString = ctxt.settings().getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
         ArrayList<String> rolesToInherit = new ArrayList<String>(Arrays.asList(rolesString.split("\\s*,\\s*")));
-        if (!rolesToInherit.isEmpty()) {
-            if (rolesToInherit.contains("*")) {
-                inheritAllRoles = true;
-            }
+        if (rolesString.length() > 0) {
+            if (!rolesToInherit.isEmpty()) {
+                if (rolesToInherit.contains("*")) {
+                    inheritAllRoles = true;
+                }
 
-            List<RoleAssignment> assignedRoles = ctxt.roles().directRoleAssignments(owner);
-            for (RoleAssignment role : assignedRoles) {
-                // If all roles are to be inherited, or this role is in the list, and, in both
-                // cases, this is not an admin role for the current user which was just created
-                // above...
-                if ((inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias()))
-                        && !(role.getAssigneeIdentifier().equals(getRequest().getUser().getIdentifier())
-                                && role.getRole().equals(adminRole))) {
-                    String identifier = role.getAssigneeIdentifier();
-                    if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
-                        identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
-                        ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken));
-                    } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
-                        identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
-                        Group roleGroup = ctxt.groups().getGroup(identifier); 
-                        if (roleGroup!=null) {
+                List<RoleAssignment> assignedRoles = ctxt.roles().directRoleAssignments(owner);
+                for (RoleAssignment role : assignedRoles) {
+                    // If all roles are to be inherited, or this role is in the list, and, in both
+                    // cases, this is not an admin role for the current user which was just created
+                    // above...
+                    if ((inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias()))
+                            && !(role.getAssigneeIdentifier().equals(getRequest().getUser().getIdentifier())
+                                    && role.getRole().equals(adminRole))) {
+                        String identifier = role.getAssigneeIdentifier();
+                        if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
+                            identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
                             ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                    roleGroup, managedDv, privateUrlToken));
+                                    ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken));
+                        } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
+                            identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
+                            Group roleGroup = ctxt.groups().getGroup(identifier);
+                            if (roleGroup != null) {
+                                ctxt.roles().save(new RoleAssignment(role.getRole(),
+                                        roleGroup, managedDv, privateUrlToken));
+                            }
                         }
                     }
                 }
