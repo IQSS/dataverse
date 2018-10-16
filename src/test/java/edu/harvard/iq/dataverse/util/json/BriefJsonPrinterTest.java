@@ -56,7 +56,6 @@ public class BriefJsonPrinterTest {
      */
     @Test
     public void testJson_MetadataBlock() {
-        try {
         MetadataBlock mtb = new MetadataBlock();
         mtb.setId(1L);
         mtb.setName("metadata_block_name");
@@ -69,9 +68,6 @@ public class BriefJsonPrinterTest {
         assertEquals("metadata_block_name", res.getString("name"));        
         assertEquals(1, res.getInt("id"));        
         assertEquals(3, res.keySet().size());
-        } catch (MissingResourceException e) {
-            return;
-        }
     }
 
     /**
