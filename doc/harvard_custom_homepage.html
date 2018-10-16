@@ -65,7 +65,7 @@
         });
     }
     
-    function queryMetric(metricRelPath, month, elm) {
+    function queryMetricSimple(metricRelPath, month, elm) {
         // $.get(metricBaseUrl + metricRelPath + month, function(jData) {
         //     document.getElementById(elm).innerHTML = JSON.stringify(jData);
         // });
@@ -77,10 +77,15 @@
             document.getElementById(elm).innerHTML = resultCount;
         });
     }
- 
-    function querySubject(metricRelPath, resultCount, elm) {
-        $.get(metricBaseUrl + metricRelPath, function(jData) {
-            document.getElementById(elm).innerHTML = JSON.stringify(jData);
+
+    function querySubject(elm) {
+        $.get(metricBaseUrl + "dataverses/bySubject", function(jData) {
+            var resultHtml = "";
+            jData.data.forEach(function(item) {
+                //TODO: NEED DYNAMIC 'ROOT' DV NAME
+                resultHtml += "<p><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + item.subject + "%22&types=datasets&sort=dateSort&order=desc\" title=\"" + item.subject + "\">" + item.subject + "</a> (" + item.count + ")</p>";
+            });
+            document.getElementById(elm).innerHTML = resultHtml;
         });
     }
 
@@ -91,14 +96,14 @@
     writeRecentDatasetsInDataverses("" , 3, "journals");
     writeRecentDatasetsInDataverses("" , 6, "researchers");
     
-    queryMetric("datasets/toMonth", "", "activityAllTimeDatasetsValue");
-    queryMetric("files/toMonth", "", "activityAllTimeFilesValue");
+    queryMetricSimple("datasets/toMonth", "", "activityAllTimeDatasetsValue");
+    queryMetricSimple("files/toMonth", "", "activityAllTimeFilesValue");
     
     //These don't actually return the past 30 days, just the value up until September. Will need discussion
-    queryMetric("datasets/toMonth", "/2018-09", "activity30DaysDatasetsValue");
-    queryMetric("files/toMonth", "/2018-09", "activity30DaysFilesValue");
+    queryMetricSimple("datasets/toMonth", "/2018-09", "activity30DaysDatasetsValue");
+    queryMetricSimple("files/toMonth", "/2018-09", "activity30DaysFilesValue");
     
-    querySubject("dataverses/bySubject", "", "dataversesBySubject");
+    querySubject("dataversesBySubject");
 </script>
 
 <html>
