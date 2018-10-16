@@ -37,6 +37,9 @@ public class UserNotification implements Serializable {
     @ManyToOne
     @JoinColumn( nullable = false )
     private AuthenticatedUser user;
+    @ManyToOne
+    @JoinColumn( nullable = true )
+    private AuthenticatedUser requestor;
     private Timestamp sendDate;
     private boolean readNotification;
     
@@ -67,6 +70,14 @@ public class UserNotification implements Serializable {
 
     public void setUser(AuthenticatedUser user) {
         this.user = user;
+    }
+        
+    public AuthenticatedUser getRequestor() {
+        return requestor;
+    }
+
+    public void setRequestor(AuthenticatedUser requestor) {
+        this.requestor = requestor;
     }
 
     public String getSendDate() {

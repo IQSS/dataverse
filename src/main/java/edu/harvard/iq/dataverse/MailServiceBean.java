@@ -214,14 +214,19 @@ public class MailServiceBean implements java.io.Serializable {
     }
     
     
-    public Boolean sendNotificationEmail(UserNotification notification, String comment){  
+    public Boolean sendNotificationEmail(UserNotification notification, String comment) {
+        return sendNotificationEmail(notification, comment, null);
+    }
+    
+    
+    public Boolean sendNotificationEmail(UserNotification notification, String comment, AuthenticatedUser requestor){  
 
         boolean retval = false;
         String emailAddress = getUserEmailAddress(notification);
         if (emailAddress != null){
            Object objectOfNotification =  getObjectOfNotification(notification);
            if (objectOfNotification != null){
-               String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification);
+               String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification, comment, requestor);
                String rootDataverseName = dataverseService.findRootDataverse().getName();
                String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, rootDataverseName, objectOfNotification);
                if (!(messageText.isEmpty() || subjectText.isEmpty())){
@@ -318,7 +323,12 @@ public class MailServiceBean implements java.io.Serializable {
             
     }
     
-    public String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject, String comment){       
+    public String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject, String comment) {
+        return getMessageTextBasedOnNotification(userNotification, targetObject, comment, null);
+
+    }
+
+    public String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject, String comment, AuthenticatedUser requestor) {      
         
         String messageText = BundleUtil.getStringFromBundle("notification.email.greeting");
         DatasetVersion version;
@@ -437,10 +447,14 @@ public class MailServiceBean implements java.io.Serializable {
                 if (comment != null && !comment.isEmpty()) {
                     mightHaveSubmissionComment = ".\n\n" + BundleUtil.getStringFromBundle("submissionComment") + "\n\n" + comment;
                 }
-                */
+                */                
+                String requestorName = (requestor.getLastName() != null && requestor.getLastName() != null) ? requestor.getFirstName() + " " + requestor.getLastName() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+                String requestorEmail = requestor.getEmail() != null ? requestor.getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");               
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasSubmittedForReview");
+
                 String[] paramArraySubmittedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
-                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()), mightHaveSubmissionComment};
+                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()),
+                   requestorName, requestorEmail  };
                 messageText += MessageFormat.format(pattern, paramArraySubmittedDataset);
                 return messageText;
             case PUBLISHEDDS:
