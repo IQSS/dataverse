@@ -74,10 +74,12 @@ function preliminary_setup()
   # DataCite DOI Settings
   # (we can no longer offer EZID with their shared test account)
   # jvm-options use colons as separators, escape as literal
-  DOI_BASEURL_ESC=`echo $DOI_BASEURL | sed -e 's/:/\\:/'`
+  DOI_BASEURL_ESC=`echo $DOI_BASEURL | sed -e 's/:/\\\:/'`
+  echo "${DOI_BASEURL}"
+  echo "$DOI_BASEURL_ESC"
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=${DOI_USERNAME}"
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.password=${DOI_PASSWORD}"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=${DOI_BASEURL_ESC}"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=$DOI_BASEURL_ESC"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
   # enable comet support
