@@ -416,9 +416,7 @@ public class ImportDDIServiceBean {
                         //   rp.setText( (String) rpFromDDI );
                     }
                     publications.add(set);
-                    if (publications.size()>0) {
-                        getCitation(dvDTO).addField(FieldDTO.createMultipleCompoundFieldDTO(DatasetFieldConstant.publication, publications));
-                    }
+
 
                 } else if (xmlr.getLocalName().equals("otherRefs")) {
 
@@ -428,7 +426,9 @@ public class ImportDDIServiceBean {
 
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
-
+                if (publications.size()>0) {
+                    getCitation(dvDTO).addField(FieldDTO.createMultipleCompoundFieldDTO(DatasetFieldConstant.publication, publications));
+                }
                 if (xmlr.getLocalName().equals("othrStdyMat")) {
                     return;
                 }
