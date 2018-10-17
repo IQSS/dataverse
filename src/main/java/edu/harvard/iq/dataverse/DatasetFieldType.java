@@ -510,17 +510,17 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
     
     public String getDisplayName() {
-        String s = "";
+        String _title = "";
         if(getMetadataBlock()  == null){
-            s = title;
+            _title = title;
         }
         else {
-            s = BundleUtil.getStringFromPropertyFile( "datasetfieldtype."+getName()+".title" ,  getMetadataBlock().getName() );
+            _title = BundleUtil.getStringFromPropertyFile( "datasetfieldtype."+getName()+".title" ,  getMetadataBlock().getName() );
         }
-        if (isHasParent() && !parentDatasetFieldType.getTitle().equals(s)) {
-            return parentDatasetFieldType.getTitle() + " " + s;
+        if (isHasParent() && !parentDatasetFieldType.getTitle().equals(_title)) {
+            return parentDatasetFieldType.getTitle() + " " + _title;
         } else {
-            return s;
+            return _title;
         }
     }
 
