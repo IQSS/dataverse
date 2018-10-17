@@ -207,7 +207,23 @@
                 </h:outputFormat>
 
                 <div class="checksum-block" jsf:rendered="#{!fileMetadata.dataFile.tabularData}">
-                    <h:outputText id="file-checksum" value="#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}" rendered="#{!(empty fileMetadata.dataFile.checksumValue) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
+                     <button class="btn btn-secondary checksum" type="button" data-clipboard-action="copy" data-clipboard-text="#{fileMetadata.dataFile.checksumValue}" title="#{bundle['file.checksum.copy']} #{fileMetadata.dataFile.checksumValue}"  jsf:rendered="#{!(empty fileMetadata.dataFile.checksumValue) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}">
+                            #{fileMetadata.dataFile.checksumType}
+                        <span class="glyphicon glyphicon-copy"></span>
+                    </button>
+                    <script>
+                        $(document).ready(function () {
+                            // clipboard.js > checksum copy buttons
+                            var clipboard = new Clipboard('button.checksum');
+
+                            clipboard.on('success', function(e) {
+                               console.log(e);
+                            });
+                            clipboard.on('error', function(e) {
+                               console.log(e);
+                            });
+                        });
+                   </script>
                 </div>
             </div>
             <!-- UNF + Variables, Obsersvations -->

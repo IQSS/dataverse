@@ -331,8 +331,27 @@
                                         <h:outputText id="fileSize" value=" - #{FilePage.fileMetadata.dataFile.friendlySize}" />
                                         <h:outputText id="fileCreatePublishDate" value=" - #{bundle['file.lastupdated.label']}: #{FilePage.fileMetadata.fileDateToDisplay}" rendered="#{!(empty FilePage.fileMetadata.id)}"/>
                                         <div class="checksum-block" jsf:rendered="#{!FilePage.file.tabularData}">
-                                            <h:outputText id="file-checksum" value="#{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}: #{FilePage.file.checksumValue}"
-                                                          rendered="#{!(empty FilePage.file.checksumValue)}"/>
+                                        <button class="btn btn-secondary checksum" type="button"
+                                            data-clipboard-action="copy"
+                                            data-clipboard-text="#{FilePage.file.checksumValue}"
+                                            title="#{bundle['file.checksum.copy']} #{FilePage.file.checksumValue}"
+                                            jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
+                                            #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType} 
+                                            <span class="glyphicon glyphicon-copy"></span>
+                                        </button>
+                                        <script>
+                                            $(document).ready(function() {
+                                                // clipboard.js > checksum copy buttons
+                                                var clipboard = new Clipboard('button.checksum');
+                                                clipboard.on('success', function(e) {
+                                                    console.log(e);
+                                                });
+                                                clipboard.on('error', function(e) {
+                                                    console.log(e);
+                                                });
+                                            });
+                                        </script>
+
                                         </div>
                                         <div id="unf-block" class="text-muted" jsf:rendered="#{FilePage.file.tabularData}">
                                             <h:outputText id="fileNumVars" value="#{FilePage.file.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, " rendered="#{FilePage.file.tabularData}"/>
@@ -441,7 +460,7 @@
                                                     <h:outputText value="#{FilePage.file.unf}"/>
                                                 </div>
                                             </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
+                                            <div class="form-group checksum-block" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
                                                 <label class="col-sm-3 control-label">                                                   
                                                    #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}
                                                 </label>
