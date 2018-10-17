@@ -87,3 +87,76 @@ the users publish the datasets. It would be possible to extract these
 DOIs of unpublished datasets from the database, and put together a
 script that would register them as draft DOIs with DataCite, using
 their new API... But we are not doing this for our DOIs here.
+
+
+6. The Harvard Dataverse has carried out the migration on Oct. 17.
+The process was started at 9AM European time, 3AM local.  As specified
+above, DataCite people requested that we don't update any existing
+DOIs during the transfer window. So on the day before the migration we put 
+the following announcements on our pages: 
+
+curl -X PUT -d "Warning: Users may not be able to PUBLISH their 
+datasets, between 3AM-9AM Wed. Oct. 17" \
+http://localhost:8080/api/admin/settings/:StatusMessageHeader
+
+curl -X PUT -d "Harvard Dataverse is in the process of switching from
+EZID to DataCite, as the provider for registering the persistent
+identifiers for Datasets and Datafiles. The migration transfer of the
+authority and the existing identifiers will happen between 3AM and
+approx. 9AM on Wed. Oct 17 (i.e. late tonight). During the migration
+window updating existing identifiers is likely not to work
+properly. So we recommend not to attempt to publish your Datasets
+during the hours between 3AM and until this message disappears from
+the main page." \
+http://localhost:8080/api/admin/settings/:StatusMessageText
+
+
+Right before the start of the migration process we changed the old
+(EZID) configuration to the new (DataCite).
+
+The Database "provider" setting: 
+
+curl -X PUT -d "DataCite" http://localhost:8080/api/admin/settings/:DoiProvider
+
+The JVM options: 
+
+removed the old ones: 
+
+asadmin delete-jvm-options "\-Ddoi.baseurlstring=https\://ezid.cdlib.org"
+asadmin delete-jvm-options "\-Ddoi.username=[OUR EZID ACCOUNT USERNAME]"
+asadmin delete-jvm-options "\-Ddoi.password=[OUR EZID ACCOUNT PASSWORD]"
+
+and added the new ones: 
+
+asadmin create-jvm-options "\-Ddoi.baseurlstring=https\://mds.datacite.org"
+asadmin create-jvm-options "\-Ddoi.username=[OUR DATACITE ACCOUNT USERNAME]"
+asadmin delete-jvm-options "\-Ddoi.password=PLACEHOLDER'
+
+- NOTE THE FAKE PLACEHOLDER password - that was to keep the new configuration disabled during the migration. 
+
+Once the prefix was transferred to DataCite and they told us that it
+was safe to mint DOIs again, we re-enabled the configuration by adding
+the real password to the configuration:
+
+asadmin delete-jvm-options "\-Ddoi.password="'PLACEHOLDER'
+asadmin create-jvm-options "\-Ddoi.password=[OUR DATACITE ACCOUNT PASSWORD]'
+
+And then removed the warning messages from the page: 
+
+curl -X DELETE http://localhost:8080/api/admin/settings/:StatusMessageText
+curl -X DELETE http://localhost:8080/api/admin/settings/:StatusMessageHeader
+
+
+We have a lot of public DOIs (240K as of the day of the migration). It
+took about 12 hours (not 6, as originally anticipated) to reindex them
+all in the DataCite database. So crude math suggests it's about 20K
+DOIs/hour.
+
+We chose to reenable the registration setup as soon as we had heard
+from DataCite that it was safe to mint new DOIs again. Even though
+some of the old DOIs were still being reindexed. That meant that, for
+a few more hours, it was still possible for some user to try and
+re-publish a previously published dataverse and get an error; because
+it would still be under the EZID authority. It didn't actually
+shappen, to the best of our knowledge. And if it had, we would have
+simply advised them to wait a couple of more hours and try again.
