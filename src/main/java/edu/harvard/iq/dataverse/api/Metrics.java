@@ -31,15 +31,22 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
  */
 @Path("info/metrics")
 public class Metrics extends AbstractApiBean {
-
     /** Dataverses */
     
+    
+    @GET
+    @Path("dataverses")
+    public Response getDataversesAllTime() {
+        return getDataversesToMonth(MetricsUtil.getCurrentMonth());
+    }
+    
+    @Deprecated //for better path
     @GET
     @Path("dataverses/toMonth")
     public Response getDataversesToMonthCurrent() {
         return getDataversesToMonth(MetricsUtil.getCurrentMonth());
     }
-
+    
     @GET
     @Path("dataverses/toMonth/{yyyymm}")
     public Response getDataversesToMonth(@PathParam("yyyymm") String yyyymm) {
@@ -126,6 +133,13 @@ public class Metrics extends AbstractApiBean {
     }
     
     @GET
+    @Path("datasets")
+    public Response getDatasetsAllTime() {
+        return getDatasetsToMonth(MetricsUtil.getCurrentMonth());
+    }
+    
+    @Deprecated //for better path
+    @GET
     @Path("datasets/toMonth")
     public Response getDatasetsToMonthCurrent() {
         return getDatasetsToMonth(MetricsUtil.getCurrentMonth());
@@ -155,7 +169,13 @@ public class Metrics extends AbstractApiBean {
     }
 
     /** Files */
+    @GET
+    @Path("files")
+    public Response getFilesAllTime() {
+        return getFilesToMonth(MetricsUtil.getCurrentMonth());
+    }
     
+    @Deprecated //for better path
     @GET
     @Path("files/toMonth")
     public Response getFilesToMonthCurrent() {
@@ -186,6 +206,13 @@ public class Metrics extends AbstractApiBean {
 
     /** Downloads */
     
+    @GET
+    @Path("downloads")
+    public Response getDownloadsAllTime() {
+        return getDownloadsToMonth(MetricsUtil.getCurrentMonth());
+    }
+    
+    @Deprecated //for better path
     @GET
     @Path("downloads/toMonth")
     public Response getDownloadsToMonthCurrent() {

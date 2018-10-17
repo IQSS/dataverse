@@ -10,33 +10,33 @@ The Metrics API
 
 .. _CORS: https://www.w3.org/TR/cors/
 
-dataverses/toMonth
+dataverses/toMonth/$month
 ----------------------
 
-Returns a count up to the current month or append a date in YYYY-MM format (i.e. ``/2018-01``) for a specific month.
+Returns a count up to the specified month in YYYY-MM format (i.e. ``/2018-01``).
 
-``curl https://demo.dataverse.org/api/info/metrics/dataverses/toMonth``
+``curl https://demo.dataverse.org/api/info/metrics/dataverses/toMonth/YYYY-DD``
 
-datasets/toMonth
+datasets/toMonth/$month
 ------------------------
 
 Returns a count up to the current month or append a date in YYYY-MM format (i.e. ``/2018-01``) for a specific month.
 
-``curl https://demo.dataverse.org/api/info/metrics/datasets/toMonth``
+``curl https://demo.dataverse.org/api/info/metrics/datasets/toMonth/YYYY-DD``
 
-files/toMonth
+files/toMonth/$month
 ------------------------
 
 Returns a count up to the current month or append a date in YYYY-MM format (i.e. ``/2018-01``) for a specific month.
 
-``curl https://demo.dataverse.org/api/info/metrics/files/toMonth``
+``curl https://demo.dataverse.org/api/info/metrics/files/toMonth/YYYY-DD``
 
-downloads/toMonth
+downloads/toMonth/$month
 ------------------------
 
 Returns a count up to the current month or append a date in YYYY-MM format (i.e. ``/2018-01``) for a specific month.
 
-``curl https://demo.dataverse.org/api/info/metrics/downloads/toMonth``
+``curl https://demo.dataverse.org/api/info/metrics/downloads/toMonth/YYYY-DD``
 
 dataverses/byCategory
 ------------------------
