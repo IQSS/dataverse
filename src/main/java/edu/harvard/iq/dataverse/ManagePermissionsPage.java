@@ -354,29 +354,38 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
 
     public List<DataverseRole> getAvailableRoles() {
-        List<DataverseRole> roles = new LinkedList<>();
-        if (dvObject != null && dvObject.getId() != null) {
 
-            if (dvObject instanceof Dataverse) {
-                roles.addAll(roleService.availableRoles(dvObject.getId()));
+        try {
+            List<DataverseRole> roles = new LinkedList<>();
+            if (dvObject != null && dvObject.getId() != null) {
 
-            } else if (dvObject instanceof Dataset) {
-                // don't show roles that only have Dataverse level permissions
-                // current the available roles for a dataset are gotten from its parent
-                for (DataverseRole role : roleService.availableRoles(dvObject.getOwner().getId())) {
-                    for (Permission permission : role.permissions()) {
-                        if (permission.appliesTo(Dataset.class) || permission.appliesTo(DataFile.class)) {
-                            roles.add(role);
-                            break;
+                if (dvObject instanceof Dataverse) {
+                    roles.addAll(roleService.availableRoles(dvObject.getId()));
+
+                } else if (dvObject instanceof Dataset) {
+                    // don't show roles that only have Dataverse level permissions
+                    // current the available roles for a dataset are gotten from its parent
+                    for (DataverseRole role : roleService.availableRoles(dvObject.getOwner().getId())) {
+                        for (Permission permission : role.permissions()) {
+                            if (permission.appliesTo(Dataset.class) || permission.appliesTo(DataFile.class)) {
+                                roles.add(role);
+                                break;
+                            }
                         }
                     }
+
+                } else if (dvObject instanceof DataFile) {
+                    roles.add(roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER));
                 }
 
-            } else if (dvObject instanceof DataFile) {
-                roles.add(roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER));
-            }
 
-            Collections.sort(roles, DataverseRole.CMP_BY_NAME);
+                Collections.sort(roles, DataverseRole.CMP_BY_NAME);
+            }
+        }catch (Exception e)
+        {
+            System.out.println("====================================================");
+            e.printStackTrace();
+            System.out.println("====================================================");
         }
         return roles;
     }
