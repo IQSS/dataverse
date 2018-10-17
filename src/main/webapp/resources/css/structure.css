@@ -806,7 +806,7 @@ div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr, div
 div.dvnDifferanceTable div.ui-datatable-tablewrapper table td.versionValue {width:30%;}
 div.dvnDifferanceTable div.ui-datatable-tablewrapper table td.versionDetails {width:35%;}
 
-div.dvnDifferanceTable .diffDetailBlock, div.dvnDifferanceTable .versionValue {
+div.dvnDifferanceTable .diffDetailBlock {
     display:block;
     word-break:break-word;
 }
