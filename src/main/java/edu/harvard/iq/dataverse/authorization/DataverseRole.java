@@ -122,7 +122,15 @@ public class DataverseRole implements Serializable  {
 		if (alias != null )
 		{
 			String key = "role." + alias.toLowerCase() +".name";
-			return BundleUtil.getStringFromPropertyFile(key,"BuiltInRoles" );
+			String _name = BundleUtil.getStringFromPropertyFile(key,"BuiltInRoles" );
+			if(_name == null)
+			{
+				return name;
+			}
+			else
+			{
+				return _name;
+			}
 		}
 		else {
 			return name;
@@ -137,7 +145,15 @@ public class DataverseRole implements Serializable  {
 		if (alias != null )
 		{
 			String key = "role." + alias.toLowerCase() +".description";
-			return BundleUtil.getStringFromPropertyFile(key,"BuiltInRoles" );
+			String _description = BundleUtil.getStringFromPropertyFile(key,"BuiltInRoles" );
+			if(_description == null)
+			{
+				return description;
+			}
+			else
+			{
+				return _description;
+			}
 		}
 		else {
 			return description;
