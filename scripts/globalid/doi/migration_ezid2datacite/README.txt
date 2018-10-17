@@ -91,7 +91,7 @@ their new API... But we are not doing this for our DOIs here.
 
 6. The Harvard Dataverse has carried out the migration on Oct. 17.
 The process was started at 9AM European time, 3AM local.  As specified
-above, DataCite people requested that we don't update any existing
+above, DataCite people requested that we don't try to mind any
 DOIs during the transfer window. So on the day before the migration we put 
 the following announcements on our pages: 
 
@@ -104,8 +104,8 @@ EZID to DataCite, as the provider for registering the persistent
 identifiers for Datasets and Datafiles. The migration transfer of the
 authority and the existing identifiers will happen between 3AM and
 approx. 9AM on Wed. Oct 17 (i.e. late tonight). During the migration
-window updating existing identifiers is likely not to work
-properly. So we recommend not to attempt to publish your Datasets
+window updating DOI registration may not work properly. 
+So we recommend not to attempt to publish your Datasets
 during the hours between 3AM and until this message disappears from
 the main page." \
 http://localhost:8080/api/admin/settings/:StatusMessageText
@@ -132,7 +132,8 @@ asadmin create-jvm-options "\-Ddoi.baseurlstring=https\://mds.datacite.org"
 asadmin create-jvm-options "\-Ddoi.username=[OUR DATACITE ACCOUNT USERNAME]"
 asadmin delete-jvm-options "\-Ddoi.password=PLACEHOLDER'
 
-- NOTE THE FAKE PLACEHOLDER password - that was to keep the new configuration disabled during the migration. 
+- NOTE THE FAKE PLACEHOLDER password - that was to keep the new
+configuration disabled during the migration.
 
 Once the prefix was transferred to DataCite and they told us that it
 was safe to mint DOIs again, we re-enabled the configuration by adding
