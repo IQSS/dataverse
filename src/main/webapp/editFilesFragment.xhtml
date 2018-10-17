@@ -684,8 +684,8 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton rendered="#{!datasetPage}" value="#{bundle.continue} Edit DataFiles" onclick="PF('editFileAccessPopup').hide()" update=":datasetForm,:messagePanel" action="#{EditDatafilesPage.saveWithTermsOfUse()}" />
-            <p:commandButton rendered="#{datasetPage}" value="#{bundle.continue} Dataset" onclick="PF('editFileAccessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.saveWithTermsOfUse()}" />
+            <p:commandButton rendered="#{!datasetPage}" value="#{bundle.continue}" onclick="PF('editFileAccessPopup').hide()" update=":datasetForm,:messagePanel" action="#{EditDatafilesPage.saveWithTermsOfUse()}" />
+            <p:commandButton rendered="#{datasetPage}" value="#{bundle.continue}" onclick="PF('editFileAccessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.saveWithTermsOfUse()}" />
             <p:commandButton value="#{bundle.cancel}" onclick="PF('editFileAccessPopup').hide();PF('blockFileForm').hide();" type="button" />
         </div>
     </p:dialog>
