@@ -60,7 +60,6 @@ public class JsfHelper {
         FacesContext facesContext = FacesContext.getCurrentInstance();
         String messageBundleName = facesContext.getApplication().getMessageBundle();
         Locale locale = facesContext.getViewRoot().getLocale();
-        logger.log(Level.WARNING, " JH LOCALIZE--------- " +locale.getLanguage());
         ResourceBundle bundle = ResourceBundle.getBundle("Bundle", locale);
         return bundle.getString(messageKey);
     }
