@@ -332,8 +332,8 @@
                                         <div class="checksum-block" jsf:rendered="#{!FilePage.file.tabularData}">
                                         <button class="btn btn-secondary checksum" type="button"
                                             data-clipboard-action="copy"
-                                            data-clipboard-text="#{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}: #{FilePage.file.checksumValue}"
-                                            title="#{bundle['file.checksum.copy']} #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}: #{FilePage.file.checksumValue}"
+                                            data-clipboard-text="#{FilePage.file.checksumValue}"
+                                            title="#{bundle['file.checksum.copy']} #{FilePage.file.checksumValue}"
                                             jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
                                             #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType} 
                                             <span class="glyphicon glyphicon-copy"></span>
