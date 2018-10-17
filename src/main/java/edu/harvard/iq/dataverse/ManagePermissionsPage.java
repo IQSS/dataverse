@@ -355,8 +355,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     public List<DataverseRole> getAvailableRoles() {
 
+        List<DataverseRole> roles = new LinkedList<>();
         try {
-            List<DataverseRole> roles = new LinkedList<>();
+
             if (dvObject != null && dvObject.getId() != null) {
 
                 if (dvObject instanceof Dataverse) {
