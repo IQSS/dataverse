@@ -444,7 +444,10 @@ a[id$='advsearchlink'] {margin-left:1em;}
 
 span.search-term-match {font-weight: bold;}
 [id$='resultsTable'] {width:100%;}
-[id$='resultsTable'] div[class*='Result'] {font-size: 90%;}
+[id$='resultsTable'] div[class*='Result'] {
+    font-size: 90%;
+    word-break:break-word;
+}
 [id$='resultsTable'] div[class*='Result'] > div.card-title-icon-block, 
 [id$='resultsTable'] div[class*='Result'] > div.card-preview-icon-block, 
 [id$='resultsTable'] div[class*='Result'] > div.file-tags-block {font-size: 110%;}
@@ -505,6 +508,9 @@ a.facetLink.facetSelected span.glyphicon-remove {vertical-align:text-top; margin
 #my_data_filter_column div.checkbox label:not(.facetTypeLabel) {color:#428bca;font-size:90%;}
 #my_data_filter_column div.checkbox.facetSelected label, #my_data_filter_column  div.checkbox label.facetSelected {font-weight: bold;}
 #my_data_filter_column div.checkbox label.facetSelected:hover {color: #23527c;}
+#div-card-results {
+    word-break:break-word;
+}
 
 table.ui-panelgrid.facetsMoreLess {width:100%;}
 table.ui-panelgrid.facetsMoreLess tr.ui-widget-content {border:0;}
@@ -776,6 +782,11 @@ div[id$="filesTable"] .ui-paginator .ui-paginator-pages .ui-state-active {
     border-color: rgb(51, 122, 183);
 }
 
+.checksum-block .checksum {
+    padding: 2px 2px;
+    line-height: 1.0;
+}
+
 span.ingest-warning {display:inline-block; font-size:24px; line-height:1; vertical-align: middle;}
 span.ingest-warning span.glyphicon {top:3px} 
 
@@ -792,7 +803,14 @@ div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr, div
 div.dvnDifferanceTable div.ui-datatable-tablewrapper table td.versionValue {width:30%;}
 div.dvnDifferanceTable div.ui-datatable-tablewrapper table td.versionDetails {width:35%;}
 
-div.dvnDifferanceTable .diffDetailBlock {display:block;}
+div.dvnDifferanceTable .diffDetailBlock, div.dvnDifferanceTable .versionValue {
+    display:block;
+    word-break:break-word;
+}
+
+div.dvnDifferanceTable .versionValue {
+    word-break:break-word;
+}
 
 .dropin-btn-status.ui-icon {background: url("https://www.dropbox.com/static/images/widgets/dbx-saver-status.png") no-repeat;}
 
