@@ -147,16 +147,16 @@ curl -X DELETE http://localhost:8080/api/admin/settings/:StatusMessageText
 curl -X DELETE http://localhost:8080/api/admin/settings/:StatusMessageHeader
 
 
-We have a lot of public DOIs (240K as of the day of the migration). It
-took about 12 hours (not 6, as originally anticipated) to reindex them
-all in the DataCite database. So crude math suggests it's about 20K
-DOIs/hour.
+We have a large number of public DOIs (240K as of the day of the
+migration). It took about 12 hours (not 6, as originally anticipated)
+to reindex them all in the DataCite database. So crude math suggests
+it's about 20K DOIs/hour.
 
-We chose to reenable the registration setup as soon as we had heard
+We chose to re-enable the registration setup as soon as we had heard
 from DataCite that it was safe to mint new DOIs again. Even though
-some of the old DOIs were still being reindexed. That meant that, for
-a few more hours, it was still possible for some user to try and
-re-publish a previously published dataverse and get an error; because
-it would still be under the EZID authority. It didn't actually
-shappen, to the best of our knowledge. And if it had, we would have
-simply advised them to wait a couple of more hours and try again.
+some of the existing DOIs were still being reindexed. That meant that,
+for a few more hours, it was still possible for some user to try and
+re-publish a previously published dataset and get an error; because it
+would still be under the EZID authority. It didn't actually shappen,
+to the best of our knowledge. And if it had, we would have simply
+advised them to wait a couple of hours and try again.
