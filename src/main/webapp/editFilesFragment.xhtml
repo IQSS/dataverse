@@ -225,8 +225,7 @@
                              selection="#{EditDatafilesPage.selectedFiles}" 
                              var="fileMetadata" 
                              widgetVar="filesTable"
-                             emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}"
-                             scrollable="#{EditDatafilesPage.scrollable}" scrollHeight="#{EditDatafilesPage.scrollHeightPercentage}" scrollWidth="100%" >
+                             emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
                     <f:facet name="header">
                         <div jsf:id="filesHeaderBlock" class="row">
                             <h:inputHidden id="showAccessPopup" value="#{EditDatafilesPage.showAccessPopup}"/>
