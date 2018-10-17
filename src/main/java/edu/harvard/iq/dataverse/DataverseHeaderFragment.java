@@ -217,6 +217,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
      */
     public String logout() {
         dataverseSession.setUser(null);
+        dataverseSession.setStatusDismissed(false);
 
         String redirectPage = navigationWrapper.getPageFromContext();
         try {
