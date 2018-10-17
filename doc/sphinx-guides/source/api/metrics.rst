@@ -10,6 +10,41 @@ The Metrics API
 
 .. _CORS: https://www.w3.org/TR/cors/
 
+dataverses
+----------------------
+
+Returns an all-time count of the dataverses.
+
+``curl https://demo.dataverse.org/api/info/metrics/dataverses``
+
+datasets
+----------------------
+
+Returns an all-time count of the datasets.
+
+``curl https://demo.dataverse.org/api/info/metrics/datasets``
+
+files
+----------------------
+
+Returns an all-time count of the files.
+
+``curl https://demo.dataverse.org/api/info/metrics/files``
+
+downloads
+----------------------
+
+Returns a count of all the downloads.
+
+``curl https://demo.dataverse.org/api/info/metrics/downloads``
+
+dataverses/toMonth/$month
+----------------------
+
+Returns a count up to the specified month in YYYY-MM format (i.e. ``/2018-01``).
+
+``curl https://demo.dataverse.org/api/info/metrics/dataverses/toMonth/YYYY-DD``
+
 dataverses/toMonth/$month
 ----------------------
 
