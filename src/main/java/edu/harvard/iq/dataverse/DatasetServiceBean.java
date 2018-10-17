@@ -194,7 +194,13 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     public Dataset findByGlobalId(String globalId) {
-        return (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset");
+        Dataset retVal = (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset");
+        if (retVal != null){
+            return retVal;
+        } else {
+            //try to find with alternative PID
+            return (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset", true);
+        }        
     }
 
     public String generateDatasetIdentifier(Dataset dataset, GlobalIdServiceBean idServiceBean) {

@@ -1,7 +1,7 @@
 # build from repo root
 FROM centos:6
 RUN yum install -y epel-release
-ARG RPMFILE=dcm-0.2-0.noarch.rpm
+ARG RPMFILE=dcm-0.3-0.noarch.rpm
 COPY ${RPMFILE} /tmp/
 COPY bashrc /root/.bashrc
 COPY test_install.sh /root/
