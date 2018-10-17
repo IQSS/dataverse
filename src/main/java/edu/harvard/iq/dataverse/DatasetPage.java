@@ -2569,6 +2569,33 @@ public class DatasetPage implements java.io.Serializable {
            - but we will do this inside the UpdateDatasetCommand.
         */
     }
+    
+    private String enteredTermsOfAccess;
+
+    public String getEnteredTermsOfAccess() {
+        return enteredTermsOfAccess;
+    }
+
+    public void setEnteredTermsOfAccess(String enteredTermsOfAccess) {
+        this.enteredTermsOfAccess = enteredTermsOfAccess;
+    }
+    
+    private Boolean enteredFileAccessRequest;
+
+    public Boolean getEnteredFileAccessRequest() {
+        return enteredFileAccessRequest;
+    }
+
+    public void setEnteredFileAccessRequest(Boolean fileAccessRequest) {
+        this.enteredFileAccessRequest = fileAccessRequest;
+    }
+    
+    
+     public String saveWithTermsOfUse() {
+        workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(enteredTermsOfAccess);
+        workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(enteredFileAccessRequest);
+        return save();
+    }
 
     public String save() {
          //Before dataset saved, write cached prov freeform to version
@@ -2584,7 +2611,7 @@ public class DatasetPage implements java.io.Serializable {
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
             return "";
         }
-
+        
         // Use the Create or Update command to save the dataset: 
         Command<Dataset> cmd;
         try {
