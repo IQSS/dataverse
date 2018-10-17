@@ -120,9 +120,6 @@ public class ProvInvestigatorTest {
         assertFalse(entities.size() > 0); 
     }
     
-    //MAD: write a simple entity test as well, also ensure logging works after getting a real tostring together
-    //also write a test of parsing different cases, we don't want to catch "fakename" but we do want to catch "rdt:name" and "name"
-    
     @Category(NonEssentialTests.class)
     @Test
     public void testProvNameJsonParserEmptyEntities() throws IOException {

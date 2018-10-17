@@ -335,7 +335,8 @@ public class DatasetField implements Serializable {
 
     private boolean isEmpty(boolean forDisplay) {
         if (datasetFieldType.isPrimitive()) { // primitive
-            for (String value : getValues()) {
+        	List<String> values = forDisplay ? getValues() : getValues_nondisplay();
+            for (String value : values) {
                 if (!StringUtils.isBlank(value) && !(forDisplay && DatasetField.NA_VALUE.equals(value))) {
                     return false;
                 }
