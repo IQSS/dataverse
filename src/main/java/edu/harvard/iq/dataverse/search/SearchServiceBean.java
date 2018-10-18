@@ -307,7 +307,7 @@ public class SearchServiceBean {
         // -----------------------------------
         QueryResponse queryResponse = null;
         try {
-            logger.info(solrQuery.toString());
+
             queryResponse = solrServer.query(solrQuery);
         } catch (RemoteSolrException ex) {
             String messageFromSolr = ex.getLocalizedMessage();
