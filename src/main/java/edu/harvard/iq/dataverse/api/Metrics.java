@@ -2,17 +2,8 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Metric;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
-import java.io.StringReader;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Map.Entry;
-import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -32,8 +23,7 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 @Path("info/metrics")
 public class Metrics extends AbstractApiBean {
     /** Dataverses */
-    
-    
+
     @GET
     @Path("dataverses")
     public Response getDataversesAllTime() {
@@ -70,6 +60,31 @@ public class Metrics extends AbstractApiBean {
         }
     }
 
+    @GET
+    @Path("dataverses/pastDays/{days}")
+    public Response getDataversesPastDays(@PathParam("days") int days) {
+        String metricName = "dataversesPastDays";
+        
+        if(days < 1) {
+            return allowCors(error(BAD_REQUEST, "Invalid parameter for number of days."));
+        }
+        try {
+            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days));
+
+            if (null == jsonString) { //run query and save
+                Long count = metricsSvc.dataversesPastDays(days);
+                JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
+                jsonString = jsonObjBuilder.build().toString();
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), jsonString), true); //if not using cache save new
+            }
+
+            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
+
+        } catch (Exception ex) {
+            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+        }
+    }
+    
     @GET
     @Path("dataverses/byCategory")
     public Response getDataversesByCategory() {
@@ -113,26 +128,6 @@ public class Metrics extends AbstractApiBean {
     /** Datasets */
     
     @GET
-    @Path("datasets/bySubject")
-    public Response getDatasetsBySubject() {
-        String metricName = "datasetsBySubject";
-
-        try {
-            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName);
-
-            if (null == jsonArrayString) { //run query and save
-                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubject());
-                jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, jsonArrayString), false);
-            }
-
-            return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
-        } catch (Exception ex) {
-            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
-        }
-    }
-    
-    @GET
     @Path("datasets")
     public Response getDatasetsAllTime() {
         return getDatasetsToMonth(MetricsUtil.getCurrentMonth());
@@ -163,6 +158,51 @@ public class Metrics extends AbstractApiBean {
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
 
+        } catch (Exception ex) {
+            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+        }
+    }
+    
+    @GET
+    @Path("datasets/pastDays/{days}")
+    public Response getDatasetsPastDays(@PathParam("days") int days) {
+        String metricName = "datasetsPastDays";
+        
+        if(days < 1) {
+            return allowCors(error(BAD_REQUEST, "Invalid parameter for number of days."));
+        }
+        try {
+            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days));
+
+            if (null == jsonString) { //run query and save
+                Long count = metricsSvc.datasetsPastDays(days);
+                JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
+                jsonString = jsonObjBuilder.build().toString();
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), jsonString), true); //if not using cache save new
+            }
+
+            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
+
+        } catch (Exception ex) {
+            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+        }
+    }
+    
+    @GET
+    @Path("datasets/bySubject")
+    public Response getDatasetsBySubject() {
+        String metricName = "datasetsBySubject";
+
+        try {
+            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName);
+
+            if (null == jsonArrayString) { //run query and save
+                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubject());
+                jsonArrayString = jsonArrayBuilder.build().toString();
+                metricsSvc.save(new Metric(metricName, jsonArrayString), false);
+            }
+
+            return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
@@ -203,6 +243,31 @@ public class Metrics extends AbstractApiBean {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
     }
+    
+    @GET
+    @Path("files/pastDays/{days}")
+    public Response getFilesPastDays(@PathParam("days") int days) {
+        String metricName = "filesPastDays";
+        
+        if(days < 1) {
+            return allowCors(error(BAD_REQUEST, "Invalid parameter for number of days."));
+        }
+        try {
+            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days));
+
+            if (null == jsonString) { //run query and save
+                Long count = metricsSvc.filesPastDays(days);
+                JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
+                jsonString = jsonObjBuilder.build().toString();
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), jsonString), true); //if not using cache save new
+            }
+
+            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
+
+        } catch (Exception ex) {
+            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+        }
+    }
 
     /** Downloads */
     
@@ -236,6 +301,31 @@ public class Metrics extends AbstractApiBean {
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
+        } catch (Exception ex) {
+            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+        }
+    }
+    
+    @GET
+    @Path("downloads/pastDays/{days}")
+    public Response getDownloadsPastDays(@PathParam("days") int days) {
+        String metricName = "downloadsPastDays";
+        
+        if(days < 1) {
+            return allowCors(error(BAD_REQUEST, "Invalid parameter for number of days."));
+        }
+        try {
+            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days));
+
+            if (null == jsonString) { //run query and save
+                Long count = metricsSvc.downloadsPastDays(days);
+                JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
+                jsonString = jsonObjBuilder.build().toString();
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), jsonString), true); //if not using cache save new
+            }
+
+            return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
+
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }

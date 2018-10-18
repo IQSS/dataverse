@@ -1559,7 +1559,6 @@ public class UtilIT {
             optionalYyyyMm = "/" + yyyymm;
         }
         RequestSpecification requestSpecification = given();
-        requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/dataverses/toMonth" + optionalYyyyMm);
     }
 
@@ -1569,7 +1568,6 @@ public class UtilIT {
             optionalYyyyMm = "/" + yyyymm;
         }
         RequestSpecification requestSpecification = given();
-        requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/datasets/toMonth" + optionalYyyyMm);
     }
 
@@ -1579,7 +1577,6 @@ public class UtilIT {
             optionalYyyyMm = "/" + yyyymm;
         }
         RequestSpecification requestSpecification = given();
-        requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/files/toMonth" + optionalYyyyMm);
     }
 
@@ -1589,31 +1586,46 @@ public class UtilIT {
             optionalYyyyMm = "/" + yyyymm;
         }
         RequestSpecification requestSpecification = given();
-        requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/downloads/toMonth" + optionalYyyyMm);
+    }
+    
+    static Response metricsDataversesPastDays(String days) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/dataverses/pastDays/" + days);
+    }
+    
+    static Response metricsDatasetsPastDays(String days) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/datasets/pastDays/" + days);
+    }
+        
+    static Response metricsFilesPastDays(String days) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/files/pastDays/" + days);
+    }
+            
+    static Response metricsDownloadsPastDays(String days) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/downloads/pastDays/" + days);
     }
 
     static Response metricsDataversesByCategory() {
         RequestSpecification requestSpecification = given();
-        requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/dataverses/byCategory");
     }
     
     static Response metricsDataversesBySubject() {
         RequestSpecification requestSpecification = given();
-        requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/dataverses/bySubject");
     }
 
     static Response metricsDatasetsBySubject() {
         RequestSpecification requestSpecification = given();
-        requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/datasets/bySubject");
     }
     
     static Response clearMetricCache() {
         RequestSpecification requestSpecification = given();
-        requestSpecification = given();
         return requestSpecification.delete("/api/admin/clearMetricsCache");
     }
 
