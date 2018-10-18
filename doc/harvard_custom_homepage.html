@@ -103,12 +103,12 @@
     writeRecentDatasetsInDataverses("" , 3, "journals", 12);
     writeRecentDatasetsInDataverses("" , 6, "researchers", 6);
     
-    queryMetricSimple("datasets/toMonth", "", "activityAllTimeDatasetsValue");
-    queryMetricSimple("files/toMonth", "", "activityAllTimeFilesValue");
+    queryMetricSimple("datasets", "", "activityAllTimeDatasetsValue");
+    queryMetricSimple("downloads", "", "activityAllTimeFilesValue");
     
     //These don't actually return the past 30 days, just the value up until September. Will need discussion
-    queryMetricSimple("datasets/toMonth", "/2018-09", "activity30DaysDatasetsValue");
-    queryMetricSimple("files/toMonth", "/2018-09", "activity30DaysFilesValue");
+    queryMetricSimple("datasets/pastDays", "/30", "activity30DaysDatasetsValue");
+    queryMetricSimple("downloads/pastDays", "/30", "activity30DaysFilesValue");
     
     querySubject("dataversesBySubject");
 </script>
