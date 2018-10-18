@@ -206,8 +206,8 @@
                     <f:param value="#{DatasetPage.getGuestbookResponseCount(fileMetadata)}"/>
                 </h:outputFormat>
 
-                <div class="checksum-block" jsf:rendered="#{!fileMetadata.dataFile.tabularData}">
-                     <button class="btn btn-secondary checksum" type="button" data-clipboard-action="copy" data-clipboard-text="#{fileMetadata.dataFile.checksumValue}" title="#{bundle['file.checksum.copy']} #{fileMetadata.dataFile.checksumValue}"  jsf:rendered="#{!(empty fileMetadata.dataFile.checksumValue) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}">
+                <div class="checksum-block" jsf:rendered="#{!fileMetadata.dataFile.tabularData and !(empty fileMetadata.dataFile.checksumValue) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}">
+                     <button class="btn checksum" type="button" data-clipboard-action="copy" data-clipboard-text="#{fileMetadata.dataFile.checksumValue}" title="#{bundle['file.checksum.copy']} #{fileMetadata.dataFile.checksumValue}">
                             #{fileMetadata.dataFile.checksumType}
                         <span class="glyphicon glyphicon-copy"></span>
                     </button>
