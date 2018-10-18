@@ -45,7 +45,7 @@
     * @param {number} resultCount - the number of results to write
     * @param {string} elm - The id of the html element to write the result to
     */
-    function writeRecentDatasetsInDataverses(fqString, resultCount, elm) {
+    function writeRecentDatasetsInDataverses(fqString, resultCount, elm, colSize) {
         var tempSecondSearch = secondSearch + resultCount;
         
         $.get(firstSearch + fqString, function(jData) {
@@ -56,11 +56,18 @@
             $.get(tempSecondSearch, function(jData2) {
                 var resultHtml = "";
                 jData2.data.items.forEach(function(item){
-                    resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\"><img src=\"" + thumbBaseURL + item.global_id + "\" alt=\"Dataset thumbnail\"></a></div>";
-                    resultHtml += "<div class=\"col-xs-10\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\">" + item.name + "</a></p></div>";
-                    resultHtml += "<hr class=\"col-xs-11 no-margin-top\"/>"
+                    resultHtml += "<div class=\"col-xs-" + colSize + "\">"
+                    resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\"><span class=\"icon-dataset\"></span></a></div>";
+                    resultHtml += "<div class=\"col-xs-10\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\">" + item.name + "</a></p><p class=\"small text-muted\">" + item.parentDataverse + " - " + item.publicationDate + "</p></div>";
+                    resultHtml += "<hr class=\"col-xs-11 no-margin-top\"/></div>"
                 });
                 document.getElementById(elm).innerHTML = resultHtml;
+
+
+                // BROKEN THUMBNAIL IMAGES
+                // <img src=\"" + thumbBaseURL + item.global_id + "\" alt=\"Dataset thumbnail\">
+
+
             });
         });
     }
@@ -72,7 +79,7 @@
 
         $.get(metricBaseUrl + metricRelPath + month, function(jData) {
 
-            var resultCount = jData.data.count; //"6"
+            var resultCount = jData.data.count;
 
             document.getElementById(elm).innerHTML = resultCount;
         });
@@ -83,7 +90,7 @@
             var resultHtml = "";
             jData.data.forEach(function(item) {
                 //TODO: NEED DYNAMIC 'ROOT' DV NAME
-                resultHtml += "<p><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + item.subject + "%22&types=datasets&sort=dateSort&order=desc\" title=\"" + item.subject + "\">" + item.subject + "</a> (" + item.count + ")</p>";
+                resultHtml += "<div class=\"col-xs-4 browse-subjects\"><p><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + item.subject + "%22&types=datasets&sort=dateSort&order=desc\" title=\"" + item.subject + "\">" + item.subject + "</a> <span class=\"text-muted\">" + item.count + "</span></p></div>";
             });
             document.getElementById(elm).innerHTML = resultHtml;
         });
@@ -93,8 +100,8 @@
     //writeRecentDatasetsInDataverses("&fq=dvCategory:(Journal%20OR%20Laboratory)",3, "journals");
     //writeRecentDatasetsInDataverses("&fq=dvCategory:(\"Research+Project\"%20OR%20Researcher)",6, "researchers");
     
-    writeRecentDatasetsInDataverses("" , 3, "journals");
-    writeRecentDatasetsInDataverses("" , 6, "researchers");
+    writeRecentDatasetsInDataverses("" , 3, "journals", 12);
+    writeRecentDatasetsInDataverses("" , 6, "researchers", 6);
     
     queryMetricSimple("datasets/toMonth", "", "activityAllTimeDatasetsValue");
     queryMetricSimple("files/toMonth", "", "activityAllTimeFilesValue");
@@ -109,79 +116,63 @@
 <html>
     <body>
 
-        <div id="dataversesBySubjectHead"><b>Dataverses By Subject</b></div>
-        <div id="dataversesBySubject"></div>
-        <hr>
 
     <!-- SEARCH + BROWSE + RECENT -->
     <div class="row hmpg-browse-block">
-
-
+        
+        <!-- SEARCH -->
         <div class="col-xs-12">
+            <div class="h4 lite-header margin-bottom">Find data across research fields, preview metadata, and download files.</div>
+
             <div class="row">
                 <div class="col-xs-4">
-                    <div class="h4 lite-header margin-bottom">Datasets from journal articles</div>
-                </div>
-                <div class="col-xs-8">
-                    <div class="h4 lite-header margin-bottom">Datasets from research projects, groups and researchers</div>
+                    <div class="search-widget input-group">
+                        <input id="inputDataverseSearch" class="form-control" type="text" placeholder="Search over 75,000 datasets..." onkeydown="if (event.keyCode == 13) document.getElementById('btnDataverseSearch').click();">
+                        <span class="input-group-btn">
+                            <button id="btnDataverseSearch" class="btn btn-default" type="button" onclick="window.location = '/dataverse/root?q=' + document.getElementById('inputDataverseSearch').value;return false;"><span class="glyphicon glyphicon-search"></span> Find</button>
+                        </span>
+                    </div>
                 </div>
             </div>
-            
+        </div>
+        
+        <!-- BROWSE -->
+        <div class="col-xs-12">
+            <p class="text-muted small">Browse dataverses in this repository by subject.</p>
+            <div id="dataversesBySubject" class="row margin-bottom">
 
+            </div>
+        </div>
+
+        <!-- RECENT -->
+        <div class="col-xs-12">
             <div class="row">
                 <div class="col-xs-4 hmpg-recent-col">
+                    <div class="h4 lite-header margin-bottom">Datasets from journal articles</div>
+
                     <hr class="col-xs-11 no-margin-top"/>
 
                     <!-- JOURNAL RESULTS -->
-                    <div id="journals">Should not see this</div>
+                    <div id="journals" class="row col-xs-12">Loading...</div>
 
                     <!-- VIEW ALL -->
-                    <div class="col-xs-11 text-center">
-                        <p class="small text-muted"><a href="#" title="{TITLE}">TODO ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                    <div class="col-xs-12 text-center">
+                        <p class="small text-muted"><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22&types=dataverses%3Adatasets&sort=dateSort&order=desc" title="{TITLE}">TODO ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
                 </div>
 
-                <div class="col-xs-4 hmpg-recent-col">
+                <div class="col-xs-8 hmpg-recent-col">
+                    <div class="h4 lite-header margin-bottom">Datasets from research projects, groups and researchers</div>
+
                     <hr class="col-xs-11 no-margin-top"/>
 
                     <!-- RESEARCHERS RESULTS -->
-                    <div id="researchers">Should not see this</div>
+                    <div id="researchers" class="row col-xs-12">Loading...</div>
 
                     <!-- VIEW ALL -->
-                    <div class="col-xs-11 text-center">
-                        <p class="small text-muted"><a href="#" title="{TITLE}">TODO ALL RECENT RESEARCHERS ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                    <div class="col-xs-12 text-center">
+                        <p class="small text-muted"><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22&types=dataverses%3Adatasets&sort=dateSort&order=desc" title="{TITLE}">TODO ALL RECENT RESEARCHERS ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
-                </div>
-
-                <div class="col-xs-4 hmpg-recent-col">
-                    <hr class="col-xs-11 no-margin-top"/>
-
-                    <!-- RESULT 1 -->
-                    <div class="col-xs-2 text-center hmpg-recent-thumb">
-                        <a href="/dataset.xhtml?persistentId=doi:10.7910/DVN/P0OMNM" title="{TITLE}"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAAwCAYAAACMuVOlAAAEN0lEQVR42s2ZX0gUQRzHz0DpQSGELiGKKAkfDIKKzCQokTwJK3zIhEhQiQsuohTSUvyTKKYiZKb2TywI7Q9R2D98OjDSLrA/6ItZCoU+nGkUEdRN9x33N81te+fV7d24MMzuzO3sZ3//Z89i8T2YJbgj2N+Zf5Sda2XBAJTUNqqDxMM10IBSrGq6qA6y5vwllrxxw0LSZCfKz6qDLG/pZHXt3SyQOjG3as1qpswuDx0/zdWddbDALwTm62pLmVUVpC0nl0N63INcov5MAvPKJJmYvIlxiDkX7w1AxEuoDEOMJDXqvMyy9mUzvc2iYX75igR1kAgvkKTn6xufcAQbBODe/MN8Pm3nDsWQXkCAQP3kII7qFg75bvghn8uw2dRBcpvTIOfG+oTtAZ7sFfNaPFUH6Z4YEKBNXT2Mxrk9YtzblDvOkPPWvMS8DXAEiPi4KCARH9ubq4UkAUg5nVQ96epVlxZJrXAKkhhJsdBuF+D+An1EDqsGGRtv5UC/Zl5x9QNS2KliVXNIyjSk2orWLh+PVypFWZIFjpNCarHL4vgYpJqRmqQWkA7EQ3ISSBSVEerHtoYSdZWPUU0Jb0Z+pu2E0vrRn8oBWVSQx+0P0Bqgvqk9kGUclQ1ckqgxk7ft4uBwKphD8anSxQFK8fFoGd/PCC8H6IUrN1i/8xnzeDxqQSE52vOkpmdyIDQaA6z7y7f5cKXNadCRczCSJAVzGQSQMAkRU7VxQEdUurBJwBEsKnGCcb0e4ZAwATSMwW5laUY0j6MBhKRKksMYlXG4vnPvroB8OexiEXeelWvXs/GJ9z4q1zceW7VzvU3SONYIS2DXw6Ail1TK2rt7+HVbRwfva+vrjUD0zmWuygeeD7KxyU8+D6mKiWIO75xDevjM7OeFAMIDSYuiyED/6EGvgKNGD38x8oFLM5j1TE2PurcX5wT3s+YA70miC63Z9/iJ6d4voJBh9Lb5oyKffT+zn4MGCynfPzo2wUyR5Mep6YAefbX7Gnt7dDfrvHl/wSxjlV4a4YoCP+zdFIniAUtj4/m2Aj3GEpN4AczH4DT/YuP6DNXX7/wrrZpiFshIWORIcanIQoinge6pLK8x1MjmlBQOjPAlj5PDhhTkKSPJCwf6nK13wGDbf++DqGyj6l1eNMDnarYlLd1HtbL0pt1zrLkxLnQb3W7L8cnndG6kQv29efZiuQYIfz6nh9G1LM3xqVlDSFT1Qf7DEXo+JzAYNl2jxjQqOoxeMNx/sQh7lFVOvVGVjhehewlQ+234dpKQGH2rxDntfUj9emlibN2S+Y+z1OA811Msom1NiDIlVYrSjB5EkOhpi4GdpT7M0G9pp0nR4Hb2nxbSNjkzMYoNHYthT4uieU+QMqBso2SbyEoESf9oZOzJEdkKkjVVxdqCDMBJ1mghFQJF0zx58XzhQJzMLbRHFOo3uJqAWXt2qn4AAAAASUVORK5CYII=" alt="Dataset thumbnail"></a>
-                    </div>
-                    <div class="col-xs-10">
-                        <p><a href="#" title="{TITLE}">TODO Short Title</a><br/><span class="text-muted small"><a href="#" title="" class="highlightBold">Dataverse Name</a> - Publish Date</span></p>
-                    </div>
-                    <hr class="col-xs-11 no-margin-top"/>
-
-                    <!-- RESULT 2 -->
-                    <div class="col-xs-2 text-center hmpg-recent-thumb">
-                        <a href="/dataset.xhtml?persistentId=doi:10.7910/DVN/P0OMNM" title="{TITLE}"><span class="icon-dataset"></span></a>
-                    </div>
-                    <div class="col-xs-10">
-                        <p><a href="#" title="{TITLE}">TODO Replication Data For: Long Dataset Title, Whatever the Median Dataset Title Length Is Currently in Production, I Should Probably Look That Up</a><br/><span class="text-muted small"><a href="#" title="" class="highlightBold">Dataverse Name</a> - Publish Date</span></p>
-                    </div>
-                    <hr class="col-xs-11 no-margin-top"/>
-
-                    <!-- RESULT 3 -->
-                    <div class="col-xs-2 text-center hmpg-recent-thumb">
-                        <a href="/dataset.xhtml?persistentId=doi:10.7910/DVN/P0OMNM" title="{TITLE}"><span class="icon-dataset"></span></a>
-                    </div>
-                    <div class="col-xs-10">
-                        <p><a href="#" title="{TITLE}">TODO Replication Data For: Long Dataset Title, Whatever the Median Dataset Title Length Is Currently in Production, I Should Probably Look That Up</a><br/><span class="text-muted small"><a href="#" title="" class="highlightBold">Dataverse Name</a> - Publish Date</span></p>
-                    </div>
-                    <hr class="col-xs-11 no-margin-top"/>
                 </div>
             </div>
         </div>
