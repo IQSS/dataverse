@@ -748,7 +748,8 @@ public class ImportDDIServiceBean {
                     if (NOTE_TYPE_EXTENDED_METADATA.equalsIgnoreCase(noteType) ) {
                         processCustomField(xmlr, dvDTO);                       
                     } else {
-                        addNote("Subject: Study Level Error Note, Notes: "+ parseText( xmlr,"notes" ) +";", dvDTO);
+                        processNotes(xmlr, dvDTO);
+//                        addNote("Subject: Study Level Error Note, Notes: "+ parseText( xmlr,"notes" ) +";", dvDTO);
                        
                     }
                 } else if (xmlr.getLocalName().equals("anlyInfo")) {
