@@ -329,12 +329,11 @@
                                         <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{FilePage.fileMetadata.dataFile.tabularData}"/>
                                         <h:outputText id="fileSize" value=" - #{FilePage.fileMetadata.dataFile.friendlySize}" />
                                         <h:outputText id="fileCreatePublishDate" value=" - #{bundle['file.lastupdated.label']}: #{FilePage.fileMetadata.fileDateToDisplay}" rendered="#{!(empty FilePage.fileMetadata.id)}"/>
-                                        <div class="checksum-block" jsf:rendered="#{!FilePage.file.tabularData}">
+                                        <div class="checksum-block" jsf:rendered="#{!FilePage.file.tabularData and !(empty FilePage.file.checksumValue)}">
                                         <button class="btn btn-secondary checksum" type="button"
                                             data-clipboard-action="copy"
                                             data-clipboard-text="#{FilePage.file.checksumValue}"
-                                            title="#{bundle['file.checksum.copy']} #{FilePage.file.checksumValue}"
-                                            jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
+                                            title="#{bundle['file.checksum.copy']} #{FilePage.file.checksumValue}">
                                             #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType} 
                                             <span class="glyphicon glyphicon-copy"></span>
                                         </button>
