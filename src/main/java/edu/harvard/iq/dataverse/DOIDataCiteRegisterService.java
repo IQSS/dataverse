@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean.GlobalIdMetadataTemplate;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -38,6 +40,11 @@ public class DOIDataCiteRegisterService {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
+    @EJB
+    DataverseServiceBean dataverseService;
+    @EJB
+    DOIDataCiteServiceBean doiDataCiteServiceBean;
+    
     private DataCiteRESTfullClient openClient() throws IOException {
         return new DataCiteRESTfullClient(System.getProperty("doi.baseurlstring"), System.getProperty("doi.username"), System.getProperty("doi.password"));
     }
@@ -121,7 +128,7 @@ public class DOIDataCiteRegisterService {
         } else {
             dataset = (Dataset) dvObject.getOwner();
         }
-
+        
         DataCiteMetadataTemplate metadataTemplate = new DataCiteMetadataTemplate();
         metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
         metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
@@ -232,7 +239,7 @@ public class DOIDataCiteRegisterService {
         HashMap<String, String> metadata = new HashMap<>();
         try (DataCiteRESTfullClient client = openClient()) {
             String xmlMetadata = client.getMetadata(identifier.substring(identifier.indexOf(":") + 1));
-            DataCiteMetadataTemplate template = new DataCiteMetadataTemplate(xmlMetadata);
+            DOIDataCiteServiceBean.GlobalIdMetadataTemplate template = doiDataCiteServiceBean.new GlobalIdMetadataTemplate(xmlMetadata);
             metadata.put("datacite.creator", Util.getStrFromList(template.getCreators()));
             metadata.put("datacite.title", template.getTitle());
             metadata.put("datacite.publisher", template.getPublisher());
@@ -590,4 +597,5 @@ class Util {
         }
         return str.toString();
     }
+    
 }
