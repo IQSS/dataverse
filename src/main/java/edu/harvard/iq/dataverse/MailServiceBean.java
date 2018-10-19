@@ -445,7 +445,7 @@ public class MailServiceBean implements java.io.Serializable {
                 "submissionComment" needs to be added to Bundle
                 mightHaveSubmissionComment = ".";
                 if (comment != null && !comment.isEmpty()) {
-                    mightHaveSubmissionComment = ".\n\n" + BundleUtil.getStringFromBundleCatchMissing("submissionComment") + "\n\n" + comment;
+                    mightHaveSubmissionComment = ".\n\n" + BundleUtil.getStringFromBundle("submissionComment") + "\n\n" + comment;
                 }
                 */                
                 String requestorName = (requestor.getLastName() != null && requestor.getLastName() != null) ? requestor.getFirstName() + " " + requestor.getLastName() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
@@ -474,7 +474,7 @@ public class MailServiceBean implements java.io.Serializable {
                 Setting up to add single comment when design completed
                 optionalReturnReason = ".";
                 if (comment != null && !comment.isEmpty()) {
-                    optionalReturnReason = ".\n\n" + BundleUtil.getStringFromBundleCatchMissing("wasReturnedReason") + "\n\n" + comment;
+                    optionalReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + comment;
                 }
                 */
                 String[] paramArrayReturnedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 

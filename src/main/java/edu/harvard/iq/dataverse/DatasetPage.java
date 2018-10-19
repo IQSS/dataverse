@@ -1815,7 +1815,7 @@ public class DatasetPage implements java.io.Serializable {
         try {
             Command<Dataset> cmd = new SubmitDatasetForReviewCommand( dvRequestService.getDataverseRequest(), dataset);
             dataset = commandEngine.submit(cmd);
-            //JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundleCatchMissing("dataset.submit.success"));
+            //JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.submit.success"));
         } catch (CommandException ex) {
             String message = ex.getMessage();
             logger.log(Level.SEVERE, "submitDataset: {0}", message);

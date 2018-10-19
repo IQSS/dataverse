@@ -26,10 +26,10 @@ public class BundleUtil {
 
     public static String getStringFromBundle(String key, List<String> arguments) {
         ResourceBundle bundle = getResourceBundle(defaultBundleFile );
-        return getStringFromBundleCatchMissing(key, arguments, bundle);
+        return getStringFromBundle(key, arguments, bundle);
     }
 
-    public static String getStringFromBundle(String key, List<String> arguments, ResourceBundle bundle) throws MissingResourceException {
+    public static String getStringFromBundleNoMissingCheck(String key, List<String> arguments, ResourceBundle bundle) throws MissingResourceException {
         if (key == null || key.isEmpty()) {
             return null;
         }
@@ -48,9 +48,9 @@ public class BundleUtil {
     }
     
     //This call was added to allow bypassing the exception catch, for filetype indexing which also catches it
-    public static String getStringFromBundleCatchMissing(String key, List<String> arguments, ResourceBundle bundle) {
+    public static String getStringFromBundle(String key, List<String> arguments, ResourceBundle bundle) {
         try {
-            return getStringFromBundle(key, arguments, bundle);
+            return getStringFromBundleNoMissingCheck(key, arguments, bundle);
         } catch (MissingResourceException ex) {
             logger.warning("Could not find key \"" + key + "\" in bundle file: ");
             logger.log(Level.CONFIG, ex.getMessage(), ex);
@@ -60,14 +60,14 @@ public class BundleUtil {
 
     public static String getStringFromPropertyFile(String key, String propertyFileName  ) {
         ResourceBundle bundle = getResourceBundle(propertyFileName);
-        return getStringFromBundleCatchMissing(key, null, bundle);
+        return getStringFromBundle(key, null, bundle);
     }
     
     //Added this function to fix indexing issue where it was expecting the exception
     // to bubble up. See FileUtil.getFacetFileType --MAD 4.9.4
     public static String getStringFromPropertyFileAllowMissing(String key, String propertyFileName  ) {
         ResourceBundle bundle = getResourceBundle(propertyFileName);
-        return getStringFromBundle(key, null, bundle);
+        return getStringFromBundleNoMissingCheck(key, null, bundle);
     }
 
 
