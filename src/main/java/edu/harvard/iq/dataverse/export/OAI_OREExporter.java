@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.export;
 import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import java.io.OutputStream;
@@ -25,7 +26,7 @@ public class OAI_OREExporter implements Exporter {
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
             throws ExportException {
         try {
-            new OREMap(version).writeOREMap(outputStream);
+            new OREMap(version, ExportService.settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false)).writeOREMap(outputStream);
         } catch (Exception e) {
             logger.severe(e.getMessage());
             e.printStackTrace();
