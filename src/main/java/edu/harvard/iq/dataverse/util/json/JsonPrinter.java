@@ -622,7 +622,7 @@ public class JsonPrinter {
         return fileCategories;
     }
 
-    private static JsonArrayBuilder getTabularFileTags(DataFile df) {
+    public static JsonArrayBuilder getTabularFileTags(DataFile df) {
         if (df == null) {
             return null;
         }

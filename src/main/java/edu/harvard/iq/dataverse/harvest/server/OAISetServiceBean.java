@@ -52,6 +52,9 @@ public class OAISetServiceBean implements java.io.Serializable {
     @EJB
     OAIRecordServiceBean oaiRecordService;
     
+    @EJB 
+    DatasetServiceBean datasetService;
+    
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean");
     
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
@@ -81,12 +84,35 @@ public class OAISetServiceBean implements java.io.Serializable {
         }
         return oaiSet;
     }
+    
+    // Find the default, "no name" set:
+    public OAISet findDefaultSet() {
+        String query = "SELECT o FROM OAISet o where o.spec = ''";
+        OAISet oaiSet = null;
+        try {
+            oaiSet = (OAISet) em.createQuery(query).getSingleResult();
+        } catch (Exception e) {
+            // Do nothing, just return null. 
+        }
+        return oaiSet;
+    }
 
     public List<OAISet> findAll() {
         try {
             logger.fine("setService, findAll; query: select object(o) from OAISet as o order by o.name");
             List<OAISet> oaiSets = em.createQuery("select object(o) from OAISet as o order by o.name", OAISet.class).getResultList();
             logger.fine((oaiSets != null ? oaiSets.size() : 0) + " results found.");
+            return oaiSets;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    public List<OAISet> findAllNamedSets() {
+        try {
+            logger.info("setService, findAllNamedSets; query: select object(o) from OAISet as o where o.spec != '' order by o.spec");
+            List<OAISet> oaiSets = em.createQuery("select object(o) from OAISet as o where o.spec != '' order by o.spec", OAISet.class).getResultList();
+            logger.info((oaiSets != null ? oaiSets.size() : 0) + " results found.");
             return oaiSets;
         } catch (Exception e) {
             return null;
@@ -136,8 +162,16 @@ public class OAISetServiceBean implements java.io.Serializable {
 
         List<Long> datasetIds;
         try {
-            datasetIds = expandSetQuery(query);
-            exportLogger.info("set query expanded to " + datasetIds.size() + " datasets.");
+            if (!oaiSet.isDefaultSet()) {
+                datasetIds = expandSetQuery(query);
+                exportLogger.info("set query expanded to " + datasetIds.size() + " datasets.");
+            } else {
+                // The default set includes all the local, published datasets. 
+                // findAllLocalDatasetIds() finds the ids of all the local datasets - 
+                // including the unpublished drafts and deaccessioned ones.
+                // Those will be filtered out further down the line. 
+                datasetIds = datasetService.findAllLocalDatasetIds();
+            }
         } catch (OaiSetException ose) {
             datasetIds = null;
         }

@@ -4,7 +4,7 @@
 
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.9.2</version>
+    <version>4.9.4</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
@@ -13,7 +13,23 @@
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	<additionalparam>-Xdoclint:none</additionalparam>
+        <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
+        <compilerArgument></compilerArgument>
         <aws.version>1.11.172</aws.version>
+        <project.timezone>UTC</project.timezone>
+        <project.language>en</project.language>
+        <project.region>US</project.region>
+        <!--
+            Moving this from plugin config to global config, because of GH-5122.
+            This seems to play well with NetBeans 8.2, IDEA 2018.1 and mvn including compatibility with JaCoCo.
+        -->
+        <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
+    
+        <junit.version>4.12</junit.version>
+        <junit.jupiter.version>5.3.1</junit.jupiter.version>
+        <junit.vintage.version>5.3.1</junit.vintage.version>
+        <junit.platform.version>1.3.1</junit.platform.version>
+        <mockito.version>2.22.0</mockito.version>
     </properties>
 
     <repositories>
@@ -64,11 +80,26 @@
             <version>1.1.0</version>
         </dependency>
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.8.1</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
-            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.jupiter.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>${junit.vintage.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
@@ -107,6 +138,12 @@
             -->
             <version>1.1-SNAPSHOT</version>
             <type>war</type>
+            <exclusions>
+              <exclusion>
+                 <groupId>xerces</groupId>  
+                 <artifactId>xercesImpl</artifactId> 
+              </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
@@ -132,6 +169,12 @@
             <version>1.3.3</version>
         </dependency>
         <dependency>
+            <!-- a dependency of commons-fileupload, but newer version required by tika -->
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.2.4</version>
@@ -139,9 +182,9 @@
         </dependency>
         <dependency>
             <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>xom</groupId>
+            <groupId>com.io7m.xom</groupId>
             <artifactId>xom</artifactId>
-            <version>1.1</version>
+            <version>1.2.10</version>
         </dependency>
         <!-- END Data Deposit API v1 (SWORD v2) -->
         <dependency>
@@ -263,17 +306,17 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>3.10-FINAL</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>3.10-FINAL</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-examples</artifactId>
-            <version>3.10-FINAL</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>edu.harvard.hul.ois.jhove</groupId>
@@ -351,11 +394,18 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.7</version>
-	</dependency>
+        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>1.10.19</version>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
         </dependency>
         <!-- Added for DataCite -->
         <!--dependency>
@@ -456,6 +506,12 @@
             <artifactId>unirest-java</artifactId>
             <version>1.4.9</version>
         </dependency>
+        <!--  Full text indexing -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parsers</artifactId>
+            <version>1.19</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -537,7 +593,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.6</version>
+                <version>3.1.1</version>
                 <executions>
                     <execution>
                         <phase>validate</phase>
@@ -633,8 +689,18 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.0</version>
                 <configuration>
-                   <!-- testsToExclude come from the profile-->
-                   <excludedGroups>${testsToExclude}</excludedGroups>
+                    <!-- testsToExclude come from the profile-->
+                    <excludedGroups>${testsToExclude}</excludedGroups>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <configLocation>checkstyle.xml</configLocation>
+                    <encoding>UTF-8</encoding>
+                    <consoleOutput>true</consoleOutput>
                 </configuration>
             </plugin>
         </plugins>
