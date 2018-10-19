@@ -182,6 +182,9 @@ public class SubmitToArchiveCommand implements Command<DatasetVersion> {
                                     JsonObject jsonOreMap = (JsonObject) new JsonParser().parse(oreMap.getOREMap().toString());
                                     
                                     //Generate bag
+                                    //To do: Change to this when #5185/#5192 is merged.
+                                    //The archival copy should include contact Emails regardless of the  :ExcludeEmailFromExport setting
+                                    //BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
                                     BagGenerator bagger = new BagGenerator(new OREMap(dv), dataciteXml);
                                     bagger.setAuthenticationKey(token.getTokenString());
                                     bagger.generateBag(out);
