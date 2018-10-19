@@ -177,12 +177,10 @@ public class SubmitToArchiveCommand implements Command<DatasetVersion> {
                         new Thread(new Runnable() {
                             public void run() {
                                 try {
-                                    //Get OREmap, convert from javax.json.JsonObject to com.google.gson.JsonObject
-                                    OREMap oreMap = new OREMap(dv);
-                                    JsonObject jsonOreMap = (JsonObject) new JsonParser().parse(oreMap.getOREMap().toString());
                                     
                                     //Generate bag
-                                    BagGenerator bagger = new BagGenerator(new OREMap(dv), dataciteXml);
+                                    //OREMap for archival copy should include emails regardless of :ExcludeEmailFromExport setting
+                                    BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
                                     bagger.setAuthenticationKey(token.getTokenString());
                                     bagger.generateBag(out);
                                 } catch (Exception e) {
