@@ -427,7 +427,7 @@ public class UtilIT {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/json")
-                .get("/api/datasets/:persistentId/modifyRegistrationMetadata/?persistentId=" + persistentId);
+                .post("/api/datasets/:persistentId/modifyRegistrationMetadata/?persistentId=" + persistentId);
         return response;
     }
 
