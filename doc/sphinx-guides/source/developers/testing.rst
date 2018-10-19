@@ -290,4 +290,4 @@ Future Work on Load/Performance Testing
 
 ----
 
-Previous: :doc:`version-control` | Next: :doc:`documentation`
+Previous: :doc:`sql-upgrade-scripts` | Next: :doc:`documentation`
