@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.export.OAI_OREExporter;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -36,6 +38,8 @@ public class OREMap {
     private Map<String, String> localContext = new TreeMap<String, String>();
     private DatasetVersion version;
     private boolean excludeEmail = false;
+    
+    private static final Logger logger = Logger.getLogger(OREMap.class.getCanonicalName());
 
     public OREMap(DatasetVersion version, boolean excludeEmail) {
         this.version = version;
@@ -56,6 +60,7 @@ public class OREMap {
         localContext.putIfAbsent(JsonLDNamespace.dvcore.getPrefix(), JsonLDNamespace.dvcore.getUrl());
         localContext.putIfAbsent(JsonLDNamespace.schema.getPrefix(), JsonLDNamespace.schema.getUrl());
 
+        logger.info("ExcludeEmail = : " + excludeEmail);
         Dataset dataset = version.getDataset();
         String id = dataset.getGlobalId().asString();
         JsonArrayBuilder fileArray = Json.createArrayBuilder();
@@ -67,6 +72,7 @@ public class OREMap {
             if (!field.isEmpty()) {
                 DatasetFieldType dfType = field.getDatasetFieldType();
                 if(excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dfType.getFieldType())) {
+                    logger.info("Found email field: " + dfType.getDisplayName());
                     continue;
                 }
                 JsonLDTerm fieldName = getTermFor(dfType);
