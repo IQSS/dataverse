@@ -1,6 +1,7 @@
 #!/bin/bash
 
 SECURESETUP=1
+DV_SU_PASSWORD="admin"
 
 for opt in $*
 do
@@ -10,6 +11,11 @@ do
 	  ;;
       "-insecure")
 	  SECURESETUP=0;
+	  ;;
+      -p=*)
+	  # https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash/14203146#14203146
+	  DV_SU_PASSWORD="${opt#*=}"
+	  shift # past argument=value
 	  ;;
       *)
 	  echo "invalid option: $opt"
@@ -58,7 +64,7 @@ curl -X PUT -d 'native/http' $SERVER/admin/settings/:UploadMethods
 echo
 
 echo "Setting up the admin user (and as superuser)"
-adminResp=$(curl -s -H "Content-type:application/json" -X POST -d @data/user-admin.json "$SERVER/builtin-users?password=admin&key=burrito")
+adminResp=$(curl -s -H "Content-type:application/json" -X POST -d @data/user-admin.json "$SERVER/builtin-users?password=$DV_SU_PASSWORD&key=burrito")
 echo $adminResp
 curl -X POST "$SERVER/admin/superuser/dataverseAdmin"
 echo

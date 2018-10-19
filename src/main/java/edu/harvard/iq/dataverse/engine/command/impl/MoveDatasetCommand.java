@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
@@ -29,10 +30,10 @@ import java.util.logging.Logger;
  *
  * @author skraffmi
  */
-
-// the permission annotation is open, since this is a superuser-only command - 
-// and that's enforced in the command body:
-@RequiredPermissions({})
+@RequiredPermissionsMap({
+    @RequiredPermissions(dataverseName = "moved", value = {Permission.PublishDataset})
+    ,	@RequiredPermissions(dataverseName = "destination", value = {Permission.AddDataset, Permission.PublishDataset})
+})
 public class MoveDatasetCommand extends AbstractVoidCommand {
 
     private static final Logger logger = Logger.getLogger(MoveDatasetCommand.class.getCanonicalName());
@@ -41,7 +42,11 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
     final Boolean force;
 
     public MoveDatasetCommand(DataverseRequest aRequest, Dataset moved, Dataverse destination, Boolean force) {
-        super(aRequest, moved);
+        super(
+                aRequest,
+                dv("moved", moved),
+                dv("destination", destination)
+        );
         this.moved = moved;
         this.destination = destination;
         this.force= force;
@@ -50,13 +55,10 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
         boolean removeGuestbook = false, removeLinkDs = false;
-       // first check if  user is a superuser
-        if ( (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser() ) ) {      
-            throw new PermissionException("Move Dataset can only be called by superusers.",
-                this,  Collections.singleton(Permission.DeleteDatasetDraft), moved);                
+        if (!(getUser() instanceof AuthenticatedUser)) {
+            throw new PermissionException("Move Dataset can only be called by authenticated users.", this, Collections.singleton(Permission.DeleteDatasetDraft), moved);
         }
-        
-        
+
         // validate the move makes sense
         if (moved.getOwner().equals(destination)) {
             throw new IllegalCommandException("Dataset already in this Dataverse ", this);

@@ -51,11 +51,11 @@ if [ ! -z "$CONF" ];then
    set +a
 fi
 
-# now build extra-vars string from dataverse_* env variables
+# now build extra-vars string from doi_* env variables
 NL=$'\n'
 extra_vars="dataverse_branch=$BRANCH dataverse_repo=$REPO_URL"
 while IFS='=' read -r name value; do
-  if [[ $name == *'dataverse'* ]]; then
+  if [[ $name == *'doi_'* ]]; then
     extra_var="$name"=${!name}
     extra_var=${extra_var%$NL}
     extra_vars="$extra_vars $extra_var"
