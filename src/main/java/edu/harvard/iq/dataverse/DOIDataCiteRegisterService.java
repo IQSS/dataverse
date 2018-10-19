@@ -149,7 +149,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
         metadataTemplate.setTitle(dvObject.getDisplayName());
-        String producerString = dataverseService.findRootDataverse().getName();
+        String producerString = dataset.getLatestVersion().getRootDataverseNameforCitation();
         if (producerString.isEmpty()) {
             producerString = ":unav";
         }

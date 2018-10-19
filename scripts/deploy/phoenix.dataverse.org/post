@@ -1,6 +1,6 @@
 #/bin/sh
 cd scripts/api
-./setup-all.sh --insecure | tee /tmp/setup-all.sh.out
+./setup-all.sh --insecure -p=admin1 | tee /tmp/setup-all.sh.out
 cd ../..
 psql -U dvnapp dvndb -f scripts/database/reference_data.sql
 psql -U dvnapp dvndb -f doc/sphinx-guides/source/_static/util/pg8-createsequence-prep.sql

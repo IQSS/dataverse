@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.ws.rs.core.MediaType;
 
 @AutoService(Exporter.class)
 public class SchemaDotOrgExporter implements Exporter {
@@ -81,6 +82,12 @@ public class SchemaDotOrgExporter implements Exporter {
     @Override
     public void setParam(String name, Object value) {
         // this exporter doesn't need/doesn't currently take any parameters
+    }
+    
+
+    @Override
+    public String getMediaType() {
+        return MediaType.APPLICATION_JSON;
     }
 
 }
