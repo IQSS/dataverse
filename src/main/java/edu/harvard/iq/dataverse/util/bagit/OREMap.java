@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -71,10 +72,6 @@ public class OREMap {
         for (DatasetField field : fields) {
             if (!field.isEmpty()) {
                 DatasetFieldType dfType = field.getDatasetFieldType();
-                if(excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dfType.getFieldType())) {
-                    logger.info("Found email field: " + dfType.getDisplayName());
-                    continue;
-                }
                 JsonLDTerm fieldName = getTermFor(dfType);
                 if (fieldName.inNamespace()) {
                     localContext.putIfAbsent(fieldName.getNamespace().getPrefix(), fieldName.getNamespace().getUrl());
@@ -84,8 +81,12 @@ public class OREMap {
 
                 JsonArrayBuilder vals = Json.createArrayBuilder();
                 if (!dfType.isCompound()) {
-                    for (String val : field.getValues_nondisplay()) {
-                        vals.add(val);
+                    for ( DatasetFieldValue pv : field.getDatasetFieldValues()) {
+                        if(excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(pv.getDatasetField().getDatasetFieldType().getFieldType())) {
+                            logger.info("Found email field: " + dfType.getDisplayName());
+                            continue;
+                        }
+                        vals.add(pv.getValue());
                     }
                 } else {
                     // ToDo: Needs to be recursive (as in JsonPrinter?)
