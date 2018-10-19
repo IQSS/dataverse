@@ -79,7 +79,7 @@ For faster iteration while working on JSF pages, it is highly recommended that y
 Database Schema Exploration
 ---------------------------
 
-With over 100 tables, the Dataverse PostgreSQL database ("dvndb") can be somewhat daunting for newcomers. Here are some tips for coming up to speed.
+With over 100 tables, the Dataverse PostgreSQL database ("dvndb") can be somewhat daunting for newcomers. Here are some tips for coming up to speed. (See also the :doc:`sql-upgrade-scripts` section.)
 
 pgAdmin
 ~~~~~~~~
