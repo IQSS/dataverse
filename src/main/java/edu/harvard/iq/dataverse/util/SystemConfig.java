@@ -104,7 +104,7 @@ public class SystemConfig {
 
             // The Version Number is no longer supplied in a .properties file - so
             // we can't just do 
-            //  return BundleUtil.getStringFromBundle("version.number", null, ResourceBundle.getBundle("VersionNumber", Locale.US));
+            //  return BundleUtil.getStringFromBundleCatchMissing("version.number", null, ResourceBundle.getBundle("VersionNumber", Locale.US));
             //
             // Instead, we'll rely on Maven placing the version number into the
             // Manifest, and getting it from there:

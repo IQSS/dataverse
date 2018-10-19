@@ -209,7 +209,7 @@ public class FileUtil implements java.io.Serializable  {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
             try {
-                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeDisplay" );
+                return BundleUtil.getStringFromPropertyFileAllowMissing(fileType,"MimeTypeDisplay" );
             } catch (MissingResourceException e) {
                 return fileType;
             }
@@ -227,7 +227,7 @@ public class FileUtil implements java.io.Serializable  {
             }
 
             try {
-                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeFacets"  );
+                return BundleUtil.getStringFromPropertyFileAllowMissing(fileType,"MimeTypeFacets"  );
             } catch (MissingResourceException e) {
                 // if there's no defined "facet-friendly" form of this mime type
                 // we'll truncate the available type by "/", e.g., all the 

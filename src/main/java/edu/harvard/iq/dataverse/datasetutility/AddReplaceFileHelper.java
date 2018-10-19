@@ -1289,7 +1289,7 @@ public class AddReplaceFileHelper{
                 List<String> errParams = Arrays.asList(fileToReplace.getFriendlyType(),
                                                 df.getFriendlyType());
                 
-                String contentTypeErr = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", 
+                String contentTypeErr = BundleUtil.getStringFromBundleCatchMissing("file.addreplace.error.replace.new_file_has_different_content_type", 
                                 errParams);
                                         
                 if (isForceFileOperation()){

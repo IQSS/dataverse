@@ -67,8 +67,8 @@ public class BundleUtilTest {
 
     @Test
     public void testGetStringFromBundleWithArgumentsAndSpecificBundle() {
-        assertEquals(null, BundleUtil.getStringFromBundle(null, null, null));
-        assertEquals("Search", BundleUtil.getStringFromBundle("search", null, ResourceBundle.getBundle("Bundle", Locale.US)));
+        assertEquals(null, BundleUtil.getStringFromBundleCatchMissing(null, null, null));
+        assertEquals("Search", BundleUtil.getStringFromBundleCatchMissing("search", null, ResourceBundle.getBundle("Bundle", Locale.US)));
     }
 
 }

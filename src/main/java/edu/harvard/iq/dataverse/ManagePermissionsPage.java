@@ -394,7 +394,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 because permissions are not inherited
             
             if (dataverseRolePermissionHelper.hasDataversePermissions(selectedRoleId) && dvObject instanceof Dataverse){
-                String dvLabel = BundleUtil.getStringFromBundle("dataverses");
+                String dvLabel = BundleUtil.getStringFromBundleCatchMissing("dataverses");
                 retString = dvLabel;
             }
             */
