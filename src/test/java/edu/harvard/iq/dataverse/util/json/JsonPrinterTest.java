@@ -194,6 +194,9 @@ public class JsonPrinterTest {
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
 
+        SettingsServiceBean nullServiceBean = null;
+        JsonPrinter.setSettingsService(nullServiceBean);
+        
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
 
