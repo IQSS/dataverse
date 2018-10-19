@@ -6,10 +6,12 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.export.OAI_OREExporter;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -22,6 +24,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -36,7 +39,7 @@ public class OREMap {
     private Map<String, String> localContext = new TreeMap<String, String>();
     private DatasetVersion version;
     private boolean excludeEmail = false;
-
+    
     public OREMap(DatasetVersion version, boolean excludeEmail) {
         this.version = version;
         this.excludeEmail = excludeEmail;
@@ -88,6 +91,9 @@ public class OREMap {
 
                         for (DatasetField dsf : dscv.getChildDatasetFields()) {
                             DatasetFieldType dsft = dsf.getDatasetFieldType();
+                            if(excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dsft.getFieldType())) {
+                                continue;
+                            }
                             // which may have multiple values
                             if (!dsf.isEmpty()) {
                                 // Add context entry 
