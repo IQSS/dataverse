@@ -71,4 +71,4 @@ Send Dataset metadata to PID provider
 
 Forces update to metadata provided to the PID provider of a published dataset. Only accessible to superusers. ::
 
-    curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/admin/$dataset-id/modifyRegistrationMetadata
+    curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/$dataset-id/modifyRegistrationMetadata
