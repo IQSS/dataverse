@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
 
 import javax.json.Json;
 import javax.json.JsonArray;
