@@ -85,7 +85,6 @@ public class OREMap {
 
                 JsonArrayBuilder vals = Json.createArrayBuilder();
                 if (!dfType.isCompound()) {
-                    for ( DatasetFieldValue pv : field.getDatasetFieldValues()) {
                     for (String val : field.getValues_nondisplay()) {
                         vals.add(val);
                     }
