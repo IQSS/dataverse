@@ -357,7 +357,7 @@ public class Datasets extends AbstractApiBean {
         });
     }
     
-    @GET
+    @POST
     @Path("/modifyRegistrationAll")
     public Response updateDatasetTargetURLAll() {
         return response( req -> {
@@ -372,7 +372,7 @@ public class Datasets extends AbstractApiBean {
         });
     }
     
-    @GET
+    @POST
     @Path("{id}/modifyRegistrationMetadata")
     public Response updateDatasetPIDMetadata(@PathParam("id") String id) {
 
