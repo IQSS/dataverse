@@ -55,8 +55,6 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     @EJB
     ControlledVocabularyValueServiceBean controlledVocabularyValueService;
 
-    private static final Logger logger = Logger.getLogger(DatasetFieldServiceApi.class.getName());
-    
     @GET
     public Response getAll() {
         try {
@@ -279,7 +277,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             return error(Status.EXPECTATION_FAILED, "File not found");
             
         } catch (Exception e) {
-            logger.log(Level.WARNING, "Error parsing dataset fields:" + e.getMessage(), e);
+            Logger.getLogger(DatasetFieldServiceApi.class.getName()).log(Level.WARNING, "Error parsing dataset fields:" + e.getMessage(), e);
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             alr.setInfo( alr.getInfo() + "// " + e.getMessage());
             return error(Status.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -289,7 +287,8 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 try {
                     br.close();
                 } catch (IOException e) {
-                    logger.log(Level.WARNING, "Error closing the reader while importing Dataset Fields.");
+                    Logger.getLogger(DatasetFieldServiceApi.class.getName())
+                            .log(Level.WARNING, "Error closing the reader while importing Dataset Fields.");
                 }
             }
             actionLogSvc.log(alr);
@@ -309,9 +308,6 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             mdb.setOwner(dataverseService.findByAlias(values[2]));
         }
         mdb.setDisplayName(values[3]);
-        if (values.length>4 && !StringUtils.isEmpty(values[4])) {
-            mdb.setNamespaceUri(values[4]);
-        }
 
         metadataBlockService.save(mdb);
         return mdb.getName();
@@ -341,13 +337,8 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         dsf.setRequired(Boolean.parseBoolean(values[13]));
         if (!StringUtils.isEmpty(values[14])) {
             dsf.setParentDatasetFieldType(datasetFieldService.findByName(values[14]));
-        } else {
-            dsf.setParentDatasetFieldType(null);
         }
         dsf.setMetadataBlock(dataverseService.findMDBByName(values[15]));
-        if(values.length>16 && !StringUtils.isEmpty(values[16])) {
-          dsf.setUri(values[16]);
-        }
         datasetFieldService.save(dsf);
         return dsf.getName();
     }

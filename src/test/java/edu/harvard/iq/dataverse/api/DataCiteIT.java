@@ -34,7 +34,7 @@ public class DataCiteIT {
         String description = "myDescription";
         Response createDataset = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, apiToken);
         createDataset.prettyPrint();
-        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
 
         Response uploadFile = UtilIT.uploadRandomFile(datasetPersistentId, apiToken);
         uploadFile.then().assertThat()

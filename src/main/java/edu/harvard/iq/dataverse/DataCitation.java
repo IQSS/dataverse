@@ -17,9 +17,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -203,6 +201,7 @@ public class DataCitation {
         citationList.add(version);
 
         StringBuilder citation = new StringBuilder(citationList.stream().filter(value -> !StringUtils.isEmpty(value))
+                // QDRCustom: Use period to join values, not comma
                 .collect(Collectors.joining(separator)));
 
         if ((fileTitle != null) && !isDirect()) {
@@ -312,13 +311,10 @@ public class DataCitation {
         if (seriesTitle != null) {
             out.write("T3  - " + seriesTitle + "\r\n");
         }
-        if(description!=null) {
-            out.write("AB  - " + flattenHtml(description) + "\r\n");
-        }
+        out.write("AB  - " + flattenHtml(description) + "\r\n");
         for (String author : authors) {
             out.write("AU  - " + author + "\r\n");
         }
-        
         if (!producers.isEmpty()) {
             for (String author : producers) {
                 out.write("A2  - " + author + "\r\n");
@@ -499,9 +495,7 @@ public class DataCitation {
         xmlw.writeEndElement(); // section
 
         xmlw.writeStartElement("abstract");
-        if(description!=null) {
-            xmlw.writeCharacters(flattenHtml(description));
-        }
+        xmlw.writeCharacters(flattenHtml(description));
         xmlw.writeEndElement(); // abstract
 
         xmlw.writeStartElement("dates");
@@ -593,30 +587,9 @@ public class DataCitation {
 
         xmlw.writeEndElement(); // records
         xmlw.writeEndElement(); // xml
-
     }
 
-	public Map<String, String> getDataCiteMetadata() {
-        Map<String, String> metadata = new HashMap<>();
-        String authorString = getAuthorsString();
 
-        if (authorString.isEmpty()) {
-            authorString = ":unav";
-    }
-        String producerString = getPublisher();
-
-        if (producerString.isEmpty()) {
-            producerString = ":unav";
-        }
-
-        metadata.put("datacite.creator", authorString);
-        metadata.put("datacite.title", getTitle());
-        metadata.put("datacite.publisher", producerString);
-        metadata.put("datacite.publicationyear", getYear());
-        return metadata;
-	}
-
-	
     // helper methods   
     private String formatString(String value, boolean escapeHtml) {
         return formatString(value, escapeHtml, "");

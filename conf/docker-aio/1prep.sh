@@ -1,5 +1,7 @@
 #!/bin/sh
 
+export LANG="en_US.UTF-8"
+
 # move things necessary for integration tests into build context.
 # this was based off the phoenix deployment; and is likely uglier and bulkier than necessary in a perfect world
 

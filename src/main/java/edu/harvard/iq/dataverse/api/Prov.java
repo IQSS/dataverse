@@ -79,6 +79,7 @@ public class Prov extends AbstractApiBean {
     
     @DELETE
     @Path("{id}/prov-json")
+//MAD: SHOULD NOT WORK ON PUBLISHED
     public Response deleteProvJson(String body, @PathParam("id") String idSupplied) {
         if(!systemConfig.isProvCollectionEnabled()) {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));

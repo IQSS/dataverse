@@ -133,7 +133,9 @@ public class XitemRepository implements ItemRepository {
             // Run a second pass, looking for records in this set that occur
             // in *other* sets. Then we'll add these multiple sets to the 
             // formatted output in the header:
-            addExtraSets(xoaiItems, setSpec, from, until);
+            if (!StringUtil.isEmpty(setSpec)) {
+                addExtraSets(xoaiItems, setSpec, from, until);
+            }
             
             boolean hasMore = offset + length < oaiRecords.size();
             ListItemIdentifiersResult result = new ListItemIdentifiersResult(hasMore, xoaiItems);
@@ -203,7 +205,9 @@ public class XitemRepository implements ItemRepository {
                 }
             }
             
-            addExtraSets(xoaiItems, setSpec, from, until);
+            if (!StringUtil.isEmpty(setSpec)) {
+                addExtraSets(xoaiItems, setSpec, from, until);
+            }
             
             boolean hasMore = offset + length < oaiRecords.size();
             ListItemsResults result = new ListItemsResults(hasMore, xoaiItems);

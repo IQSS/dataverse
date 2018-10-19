@@ -73,8 +73,6 @@ This template can be used for configuring this setting (**this is not something 
 
 - :download:`orcid-sandbox.json <../_static/installation/files/root/auth-providers/orcid-sandbox.json>`
 
-Please note that the :doc:`prerequisites` section contains an step regarding CA certs in Glassfish that must be followed to get ORCID login to work.
-
 Converting Local Users to OAuth
 -------------------------------
 

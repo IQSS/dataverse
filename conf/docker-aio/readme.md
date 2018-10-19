@@ -8,7 +8,6 @@ Also usable for normal development and system evaluation; not intended for produ
 
 ### Quickstart:
  - in the root of the repository, run `./conf/docker-aio/prep_it.bash`
- - if using DataCite test credentials, update the build args appropriately.
  - if all goes well, you should see the results of the `api/info/version` endpoint, including the deployed build (eg `{"status":"OK","data":{"version":"4.8.6","build":"develop-c3e9f40"}}`). If not, you may need to read the non-quickstart instructions.
  - run integration tests: `./conf/docker-aio/run-test-suite.sh`
 

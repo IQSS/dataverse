@@ -5,15 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.groups.Group;
-import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -24,9 +17,7 @@ import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
@@ -38,16 +29,11 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.ws.rs.core.Response;
 
 /**
  *
@@ -62,25 +48,13 @@ public class DataverseServiceBean implements java.io.Serializable {
     IndexServiceBean indexService;
 
     @EJB
-    AuthenticationServiceBean authService;
-    
-    @EJB
     DatasetServiceBean datasetService;
-    
+
     @EJB
     DataverseLinkingServiceBean dataverseLinkingService;
 
     @EJB
     DatasetLinkingServiceBean datasetLinkingService;
-    
-    @EJB
-    GroupServiceBean groupService;
-    
-    @EJB
-    DataverseRoleServiceBean rolesService;
-    
-    @EJB
-    PermissionServiceBean permissionService;
     
     @EJB
     SystemConfig systemConfig;
@@ -205,7 +179,7 @@ public class DataverseServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
+	
 	public boolean hasData( Dataverse dv ) {
 		TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
 								.setParameter("id", dv.getId());
@@ -467,34 +441,6 @@ public class DataverseServiceBean implements java.io.Serializable {
         return ret;
     }
     
-    public List<Dataverse> filterDataversesForLinking(String query, DataverseRequest req, Dataset dataset) {
-
-        List<Dataverse> dataverseList = new ArrayList<>();
-
-        List<Dataverse> results = em.createNamedQuery("Dataverse.filterByName", Dataverse.class)
-                .setParameter("name", "%" + query.toLowerCase() + "%")
-                .getResultList();
-
-        List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
-        List<Dataverse> remove = new ArrayList<>();
-
-        if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
-            alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((removeIt) -> {
-                remove.add(removeIt);
-            });
-        }
-        
-        for (Dataverse res : results) {
-            if (!remove.contains(res)) {
-                if (this.permissionService.requestOn(req, res).has(Permission.PublishDataset)) {
-                    dataverseList.add(res);
-                }
-            }
-        }
-
-        return dataverseList;
-    }
-    
     /**
      * Used to identify and properly display Harvested objects on the dataverse page.
      * 
@@ -648,142 +594,4 @@ public class DataverseServiceBean implements java.io.Serializable {
             return datasetChildren;
         }
     }
-    
-    public String addRoleAssignmentsToChildren(Dataverse owner, ArrayList<String> rolesToInherit,
-            boolean inheritAllRoles) {
-        /*
-         * This query recursively finds all Dataverses that are inside/children of the
-         * specified one. It recursively finds dvobjects of dtype 'Dataverse' whose
-         * owner_id equals an id already in the list and then returns the list of ids
-         * found, excluding the id of the original specified Dataverse.
-         */
-        String qstr = "WITH RECURSIVE path_elements AS ((" + " SELECT id, dtype FROM dvobject WHERE id in ("
-                + owner.getId() + "))" + " UNION\n"
-                + " SELECT o.id, o.dtype FROM path_elements p, dvobject o WHERE o.owner_id = p.id and o.dtype='Dataverse') "
-                + "SELECT id FROM path_elements WHERE id !=" + owner.getId() + ";";
-
-        List<Integer> childIds;
-        try {
-            childIds = em.createNativeQuery(qstr).getResultList();
-        } catch (Exception ex) {
-            childIds = null;
-        }
-
-        // Set up to track the set of users/groups that get assigned a role and those
-        // that don't
-        JsonArrayBuilder usedNames = Json.createArrayBuilder();
-        JsonArrayBuilder unusedNames = Json.createArrayBuilder();
-        // Set up to track the list of dataverses, by id and alias, that are traversed.
-        JsonArrayBuilder dataverseIds = Json.createArrayBuilder();
-        JsonArrayBuilder dataverseAliases = Json.createArrayBuilder();
-        // Get the Dataverses for the returned ids
-
-        List<Dataverse> children = new ArrayList<Dataverse>();
-
-        for (int i = 0; i < childIds.size(); i++) {
-            Integer childId = childIds.get(i);
-            Dataverse child = find(new Long(childId.longValue()));
-            if (child != null) {
-                // Add to the list of Dataverses
-                children.add(child);
-                // Add ids and aliases to the tracking arrays
-                dataverseIds.add(childId.longValue());
-                dataverseAliases.add(child.getAlias());
-            }
-        }
-        // Find the role assignments on the specified Dataverse
-        List<RoleAssignment> allRAsOnOwner = rolesService.directRoleAssignments(owner);
-
-        // Create a list of just the inheritable role assignments on the original
-        // dataverse
-        List<RoleAssignment> inheritableRAsOnOwner = new ArrayList<RoleAssignment>();
-        for (RoleAssignment role : allRAsOnOwner) {
-            if (inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias())) {
-                //Only supporting built-in/non-dataverse-specific custom roles. Custom roles all have an owner.
-                if(role.getRole().getOwner()==null) {
-                    inheritableRAsOnOwner.add(role);
-                }
-            }
-        }
-
-        String privateUrlToken = null;
-        // Create lists of the existing inheritable roles for each child Dataverse
-        Map<Long, List<RoleAssignment>> existingRAs = new HashMap<Long, List<RoleAssignment>>();
-        for (Dataverse childDv : children) {
-            List<RoleAssignment> allRAsOnChild = rolesService.directRoleAssignments(childDv);
-            List<RoleAssignment> inheritableRoles = new ArrayList<RoleAssignment>();
-            for (RoleAssignment role : allRAsOnChild) {
-                if (inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias())) {
-                    inheritableRoles.add(role);
-                }
-            }
-            existingRAs.put(childDv.getId(), inheritableRoles);
-        }
-
-        for (RoleAssignment roleAssignment : inheritableRAsOnOwner) {
-            DataverseRole inheritableRole = roleAssignment.getRole();
-            String identifier = roleAssignment.getAssigneeIdentifier();
-            if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
-                // The RoleAssignment is for an individual user
-                // Add their name to the tracking list
-                usedNames.add(identifier);
-                // Strip the Identifier prefix so we can retrieve the user
-                identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
-                AuthenticatedUser roleUser = authService.getAuthenticatedUser(identifier);
-                // Now loop over all children and add the roleUser in this role if they don't
-                // yet have this role
-                for (Dataverse childDv : children) {
-                    try {
-                        RoleAssignment ra = new RoleAssignment(inheritableRole, roleUser, childDv, privateUrlToken);
-                        if (!existingRAs.get(childDv.getId()).contains(ra)) {
-                            rolesService.save(ra);
-                        }
-                    } catch (Exception e) {
-                        logger.warning("Unable to assign " + roleAssignment.getAssigneeIdentifier()
-                                + "as an admin for new Dataverse: " + childDv.getName());
-                        logger.warning(e.getMessage());
-                        throw (e);
-                    }
-                }
-            } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
-                // The role assignment is for a group
-                usedNames.add(identifier);
-                identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
-                Group roleGroup = groupService.getGroup(identifier);
-                if (roleGroup != null) {
-                    for (Dataverse childDv : children) {
-                        try {
-                            RoleAssignment ra = new RoleAssignment(inheritableRole, roleGroup, childDv,
-                                    privateUrlToken);
-                            if (!existingRAs.get(childDv.getId()).contains(ra)) {
-                                rolesService.save(ra);
-                            }
-                        } catch (Exception e) {
-                            logger.warning("Unable to assign " + roleAssignment.getAssigneeIdentifier()
-                                    + "as an admin for new Dataverse: " + childDv.getName());
-                            logger.warning(e.getMessage());
-                            throw (e);
-                        }
-                    }
-                } else {
-                    // Add any groups of types not yet supported
-                    unusedNames.add(identifier);
-                }
-            } else {
-                // Add any other types of entity found (not user or group) that aren't supported
-                unusedNames.add(identifier);
-            }
-        }
-        /*
-         * Report the list of Dataverses affected and the set of users/groups that
-         * should now have admin roles on them (they may already have had them) and any
-         * entities that had an admin role on the specified dataverse which were not
-         * handled. Add this to the log and the API return message.
-         */
-        String result = Json.createObjectBuilder().add("Dataverses Updated", dataverseIds)
-                .add("Updated Dataverse Aliases", dataverseAliases).add("Assignments added for", usedNames)
-                .add("Assignments not added for", unusedNames).build().toString();
-        logger.info(result);
-        return (result);
-    }
-}
+}  

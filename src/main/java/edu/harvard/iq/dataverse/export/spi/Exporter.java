@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ExportException;
 import java.io.OutputStream;
 import javax.json.JsonObject;
-import javax.ws.rs.core.MediaType;
 
 /**
  *
@@ -44,9 +43,5 @@ public interface Exporter {
     public String getXMLSchemaVersion() throws ExportException; 
     
     public void setParam(String name, Object value);
-
-	public default String getMediaType() {
-	    return MediaType.APPLICATION_XML;
-	};
     
 }

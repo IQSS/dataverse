@@ -62,13 +62,13 @@ public class RepositoryStorageAbstractionLayerUtil {
          */
         boolean onlyOnPackagePerDatasetIsSupported = true;
         if (onlyOnPackagePerDatasetIsSupported) {
-            String leafDirectory = dataset.getIdentifierForFileStorage();
+            String leafDirectory = dataset.getIdentifier();
             if (leafDirectoryOnly) {
 		    File f = new File( leafDirectory );
 		    return f.getName();
             } else {
                 // The "authority" is something like "FK2".
-                String relativePathToLeafDir = dataset.getAuthorityForFileStorage();
+                String relativePathToLeafDir = dataset.getAuthority();
                 return relativePathToLeafDir + File.separator + leafDirectory;
             }
         } else {

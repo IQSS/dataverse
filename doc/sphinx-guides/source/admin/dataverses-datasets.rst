@@ -28,13 +28,6 @@ Removes a link between a dataverse and another dataverse. Only accessible to sup
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/dataverses/$linked-dataverse-alias/deleteLink/$linking-dataverse-alias
 
-Add Dataverse RoleAssignments to Child Dataverses
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Recursively assigns the users and groups having a role(s),that are in the set configured to be inheritable via the :InheritParentRoleAssignments setting, on a specified dataverse to have the same role assignments on all of the dataverses that have been created within it. The response indicates success or failure and lists the individuals/groups and dataverses involved in the update. Only accessible to superusers. ::
- 
-    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias//addRoleAssignmentsToChildren
-
 Datasets
 --------
 
@@ -48,7 +41,7 @@ Moves a dataset whose id is passed to a dataverse whose alias is passed. If the 
 Link a Dataset
 ^^^^^^^^^^^^^^
 
-Creates a link between a dataset and a dataverse (see the Linked Dataverses + Linked Datasets section of the :doc:`/user/dataverse-management` guide for more information). ::
+Creates a link between a dataset and a dataverse (see the Linked Dataverses + Linked Datasets section of the :doc:`/user/dataverse-management` guide for more information). Only accessible to superusers. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/datasets/$linked-dataset-id/link/$linking-dataverse-alias
 
@@ -58,10 +51,3 @@ Unlink a Dataset
 Removes a link between a dataset and a dataverse. Only accessible to superusers. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$linked-dataset-id/deleteLink/$linking-dataverse-alias
-
-Mint new PID for a Dataset
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Mints a new identifier for a dataset previously registered with a handle. Only accessible to superusers. ::
-
-    curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/admin/$dataset-id/reregisterHDLToPID

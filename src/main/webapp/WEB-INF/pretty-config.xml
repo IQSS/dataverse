@@ -17,9 +17,4 @@
         <view-id value="/search/advanced.xhtml" />
     </url-mapping>
 
-    <url-mapping id="sitemap">
-        <pattern value="/sitemap.xml" />
-        <view-id value="/sitemap/sitemap.xml" />
-    </url-mapping>
-
 </pretty-config>

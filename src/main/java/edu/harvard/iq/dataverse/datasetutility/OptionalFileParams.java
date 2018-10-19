@@ -12,8 +12,6 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.api.Util;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -257,7 +255,7 @@ public class OptionalFileParams {
             if (DataFileTag.isDataFileTag(tagToCheck)){
                 this.dataFileTags.add(tagToCheck);
             }else{                    
-                String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.invalid_datafile_tag");
+                String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.invalid_datafile_tag");
                 throw new DataFileTagException(errMsg + " [" + tagToCheck + "]. Please use one of the following: " + DataFileTag.getListofLabelsAsString());
             }
         }
@@ -363,7 +361,7 @@ public class OptionalFileParams {
         // Is this a tabular file?
         // --------------------------------------------------
         if (!df.isTabularData()){
-            String errMsg = BundleUtil.getStringFromBundle("file.metadata.datafiletag.not_tabular");
+            String errMsg = ResourceBundle.getBundle("Bundle").getString("file.metadata.datafiletag.not_tabular");
 
             throw new DataFileTagException(errMsg);
         }

@@ -10,7 +10,6 @@ import com.lyncode.xoai.dataprovider.model.Set;
 import com.lyncode.xoai.model.oaipmh.About;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,7 +29,7 @@ public class Xitem implements Item {
         super();
         this.oaiRecord = oaiRecord;
         oaisets = new ArrayList<>();
-        if (!StringUtil.isEmpty(oaiRecord.getSetName())) {
+        if (oaiRecord.getSetName() != null) {
             oaisets.add(new Set(oaiRecord.getSetName()));
         }
     }

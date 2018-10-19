@@ -62,8 +62,8 @@ public class OAISet implements Serializable {
     private String name;
     @Column(columnDefinition="TEXT", nullable = false, unique=true)
     @Size(max = 30, message = "{setspec.maxLength}")
-    @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "{dataverse.nameIllegalCharacters}")})
-    //    @Pattern(regexp=".*\\D.*", message="{setspec.notNumber}")})
+    @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "{dataverse.nameIllegalCharacters}"),
+        @Pattern(regexp=".*\\D.*", message="{setspec.notNumber}")})
     private String spec;
     
     @Column(columnDefinition="TEXT", nullable = false)
@@ -133,10 +133,6 @@ public class OAISet implements Serializable {
     
     public void setVersion(Long version) {
         this.version = version;
-    }
-    
-    public boolean isDefaultSet() {
-        return "".equals(this.spec);
     }
 
     @Override

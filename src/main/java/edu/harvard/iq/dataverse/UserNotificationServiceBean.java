@@ -82,18 +82,12 @@ public class UserNotificationServiceBean {
     }
     
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment) {
-        sendNotification(dataverseUser, sendDate, type, objectId, comment, null);
-    }
-    
-    public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment, AuthenticatedUser requestor) {
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
         userNotification.setSendDate(sendDate);
         userNotification.setType(type);
         userNotification.setObjectId(objectId);
-        userNotification.setRequestor(requestor);
-        
-        if (mailService.sendNotificationEmail(userNotification, comment, requestor)) {
+        if (mailService.sendNotificationEmail(userNotification)) {
             logger.fine("email was sent");
             userNotification.setEmailed(true);
             save(userNotification);

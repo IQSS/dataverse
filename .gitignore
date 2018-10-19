@@ -43,8 +43,3 @@ conf/docker-aio/dv/install/dvinstall.zip
 # or copy of test data
 conf/docker-aio/testdata/
 scripts/installer/default.config
-*.pem
-
-# do not track IntelliJ IDEA files
-.idea
-**/*.iml

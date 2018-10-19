@@ -57,20 +57,9 @@ Multiple File ("bundle") download
 
 Returns the files listed, zipped. 
 
-.. note:: If files requested cannot be provided, a 207 status code will be returned indicating that the result was a mixed success.
-
 Parameters: 
 ~~~~~~~~~~~
-
-``format`` 
-the following parameter values are supported (for tabular data files only):
-
-==============  ===========
-Value           Description
-==============  ===========
-original        "Saved Original", the proprietary (SPSS, Stata, R, etc.) file from which the tabular data was ingested;
-==============  ===========
-
+none.
 
 "All Formats" bundled access for Tabular Files. 
 -----------------------------------------------

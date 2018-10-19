@@ -410,4 +410,4 @@ Again, Dataverse Docker images on Docker Hub are highly experimental at this poi
 
 ----
 
-Previous: :doc:`deployment` | Next: :doc:`making-releases`
+Previous: :doc:`coding-style` | Next: :doc:`making-releases`

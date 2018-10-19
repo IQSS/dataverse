@@ -165,7 +165,7 @@ public class IngestableDataCheckerTest {
         assertEquals(result, "application/x-spss-sav");
 
         msgt("(2b) File is empty string");
-        buff = createTempFileAndGetBuffer("testNotSAV-empty.txt", "");
+        buff = createTempFileAndGetBuffer("testNotSAV.txt", "");
 
         instance = new IngestableDataChecker();
         result = instance.testSAVformat(buff);
@@ -173,7 +173,7 @@ public class IngestableDataCheckerTest {
         assertEquals(result, null);
 
         msgt("(2c) File is non-SAV string");
-        buff = createTempFileAndGetBuffer("testNotSAV-string.txt", "i-am-not-a-x-spss-sav-file");
+        buff = createTempFileAndGetBuffer("testNotSAV.txt", "i-am-not-a-x-spss-sav-file");
         instance = new IngestableDataChecker();
         result = instance.testSAVformat(buff);
         msg("result 2c: " + result);

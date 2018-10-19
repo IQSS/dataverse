@@ -192,19 +192,6 @@ public class BuiltinUsersIT {
         String retrievedTokenUsingUsername = JsonPath.from(getApiTokenUsingUsername.asString()).getString("data.message");
         assertEquals(createdToken, retrievedTokenUsingUsername);
 
-        //TODO: This chunk was for testing email login via API, 
-        // but is disabled as it could not be used without a code change and
-        // then the code to use it was removed in https://github.com/IQSS/dataverse/pull/4993 .
-        // We should consider a better way to test email login --MAD 4.9.3
-        
-        //if (BuiltinUsers.retrievingApiTokenViaEmailEnabled) {
-        //    Response getApiTokenUsingEmail = getApiTokenUsingEmail(usernameToCreate + "@mailinator.com", usernameToCreate);
-        //    getApiTokenUsingEmail.prettyPrint();
-        //    assertEquals(200, getApiTokenUsingEmail.getStatusCode());
-        //    String retrievedTokenUsingEmail = JsonPath.from(getApiTokenUsingEmail.asString()).getString("data.message");
-        //    assertEquals(createdToken, retrievedTokenUsingEmail);
-        //}
-        
         Response failExpected = UtilIT.getApiTokenUsingUsername("junk", "junk");
         failExpected.prettyPrint();
         assertEquals(400, failExpected.getStatusCode());

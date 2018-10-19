@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -154,7 +153,7 @@ public class DatasetFieldCompoundValue implements Serializable {
                         .replace("#NAME", childDatasetField.getDatasetFieldType().getTitle())
                         //todo: this should be handled in more generic way for any other text that can then be internationalized
                         // if we need to use replaceAll for regexp, then make sure to use: java.util.regex.Matcher.quoteReplacement(<target string>)
-                        .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
+                        .replace("#EMAIL", ResourceBundle.getBundle("Bundle").getString("dataset.email.hiddenMessage"))
                         .replace("#VALUE",  sanitizedValue );
 
                 fieldMap.put(childDatasetField,displayValue);

@@ -101,9 +101,7 @@ public class DataFile extends DvObject implements Comparable {
     public enum ChecksumType {
 
         MD5("MD5"),
-        SHA1("SHA-1"),
-        SHA256("SHA-256"),
-        SHA512("SHA-512");
+        SHA1("SHA-1");
 
         private final String text;
 

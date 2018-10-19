@@ -22,13 +22,10 @@ You should have already downloaded the installer from https://github.com/IQSS/da
 
 Unpack the zip file - this will create the directory ``dvinstall``.
 
-**Important:** The installer will need to use the PostgreSQL command line utility ``psql`` in order to configure the database. If the executable is not in your system PATH, the installer will try to locate it on your system. However, we strongly recommend that you check and make sure it is in the PATH. This is especially important if you have multiple versions of PostgreSQL installed on your system. Make sure the psql that came with the version that you want to use with your Dataverse is the first on your path. For example, if the PostgreSQL distribution you are running is installed in  /Library/PostgreSQL/9.6, add /Library/PostgreSQL/9.6/bin to the beginning of your $PATH variable. If you are *running* multiple PostgreSQL servers, make sure you know the port number of the one you want to use, as the installer will need it in order to connect to the database (the first PostgreSQL distribution installed on your system is likely using the default port 5432; but the second will likely be on 5433, etc.) Does every word in this paragraph make sense? If it does, great - because you definitely need to be comfortable with basic system tasks in order to install Dataverse. If not - if you don't know how to check where your PostgreSQL is installed, or what port it is running on, or what a $PATH is... it's not too late to stop. Because it will most likely not work. And if you contact us for help, these will be the questions we'll be asking you - so, again, you need to be able to answer them comfortably for it to work. 
-
 Execute the installer script like this (but first read the note below about not running the installer as root)::
 
         $ cd dvinstall
         $ ./install
-
 
 **It is no longer necessary to run the installer as root!**
 
@@ -176,7 +173,7 @@ mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
 
 The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. See the below example:
 
-- Delete: ``./asadmin delete-javamail-resource mail/notifyMailSession``
+- Delete: ``./asadmin delete-javamail-resource mail/MyMailSession``
 - Create (remove brackets and replace the variables inside): ``./asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
 
 Be sure you save the changes made here and then restart your Glassfish server to test it out.

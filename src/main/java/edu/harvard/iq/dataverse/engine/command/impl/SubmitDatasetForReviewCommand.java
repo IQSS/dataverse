@@ -53,12 +53,10 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
         ctxt.em().flush();
 
         updateDatasetUser(ctxt);
-
-        AuthenticatedUser requestor = getUser().isAuthenticated() ? (AuthenticatedUser) getUser() : null;
         
         List<AuthenticatedUser> authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
         for (AuthenticatedUser au : authUsers) {
-            ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, savedDataset.getLatestVersion().getId(), "", requestor);
+            ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, savedDataset.getLatestVersion().getId());
         }
         
         //  TODO: What should we do with the indexing result? Print it to the log?

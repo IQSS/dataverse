@@ -131,139 +131,14 @@ public class ProvInvestigator {
     //Pulled from https://www.w3.org/Submission/2013/SUBM-prov-json-20130424/schema
     //Not the prettiest way of accessing the schema, but loading the .json file as an external resource
     //turned out to be very painful, especially when also trying to exercise it via unit tests
-    //
-    //To solve https://github.com/IQSS/dataverse/issues/5154 , the provenance schema
-    //here was updated to include the "core schema" values being downloaded by the "id" tag. 
-    //If this schema needs to be updated (as of 2018, it hadn't been since 2013) this will need
-    //to be done manually again or we'll need to pull both files and store them on disk.
-    //The later option was not done previously because we couldn't get the same files to be
-    //referenced by the code and our junit tests.
     private static final String provSchema = 
         "{\n" +
-        "    \"id\": \"\",\n" +
+        "    \"id\": \"http://provenance.ecs.soton.ac.uk/prov-json/schema#\",\n" +
         "    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n" +
         "    \"description\": \"Schema for a PROV-JSON document\",\n" +
         "    \"type\": \"object\",\n" +
         "    \"additionalProperties\": false,\n" +
-        "    \"dependencies\": {\n" +
-        "        \"exclusiveMaximum\": [ \"maximum\" ],\n" +
-        "        \"exclusiveMinimum\": [ \"minimum\" ]\n" +
-        "    },"+
-        "    \"default\": {},\n" +
         "    \"properties\": {\n" +
-        "        \"id\": {\n" +
-        "            \"type\": \"string\"\n" +
-        "        },\n" +
-        "        \"$schema\": {\n" +
-        "            \"type\": \"string\"\n" +
-        "        },\n" +
-        "        \"title\": {\n" +
-        "            \"type\": \"string\"\n" +
-        "        },\n" +
-        "        \"description\": {\n" +
-        "            \"type\": \"string\"\n" +
-        "        },\n" +
-        "        \"default\": {},\n" +
-        "        \"multipleOf\": {\n" +
-        "            \"type\": \"number\",\n" +
-        "            \"minimum\": 0,\n" +
-        "            \"exclusiveMinimum\": true\n" +
-        "        },\n" +
-        "        \"maximum\": {\n" +
-        "            \"type\": \"number\"\n" +
-        "        },\n" +
-        "        \"exclusiveMaximum\": {\n" +
-        "            \"type\": \"boolean\",\n" +
-        "            \"default\": false\n" +
-        "        },\n" +
-        "        \"minimum\": {\n" +
-        "            \"type\": \"number\"\n" +
-        "        },\n" +
-        "        \"exclusiveMinimum\": {\n" +
-        "            \"type\": \"boolean\",\n" +
-        "            \"default\": false\n" +
-        "        },\n" +
-        "        \"maxLength\": { \"$ref\": \"#/definitions/positiveInteger\" },\n" +
-        "        \"minLength\": { \"$ref\": \"#/definitions/positiveIntegerDefault0\" },\n" +
-        "        \"pattern\": {\n" +
-        "            \"type\": \"string\",\n" +
-        "            \"format\": \"regex\"\n" +
-        "        },\n" +
-        "        \"additionalItems\": {\n" +
-        "            \"anyOf\": [\n" +
-        "                { \"type\": \"boolean\" },\n" +
-        "                { \"$ref\": \"#\" }\n" +
-        "            ],\n" +
-        "            \"default\": {}\n" +
-        "        },\n" +
-        "        \"items\": {\n" +
-        "            \"anyOf\": [\n" +
-        "                { \"$ref\": \"#\" },\n" +
-        "                { \"$ref\": \"#/definitions/schemaArray\" }\n" +
-        "            ],\n" +
-        "            \"default\": {}\n" +
-        "        },\n" +
-        "        \"maxItems\": { \"$ref\": \"#/definitions/positiveInteger\" },\n" +
-        "        \"minItems\": { \"$ref\": \"#/definitions/positiveIntegerDefault0\" },\n" +
-        "        \"uniqueItems\": {\n" +
-        "            \"type\": \"boolean\",\n" +
-        "            \"default\": false\n" +
-        "        },\n" +
-        "        \"maxProperties\": { \"$ref\": \"#/definitions/positiveInteger\" },\n" +
-        "        \"minProperties\": { \"$ref\": \"#/definitions/positiveIntegerDefault0\" },\n" +
-        "        \"required\": { \"$ref\": \"#/definitions/stringArray\" },\n" +
-        "        \"additionalProperties\": {\n" +
-        "            \"anyOf\": [\n" +
-        "                { \"type\": \"boolean\" },\n" +
-        "                { \"$ref\": \"#\" }\n" +
-        "            ],\n" +
-        "            \"default\": {}\n" +
-        "        },\n" +
-        "        \"definitions\": {\n" +
-        "            \"type\": \"object\",\n" +
-        "            \"additionalProperties\": { \"$ref\": \"#\" },\n" +
-        "            \"default\": {}\n" +
-        "        },\n" +
-        "        \"properties\": {\n" +
-        "            \"type\": \"object\",\n" +
-        "            \"additionalProperties\": { \"$ref\": \"#\" },\n" +
-        "            \"default\": {}\n" +
-        "        },\n" +
-        "        \"patternProperties\": {\n" +
-        "            \"type\": \"object\",\n" +
-        "            \"additionalProperties\": { \"$ref\": \"#\" },\n" +
-        "            \"default\": {}\n" +
-        "        },\n" +
-        "        \"dependencies\": {\n" +
-        "            \"type\": \"object\",\n" +
-        "            \"additionalProperties\": {\n" +
-        "                \"anyOf\": [\n" +
-        "                    { \"$ref\": \"#\" },\n" +
-        "                    { \"$ref\": \"#/definitions/stringArray\" }\n" +
-        "                ]\n" +
-        "            }\n" +
-        "        },\n" +
-        "        \"enum\": {\n" +
-        "            \"type\": \"array\",\n" +
-        "            \"minItems\": 1,\n" +
-        "            \"uniqueItems\": true\n" +
-        "        },\n" +
-        "        \"type\": {\n" +
-        "            \"anyOf\": [\n" +
-        "                { \"$ref\": \"#/definitions/simpleTypes\" },\n" +
-        "                {\n" +
-        "                    \"type\": \"array\",\n" +
-        "                    \"items\": { \"$ref\": \"#/definitions/simpleTypes\" },\n" +
-        "                    \"minItems\": 1,\n" +
-        "                    \"uniqueItems\": true\n" +
-        "                }\n" +
-        "            ]\n" +
-        "        },\n" +
-        "        \"format\": { \"type\": \"string\" },\n" +
-        "        \"allOf\": { \"$ref\": \"#/definitions/schemaArray\" },\n" +
-        "        \"anyOf\": { \"$ref\": \"#/definitions/schemaArray\" },\n" +
-        "        \"oneOf\": { \"$ref\": \"#/definitions/schemaArray\" },\n" +
-        "        \"not\": { \"$ref\": \"#\" },\n" +
         "        \"prefix\": {\n" +
         "            \"type\": \"object\",\n" +
         "            \"patternProperties\": {\n" +
@@ -344,27 +219,6 @@ public class ProvInvestigator {
         "        }\n" +
         "    },\n" +
         "    \"definitions\": {\n" +
-        "        \"schemaArray\": {\n" +
-        "            \"type\": \"array\",\n" +
-        "            \"minItems\": 1,\n" +
-        "            \"items\": { \"$ref\": \"#\" }\n" +
-        "        },\n" +
-        "        \"positiveInteger\": {\n" +
-        "            \"type\": \"integer\",\n" +
-        "            \"minimum\": 0\n" +
-        "        },\n" +
-        "        \"positiveIntegerDefault0\": {\n" +
-        "            \"allOf\": [ { \"$ref\": \"#/definitions/positiveInteger\" }, { \"default\": 0 } ]\n" +
-        "        },\n" +
-        "        \"simpleTypes\": {\n" +
-        "            \"enum\": [ \"array\", \"boolean\", \"integer\", \"null\", \"number\", \"object\", \"string\" ]\n" +
-        "        },\n" +
-        "        \"stringArray\": {\n" +
-        "            \"type\": \"array\",\n" +
-        "            \"items\": { \"type\": \"string\" },\n" +
-        "            \"minItems\": 1,\n" +
-        "            \"uniqueItems\": true\n" +
-        "        },\n"+
         "        \"typedLiteral\": {\n" +
         "            \"title\": \"PROV-JSON Typed Literal\",\n" +
         "            \"type\": \"object\",\n" +

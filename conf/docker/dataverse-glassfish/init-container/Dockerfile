@@ -11,6 +11,7 @@ RUN yum install -y \
     postgresql \
     sha1sum 
 
-COPY install /
+COPY postgres-setup /
 
-ENTRYPOINT ["/install", "--pg_only", "--yes"]
+ENTRYPOINT ["/postgres-setup"]
+CMD ["dataverse"]

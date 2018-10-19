@@ -20,7 +20,6 @@
 
 package edu.harvard.iq.dataverse.util;
 
-
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
@@ -44,6 +43,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ResourceBundle;
+import java.util.MissingResourceException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
@@ -56,12 +57,11 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,9 +70,6 @@ import javax.ejb.EJBException;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
-import org.apache.commons.io.FileUtils;
-
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -209,7 +206,7 @@ public class FileUtil implements java.io.Serializable  {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
             try {
-                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeDisplay" );
+                return ResourceBundle.getBundle("MimeTypeDisplay").getString(fileType);
             } catch (MissingResourceException e) {
                 return fileType;
             }
@@ -221,13 +218,13 @@ public class FileUtil implements java.io.Serializable  {
     public static String getFacetFileType(DataFile dataFile) {
         String fileType = dataFile.getContentType();
         
-        if (!StringUtil.isEmpty(fileType)) {
+        if (fileType != null) {
             if (fileType.contains(";")) {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
 
             try {
-                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeFacets"  );
+                return ResourceBundle.getBundle("MimeTypeFacets").getString(fileType);
             } catch (MissingResourceException e) {
                 // if there's no defined "facet-friendly" form of this mime type
                 // we'll truncate the available type by "/", e.g., all the 
@@ -236,18 +233,11 @@ public class FileUtil implements java.io.Serializable  {
                 // but it is probably still better than to tag them all as 
                 // "uknown". 
                 // -- L.A. 4.0 alpha 1
-                //
-                // UPDATE, MH 4.9.2
-                // Since production is displaying both "tabulardata" and "Tabular Data"
-                // we are going to try to add capitalization here to this function
-                // in order to capitalize all the unknown types that are not called
-                // out in MimeTypeFacets.properties
-                String typeClass = fileType.split("/")[0];
-                return Character.toUpperCase(typeClass.charAt(0)) + typeClass.substring(1);
+                return fileType.split("/")[0];
             }
         }
         
-        return BundleUtil.getStringFromPropertyFile("application/octet-stream","MimeTypeFacets"  );
+        return "unknown"; 
     }
     
     public static String getUserFriendlyOriginalType(DataFile dataFile) {
@@ -258,7 +248,7 @@ public class FileUtil implements java.io.Serializable  {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
             try {
-                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeDisplay" );
+                return ResourceBundle.getBundle("MimeTypeDisplay").getString(fileType);
             } catch (MissingResourceException e) {
                 return fileType;
             }
@@ -906,19 +896,18 @@ public class FileUtil implements java.io.Serializable  {
             }
             
             // Delete the temp directory used for unzipping
-            FileUtils.deleteDirectory(rezipFolder);
             
+            //logger.fine("Delete temp shapefile unzip directory: " + rezipFolder.getAbsolutePath());
+            //FileUtils.deleteDirectory(rezipFolder);
+
+            //// Delete rezipped files
+            //for (File finalFile : shpIngestHelper.getFinalRezippedFiles()){
+            //    if (finalFile.isFile()){
+            //        finalFile.delete();
+            //    }
+            //}
+             
             if (datafiles.size() > 0) {
-                // remove the uploaded zip file:
-                try {
-                    Files.delete(tempFile);
-                } catch (IOException ioex) {
-                    // do nothing - it's just a temp file.
-                    logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
-                } catch (SecurityException se) {
-                    logger.warning("Unable to delete: " + tempFile.toString() + "due to Security Exception: "
-                            + se.getMessage());
-                }
                 return datafiles;
             }else{
                 logger.severe("No files added from directory of rezipped shapefiles");
@@ -946,9 +935,7 @@ public class FileUtil implements java.io.Serializable  {
         return null;
     }   // end createDataFiles
     
-
-    private static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit)
-            throws IOException, FileExceedsMaxSizeException {
+    private static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit) throws IOException, FileExceedsMaxSizeException {
         Path tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
         
         if (inputStream != null && tempFile != null) {

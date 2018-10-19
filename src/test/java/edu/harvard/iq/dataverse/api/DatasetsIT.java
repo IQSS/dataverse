@@ -60,8 +60,7 @@ public class DatasetsIT {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
         removeExcludeEmail.then().assertThat()
                 .statusCode(200);
-        /* With Dual mode, we can no longer mess with upload methods since native is now required for anything to work
-               
+
         Response removeDcmUrl = UtilIT.deleteSetting(SettingsServiceBean.Key.DataCaptureModuleUrl);
         removeDcmUrl.then().assertThat()
                 .statusCode(200);
@@ -69,7 +68,6 @@ public class DatasetsIT {
         Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
         removeUploadMethods.then().assertThat()
                 .statusCode(200);
-         */
     }
 
     @AfterClass
@@ -82,7 +80,7 @@ public class DatasetsIT {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
         removeExcludeEmail.then().assertThat()
                 .statusCode(200);
-        /* See above
+
         Response removeDcmUrl = UtilIT.deleteSetting(SettingsServiceBean.Key.DataCaptureModuleUrl);
         removeDcmUrl.then().assertThat()
                 .statusCode(200);
@@ -90,7 +88,6 @@ public class DatasetsIT {
         Response removeUploadMethods = UtilIT.deleteSetting(SettingsServiceBean.Key.UploadMethods);
         removeUploadMethods.then().assertThat()
                 .statusCode(200);
-         */
     }
 
     @Test
@@ -1127,9 +1124,9 @@ public class DatasetsIT {
         Response getRsyncScriptPermErrorGuest = UtilIT.getRsyncScript(datasetPersistentId, nullTokenToIndicateGuest);
         getRsyncScriptPermErrorGuest.prettyPrint();
         getRsyncScriptPermErrorGuest.then().assertThat()
-                .statusCode(UNAUTHORIZED.getStatusCode())
                 .contentType(ContentType.JSON)
-                .body("message", equalTo("Please provide a key query parameter (?key=XXX) or via the HTTP header X-Dataverse-key"));
+                .body("message", equalTo("User :guest is not permitted to perform requested action."))
+                .statusCode(UNAUTHORIZED.getStatusCode());
 
         Response createNoPermsUser = UtilIT.createRandomUser();
         String noPermsUsername = UtilIT.getUsernameFromResponse(createNoPermsUser);
@@ -1276,9 +1273,7 @@ public class DatasetsIT {
         String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
         String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
         String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
-        logger.info("identifier: " + identifier);
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
-        logger.info("datasetPersistentId: " + datasetPersistentId);
 
         /**
          * Here we are pretending to be the Data Capture Module reporting on if
@@ -1339,32 +1334,23 @@ public class DatasetsIT {
         removeUploadMethods.then().assertThat()
                 .statusCode(200);
 
-        String uploadFolder = identifier.split("FK2/")[1];
-        logger.info("uploadFolder: " + uploadFolder);
+        String uploadFolder = identifier;
 
         /**
          * The "extra testing" involves having this REST Assured test do two
          * jobs done by the rsync script and the DCM. The rsync script creates
          * "files.sha" and (if checksum validation succeeds) the DCM moves the
          * files and the "files.sha" file into the uploadFolder.
-         *
-         * The whole test was disabled in ae6b0a7 so we are changing
-         * doExtraTesting to true.
          */
-        boolean doExtraTesting = true;
+        boolean doExtraTesting = false;
 
         if (doExtraTesting) {
 
             String SEP = java.io.File.separator;
             // Set this to where you keep your files in dev. It might be nice to have an API to query to get this location from Dataverse.
-            // TODO: Think more about if dsDir should end with "/FK2" or not.
-            String dsDir = "/usr/local/glassfish4/glassfish/domains/domain1/files/10.5072";
-            String dsDirPlusIdentifier = dsDir + SEP + identifier;
-            logger.info("dsDirPlusIdentifier: " + dsDirPlusIdentifier);
-            java.nio.file.Files.createDirectories(java.nio.file.Paths.get(dsDirPlusIdentifier));
-            String dsDirPlusIdentifierPlusUploadFolder = dsDir + SEP + identifier + SEP + uploadFolder;
-            logger.info("dsDirPlusIdentifierPlusUploadFolder: " + dsDirPlusIdentifierPlusUploadFolder);
-            java.nio.file.Files.createDirectories(java.nio.file.Paths.get(dsDirPlusIdentifierPlusUploadFolder));
+            String dsDir = "/Users/pdurbin/dataverse/files/10.5072/FK2";
+            java.nio.file.Files.createDirectories(java.nio.file.Paths.get(dsDir + SEP + identifier));
+            java.nio.file.Files.createDirectories(java.nio.file.Paths.get(dsDir + SEP + identifier + SEP + uploadFolder));
             String checksumFilename = "files.sha";
             String filename1 = "file1.txt";
             String fileContent1 = "big data!";
@@ -1401,8 +1387,8 @@ public class DatasetsIT {
         if (doExtraTesting) {
 
             uploadSuccessful.then().assertThat()
-                    .statusCode(200)
-                    .body("data.message", equalTo("FileSystemImportJob in progress"));
+                    .body("data.message", equalTo("FileSystemImportJob in progress"))
+                    .statusCode(200);
 
             if (doExtraTesting) {
 
@@ -1411,11 +1397,11 @@ public class DatasetsIT {
                 Response datasetAsJson2 = UtilIT.nativeGet(datasetId, apiToken);
                 datasetAsJson2.prettyPrint();
                 datasetAsJson2.then().assertThat()
-                        .statusCode(OK.getStatusCode())
-                        .body("data.latestVersion.files[0].dataFile.filename", equalTo(uploadFolder))
+                        .body("data.latestVersion.files[0].dataFile.filename", equalTo(identifier))
                         .body("data.latestVersion.files[0].dataFile.contentType", equalTo("application/vnd.dataverse.file-package"))
                         .body("data.latestVersion.files[0].dataFile.filesize", equalTo(totalSize))
-                        .body("data.latestVersion.files[0].dataFile.checksum.type", equalTo("SHA-1"));
+                        .body("data.latestVersion.files[0].dataFile.checksum.type", equalTo("SHA-1"))
+                        .statusCode(OK.getStatusCode());
             }
         }
         logger.info("username/password: " + username);
@@ -1440,16 +1426,6 @@ public class DatasetsIT {
         
         // This should fail, because we are attempting to link the dataset 
         // to its own dataverse:
-        Response publishTargetDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
-        publishTargetDataverse.prettyPrint();
-        publishTargetDataverse.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
-        Response publishDatasetForLinking = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
-        publishDatasetForLinking.prettyPrint();
-        publishDatasetForLinking.then().assertThat()
-                .statusCode(OK.getStatusCode());
-                        
         Response createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
         createLinkingDatasetResponse.prettyPrint();
         createLinkingDatasetResponse.then().assertThat()
@@ -1460,10 +1436,7 @@ public class DatasetsIT {
         createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        publishTargetDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
-        publishDatasetForLinking.prettyPrint();
-        publishTargetDataverse.then().assertThat()
-                .statusCode(OK.getStatusCode());
+        
         
         // And link the dataset to this new dataverse:
         createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);

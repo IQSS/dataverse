@@ -8,20 +8,15 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
-import edu.harvard.iq.dataverse.authorization.groups.Group;
-import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -32,8 +27,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailInitResponse;
-import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
 import javax.json.Json;
@@ -48,8 +41,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
-
-import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Map;
 import java.util.logging.Level;
@@ -62,9 +53,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
-
-import org.apache.commons.io.IOUtils;
-
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -75,16 +63,9 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.ResourceBundle;
 import javax.inject.Inject;
 import javax.persistence.Query;
@@ -115,8 +96,6 @@ public class Admin extends AbstractApiBean {
 	DataFileServiceBean fileService;
 	@EJB
 	DatasetServiceBean datasetService;
-    @EJB
-    GroupServiceBean groupService;
 
 	// Make the session available
 	@Inject
@@ -349,12 +328,12 @@ public class Admin extends AbstractApiBean {
 			authUser = this.findUserOrDie();
 		} catch (AbstractApiBean.WrappedResponse ex) {
 			return error(Response.Status.FORBIDDEN,
-					BundleUtil.getStringFromBundle("dashboard.list_users.api.auth.invalid_apikey"));
+					ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.invalid_apikey"));
 		}
 
 		if (!authUser.isSuperuser()) {
 			return error(Response.Status.FORBIDDEN,
-					BundleUtil.getStringFromBundle("dashboard.list_users.api.auth.not_superuser"));
+					ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.not_superuser"));
 		}
 
 		UserListMaker userListMaker = new UserListMaker(userService);
@@ -1049,42 +1028,6 @@ public class Admin extends AbstractApiBean {
 	public Response isOrcidEnabled() {
 		return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
 	}
-        
-    @POST
-    @Path("{id}/reregisterHDLToPID")
-    public Response reregisterHdlToPID(@PathParam("id") String id) {
-        logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
-        try {
-            if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(GlobalId.HDL_PROTOCOL)) {
-                logger.info("Bad Request protocol set to handle  " );
-                return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
-            }
-            
-            User u = findUserOrDie();
-            if (!u.isSuperuser()) {
-                logger.info("Bad Request Unauthor " );
-                return error(Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
-            }
-
-            DataverseRequest r = createDataverseRequest(u);
-            Dataset ds = findDatasetOrDie(id);
-            if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(GlobalId.HDL_PROTOCOL)) {
-                execCommand(new RegisterDvObjectCommand(r, ds, true));
-            } else {
-                return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.hdl.dataset"));
-            }
-
-        } catch (WrappedResponse r) {
-            logger.info("Failed to migrate Dataset Handle id: " + id);
-            return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure", Arrays.asList(id)));
-        } catch (Exception e) {
-            logger.info("Failed to migrate Dataset Handle id: " + id + " Unexpected Exception " + e.getMessage());
-            List<String> args = Arrays.asList(id,e.getMessage());
-            return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failureWithException", args));
-        }
-        System.out.print("before the return ok...");
-        return ok(BundleUtil.getStringFromBundle("admin.api.migrateHDL.success"));
-    }
 
 	@GET
 	@Path("{id}/registerDataFile")
@@ -1158,115 +1101,6 @@ public class Admin extends AbstractApiBean {
 				+ " unregistered, published files registered successfully.");
 	}
 
-	@GET
-	@Path("/updateHashValues/{alg}")
-	public Response updateHashValues(@PathParam("alg") String alg, @QueryParam("num") int num) {
-		Integer count = fileService.findAll().size();
-		Integer successes = 0;
-		Integer alreadyUpdated = 0;
-		Integer rehashed = 0;
-		Integer harvested=0;
-		
-		if (num <= 0)
-			num = Integer.MAX_VALUE;
-		DataFile.ChecksumType cType = null;
-		try {
-			cType = DataFile.ChecksumType.fromString(alg);
-		} catch (IllegalArgumentException iae) {
-			return error(Status.BAD_REQUEST, "Unknown algorithm");
-		}
-		logger.info("Starting to rehash: analyzing " + count + " files. " + new Date());
-		logger.info("Hashes not created with " + alg + " will be verified, and, if valid, replaced with a hash using "
-				+ alg);
-		try {
-			User u = findAuthenticatedUserOrDie();
-			if (!u.isSuperuser())
-				return error(Status.UNAUTHORIZED, "must be superuser");
-		} catch (WrappedResponse e1) {
-			return error(Status.UNAUTHORIZED, "api key required");
-		}
-
-		for (DataFile df : fileService.findAll()) {
-			if (rehashed.intValue() >= num)
-				break;
-			InputStream in = null;
-			InputStream in2 = null; 
-			try {
-				if (df.isHarvested()) {
-					harvested++;
-				} else {
-					if (!df.getChecksumType().equals(cType)) {
-
-						rehashed++;
-						logger.fine(rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", "
-								+ df.getIdentifier());
-						// verify hash and calc new one to replace it
-						StorageIO<DataFile> storage = df.getStorageIO();
-						storage.open(DataAccessOption.READ_ACCESS);
-						if (!df.isTabularData()) {
-							in = storage.getInputStream();
-						} else {
-							// if this is a tabular file, read the preserved original "auxiliary file"
-							// instead:
-							in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-						}
-						if (in == null)
-							logger.warning("Cannot retrieve file.");
-						String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
-						if (currentChecksum.equals(df.getChecksumValue())) {
-							logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
-									+ df.getIdentifier() + " is valid");
-							storage.open(DataAccessOption.READ_ACCESS);
-							if (!df.isTabularData()) {
-								in2 = storage.getInputStream();
-							} else {
-								// if this is a tabular file, read the preserved original "auxiliary file"
-								// instead:
-								in2 = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-							}
-							if (in2 == null)
-								logger.warning("Cannot retrieve file to calculate new checksum.");
-							String newChecksum = FileUtil.CalculateChecksum(in2, cType);
-
-							df.setChecksumType(cType);
-							df.setChecksumValue(newChecksum);
-							successes++;
-							if (successes % 100 == 0) {
-								logger.info(
-										successes + " of  " + count + " files rehashed successfully. " + new Date());
-							}
-						} else {
-							logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
-									+ ", " + df.getIdentifier() + " is INVALID");
-						}
-					} else {
-						alreadyUpdated++;
-						if (alreadyUpdated % 100 == 0) {
-							logger.info(alreadyUpdated + " of  " + count
-									+ " files are already have hashes with the new algorithm. " + new Date());
-						}
-					}
-				}
-			} catch (Exception e) {
-				logger.warning("Unexpected Exception: " + e.getMessage());
-
-			} finally {
-				IOUtils.closeQuietly(in);
-				IOUtils.closeQuietly(in2);
-			}
-		}
-		logger.info("Final Results:");
-		logger.info(harvested + " harvested files skipped.");
-		logger.info(
-				alreadyUpdated + " of  " + count + " files already had hashes with the new algorithm. " + new Date());
-		logger.info(rehashed + " of  " + count + " files to rehash. " + new Date());
-		logger.info(
-				successes + " of  " + rehashed + " files successfully rehashed with the new algorithm. " + new Date());
-
-		return ok("Datafile rehashing complete." + successes + " of  " + rehashed + " files successfully rehashed.");
-	}
-
-	
 	@DELETE
 	@Path("/clearMetricsCache")
 	public Response clearMetricsCache() {
@@ -1283,33 +1117,4 @@ public class Admin extends AbstractApiBean {
 		return ok("metric cache " + name + " cleared.");
 	}
 
-    @GET
-    @Path("/dataverse/{alias}/addRoleAssignmentsToChildren")
-    public Response addRoleAssignementsToChildren(@PathParam("alias") String alias) throws WrappedResponse {
-        Dataverse owner = dataverseSvc.findByAlias(alias);
-        if (owner == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
-        }
-        try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
-            }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        boolean inheritAllRoles = false;
-        String rolesString = settingsSvc.getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
-        if (rolesString.length() > 0) {
-            ArrayList<String> rolesToInherit = new ArrayList<String>(Arrays.asList(rolesString.split("\\s*,\\s*")));
-            if (!rolesToInherit.isEmpty()) {
-                if (rolesToInherit.contains("*")) {
-                    inheritAllRoles = true;
-                }
-                return ok(dataverseSvc.addRoleAssignmentsToChildren(owner, rolesToInherit, inheritAllRoles));
-            }
-        }
-        return error(Response.Status.BAD_REQUEST,
-                "InheritParentRoleAssignments does not list any roles on this instance");
-    }
 }

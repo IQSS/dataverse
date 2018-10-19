@@ -96,13 +96,6 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     @Override
     public AuthenticationResponse authenticate( AuthenticationRequest authReq ) {
         BuiltinUser u = bean.findByUserName(authReq.getCredential(KEY_USERNAME_OR_EMAIL) );
-        AuthenticatedUser authUser = null;
-        
-        if(u == null) { //If can't find by username in builtin, get the auth user and then the builtin
-            authUser = authBean.getAuthenticatedUserByEmail(authReq.getCredential(KEY_USERNAME_OR_EMAIL));
-            u = bean.findByUserName(authUser.getUserIdentifier());
-        }
-        
         if ( u == null ) return AuthenticationResponse.makeFail("Bad username, email address, or password");
         
         boolean userAuthenticated = PasswordEncryption.getVersion(u.getPasswordEncryptionVersion())
@@ -132,9 +125,8 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
                 return AuthenticationResponse.makeError("Error while attempting to upgrade password", ex);
             }
         }
-        if(null == authUser) {
-            authUser = authBean.getAuthenticatedUser(u.getUserName());
-        }
+        
+        AuthenticatedUser authUser = authBean.getAuthenticatedUser(u.getUserName());
         
         return AuthenticationResponse.makeSuccess(u.getUserName(), authUser.getDisplayInfo());
    }

@@ -16,8 +16,7 @@ public class XmlValidatorTest {
 
     private static final Logger logger = Logger.getLogger(XmlValidatorTest.class.getCanonicalName());
 
-    //Ignored as this relies on an external resource that has been down occasionally. 
-    //May be a good test for our full vs. everytime test classifications (#4896) -MAD 4.9.1
+    // FIXME: Remove @Ignore after figuring out why `mvn` (but not NetBeans) shows "javax.xml.transform.TransformerException: org.xml.sax.SAXParseException; Premature end of file"
     @Ignore
     @Category(NonEssentialTests.class)
     @Test

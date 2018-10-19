@@ -826,6 +826,13 @@ public class GuestbookResponseServiceBean {
         return in;
     }
     
+    public GuestbookResponse modifySelectedFileIds(GuestbookResponse in, String fileIds) {
+        if (in != null && fileIds != null) {
+            in.setSelectedFileIds(fileIds);
+        }
+        return in;
+    }
+
     public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format) {
         if (in != null && fm.getDataFile() != null) {
             in.setFileFormat(format);

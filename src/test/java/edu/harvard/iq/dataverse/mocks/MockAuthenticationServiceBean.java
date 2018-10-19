@@ -12,10 +12,6 @@ public class MockAuthenticationServiceBean extends AuthenticationServiceBean {
     @Override
     public AuthenticatedUser getAuthenticatedUser( String identifier ) {
         return new MockAuthenticatedUser();
-    }
-    
-    @Override
-    public AuthenticatedUser getAuthenticatedUserByEmail(String email) {
-        return new MockAuthenticatedUser();
+
     }
 }
