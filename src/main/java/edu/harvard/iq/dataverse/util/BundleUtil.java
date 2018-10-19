@@ -29,7 +29,7 @@ public class BundleUtil {
         return getStringFromBundleCatchMissing(key, arguments, bundle);
     }
 
-    public static String getStringFromBundle(String key, List<String> arguments, ResourceBundle bundle) {
+    public static String getStringFromBundle(String key, List<String> arguments, ResourceBundle bundle) throws MissingResourceException {
         if (key == null || key.isEmpty()) {
             return null;
         }
@@ -47,7 +47,7 @@ public class BundleUtil {
         }
     }
     
-    //This call was added to allow bypassing the exception catch, for filetype indexing
+    //This call was added to allow bypassing the exception catch, for filetype indexing which also catches it
     public static String getStringFromBundleCatchMissing(String key, List<String> arguments, ResourceBundle bundle) {
         try {
             return getStringFromBundle(key, arguments, bundle);
