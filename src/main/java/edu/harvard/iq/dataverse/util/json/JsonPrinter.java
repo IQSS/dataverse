@@ -76,7 +76,7 @@ public class JsonPrinter {
 
     private static final Logger logger = Logger.getLogger(JsonPrinter.class.getCanonicalName());
 
-    static SettingsServiceBean settingsService;
+    static SettingsServiceBean settingsService = null;
 
     // Passed to DatasetFieldWalker so it can check the :ExcludeEmailFromExport setting
     public static void setSettingsService(SettingsServiceBean ssb) {
