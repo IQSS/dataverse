@@ -40,8 +40,6 @@ public class OREMap {
     private DatasetVersion version;
     private boolean excludeEmail = false;
     
-    private static final Logger logger = Logger.getLogger(OREMap.class.getCanonicalName());
-
     public OREMap(DatasetVersion version, boolean excludeEmail) {
         this.version = version;
         this.excludeEmail = excludeEmail;
@@ -61,7 +59,6 @@ public class OREMap {
         localContext.putIfAbsent(JsonLDNamespace.dvcore.getPrefix(), JsonLDNamespace.dvcore.getUrl());
         localContext.putIfAbsent(JsonLDNamespace.schema.getPrefix(), JsonLDNamespace.schema.getUrl());
 
-        logger.info("ExcludeEmail = : " + excludeEmail);
         Dataset dataset = version.getDataset();
         String id = dataset.getGlobalId().asString();
         JsonArrayBuilder fileArray = Json.createArrayBuilder();
@@ -73,7 +70,6 @@ public class OREMap {
             if (!field.isEmpty()) {
                 DatasetFieldType dfType = field.getDatasetFieldType();
                 if(excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dfType.getFieldType())) {
-                    logger.info("Found email field: " + dfType.getDisplayName());
                     continue;
                 }
                 JsonLDTerm fieldName = getTermFor(dfType);
@@ -97,7 +93,6 @@ public class OREMap {
                         for (DatasetField dsf : dscv.getChildDatasetFields()) {
                             DatasetFieldType dsft = dsf.getDatasetFieldType();
                             if(excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dsft.getFieldType())) {
-                                logger.info("Found email subfield: " + dfType.getDisplayName());
                                 continue;
                             }
                             // which may have multiple values
