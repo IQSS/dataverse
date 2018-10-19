@@ -2,7 +2,7 @@
 SQL Upgrade Scripts
 ===================
 
-The database schema for Dataverse is constantly evolving. As other developers make changes to the database schema you will need to keep up with these changes to keep your development environment in working order. Additionally, as you make changes to the database schema, you must help write SQL upgrade scripts as needed and communicate with your fellow developers when the scripts must be applied.
+The database schema for Dataverse is constantly evolving. As other developers make changes to the database schema you will need to keep up with these changes to have your development environment in working order. Additionally, as you make changes to the database schema, you must write SQL upgrade scripts when needed and communicate with your fellow developers about applying those scripts.
 
 .. contents:: |toctitle|
 	:local:
