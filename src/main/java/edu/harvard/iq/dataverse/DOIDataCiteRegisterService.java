@@ -41,9 +41,15 @@ public class DOIDataCiteRegisterService {
 
     @EJB
     DataverseServiceBean dataverseService;
+    
+    //A singleton since it, and the httpClient in it can be reused.
+    private DataCiteRESTfullClient client=null;
 
-    private DataCiteRESTfullClient openClient() throws IOException {
-        return new DataCiteRESTfullClient(System.getProperty("doi.baseurlstring"), System.getProperty("doi.username"), System.getProperty("doi.password"));
+    private DataCiteRESTfullClient getClient() throws IOException {
+        if (client == null) {
+            client = new DataCiteRESTfullClient(System.getProperty("doi.baseurlstring"), System.getProperty("doi.username"), System.getProperty("doi.password"));
+        }
+        return client;
     }
 
     public String createIdentifierLocal(String identifier, Map<String, String> metadata, DvObject dvObject) {
@@ -85,14 +91,16 @@ public class DOIDataCiteRegisterService {
             } else {
                 rc.setUrl(target);
             }
-            try (DataCiteRESTfullClient client = openClient()) {
+            try  {
+                DataCiteRESTfullClient client = getClient();
                 retString = client.postMetadata(xmlMetadata);
                 client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
-            try (DataCiteRESTfullClient client = openClient()) {
+            try  {
+                DataCiteRESTfullClient client = getClient();
                 retString = client.postMetadata(xmlMetadata);
                 client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
             } catch (UnsupportedEncodingException ex) {
@@ -105,7 +113,8 @@ public class DOIDataCiteRegisterService {
     public String deactivateIdentifier(String identifier, HashMap<String, String> metadata, DvObject dvObject) {
         String retString = "";
         DOIDataCiteRegisterCache rc = findByDOI(identifier);
-        try (DataCiteRESTfullClient client = openClient()) {
+        try  {
+            DataCiteRESTfullClient client = getClient();
             if (rc != null) {
                 rc.setStatus("unavailable");
                 retString = client.inactiveDataset(identifier.substring(identifier.indexOf(":") + 1));
@@ -195,7 +204,8 @@ public class DOIDataCiteRegisterService {
                 } else {
                     rc.setUrl(target);
                 }
-                try (DataCiteRESTfullClient client = openClient()) {
+                try {
+                    DataCiteRESTfullClient client = getClient();
                     retString = client.postMetadata(xmlMetadata);
                     client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
 
@@ -210,7 +220,8 @@ public class DOIDataCiteRegisterService {
             }
         } else if (status.equals("unavailable")) {
             DOIDataCiteRegisterCache rc = findByDOI(identifier);
-            try (DataCiteRESTfullClient client = openClient()) {
+            try {
+                DataCiteRESTfullClient client = getClient();
                 if (rc != null) {
                     rc.setStatus("unavailable");
                     retString = client.inactiveDataset(identifier.substring(identifier.indexOf(":") + 1));
@@ -224,7 +235,8 @@ public class DOIDataCiteRegisterService {
 
     public boolean testDOIExists(String identifier) {
         boolean doiExists;
-        try (DataCiteRESTfullClient client = openClient()) {
+        try {
+            DataCiteRESTfullClient client = getClient();
             doiExists = client.testDOIExists(identifier.substring(identifier.indexOf(":") + 1));
         } catch (Exception e) {
             logger.log(Level.INFO, identifier, e);
@@ -235,7 +247,8 @@ public class DOIDataCiteRegisterService {
 
     public HashMap<String, String> getMetadata(String identifier) throws IOException {
         HashMap<String, String> metadata = new HashMap<>();
-        try (DataCiteRESTfullClient client = openClient()) {
+        try {
+            DataCiteRESTfullClient client = getClient();
             String xmlMetadata = client.getMetadata(identifier.substring(identifier.indexOf(":") + 1));
             DataCiteMetadataTemplate template = new DataCiteMetadataTemplate(xmlMetadata);
             metadata.put("datacite.creator", Util.getStrFromList(template.getCreators()));
