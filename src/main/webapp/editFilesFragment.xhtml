@@ -653,9 +653,16 @@
                         #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                     </span>
                 </label>
-                <div class="col-sm-9" jsf:rendered="#{!empty EditDatafilesPage.workingVersion.termsOfUseAndAccess}">
-                    <p:inputTextarea value="#{EditDatafilesPage.workingVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" />
+                <ui:fragment rendered="#{!datasetPage}">
+                <div class="col-sm-9" jsf:rendered="#{!empty version.termsOfUseAndAccess}">
+                    <p:inputTextarea value="#{version.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" />
                 </div>
+                </ui:fragment> 
+                <ui:fragment rendered="#{datasetPage}">
+                <div class="col-sm-9" jsf:rendered="#{!empty version.termsOfUseAndAccess}">
+                    <p:inputTextarea value="#{DatasetPage.enteredTermsOfAccess}" autoResize="false" rows="5" styleClass="form-control" />
+                </div>
+                </ui:fragment> 
             </div>
             <div class="form-group">
                 <label for="metadata_RequestAccess" class="col-sm-3 control-label">
@@ -663,13 +670,21 @@
                         #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
                     </span>
                 </label>
-                <div class="col-sm-9" jsf:rendered="#{!empty EditDatafilesPage.workingVersion.termsOfUseAndAccess}">
-                    <p:selectBooleanCheckbox id="editFileRequestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{EditDatafilesPage.workingVersion.termsOfUseAndAccess.fileAccessRequest}"/>
+                <ui:fragment rendered="#{!datasetPage}">
+                <div class="col-sm-9" jsf:rendered="#{!empty version.termsOfUseAndAccess}">
+                    <p:selectBooleanCheckbox id="editFileRequestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{version.termsOfUseAndAccess.fileAccessRequest}"/>
                 </div>
+                </ui:fragment> 
+                <ui:fragment rendered="#{datasetPage}">
+                <div class="col-sm-9" jsf:rendered="#{!empty version.termsOfUseAndAccess}">
+                    <p:selectBooleanCheckbox id="editFileRequestAccessDSP" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{DatasetPage.enteredFileAccessRequest}"/>
+                </div>
+                </ui:fragment>
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton value="#{bundle.continue}" onclick="PF('editFileAccessPopup').hide()" update=":datasetForm,:messagePanel" action="#{EditDatafilesPage.saveWithTermsOfUse()}" />
+            <p:commandButton rendered="#{!datasetPage}" value="#{bundle.continue}" onclick="PF('editFileAccessPopup').hide()" update=":datasetForm,:messagePanel" action="#{EditDatafilesPage.saveWithTermsOfUse()}" />
+            <p:commandButton rendered="#{datasetPage}" value="#{bundle.continue}" onclick="PF('editFileAccessPopup').hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.saveWithTermsOfUse()}" />
             <p:commandButton value="#{bundle.cancel}" onclick="PF('editFileAccessPopup').hide();PF('blockFileForm').hide();" type="button" />
         </div>
     </p:dialog>
