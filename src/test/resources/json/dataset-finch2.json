@@ -28,7 +28,7 @@
                   "typeName": "authorIdentifier",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "https://orcid.org/0000-0002-1825-0097"
+                  "value": "0000-0002-1825-0097"
                 },
                 "authorAffiliation": {
                   "value": "Birds Inc.",

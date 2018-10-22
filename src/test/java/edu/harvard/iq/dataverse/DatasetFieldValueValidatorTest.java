@@ -136,5 +136,46 @@ public class DatasetFieldValueValidatorTest {
         assertEquals(false, result);
         
     }
+
+    @Test
+    public void testIsValidAuthorIdentifierOrcid() {
+        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
+        assertTrue(validator.isValidAuthorIdentifierOrcid("0000-0002-1825-0097"));
+        // An "X" at the end of an ORCID is less common but still valid.
+        assertTrue(validator.isValidAuthorIdentifierOrcid("0000-0002-1694-233X"));
+        assertFalse(validator.isValidAuthorIdentifierOrcid("0000 0002 1825 0097"));
+        assertFalse(validator.isValidAuthorIdentifierOrcid(" 0000-0002-1825-0097"));
+        assertFalse(validator.isValidAuthorIdentifierOrcid("0000-0002-1825-0097 "));
+        assertFalse(validator.isValidAuthorIdentifierOrcid("junk"));
+    }
+
+    @Test
+    public void testIsValidAuthorIdentifierIsni() {
+        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
+        assertTrue(validator.isValidAuthorIdentifierIsni("0000000121032683"));
+        assertFalse(validator.isValidAuthorIdentifierIsni("junk"));
+    }
+
+    @Test
+    public void testIsValidAuthorIdentifierLcna() {
+        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
+        assertTrue(validator.isValidAuthorIdentifierLcna("n82058243"));
+        assertTrue(validator.isValidAuthorIdentifierLcna("foobar123"));
+        assertFalse(validator.isValidAuthorIdentifierLcna("junk"));
+    }
+
+    @Test
+    public void testIsValidAuthorIdentifierViaf() {
+        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
+        assertTrue(validator.isValidAuthorIdentifierViaf("172389567"));
+        assertFalse(validator.isValidAuthorIdentifierViaf("junk"));
+    }
+
+    @Test
+    public void testIsValidAuthorIdentifierGnd() {
+        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
+        assertTrue(validator.isValidAuthorIdentifierGnd("4079154-3"));
+        assertFalse(validator.isValidAuthorIdentifierGnd("junk"));
+    }
     
 }

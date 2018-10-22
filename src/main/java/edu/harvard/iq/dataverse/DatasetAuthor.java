@@ -88,4 +88,40 @@ public class DatasetAuthor {
            );
     }
     
+    public String getIdentifierAsUrl() {
+        if (idType != null && !idType.isEmpty() && idValue != null && !idValue.isEmpty()) {
+            DatasetFieldValueValidator datasetFieldValueValidator = new DatasetFieldValueValidator();
+            switch (idType) {
+                case "ORCID":
+                    if (datasetFieldValueValidator.isValidAuthorIdentifierOrcid(idValue)) {
+                        return "https://orcid.org/" + idValue;
+                    }
+                    break;
+                case "ISNI":
+                    if (datasetFieldValueValidator.isValidAuthorIdentifierIsni(idValue)) {
+                        return "http://www.isni.org/isni/" + idValue;
+                    }
+                    break;
+                case "LCNA":
+                    if (datasetFieldValueValidator.isValidAuthorIdentifierLcna(idValue)) {
+                        return "http://id.loc.gov/authorities/names/" + idValue;
+                    }
+                    break;
+                case "VIAF":
+                    if (datasetFieldValueValidator.isValidAuthorIdentifierViaf(idValue)) {
+                        return "https://viaf.org/viaf/" + idValue;
+                    }
+                    break;
+                case "GND":
+                    if (datasetFieldValueValidator.isValidAuthorIdentifierGnd(idValue)) {
+                        return "https://d-nb.info/gnd/" + idValue;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        return null;
+    }
+
 }

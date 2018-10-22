@@ -1508,17 +1508,11 @@ public class DatasetVersion implements Serializable {
             if (!StringUtil.isEmpty(affiliation)) {
                 author.add("affiliation", affiliation);
             }
-            // TODO: Think more about if authors will ever have multiple identifiers (ORCID, ISNI, etc.).
-            // A PropertyValue example was found at https://github.com/schemaorg/schemaorg/issues/1286#issuecomment-255808977
-            // and https://github.com/solid/solid-spec/issues/102#issuecomment-303719955
-            String idType = datasetAuthor.getIdType();
-            String idValue = datasetAuthor.getIdValue();
-            if (idType != null && !idType.isEmpty() && idValue != null && !idValue.isEmpty()) {
-                author.add("identifier", Json.createObjectBuilder()
-                        .add("@type", "PropertyValue")
-                        .add("propertyId", idType)
-                        .add("value", idValue)
-                );
+            String identifierAsUrl = datasetAuthor.getIdentifierAsUrl();
+            if (identifierAsUrl != null) {
+                // It would be valid to provide an array of identifiers for authors but we have decided to only provide one.
+                author.add("@id", identifierAsUrl);
+                author.add("identifier", identifierAsUrl);
             }
             authors.add(author);
         }
