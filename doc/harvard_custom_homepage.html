@@ -28,7 +28,7 @@
     </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 <script>
-    var baseUrl = "http://localhost:8080";
+    //var baseUrl = "http://localhost:8080";
     //var baseUrl = "https://dataverse.harvard.edu"
     
     //This get slow and eventually the resulting pile of substrings is too long if there are actually 1000 results
@@ -37,7 +37,8 @@
     var secondSearch = baseUrl + "/api/search?q=*&type=dataset&sort=date&order=desc&per_page=";
     var thumbBaseURL = baseUrl + "/api/datasets/:persistentId/thumbnail" + "?persistentId=";
     var metricBaseUrl = baseUrl + "/api/info/metrics/";
-    
+    var simpleCatSearch = baseUrl + "/api/search?q=*&type=dataset&per_page=1000&fq=dvCategory:";
+
     /**
     * Runs two search queries, the first to get dataverses based on a certain filter, and the second to get recent datasets for those dataverses.
     * The initial intent of the query is to get recent datasets based on dataverse subjects
@@ -45,7 +46,7 @@
     * @param {number} resultCount - the number of results to write
     * @param {string} elm - The id of the html element to write the result to
     */
-    function writeRecentDatasetsInDataverses(fqString, resultCount, elm, colSize) {
+    function writeRecentDatasetsInDataversesTwoSearches(fqString, resultCount, elm, colSize) {
         var tempSecondSearch = secondSearch + resultCount;
         
         $.get(firstSearch + fqString, function(jData) {
@@ -72,6 +73,21 @@
         });
     }
     
+    function writeRecentDatasetsInDataverses(fqString, resultCount, elm, colSize) {
+        $.get(simpleCatSearch + fqString, function(jData) {
+            var resultHtml = "";
+            jData.data.items.forEach(function(item){
+                resultHtml += "<div class=\"col-xs-" + colSize + "\">"
+                resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\"><span class=\"icon-dataset\"></span></a></div>";
+                resultHtml += "<div class=\"col-xs-10\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\">" + item.name + "</a></p><p class=\"small text-muted\">" + item.parentDataverse + " - " + item.published_at + "</p></div>";
+                resultHtml += "<hr class=\"col-xs-11 no-margin-top\"/></div>"
+            });
+            document.getElementById(elm).innerHTML = resultHtml;
+        });
+        //curl "localhost:8080/api/search?q=*:*&fq=dvCategory:(Journal%20OR%20Laboratory)&type=dataset&per_page=1000"
+
+    }
+    
     function queryMetricSimple(metricRelPath, month, elm) {
         // $.get(metricBaseUrl + metricRelPath + month, function(jData) {
         //     document.getElementById(elm).innerHTML = JSON.stringify(jData);
@@ -96,12 +112,14 @@
         });
     }
 
-    //These are the correct searches, but commented out as I don't have enough results
-    //writeRecentDatasetsInDataverses("&fq=dvCategory:(Journal%20OR%20Laboratory)",3, "journals");
-    //writeRecentDatasetsInDataverses("&fq=dvCategory:(\"Research+Project\"%20OR%20Researcher)",6, "researchers");
+    //These calls are based on the old method for getting datasets by dataverse category, utilizing search
+    //writeRecentDatasetsInDataversesTwoSearches("&fq=dvCategory:(Journal%20OR%20Laboratory)",3, "journals");
+    //writeRecentDatasetsInDataversesTwoSearches("&fq=dvCategory:(\"Research+Project\"%20OR%20Researcher)",6, "researchers");   
+    //writeRecentDatasetsInDataversesTwoSearches("" , 3, "journals", 12);
+    //writeRecentDatasetsInDataversesTwoSearches("" , 6, "researchers", 6);
     
-    writeRecentDatasetsInDataverses("" , 3, "journals", 12);
-    writeRecentDatasetsInDataverses("" , 6, "researchers", 6);
+    writeRecentDatasetsInDataverses("(Journal)" , 3, "journals", 12);
+    writeRecentDatasetsInDataverses("(\"Research+Project\"%20OR%20Researcher)" , 6, "researchers", 6);
     
     queryMetricSimple("datasets", "", "activityAllTimeDatasetsValue");
     queryMetricSimple("downloads", "", "activityAllTimeFilesValue");
