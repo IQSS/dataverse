@@ -271,49 +271,43 @@
             "typeClass": "compound",
             "value": [
               {
-                "state": {
-                  "typeName": "state",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "Ohio"
-                },
                 "city": {
                   "typeName": "city",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "Columbus"
                 },
-                "otherGeographicCoverage": {
-                  "typeName": "otherGeographicCoverage",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "GeographicCoverageOther1"
-                }
-              },
-              {
                 "state": {
                   "typeName": "state",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "GeographicCoverageStateProvince2"
-                },
-                "city": {
-                  "typeName": "city",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "GeographicCoverageCity2"
-                },
-                "otherGeographicCoverage": {
-                  "typeName": "otherGeographicCoverage",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "GeographicCoverageOther2"
+                  "value": "Ohio"
                 },
                 "country": {
                   "typeName": "country",
                   "multiple": false,
                   "typeClass": "controlledVocabulary",
-                  "value": "Afghanistan"
+                  "value": "United States"
+                },
+                "otherGeographicCoverage": {
+                  "typeName": "otherGeographicCoverage",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "North America"
+                }
+              },
+              {
+                "country": {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "United States"
+                },
+                "state": {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Wisconsin"
                 }
               }
             ]

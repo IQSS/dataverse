@@ -14,9 +14,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
@@ -995,34 +997,35 @@ public class DatasetVersion implements Serializable {
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.geographicCoverage)) {
                 for (DatasetFieldCompoundValue geoValue : dsf.getDatasetFieldCompoundValues()) {
-                    List<String> coverage = new ArrayList<>();
+                    Map<String, String> coverageHash = new HashMap<>();
                     for (DatasetField subField : geoValue.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.country)) {
                             if (!subField.isEmptyForDisplay()) {
-                                coverage.add(subField.getValue());
+                                coverageHash.put(DatasetFieldConstant.country, subField.getValue());
                             }
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.state)) {
                             if (!subField.isEmptyForDisplay()) {
-                                coverage.add(subField.getValue());
+                                coverageHash.put(DatasetFieldConstant.state, subField.getValue());
                             }
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.city)) {
                             if (!subField.isEmptyForDisplay()) {
-                                coverage.add(subField.getValue());
+                                coverageHash.put(DatasetFieldConstant.city, subField.getValue());
                             }
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.otherGeographicCoverage)) {
                             if (!subField.isEmptyForDisplay()) {
-                                coverage.add(subField.getValue());
+                                coverageHash.put(DatasetFieldConstant.otherGeographicCoverage, subField.getValue());
                             }
                         }
                     }
-                    if (!coverage.isEmpty()) {
+                    if (!coverageHash.isEmpty()) {
+                        List<String> coverageSorted = sortSpatialCoverage(coverageHash);
                         if (commaSeparated) {
-                            retList.add(String.join(",", coverage));
+                            retList.add(String.join(", ", coverageSorted));
                         } else {
-                            retList.addAll(coverage);
+                            retList.addAll(coverageSorted);
                         }
                     }
                 }
@@ -1030,7 +1033,28 @@ public class DatasetVersion implements Serializable {
         }
         return retList;
     }
- 
+
+    private List<String> sortSpatialCoverage(Map<String, String> hash) {
+        List<String> sorted = new ArrayList<>();
+        String city = hash.get(DatasetFieldConstant.city);
+        if (city != null) {
+            sorted.add(city);
+        }
+        String state = hash.get(DatasetFieldConstant.state);
+        if (state != null) {
+            sorted.add(state);
+        }
+        String country = hash.get(DatasetFieldConstant.country);
+        if (country != null) {
+            sorted.add(country);
+        }
+        String otherGeographicCoverage = hash.get(DatasetFieldConstant.otherGeographicCoverage);
+        if (otherGeographicCoverage != null) {
+            sorted.add(otherGeographicCoverage);
+        }
+        return sorted;
+    }
+
     /**
      * @return List of Strings containing the version's Keywords
      */
@@ -1682,7 +1706,7 @@ public class DatasetVersion implements Serializable {
             job.add("funder", funderArray);
         }
 
-        boolean commaSeparated = false;
+        boolean commaSeparated = true;
         List<String> spatialCoverages = getSpatialCoverages(commaSeparated);
         if (!spatialCoverages.isEmpty()) {
             JsonArrayBuilder spatialArray = Json.createArrayBuilder();

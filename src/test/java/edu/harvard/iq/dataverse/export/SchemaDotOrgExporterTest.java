@@ -301,14 +301,9 @@ public class SchemaDotOrgExporterTest {
         // The NIH grant number is not shown because don't have anywhere in schema.org to put it. :(
         assertEquals("National Institutes of Health", json2.getJsonArray("funder").getJsonObject(1).getString("name"));
         assertEquals(2, json2.getJsonArray("funder").size());
-        assertEquals("Ohio", json2.getJsonArray("spatialCoverage").getString(0));
-        assertEquals("Columbus", json2.getJsonArray("spatialCoverage").getString(1));
-        assertEquals("GeographicCoverageOther1", json2.getJsonArray("spatialCoverage").getString(2));
-        assertEquals("GeographicCoverageStateProvince2", json2.getJsonArray("spatialCoverage").getString(3));
-        assertEquals("GeographicCoverageCity2", json2.getJsonArray("spatialCoverage").getString(4));
-        assertEquals("GeographicCoverageOther2", json2.getJsonArray("spatialCoverage").getString(5));
-        assertEquals("Afghanistan", json2.getJsonArray("spatialCoverage").getString(6));
-        assertEquals(7, json2.getJsonArray("spatialCoverage").size());
+        assertEquals("Columbus, Ohio, United States, North America", json2.getJsonArray("spatialCoverage").getString(0));
+        assertEquals("Wisconsin, United States", json2.getJsonArray("spatialCoverage").getString(1));
+        assertEquals(2, json2.getJsonArray("spatialCoverage").size());
         assertEquals("DataDownload", json2.getJsonArray("distribution").getJsonObject(0).getString("@type"));
         assertEquals("README.md", json2.getJsonArray("distribution").getJsonObject(0).getString("name"));
         assertEquals("text/plain", json2.getJsonArray("distribution").getJsonObject(0).getString("fileFormat"));
