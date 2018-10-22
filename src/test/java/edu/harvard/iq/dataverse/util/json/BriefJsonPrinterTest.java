@@ -12,9 +12,6 @@ import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import javax.json.JsonObject;
 import org.junit.Test;
-
-import java.util.MissingResourceException;
-
 import static org.junit.Assert.*;
 
 /**
