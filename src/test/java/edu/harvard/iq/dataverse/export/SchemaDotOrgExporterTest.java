@@ -155,6 +155,12 @@ public class SchemaDotOrgExporterTest {
         }
         contributorType.setChildDatasetFieldTypes(contributorChildTypes);
 
+        DatasetFieldType grantNumberType = datasetFieldTypeSvc.add(new DatasetFieldType("grantNumber", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> grantNumberChildTypes = new HashSet<>();
+        grantNumberChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("grantNumberAgency", DatasetFieldType.FieldType.TEXT, false)));
+        grantNumberChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("grantNumberValue", DatasetFieldType.FieldType.TEXT, false)));
+        grantNumberType.setChildDatasetFieldTypes(grantNumberChildTypes);
+
         DatasetFieldType geographicCoverageType = datasetFieldTypeSvc.add(new DatasetFieldType("geographicCoverage", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> geographicCoverageChildTypes = new HashSet<>();
         DatasetFieldType countries = datasetFieldTypeSvc.add(new DatasetFieldType("country", DatasetFieldType.FieldType.TEXT, false));
@@ -268,7 +274,9 @@ public class SchemaDotOrgExporterTest {
         assertEquals("LibraScholar", json2.getJsonObject("provider").getString("name"));
         assertEquals("Organization", json2.getJsonArray("funder").getJsonObject(0).getString("@type"));
         assertEquals("National Science Foundation", json2.getJsonArray("funder").getJsonObject(0).getString("name"));
-        assertEquals(1, json2.getJsonArray("funder").size());
+        // The NIH grant number is not shown because don't have anywhere in schema.org to put it. :(
+        assertEquals("National Institutes of Health", json2.getJsonArray("funder").getJsonObject(1).getString("name"));
+        assertEquals(2, json2.getJsonArray("funder").size());
         assertEquals("Ohio", json2.getJsonArray("spatialCoverage").getString(0));
         assertEquals("Columbus", json2.getJsonArray("spatialCoverage").getString(1));
         assertEquals("GeographicCoverageOther1", json2.getJsonArray("spatialCoverage").getString(2));

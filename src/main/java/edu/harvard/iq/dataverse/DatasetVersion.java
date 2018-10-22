@@ -772,8 +772,8 @@ public class DatasetVersion implements Serializable {
     public List<String> getFunders() {
         List<String> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
-            boolean addFunder = false;
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributor)) {
+                boolean addFunder = false;
                 for (DatasetFieldCompoundValue contributorValue : dsf.getDatasetFieldCompoundValues()) {
                     String contributorName = null;
                     String contributorType = null;
@@ -792,6 +792,19 @@ public class DatasetVersion implements Serializable {
                     }
                     if (addFunder) {
                         retList.add(contributorName);
+                    }
+                }
+            }
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumber)) {
+                for (DatasetFieldCompoundValue grantObject : dsf.getDatasetFieldCompoundValues()) {
+                    for (DatasetField subField : grantObject.getChildDatasetFields()) {
+                        // It would be nice to do something with grantNumberValue (the actual number) but schema.org doesn't support it.
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberAgency)) {
+                            String grantAgency = subField.getDisplayValue();
+                            if (grantAgency != null && !grantAgency.isEmpty()) {
+                                retList.add(grantAgency);
+                            }
+                        }
                     }
                 }
             }
