@@ -278,6 +278,13 @@ public class IndexServiceBean {
         return indexDataset(dataset, doNormalSolrDocCleanUp);
     }
     
+    @Asynchronous
+    public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
+        for(Dataset dataset : datasets) {
+            indexDataset(dataset, true);
+        }
+    }
+    
     public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         logger.fine("indexing dataset " + dataset.getId());
         /**
@@ -655,6 +662,9 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
 
+        //This only grabs the immediate parent dataverse's category. We do the same for dataverses themselves.
+        solrInputDocument.addField(SearchFields.DATAVERSE_CATEGORY, dataset.getDataverseContext().getIndexableCategoryName());
+        
         Date datasetSortByDate = new Date();
         Date majorVersionReleaseDate = dataset.getMostRecentMajorVersionReleaseDate();
         if (majorVersionReleaseDate != null) {
