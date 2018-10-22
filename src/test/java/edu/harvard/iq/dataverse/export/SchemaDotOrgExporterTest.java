@@ -286,7 +286,10 @@ public class SchemaDotOrgExporterTest {
         assertEquals("KeywordTerm2", json2.getJsonArray("keywords").getString(3));
         // This dataset, for example, has multiple keywords separated by commas: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/24034&version=2.0
         assertEquals("keywords, with, commas", json2.getJsonArray("keywords").getString(4));
-        assertEquals("Finch, Fiona 2018. \"The Finches.\" American Ornithological Journal 60 (4): 990-1005.", json2.getJsonArray("citation").getString(0));
+        assertEquals("CreativeWork", json2.getJsonArray("citation").getJsonObject(0).getString("@type"));
+        assertEquals("Finch, Fiona 2018. \"The Finches.\" American Ornithological Journal 60 (4): 990-1005.", json2.getJsonArray("citation").getJsonObject(0).getString("text"));
+        assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("@id"));
+        assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("identifier"));
         assertEquals("https://schema.org/version/3.3", json2.getString("schemaVersion"));
         assertEquals("DataCatalog", json2.getJsonObject("includedInDataCatalog").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));

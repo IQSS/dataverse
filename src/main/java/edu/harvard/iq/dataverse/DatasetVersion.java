@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
@@ -1036,12 +1037,28 @@ public class DatasetVersion implements Serializable {
     public List<String> getKeywords() {
         return getCompoundChildFieldValues(DatasetFieldConstant.keyword, DatasetFieldConstant.keywordValue);
     }
-    
-    /**
-     * @return List of Strings containing the version's PublicationCitations
-     */
-    public List<String> getPublicationCitationValues() {
-        return getCompoundChildFieldValues(DatasetFieldConstant.publication, DatasetFieldConstant.publicationCitation);
+
+    public List<DatasetRelPublication> getRelatedPublications() {
+        List<DatasetRelPublication> relatedPublications = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.publication)) {
+                for (DatasetFieldCompoundValue publication : dsf.getDatasetFieldCompoundValues()) {
+                    DatasetRelPublication relatedPublication = new DatasetRelPublication();
+                    for (DatasetField subField : publication.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationCitation)) {
+                            String citation = subField.getDisplayValue();
+                            relatedPublication.setText(citation);
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
+                            String url = subField.getDisplayValue();
+                            relatedPublication.setUrl(url);
+                        }
+                    }
+                    relatedPublications.add(relatedPublication);
+                }
+            }
+        }
+        return relatedPublications;
     }
     
     /**
@@ -1575,23 +1592,39 @@ public class DatasetVersion implements Serializable {
         }
         
         job.add("keywords", keywords);
-        
+
         /**
-         * citation: 
-         * (multiple) publicationCitation values, if present:
+         * citation: (multiple) related publication citation and URLs, if present:
          */
-        
-        List<String> publicationCitations = getPublicationCitationValues();
-        if (publicationCitations.size() > 0) {
-            JsonArrayBuilder citation = Json.createArrayBuilder();
-            for (String pubCitation : publicationCitations) {
-                //citationEntry.add("@type", "Dataset");
-                //citationEntry.add("text", pubCitation);
-                citation.add(pubCitation);
+        List<DatasetRelPublication> relatedPublications = getRelatedPublications();
+        if (!relatedPublications.isEmpty()) {
+            JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+            for (DatasetRelPublication relatedPub : relatedPublications) {
+                boolean addToArray = false;
+                String pubCitation = relatedPub.getText();
+                String pubUrl = relatedPub.getUrl();
+                if (pubCitation != null || pubUrl != null) {
+                    addToArray = true;
+                }
+                JsonObjectBuilder citationEntry = Json.createObjectBuilder();
+                citationEntry.add("@type", "CreativeWork");
+                if (pubCitation != null) {
+                    citationEntry.add("text", pubCitation);
+                }
+                if (pubUrl != null) {
+                    citationEntry.add("@id", pubUrl);
+                    citationEntry.add("identifier", pubUrl);
+                }
+                if (addToArray) {
+                    jsonArrayBuilder.add(citationEntry);
+                }
             }
-            job.add("citation", citation);
+            JsonArray jsonArray = jsonArrayBuilder.build();
+            if (!jsonArray.isEmpty()) {
+                job.add("citation", jsonArray);
+            }
         }
-        
+
         /**
          * temporalCoverage:
          * (if available)
