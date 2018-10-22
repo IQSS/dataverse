@@ -131,6 +131,8 @@
 	authorIdentifierScheme	ORCID		0											
 	authorIdentifierScheme	ISNI		1											
 	authorIdentifierScheme	LCNA		2											
+	authorIdentifierScheme	VIAF		3											
+	authorIdentifierScheme	GND		4											
 	language	Abkhaz		0											
 	language	Afar		1											
 	language	Afrikaans		2											

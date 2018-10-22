@@ -65,6 +65,8 @@ public class ExportService {
 
     public static synchronized ExportService getInstance(SettingsServiceBean settingsService) {
         ExportService.settingsService = settingsService;
+        // We pass settingsService into the JsonPrinter so it can check the :ExcludeEmailFromExport setting in calls to JsonPrinter.jsonAsDatasetDto().
+        JsonPrinter.setSettingsService(settingsService);
         if (service == null) {
             service = new ExportService();
         }
@@ -154,6 +156,7 @@ public class ExportService {
             if (releasedVersion == null) {
                 throw new ExportException("No released version for dataset " + dataset.getGlobalId().toString());
             }
+
             final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(releasedVersion);
             JsonObject datasetAsJson = datasetAsJsonBuilder.build();
 

@@ -170,6 +170,9 @@ public class SettingsServiceBean {
         SearchRespectPermissionRoot,
         /** Solr hostname and port, such as "localhost:8983". */
         SolrHostColonPort,
+        /** Enable full-text indexing in solr up to max file size */
+        SolrFullTextIndexing, //true or false (default)
+        SolrMaxFileSizeForFullTextIndexing, //long - size in bytes (default unset/no limit)
         /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
         MaxFileUploadSizeInBytes,
         /** Key for if ScrubMigrationData is enabled or disabled. */
@@ -381,7 +384,15 @@ public class SettingsServiceBean {
         
         DuraCloudHost,
         DuraCloudPort,
-        DuraCloudContext
+        DuraCloudContext,
+        /**
+         * A comma-separated list of roles for which new dataverses should inherit the
+         * corresponding role assignments from the parent dataverse. Also affects
+         * /api/admin/dataverse/{alias}/addRolesToChildren. Default is "", no
+         * inheritance. "*" means inherit assignments for all roles
+         */
+        InheritParentRoleAssignments
+        
         ;
 
         @Override

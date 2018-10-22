@@ -35,9 +35,11 @@ public class OREMap {
     public static final String NAME = "OREMap";
     private Map<String, String> localContext = new TreeMap<String, String>();
     private DatasetVersion version;
-
-    public OREMap(DatasetVersion version) {
+    private boolean excludeEmail = false;
+    
+    public OREMap(DatasetVersion version, boolean excludeEmail) {
         this.version = version;
+        this.excludeEmail = excludeEmail;
     }
 
     public void writeOREMap(OutputStream outputStream) throws Exception {
@@ -64,6 +66,9 @@ public class OREMap {
         for (DatasetField field : fields) {
             if (!field.isEmpty()) {
                 DatasetFieldType dfType = field.getDatasetFieldType();
+                if(excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dfType.getFieldType())) {
+                    continue;
+                }
                 JsonLDTerm fieldName = getTermFor(dfType);
                 if (fieldName.inNamespace()) {
                     localContext.putIfAbsent(fieldName.getNamespace().getPrefix(), fieldName.getNamespace().getUrl());
@@ -83,6 +88,9 @@ public class OREMap {
 
                         for (DatasetField dsf : dscv.getChildDatasetFields()) {
                             DatasetFieldType dsft = dsf.getDatasetFieldType();
+                            if(excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dsft.getFieldType())) {
+                                continue;
+                            }
                             // which may have multiple values
                             if (!dsf.isEmpty()) {
                                 // Add context entry 
