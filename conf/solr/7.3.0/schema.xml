@@ -290,7 +290,7 @@
     <field name="dateOfCollectionStart" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="dateOfDeposit" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="datesAdditionalInformationCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="depositor" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="depositor" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="deviationsFromSampleDesign" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="distributionDate" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="distributor" type="text_en" multiValued="true" stored="true" indexed="true"/>
