@@ -40,7 +40,7 @@ public class BundleUtil {
     }
     
     /**
-     * This call was added to allow bypassing the exception catch, for filetype indexing which also catches it
+     * This call was added to allow bypassing the exception catch, for filetype indexing needs the exception to bubble up
      * --MAD 4.9.4
      */
     private static String getStringFromBundleNoMissingCheck(String key, List<String> arguments, ResourceBundle bundle) throws MissingResourceException {
@@ -61,12 +61,12 @@ public class BundleUtil {
         }
     }
 
-    public static String getStringFromPropertyFile(String key, String propertyFileName  ) {
+    public static String getStringFromPropertyFile(String key, String propertyFileName  ) throws MissingResourceException {
         ResourceBundle bundle = getResourceBundle(propertyFileName);
         return getStringFromBundleNoMissingCheck(key, null, bundle);
     }
 
-    private static ResourceBundle getResourceBundle(String propertyFileName)
+    public static ResourceBundle getResourceBundle(String propertyFileName)
     {
         DataverseLocaleBean d = new DataverseLocaleBean();
         ResourceBundle bundle;
