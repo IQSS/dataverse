@@ -16,6 +16,7 @@ Developer Guide
    tips
    troubleshooting
    version-control
+   sql-upgrade-scripts
    testing
    documentation
    debugging

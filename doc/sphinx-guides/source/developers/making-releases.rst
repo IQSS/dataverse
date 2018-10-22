@@ -36,7 +36,7 @@ Upload the following artifacts to the draft release you created:
 
 - war file (``mvn package`` from Jenkins)
 - installer (``cd scripts/installer && make``)
-- database migration script
+- database migration script (see also the :doc:`sql-upgrade-scripts` section)
 - other files as needed, such as an updated Solr schema
 
 Publish Release
