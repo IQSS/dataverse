@@ -1,8 +1,11 @@
 package edu.harvard.iq.dataverse.workflow;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
+
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -25,26 +28,27 @@ public class WorkflowContext {
     private final long    nextVersionNumber;
     private final long    nextMinorVersionNumber;
     private final TriggerType    type;
-    private final String  doiProvider;
+    private final ApiToken apiToken;
+    private Map<String, Object> settings;
     
     private String invocationId = UUID.randomUUID().toString();
 
-    public WorkflowContext( DataverseRequest aRequest, Dataset aDataset, String doiProvider, TriggerType aTriggerType ) {
+    public WorkflowContext( DataverseRequest aRequest, Dataset aDataset, TriggerType aTriggerType ) {
         this( aRequest, aDataset,
                 aDataset.getLatestVersion().getVersionNumber(), 
                 aDataset.getLatestVersion().getMinorVersionNumber(),
-                aTriggerType, 
-                doiProvider);
+                aTriggerType, null, null);
     }
     
     public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber, 
-                            long nextMinorVersionNumber, TriggerType type, String doiProvider) {
+                            long nextMinorVersionNumber, TriggerType type, Map<String, Object> settings, ApiToken apiToken) {
         this.request = request;
         this.dataset = dataset;
         this.nextVersionNumber = nextVersionNumber;
         this.nextMinorVersionNumber = nextMinorVersionNumber;
         this.type = type;
-        this.doiProvider = doiProvider;
+        this.settings = settings;
+        this.apiToken = apiToken;
     }
 
     public Dataset getDataset() {
@@ -75,12 +79,16 @@ public class WorkflowContext {
         return invocationId;
     }
 
-    public String getDoiProvider() {
-        return doiProvider;
-    }
-
     public TriggerType getType() {
         return type;
+    }
+
+    public Map<String, Object> getSettings() {
+        return settings;
+    }
+
+    public ApiToken getApiToken() {
+        return apiToken;
     }
     
 }
