@@ -161,6 +161,26 @@ public class SchemaDotOrgExporterTest {
         grantNumberChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("grantNumberValue", DatasetFieldType.FieldType.TEXT, false)));
         grantNumberType.setChildDatasetFieldTypes(grantNumberChildTypes);
 
+        DatasetFieldType publicationType = datasetFieldTypeSvc.add(new DatasetFieldType("publication", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> publicationChildTypes = new HashSet<>();
+        publicationChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("publicationCitation", DatasetFieldType.FieldType.TEXT, false)));
+        DatasetFieldType publicationIdTypes = datasetFieldTypeSvc.add(new DatasetFieldType("publicationIDType", DatasetFieldType.FieldType.TEXT, false));
+        publicationIdTypes.setAllowControlledVocabulary(true);
+        publicationIdTypes.setControlledVocabularyValues(Arrays.asList(
+                // Why aren't these enforced?
+                new ControlledVocabularyValue(1l, "ark", publicationIdTypes),
+                new ControlledVocabularyValue(2l, "arXiv", publicationIdTypes),
+                new ControlledVocabularyValue(3l, "bibcode", publicationIdTypes),
+                new ControlledVocabularyValue(4l, "doi", publicationIdTypes),
+                new ControlledVocabularyValue(5l, "ean13", publicationIdTypes),
+                new ControlledVocabularyValue(6l, "handle", publicationIdTypes)
+        // Etc. There are more.
+        ));
+        publicationChildTypes.add(datasetFieldTypeSvc.add(publicationIdTypes));
+        publicationChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("publicationIDNumber", DatasetFieldType.FieldType.TEXT, false)));
+        publicationChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("publicationURL", DatasetFieldType.FieldType.TEXT, false)));
+        publicationType.setChildDatasetFieldTypes(publicationChildTypes);
+
         DatasetFieldType geographicCoverageType = datasetFieldTypeSvc.add(new DatasetFieldType("geographicCoverage", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> geographicCoverageChildTypes = new HashSet<>();
         DatasetFieldType countries = datasetFieldTypeSvc.add(new DatasetFieldType("country", DatasetFieldType.FieldType.TEXT, false));
@@ -266,6 +286,7 @@ public class SchemaDotOrgExporterTest {
         assertEquals("KeywordTerm2", json2.getJsonArray("keywords").getString(3));
         // This dataset, for example, has multiple keywords separated by commas: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/24034&version=2.0
         assertEquals("keywords, with, commas", json2.getJsonArray("keywords").getString(4));
+        assertEquals("Finch, Fiona 2018. \"The Finches.\" American Ornithological Journal 60 (4): 990-1005.", json2.getJsonArray("citation").getString(0));
         assertEquals("https://schema.org/version/3.3", json2.getString("schemaVersion"));
         assertEquals("DataCatalog", json2.getJsonObject("includedInDataCatalog").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));
