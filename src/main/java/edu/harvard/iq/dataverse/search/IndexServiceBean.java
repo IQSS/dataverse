@@ -835,6 +835,9 @@ public class IndexServiceBean {
 
         docs.add(solrInputDocument);
 
+        /**
+         * File Indexing
+         */
         List<String> filesIndexed = new ArrayList<>();
         if (datasetVersion != null) {
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
@@ -868,6 +871,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileEntityId);
                     datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
                     datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
+                    datafileSolrInputDocument.addField(SearchFields.DATAVERSE_CATEGORY, dataset.getDataverseContext().getIndexableCategoryName());
 
                     String filenameCompleteFinal = "";
                     if (fileMetadata != null) {
