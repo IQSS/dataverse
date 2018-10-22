@@ -28,8 +28,21 @@ public class BundleUtil {
         ResourceBundle bundle = getResourceBundle(defaultBundleFile );
         return getStringFromBundle(key, arguments, bundle);
     }
-
-    public static String getStringFromBundleNoMissingCheck(String key, List<String> arguments, ResourceBundle bundle) throws MissingResourceException {
+    
+    public static String getStringFromBundle(String key, List<String> arguments, ResourceBundle bundle) {
+        try {
+            return getStringFromBundleNoMissingCheck(key, arguments, bundle);
+        } catch (MissingResourceException ex) {
+            logger.warning("Could not find key \"" + key + "\" in bundle file: ");
+            logger.log(Level.CONFIG, ex.getMessage(), ex);
+            return null;
+        }
+    }
+    
+    /**
+     * This call was added to allow bypassing the exception catch, for filetype indexing which also catches it
+     */
+    private static String getStringFromBundleNoMissingCheck(String key, List<String> arguments, ResourceBundle bundle) throws MissingResourceException {
         if (key == null || key.isEmpty()) {
             return null;
         }
@@ -46,32 +59,22 @@ public class BundleUtil {
             return stringFromBundle;
         }
     }
-    
-    //This call was added to allow bypassing the exception catch, for filetype indexing which also catches it
-    public static String getStringFromBundle(String key, List<String> arguments, ResourceBundle bundle) {
-        try {
-            return getStringFromBundleNoMissingCheck(key, arguments, bundle);
-        } catch (MissingResourceException ex) {
-            logger.warning("Could not find key \"" + key + "\" in bundle file: ");
-            logger.log(Level.CONFIG, ex.getMessage(), ex);
-            return null;
-        }
-    }
 
     public static String getStringFromPropertyFile(String key, String propertyFileName  ) {
         ResourceBundle bundle = getResourceBundle(propertyFileName);
         return getStringFromBundle(key, null, bundle);
     }
     
-    //Added this function to fix indexing issue where it was expecting the exception
-    // to bubble up. See FileUtil.getFacetFileType --MAD 4.9.4
+    /**
+    * Added this function to fix indexing issue where it was expecting the exception
+    * to bubble up, see FileUtil.getFacetFileType --MAD 4.9.4
+    */
     public static String getStringFromPropertyFileAllowMissing(String key, String propertyFileName  ) {
         ResourceBundle bundle = getResourceBundle(propertyFileName);
         return getStringFromBundleNoMissingCheck(key, null, bundle);
     }
 
-
-    public static ResourceBundle getResourceBundle(String propertyFileName)
+    private static ResourceBundle getResourceBundle(String propertyFileName)
     {
         DataverseLocaleBean d = new DataverseLocaleBean();
         ResourceBundle bundle;
