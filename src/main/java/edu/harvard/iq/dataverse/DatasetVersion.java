@@ -1587,6 +1587,9 @@ public class DatasetVersion implements Serializable {
          * We are aware that there is a "datePublished" field but it means "Date
          * of first broadcast/publication." This only makes sense for a 1.0
          * version.
+         *
+         * TODO: Should we remove the comment above about a 1.0 version? We
+         * included this "datePublished" field in Dataverse 4.8.4.
          */
         String datePublished = this.getDataset().getPublicationDateFormattedYYYYMMDD();
         if (datePublished != null) {
@@ -1606,6 +1609,10 @@ public class DatasetVersion implements Serializable {
         for (String description : descriptions) {
             descriptionsArray.add(description);
         }
+        /**
+         * In Dataverse 4.8.4 "description" was a single string but now it's an
+         * array.
+         */
         job.add("description", descriptionsArray);
 
         /**
@@ -1630,7 +1637,11 @@ public class DatasetVersion implements Serializable {
         job.add("keywords", keywords);
 
         /**
-         * citation: (multiple) related publication citation and URLs, if present:
+         * citation: (multiple) related publication citation and URLs, if
+         * present.
+         *
+         * In Dataverse 4.8.4 "citation" was an array of strings but now it's an
+         * array of objects.
          */
         List<DatasetRelPublication> relatedPublications = getRelatedPublications();
         if (!relatedPublications.isEmpty()) {
@@ -1675,6 +1686,13 @@ public class DatasetVersion implements Serializable {
             job.add("temporalCoverage", temporalCoverage);
         }
 
+        /**
+         * Should "schemaVersion" be removed? https://schema.org/version/3.4/
+         * says, "Note that schema.org release numbers are not generally
+         * included when you use schema.org. In contexts (e.g. related standards
+         * work) when a particular release needs to be cited, this document
+         * provides the appropriate URL."
+         */
         job.add("schemaVersion", "https://schema.org/version/3.3");
         
         TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess();
