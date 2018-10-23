@@ -998,7 +998,10 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public String saveWithTermsOfUse() {
         logger.fine("saving terms of use, and the dataset version");
-        datasetUpdateRequired = true; 
+        //Set update required only if dataset already exists
+        if (dataset.getId() != null){
+             datasetUpdateRequired = true; 
+        }
         return save();
     }
     
@@ -1094,28 +1097,27 @@ public class EditDatafilesPage implements java.io.Serializable {
         int nExpectedFilesTotal = nOldFiles + nNewFiles; 
         
         if (nNewFiles > 0) {
-            Dataset lockTest = datasetService.find(dataset.getId());
-            //SEK 09/19/18 Get Dataset again to test for lock just in case the user downloads the rsync script via the api while the 
-            // edit files page is open and has already loaded a file in http upload for Dual Mode
-            if(dataset.isLockedFor(DatasetLock.Reason.DcmUpload) || lockTest.isLockedFor(DatasetLock.Reason.DcmUpload)){
-                System.out.print("Kill file save because locked for DCMUpload");
-                logger.log(Level.INFO, "Couldn''t save dataset: {0}", "DCM script has been downloaded for this dataset. Additonal files are not permitted."
-                        + "");
-                populateDatasetUpdateFailureMessage();
-                return null;               
-            }
-
-            
-            for (DatasetVersion dv : lockTest.getVersions()) {
-                if (dv.isHasPackageFile()) {
-                    logger.log(Level.INFO, ResourceBundle.getBundle("Bundle").getString("file.api.alreadyHasPackageFile")
+            //SEK 10/15/2018 only apply the following tests if dataset has already been saved.
+            if (dataset.getId() != null) {
+                Dataset lockTest = datasetService.find(dataset.getId());
+                //SEK 09/19/18 Get Dataset again to test for lock just in case the user downloads the rsync script via the api while the 
+                // edit files page is open and has already loaded a file in http upload for Dual Mode
+                if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload) || lockTest.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+                    logger.log(Level.INFO, "Couldn''t save dataset: {0}", "DCM script has been downloaded for this dataset. Additonal files are not permitted."
                             + "");
                     populateDatasetUpdateFailureMessage();
                     return null;
                 }
-            }  
-
-            
+                for (DatasetVersion dv : lockTest.getVersions()) {
+                    if (dv.isHasPackageFile()) {
+                        logger.log(Level.INFO, ResourceBundle.getBundle("Bundle").getString("file.api.alreadyHasPackageFile")
+                                + "");
+                        populateDatasetUpdateFailureMessage();
+                        return null;
+                    }
+                }
+            }
+                                
             // Try to save the NEW files permanently: 
             List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles);
             

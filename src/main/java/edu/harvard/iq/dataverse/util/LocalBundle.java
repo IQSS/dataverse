@@ -25,20 +25,14 @@ public class LocalBundle extends ResourceBundle {
 
     public LocalBundle(){
         DataverseLocaleBean d = new DataverseLocaleBean();
-        bundle_locale= new Locale(d.getLocaleCode());
+        bundle_locale = new Locale(d.getLocaleCode());
 
         String filesRootDirectory = System.getProperty("dataverse.lang.directory");
+
         if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
-            filesRootDirectory = "/tmp/lang";
-        }
-        File bundleFileDir = new File(filesRootDirectory);
-
-        if (!bundleFileDir.exists())
-        {
             bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale);
-        }
-        else {
-
+        } else {
+            File bundleFileDir  = new File(filesRootDirectory);
             URL[] urls = null;
             try {
                 urls = new URL[]{bundleFileDir.toURI().toURL()};
