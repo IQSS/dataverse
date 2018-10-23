@@ -93,6 +93,7 @@ public class SearchFields {
     public static final String DATAVERSE_AFFILIATION = "dvAffiliation";
     public static final String DATAVERSE_DESCRIPTION = "dvDescription";
     public static final String DATAVERSE_CATEGORY = "dvCategory";
+    
     /**
      * What is dvSubject_en for? How does it get populated into Solr? The
      * behavior changed so that now the subjects of dataverses are based on
@@ -112,6 +113,13 @@ public class SearchFields {
      * could have a convention like "subjectFacet" for the facets?
      */
     public static final String SUBJECT = "subject_ss";
+    
+    /*
+     * The category of the Dataverse (aka Dataverse Type). Named differently
+     * than DATAVERSE_CATEGORY so it can be searched but doesn't show up on the
+     * homepage facet
+     */
+    public static final String CATEGORY_FROM_DATAVERSE = "categoryFromDataverse";
     /**
      * @todo think about how to tie the fact that this needs to be multivalued
      * (_ss) because a multivalued facet (authorAffilition_ss) will be collapsed

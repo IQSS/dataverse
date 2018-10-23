@@ -37,7 +37,7 @@
     var secondSearch = baseUrl + "/api/search?q=*&type=dataset&sort=date&order=desc&per_page=";
     var thumbBaseURL = baseUrl + "/api/datasets/:persistentId/thumbnail" + "?persistentId=";
     var metricBaseUrl = baseUrl + "/api/info/metrics/";
-    var simpleCatSearch = baseUrl + "/api/search?q=*&type=dataset&fq=dvCategory:";
+    var simpleCatSearch = baseUrl + "/api/search?q=*&type=dataset&fq=categoryFromDataverse:";
 
     /**
     * Runs two search queries, the first to get dataverses based on a certain filter, and the second to get recent datasets for those dataverses.
