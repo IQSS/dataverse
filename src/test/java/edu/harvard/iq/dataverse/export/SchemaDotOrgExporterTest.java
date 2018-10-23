@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import static edu.harvard.iq.dataverse.util.SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
@@ -232,8 +233,10 @@ public class SchemaDotOrgExporterTest {
         Date publicationDate = dateFmt.parse("19551105");
         version.setReleaseTime(publicationDate);
         version.setVersionNumber(1l);
-        // TODO: It might be nice to test TermsOfUseAndAccess some day
-        version.setTermsOfUseAndAccess(null);
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        terms.setLicense(TermsOfUseAndAccess.License.CC0);
+        version.setTermsOfUseAndAccess(terms);
+
         Dataset dataset = new Dataset();
         dataset.setProtocol("doi");
         dataset.setAuthority("myAuthority");
@@ -306,6 +309,9 @@ public class SchemaDotOrgExporterTest {
         assertEquals("2002/2005", json2.getJsonArray("temporalCoverage").getString(0));
         assertEquals("2001-10-01/2015-11-15", json2.getJsonArray("temporalCoverage").getString(1));
         assertEquals("https://schema.org/version/3.3", json2.getString("schemaVersion"));
+        assertEquals("Dataset", json2.getJsonObject("license").getString("@type"));
+        assertEquals("CC0", json2.getJsonObject("license").getString("text"));
+        assertEquals("https://creativecommons.org/publicdomain/zero/1.0/", json2.getJsonObject("license").getString("url"));
         assertEquals("DataCatalog", json2.getJsonObject("includedInDataCatalog").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));
         assertEquals("https://librascholar.org", json2.getJsonObject("includedInDataCatalog").getString("url"));
