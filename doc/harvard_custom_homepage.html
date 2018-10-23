@@ -103,11 +103,20 @@
 
     function querySubject(elm) {
         $.get(metricBaseUrl + "dataverses/bySubject", function(jData) {
+            var subArray = [];
+
             var resultHtml = "";
             jData.data.forEach(function(item) {
-                //TODO: NEED DYNAMIC 'ROOT' DV NAME
-                resultHtml += "<div class=\"col-xs-4 browse-subjects\"><p><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + item.subject + "%22&types=datasets&sort=dateSort&order=desc\" title=\"" + item.subject + "\">" + item.subject + "</a> <span class=\"text-muted\">" + item.count + "</span></p></div>";
+                if(item.subject !== "N/A")
+                subArray.push([item.subject, item.count]);
+                
             });
+            subArray.sort();
+            subArray.forEach(function(subject){
+                //TODO: NEED DYNAMIC 'ROOT' DV NAME
+                resultHtml += "<div class=\"col-xs-4 browse-subjects\"><p><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + subject[0] + "%22&types=datasets&sort=dateSort&order=desc\" title=\"" + subject[0] + "\">" + subject[0] + "</a> <span class=\"text-muted\">" + subject[1] + "</span></p></div>";
+            });
+                
             document.getElementById(elm).innerHTML = resultHtml;
         });
     }
@@ -175,7 +184,7 @@
 
                     <!-- VIEW ALL -->
                     <div class="col-xs-12 text-center">
-                        <p class="small text-muted"><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22&types=dataverses%3Adatasets&sort=dateSort&order=desc" title="{TITLE}">TODO ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                        <p class="small text-muted"><a href="/dataverse/root?q=%28categoryFromDataverse%3A%22Journal%22%29&types=datasets&sort=dateSort&order=desc" title="{TITLE}">TODO ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
                 </div>
 
@@ -189,7 +198,7 @@
 
                     <!-- VIEW ALL -->
                     <div class="col-xs-12 text-center">
-                        <p class="small text-muted"><a href="/dataverse/root?q=&fq0=subject_ss%3A%22Chemistry%22&types=dataverses%3Adatasets&sort=dateSort&order=desc" title="{TITLE}">TODO ALL RECENT RESEARCHERS ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                        <p class="small text-muted"><a href= "/dataverse/root?q=%28categoryFromDataverse%3A%22Research+Project%22+OR+categoryFromDataverse%3A%22Researcher%22+OR+categoryFromDataverse%3A%22Research+Group%22%29&types=datasets&sort=dateSort&order=desc" title="{TITLE}">TODO ALL RECENT RESEARCHERS ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
                 </div>
             </div>
