@@ -182,6 +182,12 @@ public class SchemaDotOrgExporterTest {
         publicationChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("publicationURL", DatasetFieldType.FieldType.TEXT, false)));
         publicationType.setChildDatasetFieldTypes(publicationChildTypes);
 
+        DatasetFieldType timePeriodCoveredType = datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCovered", DatasetFieldType.FieldType.NONE, true));
+        Set<DatasetFieldType> timePeriodCoveredChildTypes = new HashSet<>();
+        timePeriodCoveredChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCoveredStart", DatasetFieldType.FieldType.DATE, false)));
+        timePeriodCoveredChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCoveredEnd", DatasetFieldType.FieldType.DATE, false)));
+        timePeriodCoveredType.setChildDatasetFieldTypes(timePeriodCoveredChildTypes);
+
         DatasetFieldType geographicCoverageType = datasetFieldTypeSvc.add(new DatasetFieldType("geographicCoverage", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> geographicCoverageChildTypes = new HashSet<>();
         DatasetFieldType countries = datasetFieldTypeSvc.add(new DatasetFieldType("country", DatasetFieldType.FieldType.TEXT, false));
@@ -297,6 +303,8 @@ public class SchemaDotOrgExporterTest {
         assertEquals("Finch, Fiona 2018. \"The Finches.\" American Ornithological Journal 60 (4): 990-1005.", json2.getJsonArray("citation").getJsonObject(0).getString("text"));
         assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("@id"));
         assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("identifier"));
+        assertEquals("2002/2005", json2.getJsonArray("temporalCoverage").getString(0));
+        assertEquals("2001-10-01/2015-11-15", json2.getJsonArray("temporalCoverage").getString(1));
         assertEquals("https://schema.org/version/3.3", json2.getString("schemaVersion"));
         assertEquals("DataCatalog", json2.getJsonObject("includedInDataCatalog").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));

@@ -258,6 +258,41 @@
                 }
               }
             ]
+          },
+          {
+            "typeName": "timePeriodCovered",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "timePeriodCoveredStart": {
+                  "typeName": "timePeriodCoveredStart",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "2002"
+                },
+                "timePeriodCoveredEnd": {
+                  "typeName": "timePeriodCoveredEnd",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "2005"
+                }
+              },
+              {
+                "timePeriodCoveredStart": {
+                  "typeName": "timePeriodCoveredStart",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "2001-10-01"
+                },
+                "timePeriodCoveredEnd": {
+                  "typeName": "timePeriodCoveredEnd",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "2015-11-15"
+                }
+              }
+            ]
           }
         ],
         "displayName": "Citation Metadata"
