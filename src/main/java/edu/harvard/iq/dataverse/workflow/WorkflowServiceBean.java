@@ -319,13 +319,14 @@ public class WorkflowServiceBean {
         logger.log(Level.INFO, "Workflow {0} completed.", ctxt.getInvocationId());
         
             try {
-                if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
-                engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest(), ctxt.getDatasetExternallyReleased()) );
-                } else {
-                    logger.fine("Removing workflow lock");
-                    unlockDataset(ctxt);
-                }
-            } catch (CommandException ex) {
+            if (ctxt.getType() == TriggerType.PrePublishDataset) {
+                unlockDataset(ctxt);
+                engine.submit(new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest(), ctxt.getDatasetExternallyReleased()));
+            } else {
+                logger.fine("Removing workflow lock");
+                unlockDataset(ctxt);
+            }
+        } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
                 rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size()-1);
             }
