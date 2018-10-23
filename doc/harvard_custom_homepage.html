@@ -1,34 +1,36 @@
-<!DOCTYPE html>
-    <style>
-        /* Custom CSS for the custom homepage... */
-        .lite-header {font-weight: 300;}
 
-        div.hmpg-action-block {padding-top:2em;}
-        div.search-widget {padding-bottom: 2em;}
-        div.browse-subjects a {color: #C55B28;}
-        div.browse-subjects a:focus, div.browse-subjects a:hover {color: #9F3502;}
-        div.hmpg-recent-col div.hmpg-recent-thumb img {max-height:48px;max-width:48px;}
-        div.hmpg-recent-col div.hmpg-recent-thumb span {font-size:38px;}
-        div.hmpg-activity-block .row .lite-header {margin-left:1em;}
+<style>
+    /* Custom CSS for the custom homepage... */
+    .lite-header {font-weight: 300;}
 
-        .btn-harvard { 
-          color: #A51C30;
-          background: #FFFFFF;
-          font-weight: bold;
-        }
-        .btn-harvard:hover, 
-        .btn-harvard:focus, 
-        .btn-harvard:active, 
-        .btn-harvard.active, 
-        .open .dropdown-toggle.btn-harvard { 
-          color: #7F000A;
-          background: #FFFFFF;
-          font-weight: bold;
-        } 
-    </style>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    div.hmpg-action-block {padding-top:2em;}
+    div.search-widget {padding-bottom: 2em;}
+    div.browse-subjects {padding:0 2px;}
+    div.browse-subjects a {color: #C55B28;}
+    div.browse-subjects a:focus, div.browse-subjects a:hover {color: #9F3502;}
+    div.hmpg-recent-col div.hmpg-recent-thumb img {max-height:48px;max-width:48px;}
+    div.hmpg-recent-col div.hmpg-recent-thumb span {font-size:38px;}
+    div.hmpg-activity-block .row .lite-header {margin-left:1em;}
+
+    .btn-harvard { 
+      color: #A51C30;
+      background: #FFFFFF;
+      font-weight: bold;
+    }
+    .btn-harvard:hover, 
+    .btn-harvard:focus, 
+    .btn-harvard:active, 
+    .btn-harvard.active, 
+    .open .dropdown-toggle.btn-harvard { 
+      color: #7F000A;
+      background: #FFFFFF;
+      font-weight: bold;
+    } 
+</style>
+
 <script>
-    var baseUrl = "http://localhost:8080";
+    var baseUrl = "http://ec2-52-87-214-22.compute-1.amazonaws.com:8080";
+    //var baseUrl = "http://localhost:8080";
     //var baseUrl = "https://dataverse.harvard.edu"
     
     //This get slow and eventually the resulting pile of substrings is too long if there are actually 1000 results
@@ -46,7 +48,7 @@
     * @param {number} resultCount - the number of results to write
     * @param {string} elm - The id of the html element to write the result to
     */
-    function writeRecentDatasetsInDataversesTwoSearches(fqString, resultCount, elm, colSize) {
+    function writeRecentDatasetsInDataversesTwoSearches(fqString, resultCount, elm) {
         var tempSecondSearch = secondSearch + resultCount;
         
         $.get(firstSearch + fqString, function(jData) {
@@ -57,7 +59,7 @@
             $.get(tempSecondSearch, function(jData2) {
                 var resultHtml = "";
                 jData2.data.items.forEach(function(item){
-                    resultHtml += "<div class=\"col-xs-" + colSize + "\">"
+                    resultHtml += "<div class=\"col-xs-12\">"
                     resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\"><span class=\"icon-dataset\"></span></a></div>";
                     resultHtml += "<div class=\"col-xs-10\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\">" + item.name + "</a></p><p class=\"small text-muted\">" + item.parentDataverse + " - " + item.publicationDate + "</p></div>";
                     resultHtml += "<hr class=\"col-xs-11 no-margin-top\"/></div>"
@@ -73,11 +75,11 @@
         });
     }
     
-    function writeRecentDatasetsInDataverses(fqString, resultCount, elm, colSize) {
+    function writeRecentDatasetsInDataverses(fqString, resultCount, elm) {
         $.get(simpleCatSearch + fqString + "&per_page=" + resultCount, function(jData) {
             var resultHtml = "";
             jData.data.items.forEach(function(item){
-                resultHtml += "<div class=\"col-xs-" + colSize + "\">"
+                resultHtml += "<div class=\"col-xs-12\">"
                 resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\"><span class=\"icon-dataset\"></span></a></div>";
                 resultHtml += "<div class=\"col-xs-10\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\">" + item.name + "</a></p><p class=\"small text-muted\">" + item.parentDataverse + " - " + item.published_at + "</p></div>";
                 resultHtml += "<hr class=\"col-xs-11 no-margin-top\"/></div>"
@@ -113,8 +115,7 @@
             });
             subArray.sort();
             subArray.forEach(function(subject){
-                //TODO: NEED DYNAMIC 'ROOT' DV NAME
-                resultHtml += "<div class=\"col-xs-4 browse-subjects\"><p><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + subject[0] + "%22&types=datasets&sort=dateSort&order=desc\" title=\"" + subject[0] + "\">" + subject[0] + "</a> <span class=\"text-muted\">" + subject[1] + "</span></p></div>";
+                resultHtml += "<div class=\"browse-subjects\"><p><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + subject[0] + "%22&types=datasets&sort=dateSort&order=desc\" title=\"" + subject[0] + "\">" + subject[0] + "</a> <span class=\"text-muted\">" + subject[1] + "</span></p></div>";
             });
                 
             document.getElementById(elm).innerHTML = resultHtml;
@@ -127,8 +128,8 @@
     //writeRecentDatasetsInDataversesTwoSearches("" , 3, "journals", 12);
     //writeRecentDatasetsInDataversesTwoSearches("" , 6, "researchers", 6);
     
-    writeRecentDatasetsInDataverses("(Journal)" , 3, "journals", 12);
-    writeRecentDatasetsInDataverses("(\"Research+Project\"%20OR%20Researcher)" , 6, "researchers", 6);
+    writeRecentDatasetsInDataverses("(Journal)" , 3, "journals");
+    writeRecentDatasetsInDataverses("(\"Research+Project\"%20OR%20Researcher)" , 3, "researchers");
     
     queryMetricSimple("datasets", "", "activityAllTimeDatasetsValue");
     queryMetricSimple("downloads", "", "activityAllTimeFilesValue");
@@ -140,9 +141,25 @@
     querySubject("dataversesBySubject");
 </script>
 
-<html>
-    <body>
+    <!-- ACTIONS -->
+    <div class="row hmpg-action-block">
+        <div class="col-xs-6">
+            <div class="h4 lite-header">Deposit and share your data. Get academic credit.</div>
+            <p class="text-muted small margin-bottom">Harvard Dataverse is a digital repository.</p>
+            <button class="btn btn-default btn-harvard margin-top margin-bottom">
+                Add data to Harvard Dataverse <span class="glyphicon glyphicon-plus"></span>
+            </button>
+        </div>
+        <div class="col-xs-6">
+            <div class="h4 lite-header">Organize datasets and gather metrics in your own virtual archive.</div>
+            <p class="text-muted small margin-bottom">A dataverse is a virtual archive. A dataverse can contain dataverses, datasets, files and metadata.</p>
+            <button class="btn btn-default btn-harvard margin-top margin-bottom">
+                Create my own dataverse <span class="glyphicon glyphicon-chevron-right"></span>
+            </button>
+        </div>
+    </div>
 
+    <hr/>
 
     <!-- SEARCH + BROWSE + RECENT -->
     <div class="row hmpg-browse-block">
@@ -166,15 +183,17 @@
         <!-- BROWSE -->
         <div class="col-xs-12">
             <p class="text-muted small">Browse dataverses in this repository by subject.</p>
-            <div id="dataversesBySubject" class="row margin-bottom">
+            <div class="row margin-bottom">
+                <div id="dataversesBySubject" class="col-xs-12" style="-webkit-column-count: 3; -moz-column-count: 3; column-count: 3;">
 
+                </div>
             </div>
         </div>
 
         <!-- RECENT -->
         <div class="col-xs-12">
             <div class="row">
-                <div class="col-xs-4 hmpg-recent-col">
+                <div class="col-xs-6 hmpg-recent-col">
                     <div class="h4 lite-header margin-bottom">Datasets from journal articles</div>
 
                     <hr class="col-xs-11 no-margin-top"/>
@@ -184,11 +203,11 @@
 
                     <!-- VIEW ALL -->
                     <div class="col-xs-12 text-center">
-                        <p class="small text-muted"><a href="/dataverse/root?q=%28categoryFromDataverse%3A%22Journal%22%29&types=datasets&sort=dateSort&order=desc" title="{TITLE}">TODO ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                        <p class="small text-muted"><a href="/dataverse/root?q=%28categoryFromDataverse%3A%22Journal%22%29&types=datasets&sort=dateSort&order=desc" title="All Datasets from Journals">ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
                 </div>
 
-                <div class="col-xs-8 hmpg-recent-col">
+                <div class="col-xs-6 hmpg-recent-col">
                     <div class="h4 lite-header margin-bottom">Datasets from research projects, groups and researchers</div>
 
                     <hr class="col-xs-11 no-margin-top"/>
@@ -198,7 +217,7 @@
 
                     <!-- VIEW ALL -->
                     <div class="col-xs-12 text-center">
-                        <p class="small text-muted"><a href= "/dataverse/root?q=%28categoryFromDataverse%3A%22Research+Project%22+OR+categoryFromDataverse%3A%22Researcher%22+OR+categoryFromDataverse%3A%22Research+Group%22%29&types=datasets&sort=dateSort&order=desc" title="{TITLE}">TODO ALL RECENT RESEARCHERS ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                        <p class="small text-muted"><a href= "/dataverse/root?q=%28categoryFromDataverse%3A%22Research+Project%22+OR+categoryFromDataverse%3A%22Researcher%22+OR+categoryFromDataverse%3A%22Research+Group%22%29&types=datasets&sort=dateSort&order=desc" title="All Datasets from Research Projects, Groups and Researchers">ALL RECENT RESEARCHERS ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
                 </div>
             </div>
@@ -224,6 +243,10 @@
 
     <hr/>
 
-
-    </body>
-</html>
+    <!-- OTHER LINKS -->
+    <div class="row hmpg-other-block">
+        <div class="col-xs-12">
+            <div class="h4 lite-header margin-bottom">Looking for other online repositories at Harvard?</div>
+            <p class="text-muted"><a href="#" title="TITLE">Harvard DASH article repository</a> <span class="glyphicon glyphicon-chevron-right"></span> &nbsp; <a href="#" title="TITLE">All repositories at Harvard</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+        </div>
+    </div>
