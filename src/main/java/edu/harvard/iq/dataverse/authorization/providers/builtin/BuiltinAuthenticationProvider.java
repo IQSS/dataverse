@@ -123,7 +123,7 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
 //        } else {
 //            return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
         }
-        final List<String> errors = passwordValidatorService.validate(authReq.getCredential("Password"));
+        final List<String> errors = passwordValidatorService.validate(authReq.getCredential(KEY_PASSWORD));
         if (!errors.isEmpty()) {
             try {
                 String passwordResetUrl = bean.requestPasswordComplianceLink(u);
