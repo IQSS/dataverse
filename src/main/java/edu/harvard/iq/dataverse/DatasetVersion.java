@@ -1701,6 +1701,16 @@ public class DatasetVersion implements Serializable {
         );
 
         String installationBrandName = BrandingUtil.getInstallationBrandName(getRootDataverseNameforCitation());
+        /**
+         * Both "publisher" and "provider" are included but they have the same
+         * values.
+         *
+         * TODO: Ask if this is an experiment like "creator" vs "author" above.
+         */
+        job.add("publisher", Json.createObjectBuilder()
+                .add("@type", "Organization")
+                .add("name", installationBrandName)
+        );
         job.add("provider", Json.createObjectBuilder()
                 .add("@type", "Organization")
                 .add("name", installationBrandName)

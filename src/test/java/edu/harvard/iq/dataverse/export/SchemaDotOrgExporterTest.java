@@ -315,6 +315,8 @@ public class SchemaDotOrgExporterTest {
         assertEquals("DataCatalog", json2.getJsonObject("includedInDataCatalog").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));
         assertEquals("https://librascholar.org", json2.getJsonObject("includedInDataCatalog").getString("url"));
+        assertEquals("Organization", json2.getJsonObject("publisher").getString("@type"));
+        assertEquals("LibraScholar", json2.getJsonObject("provider").getString("name"));
         assertEquals("Organization", json2.getJsonObject("provider").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("provider").getString("name"));
         assertEquals("Organization", json2.getJsonArray("funder").getJsonObject(0).getString("@type"));

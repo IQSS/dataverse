@@ -95,6 +95,9 @@ public class DatasetVersionTest {
         assertFalse(nonDraft.isInReview());
     }
 
+    /**
+     * See also SchemaDotOrgExporterTest.java for more extensive tests.
+     */
     @Test
     public void testGetJsonLd() throws ParseException {
         Dataset dataset = new Dataset();
@@ -137,6 +140,9 @@ public class DatasetVersionTest {
         assertEquals(emptyArray, obj.getJsonArray("author"));
         // TODO: If it ever becomes easier to mock subjects, test them.
         assertEquals(emptyArray, obj.getJsonArray("keywords"));
+        assertEquals("Organization", obj.getJsonObject("publisher").getString("@type"));
+        assertEquals("LibraScholar", obj.getJsonObject("publisher").getString("name"));
+        assertEquals("Organization", obj.getJsonObject("provider").getString("@type"));
         assertEquals("LibraScholar", obj.getJsonObject("provider").getString("name"));
         assertEquals("LibraScholar", obj.getJsonObject("includedInDataCatalog").getString("name"));
     }
