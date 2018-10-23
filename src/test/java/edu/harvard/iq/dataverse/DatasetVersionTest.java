@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -116,7 +117,7 @@ public class DatasetVersionTest {
         dataverse.setName("LibraScholar");
         dataset.setOwner(dataverse);
         String jsonLd = datasetVersion.getJsonLd();
-        System.out.println("jsonLd: " + jsonLd);
+        System.out.println("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
         JsonReader jsonReader = Json.createReader(new StringReader(jsonLd));
         JsonObject obj = jsonReader.readObject();
         assertEquals("http://schema.org", obj.getString("@context"));
@@ -133,6 +134,7 @@ public class DatasetVersionTest {
         // TODO: If it ever becomes easier to mock authors, test them.
         JsonArray emptyArray = Json.createArrayBuilder().build();
         assertEquals(emptyArray, obj.getJsonArray("creator"));
+        assertEquals(emptyArray, obj.getJsonArray("author"));
         // TODO: If it ever becomes easier to mock subjects, test them.
         assertEquals(emptyArray, obj.getJsonArray("keywords"));
         assertEquals("LibraScholar", obj.getJsonObject("provider").getString("name"));

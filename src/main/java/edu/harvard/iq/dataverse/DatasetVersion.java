@@ -1570,7 +1570,19 @@ public class DatasetVersion implements Serializable {
             }
             authors.add(author);
         }
-        job.add("creator", authors);
+        JsonArray authorsArray = authors.build();
+        /**
+         * "creator" is being added along side "author" (below) as an
+         * experiment. We think Google Dataset Search might like "creator"
+         * better".
+         */
+        job.add("creator", authorsArray);
+        /**
+         * "author" is still here for backward compatibility. Depending on how
+         * the "creator" experiment above goes, we may deprecate it in the
+         * future.
+         */
+        job.add("author", authorsArray);
         /**
          * We are aware that there is a "datePublished" field but it means "Date
          * of first broadcast/publication." This only makes sense for a 1.0
