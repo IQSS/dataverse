@@ -648,6 +648,85 @@ public class SearchIT {
     }
 
     @Test
+    public void testNestedSubtree() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        //(String alias, String category, String apiToken, String parentDV)
+        Response createDataverseResponse2 = UtilIT.createSubDataverse("subDV" + UtilIT.getRandomIdentifier(), null, apiToken, dataverseAlias);
+        createDataverseResponse2.prettyPrint();
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
+
+        String searchPart = "*"; 
+
+        Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
+        searchUnpublishedSubtree.prettyPrint();
+        searchUnpublishedSubtree.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // It's expected that you can't find it because it hasn't been published.
+                .body("data.total_count", CoreMatchers.equalTo(0));
+        
+        Response searchUnpublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
+        searchUnpublishedSubtree2.prettyPrint();
+        searchUnpublishedSubtree2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // It's expected that you can't find it because it hasn't been published.
+                .body("data.total_count", CoreMatchers.equalTo(0));
+        
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response publishDataverse2 = UtilIT.publishDataverseViaNativeApi(dataverseAlias2, apiToken);
+        publishDataverse2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response searchPublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
+        searchPublishedSubtree.prettyPrint();
+        searchPublishedSubtree.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+        
+        Response searchPublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
+        searchPublishedSubtree2.prettyPrint();
+        searchPublishedSubtree2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(0));
+        
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias2, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        System.out.println("id: " + datasetId);
+        String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
+        System.out.println("datasetPid: " + datasetPid);
+        
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response searchPublishedSubtreeWDS = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
+        searchPublishedSubtreeWDS.prettyPrint();
+        searchPublishedSubtreeWDS.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(2));
+        
+        Response searchPublishedSubtreeWDS2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
+        searchPublishedSubtreeWDS2.prettyPrint();
+        searchPublishedSubtreeWDS2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+        
+        
+                
+    }
+    
+    @Test
     public void testSubtreePermissions() {
 
         Response createUser = UtilIT.createRandomUser();

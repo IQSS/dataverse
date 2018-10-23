@@ -242,7 +242,12 @@ public class UtilIT {
         return response;
     }
 
+    //This method creates a dataverse off root, for more nesting use createSubDataverse
     static Response createDataverse(String alias, String category, String apiToken) {
+        return createSubDataverse(alias, category, apiToken, ":root");
+    }
+    
+    static Response createSubDataverse(String alias, String category, String apiToken, String parentDV) {
         JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
         contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", getEmailFromUserName(getRandomIdentifier())));
         JsonArrayBuilder subjectArrayBuilder = Json.createArrayBuilder();
@@ -257,7 +262,7 @@ public class UtilIT {
                 .build();
         Response createDataverseResponse = given()
                 .body(dvData.toString()).contentType(ContentType.JSON)
-                .when().post("/api/dataverses/:root?key=" + apiToken);
+                .when().post("/api/dataverses/" + parentDV + "?key=" + apiToken);
         return createDataverseResponse;
     }
 
