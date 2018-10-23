@@ -200,14 +200,7 @@ public class WorkflowServiceBean {
         
         logger.log( Level.INFO, "Removing workflow lock");
         try {
-            engine.submit( new RemoveLockCommand(ctxt.getRequest(), ctxt.getDataset(), DatasetLock.Reason.Workflow) );
-            
-            // Corner case - delete locks generated within this same transaction.
-            Query deleteQuery = em.createQuery("DELETE from DatasetLock l WHERE l.dataset.id=:id AND l.reason=:reason");
-            deleteQuery.setParameter("id", ctxt.getDataset().getId() );
-            deleteQuery.setParameter("reason", DatasetLock.Reason.Workflow );
-            deleteQuery.executeUpdate();
-            
+            unlockDataset(ctxt);
         } catch (CommandException ex) {
             logger.log(Level.SEVERE, "Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
         }
@@ -289,7 +282,7 @@ public class WorkflowServiceBean {
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    void unlockDataset( WorkflowContext ctxt ) {
+    void unlockDataset( WorkflowContext ctxt ) throws CommandException {
     	/* Since the lockDataset command above directly persists a lock to the database, 
     	 * the ctxt.getDataset() is not updated and its list of locks can't be used. Using the named query below will find the workflow
     	 * lock and remove it (actually all workflow locks for this Dataset but only one workflow should be active). 
@@ -299,7 +292,7 @@ public class WorkflowServiceBean {
         List<DatasetLock> locks = lockCounter.getResultList();
         for(DatasetLock lock: locks) {
         	if(lock.getReason() == DatasetLock.Reason.Workflow) {
-        		logger.info("Removing lock");
+                logger.fine("Removing lock");
         		em.remove(lock);
         	}
         }
@@ -318,16 +311,19 @@ public class WorkflowServiceBean {
 
     private void workflowCompleted(Workflow wf, WorkflowContext ctxt) {
         logger.log(Level.INFO, "Workflow {0} completed.", ctxt.getInvocationId());
-        if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
+        
             try {
-                engine.submit( new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest()) );
-                                
+        if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
+                unlockDataset(ctxt);
+                engine.submit(new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest(), ctxt.getDatasetExternallyReleased()));
+            } else {
+                logger.fine("Removing workflow lock");
+                unlockDataset(ctxt);
+            }
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
                 rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size()-1);
             }
-        }
-        unlockDataset(ctxt);
         
     }
 
@@ -434,7 +430,7 @@ public class WorkflowServiceBean {
     	 */
         return new WorkflowContext( ctxt.getRequest(), 
                        em.merge(ctxt.getDataset()), ctxt.getNextVersionNumber(), 
-                       ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken);
+                       ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken, ctxt.getDatasetExternallyReleased());
     }
 
 }
