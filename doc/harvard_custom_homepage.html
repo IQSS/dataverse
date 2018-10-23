@@ -29,8 +29,7 @@
 </style>
 
 <script>
-    var baseUrl = "http://ec2-52-87-214-22.compute-1.amazonaws.com:8080";
-    //var baseUrl = "http://localhost:8080";
+    var baseUrl = "http://localhost:8080";
     //var baseUrl = "https://dataverse.harvard.edu"
     
     //This get slow and eventually the resulting pile of substrings is too long if there are actually 1000 results
@@ -41,40 +40,6 @@
     var metricBaseUrl = baseUrl + "/api/info/metrics/";
     var simpleCatSearch = baseUrl + "/api/search?q=*&type=dataset&fq=categoryFromDataverse:";
 
-    /**
-    * Runs two search queries, the first to get dataverses based on a certain filter, and the second to get recent datasets for those dataverses.
-    * The initial intent of the query is to get recent datasets based on dataverse subjects
-    * @param {string} fqString - the filter for the first query, which returns which dataverses to get recent datasets from. For example: "&fq=dvCategory:(Journal%20OR%20Laboratory)" To get dataverses that are a Journal or Laboratory.
-    * @param {number} resultCount - the number of results to write
-    * @param {string} elm - The id of the html element to write the result to
-    */
-    function writeRecentDatasetsInDataversesTwoSearches(fqString, resultCount, elm) {
-        var tempSecondSearch = secondSearch + resultCount;
-        
-        $.get(firstSearch + fqString, function(jData) {
-            jData.data.items.forEach(function(item){
-                tempSecondSearch += "&subtree=" + item.identifier;
-            });
-
-            $.get(tempSecondSearch, function(jData2) {
-                var resultHtml = "";
-                jData2.data.items.forEach(function(item){
-                    resultHtml += "<div class=\"col-xs-12\">"
-                    resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\"><span class=\"icon-dataset\"></span></a></div>";
-                    resultHtml += "<div class=\"col-xs-10\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\">" + item.name + "</a></p><p class=\"small text-muted\">" + item.parentDataverse + " - " + item.publicationDate + "</p></div>";
-                    resultHtml += "<hr class=\"col-xs-11 no-margin-top\"/></div>"
-                });
-                document.getElementById(elm).innerHTML = resultHtml;
-
-
-                // BROKEN THUMBNAIL IMAGES
-                // <img src=\"" + thumbBaseURL + item.global_id + "\" alt=\"Dataset thumbnail\">
-
-
-            });
-        });
-    }
-    
     function writeRecentDatasetsInDataverses(fqString, resultCount, elm) {
         $.get(simpleCatSearch + fqString + "&per_page=" + resultCount, function(jData) {
             var resultHtml = "";
@@ -86,19 +51,11 @@
             });
             document.getElementById(elm).innerHTML = resultHtml;
         });
-        //curl "localhost:8080/api/search?q=*:*&fq=dvCategory:(Journal%20OR%20Laboratory)&type=dataset&per_page=1000"
-
     }
     
     function queryMetricSimple(metricRelPath, month, elm) {
-        // $.get(metricBaseUrl + metricRelPath + month, function(jData) {
-        //     document.getElementById(elm).innerHTML = JSON.stringify(jData);
-        // });
-
         $.get(metricBaseUrl + metricRelPath + month, function(jData) {
-
             var resultCount = jData.data.count;
-
             document.getElementById(elm).innerHTML = resultCount;
         });
     }
@@ -122,12 +79,6 @@
         });
     }
 
-    //These calls are based on the old method for getting datasets by dataverse category, utilizing search
-    //writeRecentDatasetsInDataversesTwoSearches("&fq=dvCategory:(Journal%20OR%20Laboratory)",3, "journals");
-    //writeRecentDatasetsInDataversesTwoSearches("&fq=dvCategory:(\"Research+Project\"%20OR%20Researcher)",6, "researchers");   
-    //writeRecentDatasetsInDataversesTwoSearches("" , 3, "journals", 12);
-    //writeRecentDatasetsInDataversesTwoSearches("" , 6, "researchers", 6);
-    
     writeRecentDatasetsInDataverses("(Journal)" , 3, "journals");
     writeRecentDatasetsInDataverses("(\"Research+Project\"%20OR%20Researcher)" , 3, "researchers");
     
