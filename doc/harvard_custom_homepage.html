@@ -29,9 +29,10 @@
 </style>
 
 <script>
-    var baseUrl = "http://localhost:8080";
-    //var baseUrl = "https://dataverse.harvard.edu"
-    
+    //You should not need to specify a baseUrl when running the homepage on the same server as dataverse
+    var baseUrl = ""; 
+    //var baseUrl = "http://localhost:8080";
+
     var thumbBaseURL = baseUrl + "/api/datasets/:persistentId/thumbnail" + "?persistentId=";
     var metricBaseUrl = baseUrl + "/api/info/metrics/";
     var simpleCatSearch = baseUrl + "/api/search?q=*&type=dataset&fq=categoryFromDataverse:";
@@ -40,10 +41,11 @@
         $.get(simpleCatSearch + fqString + "&per_page=" + resultCount, function(jData) {
             var resultHtml = "";
             jData.data.items.forEach(function(item){
+                var date = new Date(item.published_at);
                 resultHtml += "<div class=\"col-xs-12\">"           
                 resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\">";
                 resultHtml += "<object data=\"" + thumbBaseURL + item.global_id + "\" type=\"image/png\"/><span class=\"icon-dataset\"></span></object></div>";
-                resultHtml += "<div class=\"col-xs-10\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\">" + item.name + "</a></p><p class=\"small text-muted\">" + item.parentDataverse + " - " + item.published_at + "</p></div>";
+                resultHtml += "<div class=\"col-xs-10\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\">" + item.name + "</a></p><p class=\"small text-muted\">" + item.parentDataverse + " - " + date.toDateString() + "</p></div>";
                 resultHtml += "<hr class=\"col-xs-11 no-margin-top\"/></div>"
             });
             document.getElementById(elm).innerHTML = resultHtml;
