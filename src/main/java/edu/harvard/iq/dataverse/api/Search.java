@@ -68,9 +68,9 @@ public class Search extends AbstractApiBean {
             @QueryParam("show_facets") boolean showFacets,
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("show_entity_ids") boolean showEntityIds,
-            @QueryParam("show_api_urls") boolean showApiUrls, //MAD: not documented
-            @QueryParam("show_my_data") boolean showMyData, //MAD: not documented
-            @QueryParam("query_entities") boolean queryEntities, //MAD: not documented
+            @QueryParam("show_api_urls") boolean showApiUrls,
+            @QueryParam("show_my_data") boolean showMyData,
+            @QueryParam("query_entities") boolean queryEntities,
             @Context HttpServletResponse response
     ) {
 
@@ -255,7 +255,7 @@ public class Search extends AbstractApiBean {
         /**
          * @todo should maxLimit be configurable?
          */
-        int maxLimit = 1000000; //MAD: I upped this to test realistic max results
+        int maxLimit = 1000; 
         if (numResultsPerPage == 0) {
             /**
              * @todo should defaultLimit be configurable?
