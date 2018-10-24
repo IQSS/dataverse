@@ -8,6 +8,7 @@
     div.browse-subjects {padding:0 2px;}
     div.browse-subjects a {color: #C55B28;}
     div.browse-subjects a:focus, div.browse-subjects a:hover {color: #9F3502;}
+    #dataversesBySubject {-webkit-column-count: 3; -moz-column-count: 3; column-count: 3;}
     div.hmpg-recent-col div.hmpg-recent-thumb img {max-height:48px;max-width:48px;}
     div.hmpg-recent-col div.hmpg-recent-thumb span {font-size:38px;}
     div.hmpg-activity-block .row .lite-header {margin-left:1em;}
@@ -43,9 +44,9 @@
             jData.data.items.forEach(function(item){
                 var date = new Date(item.published_at);
                 resultHtml += "<div class=\"col-xs-12\">"           
-                resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\">";
+                resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">";
                 resultHtml += "<object data=\"" + thumbBaseURL + item.global_id + "\" type=\"image/png\"/><span class=\"icon-dataset\"></span></object></div>";
-                resultHtml += "<div class=\"col-xs-10\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\" title=\"" + item.name + "\">" + item.name + "</a></p><p class=\"small text-muted\">" + item.parentDataverse + " - " + date.toDateString() + "</p></div>";
+                resultHtml += "<div class=\"col-xs-10\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">" + item.name + "</a></p><p class=\"small text-muted\">" + item.parentDataverse + " - " + date.toDateString() + "</p></div>";
                 resultHtml += "<hr class=\"col-xs-11 no-margin-top\"/></div>"
             });
             document.getElementById(elm).innerHTML = resultHtml;
@@ -72,7 +73,7 @@
             });
             subArray.sort();
             subArray.forEach(function(subject){
-                resultHtml += "<div class=\"browse-subjects\"><p><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + subject[0] + "%22&types=datasets&sort=dateSort&order=desc\" title=\"" + subject[0] + "\">" + subject[0] + "</a> <span class=\"text-muted\">" + subject[1] + "</span></p></div>";
+                resultHtml += "<div class=\"browse-subjects\"><p><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + subject[0] + "%22&types=datasets&sort=dateSort&order=desc\">" + subject[0] + "</a> <span class=\"text-muted\">" + subject[1] + "</span></p></div>";
             });
                 
             document.getElementById(elm).innerHTML = resultHtml;
@@ -97,16 +98,16 @@
         <div class="col-xs-6">
             <div class="h4 lite-header">Deposit and share your data. Get academic credit.</div>
             <p class="text-muted small margin-bottom">Harvard Dataverse is a digital repository.</p>
-            <button class="btn btn-default btn-harvard margin-top margin-bottom">
+            <a class="btn btn-default btn-harvard margin-top margin-bottom" href="/dataset.xhtml?ownerId=1">
                 Add data to Harvard Dataverse <span class="glyphicon glyphicon-plus"></span>
-            </button>
+            </a>
         </div>
         <div class="col-xs-6">
             <div class="h4 lite-header">Organize datasets and gather metrics in your own virtual archive.</div>
             <p class="text-muted small margin-bottom">A dataverse is a virtual archive. A dataverse can contain dataverses, datasets, files and metadata.</p>
-            <button class="btn btn-default btn-harvard margin-top margin-bottom">
+            <a class="btn btn-default btn-harvard margin-top margin-bottom" href="/dataverse.xhtml?ownerId=1">
                 Create my own dataverse <span class="glyphicon glyphicon-chevron-right"></span>
-            </button>
+            </a>
         </div>
     </div>
 
@@ -135,7 +136,7 @@
         <div class="col-xs-12">
             <p class="text-muted small">Browse dataverses in this repository by subject.</p>
             <div class="row margin-bottom">
-                <div id="dataversesBySubject" class="col-xs-12" style="-webkit-column-count: 3; -moz-column-count: 3; column-count: 3;">
+                <div id="dataversesBySubject" class="col-xs-12">
 
                 </div>
             </div>
@@ -154,7 +155,7 @@
 
                     <!-- VIEW ALL -->
                     <div class="col-xs-12 text-center">
-                        <p class="small text-muted"><a href="/dataverse/root?q=%28categoryFromDataverse%3A%22Journal%22%29&types=datasets&sort=dateSort&order=desc" title="All Datasets from Journals">ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                        <p class="small text-muted"><a href="/dataverse/root?q=%28categoryFromDataverse%3A%22Journal%22%29&types=datasets&sort=dateSort&order=desc">ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
                 </div>
 
@@ -168,7 +169,7 @@
 
                     <!-- VIEW ALL -->
                     <div class="col-xs-12 text-center">
-                        <p class="small text-muted"><a href= "/dataverse/root?q=%28categoryFromDataverse%3A%22Research+Project%22+OR+categoryFromDataverse%3A%22Researcher%22+OR+categoryFromDataverse%3A%22Research+Group%22%29&types=datasets&sort=dateSort&order=desc" title="All Datasets from Research Projects, Groups and Researchers">ALL RECENT RESEARCHERS ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                        <p class="small text-muted"><a href= "/dataverse/root?q=%28categoryFromDataverse%3A%22Research+Project%22+OR+categoryFromDataverse%3A%22Researcher%22+OR+categoryFromDataverse%3A%22Research+Group%22%29&types=datasets&sort=dateSort&order=desc">ALL RECENT RESEARCHERS ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
                 </div>
             </div>
@@ -198,6 +199,6 @@
     <div class="row hmpg-other-block">
         <div class="col-xs-12">
             <div class="h4 lite-header margin-bottom">Looking for other online repositories at Harvard?</div>
-            <p class="text-muted"><a href="#" title="TITLE">Harvard DASH article repository</a> <span class="glyphicon glyphicon-chevron-right"></span> &nbsp; <a href="#" title="TITLE">All repositories at Harvard</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+            <p class="text-muted"><a href="https://dash.harvard.edu/" target="_blank">Harvard DASH article repository</a> <span class="glyphicon glyphicon-chevron-right"></span> &#160;&#160; <a href="https://library.harvard.edu/services-tools" target="_blank">All repositories at Harvard</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
         </div>
     </div>
