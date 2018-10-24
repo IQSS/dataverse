@@ -955,12 +955,17 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Produces({"image/png"})
     @Path("{id}/thumbnail")
-    public InputStream getDatasetThumbnail(@PathParam("id") String idSupplied) {
+    public Response getDatasetThumbnail(@PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
-            return DatasetUtil.getThumbnailAsInputStream(dataset);
-        } catch (WrappedResponse ex) {
-            return null;
+            InputStream is = DatasetUtil.getThumbnailAsInputStream(dataset);
+            if(is == null) {
+                return error(Response.Status.NOT_FOUND, "Thumbnail not available");
+            }
+            return Response.ok(is).build();
+            //return DatasetUtil.getThumbnailAsInputStream(dataset);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 
