@@ -100,6 +100,9 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
         
         if(u == null) { //If can't find by username in builtin, get the auth user and then the builtin
             authUser = authBean.getAuthenticatedUserByEmail(authReq.getCredential(KEY_USERNAME_OR_EMAIL));
+            if (authUser == null) { //if can't find by email return bad username, etc.
+                return AuthenticationResponse.makeFail("Bad username, email address, or password");
+            }
             u = bean.findByUserName(authUser.getUserIdentifier());
         }
         
