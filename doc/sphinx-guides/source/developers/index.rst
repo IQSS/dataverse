@@ -16,10 +16,12 @@ Developer Guide
    tips
    troubleshooting
    version-control
+   sql-upgrade-scripts
    testing
    documentation
    debugging
    coding-style
+   deployment
    containers
    making-releases
    tools

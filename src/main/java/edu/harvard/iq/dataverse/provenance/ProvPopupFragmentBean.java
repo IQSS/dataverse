@@ -1,7 +1,16 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.provenance;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetPage;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.EditDatafilesPage;
+import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.FilePage;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.io.IOException;
 import java.util.logging.Logger;
 import org.primefaces.event.FileUploadEvent;
@@ -78,25 +87,35 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     DatasetPage datasetPage;
     @Inject
     EditDatafilesPage datafilesPage;
-    @Inject
-    ProvUtilFragmentBean provUtil;
+    ProvInvestigator provUtil = ProvInvestigator.getInstance();
         
     public void handleFileUpload(FileUploadEvent event) throws IOException {
         jsonUploadedTempFile = event.getFile();
         provJsonParsedEntities = new HashMap<>();
         provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputstream());
-        try {
-            generateProvJsonParsedEntities();
-
-        } catch (Exception e) {
+        
+        
+        if(!provUtil.isProvValid(provJsonState)) { //if uploaded prov-json does not comply with schema
             Logger.getLogger(ProvPopupFragmentBean.class.getName())
-                    .log(Level.SEVERE, BundleUtil.getStringFromBundle("file.editProvenanceDialog.uploadError"), e);
+                    .log(Level.INFO, BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError")); 
             removeJsonAndRelatedData();
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.uploadError")); 
-        } 
-        if(provJsonParsedEntities.isEmpty()) {
-            removeJsonAndRelatedData();
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.noEntitiesError"));
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.invalidSchemaError")); 
+        }
+        
+        else {
+            try {
+                generateProvJsonParsedEntities();
+
+            } catch (Exception e) {
+                Logger.getLogger(ProvPopupFragmentBean.class.getName())
+                        .log(Level.SEVERE, BundleUtil.getStringFromBundle("file.editProvenanceDialog.uploadError"), e);
+                removeJsonAndRelatedData();
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.uploadError")); 
+            } 
+            if(provJsonParsedEntities.isEmpty()) {
+                removeJsonAndRelatedData();
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("file.editProvenanceDialog.noEntitiesError"));
+            }
         }
 
     }
@@ -323,7 +342,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     }
     
     //Called by editFilesPage to update its metadata with stored prov freeform values for multiple DataFiles
-    Boolean updatePageMetadatasWithProvFreeform(List<FileMetadata> fileMetadatas) {
+    public Boolean updatePageMetadatasWithProvFreeform(List<FileMetadata> fileMetadatas) {
         Boolean changes = false;
         for(FileMetadata fm : fileMetadatas) {
             UpdatesEntry ue = provenanceUpdates.get(fm.getDataFile().getChecksumValue());
@@ -389,7 +408,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     }
     public boolean provJsonAlreadyPublishedRendering() {
         if(null == popupDataFile) { //is hit on loading, returns true to prevent loading of upload elements
-            return false; //MAD: I Switched this but hmmm
+            return false; 
         }
         for(DataFile df : dataset.getFiles()) {
             if(df.getChecksumType().equals(popupDataFile.getChecksumType())
@@ -455,11 +474,11 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     }
     
      //for storing datafile and provjson in a map value
-    class UpdatesEntry {
-        String provJson;
-        DataFile dataFile;
-        String provFreeform;
-        Boolean deleteJson;
+    public class UpdatesEntry {
+        public String provJson;
+        public DataFile dataFile;
+        public String provFreeform;
+        public Boolean deleteJson;
         
         UpdatesEntry(DataFile dataFile, String provJson, Boolean deleteJson, String provFreeform) {
             this.provJson = provJson;

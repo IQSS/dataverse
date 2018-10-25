@@ -79,6 +79,11 @@ These properties can be tailored to your own preferred mail service, but if all 
 + If you're seeing a "Relay access denied" error in your Glassfish logs when your app attempts to send an email, double check your user/password credentials for the Mail Host you're using.
 + If you're seeing a "Connection refused" / similar error upon email sending, try another port.
 
+As another example, here is how to create a Mail Host via command line for Amazon SES:
+
+- Delete: ``./asadmin delete-javamail-resource mail/MyMailSession``
+- Create (remove brackets and replace the variables inside): ``./asadmin create-javamail-resource --mailhost email-smtp.us-east-1.amazonaws.com --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --transprotocol aws --transprotocolclass com.amazonaws.services.simpleemail.AWSJavaMailTransport --property mail.smtp.auth=true:mail.smtp.user=[aws_access_key]:mail.smtp.password=[aws_secret_key]:mail.transport.protocol=smtp:mail.smtp.port=587:mail.smtp.starttls.enable=true mail/notifyMailSession``
+
 Rebuilding Your Dev Environment
 -------------------------------
 
@@ -96,7 +101,7 @@ You may also find https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/
 DataCite
 --------
 
-If you've reconfigured from EZID to DataCite and are seeing ``Response code: 400, [url] domain of URL is not allowed`` it's probably because your ``dataverse.siteUrl`` JVM option is unset or set to localhost (``-Ddataverse.siteUrl=http://localhost:8080``). You can try something like this:
+If you are seeing ``Response code: 400, [url] domain of URL is not allowed`` it's probably because your ``dataverse.siteUrl`` JVM option is unset or set to localhost (``-Ddataverse.siteUrl=http://localhost:8080``). You can try something like this:
 
 ``./asadmin delete-jvm-options '-Ddataverse.siteUrl=http\://localhost\:8080'``
 

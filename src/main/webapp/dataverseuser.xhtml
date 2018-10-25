@@ -134,6 +134,12 @@
                                                             <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
+                                                            #{DataverseUserPage.getRequestorName(item)}
+                                                        </o:param>
+                                                        <o:param>
+                                                            #{DataverseUserPage.getRequestorEmail(item)}
+                                                        </o:param>
+                                                        <o:param>
                                                             #{DataverseUserPage.getReasonForReturn(item.theObject)}
                                                         </o:param>
                                                     </h:outputFormat>
@@ -283,11 +289,10 @@
                                                     a more type-safe approach would be to use the "Type" enum in UserNotification.
                                                     Also, isInstanceofDataset() should be checked, probably.
                                                     -->
-                                                    <i class="icon-dataverse text-icon-inline text-muted"></i>
-                                                    <h:outputFormat value="#{bundle['notification.checksumfail']}">
-                                                        <o:param>
-                                                            <h:outputText value="#{item.theObject.getGlobalId()}"/>
-                                                        </o:param>
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.checksumfail']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'FILESYSTEMIMPORT'}">

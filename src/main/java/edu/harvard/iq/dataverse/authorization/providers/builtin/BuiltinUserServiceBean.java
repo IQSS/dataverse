@@ -46,14 +46,6 @@ public class BuiltinUserServiceBean {
        
     public BuiltinUser save(BuiltinUser aUser) {
         /**
-         * Trim the email address no matter what the user entered or is entered
-         * on their behalf in the case of Shibboleth assertions.
-         *
-         * @todo Why doesn't Bean Validation report that leading and trailing
-         * whitespace in an email address is a problem?
-         */
-        aUser.setEmail(aUser.getEmail().trim());
-        /**
          * We throw a proper IllegalArgumentException here because otherwise
          * from the API you get a 500 response and "Can't save user: null".
          */
@@ -104,42 +96,10 @@ public class BuiltinUserServiceBean {
         }
     }
 	
-	public List<BuiltinUser> listByUsernamePart ( String part ) {
-		return em.createNamedQuery("BuiltinUser.listByUserNameLike", BuiltinUser.class)
-				.setParameter("userNameLike", "%" + part + "%")
-				.getResultList();
-	}
-
-    /**
-     * @param email email of the user.
-     * @return A {@link BuiltinUser} or null if not found
-     */
-    public BuiltinUser findByEmail(String email) {
-        try {
-            return em.createNamedQuery("BuiltinUser.findByEmail", BuiltinUser.class)
-                    .setParameter("email", email)
-                    .getSingleResult();
-        } catch (NoResultException | NonUniqueResultException ex) {
-            return null;
-        }
-    }
-
-    /**
-     * @param usernameOrEmail Username or email address of the user.
-     * @return A {@link BuiltinUser} or null if not found
-     */
-    public BuiltinUser findByUsernameOrEmail(String usernameOrEmail) {
-        BuiltinUser userFoundByUsername = findByUserName(usernameOrEmail);
-        if (userFoundByUsername != null) {
-            return userFoundByUsername;
-        } else {
-            BuiltinUser userFoundByEmail = findByEmail(usernameOrEmail);
-            if (userFoundByEmail != null) {
-                return userFoundByEmail;
-            } else {
-                return null;
-            }
-        }
+    public List<BuiltinUser> listByUsernamePart ( String part ) {
+            return em.createNamedQuery("BuiltinUser.listByUserNameLike", BuiltinUser.class)
+                            .setParameter("userNameLike", "%" + part + "%")
+                            .getResultList();
     }
     
     public List<BuiltinUser> findAll() {

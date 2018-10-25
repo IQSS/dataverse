@@ -308,13 +308,12 @@ public class DataverseUserPage implements java.io.Serializable {
             // Create a new built-in user.
             BuiltinUser builtinUser = new BuiltinUser();
             builtinUser.setUserName( getUsername() );
-            builtinUser.applyDisplayInfo(userDisplayInfo);
             builtinUser.updateEncryptedPassword(PasswordEncryption.get().encrypt(inputPassword),
                                                 PasswordEncryption.getLatestVersionNumber());
             
             AuthenticatedUser au = authenticationService.createAuthenticatedUser(
                     new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName()),
-                    builtinUser.getUserName(), builtinUser.getDisplayInfo(), false);
+                    builtinUser.getUserName(), userDisplayInfo, false);
             if ( au == null ) {
                 // Username already exists, show an error message
                 getUsernameField().setValid(false);
@@ -680,5 +679,17 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public String getPasswordRequirements() {
         return passwordValidatorService.getGoodPasswordDescription(passwordErrors);
+    }
+    
+    public String getRequestorName(UserNotification notification) {
+        if(notification == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+        if(notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
+        return (notification.getRequestor().getLastName() != null && notification.getRequestor().getLastName() != null) ? notification.getRequestor().getFirstName() + " " + notification.getRequestor().getLastName() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+    }
+    
+    public String getRequestorEmail(UserNotification notification) {
+        if(notification == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
+        if(notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
+        return notification.getRequestor().getEmail() != null ? notification.getRequestor().getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
     }
 }

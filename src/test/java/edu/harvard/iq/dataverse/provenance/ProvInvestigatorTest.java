@@ -3,32 +3,109 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.provenance;
 
 import com.google.gson.JsonParser;
-import com.google.gson.JsonObject;
+import edu.harvard.iq.dataverse.NonEssentialTests;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Logger;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  *
  * @author madunlap
  */
-public class ProvUtilFragmentTest {
+
+//Fix this ignore when we classify our tests, these tests are slow and unimportant
+public class ProvInvestigatorTest {
     
-    private ProvUtilFragmentBean provUtilBean;
+    private ProvInvestigator provUtilBean;
     JsonParser jsonParser;
+    private static final Logger logger = Logger.getLogger(ProvInvestigatorTest.class.getCanonicalName());
     
     @Before
     public void setUp() {
-        provUtilBean = new ProvUtilFragmentBean();
+        provUtilBean = ProvInvestigator.getInstance();
         jsonParser = new JsonParser();
     }
     
+    @Category(NonEssentialTests.class)
+    @Test
+    public void testProvValidator() {   
+        String validJsonString = "{\n" +
+            "    \"entity\": {\n" +
+            "        \"ex:report2\": {\n" +
+            "            \"prov:type\": \"report\",\n" +
+            "            \"ex:version\": 2\n" +
+            "        },\n" +
+            "        \"ex:report1\": {\n" +
+            "            \"prov:type\": \"report\",\n" +
+            "            \"ex:version\": 1\n" +
+            "        },\n" +
+            "        \"bob:bundle1\": {\n" +
+            "            \"prov:type\": {\n" +
+            "                \"$\": \"prov:Bundle\",\n" +
+            "                \"type\": \"xsd:QName\"\n" +
+            "            }\n" +
+            "        }\n" +
+            "    },\n" +
+            "    \"bundle\": {\n" +
+            "        \"alice:bundle2\": {\n" +
+            "            \"entity\": {\n" +
+            "                \"ex:report2\": {\n" +
+            "                    \"prov:type\": \"not report\",\n" +
+            "                    \"ex:version\": 2\n" +
+            "                },\n" +
+            "                \"ex:report1\": {\n" +
+            "                }\n" +
+            "            }\n" +
+            "        }\n" +
+            "    }\n" +
+            "}";
+        
+        assertTrue(provUtilBean.isProvValid(validJsonString)); 
+        
+        //This string has the "entity" section misnamed to "entitddd"
+        String invalidJsonString = "{\n" +
+            "    \"entitddd\": {\n" +
+            "        \"ex:report2\": {\n" +
+            "            \"prov:type\": \"report\",\n" +
+            "            \"ex:version\": 2\n" +
+            "        },\n" +
+            "        \"ex:report1\": {\n" +
+            "            \"prov:type\": \"report\",\n" +
+            "            \"ex:version\": 1\n" +
+            "        },\n" +
+            "        \"bob:bundle1\": {\n" +
+            "            \"prov:type\": {\n" +
+            "                \"$\": \"prov:Bundle\",\n" +
+            "                \"type\": \"xsd:QName\"\n" +
+            "            }\n" +
+            "        }\n" +
+            "    },\n" +
+            "    \"bundle\": {\n" +
+            "        \"alice:bundle2\": {\n" +
+            "            \"entity\": {\n" +
+            "                \"ex:report2\": {\n" +
+            "                    \"prov:type\": \"not report\",\n" +
+            "                    \"ex:version\": 2\n" +
+            "                },\n" +
+            "                \"ex:report1\": {\n" +
+            "                }\n" +
+            "            }\n" +
+            "        }\n" +
+            "    }\n" +
+            "}";
+        
+        assertFalse(provUtilBean.isProvValid(invalidJsonString)); 
+
+    }
+    
+    @Category(NonEssentialTests.class)
     @Test
     public void testProvNamesNotInsideEntity() throws IOException {
         //name and type on their own
@@ -43,9 +120,7 @@ public class ProvUtilFragmentTest {
         assertFalse(entities.size() > 0); 
     }
     
-    //MAD: write a simple entity test as well, also ensure logging works after getting a real tostring together
-    //also write a test of parsing different cases, we don't want to catch "fakename" but we do want to catch "rdt:name" and "name"
-    
+    @Category(NonEssentialTests.class)
     @Test
     public void testProvNameJsonParserEmptyEntities() throws IOException {
         String jsonString = "{\n" +
@@ -84,6 +159,8 @@ public class ProvUtilFragmentTest {
     
     //Note: this test has entity tags in multiple places, all with unique names
     //Only one entity is added to our list per unique name.
+
+    @Category(NonEssentialTests.class)
     @Test
     public void testProvJsonWithEntitiesInMultiplePlaces() throws IOException {
         String jsonString = "{\n" +
@@ -156,6 +233,7 @@ public class ProvUtilFragmentTest {
         assertTrue(entities.size() == 7);
     }
     
+    @Category(NonEssentialTests.class)
     @Test
     public void testProvJsonWithEntitiesInMultiplePlacesWithSameNames() throws IOException {
         String jsonString = "{\n" +
@@ -194,6 +272,7 @@ public class ProvUtilFragmentTest {
         assertTrue(entities.size() == 3); //ex:report2 & ex:report1 are repeated
     }
    
+    @Category(NonEssentialTests.class)
     @Test
     public void testProvLongJsonWithEntities() throws IOException {
         String jsonString = "{\n" +

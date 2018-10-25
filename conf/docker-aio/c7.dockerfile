@@ -2,8 +2,8 @@ FROM centos:7
 # OS dependencies
 RUN yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
 #RUN yum install -y java-1.8.0-openjdk-headless postgresql-server sudo epel-release unzip perl curl httpd
-RUN yum install -y java-1.8.0-openjdk-headless postgresql96-server sudo epel-release unzip perl curl httpd
-RUN yum install -y jq
+RUN yum install -y java-1.8.0-openjdk-devel postgresql96-server sudo epel-release unzip perl curl httpd
+RUN yum install -y jq lsof
 
 # copy and unpack dependencies (solr, glassfish)
 COPY dv /tmp/dv
@@ -57,6 +57,18 @@ COPY testdata /opt/dv/testdata
 COPY testscripts/* /opt/dv/testdata/
 COPY setupIT.bash /opt/dv
 WORKDIR /opt/dv
+
+# need to take DOI provider info from build args as of ec377d2a4e27424db8815c55ce544deee48fc5e0
+# Default to EZID; use built-args to switch to DataCite (or potentially handles)
+ARG DoiProvider=EZID
+ARG doi_baseurl=https://ezid.cdlib.org
+ARG doi_username=apitest
+ARG doi_password=apitest
+ENV DoiProvider=${DoiProvider}
+ENV doi_baseurl=${doi_baseurl}
+ENV doi_username=${doi_username}
+ENV doi_password=${doi_password}
+COPY configure_doi.bash /opt/dv
 
 # healthcheck for glassfish only (assumes modified domain.xml); 
 #  does not check dataverse application status.

@@ -3,11 +3,7 @@ package edu.harvard.iq.dataverse.dataaccess;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.regions.Regions;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -19,7 +15,6 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.MultiObjectDeleteException;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
 import com.amazonaws.services.s3.model.S3Object;
@@ -30,9 +25,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -46,11 +39,12 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
+
+import javax.validation.constraints.NotNull;
 
 /**
  *
@@ -78,18 +72,49 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public S3AccessIO(T dvObject, DataAccessRequest req) {
         super(dvObject, req);
         this.setIsLocalFile(false);
+        
         try {
-            s3 = AmazonS3ClientBuilder.standard().defaultClient();
+            // get a standard client, using the standard way of configuration the credentials, etc.
+            AmazonS3ClientBuilder s3CB = AmazonS3ClientBuilder.standard();
+            // if the admin has set a system property (see below) we use this endpoint URL instead of the standard ones.
+            if (!s3CEUrl.isEmpty()) {
+                s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3CEUrl, s3CERegion));
+            }
+            // some custom S3 implementations require "PathStyleAccess" as they us a path, not a subdomain. default = false
+            s3CB.withPathStyleAccessEnabled(s3pathStyleAccess);
+            // let's build the client :-)
+            this.s3 = s3CB.build();
         } catch (Exception e) {
             throw new AmazonClientException(
-                    "Cannot instantiate a S3 client using; check your AWS credentials and region",
-                    e);
+                        "Cannot instantiate a S3 client using; check your AWS credentials and region",
+                        e);
         }
+    }
+    
+    public S3AccessIO(T dvObject, DataAccessRequest req, @NotNull AmazonS3 s3client) {
+        super(dvObject, req);
+        this.setIsLocalFile(false);
+        this.s3 = s3client;
     }
 
     public static String S3_IDENTIFIER_PREFIX = "s3";
     
     private AmazonS3 s3 = null;
+    /**
+     * Pass in a URL pointing to your S3 compatible storage.
+     * For possible values see https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/client/builder/AwsClientBuilder.EndpointConfiguration.html
+     */
+    private String s3CEUrl = System.getProperty("dataverse.files.s3-custom-endpoint-url", "");
+    /**
+     * Pass in a region to use for SigV4 signing of requests.
+     * Defaults to "dataverse" as it is not relevant for custom S3 implementations.
+     */
+    private String s3CERegion = System.getProperty("dataverse.files.s3-custom-endpoint-region", "dataverse");
+    /**
+     * Pass in a boolean value if path style access should be used within the S3 client.
+     * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
+     */
+    private boolean s3pathStyleAccess = Boolean.parseBoolean(System.getProperty("dataverse.files.s3-path-style-access", "false"));
     private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
     private String key;
 
@@ -161,7 +186,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 }
 
             } else if (isWriteAccess) {
-                key = dataFile.getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
+                key = dataFile.getOwner().getAuthorityForFileStorage() + "/" + this.getDataFile().getOwner().getIdentifierForFileStorage();
 
                 if (storageIdentifier.startsWith(S3_IDENTIFIER_PREFIX + "://")) {
                     key += "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
@@ -181,7 +206,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
         } else if (dvObject instanceof Dataset) {
             Dataset dataset = this.getDataset();
-            key = dataset.getAuthority() + "/" + dataset.getIdentifier();
+            key = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage();
             dataset.setStorageIdentifier(S3_IDENTIFIER_PREFIX + "://" + key);
         } else if (dvObject instanceof Dataverse) {
             throw new IOException("Data Access: Invalid DvObject type : Dataverse");
@@ -639,7 +664,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
-    private String getDestinationKey(String auxItemTag) throws IOException {
+    String getDestinationKey(String auxItemTag) throws IOException {
         if (dvObject instanceof DataFile) {
             return getMainFileKey() + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
@@ -652,9 +677,18 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
-    private String getMainFileKey() throws IOException {
+    /**
+     * TODO: this function is not side effect free (sets instance variables key and bucketName).
+     *       Is this good or bad? Need to ask @landreev
+     *
+     * Extract the file key from a file stored on S3.
+     * Follows template: "owner authority name"/"owner identifier"/"storage identifier without bucketname and protocol"
+     * @return Main File Key
+     * @throws IOException
+     */
+    String getMainFileKey() throws IOException {
         if (key == null) {
-            String baseKey = this.getDataFile().getOwner().getAuthority() + "/" + this.getDataFile().getOwner().getIdentifier();
+            String baseKey = this.getDataFile().getOwner().getAuthorityForFileStorage() + "/" + this.getDataFile().getOwner().getIdentifierForFileStorage();
             String storageIdentifier = dvObject.getStorageIdentifier();
 
             if (storageIdentifier == null || "".equals(storageIdentifier)) {
@@ -732,7 +766,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
-    private int getUrlExpirationMinutes() {
+    int getUrlExpirationMinutes() {
         String optionValue = System.getProperty("dataverse.files.s3-url-expiration-minutes"); 
         if (optionValue != null) {
             Integer num; 

@@ -10,7 +10,8 @@ import org.junit.Test;
  * These tests will only work if you are using "DataCite" rather than "EZID" for
  * your :DoiProvider and have done all the other related setup to switch from
  * EZID, including setting JVM options. Look for DataCite in the dev guide for
- * more tips.
+ * more tips. You should switch away from EZID for dev anyway because it's going
+ * away: https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/
  */
 public class DataCiteIT {
 
@@ -33,7 +34,11 @@ public class DataCiteIT {
         String description = "myDescription";
         Response createDataset = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, apiToken);
         createDataset.prettyPrint();
-        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
+
+        Response uploadFile = UtilIT.uploadRandomFile(datasetPersistentId, apiToken);
+        uploadFile.then().assertThat()
+                .statusCode(201);
 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());

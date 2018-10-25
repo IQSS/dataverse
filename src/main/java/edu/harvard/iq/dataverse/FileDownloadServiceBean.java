@@ -73,32 +73,78 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(FileDownloadServiceBean.class.getCanonicalName());   
     
+    public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse){ 
+        writeGuestbookAndStartBatchDownload(guestbookResponse, false);
+    }
     
-    public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse){
+    public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse, Boolean doNotSaveGuestbookRecord){
+        if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null) {
+            return;
+        }
 
-        if (guestbookResponse != null && guestbookResponse.getDataFile() != null     ){
-            writeGuestbookResponseRecord(guestbookResponse);
-            // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
-            callDownloadServlet(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId(), true);
+        // Let's intercept the case where a multiple download method was called, 
+        // with only 1 file on the list. We'll treat it like a single file download 
+        // instead:
+        String[] fileIds = guestbookResponse.getSelectedFileIds().split(",");
+        if (fileIds.length == 1) {
+            Long fileId;
+            try {
+                fileId = Long.parseLong(fileIds[0]);
+            } catch (NumberFormatException nfe) {
+                logger.warning("A file id passed to the writeGuestbookAndStartBatchDownload method as a string could not be converted back to Long: " + fileIds[0]);
+                return;
+            }
+            // If we need to create a GuestBookResponse record, we have to 
+            // look up the DataFile object for this file: 
+            if (!doNotSaveGuestbookRecord) {
+                DataFile df = datafileService.findCheapAndEasy(Long.parseLong(fileIds[0]));
+                guestbookResponse.setDataFile(df);
+                writeGuestbookResponseRecord(guestbookResponse);
+            }
+        
+            redirectToDownloadAPI(guestbookResponse.getFileFormat(), fileId, true);
+            return;
         }
         
-        if (guestbookResponse != null && guestbookResponse.getSelectedFileIds() != null     ){
+        // OK, this is a real batch (multi-file) download. 
+        // Do we need to write GuestbookRecord entries for the files? 
+        if (!doNotSaveGuestbookRecord) {
+
             List<String> list = new ArrayList<>(Arrays.asList(guestbookResponse.getSelectedFileIds().split(",")));
 
             for (String idAsString : list) {
-                DataFile df = datafileService.findCheapAndEasy(new Long(idAsString)) ;
+                DataFile df = datafileService.findCheapAndEasy(new Long(idAsString));
                 if (df != null) {
                     guestbookResponse.setDataFile(df);
                     writeGuestbookResponseRecord(guestbookResponse);
                 }
             }
-            
-            callDownloadServlet(guestbookResponse.getSelectedFileIds(), true);
         }
-        
-        
+
+
+        redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(), "original".equals(guestbookResponse.getFileFormat()));
     }
     
+    public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
+        if(!fileMetadata.getDatasetVersion().isDraft()){
+            guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
+            writeGuestbookResponseRecord(guestbookResponse);
+        }
+        // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
+        redirectToDownloadAPI(format, fileMetadata.getDataFile().getId(), true);
+        logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
+    }
+    
+    public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse) {
+        if (guestbookResponse.getDataFile() == null) {
+            logger.warning("writeGuestbookAndStartFileDownload(GuestbookResponse) called without the DataFile in the GuestbookResponse.");
+            return;
+        }
+        writeGuestbookResponseRecord(guestbookResponse);
+        redirectToDownloadAPI(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId());
+        logger.fine("issued file download redirect for datafile "+guestbookResponse.getDataFile().getId());
+    }
+
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
 
         try {
@@ -109,32 +155,44 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         }
     }
-    public void callDownloadServlet(String multiFileString, Boolean gbRecordsWritten){
+    
+    // The "guestBookRecord(s)AlreadyWritten" parameter in the 2 methods 
+    // below (redirectToBatchDownloadAPI() and redirectToDownloadAPI(), for the 
+    // multiple- and single-file downloads respectively) are passed to the 
+    // Download API, where it is treated as a "SKIP writing the GuestbookResponse 
+    // record for this download on the API side" flag. In other words, we want 
+    // to create and save this record *either* on the UI, or the API side - but 
+    // not both. 
+    // As of now (Aug. 2018) we always set this flag to true when redirecting the 
+    // user to the Access API. That's because we have either just created the 
+    // record ourselves, on the UI side; or we have skipped creating one, 
+    // because this was a draft file and we don't want to count the download. 
+    // But either way, it is NEVER the API side's job to count the download that 
+    // was initiated in the GUI. 
+    // But note that this may change - there may be some future situations where it will 
+    // become necessary again, to pass the job of creating the access record 
+    // to the API.
+    private void redirectToBatchDownloadAPI(String multiFileString, Boolean guestbookRecordsAlreadyWritten, Boolean downloadOriginal){
+
         String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
-        if (gbRecordsWritten){
+        if (guestbookRecordsAlreadyWritten && !downloadOriginal){
             fileDownloadUrl += "?gbrecs=true";
+        } else if (guestbookRecordsAlreadyWritten && downloadOriginal){
+            fileDownloadUrl += "?gbrecs=true&format=original";
+        } else if (!guestbookRecordsAlreadyWritten && downloadOriginal){
+            fileDownloadUrl += "?format=original";
         }
+        
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
         } catch (IOException ex) {
             logger.info("Failed to issue a redirect to file download url.");
         }
 
-        //return fileDownloadUrl;
     }
 
-    // The "doNotWriteGuestBookRecord" parameter is passed to the API. 
-    // As of now (May 2018) we always set this flag to true when redirecting the 
-    // user to the Access API. That's because we have either just created the 
-    // record ourselves, on the application side; or we have skipped creating one, 
-    // because this was a draft file and we don't want to count the download. 
-    // But either way, it is NEVER the API side's job to count the download that 
-    // was initiated in the GUI. 
-    // But note that this may change - there may be some future situations where it will 
-    // become necessary again, to pass the job of creating the access record 
-    // to the API!
-    public void callDownloadServlet(String downloadType, Long fileId, boolean doNotWriteGuestBookRecord) {
-        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, doNotWriteGuestBookRecord);
+    private void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten) {
+        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten);
         logger.fine("Redirecting to file download url: " + fileDownloadUrl);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
@@ -142,19 +200,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
         }
     }
-
     
-    //public String startFileDownload(FileMetadata fileMetadata, String format) {
-    public void startFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
-        if(!fileMetadata.getDatasetVersion().isDraft()){
-            guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
-            writeGuestbookResponseRecord(guestbookResponse);
-        }
-        // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
-        callDownloadServlet(format, fileMetadata.getDataFile().getId(), true);
-        logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
+    private void redirectToDownloadAPI(String downloadType, Long fileId) {
+        redirectToDownloadAPI(downloadType, fileId, true);
+    }
+    
+    private void redirectToBatchDownloadAPI(String multiFileString, Boolean downloadOriginal){
+        redirectToBatchDownloadAPI(multiFileString, true, downloadOriginal);
     }
 
+    
     /**
      * Launch an "explore" tool which is a type of ExternalTool such as
      * TwoRavens or Data Explorer. This method may be invoked directly from the
@@ -237,36 +292,39 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void downloadDatasetCitationXML(Dataset dataset) {
-        downloadCitationXML(null, dataset);
+        downloadCitationXML(null, dataset, false);
     }
 
     public void downloadDatafileCitationXML(FileMetadata fileMetadata) {
-        downloadCitationXML(fileMetadata, null);
+        downloadCitationXML(fileMetadata, null, false);
+    }
+    
+    public void downloadDirectDatafileCitationXML(FileMetadata fileMetadata) {
+        downloadCitationXML(fileMetadata, null, true);
     }
 
-    public void downloadCitationXML(FileMetadata fileMetadata, Dataset dataset) {
-        DatasetVersion workingVersion;
+    public void downloadCitationXML(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
+    	DataCitation citation=null;
         if (dataset != null){
-            workingVersion = dataset.getLatestVersion();
+        	citation = new DataCitation(dataset.getLatestVersion());
         } else {
-            workingVersion = fileMetadata.getDatasetVersion();
+            citation= new DataCitation(fileMetadata, direct);
         }
-        String xml = datasetService.createCitationXML(workingVersion, fileMetadata);
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("text/xml");
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
-            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + ".xml";
+            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + ".xml";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + "-" + FileUtil.getCiteDataFileFilename(fileMetadata, FileUtil.FileCitationExtension.ENDNOTE);
+            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.ENDNOTE);
         }
         response.setHeader("Content-Disposition", fileNameString);
         try {
             ServletOutputStream out = response.getOutputStream();
-            out.write(xml.getBytes());
+            citation.writeAsEndNoteCitation(out);
             out.flush();
             ctx.responseComplete();
         } catch (IOException e) {
@@ -276,22 +334,26 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     public void downloadDatasetCitationRIS(Dataset dataset) {
 
-        downloadCitationRIS(null, dataset);
+        downloadCitationRIS(null, dataset, false);
 
     }
 
     public void downloadDatafileCitationRIS(FileMetadata fileMetadata) {
-        downloadCitationRIS(fileMetadata, null);
+        downloadCitationRIS(fileMetadata, null, false);
+    }
+    
+    public void downloadDirectDatafileCitationRIS(FileMetadata fileMetadata) {
+        downloadCitationRIS(fileMetadata, null, true);
     }
 
-    public void downloadCitationRIS(FileMetadata fileMetadata, Dataset dataset) {
-        DatasetVersion workingVersion;
+    public void downloadCitationRIS(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
+    	DataCitation citation=null;
         if (dataset != null){
-            workingVersion = dataset.getLatestVersion();
+        	citation = new DataCitation(dataset.getLatestVersion());
         } else {
-            workingVersion = fileMetadata.getDatasetVersion();
+            citation= new DataCitation(fileMetadata, direct);
         }
-        String risFormatDowload = datasetService.createCitationRIS(workingVersion, fileMetadata);
+
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
@@ -299,16 +361,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
-            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + ".ris";
+            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + ".ris";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + "-" + FileUtil.getCiteDataFileFilename(fileMetadata, FileUtil.FileCitationExtension.RIS);
+            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.RIS);
         }
         response.setHeader("Content-Disposition", fileNameString);
 
         try {
             ServletOutputStream out = response.getOutputStream();
-            out.write(risFormatDowload.getBytes());
+            citation.writeAsRISCitation(out);
             out.flush();
             ctx.responseComplete();
         } catch (IOException e) {
@@ -316,29 +378,32 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
     
-    private String getFileNameDOI(DatasetVersion workingVersion) {
-        Dataset ds = workingVersion.getDataset();
-        return "DOI:" + ds.getAuthority() + "_" + ds.getIdentifier();
+    private String getFileNameDOI(GlobalId id) {
+        return "DOI:" + id.getAuthority() + "_" + id.getIdentifier();
     }
 
     public void downloadDatasetCitationBibtex(Dataset dataset) {
 
-        downloadCitationBibtex(null, dataset);
+        downloadCitationBibtex(null, dataset, false);
 
     }
 
     public void downloadDatafileCitationBibtex(FileMetadata fileMetadata) {
-        downloadCitationBibtex(fileMetadata, null);
+        downloadCitationBibtex(fileMetadata, null, false);
     }
 
-    public void downloadCitationBibtex(FileMetadata fileMetadata, Dataset dataset) {
-        DatasetVersion workingVersion;
+    public void downloadDirectDatafileCitationBibtex(FileMetadata fileMetadata) {
+        downloadCitationBibtex(fileMetadata, null, true);
+    }
+    
+    public void downloadCitationBibtex(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
+    	DataCitation citation=null;
         if (dataset != null){
-            workingVersion = dataset.getLatestVersion();
+        	citation = new DataCitation(dataset.getLatestVersion());
         } else {
-            workingVersion = fileMetadata.getDatasetVersion();
+            citation= new DataCitation(fileMetadata, direct);
         }
-        String bibFormatDowload = new BibtexCitation(workingVersion).toString();
+        
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
@@ -346,16 +411,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + ".bib";
+            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + ".bib";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI(workingVersion) + "-" + FileUtil.getCiteDataFileFilename(fileMetadata, FileUtil.FileCitationExtension.BIBTEX);
+            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.BIBTEX);
         }
         response.setHeader("Content-Disposition", fileNameString);
 
         try {
             ServletOutputStream out = response.getOutputStream();
-            out.write(bibFormatDowload.getBytes());
+            citation.writeAsBibtexCitation(out);
             out.flush();
             ctx.responseComplete();
         } catch (IOException e) {
