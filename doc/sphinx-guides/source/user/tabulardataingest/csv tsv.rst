@@ -1,11 +1,11 @@
-CSV/ TSV
-++++++
+CSV/TSV
+++++++++
 
 .. contents:: |toctitle|
 	:local:
 
 Ingest of Comma-Separated Values and Tab-Separated Values files as tabular data. 
--------------------------------------------------------
+--------------------------------------------------------------------------------
 
 Dataverse will make an attempt to turn CSV and TSV files uploaded by the user into tabular data, using the `Apache CSV parser <https://commons.apache.org/proper/commons-csv/>`_. 
 

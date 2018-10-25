@@ -16,12 +16,16 @@ Data Capture Module (DCM) is an experimental component that allows users to uplo
 Install a DCM
 ~~~~~~~~~~~~~
 
-Installation instructions can be found at https://github.com/sbgrid/data-capture-module . Note that a shared filesystem between Dataverse and your DCM is required. You cannot use a DCM with non-filesystem storage options such as Swift.
+Installation instructions can be found at https://github.com/sbgrid/data-capture-module . Note that a shared filesystem (posix or AWS S3) between Dataverse and your DCM is required. You cannot use a DCM with Swift at this point in time.
+
+Please note that S3 support for DCM is highly experimental. Files can be uploaded to S3 but they cannot be downloaded until https://github.com/IQSS/dataverse/issues/4949 is worked on. If you want to play around with S3 support for DCM, you must configure a JVM option called ``dataverse.files.dcm-s3-bucket-name`` which is a holding area for uploaded files that have not yet passed checksum validation. Search for that JVM option at https://github.com/IQSS/dataverse/issues/4703 for commands on setting that JVM option and related setup. Note that because that GitHub issue has so many comments you will need to click "Load more" where it says "hidden items". FIXME: Document all of this properly.
+
+. FIXME: Explain what ``dataverse.files.dcm-s3-bucket-name`` is for and what it has to do with ``dataverse.files.s3-bucket-name``.
 
 Once you have installed a DCM, you will need to configure two database settings on the Dataverse side. These settings are documented in the :doc:`/installation/config` section of the Installation Guide:
 
 - ``:DataCaptureModuleUrl`` should be set to the URL of a DCM you installed.
-- ``:UploadMethods`` should be set to ``dcm/rsync+ssh``.
+- ``:UploadMethods`` should include ``dcm/rsync+ssh``.
   
 This will allow your Dataverse installation to communicate with your DCM, so that Dataverse can download rsync scripts for your users.
 
@@ -87,7 +91,7 @@ Add Dataverse settings to use mock (same as using DCM, noted above):
 - ``curl http://localhost:8080/api/admin/settings/:DataCaptureModuleUrl -X PUT -d "http://localhost:5000"``
 - ``curl http://localhost:8080/api/admin/settings/:UploadMethods -X PUT -d "dcm/rsync+ssh"``
 
-At this point you should be able to download a placeholder rsync script. Dataverse is then waiting for new from the DCM about if checksum validation has succeeded or not. First, you have to put files in place, which is usually the job of the DCM. You should substitute "X1METO" for the "identifier" of the dataset you create. You must also use the proper path for where you store files in your dev environment.
+At this point you should be able to download a placeholder rsync script. Dataverse is then waiting for news from the DCM about if checksum validation has succeeded or not. First, you have to put files in place, which is usually the job of the DCM. You should substitute "X1METO" for the "identifier" of the dataset you create. You must also use the proper path for where you store files in your dev environment.
 
 - ``mkdir /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/X1METO``
 - ``mkdir /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
@@ -151,7 +155,7 @@ In order to see the rsync URLs, you must run this command:
 
 ``curl -X PUT -d 'rsal/rsync' http://localhost:8080/api/admin/settings/:DownloadMethods``
 
-TODO: Document these in the Installation Guide once they're final.
+..  TODO: Document these in the Installation Guide once they're final.
 
 To specify replication sites that appear in rsync URLs:
 

@@ -38,6 +38,11 @@ import org.hamcrest.Matcher;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.path.xml.XmlPath.from;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class UtilIT {
 
@@ -97,7 +102,7 @@ public class UtilIT {
                 .post("/api/builtin-users?key=" + BUILTIN_USER_KEY + "&password=" + password);
         return response;
     }
-
+    
     public static Response createRandomUser() {
 
         return createRandomUser("user");
@@ -122,6 +127,15 @@ public class UtilIT {
                 .body(userAsJson)
                 .contentType(ContentType.JSON)
                 .post("/api/admin/authenticatedUsers");
+        return response;
+    }
+    
+    public static Response migrateDatasetIdentifierFromHDLToPId(String datasetIdentifier, String apiToken) {
+        System.out.print(datasetIdentifier);
+        Response response = given()
+                .body(datasetIdentifier)
+                .contentType(ContentType.JSON)
+                .post("/api/admin/" + datasetIdentifier + "/reregisterHDLToPID?key=" + apiToken);
         return response;
     }
 
@@ -211,6 +225,13 @@ public class UtilIT {
     }
 
     static String getDatasetPersistentIdFromResponse(Response createDatasetResponse) {
+        JsonPath createdDataset = JsonPath.from(createDatasetResponse.body().asString());
+        String persistentDatasetId = createdDataset.getString("data.persistentId");
+        logger.info("Persistent id found in create dataset response: " + persistentDatasetId);
+        return persistentDatasetId;
+    }
+    
+    static String getDatasetPersistentIdFromSwordResponse(Response createDatasetResponse) {
         String xml = createDatasetResponse.body().asString();
         String datasetSwordIdUrl = from(xml).get("entry.id");
         /**
@@ -401,6 +422,14 @@ public class UtilIT {
                 .put("/api/datasets/:persistentId/editMetadata/?persistentId=" + persistentId + "&replace=true");
         return response;
     }
+    
+    static Response updateDatasetPIDMetadata(String persistentId,  String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .post("/api/datasets/:persistentId/modifyRegistrationMetadata/?persistentId=" + persistentId);
+        return response;
+    }
 
     static private String getDatasetXml(String title, String author, String description) {
         String xmlIn = "<?xml version=\"1.0\"?>\n"
@@ -418,7 +447,7 @@ public class UtilIT {
             .header(API_TOKEN_HTTP_HEADER, apiToken)
             .put("api/datasets/" + linkedDatasetId + "/link/" + linkingDataverseAlias);
         return response;
-    }   
+    } 
     
     static Response deleteDatasetLink(Long linkedDatasetId, String linkingDataverseAlias, String apiToken) {
         Response response = given()
@@ -557,6 +586,48 @@ public class UtilIT {
                  */
                 //.header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
+    }
+
+    static Response downloadFileOriginal(Integer fileId) {
+        return given()
+                .get("/api/access/datafile/" + fileId + "?format=original");
+    }
+    
+    static Response downloadFileOriginal(Integer fileId, String apiToken) {
+        return given()
+                .get("/api/access/datafile/" + fileId + "?format=original&key=" + apiToken);
+    }
+    
+    static Response downloadFiles(Integer[] fileIds) {
+        String getString = "/api/access/datafiles/";
+        for(Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        return given().get(getString);
+    }
+    
+    static Response downloadFiles(Integer[] fileIds, String apiToken) {
+        String getString = "/api/access/datafiles/";
+        for(Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        return given().get(getString + "?key=" + apiToken);
+    }
+    
+    static Response downloadFilesOriginal(Integer[] fileIds) {
+        String getString = "/api/access/datafiles/";
+        for(Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        return given().get(getString + "?format=original");
+    }
+    
+    static Response downloadFilesOriginal(Integer[] fileIds, String apiToken) {
+        String getString = "/api/access/datafiles/";
+        for(Integer fileId : fileIds) {
+            getString += fileId + ",";
+        }
+        return given().get(getString + "?format=original&key=" + apiToken);
     }
 
     static Response subset(String fileId, String variables, String apiToken) {
@@ -785,6 +856,17 @@ public class UtilIT {
                 .urlEncodingEnabled(false)
                 .get("/api/datasets/:persistentId/actions/:publish?type=" + majorOrMinor + "&persistentId=" + persistentId);
     }
+    
+    static Response modifyDatasetPIDMetadataViaApi(String persistentId,  String apiToken) {
+        /**
+         * @todo This should be a POST rather than a GET:
+         * https://github.com/IQSS/dataverse/issues/2431
+         */
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .get("/api/datasets/:persistentId/&persistentId=" + persistentId);
+    }
 
     static Response publishDatasetViaNativeApi(Integer datasetId, String majorOrMinor, String apiToken) {
         /**
@@ -978,6 +1060,28 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .post("api/dataverses/" + movedDataverseAlias + "/move/" + targetDataverseAlias + "?forceMove=" + force + "&key=" + apiToken);
         return response;
+    }
+
+    static Response moveDataset(String idOrPersistentIdOfDatasetToMove, String destinationDataverseAlias, String apiToken) {
+        return moveDataset(idOrPersistentIdOfDatasetToMove, destinationDataverseAlias, false, apiToken);
+    }
+
+    private static Response moveDataset(String idOrPersistentIdOfDatasetToMove, String destinationDataverseAlias, boolean force, String apiToken) {
+        if (force) {
+            throw new RuntimeException("FIXME: support force");
+        }
+        String idInPath = idOrPersistentIdOfDatasetToMove; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentIdOfDatasetToMove)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDatasetToMove;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.post("/api/datasets/" + idInPath + "/move/" + destinationDataverseAlias + optionalQueryParam);
     }
     
     static Response createDataverseLink(String linkedDataverseAlias, String linkingDataverseAlias, String apiToken) {
@@ -1549,6 +1653,16 @@ public class UtilIT {
         return requestSpecification.delete("/api/admin/clearMetricsCache");
     }
 
+    static Response sitemapUpdate() {
+        return given()
+                .post("/api/admin/sitemap");
+    }
+
+    static Response sitemapDownload() {
+        return given()
+                .get("/sitemap.xml");
+    }
+
     @Test
     public void testGetFileIdFromSwordStatementWithNoFiles() {
         String swordStatementWithNoFiles = "<feed xmlns=\"http://www.w3.org/2005/Atom\">\n"
@@ -1595,5 +1709,39 @@ public class UtilIT {
         assertEquals("A Dataset with a File", title);
     }
     
-
+    static Response checkDatasetLocks(long datasetId, String lockType, String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .get("api/datasets/" + datasetId + "/locks" + (lockType == null ? "" : "?type="+lockType));
+        return response;       
+    }
+    
+    static Response lockDataset(long datasetId, String lockType, String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .post("api/datasets/" + datasetId + "/lock/" + lockType);
+        return response;       
+    }
+    
+    static Response unlockDataset(long datasetId, String lockType, String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .delete("api/datasets/" + datasetId + "/locks" + (lockType == null ? "" : "?type="+lockType));
+        return response;       
+    }
+    
+    static Response exportOaiSet(String setName) {
+        String apiPath = String.format("/api/admin/metadata/exportOAI/%s", setName);
+        return given().put(apiPath);
+    }
+    
+    static Response getOaiRecord(String datasetPersistentId, String metadataFormat) {
+        String apiPath = String.format("/oai?verb=GetRecord&identifier=%s&metadataPrefix=%s", datasetPersistentId, metadataFormat);
+        return given().get(apiPath);
+    }
+    
+    static Response getOaiListIdentifiers(String setName, String metadataFormat) {
+        String apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        return given().get(apiPath);
+    }
 }

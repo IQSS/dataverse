@@ -373,14 +373,12 @@ public class JsonParser {
             JsonArray fieldsJson = blockJson.getJsonArray("fields");
             fields.addAll(parseFieldsFromArray(fieldsJson, true));
         }
-        convertKeywordsToSubjects(fields);
         return fields;
     }
     
     public List<DatasetField> parseMultipleFields(JsonObject json) throws JsonParseException {
         JsonArray fieldsJson = json.getJsonArray("fields");
         List<DatasetField> fields = parseFieldsFromArray(fieldsJson, false);
-        convertKeywordsToSubjects(fields);
         return fields;
     }
     
@@ -408,7 +406,6 @@ public class JsonParser {
                 } 
 
             }
-        convertKeywordsToSubjects(fields);
         return fields;
         
     }
@@ -854,74 +851,6 @@ public class JsonParser {
             }
 
         return ret;
-    }
-    
-    /**
-     * Special processing of keywords and subjects.  All keywords and subjects will be input 
-     * from foreign formats (DDI, dcterms, etc) as keywords.  
-     * As part of the parsing, we will move keywords that match subject controlled vocabulary values
-     * into the subjects datasetField.
-     * @param fields - the parsed datasetFields
-     */
-    public void convertKeywordsToSubjects(List<DatasetField> fields) {
-
-        DatasetField keywordField = null;
-        for (DatasetField field : fields) {
-            if (field.getDatasetFieldType().getName().equals("keyword")) {
-                keywordField = field;
-                break;
-            }
-        }
-        if (keywordField == null) {
-            // if we don't have a keyword in the current list of datasetFields,
-            // nothing to do.
-            return;
-        }
-        DatasetFieldType type = datasetFieldSvc.findByNameOpt(DatasetFieldConstant.subject);
-        // new list to hold subjects that we find
-        List<ControlledVocabularyValue> subjects = new ArrayList<>();
-        // Make new list to hold the non-subject keywords
-        List<DatasetFieldCompoundValue> filteredValues = new ArrayList<>();
-        for (DatasetFieldCompoundValue compoundVal : keywordField.getDatasetFieldCompoundValues()) {
-            // Loop through the child fields to find the "keywordValue" field
-            for (DatasetField childField : compoundVal.getChildDatasetFields()) {
-                if (childField.getDatasetFieldType().getName().equals(DatasetFieldConstant.keywordValue)) {
-                    // check if this value is a subject
-                    ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(type, childField.getValue(),lenient);
-                    if (cvv == null) {
-                        // the keyword was not found in the subject list, so retain it in filtered list
-                        filteredValues.add(compoundVal);
-                    } else {
-                        // save the value for our subject field
-                        if (!subjects.contains(cvv)) 
-                        {
-                            subjects.add(cvv);
-                        }
-                    }
-                }
-
-            }
-
-        }
-        // if we have found any subjects in the keyword list, then update the keyword and subject fields appropriately.
-        if (subjects.size() > 0) {
-            keywordField.setDatasetFieldCompoundValues(filteredValues);
-
-               DatasetField subjectField = new DatasetField();
-            subjectField.setDatasetFieldType(type);
-            for (ControlledVocabularyValue val : subjects) {
-                int order = 0;
-              
-                val.setDisplayOrder(order);
-                val.setDatasetFieldType(type);
-                order++;
-                
-            }
-
-            subjectField.setControlledVocabularyValues(subjects);
-            fields.add(subjectField);
-        }
-
     }
     
      public List<DatasetFieldCompoundValue> parseCompoundValue(DatasetFieldType compoundType, JsonObject json) throws JsonParseException {

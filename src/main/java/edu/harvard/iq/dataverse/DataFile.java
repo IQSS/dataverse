@@ -101,7 +101,9 @@ public class DataFile extends DvObject implements Comparable {
     public enum ChecksumType {
 
         MD5("MD5"),
-        SHA1("SHA-1");
+        SHA1("SHA-1"),
+        SHA256("SHA-256"),
+        SHA512("SHA-512");
 
         private final String text;
 
@@ -400,14 +402,6 @@ public class DataFile extends DvObject implements Comparable {
     public void setOwner(Dataset dataset) {
         super.setOwner(dataset);
     }
-    
-//    public String getStorageIdentifier() {
-//        return this.fileSystemName;
-//    }
-//
-//    public void setStorageIdentifier(String storageIdentifier) {
-//        this.fileSystemName = storageIdentifier;
-//    }
     
     public String getDescription() {
         FileMetadata fmd = getLatestFileMetadata();

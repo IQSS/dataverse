@@ -4,10 +4,12 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import java.util.Arrays;
 import java.util.List;
 import static edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider.Credential;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
@@ -26,10 +28,12 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     private static List<Credential> CREDENTIALS_LIST;
       
     final BuiltinUserServiceBean bean;
+    final AuthenticationServiceBean authBean;
     private PasswordValidatorServiceBean passwordValidatorService;
 
-    public BuiltinAuthenticationProvider( BuiltinUserServiceBean aBean, PasswordValidatorServiceBean passwordValidatorService  ) {
+    public BuiltinAuthenticationProvider( BuiltinUserServiceBean aBean, PasswordValidatorServiceBean passwordValidatorService, AuthenticationServiceBean auBean  ) {
         this.bean = aBean;
+        this.authBean = auBean;
         this.passwordValidatorService = passwordValidatorService;
         KEY_USERNAME_OR_EMAIL = BundleUtil.getStringFromBundle("login.builtin.credential.usernameOrEmail");
         KEY_PASSWORD = BundleUtil.getStringFromBundle("login.builtin.credential.password");
@@ -73,18 +77,6 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
                                        PasswordEncryption.getLatestVersionNumber());
         bean.save(biUser);
     }
-
-    @Override
-    public void updateUserInfo(String userIdInProvider, AuthenticatedUserDisplayInfo updatedUserData) {
-        BuiltinUser biUser = bean.findByUserName( userIdInProvider );
-        biUser.setFirstName(updatedUserData.getFirstName());
-        biUser.setLastName(updatedUserData.getLastName());
-        biUser.setEmail( updatedUserData.getEmailAddress());
-        biUser.setAffiliation( updatedUserData.getAffiliation() );
-        biUser.setPosition(updatedUserData.getPosition());
-        
-        bean.save(biUser);
-    }
     
     /**
      * Validates that the passed password is indeed the password of the user.
@@ -103,7 +95,17 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
 
     @Override
     public AuthenticationResponse authenticate( AuthenticationRequest authReq ) {
-        BuiltinUser u = bean.findByUsernameOrEmail(authReq.getCredential(KEY_USERNAME_OR_EMAIL) );
+        BuiltinUser u = bean.findByUserName(authReq.getCredential(KEY_USERNAME_OR_EMAIL) );
+        AuthenticatedUser authUser = null;
+        
+        if(u == null) { //If can't find by username in builtin, get the auth user and then the builtin
+            authUser = authBean.getAuthenticatedUserByEmail(authReq.getCredential(KEY_USERNAME_OR_EMAIL));
+            if (authUser == null) { //if can't find by email return bad username, etc.
+                return AuthenticationResponse.makeFail("Bad username, email address, or password");
+            }
+            u = bean.findByUserName(authUser.getUserIdentifier());
+        }
+        
         if ( u == null ) return AuthenticationResponse.makeFail("Bad username, email address, or password");
         
         boolean userAuthenticated = PasswordEncryption.getVersion(u.getPasswordEncryptionVersion())
@@ -124,7 +126,7 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
 //        } else {
 //            return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
         }
-        final List<String> errors = passwordValidatorService.validate(authReq.getCredential("Password"));
+        final List<String> errors = passwordValidatorService.validate(authReq.getCredential(KEY_PASSWORD));
         if (!errors.isEmpty()) {
             try {
                 String passwordResetUrl = bean.requestPasswordComplianceLink(u);
@@ -133,7 +135,11 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
                 return AuthenticationResponse.makeError("Error while attempting to upgrade password", ex);
             }
         }
-        return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
+        if(null == authUser) {
+            authUser = authBean.getAuthenticatedUser(u.getUserName());
+        }
+        
+        return AuthenticationResponse.makeSuccess(u.getUserName(), authUser.getDisplayInfo());
    }
 
     @Override

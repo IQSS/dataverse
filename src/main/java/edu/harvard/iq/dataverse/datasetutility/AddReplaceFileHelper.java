@@ -44,6 +44,7 @@ import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.IOUtils;
 import org.ocpsoft.common.util.Strings;
 
 /**
@@ -831,9 +832,9 @@ public class AddReplaceFileHelper{
             throw new NullPointerException("msgName cannot be null");
         }
         if (isErr){        
-            return ResourceBundle.getBundle("Bundle").getString("file.addreplace.error." + msgName);
+            return BundleUtil.getStringFromBundle("file.addreplace.error." + msgName);
         }else{
-            return ResourceBundle.getBundle("Bundle").getString("file.addreplace.success." + msgName);
+            return BundleUtil.getStringFromBundle("file.addreplace.success." + msgName);
         }
        
     }
@@ -1061,10 +1062,10 @@ public class AddReplaceFileHelper{
             logger.severe(ex.toString());
             this.runMajorCleanup(); 
             return false;
-        } 
-        
-        
-        /**
+        } finally {
+            IOUtils.closeQuietly(this.newFileInputStream);
+         }
+         /**
          * This only happens:
          *  (1) the dataset was empty
          *  (2) the new file (or new file unzipped) did not ingest via "createDataFiles"
@@ -1811,7 +1812,7 @@ public class AddReplaceFileHelper{
         // start the ingest!
         //
                
-        ingestService.startIngestJobs(dataset, dvRequest.getAuthenticatedUser());
+        ingestService.startIngestJobsForDataset(dataset, dvRequest.getAuthenticatedUser());
         
         msg("post ingest start");
         return true;

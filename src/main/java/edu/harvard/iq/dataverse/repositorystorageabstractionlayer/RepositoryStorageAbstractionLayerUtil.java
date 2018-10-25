@@ -34,7 +34,7 @@ public class RepositoryStorageAbstractionLayerUtil {
         if (localDataAccessParentDir == null) {
             localDataAccessParentDir = File.separator + "UNCONFIGURED ( " + SettingsServiceBean.Key.LocalDataAccessPath + " )";
         }
-        boolean leafDirectoryOnly = false;
+        boolean leafDirectoryOnly = true;
         return localDataAccessParentDir + File.separator + getDirectoryContainingTheData(dataset, leafDirectoryOnly);
     }
 
@@ -62,12 +62,13 @@ public class RepositoryStorageAbstractionLayerUtil {
          */
         boolean onlyOnPackagePerDatasetIsSupported = true;
         if (onlyOnPackagePerDatasetIsSupported) {
-            String leafDirectory = dataset.getIdentifier();
+            String leafDirectory = dataset.getIdentifierForFileStorage();
             if (leafDirectoryOnly) {
-                return leafDirectory;
+		    File f = new File( leafDirectory );
+		    return f.getName();
             } else {
-                // The "authority" is something like "10.5072/FK2".
-                String relativePathToLeafDir = dataset.getAuthority();
+                // The "authority" is something like "FK2".
+                String relativePathToLeafDir = dataset.getAuthorityForFileStorage();
                 return relativePathToLeafDir + File.separator + leafDirectory;
             }
         } else {

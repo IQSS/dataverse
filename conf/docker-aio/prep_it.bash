@@ -63,6 +63,9 @@ if [ $err -ne 0 ]; then
 	echo "seturl fail; bailing out"
 	exit 1
 fi
+# configure DOI provider based on docker build arguments / environmental variables
+docker exec -it dv /opt/dv/configure_doi.bash
+
 
 cd ../..
 echo "docker-aio ready to run integration tests ($i_retry)"

@@ -6,7 +6,7 @@
 
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.BibtexCitation;
+import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
@@ -25,15 +25,19 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataFileZipper;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.StoredOriginalFile;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 
@@ -46,6 +50,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import javax.inject.Inject;
@@ -156,9 +161,9 @@ public class Access extends AbstractApiBean {
         FileMetadata fileMetadata = df.getFileMetadata();
         DatasetVersion datasetVersion = df.getOwner().getLatestVersion();
         
-        downloadInstance.setFileCitationEndNote(datasetService.createCitationXML(datasetVersion, fileMetadata));
-        downloadInstance.setFileCitationRIS(datasetService.createCitationRIS(datasetVersion, fileMetadata));
-        downloadInstance.setFileCitationBibtex(new BibtexCitation(datasetVersion).toString());
+        downloadInstance.setFileCitationEndNote(new DataCitation(fileMetadata).toEndNoteString());
+        downloadInstance.setFileCitationRIS(new DataCitation(fileMetadata).toRISString());
+        downloadInstance.setFileCitationBibtex(new DataCitation(fileMetadata).toBibtexString());
 
         ByteArrayOutputStream outStream = null;
         outStream = new ByteArrayOutputStream();
@@ -251,7 +256,7 @@ public class Access extends AbstractApiBean {
         for (String key : uriInfo.getQueryParameters().keySet()) {
             String value = uriInfo.getQueryParameters().getFirst(key);
             
-            if (downloadInstance.isDownloadServiceSupported(key, value)) {
+            if (downloadInstance.checkIfServiceSupportedAndSetConverter(key, value)) {
                 logger.fine("is download service supported? key="+key+", value="+value);
                 // this automatically sets the conversion parameters in 
                 // the download instance to key and value;
@@ -434,7 +439,7 @@ public class Access extends AbstractApiBean {
             throw new ServiceUnavailableException("Preprocessed Content Metadata requested on a non-tabular data file.");
         }
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
-        if (downloadInstance.isDownloadServiceSupported("format", "prep")) {
+        if (downloadInstance.checkIfServiceSupportedAndSetConverter("format", "prep")) {
             logger.fine("Preprocessed data for tabular file "+fileId);
         }
         
@@ -447,7 +452,6 @@ public class Access extends AbstractApiBean {
      * API method for downloading zipped bundles of multiple files:
     */
     
-    
     // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
     @Path("datafiles/{fileIds}")
     @GET
@@ -459,7 +463,7 @@ public class Access extends AbstractApiBean {
             setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
         }
         
-        long zipDownloadSizeLimit = setLimit; 
+        final long zipDownloadSizeLimit = setLimit; //to use via anon inner class
         
         logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
         
@@ -472,7 +476,16 @@ public class Access extends AbstractApiBean {
                 : apiTokenParam;
         
         User apiTokenUser = findAPITokenUser(apiToken); //for use in adding gb records if necessary
-               
+        
+        Boolean getOrig = false;
+        for (String key : uriInfo.getQueryParameters().keySet()) {
+            String value = uriInfo.getQueryParameters().getFirst(key);
+            if("format".equals(key) && "original".equals(value)) {
+                getOrig = true;
+            }
+        }
+        final boolean getOriginal = getOrig; //to use via anon inner class
+        
         StreamingOutput stream = new StreamingOutput() {
 
             @Override
@@ -480,7 +493,6 @@ public class Access extends AbstractApiBean {
                     WebApplicationException {
                 String fileIdParams[] = fileIds.split(",");
                 DataFileZipper zipper = null; 
-                boolean accessToUnrestrictedFileAuthorized = false; 
                 String fileManifest = "";
                 long sizeTotal = 0L;
                 
@@ -498,19 +510,15 @@ public class Access extends AbstractApiBean {
                             logger.fine("attempting to look up file id " + fileId);
                             DataFile file = dataFileService.find(fileId);
                             if (file != null) {
-                                
-                                if ((accessToUnrestrictedFileAuthorized && !file.isRestricted()) 
-                                        || isAccessAuthorized(file, apiToken)) { 
+                                if (isAccessAuthorized(file, apiToken)) { 
                                     
-                                    if (!file.isRestricted()) {
-                                        accessToUnrestrictedFileAuthorized = true;
-                                    }
                                     logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                                     //downloadInstance.addDataFile(file);
-                                            if (gbrecs == null && file.isReleased()){
-                                                GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
-                                                guestbookResponseService.save(gbr);
-                                            }
+                                    if (gbrecs == null && file.isReleased()){
+                                        GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
+                                        guestbookResponseService.save(gbr);
+                                    }
+                                    
                                     if (zipper == null) {
                                         // This is the first file we can serve - so we now know that we are going to be able 
                                         // to produce some output.
@@ -519,25 +527,62 @@ public class Access extends AbstractApiBean {
                                         response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
                                         response.setHeader("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
                                     }
-                                    if (sizeTotal + file.getFilesize() < zipDownloadSizeLimit) {
-                                        sizeTotal += zipper.addFileToZipStream(file);
+                                    
+                                    long size = 0L;
+                                    // is the original format requested, and is this a tabular datafile, with a preserved original?
+                                    if (getOriginal 
+                                            && file.isTabularData() 
+                                            && !StringUtil.isEmpty(file.getDataTable().getOriginalFileFormat())) {
+                                        //This size check is probably fairly inefficient as we have to get all the AccessObjects
+                                        //We do this again inside the zipper. I don't think there is a better solution
+                                        //without doing a large deal of rewriting or architecture redo.
+                                        //The previous size checks for non-original download is still quick.
+                                        //-MAD 4.9.2
+                                        DataAccessRequest daReq = new DataAccessRequest();
+                                        StorageIO<DataFile> accessObject = DataAccess.getStorageIO(file, daReq);
+
+                                        if (accessObject != null) {
+                                            Boolean gotOriginal = false;
+                                            StoredOriginalFile sof = new StoredOriginalFile();
+                                            StorageIO<DataFile> tempAccessObject = sof.retreive(accessObject);
+                                            if(null != tempAccessObject) { //If there is an original, use it
+                                                gotOriginal = true;
+                                                accessObject = tempAccessObject; 
+                                            } 
+                                            if(!gotOriginal) { //if we didn't get this from sof.retreive we have to open it
+                                                accessObject.open();
+                                            }
+                                            size = accessObject.getSize(); 
+                                        }
+                                        if(size == 0L){
+                                            throw new IOException("Invalid file size or accessObject when checking limits of zip file");
+                                        }
+                                    } else {
+                                        size = file.getFilesize();
+                                    }
+                                    if (sizeTotal + size < zipDownloadSizeLimit) {
+                                        sizeTotal += zipper.addFileToZipStream(file, getOriginal);
                                     } else {
                                         String fileName = file.getFileMetadata().getLabel();
                                         String mimeType = file.getContentType();
                                         
                                         zipper.addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + zipDownloadSizeLimit + " bytes.\r\n");
                                     }
-                                } else {
+                                } else if(file.isRestricted()) {
                                     if (zipper == null) {
                                         fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n";
                                     } else {
                                         zipper.addToManifest(file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
                                     }
-                                } 
-
-                            } else {
-                                // Or should we just drop it and make a note in the Manifest?
-                                String errorMessage = "Datafile " + fileId + ": no such object in the database";
+                                } else {
+                                    fileId = null;
+                                }
+                            
+                            } if (null == fileId) {
+                                // As of now this errors out.
+                                // This is bad because the user ends up with a broken zip and manifest
+                                // This is good in that the zip ends early so the user does not wait for the results
+                                String errorMessage = "Datafile " + fileId + ": no such object available";
                                 throw new NotFoundException(errorMessage);
                             }
                         }
@@ -565,7 +610,6 @@ public class Access extends AbstractApiBean {
         };
         return Response.ok(stream).build();
     }
-    
     
     /* 
      * Geting rid of the tempPreview API - it's always been a big, fat hack. 
@@ -854,29 +898,18 @@ public class Access extends AbstractApiBean {
         
         boolean published = false; 
         
-        // TODO: 
-        // this very likely creates a ton of queries; put some thought into 
-        // optimizing this stuff? -- 4.2.1
-        // 
-        // update: it appears that we can finally trust the dvObject.isReleased()
-        // method; so all this monstrous crawling through the filemetadatas, 
-        // below, may not be necessary anymore! - need to verify... L.A. 10.21.2015
-        // update: NO! we still can't just trust .isReleased(), for these purposes!
-        // TODO: explain why. L.A. 10.29.2015
         
-        
-        if (df.getOwner().getReleasedVersion() != null) {
-            //logger.fine("file belongs to a dataset with a released version.");
-            if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
-                //logger.fine("going through the list of filemetadatas that belong to the released version.");
-                for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
-                    if (df.equals(fm.getDataFile())) {
-                        //logger.fine("found a match!");
-                        published = true; 
-                    }
-                }
+        /*
+        SEK 7/26/2018 for 3661 relying on the version state of the dataset versions
+            to which this file is attached check to see if at least one is  RELEASED
+        */
+        for (FileMetadata fm : df.getFileMetadatas()){
+            if(fm.getDatasetVersion().isPublished()){
+                 published = true; 
+                 break;
             }
         }
+        
         
         // TODO: (IMPORTANT!)
         // Business logic like this should NOT be maintained in individual 

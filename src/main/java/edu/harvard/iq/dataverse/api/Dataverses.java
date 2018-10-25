@@ -55,6 +55,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -99,46 +100,47 @@ import java.util.Optional;
 
 /**
  * A REST API for dataverses.
+ *
  * @author michael
  */
 @Stateless
 @Path("dataverses")
 public class Dataverses extends AbstractApiBean {
-       
+
     private static final Logger logger = Logger.getLogger(Dataverses.class.getCanonicalName());
     static XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
 //    @EJB
 //    SystemConfig systemConfig;
-    
-	@POST
-	public Response addRoot( String body ) {
+
+    @POST
+    public Response addRoot(String body) {
         logger.info("Creating root dataverse");
-		return addDataverse( body, "");
-	}
-	
-	@POST
-	@Path("{identifier}")
-	public Response addDataverse( String body, @PathParam("identifier") String parentIdtf ) {
-		
+        return addDataverse(body, "");
+    }
+
+    @POST
+    @Path("{identifier}")
+    public Response addDataverse(String body, @PathParam("identifier") String parentIdtf) {
+
         Dataverse d;
         JsonObject dvJson;
-        try ( StringReader rdr = new StringReader(body) ) {
+        try (StringReader rdr = new StringReader(body)) {
             dvJson = Json.createReader(rdr).readObject();
             d = jsonParser().parseDataverse(dvJson);
-        } catch ( JsonParsingException jpe ) {
+        } catch (JsonParsingException jpe) {
             logger.log(Level.SEVERE, "Json: {0}", body);
-            return error( Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
+            return error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Error parsing dataverse from json: " + ex.getMessage(), ex);
-            return error( Response.Status.BAD_REQUEST,
-                    "Error parsing the POSTed json into a dataverse: " + ex.getMessage() );
+            return error(Response.Status.BAD_REQUEST,
+                    "Error parsing the POSTed json into a dataverse: " + ex.getMessage());
         }
-        
-		try {
-            if ( ! parentIdtf.isEmpty() ) {
-                Dataverse owner = findDataverseOrDie( parentIdtf );
+
+        try {
+            if (!parentIdtf.isEmpty()) {
+                Dataverse owner = findDataverseOrDie(parentIdtf);
                 d.setOwner(owner);
             }
 
@@ -148,33 +150,33 @@ public class Dataverses extends AbstractApiBean {
             }
 
             AuthenticatedUser u = findAuthenticatedUserOrDie();
-            d = execCommand( new CreateDataverseCommand(d, createDataverseRequest(u), null, null) );
-			return created( "/dataverses/"+d.getAlias(), json(d) );
-        } catch ( WrappedResponse ww ) {
-                    Throwable cause = ww.getCause();
-                    StringBuilder sb = new StringBuilder();
-                    if (cause == null) {
-                        return ww.refineResponse("cause was null!");
+            d = execCommand(new CreateDataverseCommand(d, createDataverseRequest(u), null, null));
+            return created("/dataverses/" + d.getAlias(), json(d));
+        } catch (WrappedResponse ww) {
+            Throwable cause = ww.getCause();
+            StringBuilder sb = new StringBuilder();
+            if (cause == null) {
+                return ww.refineResponse("cause was null!");
+            }
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                if (cause instanceof ConstraintViolationException) {
+                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
+                        sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
+                                .append(violation.getPropertyPath()).append(" at ")
+                                .append(violation.getLeafBean()).append(" - ")
+                                .append(violation.getMessage());
                     }
-                    while (cause.getCause() != null) {
-                        cause = cause.getCause();
-                        if (cause instanceof ConstraintViolationException) {
-                            ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                            for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                                sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
-                                        .append(violation.getPropertyPath()).append(" at ")
-                                        .append(violation.getLeafBean()).append(" - ")
-                                        .append(violation.getMessage());
-                            }
-                        }
-                    }
-                    String error = sb.toString();
-                    if (!error.isEmpty()) {
-                        logger.log(Level.INFO, error);
-                        return ww.refineResponse(error);
-                    }
+                }
+            }
+            String error = sb.toString();
+            if (!error.isEmpty()) {
+                logger.log(Level.INFO, error);
+                return ww.refineResponse(error);
+            }
             return ww.getResponse();
-            
+
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -192,17 +194,17 @@ public class Dataverses extends AbstractApiBean {
                 }
             }
             logger.log(Level.SEVERE, sb.toString());
-            return error( Response.Status.INTERNAL_SERVER_ERROR, "Error creating dataverse: " + sb.toString() );
-        } catch ( Exception ex ) {
-			logger.log(Level.SEVERE, "Error creating dataverse", ex);
-			return error( Response.Status.INTERNAL_SERVER_ERROR, "Error creating dataverse: " + ex.getMessage() );
-            
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error creating dataverse: " + sb.toString());
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Error creating dataverse", ex);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error creating dataverse: " + ex.getMessage());
+
         }
-	}
-    
+    }
+
     @POST
     @Path("{identifier}/datasets")
-    public Response createDataset( String jsonBody, @PathParam("identifier") String parentIdtf  ) {
+    public Response createDataset(String jsonBody, @PathParam("identifier") String parentIdtf) {
         try {
             User u = findUserOrDie();
             Dataverse owner = findDataverseOrDie(parentIdtf);
@@ -210,38 +212,37 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = parseDataset(jsonBody);
             logger.log(Level.INFO, "dataset={0}", xstream.toXML(ds));
             ds.setOwner(owner);
-            
-            if ( ds.getVersions().isEmpty() ) {
+
+            if (ds.getVersions().isEmpty()) {
                 return badRequest("Please provide initial version in the dataset json");
             }
-            
+
             // clean possible version metadata
-            DatasetVersion version = ds.getVersions().get(0); 
+            DatasetVersion version = ds.getVersions().get(0);
             version.setMinorVersionNumber(null);
             version.setVersionNumber(null);
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
-                
+
             ds.setAuthority(null);
             ds.setIdentifier(null);
             ds.setProtocol(null);
             ds.setGlobalIdCreateTime(null);
-            
+
             Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
             return created("/datasets/" + managedDs.getId(),
                     Json.createObjectBuilder()
                             .add("id", managedDs.getId())
                             .add("persistentId", managedDs.getGlobalIdString())
             );
-                
-        } catch ( WrappedResponse ex ) {
+
+        } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
     }
-	
-    
+
     @POST
     @Path("{identifier}/datasets/:import")
-    public Response importDataset( String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam ) {
+    public Response importDataset(String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) {
         try {
             logger.log(Level.INFO, "jsonBody:importDataset={0}", jsonBody);
             User u = findUserOrDie();
@@ -249,242 +250,242 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = parseDataset(jsonBody);
             logger.log(Level.INFO, "dataset:importDataset={0}", xstream.toXML(ds));
             ds.setOwner(owner);
-            
-            if ( ds.getVersions().isEmpty() ) {
+
+            if (ds.getVersions().isEmpty()) {
                 return badRequest("Supplied json must contain a single dataset version.");
             }
-            
+
             DatasetVersion version = ds.getVersions().get(0);
-            if ( version.getVersionState() == null ) {
+            if (version.getVersionState() == null) {
                 version.setVersionState(DatasetVersion.VersionState.DRAFT);
             }
-            
-            if ( nonEmpty(pidParam) ) {
+
+            if (nonEmpty(pidParam)) {
+                if (!GlobalId.verifyImportCharacters(pidParam)) {
+                    return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
+                }
                 Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
-                if ( maybePid.isPresent() ) {
+                if (maybePid.isPresent()) {
                     ds.setGlobalId(maybePid.get());
                 } else {
                     // unparsable PID passed. Terminate.
                     return badRequest("Cannot parse the PID parameter '" + pidParam + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
                 }
             }
-            
-            if ( ds.getIdentifier() == null ) {
+
+            if (ds.getIdentifier() == null) {
                 return badRequest("Please provide a persistent identifier, either by including it in the JSON, or by using the pid query parameter.");
             }
             boolean shouldRelease = StringUtil.isTrue(releaseParam);
             DataverseRequest request = createDataverseRequest(u);
-            
-            if ( shouldRelease ) {
+
+            if (shouldRelease) {
                 DatasetVersion latestVersion = ds.getLatestVersion();
                 latestVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
                 latestVersion.setVersionNumber(1l);
                 latestVersion.setMinorVersionNumber(0l);
-                if ( latestVersion.getCreateTime() != null ) {
+                if (latestVersion.getCreateTime() != null) {
                     latestVersion.setCreateTime(new Date());
                 }
-                if ( latestVersion.getLastUpdateTime() != null ) {
-                    latestVersion.setLastUpdateTime(new Date() );
+                if (latestVersion.getLastUpdateTime() != null) {
+                    latestVersion.setLastUpdateTime(new Date());
                 }
             }
-            
+
             Dataset managedDs = execCommand(new ImportDatasetCommand(ds, request));
             JsonObjectBuilder responseBld = Json.createObjectBuilder()
                     .add("id", managedDs.getId())
                     .add("persistentId", managedDs.getGlobalIdString());
-            
-            if ( shouldRelease ) {
+
+            if (shouldRelease) {
                 PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
                 responseBld.add("releaseCompleted", res.isCompleted());
             }
-            
+
             return created("/datasets/" + managedDs.getId(), responseBld);
-                
-        } catch ( WrappedResponse ex ) {
-            return ex.getResponse();
-        }
-    }
-    
-    private Dataset parseDataset(String datasetJson ) throws WrappedResponse {
-        logger.log(Level.INFO, "parseDataset is called");
-        try ( StringReader rdr = new StringReader(datasetJson) ) {
-            logger.log(Level.INFO, "calling jsonParser().parseDataset()");
-            return jsonParser().parseDataset(Json.createReader(rdr).readObject());
-        } catch ( JsonParsingException | JsonParseException jpe ) {
-            logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", datasetJson);
-            throw new WrappedResponse( error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage()) );
-        }
-    }
-    
-	@GET
-	@Path("{identifier}")
-	public Response viewDataverse( @PathParam("identifier") String idtf ) {
-        return allowCors(response( req -> ok(json(execCommand(
-                                    new GetDataverseCommand(req, findDataverseOrDie(idtf)))))));
-	}
-	
-	@DELETE
-	@Path("{identifier}")
-	public Response deleteDataverse( @PathParam("identifier") String idtf ) {
-        return response( req -> {
-			execCommand( new DeleteDataverseCommand(req, findDataverseOrDie(idtf)));
-			return ok( "Dataverse " + idtf  +" deleted");
-        });
-	}
-        
-        @DELETE
-	@Path("{linkingDataverseId}/deleteLink/{linkedDataverseId}")
-	public Response deleteDataverseLinkingDataverse( @PathParam("linkingDataverseId") String linkingDataverseId, @PathParam("linkedDataverseId") String linkedDataverseId) {
-                boolean index = true;
-		return response(req -> {
-			execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(linkingDataverseId), findDataverseLinkingDataverseOrDie(linkingDataverseId, linkedDataverseId), index));
-			return ok("Link from Dataverse " + linkingDataverseId + " to linked Dataverse " + linkedDataverseId + " deleted");
-        });
-	}
-	
-	@GET
-	@Path("{identifier}/metadatablocks")
-	public Response listMetadataBlocks( @PathParam("identifier") String dvIdtf ) {
-        try {
-            JsonArrayBuilder arr = Json.createArrayBuilder();
-            final List<MetadataBlock> blocks = execCommand( new ListMetadataBlocksCommand(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf)));
-            for ( MetadataBlock mdb : blocks) {
-                arr.add( brief.json(mdb) );
-            }
-            return allowCors(ok(arr));
-        } catch (WrappedResponse we ){
-            return we.getResponse();
-        }
-	}
-	
-    @POST
-    @Path("{identifier}/metadatablocks")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response setMetadataBlocks( @PathParam("identifier")String dvIdtf, String blockIds ) {
-        
-        List<MetadataBlock> blocks = new LinkedList<>();
-        try {
-            for ( JsonValue blockId : Util.asJsonArray(blockIds).getValuesAs(JsonValue.class) ) {
-                MetadataBlock blk = (blockId.getValueType()==ValueType.NUMBER)
-                                        ? findMetadataBlock( ((JsonNumber)blockId).longValue() )
-                                        : findMetadataBlock( ((JsonString)blockId).getString() );
-                if ( blk == null ) {
-                    return error(Response.Status.BAD_REQUEST, "Can't find metadata block '"+ blockId + "'");
-                }
-                blocks.add( blk );
-            }
-        } catch( Exception e ) {
-            return error(Response.Status.BAD_REQUEST, e.getMessage());
-        }
-        
-        try {
-            execCommand( new UpdateDataverseMetadataBlocksCommand.SetBlocks(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf), blocks));
-            return ok("Metadata blocks of dataverse " + dvIdtf + " updated.");
-            
+
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
     }
- 
+
+    private Dataset parseDataset(String datasetJson) throws WrappedResponse {
+        logger.log(Level.INFO, "parseDataset is called");
+        try (StringReader rdr = new StringReader(datasetJson)) {
+            logger.log(Level.INFO, "calling jsonParser().parseDataset()");
+            return jsonParser().parseDataset(Json.createReader(rdr).readObject());
+        } catch (JsonParsingException | JsonParseException jpe) {
+            logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", datasetJson);
+            throw new WrappedResponse(error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage()));
+        }
+    }
+
+    @GET
+    @Path("{identifier}")
+    public Response viewDataverse(@PathParam("identifier") String idtf) {
+        return allowCors(response(req -> ok(json(execCommand(
+                new GetDataverseCommand(req, findDataverseOrDie(idtf)))))));
+    }
+
+    @DELETE
+    @Path("{identifier}")
+    public Response deleteDataverse(@PathParam("identifier") String idtf) {
+        return response(req -> {
+            execCommand(new DeleteDataverseCommand(req, findDataverseOrDie(idtf)));
+            return ok("Dataverse " + idtf + " deleted");
+        });
+    }
+
+    @DELETE
+    @Path("{linkingDataverseId}/deleteLink/{linkedDataverseId}")
+    public Response deleteDataverseLinkingDataverse(@PathParam("linkingDataverseId") String linkingDataverseId, @PathParam("linkedDataverseId") String linkedDataverseId) {
+        boolean index = true;
+        return response(req -> {
+            execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(linkingDataverseId), findDataverseLinkingDataverseOrDie(linkingDataverseId, linkedDataverseId), index));
+            return ok("Link from Dataverse " + linkingDataverseId + " to linked Dataverse " + linkedDataverseId + " deleted");
+        });
+    }
+
+    @GET
+    @Path("{identifier}/metadatablocks")
+    public Response listMetadataBlocks(@PathParam("identifier") String dvIdtf) {
+        try {
+            JsonArrayBuilder arr = Json.createArrayBuilder();
+            final List<MetadataBlock> blocks = execCommand(new ListMetadataBlocksCommand(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf)));
+            for (MetadataBlock mdb : blocks) {
+                arr.add(brief.json(mdb));
+            }
+            return allowCors(ok(arr));
+        } catch (WrappedResponse we) {
+            return we.getResponse();
+        }
+    }
+
+    @POST
+    @Path("{identifier}/metadatablocks")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setMetadataBlocks(@PathParam("identifier") String dvIdtf, String blockIds) {
+
+        List<MetadataBlock> blocks = new LinkedList<>();
+        try {
+            for (JsonValue blockId : Util.asJsonArray(blockIds).getValuesAs(JsonValue.class)) {
+                MetadataBlock blk = (blockId.getValueType() == ValueType.NUMBER)
+                        ? findMetadataBlock(((JsonNumber) blockId).longValue())
+                        : findMetadataBlock(((JsonString) blockId).getString());
+                if (blk == null) {
+                    return error(Response.Status.BAD_REQUEST, "Can't find metadata block '" + blockId + "'");
+                }
+                blocks.add(blk);
+            }
+        } catch (Exception e) {
+            return error(Response.Status.BAD_REQUEST, e.getMessage());
+        }
+
+        try {
+            execCommand(new UpdateDataverseMetadataBlocksCommand.SetBlocks(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf), blocks));
+            return ok("Metadata blocks of dataverse " + dvIdtf + " updated.");
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
     @GET
     @Path("{identifier}/metadatablocks/:isRoot")
-    public Response getMetadataRoot_legacy( @PathParam("identifier")String dvIdtf ) {
+    public Response getMetadataRoot_legacy(@PathParam("identifier") String dvIdtf) {
         return getMetadataRoot(dvIdtf);
     }
-    
+
     @GET
     @Path("{identifier}/metadatablocks/isRoot")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getMetadataRoot( @PathParam("identifier")String dvIdtf ) {
-        return response( req -> {
+    public Response getMetadataRoot(@PathParam("identifier") String dvIdtf) {
+        return response(req -> {
             final Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            if ( permissionSvc.request(req)
-                                .on(dataverse)
-                                  .has(Permission.EditDataverse) ) {
-                return ok( dataverse.isMetadataBlockRoot() );
+            if (permissionSvc.request(req)
+                    .on(dataverse)
+                    .has(Permission.EditDataverse)) {
+                return ok(dataverse.isMetadataBlockRoot());
             } else {
-                return error( Status.FORBIDDEN, "Not authorized" );
+                return error(Status.FORBIDDEN, "Not authorized");
             }
         });
     }
-    
+
     @POST
     @Path("{identifier}/metadatablocks/:isRoot")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.WILDCARD)
-    public Response setMetadataRoot_legacy( @PathParam("identifier")String dvIdtf, String body  ) {
+    public Response setMetadataRoot_legacy(@PathParam("identifier") String dvIdtf, String body) {
         return setMetadataRoot(dvIdtf, body);
     }
-    
+
     @PUT
     @Path("{identifier}/metadatablocks/isRoot")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.WILDCARD)
-    public Response setMetadataRoot( @PathParam("identifier")String dvIdtf, String body  ) {
-        return response( req -> {
+    public Response setMetadataRoot(@PathParam("identifier") String dvIdtf, String body) {
+        return response(req -> {
             final boolean root = parseBooleanOrDie(body);
             final Dataverse dataverse = findDataverseOrDie(dvIdtf);
             execCommand(new UpdateDataverseMetadataBlocksCommand.SetRoot(req, dataverse, root));
-            return ok("Dataverse " + dataverse.getName() + " is now a metadata  " + (root? "" : "non-") + "root");
+            return ok("Dataverse " + dataverse.getName() + " is now a metadata  " + (root ? "" : "non-") + "root");
         });
     }
-    
+
     @GET
     @Path("{identifier}/facets/")
     /**
      * return list of facets for the dataverse with alias `dvIdtf`
      */
-    public Response listFacets( @PathParam("identifier") String dvIdtf ) {
-	    try
-	    {
-		    User u = findUserOrDie();
-		    DataverseRequest r = createDataverseRequest( u );
-		    Dataverse dataverse = findDataverseOrDie(dvIdtf);
-		    JsonArrayBuilder fs = Json.createArrayBuilder();
-		    for( DataverseFacet f : execCommand( new ListFacetsCommand( r, dataverse ) ) )
-		    {
-			    fs.add( f.getDatasetFieldType().getName() );
-		    }
-		    return allowCors( ok( fs ) );
-	    }
-	    catch( WrappedResponse e )
-	    {
-		    return e.getResponse();
-	    }
+    public Response listFacets(@PathParam("identifier") String dvIdtf) {
+        try {
+            User u = findUserOrDie();
+            DataverseRequest r = createDataverseRequest(u);
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            JsonArrayBuilder fs = Json.createArrayBuilder();
+            for (DataverseFacet f : execCommand(new ListFacetsCommand(r, dataverse))) {
+                fs.add(f.getDatasetFieldType().getName());
+            }
+            return allowCors(ok(fs));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
     }
 
     @POST
     @Path("{identifier}/facets")
     @Produces(MediaType.APPLICATION_JSON)
     /**
-     * (not publicly documented) API endpoint for assigning facets to a dataverse.
-     * `curl -X POST -H "X-Dataverse-key: $ADMIN_KEY" http://localhost:8088/api/dataverses/$dv/facets --upload-file foo.json`; where foo.json contains a list of datasetField names, 
-     * works as expected (judging by the UI).
-     * This triggers a 500 when '-d @foo.json' is used.
+     * (not publicly documented) API endpoint for assigning facets to a
+     * dataverse. `curl -X POST -H "X-Dataverse-key: $ADMIN_KEY"
+     * http://localhost:8088/api/dataverses/$dv/facets --upload-file foo.json`;
+     * where foo.json contains a list of datasetField names, works as expected
+     * (judging by the UI). This triggers a 500 when '-d @foo.json' is used.
      */
-    public Response setFacets( @PathParam("identifier")String dvIdtf, String facetIds ) {
-        
+    public Response setFacets(@PathParam("identifier") String dvIdtf, String facetIds) {
+
         List<DatasetFieldType> facets = new LinkedList<>();
-        for ( JsonString facetId : Util.asJsonArray(facetIds).getValuesAs(JsonString.class) ) {
+        for (JsonString facetId : Util.asJsonArray(facetIds).getValuesAs(JsonString.class)) {
             DatasetFieldType dsfType = findDatasetFieldType(facetId.getString());
-            if ( dsfType == null ) {
-                return error(Response.Status.BAD_REQUEST, "Can't find dataset field type '"+ facetId + "'");
+            if (dsfType == null) {
+                return error(Response.Status.BAD_REQUEST, "Can't find dataset field type '" + facetId + "'");
             } else if (!dsfType.isFacetable()) {
-                return error(Response.Status.BAD_REQUEST, "Dataset field type '"+ facetId + "' is not facetable");              
+                return error(Response.Status.BAD_REQUEST, "Dataset field type '" + facetId + "' is not facetable");
             }
-            facets.add( dsfType );
+            facets.add(dsfType);
         }
-        
+
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             // by passing null for Featured Dataverses and DataverseFieldTypeInputLevel, those are not changed
-            execCommand( new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(findUserOrDie()), null) );
+            execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(findUserOrDie()), null));
             return ok("Facets of dataverse " + dvIdtf + " updated.");
-            
+
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-    }    
+    }
 
     // FIXME: This listContent method is way too optimistic, always returning "ok" and never "error".
     // FIXME: This listContent method should be reformatted. The indentation and whitespace is odd.
@@ -492,61 +493,63 @@ public class Dataverses extends AbstractApiBean {
     // TODO: Investigate why there was a change in the timeframe of when pull request #4350 was merged
     // (2438-4295-dois-for-files branch) such that a contributor API token no longer allows this method
     // to be called without a PermissionException being thrown.
-	@GET
-	@Path("{identifier}/contents")
-	public Response listContent( @PathParam("identifier") String dvIdtf ) {
-		DvObject.Visitor<JsonObjectBuilder> ser = new DvObject.Visitor<JsonObjectBuilder>() {
-
-			@Override
-			public JsonObjectBuilder visit(Dataverse dv) {
-				return Json.createObjectBuilder().add("type", "dataverse")
-						.add("id", dv.getId())
-						.add("title",dv.getName() );
-			}
-
-			@Override
-			public JsonObjectBuilder visit(Dataset ds) {
-				return json(ds).add("type", "dataset");
-			}
-
-			@Override
-			public JsonObjectBuilder visit(DataFile df) { throw new UnsupportedOperationException("Files don't live directly in Dataverses"); }
-		};
-        
-        return allowCors(response( req -> ok(
-            execCommand(new ListDataverseContentCommand(req, findDataverseOrDie(dvIdtf)))
-                .stream()
-                .map( dvo->(JsonObjectBuilder)dvo.accept(ser))
-                .collect(toJsonArray()))
-        ));
-	}
-	
     @GET
-	@Path("{identifier}/roles")
-	public Response listRoles( @PathParam("identifier") String dvIdtf ) {
-        return response( req -> ok(
-                execCommand( new ListRolesCommand(req, findDataverseOrDie(dvIdtf)) )
-                .stream().map(r->json(r))
-                .collect( toJsonArray() )
+    @Path("{identifier}/contents")
+    public Response listContent(@PathParam("identifier") String dvIdtf) {
+        DvObject.Visitor<JsonObjectBuilder> ser = new DvObject.Visitor<JsonObjectBuilder>() {
+
+            @Override
+            public JsonObjectBuilder visit(Dataverse dv) {
+                return Json.createObjectBuilder().add("type", "dataverse")
+                        .add("id", dv.getId())
+                        .add("title", dv.getName());
+            }
+
+            @Override
+            public JsonObjectBuilder visit(Dataset ds) {
+                return json(ds).add("type", "dataset");
+            }
+
+            @Override
+            public JsonObjectBuilder visit(DataFile df) {
+                throw new UnsupportedOperationException("Files don't live directly in Dataverses");
+            }
+        };
+
+        return allowCors(response(req -> ok(
+                execCommand(new ListDataverseContentCommand(req, findDataverseOrDie(dvIdtf)))
+                        .stream()
+                        .map(dvo -> (JsonObjectBuilder) dvo.accept(ser))
+                        .collect(toJsonArray()))
         ));
-	}
-    
-	@POST
-	@Path("{identifier}/roles")
-	public Response createRole( RoleDTO roleDto, @PathParam("identifier") String dvIdtf ) {
-		return response( req -> ok( json(execCommand(new CreateRoleCommand(roleDto.asRole(), req, findDataverseOrDie(dvIdtf))))));
-	}
-	
-	@GET
-	@Path("{identifier}/assignments")
-	public Response listAssignments( @PathParam("identifier") String dvIdtf) {
-        return response( req -> ok(
+    }
+
+    @GET
+    @Path("{identifier}/roles")
+    public Response listRoles(@PathParam("identifier") String dvIdtf) {
+        return response(req -> ok(
+                execCommand(new ListRolesCommand(req, findDataverseOrDie(dvIdtf)))
+                        .stream().map(r -> json(r))
+                        .collect(toJsonArray())
+        ));
+    }
+
+    @POST
+    @Path("{identifier}/roles")
+    public Response createRole(RoleDTO roleDto, @PathParam("identifier") String dvIdtf) {
+        return response(req -> ok(json(execCommand(new CreateRoleCommand(roleDto.asRole(), req, findDataverseOrDie(dvIdtf))))));
+    }
+
+    @GET
+    @Path("{identifier}/assignments")
+    public Response listAssignments(@PathParam("identifier") String dvIdtf) {
+        return response(req -> ok(
                 execCommand(new ListRoleAssignments(req, findDataverseOrDie(dvIdtf)))
-                .stream()
-                .map( a -> json(a) )
-                .collect(toJsonArray())
+                        .stream()
+                        .map(a -> json(a))
+                        .collect(toJsonArray())
         ));
-	}
+    }
 
     /**
      * This code for setting a dataverse logo via API was started when initially
@@ -637,175 +640,173 @@ public class Dataverses extends AbstractApiBean {
 //            return error(Status.BAD_REQUEST, "problem uploading logo: " + ex);
 //        }
 //    }
+    @POST
+    @Path("{identifier}/assignments")
+    public Response createAssignment(RoleAssignmentDTO ra, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey) {
 
-	@POST
-	@Path("{identifier}/assignments")
-	public Response createAssignment( RoleAssignmentDTO ra, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
-		
-		try {
+        try {
             final DataverseRequest req = createDataverseRequest(findUserOrDie());
             final Dataverse dataverse = findDataverseOrDie(dvIdtf);
 
             RoleAssignee assignee = findAssignee(ra.getAssignee());
-            if ( assignee==null ) {
-                return error( Status.BAD_REQUEST, "Assignee not found" );
+            if (assignee == null) {
+                return error(Status.BAD_REQUEST, "Assignee not found");
             }
 
             DataverseRole theRole;
             Dataverse dv = dataverse;
             theRole = null;
-            while ( (theRole==null) && (dv!=null) ) {
-                for ( DataverseRole aRole : rolesSvc.availableRoles(dv.getId()) ) {
-                    if ( aRole.getAlias().equals(ra.getRole()) ) {
+            while ((theRole == null) && (dv != null)) {
+                for (DataverseRole aRole : rolesSvc.availableRoles(dv.getId())) {
+                    if (aRole.getAlias().equals(ra.getRole())) {
                         theRole = aRole;
                         break;
                     }
                 }
                 dv = dv.getOwner();
             }
-            if ( theRole == null ) {
-                return error( Status.BAD_REQUEST, "Can't find role named '" + ra.getRole() + "' in dataverse " + dataverse);
+            if (theRole == null) {
+                return error(Status.BAD_REQUEST, "Can't find role named '" + ra.getRole() + "' in dataverse " + dataverse);
             }
-                    String privateUrlToken = null;
+            String privateUrlToken = null;
 
-			return ok(json(execCommand(new AssignRoleCommand(assignee, theRole, dataverse, req, privateUrlToken))));
-			
-		} catch (WrappedResponse ex) {
-			logger.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
-			return ex.getResponse();
-		}
-	}
-	
-	@DELETE
-	@Path("{identifier}/assignments/{id}")
-	public Response deleteAssignment( @PathParam("id") long assignmentId, @PathParam("identifier") String dvIdtf ) {
-		RoleAssignment ra = em.find( RoleAssignment.class, assignmentId );
-		if ( ra != null ) {
+            return ok(json(execCommand(new AssignRoleCommand(assignee, theRole, dataverse, req, privateUrlToken))));
+
+        } catch (WrappedResponse ex) {
+            logger.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
+            return ex.getResponse();
+        }
+    }
+
+    @DELETE
+    @Path("{identifier}/assignments/{id}")
+    public Response deleteAssignment(@PathParam("id") long assignmentId, @PathParam("identifier") String dvIdtf) {
+        RoleAssignment ra = em.find(RoleAssignment.class, assignmentId);
+        if (ra != null) {
             try {
                 findDataverseOrDie(dvIdtf);
-                execCommand( new RevokeRoleCommand(ra, createDataverseRequest(findUserOrDie())));
-                return ok("Role " + ra.getRole().getName() 
-                                            + " revoked for assignee " + ra.getAssigneeIdentifier()
-                                            + " in " + ra.getDefinitionPoint().accept(DvObject.NamePrinter) );
+                execCommand(new RevokeRoleCommand(ra, createDataverseRequest(findUserOrDie())));
+                return ok("Role " + ra.getRole().getName()
+                        + " revoked for assignee " + ra.getAssigneeIdentifier()
+                        + " in " + ra.getDefinitionPoint().accept(DvObject.NamePrinter));
             } catch (WrappedResponse ex) {
                 return ex.getResponse();
             }
-		} else {
-			return error( Status.NOT_FOUND, "Role assignment " + assignmentId + " not found" );
-		}
-	}
-	
+        } else {
+            return error(Status.NOT_FOUND, "Role assignment " + assignmentId + " not found");
+        }
+    }
+
     @POST
-    @Path("{identifier}/actions/:publish") 
-    public Response publishDataverse( @PathParam("identifier") String dvIdtf ) {
+    @Path("{identifier}/actions/:publish")
+    public Response publishDataverse(@PathParam("identifier") String dvIdtf) {
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
-            return ok( json(execCommand( new PublishDataverseCommand(createDataverseRequest(findAuthenticatedUserOrDie()), dv))) );
-            
+            return ok(json(execCommand(new PublishDataverseCommand(createDataverseRequest(findAuthenticatedUserOrDie()), dv))));
+
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
     }
-        
+
     @POST
-    @Path("{identifier}/groups/") 
-    public Response createExplicitGroup( ExplicitGroupDTO dto, @PathParam("identifier") String dvIdtf) {
-        return response( req ->{
+    @Path("{identifier}/groups/")
+    public Response createExplicitGroup(ExplicitGroupDTO dto, @PathParam("identifier") String dvIdtf) {
+        return response(req -> {
             ExplicitGroupProvider prv = explicitGroupSvc.getProvider();
             ExplicitGroup newGroup = dto.apply(prv.makeGroup());
-            
-            newGroup = execCommand( new CreateExplicitGroupCommand(req, findDataverseOrDie(dvIdtf), newGroup));
-            
+
+            newGroup = execCommand(new CreateExplicitGroupCommand(req, findDataverseOrDie(dvIdtf), newGroup));
+
             String groupUri = String.format("%s/groups/%s", dvIdtf, newGroup.getGroupAliasInOwner());
-            return created( groupUri, json(newGroup) );
+            return created(groupUri, json(newGroup));
         });
     }
-    
+
     @GET
-    @Path("{identifier}/groups/") 
-    public Response listGroups( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
-        return response( req -> ok(
-            execCommand(new ListExplicitGroupsCommand(req, findDataverseOrDie(dvIdtf)))
-                        .stream().map( eg->json(eg))
-                        .collect( toJsonArray() )
+    @Path("{identifier}/groups/")
+    public Response listGroups(@PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey) {
+        return response(req -> ok(
+                execCommand(new ListExplicitGroupsCommand(req, findDataverseOrDie(dvIdtf)))
+                        .stream().map(eg -> json(eg))
+                        .collect(toJsonArray())
         ));
     }
-    
+
     @GET
-    @Path("{identifier}/groups/{aliasInOwner}") 
-    public Response getGroupByOwnerAndAliasInOwner( @PathParam("identifier") String dvIdtf,
-                                                    @PathParam("aliasInOwner") String grpAliasInOwner ){
-        return response( req -> ok(json(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
-                                                      req,
-                                                      grpAliasInOwner))));
+    @Path("{identifier}/groups/{aliasInOwner}")
+    public Response getGroupByOwnerAndAliasInOwner(@PathParam("identifier") String dvIdtf,
+            @PathParam("aliasInOwner") String grpAliasInOwner) {
+        return response(req -> ok(json(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
+                req,
+                grpAliasInOwner))));
     }
-    
+
     @PUT
-    @Path("{identifier}/groups/{aliasInOwner}") 
-    public Response updateGroup(ExplicitGroupDTO groupDto, 
-                                @PathParam("identifier") String dvIdtf,
-                                @PathParam("aliasInOwner") String grpAliasInOwner )
-    {
-        return response( req-> ok(json(execCommand( 
-                             new UpdateExplicitGroupCommand(req,
-                                     groupDto.apply( findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)))))));
+    @Path("{identifier}/groups/{aliasInOwner}")
+    public Response updateGroup(ExplicitGroupDTO groupDto,
+            @PathParam("identifier") String dvIdtf,
+            @PathParam("aliasInOwner") String grpAliasInOwner) {
+        return response(req -> ok(json(execCommand(
+                new UpdateExplicitGroupCommand(req,
+                        groupDto.apply(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)))))));
     }
-    
+
     @DELETE
-    @Path("{identifier}/groups/{aliasInOwner}") 
+    @Path("{identifier}/groups/{aliasInOwner}")
     public Response deleteGroup(@PathParam("identifier") String dvIdtf,
-                                @PathParam("aliasInOwner") String grpAliasInOwner )
-    {
-        return response( req -> {
-            execCommand( new DeleteExplicitGroupCommand(req,
-                                findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)) );            
-            return ok( "Group " + dvIdtf + "/" + grpAliasInOwner + " deleted" );
+            @PathParam("aliasInOwner") String grpAliasInOwner) {
+        return response(req -> {
+            execCommand(new DeleteExplicitGroupCommand(req,
+                    findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)));
+            return ok("Group " + dvIdtf + "/" + grpAliasInOwner + " deleted");
         });
     }
-    
+
     @POST
-    @Path("{identifier}/groups/{aliasInOwner}/roleAssignees") 
+    @Path("{identifier}/groups/{aliasInOwner}/roleAssignees")
     @Consumes("application/json")
-    public Response addRoleAssingees(List<String> roleAssingeeIdentifiers, 
-                                @PathParam("identifier") String dvIdtf,
-                                @PathParam("aliasInOwner") String grpAliasInOwner)
-    {
-        return response( req -> ok( 
-                    json(
-                      execCommand( 
-                              new AddRoleAssigneesToExplicitGroupCommand(req, 
-                                      findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
-                                      new TreeSet<>(roleAssingeeIdentifiers))))));
+    public Response addRoleAssingees(List<String> roleAssingeeIdentifiers,
+            @PathParam("identifier") String dvIdtf,
+            @PathParam("aliasInOwner") String grpAliasInOwner) {
+        return response(req -> ok(
+                json(
+                        execCommand(
+                                new AddRoleAssigneesToExplicitGroupCommand(req,
+                                        findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
+                                        new TreeSet<>(roleAssingeeIdentifiers))))));
     }
-    
+
     @PUT
-    @Path("{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier: .*}") 
-    public Response addRoleAssingee( @PathParam("identifier") String dvIdtf,
-                                     @PathParam("aliasInOwner") String grpAliasInOwner, 
-                                     @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
+    @Path("{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier: .*}")
+    public Response addRoleAssingee(@PathParam("identifier") String dvIdtf,
+            @PathParam("aliasInOwner") String grpAliasInOwner,
+            @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
         return addRoleAssingees(Collections.singletonList(roleAssigneeIdentifier), dvIdtf, grpAliasInOwner);
     }
-    
+
     @DELETE
-    @Path("{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier: .*}") 
-    public Response deleteRoleAssingee( @PathParam("identifier") String dvIdtf,
-                                        @PathParam("aliasInOwner") String grpAliasInOwner, 
-                                        @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier ) {
-        return response( req ->ok(json(execCommand( 
-                              new RemoveRoleAssigneesFromExplicitGroupCommand(req, 
-                                      findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
-                                      Collections.singleton(roleAssigneeIdentifier))))));
+    @Path("{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier: .*}")
+    public Response deleteRoleAssingee(@PathParam("identifier") String dvIdtf,
+            @PathParam("aliasInOwner") String grpAliasInOwner,
+            @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
+        return response(req -> ok(json(execCommand(
+                new RemoveRoleAssigneesFromExplicitGroupCommand(req,
+                        findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
+                        Collections.singleton(roleAssigneeIdentifier))))));
     }
-    
-    private ExplicitGroup findExplicitGroupOrDie( DvObject dv, DataverseRequest req, String groupIdtf ) throws WrappedResponse {
-        ExplicitGroup eg = execCommand(new GetExplicitGroupCommand(req, dv, groupIdtf) );
-        if ( eg == null ) throw new WrappedResponse( notFound("Can't find " + groupIdtf + " in dataverse " + dv.getId()));
+
+    private ExplicitGroup findExplicitGroupOrDie(DvObject dv, DataverseRequest req, String groupIdtf) throws WrappedResponse {
+        ExplicitGroup eg = execCommand(new GetExplicitGroupCommand(req, dv, groupIdtf));
+        if (eg == null) {
+            throw new WrappedResponse(notFound("Can't find " + groupIdtf + " in dataverse " + dv.getId()));
+        }
         return eg;
     }
 
     @GET
     @Path("{identifier}/links")
-    public Response listLinks(@PathParam("identifier") String dvIdtf ) {
+    public Response listLinks(@PathParam("identifier") String dvIdtf) {
         try {
             User u = findUserOrDie();
             Dataverse dv = findDataverseOrDie(dvIdtf);
@@ -841,42 +842,42 @@ public class Dataverses extends AbstractApiBean {
             return wr.getResponse();
         }
     }
-    
+
     @POST
-    @Path("{id}/move/{targetDataverseAlias}") 
-    public Response moveDataverse(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {        
-        try{
-            User u = findUserOrDie();            
+    @Path("{id}/move/{targetDataverseAlias}")
+    public Response moveDataverse(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {
+        try {
+            User u = findUserOrDie();
             Dataverse dv = findDataverseOrDie(id);
             Dataverse target = findDataverseOrDie(targetDataverseAlias);
-            if (target == null){
+            if (target == null) {
                 return error(Response.Status.BAD_REQUEST, "Target Dataverse not found.");
-            }            
+            }
             execCommand(new MoveDataverseCommand(
                     createDataverseRequest(u), dv, target, force
-                    ));
+            ));
             return ok("Dataverse moved successfully");
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
     }
-    
+
     @PUT
-    @Path("{linkedDataverseAlias}/link/{linkingDataverseAlias}") 
-    public Response linkDataverse(@PathParam("linkedDataverseAlias") String linkedDataverseAlias, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {        
-        try{
-            User u = findUserOrDie();            
+    @Path("{linkedDataverseAlias}/link/{linkingDataverseAlias}")
+    public Response linkDataverse(@PathParam("linkedDataverseAlias") String linkedDataverseAlias, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {
+        try {
+            User u = findUserOrDie();
             Dataverse linked = findDataverseOrDie(linkedDataverseAlias);
             Dataverse linking = findDataverseOrDie(linkingDataverseAlias);
-            if (linked == null){
+            if (linked == null) {
                 return error(Response.Status.BAD_REQUEST, "Linked Dataverse not found.");
-            } 
-            if (linking == null){
+            }
+            if (linking == null) {
                 return error(Response.Status.BAD_REQUEST, "Linking Dataverse not found.");
-            }   
+            }
             execCommand(new LinkDataverseCommand(
                     createDataverseRequest(u), linking, linked
-                    ));
+            ));
             return ok("Dataverse " + linked.getAlias() + " linked successfully to " + linking.getAlias());
         } catch (WrappedResponse ex) {
             return ex.getResponse();
