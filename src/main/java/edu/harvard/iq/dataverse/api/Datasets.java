@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
@@ -75,6 +77,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -95,6 +98,7 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.stream.JsonParsingException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -114,7 +118,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 public class Datasets extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Datasets.class.getCanonicalName());
-    
+    static XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
     @Inject DataverseSession session;    
 
     @EJB
@@ -371,7 +375,7 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @Path("{id}/versions/{versionId}")
     public Response updateDraftVersion( String jsonBody, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
-        
+        logger.log(Level.INFO, "updateDraftVersion:jsonBody={0}", jsonBody);
         if ( ! ":draft".equals(versionId) ) {
             return error( Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
         }
@@ -379,8 +383,41 @@ public class Datasets extends AbstractApiBean {
         try ( StringReader rdr = new StringReader(jsonBody) ) {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             Dataset ds = findDatasetOrDie(id);
+            
+            if (ds.getCreateDate()!=null){
+                logger.log(Level.INFO, "dataset:creationdate={0}", ds.getCreateDate());
+            } else {
+                logger.log(Level.INFO, "dataset:creationdate is not set");
+            }            
+            
+            
+            
+            logger.log(Level.INFO, "target dataset is retrieved={0}", 
+                    xstream.toXML(ds));
+            
             JsonObject json = Json.createReader(rdr).readObject();
+            logger.log(Level.INFO, "calling 1-arg-jsonParser().parseDatasetVersion()");
             DatasetVersion incomingVersion = jsonParser().parseDatasetVersion(json);
+            
+            
+
+            if (incomingVersion.getDataset() !=null){
+                logger.log(Level.INFO, "this case has a dataset: copy datafile info");
+                for (DataFile df: incomingVersion.getDataset().getFiles()){
+                    df.setOwner(ds);
+                }
+                
+                // datafile info was attached
+                ds.setFiles(incomingVersion.getDataset().getFiles());
+                logger.log(Level.INFO, "updated dataset with datafiles={0}", 
+                        xstream.toXML(ds));
+            }
+            logger.log(Level.INFO, "incomingVersion:updateDraftVersion={0}", 
+                    xstream.toXML(incomingVersion));
+            
+            
+            
+            
             
             // clear possibly stale fields from the incoming dataset version.
             // creation and modification dates are updated by the commands.
@@ -389,18 +426,23 @@ public class Datasets extends AbstractApiBean {
             incomingVersion.setMinorVersionNumber(null);
             incomingVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
             incomingVersion.setDataset(ds);
+            
+            
+            
             incomingVersion.setCreateTime(null);
             incomingVersion.setLastUpdateTime(null);
             boolean updateDraft = ds.getLatestVersion().isDraft();
             
             DatasetVersion managedVersion;
             if ( updateDraft ) {
+                logger.log(Level.INFO, "updateDraft: yes");
                 final DatasetVersion editVersion = ds.getEditVersion();
                 editVersion.setDatasetFields(incomingVersion.getDatasetFields());
                 editVersion.setTermsOfUseAndAccess( incomingVersion.getTermsOfUseAndAccess() );
                 Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
                 managedVersion = managedDataset.getEditVersion();
             } else {
+                logger.log(Level.INFO, "updateDraft: no");
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, incomingVersion));
             }
 //            DatasetVersion managedVersion = execCommand( updateDraft
@@ -577,7 +619,7 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @Path("{id}/editMetadata")
     public Response editVersionMetadata(String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) throws WrappedResponse{
-
+        logger.log(Level.INFO, "jsonBody:editVersionMetadata ={0}", jsonBody);
         Boolean replaceData = replace != null;
 
         DataverseRequest req = createDataverseRequest(findUserOrDie());
@@ -591,8 +633,9 @@ public class Datasets extends AbstractApiBean {
            
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = Json.createReader(rdr).readObject();
+            logger.log(Level.INFO, "json:processDatasetUpdate={0}", xstream.toXML(json));
             DatasetVersion dsv = ds.getEditVersion();
-
+            logger.log(Level.INFO, "DatasetVersion:processDatasetUpdate={0}", xstream.toXML(dsv));
             List<DatasetField> fields = new LinkedList<>();
             DatasetField singleField = null; 
             
@@ -1232,156 +1275,107 @@ public class Datasets extends AbstractApiBean {
     } // end: addFileToDataset
 
 
-    /*
-     * Note:
-     * The following method may be combined with the above addFiletoDataset method
-     * if there is a simple way to switch on/off calling the ingest process.
-     */
-    
-    /*
-     * The following API is based on the above addFileToDataset
-     * 
-     * 
-     */
+
     /**
      * Add DataFile-related Metadata to an existing Dataset without invoking 
      * an ingest request
      * 
-     * @param idSupplied
-//     * @param jsonData
-     * @param fileInputStream
-     * @param contentDispositionHeader
-     * @param formDataBodyPart
+     * @param jsonBody
+     * @param datasetId
      * @return 
      */
     @POST
     @Path("{id}/addFileMetadata")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response addFileMetadataToDataset(@PathParam("id") String idSupplied,
-                    //@FormDataParam("jsonData") String jsonData,
-                    @FormDataParam("file") InputStream fileInputStream,
-                    @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-                    @FormDataParam("file") final FormDataBodyPart formDataBodyPart
+    public Response addFileMetadataToDataset(String jsonBody, @PathParam("id") String datasetId
                     ){
-
-          
-        // -------------------------------------
-        // (1) Get the user from the API key
-        // -------------------------------------
-        User authUser;
-        try {
-            authUser = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.FORBIDDEN,
-                    ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
-                    );
-        }
-        //---------------------------------------
-        // (1A) Make sure that the upload type is not rsync
-        // ------------------------------------- 
-        
-        if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
-            return error(Response.Status.METHOD_NOT_ALLOWED, SettingsServiceBean.Key.UploadMethods + " contains " + SystemConfig.FileUploadMethods.RSYNC + ". Please use rsync file upload.");
-        }
-        
-        
-        // -------------------------------------
-        // (2) Get the Dataset Id
-        //  
-        // -------------------------------------
-        Dataset dataset;
-        
-        Long datasetId;
-        try {
-            dataset = findDatasetOrDie(idSupplied);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();           
-        }
-        
-               
-        // -------------------------------------
-        // (3) Get the file name and content type
-        // -------------------------------------
-        String newFilename = contentDispositionHeader.getFileName();
-        String newFileContentType = formDataBodyPart.getMediaType().toString();
-      
-        
-        // (2a) Load up optional params via JSON
-        // this block is not used because no jsonData
-        //---------------------------------------
-
-        OptionalFileParams optionalFileParams = null;
-/*        
-        msgt("(api) jsonData: " +  jsonData);
-
-        try {
-            optionalFileParams = new OptionalFileParams(jsonData);
-        } catch (DataFileTagException ex) {
-            return error( Response.Status.BAD_REQUEST, ex.getMessage());            
-        }
-*/
-        
-        //-------------------
-        // (3) Create the AddReplaceFileHelper object
-        //-------------------
-        msg("ADD!");
-
-        DataverseRequest dvRequest2 = createDataverseRequest(authUser);
-        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
-                                                ingestService,
-                                                datasetService,
-                                                fileService,
-                                                permissionSvc,
-                                                commandEngine,
-                                                systemConfig);
-
-
-        //-------------------
-        // (4) Run "runAddFileByDatasetId"
-        //-------------------
-        addFileHelper.runAddFileWOIByDataset(dataset,
-                                newFilename,
-                                newFileContentType,
-                                fileInputStream,
-                                optionalFileParams);
-
-
-        if (addFileHelper.hasError()){
-            return error(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
-        }else{
-            String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
-            try {
-                //msgt("as String: " + addFileHelper.getSuccessResult());
-                /**
-                 * @todo We need a consistent, sane way to communicate a human
-                 * readable message to an API client suitable for human
-                 * consumption. Imagine if the UI were built in Angular or React
-                 * and we want to return a message from the API as-is to the
-                 * user. Human readable.
-                 */
-                logger.log(Level.FINE, "successMsg:{0} ", successMsg);
-                return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
-                //"Look at that!  You added a file! (hey hey, it may have worked)");
-            } catch (NoFilesException ex) {
-                logger.log(Level.SEVERE, "NoFilesException during addFileMetadata:{0}", ex);
-                return error(Response.Status.BAD_REQUEST, "NoFileException!  Serious Error! See administrator!");
-
-            }
-        }
+        try ( StringReader rdr = new StringReader(jsonBody) ) {
+            logger.log(Level.INFO, "addFileMetadataToDataset:received jsonBody={0}", jsonBody);
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            // retrieve dataset by id
+            logger.log(Level.INFO, "datasetId={0}", datasetId);
+            Dataset ds = findDatasetOrDie(datasetId);
+            logger.log(Level.INFO, "dataset display name={0}", ds.getDisplayName());
+            // parse jsonbody and create metadata instances
+            JsonObject json = Json.createReader(rdr).readObject();
             
-    } // end: addFileMetadataToDataset
+            // step_060 
+            // set datafile's owner
+            // add each datafile to the list of datafile of dataset
+            logger.log(Level.INFO, "dataset: editversion={0}", ds.getEditVersion().getVersion());
+            // step_070 
+            DatasetVersion incomingVersion = jsonParser().parseDatasetVersion(json, ds.getEditVersion());
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+            // check datafile is owned by the dataset 
+            List<DataFile> dataFiles = incomingVersion.getDataset().getFiles();
+            if (dataFiles != null) {
+                
+        
+                if (dataFiles.isEmpty()){
+                    throw new NoFilesException("newlyAddedFiles is empty!");
+                }
+                for (DataFile df : dataFiles) {
+                    if (df.getOwner() == null){
+                        // df.setOwner(ds);
+                        logger.log(Level.INFO, "df is not owned by any dataset");
+                    } else {
+                        logger.log(Level.INFO, "df is owned by dataset whose id={0}", df.getOwner().getId());
+                    }
+                }
+                
+                
+                
+            } else {
+                logger.log(Level.INFO, "no datafile was parsed");
+                throw new NullPointerException("newlyAddedFiles is null!");
+
+                
+            }
+            // call UpdateDatasetVersion command
+            
+            ds = execCommand(new UpdateDatasetVersionCommand(ds, req));
+            
+            // save datafiles
+            // from addFileToDataset case
+           dataFiles = ds.getFiles();
+
+            if (dataFiles != null) {
+                for (DataFile df : dataFiles) {
+                    if (df.getOwner() == null){
+                        // df.setOwner(ds);
+                        logger.log(Level.INFO, "df is not owned by any dataset");
+                        
+                        df=fileService.save(df);
+                    } else {
+                        logger.log(Level.INFO, "df is owned by dataset whose id={0}", df.getOwner().getId());
+                    }
+                }
+                
+                
+                
+            } else {
+                logger.log(Level.INFO, "no datafile was parsed");
+                dataFiles= new ArrayList<>();
+            }
+            
+            logger.log(Level.INFO, "newlyAddedFiles: how many={0}", dataFiles.size());
+            logger.log(Level.INFO, "newlyAddedFiles={0}",  xstream.toXML(dataFiles));
+            
+            return ok( JsonPrinter.jsonDataFileList(dataFiles));
+        } catch (JsonParseException ex) {
+            logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
+            return error( Response.Status.BAD_REQUEST, "Error parsing dataset: " + ex.getMessage() );
+            
+        } catch (NoFilesException ex) {
+            logger.log(Level.SEVERE, null, ex);
+            return error(Response.Status.BAD_REQUEST, "Datafile was not found: " + ex.getMessage() );
+        } catch (WrappedResponse ex) {
+            logger.log(Level.SEVERE, null, ex);
+            return ex.getResponse();
+
+        }
+    }
+
+
     
     private void msg(String m){
         //System.out.println(m);

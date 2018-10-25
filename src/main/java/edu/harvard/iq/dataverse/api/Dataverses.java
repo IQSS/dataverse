@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -104,7 +106,7 @@ import java.util.Optional;
 public class Dataverses extends AbstractApiBean {
        
     private static final Logger logger = Logger.getLogger(Dataverses.class.getCanonicalName());
-
+    static XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
 //    @EJB
@@ -204,7 +206,9 @@ public class Dataverses extends AbstractApiBean {
         try {
             User u = findUserOrDie();
             Dataverse owner = findDataverseOrDie(parentIdtf);
+            logger.log(Level.INFO, "jsonBody:createDataset={0}", jsonBody);
             Dataset ds = parseDataset(jsonBody);
+            logger.log(Level.INFO, "dataset={0}", xstream.toXML(ds));
             ds.setOwner(owner);
             
             if ( ds.getVersions().isEmpty() ) {
@@ -239,9 +243,11 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/datasets/:import")
     public Response importDataset( String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam ) {
         try {
+            logger.log(Level.INFO, "jsonBody:importDataset={0}", jsonBody);
             User u = findUserOrDie();
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = parseDataset(jsonBody);
+            logger.log(Level.INFO, "dataset:importDataset={0}", xstream.toXML(ds));
             ds.setOwner(owner);
             
             if ( ds.getVersions().isEmpty() ) {
@@ -300,7 +306,9 @@ public class Dataverses extends AbstractApiBean {
     }
     
     private Dataset parseDataset(String datasetJson ) throws WrappedResponse {
+        logger.log(Level.INFO, "parseDataset is called");
         try ( StringReader rdr = new StringReader(datasetJson) ) {
+            logger.log(Level.INFO, "calling jsonParser().parseDataset()");
             return jsonParser().parseDataset(Json.createReader(rdr).readObject());
         } catch ( JsonParsingException | JsonParseException jpe ) {
             logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", datasetJson);

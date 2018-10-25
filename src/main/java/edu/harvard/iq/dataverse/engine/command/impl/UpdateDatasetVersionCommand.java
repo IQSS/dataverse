@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -10,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -20,6 +23,9 @@ import java.util.logging.Logger;
 public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(UpdateDatasetVersionCommand.class.getCanonicalName());
+    
+    static XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
+    
     private final List<FileMetadata> filesToDelete;
     private boolean validateLenient = false;
     
@@ -71,11 +77,14 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         
         // Merge the new version into out JPA context, if needed.
         if ( editVersion.getId() == null || editVersion.getId() == 0L ) {
+            logger.log(Level.INFO, "editVersion Id is not set: persist data");
             ctxt.em().persist(editVersion);
         } else {
+            logger.log(Level.INFO, "editVersion Id is already set: merge data");
             ctxt.em().merge(editVersion);
         }
         
+        logger.log(Level.INFO, "datafiles attatched to ds:size={0}", getDataset().getFiles().size());
         for (DataFile dataFile : getDataset().getFiles()) {
             if (dataFile.getCreateDate() == null) {
                 dataFile.setCreateDate(getTimestamp());
@@ -108,9 +117,12 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 recalculateUNF = true;
             }
         }
+        logger.log(Level.INFO, "recalculateUNF:statsus={0}", recalculateUNF);
         // we have to merge to update the database but not flush because 
         // we don't want to create two draft versions!
         Dataset tempDataset = ctxt.em().merge(getDataset());
+        
+        logger.log(Level.INFO, "tempDataset={0}", xstream.toXML(tempDataset));
         
         for (FileMetadata fmd : filesToDelete) {
             if (!fmd.getDataFile().isReleased()) {
@@ -138,8 +150,10 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         
         tempDataset.getEditVersion().setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());
-         
+        
         Dataset savedDataset = ctxt.em().merge(tempDataset);
+        logger.log(Level.INFO, "savedDataset={0}", xstream.toXML(savedDataset));
+        
         ctxt.em().flush();
 
         updateDatasetUser(ctxt);

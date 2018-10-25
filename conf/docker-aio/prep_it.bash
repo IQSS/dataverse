@@ -21,7 +21,7 @@ do
 	# cleanup from previous runs if necessary
 	docker rm -f dv
 	# start container
-	docker run -d -p 8084:80 -p 8083:8080 -p 9010:9009 --name dv dv0
+	docker run -d -p 15432:5432 -p 8084:80 -p 8083:8080 -p 9010:9009 --name dv dv0
 
 	# wait for glassfish to be healthy
 	i_wait=0
@@ -35,7 +35,7 @@ do
 			sleep $d_wait
 		fi
 		i_wait=$(( $i_wait + 1 ))
-		
+
 	done
 
 	# try setupIT.bash
@@ -68,4 +68,3 @@ cd ../..
 echo "docker-aio ready to run integration tests ($i_retry)"
 curl http://localhost:8084/api/info/version
 echo $?
-

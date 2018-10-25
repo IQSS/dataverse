@@ -544,7 +544,7 @@ public class ImportServiceBean {
 
         try (JsonReader jsonReader = Json.createReader(fileInputStream);) {
             JsonObject obj = jsonReader.readObject();
-
+            
             JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
             parser.setLenient(false);
             
@@ -676,7 +676,7 @@ public class ImportServiceBean {
             } else {
                 // case #2 dataset does not exist
                 logger.log(Level.INFO, "case #2: dataset does not exist=> new dataset");
-                logger.log(Level.INFO, "calling CreateDatasetCommand");
+                logger.log(Level.INFO, "calling CreateNewDatasetCommand");
                 Dataset managedDs = engineSvc.submit(new CreateNewDatasetCommand(ds, dataverseRequest));
                 status = " created dataset, id=" + managedDs.getId() + ".";
                 logger.log(Level.INFO, "case #2: new dataset: status={0}", status);
