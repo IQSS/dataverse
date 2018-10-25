@@ -90,7 +90,7 @@
 
                     <!-- VIEW ALL -->
                     <div class="col-xs-12">
-                        <p class="small text-muted"><a href="/dataverse/root?q=%28categoryFromDataverse%3A%22Journal%22%29&types=datasets&sort=dateSort&order=desc">ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                        <p class="small text-muted"><a href="/dataverse/root?q=%28categoryOfDataverse%3A%22Journal%22%29&types=datasets&sort=dateSort&order=desc">ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
                 </div>
 
@@ -104,7 +104,7 @@
 
                     <!-- VIEW ALL -->
                     <div class="col-xs-12">
-                        <p class="small text-muted"><a href= "/dataverse/root?q=%28categoryFromDataverse%3A%22Research+Project%22+OR+categoryFromDataverse%3A%22Researcher%22+OR+categoryFromDataverse%3A%22Research+Group%22%29&types=datasets&sort=dateSort&order=desc">ALL RECENT RESEARCHERS ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                        <p class="small text-muted"><a href= "/dataverse/root?q=%28categoryOfDataverse%3A%22Research+Project%22+OR+categoryOfDataverse%3A%22Researcher%22+OR+category_of_dataverse%3A%22Research+Group%22%29&types=datasets&sort=dateSort&order=desc">ALL RECENT RESEARCHERS ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
                 </div>
             </div>
@@ -147,7 +147,7 @@
 
     var thumbBaseURL = baseUrl + "/api/datasets/:persistentId/thumbnail" + "?persistentId=";
     var metricBaseUrl = baseUrl + "/api/info/metrics/";
-    var simpleCatSearch = baseUrl + "/api/search?q=*&type=dataset&fq=categoryFromDataverse:";
+    var simpleCatSearch = baseUrl + "/api/search?q=*&type=dataset&fq=categoryOfDataverse:";
 
     function writeRecentDatasetsInDataverses(fqString, resultCount, elm) {
         $.get(simpleCatSearch + fqString + "&per_page=" + resultCount, function(jData) {
@@ -157,7 +157,7 @@
                 resultHtml += "<div class=\"col-xs-12\">"           
                 resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">";
                 resultHtml += "<object data=\"" + thumbBaseURL + item.global_id + "\" type=\"image/png\"/><span class=\"icon-dataset\"></span></object></div>";
-                resultHtml += "<div class=\"col-xs-10\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">" + item.name + "</a></p><p class=\"small text-muted\">" + item.parentDataverse + " - " + date.toDateString() + "</p></div>";
+                resultHtml += "<div class=\"col-xs-10\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">" + item.name + "</a></p><p class=\"small text-muted\"><a href=\"/dataverse/" + item.identifier_of_dataverse + "\">" + item.name_of_dataverse + "</a> - " + date.toDateString() + "</p></div>";
                 resultHtml += "<hr class=\"col-xs-12\"/></div>"
             });
             document.getElementById(elm).innerHTML = resultHtml;

@@ -663,7 +663,9 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
 
         //This only grabs the immediate parent dataverse's category. We do the same for dataverses themselves.
-        solrInputDocument.addField(SearchFields.CATEGORY_FROM_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName());
+        solrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName());
+        solrInputDocument.addField(SearchFields.IDENTIFIER_OF_DATAVERSE, dataset.getDataverseContext().getAlias());
+        solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dataset.getDataverseContext().getDisplayName());
         
         Date datasetSortByDate = new Date();
         Date majorVersionReleaseDate = dataset.getMostRecentMajorVersionReleaseDate();
@@ -871,7 +873,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileEntityId);
                     datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
                     datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
-                    datafileSolrInputDocument.addField(SearchFields.CATEGORY_FROM_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName());
+                    datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName());
 
                     String filenameCompleteFinal = "";
                     if (fileMetadata != null) {

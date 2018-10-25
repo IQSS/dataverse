@@ -119,7 +119,14 @@ public class SearchFields {
      * than DATAVERSE_CATEGORY so it can be searched but doesn't show up on the
      * homepage facet
      */
-    public static final String CATEGORY_FROM_DATAVERSE = "categoryFromDataverse";
+    public static final String CATEGORY_OF_DATAVERSE = "categoryOfDataverse";
+    
+    /*
+     * The alias of the dataverse. This named differently because IDENTIFIER
+     * is used for dataset for its own identifier.
+     */
+    public static final String IDENTIFIER_OF_DATAVERSE = "identifierOfDataverse";
+    
     /**
      * @todo think about how to tie the fact that this needs to be multivalued
      * (_ss) because a multivalued facet (authorAffilition_ss) will be collapsed

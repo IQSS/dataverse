@@ -53,6 +53,8 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 	@Override
 	public Dataverse execute(CommandContext ctxt) throws CommandException {
             DataverseType oldDvType = ctxt.dataverses().find(editedDv.getId()).getDataverseType();
+            String oldDvAlias = ctxt.dataverses().find(editedDv.getId()).getAlias();
+            String oldDvName = ctxt.dataverses().find(editedDv.getId()).getName();
             Dataverse result = ctxt.dataverses().save(editedDv);
             
             if ( facetList != null ) {
@@ -79,12 +81,13 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
             
             ctxt.index().indexDataverse(result);
             
-            //When type is changed we need to reindex all children datasets
-            //This is not recursive, which matches functionally with parent dataverses
-            //not applying their Category to children dataverses
+            //When these values are changed we need to reindex all children datasets
+            //This check is not recursive as all the values just report the immediate parent
             //
             //This runs async to not slow down editing --MAD 4.9.4
-            if(!oldDvType.equals(editedDv.getDataverseType())) {
+            if(!oldDvType.equals(editedDv.getDataverseType()) 
+            || !oldDvName.equals(editedDv.getName())
+            || !oldDvAlias.equals(editedDv.getAlias())) {
                 List<Dataset> datasets = ctxt.datasets().findByOwnerId(editedDv.getId());
                 ctxt.index().asyncIndexDatasetList(datasets, true);
             }
