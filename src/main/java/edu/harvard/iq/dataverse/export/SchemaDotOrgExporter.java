@@ -18,7 +18,7 @@ import javax.json.JsonReader;
  * and available as an export format.
  * <p>
  * Do not make any backward incompatible changes unless it's absolutely
- * necessary and list them in the API Guide. The exisiting list is in the
+ * necessary and list them in the API Guide. The existing list is in the
  * "Native API" section.
  * <p>
  * {@link SchemaDotOrgExporterTest} has most of the tests but
@@ -43,8 +43,11 @@ import javax.json.JsonReader;
  * https://github.com/jsonld-java/jsonld-java-tools (unclear if they support
  * validation), https://github.com/structured-data/linter (couldn't get it
  * installed), https://github.com/json-ld/json-ld.org (couldn't get the test
- * suite to detect changes). We use https://github.com/everit-org/json-schema in
- * our app already to validate JSON Schema but JSON-LD is a different animal.
+ * suite to detect changes) , https://tech.yandex.com/validator/ (requires API
+ * key),
+ * https://packagist.org/packages/padosoft/laravel-google-structured-data-testing-tool
+ * (may be promising). We use https://github.com/everit-org/json-schema in our
+ * app already to validate JSON Schema but JSON-LD is a different animal.
  * https://schema.org/Dataset.jsonld appears to be the way to download just the
  * "Dataset" definition ( https://schema.org/Dataset ) from schema.org but the
  * official way to download these definitions is from
