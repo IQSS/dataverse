@@ -1526,7 +1526,10 @@ public class DatasetVersion implements Serializable {
     // released (published) version. This JSON fragment is generated for a 
     // specific released version - and we can have multiple released versions. 
     // So something will need to be modified to accommodate this. -- L.A.  
-    
+    /**
+     * We call the export format "Schema.org JSON-LD" and extensive Javadoc can
+     * be found in {@link SchemaDotOrgExporter}.
+     */
     public String getJsonLd() {
         // We show published datasets only for "datePublished" field below.
         if (!this.isPublished()) {

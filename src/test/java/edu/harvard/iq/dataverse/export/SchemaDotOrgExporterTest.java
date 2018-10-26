@@ -35,6 +35,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+/**
+ * For docs see {@link SchemaDotOrgExporter}.
+ */
 public class SchemaDotOrgExporterTest {
 
     private final SchemaDotOrgExporter schemaDotOrgExporter;
