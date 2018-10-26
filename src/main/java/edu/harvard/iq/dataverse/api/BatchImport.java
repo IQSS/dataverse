@@ -95,59 +95,7 @@ public class BatchImport extends AbstractApiBean {
         }
     }
 
-    /**
-     * Import a new Dataset with DDI xml data posted in the request
-     *
-     * 
-     * @param parentIdtf the dataverse to import into (id or alias)
-     * @param apiKey user's api key
-     * @param fileName Dataset Id string
-     * @param fileInputStream InputStream of the uploaded Json File
-     * @return import status (including id of the dataset created)
-     */
-    
-    @POST
-    @Path("importwoi")
-    @Consumes({MediaType.MULTIPART_FORM_DATA})
-    public Response postImportWoI(
-            @FormDataParam("dv") String parentIdtf, 
-            @FormDataParam("key") String apiKey, 
-            @FormDataParam("filename") String fileName,
-            @FormDataParam("file") InputStream fileInputStream) {
-        logger.log(Level.INFO, " ========= BatchImport#importwoi() is called  =========");
-        logger.log(Level.INFO, "datavarse Id: number or alias={0}", parentIdtf);
-        logger.log(Level.INFO, "api key={0}", apiKey);
-        logger.log(Level.INFO, "filename={0}", fileName);
-        
-        
-        DataverseRequest dataverseRequest;
-        
-        try {
-            dataverseRequest = createDataverseRequest(findAuthenticatedUserOrDie());
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
 
-        if (parentIdtf == null) {
-            parentIdtf = "root";
-        }
-        
-        Dataverse owner = findDataverse(parentIdtf);
-        logger.log(Level.INFO, "dataverse:owner={0}", owner);
-        if (owner == null) {
-            return error(Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
-        }
-        
-        try {
-            PrintWriter cleanupLog = null; // Cleanup log isn't needed for ImportType == NEW. We don't do any data cleanup in this mode.
-            logger.log(Level.INFO, "calling importService#doImportWoI()");
-            JsonObjectBuilder status = importService.doImportWoI(dataverseRequest, owner, fileInputStream, fileName, ImportType.IMPORT_METADATA_ONLY, cleanupLog);
-            logger.log(Level.INFO, "returned status={0}", status);
-            return this.ok(status);
-        } catch (ImportException | IOException e) {
-            return this.error(Response.Status.BAD_REQUEST, e.getMessage());
-        }
-    }
     
     
     

@@ -466,6 +466,10 @@ public class JsonParser {
         dataFile.setModificationTime(timestamp);
         dataFile.setPermissionModificationTime(timestamp);
         
+        // as of version 4.9.4, missing datafile-items that exist in JsonPrinter
+        // persistentId
+        // pidURL
+        
         if ( datafileJson.containsKey("filesize") ) {
             dataFile.setFilesize(datafileJson.getJsonNumber("filesize").longValueExact());
         }

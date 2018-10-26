@@ -15,9 +15,7 @@ public interface ImportUtil {
        NEW, 
 
        /** Data is harvested from another Dataverse instance */
-       HARVEST,
-       /** after TRSA */
-       IMPORT_METADATA_ONLY
+       HARVEST
    };
      
 }
