@@ -314,6 +314,9 @@ public class Dataverses extends AbstractApiBean {
     public Response importDatasetDdi(String xml, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) throws ImportException {
         try {
             User u = findUserOrDie();
+            if (!u.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = null;
             try {
