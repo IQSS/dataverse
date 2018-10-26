@@ -141,9 +141,8 @@
 <script type="text/javascript">
 //<![CDATA[
 
-    //You should not need to specify a baseUrl when running the homepage on the same server as dataverse
+    //switch baseUrl to point to a different server than the local box
     var baseUrl = ""; 
-    //var baseUrl = "http://localhost:8080";
 
     var thumbBaseURL = baseUrl + "/api/datasets/:persistentId/thumbnail" + "?persistentId=";
     var metricBaseUrl = baseUrl + "/api/info/metrics/";
@@ -171,6 +170,15 @@
             document.getElementById(elm).innerHTML = resultCount;
         });
     }
+    
+    function queryMetricSearch(metricRelPath, month) {
+        $.get(metricBaseUrl + metricRelPath + month, function(jData) {
+            var resultCount = jData.data.count;
+            var roundedDatasetCount = Math.floor(resultCount / 100) * 100;
+            var dynamicSearchPlaceholder = "Search over " + roundedDatasetCount + " datasets...";
+            $("#inputDataverseSearch").attr({"placeholder" : dynamicSearchPlaceholder});
+        });
+    }
 
     function querySubject(elm) {
         $.get(metricBaseUrl + "dataverses/bySubject", function(jData) {
@@ -194,20 +202,11 @@
     queryMetricSimple("datasets", "", "activityAllTimeDatasetsValue");
     queryMetricSimple("downloads", "", "activityAllTimeFilesValue");
     
-    //These don't actually return the past 30 days, just the value up until September. Will need discussion
     queryMetricSimple("datasets/pastDays", "/30", "activity30DaysDatasetsValue");
     queryMetricSimple("downloads/pastDays", "/30", "activity30DaysFilesValue");
     
     querySubject("dataversesBySubject");
-
-    $(document).ready(function () {
-        
-        var testRound = "76,999"; // $("#activityAllTimeDatasetsValue").text();
-        var dynamicDatasetCount = testRound.replace(/,/g, '');
-        var roundedDatasetCount = Math.floor(dynamicDatasetCount / 100) * 100;
-        var dynamicSearchPlaceholder = "Search over " + roundedDatasetCount + " datasets...";
-        $("#inputDataverseSearch").attr({"placeholder" : dynamicSearchPlaceholder});
-    });
+    queryMetricSearch("datasets", "");
 
 //]]>
 </script>
