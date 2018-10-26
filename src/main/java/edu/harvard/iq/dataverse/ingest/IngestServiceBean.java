@@ -642,6 +642,8 @@ public class IngestServiceBean {
                             Double numberFreq = freq.get(catValue);
                             if (numberFreq != null) {
                                 cat.setFrequency(numberFreq);
+                            } else {
+                                cat.setFrequency(0D);
                             }
                         }
                     } else {
