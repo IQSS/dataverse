@@ -19,16 +19,19 @@ import javax.inject.Named;
 @SessionScoped
 public class DataverseSession implements Serializable{
     
-	private User user;
-	
-	@EJB
-	PermissionServiceBean permissionsService;
-	
-	@EJB
-	BuiltinUserServiceBean usersSvc;
+    /* Note that on logout, variables must be cleared manually in DataverseHeaderFragment*/
+    private User user;
+
+    @EJB
+    PermissionServiceBean permissionsService;
+
+    @EJB
+    BuiltinUserServiceBean usersSvc;
 	
     @EJB 
     ActionLogServiceBean logSvc;
+    
+    private boolean statusDismissed = false;
     
     public User getUser() {
         if ( user == null ) {
@@ -46,8 +49,16 @@ public class DataverseSession implements Serializable{
         this.user = aUser;
     }
 
-	public StaticPermissionQuery on( Dataverse d ) {
-		return permissionsService.userOn(user, d);
-	}
+    public boolean isStatusDismissed() {
+        return statusDismissed;
+    }
+    
+    public void setStatusDismissed(boolean status) {
+        statusDismissed = status; //MAD: Set to true to enable code!
+    }
+    
+    public StaticPermissionQuery on( Dataverse d ) {
+            return permissionsService.userOn(user, d);
+    }
 
 }

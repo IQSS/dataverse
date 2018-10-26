@@ -97,7 +97,7 @@ public class UtilIT {
                 .post("/api/builtin-users?key=" + BUILTIN_USER_KEY + "&password=" + password);
         return response;
     }
-
+    
     public static Response createRandomUser() {
 
         return createRandomUser("user");
@@ -420,6 +420,14 @@ public class UtilIT {
                 .body(jsonIn)
                 .contentType("application/json")
                 .put("/api/datasets/:persistentId/editMetadata/?persistentId=" + persistentId + "&replace=true");
+        return response;
+    }
+    
+    static Response updateDatasetPIDMetadata(String persistentId,  String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .post("/api/datasets/:persistentId/modifyRegistrationMetadata/?persistentId=" + persistentId);
         return response;
     }
 
@@ -848,6 +856,17 @@ public class UtilIT {
                 .urlEncodingEnabled(false)
                 .get("/api/datasets/:persistentId/actions/:publish?type=" + majorOrMinor + "&persistentId=" + persistentId);
     }
+    
+    static Response modifyDatasetPIDMetadataViaApi(String persistentId,  String apiToken) {
+        /**
+         * @todo This should be a POST rather than a GET:
+         * https://github.com/IQSS/dataverse/issues/2431
+         */
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .get("/api/datasets/:persistentId/&persistentId=" + persistentId);
+    }
 
     static Response publishDatasetViaNativeApi(Integer datasetId, String majorOrMinor, String apiToken) {
         /**
@@ -1041,6 +1060,28 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .post("api/dataverses/" + movedDataverseAlias + "/move/" + targetDataverseAlias + "?forceMove=" + force + "&key=" + apiToken);
         return response;
+    }
+
+    static Response moveDataset(String idOrPersistentIdOfDatasetToMove, String destinationDataverseAlias, String apiToken) {
+        return moveDataset(idOrPersistentIdOfDatasetToMove, destinationDataverseAlias, false, apiToken);
+    }
+
+    private static Response moveDataset(String idOrPersistentIdOfDatasetToMove, String destinationDataverseAlias, boolean force, String apiToken) {
+        if (force) {
+            throw new RuntimeException("FIXME: support force");
+        }
+        String idInPath = idOrPersistentIdOfDatasetToMove; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentIdOfDatasetToMove)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDatasetToMove;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.post("/api/datasets/" + idInPath + "/move/" + destinationDataverseAlias + optionalQueryParam);
     }
     
     static Response createDataverseLink(String linkedDataverseAlias, String linkingDataverseAlias, String apiToken) {

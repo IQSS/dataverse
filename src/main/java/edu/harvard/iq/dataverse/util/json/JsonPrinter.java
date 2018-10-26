@@ -76,14 +76,15 @@ public class JsonPrinter {
 
     private static final Logger logger = Logger.getLogger(JsonPrinter.class.getCanonicalName());
 
-    static SettingsServiceBean settingsService;
+    static SettingsServiceBean settingsService = null;
 
-    public JsonPrinter(SettingsServiceBean settingsService) {
-        this.settingsService = settingsService;
+    // Passed to DatasetFieldWalker so it can check the :ExcludeEmailFromExport setting
+    public static void setSettingsService(SettingsServiceBean ssb) {
+            settingsService = ssb;
     }
 
     public JsonPrinter() {
-        this(null);
+   
     }
 
     public static final BriefJsonPrinter brief = new BriefJsonPrinter();
@@ -622,7 +623,7 @@ public class JsonPrinter {
         return fileCategories;
     }
 
-    private static JsonArrayBuilder getTabularFileTags(DataFile df) {
+    public static JsonArrayBuilder getTabularFileTags(DataFile df) {
         if (df == null) {
             return null;
         }
