@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -242,8 +243,8 @@ public class SchemaDotOrgExporterTest {
 
         Dataset dataset = new Dataset();
         dataset.setProtocol("doi");
-        dataset.setAuthority("myAuthority");
-        dataset.setIdentifier("myIdentifier");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("IMK5A4");
         dataset.setPublicationDate(new Timestamp(publicationDate.getTime()));
         version.setDataset(dataset);
         Dataverse dataverse = new Dataverse();
@@ -261,8 +262,8 @@ public class SchemaDotOrgExporterTest {
         dataFile.setFilesize(1234);
         dataFile.setContentType("text/plain");
         dataFile.setProtocol("doi");
-        dataFile.setAuthority("myAuthority");
-        dataFile.setIdentifier("myIdentifierFile1");
+        dataFile.setAuthority("10.5072/FK2");
+        dataFile.setIdentifier("7V5MPI");
         fmd.setDatasetVersion(version);
         fmd.setDataFile(dataFile);
         fmd.setLabel("README.md");
@@ -276,14 +277,15 @@ public class SchemaDotOrgExporterTest {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         schemaDotOrgExporter.exportDataset(version, json1, byteArrayOutputStream);
         String jsonLd = byteArrayOutputStream.toString();
-        System.out.println("schema.org JSON-LD: " + JsonUtil.prettyPrint(jsonLd));
+        String prettyJson = JsonUtil.prettyPrint(jsonLd);
+        System.out.println("schema.org JSON-LD: " + prettyJson);
         JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
         JsonObject json2 = jsonReader2.readObject();
         assertEquals("http://schema.org", json2.getString("@context"));
         assertEquals("Dataset", json2.getString("@type"));
-        assertEquals("https://doi.org/myAuthority/myIdentifier", json2.getString("@id"));
-        assertEquals("https://doi.org/myAuthority/myIdentifier", json2.getString("identifier"));
-        assertEquals("https://doi.org/myAuthority/myIdentifier", json2.getString("url"));
+        assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("@id"));
+        assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("identifier"));
+        assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("url"));
         assertEquals("Darwin's Finches", json2.getString("name"));
         assertEquals("Finch, Fiona", json2.getJsonArray("creator").getJsonObject(0).getString("name"));
         assertEquals("Birds Inc.", json2.getJsonArray("creator").getJsonObject(0).getString("affiliation"));
@@ -335,9 +337,12 @@ public class SchemaDotOrgExporterTest {
         assertEquals("text/plain", json2.getJsonArray("distribution").getJsonObject(0).getString("fileFormat"));
         assertEquals(1234, json2.getJsonArray("distribution").getJsonObject(0).getInt("contentSize"));
         assertEquals("README file.", json2.getJsonArray("distribution").getJsonObject(0).getString("description"));
-        assertEquals("https://doi.org/myAuthority/myIdentifierFile1", json2.getJsonArray("distribution").getJsonObject(0).getString("identifier"));
+        assertEquals("https://doi.org/10.5072/FK2/7V5MPI", json2.getJsonArray("distribution").getJsonObject(0).getString("identifier"));
         assertEquals("https://librascholar.org/api/access/datafile/42", json2.getJsonArray("distribution").getJsonObject(0).getString("contentUrl"));
         assertEquals(1, json2.getJsonArray("distribution").size());
+        try (PrintWriter printWriter = new PrintWriter("/tmp/dvjsonld.json")) {
+            printWriter.println(prettyJson);
+        }
     }
 
     /**
