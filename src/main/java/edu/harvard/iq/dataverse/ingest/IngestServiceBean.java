@@ -629,49 +629,43 @@ public class IngestServiceBean {
     }
 
     public void produceFrequencyStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
-        try {
-            for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
 
-                Collection<VariableCategory> cats = dataFile.getDataTable().getDataVariables().get(i).getCategories();
-                if (cats.size() > 0) {
-                    String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
-                    if (variableVector != null) {
-                        Hashtable<String, Double> freq = calculateFrequency(dataFile, i, variableVector);
-                        for (VariableCategory cat : cats) {
-                            String catValue = cat.getValue();
-                            Double numberFreq = freq.get(catValue);
-                            if (numberFreq != null) {
-                                cat.setFrequency(numberFreq);
-                            } else {
-                                cat.setFrequency(0D);
-                            }
+        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
+
+            Collection<VariableCategory> cats = dataFile.getDataTable().getDataVariables().get(i).getCategories();
+            if (cats.size() > 0) {
+                String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
+                if (variableVector != null) {
+                    Hashtable<String, Double> freq = calculateFrequency(dataFile, i, variableVector);
+                    for (VariableCategory cat : cats) {
+                        String catValue = cat.getValue();
+                        Double numberFreq = freq.get(catValue);
+                        if (numberFreq != null) {
+                            cat.setFrequency(numberFreq);
+                        } else {
+                            cat.setFrequency(0D);
                         }
-                    } else {
-                        logger.fine("variableVector is null");
-                        logger.fine("for variable " + dataFile.getDataTable().getDataVariables().get(i).getName()  );
                     }
+                } else {
+                    logger.fine("variableVector is null for variable " + dataFile.getDataTable().getDataVariables().get(i).getName());
                 }
             }
-        } catch (Exception e) {
-            logger.warning(e.getMessage());
         }
+
     }
 
     public Hashtable<String, Double> calculateFrequency(DataFile dataFile, int i, String[] variableVector) {
         Hashtable<String, Double> freq = new Hashtable<String, Double>();
-        try {
-            for (int j = 0; j < variableVector.length; j++) {
-                if (variableVector[j] != null) {
-                    Double freqNum = freq.get(variableVector[j]);
-                    if (freqNum != null) {
-                        freq.put(variableVector[j], freqNum + 1);
-                    } else {
-                        freq.put(variableVector[j], 1D);
-                    }
+
+        for (int j = 0; j < variableVector.length; j++) {
+            if (variableVector[j] != null) {
+                Double freqNum = freq.get(variableVector[j]);
+                if (freqNum != null) {
+                    freq.put(variableVector[j], freqNum + 1);
+                } else {
+                    freq.put(variableVector[j], 1D);
                 }
             }
-        } catch (Exception e) {
-            logger.warning(e.getMessage());
         }
 
         return freq;
