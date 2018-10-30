@@ -149,7 +149,7 @@
 
     var thumbBaseURL = baseUrl + "/api/datasets/:persistentId/thumbnail" + "?persistentId=";
     var metricBaseUrl = baseUrl + "/api/info/metrics/";
-    var simpleCatSearch = baseUrl + "/api/search?q=*&type=dataset&fq=categoryOfDataverse:";
+    var simpleCatSearch = baseUrl + "/api/search?q=*&type=dataset&sort=dateSort&order=desc&fq=categoryOfDataverse:";
 
     function writeRecentDatasetsInDataverses(fqString, resultCount, elm) {
         $.get(simpleCatSearch + fqString + "&per_page=" + resultCount, function(jData) {
