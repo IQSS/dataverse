@@ -213,17 +213,21 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
     }
 
     private boolean updateIdentifierStatus(DvObject dvObject, String statusIn) {
-        logger.log(Level.FINE,"updateIdentifierStatus");
+        logger.log(Level.FINE, "updateIdentifierStatus");
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = getUpdateMetadata(dvObject);
-        metadata.put("_status", statusIn);
-        metadata.put("_target", getTargetUrl(dvObject));
+        String objMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+        Map<String, String> dcMetadata;
+        dcMetadata = new HashMap<>();
+        dcMetadata.put("datacite", objMetadata);
+        dcMetadata.put("_status", statusIn);
+        dcMetadata.put("_target", getTargetUrl(dvObject));
+
         try {
-            // ezID API requires HashMap, not just any map.
-            ezidService.setMetadata(identifier,
-                (metadata instanceof HashMap) ? (HashMap)metadata : new HashMap<>(metadata));
+            // ezID API requires HashMap, not just any map.            
+            ezidService.setMetadata(identifier, asHashMap(dcMetadata));
             return true;
-            
+
         } catch (EZIDException e) {
             logger.log(Level.WARNING, "modifyMetadata failed");
             logger.log(Level.WARNING, "String {0}", e.toString());
@@ -252,10 +256,15 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
         }
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = getMetadataForCreateIndicator(dvObject);
-        metadata.put("datacite.resourcetype", "Dataset");
-        metadata.put("_status", "reserved");
+        String objMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+        Map<String, String> dcMetadata;
+        dcMetadata = new HashMap<>();
+        dcMetadata.put("datacite", objMetadata);
+        dcMetadata.put("datacite.resourcetype", "Dataset");
+        dcMetadata.put("_status", "reserved");
+
         try {
-            String retString = ezidService.createIdentifier(identifier, asHashMap(metadata));
+            String retString = ezidService.createIdentifier(identifier, asHashMap(dcMetadata));
             logger.log(Level.FINE, "create DOI identifier retString : {0}", retString);
             return retString;
         } catch (EZIDException e) {

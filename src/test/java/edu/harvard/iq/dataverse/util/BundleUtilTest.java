@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -70,5 +71,21 @@ public class BundleUtilTest {
         assertEquals(null, BundleUtil.getStringFromBundle(null, null, null));
         assertEquals("Search", BundleUtil.getStringFromBundle("search", null, ResourceBundle.getBundle("Bundle", Locale.US)));
     }
+    
+    @Test
+    public void testStringFromPropertyFile() {
+        assertEquals("ZIP", BundleUtil.getStringFromPropertyFile("application/zip","MimeTypeFacets"));
+    }
 
+    //To assure that the MissingResourceException bubble up from this call
+    @Test(expected = MissingResourceException.class)
+    public void testStringFromPropertyFileException() {
+        BundleUtil.getStringFromPropertyFile("FAKE","MimeTypeFacets");
+    }
+    
+    //To assure MissingResourceException is caught when calling normal bundle calls
+    @Test
+    public void testNoErrorNonExistentStringBundle() {
+        BundleUtil.getStringFromBundle("FAKE", null, BundleUtil.getResourceBundle("MimeTypeFacets")); 
+    }
 }
