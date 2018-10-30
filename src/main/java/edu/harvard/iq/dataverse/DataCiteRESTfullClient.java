@@ -64,9 +64,13 @@ public class DataCiteRESTfullClient implements Closeable {
         }
     }
 
-    public void close() throws IOException {
+    public void close() {
         if (this.httpClient != null) {
+            try {
            httpClient.close();
+            } catch (IOException io) {
+               logger.warning("IOException closing hhtpClient: " + io.getMessage());
+           }
         }
     }
 
@@ -154,8 +158,10 @@ public class DataCiteRESTfullClient implements Closeable {
         try {
             HttpResponse response = httpClient.execute(httpGet,context);
             if (response.getStatusLine().getStatusCode() != 200) {
+                EntityUtils.consumeQuietly(response.getEntity());
                 return false;
             }
+            EntityUtils.consumeQuietly(response.getEntity());
             return true;
         } catch (IOException ioe) {
             logger.log(Level.SEVERE, "IOException when get metadata");
