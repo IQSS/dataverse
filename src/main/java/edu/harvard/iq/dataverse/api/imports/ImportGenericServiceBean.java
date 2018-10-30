@@ -411,11 +411,13 @@ public class ImportGenericServiceBean {
             if (identifierString.startsWith(GlobalId.HDL_RESOLVER_URL)) {
                 logger.fine("Processing Handle identifier formatted as a resolver URL: "+identifierString);
                 protocol = GlobalId.HDL_PROTOCOL;
-                index1 = GlobalId.HDL_RESOLVER_URL.length() - 1; 
+                index1 = GlobalId.HDL_RESOLVER_URL.length() - 1;
+                index2 = identifierString.indexOf("/", index1 + 1);
             } else if (identifierString.startsWith(GlobalId.DOI_RESOLVER_URL)) {
                 logger.fine("Processing DOI identifier formatted as a resolver URL: "+identifierString);
                 protocol = GlobalId.DOI_PROTOCOL;
                 index1 = GlobalId.DOI_RESOLVER_URL.length() - 1; 
+                index2 = identifierString.indexOf("/", index1 + 1);
             } else {
                 logger.warning("HTTP Url in supplied as the identifier is neither a Handle nor DOI resolver: "+identifierString);
                 return null;
