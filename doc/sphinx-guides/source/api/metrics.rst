@@ -6,105 +6,65 @@ Metrics API
 
 .. note:: |CORS| The Metrics API can be used from scripts running in web browsers, as it allows cross-origin resource sharing (CORS).
 
+.. note:: For all metrics `besides` Past Days Count (``/pastDays/$days``), Database setting ``MetricsCacheTimeoutMinutes`` defines how long the cached value will be returned by subsequent queries.
+
 .. _CORS: https://www.w3.org/TR/cors/
 
-dataverses
-----------
+Counts
+------
 
-Returns an all-time count of the dataverses. ``MetricsCacheTimeoutMinutes`` sets how long the cached value will be returned by subsequent queries.
+For all count metrics, ``$type`` can be set to ``dataverses``, ``datasets``, ``files`` or ``downloads``.
 
-``curl https://demo.dataverse.org/api/info/metrics/dataverses``
 
-datasets
---------
+All-Time
+~~~~~~~~
 
-Returns an all-time count of the datasets. ``MetricsCacheTimeoutMinutes`` sets how long the cached value will be returned by subsequent queries.
+Returns a count of various objects in dataverse over all-time::
 
-``curl https://demo.dataverse.org/api/info/metrics/datasets``
+    GET https://$SERVER/api/info/metrics/$type
 
-files
+Example: ``curl https://demo.dataverse.org/api/info/metrics/downloads``
+
+To-Month Counts
+~~~~~~~~~~~~~~~
+
+Returns a count of various objects in dataverse up to a specified month ``$YYYY-DD`` in YYYY-MM format (i.e. ``2018-01``)::
+
+    GET https://$SERVER/api/info/metrics/$type/toMonth/$YYYY-DD
+
+Example: ``curl https://demo.dataverse.org/api/info/metrics/dataverses/toMonth/2018-01``
+
+
+Past Days Counts
+~~~~~~~~~~~~~~~~
+
+Returns a count of various objects in dataverse for the past ``$days`` (i.e. ``30``):: 
+
+    GET https://$SERVER/api/info/metrics/$type/pastDays/$days
+
+Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/pastDays/30``
+
+Other
 -----
 
-Returns an all-time count of the files. ``MetricsCacheTimeoutMinutes`` sets how long the cached value will be returned by subsequent queries.
+By Subject
+~~~~~~~~~~~~~~~
 
-``curl https://demo.dataverse.org/api/info/metrics/files``
+Returns the number of various objects by each subject. ``$type`` can be set to ``dataverses`` or ``datasets``::
 
-downloads
----------
+    GET https://$SERVER/api/info/metrics/$type/bySubject
 
-Returns a count of all the downloads. ``MetricsCacheTimeoutMinutes`` sets how long the cached value will be returned by subsequent queries.
+Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/bySubject``
 
-``curl https://demo.dataverse.org/api/info/metrics/downloads``
 
-dataverses/toMonth/$month
--------------------------
+By Category
+~~~~~~~~~~~~~~~~~~~~~~
 
-Returns a count up to the specified month in YYYY-MM format (i.e. ``/2018-01``).
+Returns the number an object by each category. ``$type`` can only be set to ``dataverses`` at this time::
 
-``curl https://demo.dataverse.org/api/info/metrics/dataverses/toMonth/YYYY-DD``
+    GET https://$SERVER/api/info/metrics/dataverses/byCategory
 
-datasets/toMonth/$month
------------------------
-
-Returns a count up to the specified month in YYYY-MM format (i.e. ``/2018-01``).
-
-``curl https://demo.dataverse.org/api/info/metrics/datasets/toMonth/YYYY-DD``
-
-files/toMonth/$month
---------------------
-
-Returns a count up to the specified month in YYYY-MM format (i.e. ``/2018-01``).
-
-``curl https://demo.dataverse.org/api/info/metrics/files/toMonth/YYYY-DD``
-
-downloads/toMonth/$month
-------------------------
-
-Returns a count up to the specified month in YYYY-MM format (i.e. ``/2018-01``).
-
-``curl https://demo.dataverse.org/api/info/metrics/downloads/toMonth/YYYY-DD``
-
-dataverses/pastDays/$days
--------------------------
-
-Returns a count back to the specified day (i.e. ``/30``). The number returned is cached by the system until the next day.
-
-``curl https://demo.dataverse.org/api/info/metrics/dataverses/pastDays/#ofdays``
-
-datasets/pastDays/$days
------------------------
-
-Returns a count back to the specified day (i.e. ``/30``). The number returned is cached by the system until the next day.
-
-``curl https://demo.dataverse.org/api/info/metrics/datasets/pastDays/#ofdays``
-
-files/pastDays/$days
---------------------
-
-Returns a count back to the specified day (i.e. ``/30``). The number returned is cached by the system until the next day.
-
-``curl https://demo.dataverse.org/api/info/metrics/files/pastDays/#ofdays``
-
-downloads/pastDays/$days
-------------------------
-
-Returns a count back to the specified day (i.e. ``/30``). The number returned is cached by the system until the next day.
-
-``curl https://demo.dataverse.org/api/info/metrics/downloads/pastDays/#ofdays``
-
-dataverses/byCategory
----------------------
-
-Returns the number of dataverses by each category. ``MetricsCacheTimeoutMinutes`` sets how long the cached value will be returned by subsequent queries.
-
-``curl https://demo.dataverse.org/api/info/metrics/dataverses/byCategory``
-
-datasets/bySubject
-------------------
-
-Returns the number of datasets by each subject. ``MetricsCacheTimeoutMinutes`` sets how long the cached value will be returned by subsequent queries.
-
-``curl https://demo.dataverse.org/api/info/metrics/datasets/bySubject``
+Example: ``curl https://demo.dataverse.org/api/info/metrics/dataverses/byCategory``
 
 .. |CORS| raw:: html
 
