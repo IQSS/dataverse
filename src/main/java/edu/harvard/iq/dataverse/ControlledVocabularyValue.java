@@ -24,6 +24,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -66,7 +67,7 @@ public class ControlledVocabularyValue implements Serializable  {
     public String getStrValue()
     {
         String key = strValue.toLowerCase().replace(" " , "_");
-        key = key.replaceAll("[^\\p{ASCII}]", "");
+        key = StringUtils.stripAccents(key);
 
         if(getDatasetFieldType().getMetadataBlock()  == null){
             return strValue;
