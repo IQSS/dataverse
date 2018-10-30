@@ -55,6 +55,7 @@ As a developer, you also may be interested in these projects related to Datavers
 
 - External Tools - add additional features to Dataverse: See the :doc:`/installation/external-tools` section of the Installation Guide.
 - Dataverse API client libraries - use Dataverse APIs from various languages: :doc:`/api/client-libraries`
+- DVUploader - a stand-alone command-line Java application that uses the Dataverse API to support upload of files from local disk to a Dataset: https://github.com/IQSS/dataverse-uploader 
 - Miniverse - expose metrics from a Dataverse database: https://github.com/IQSS/miniverse
 - Configuration management scripts - Ansible, Puppet, etc.: See "Advanced Installation" in the :doc:`/installation/prep` section of the Installation Guide.
 - :doc:`/developers/unf/index` (Java) -  a Universal Numerical Fingerprint: https://github.com/IQSS/UNF
