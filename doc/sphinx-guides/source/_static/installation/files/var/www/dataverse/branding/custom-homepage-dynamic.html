@@ -3,16 +3,6 @@
     /* Custom CSS for the custom homepage... */
     .lite-header {font-weight: normal;}
     div.hmpg-action-block {padding-top:1em;}
-    div.search-widget {padding-bottom: 2em;}
-    div.browse-subjects {padding:0 2px;}
-    div.browse-subjects a {color: #C55B28;}
-    div.browse-subjects a:focus, div.browse-subjects a:hover {color: #9F3502;}
-    #dataversesBySubject {-webkit-column-count: 3; -moz-column-count: 3; column-count: 3;}
-    div.hmpg-recent-col div.col-xs-2.hmpg-recent-thumb {width:48px !important; padding:0 !important;}
-    div.hmpg-recent-col div.hmpg-recent-thumb img {max-height:48px;max-width:48px;}
-    div.hmpg-recent-col div.hmpg-recent-thumb span {font-size:38px;}
-    div.hmpg-activity-block .row .lite-header {margin-left:1em;}
-
     .btn-harvard { 
       color: #A51C30;
       background: #FFFFFF;
@@ -26,7 +16,20 @@
       color: #7F000A;
       background: #FFFFFF;
       font-weight: bold;
-    } 
+    }
+
+    div.search-widget {padding-bottom: 2em;}
+    div.browse-subjects {padding:0 2px;}
+    div.browse-subjects a {color: #C55B28;}
+    div.browse-subjects a:focus, div.browse-subjects a:hover {color: #9F3502;}
+    @media (min-width: 768px) {
+        #dataversesBySubject {-webkit-column-count: 3; -moz-column-count: 3; column-count: 3;}
+    }
+
+    div.hmpg-recent-col div.col-xs-2.hmpg-recent-thumb {width:48px !important; padding:0 !important;}
+    div.hmpg-recent-col div.hmpg-recent-thumb img {max-height:48px;max-width:48px;}
+    div.hmpg-recent-col div.hmpg-recent-thumb span {font-size:38px;}
+    div.hmpg-activity-block .row .lite-header {margin-left:1em;} 
 </style>
 
     <!-- ACTIONS -->
@@ -67,7 +70,7 @@
             </div>
         </div>
         
-        <!-- BROWSE -->
+        <!-- BROWSE SUBJECT -->
         <div class="col-xs-12">
             <p class="text-muted">Browse dataverses in this repository by subject.</p>
             <div class="row margin-bottom">
@@ -77,7 +80,7 @@
             </div>
         </div>
 
-        <!-- RECENT -->
+        <!-- RECENT CATEGORY -->
         <div class="col-xs-12">
             <div class="row">
                 <div class="col-sm-6 col-xs-12 hmpg-recent-col">
