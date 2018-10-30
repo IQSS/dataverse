@@ -66,6 +66,8 @@ public class ControlledVocabularyValue implements Serializable  {
     public String getStrValue()
     {
         String key = strValue.toLowerCase().replace(" " , "_");
+        key = key.replaceAll("[^\\p{ASCII}]", "");
+
         if(getDatasetFieldType().getMetadataBlock()  == null){
             return strValue;
         }
