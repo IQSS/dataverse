@@ -209,6 +209,13 @@ public class SearchIT {
 
     }
 
+    /*
+     * Note: this test does a lot of checking for permissions with / without privlidged api key.
+     * Thumbnails access is the same with/without that access as of 4.9.4 --MAD
+     * 
+     * If permissions come into play for thumbnails, the deprecated UtilIT.getInputStreamFromUnirest
+     * should be repaired to actually use api keys
+     */
     @Test
     public void testDatasetThumbnail() {
         logger.info("BEGIN testDatasetThumbnail");
@@ -283,12 +290,12 @@ public class SearchIT {
         
         InputStream inputStream1creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
         assertNotEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream1creator));
-//
+
         InputStream inputStream1guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
         assertNotEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream1guest));
  
 
-        Response getThumbnailImage1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken); //
+        Response getThumbnailImage1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken); 
         getThumbnailImage1.prettyPrint();
         getThumbnailImage1.then().assertThat()
                 .contentType("")

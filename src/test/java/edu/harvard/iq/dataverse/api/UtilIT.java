@@ -1434,8 +1434,9 @@ public class UtilIT {
     }
 
     /**
-     * @todo figure out how to get an InputStream from REST Assured instead.
+     * Deprecated as the apiToken is not used by the call.
      */
+    @Deprecated
     static InputStream getInputStreamFromUnirest(String url, String apiToken) {
         GetRequest unirestOut = Unirest.get(url);
         try {
