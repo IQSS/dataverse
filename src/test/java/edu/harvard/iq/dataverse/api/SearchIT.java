@@ -19,19 +19,18 @@ import java.util.Base64;
 import javax.json.JsonArray;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import org.hamcrest.CoreMatchers;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.hamcrest.Matchers;
 import org.junit.After;
+import static org.junit.Assert.assertNotEquals;
 
 public class SearchIT {
 
@@ -273,17 +272,27 @@ public class SearchIT {
                 .statusCode(200);
 
         String thumbnailUrl = RestAssured.baseURI + "/api/datasets/" + datasetId + "/thumbnail";
-        InputStream inputStream1creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
-        assertNull(inputStream1creator);
+        
+        File trees = new File("scripts/search/data/binary/trees.png");
+        String treesAsBase64 = null;
+        treesAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(trees, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
+        if (treesAsBase64 == null) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file trees.png");
+        }
+        
+        InputStream inputStream1creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
+        assertNotEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream1creator));
+//
         InputStream inputStream1guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
-        assertNull(inputStream1guest);
+        assertNotEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream1guest));
+ 
 
         Response getThumbnailImage1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken); //
         getThumbnailImage1.prettyPrint();
         getThumbnailImage1.then().assertThat()
                 .contentType("")
-                .statusCode(NO_CONTENT.getStatusCode());
+                .statusCode(NOT_FOUND.getStatusCode());
 
         Response attemptToGetThumbnailCandidates = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, noSpecialAcessApiToken);
         attemptToGetThumbnailCandidates.prettyPrint();
@@ -302,7 +311,7 @@ public class SearchIT {
         getThumbnailImageNoAccess1.prettyPrint();
         getThumbnailImageNoAccess1.then().assertThat()
                 .contentType("")
-                .statusCode(NO_CONTENT.getStatusCode());
+                .statusCode(NOT_FOUND.getStatusCode());
 
         Response uploadFile = UtilIT.uploadFile(datasetPersistentId, "trees.zip", apiToken);
         uploadFile.prettyPrint();
@@ -314,14 +323,6 @@ public class SearchIT {
                 .statusCode(200);
 
         logger.info("DataFile uploaded, should automatically become the thumbnail:");
-
-        File trees = new File("scripts/search/data/binary/trees.png");
-        String treesAsBase64 = null;
-        treesAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(trees, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-
-        if (treesAsBase64 == null) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file trees.png");
-        }
 
         Response search2 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
         search2.prettyPrint();
@@ -364,8 +365,14 @@ public class SearchIT {
                 .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
 
+        
+        Response getThumbnailImageA = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken); //
+        getThumbnailImageA.prettyPrint();
+        getThumbnailImageA.then().assertThat()
+                .contentType("image/png")
+                .statusCode(OK.getStatusCode());
+
         InputStream inputStream2creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
-        assertNotNull(inputStream2creator);
         assertEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream2creator));
 
         InputStream inputStream2guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
@@ -533,12 +540,18 @@ public class SearchIT {
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(true))
                 .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
-
+        
         InputStream inputStream5creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
-        assertNull(inputStream5creator);
+        assertNotEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream5creator));
 
         InputStream inputStream5guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
-        assertNull(inputStream5guest);
+        assertNotEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream5guest));
+        
+        Response getThumbnailImageB = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken); //
+        getThumbnailImageB.prettyPrint();
+        getThumbnailImageB.then().assertThat()
+                .contentType("")
+                .statusCode(NOT_FOUND.getStatusCode());
 
         Response search5 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
         search5.prettyPrint();

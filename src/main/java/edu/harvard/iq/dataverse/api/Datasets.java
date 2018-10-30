@@ -981,12 +981,11 @@ public class Datasets extends AbstractApiBean {
             Dataset dataset = findDatasetOrDie(idSupplied);
             InputStream is = DatasetUtil.getThumbnailAsInputStream(dataset);
             if(is == null) {
-                return error(Response.Status.NOT_FOUND, "Thumbnail not available");
+                return notFound("Thumbnail not available");
             }
             return Response.ok(is).build();
-            //return DatasetUtil.getThumbnailAsInputStream(dataset);
         } catch (WrappedResponse wr) {
-            return wr.getResponse();
+            return notFound("Thumbnail not available");
         }
     }
 
