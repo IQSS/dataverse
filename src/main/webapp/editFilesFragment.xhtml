@@ -225,7 +225,7 @@
                                   dragDropSupport="true"
                                   auto="true"
                                   multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}"
-                                  disabled="#{DatasetPage.lockedFromEdits || EditDatafilesPage.dataset.locked  || !(datasetPage || EditDatafilesPage.showFileUploadComponent())}"
+                                  disabled="#{lockedFromEdits ||  !(datasetPage || EditDatafilesPage.showFileUploadComponent()) }"
                                   fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
                                   process="filesTable" 
                                   update=":datasetForm:filesTable, @([id$=filesButtons])"
@@ -239,7 +239,7 @@
                                   sequential="true"
                                   widgetVar="fileUploadWidget"/>
                                 
-                                <div jsf:id="dropboxBlock" jsf:rendered="#{settingsWrapper.isHasDropBoxKey() and !(DatasetPage.lockedFromEdits or EditDatafilesPage.dataset.locked ) }"  class="margin-top">
+                                <div jsf:id="dropboxBlock" jsf:rendered="#{settingsWrapper.isHasDropBoxKey() and !lockedFromEdits }"  class="margin-top">
                                     <!-- Dropbox upload widget -->
                                     <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.fromDropbox.tip']}</p>
                                     <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>

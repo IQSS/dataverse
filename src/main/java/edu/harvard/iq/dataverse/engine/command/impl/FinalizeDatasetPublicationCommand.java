@@ -41,19 +41,16 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
     private static final Logger logger = Logger.getLogger(FinalizeDatasetPublicationCommand.class.getName());
     
-    String doiProvider;
-
     /**
      * mirror field from {@link PublishDatasetCommand} of same name
      */
     final boolean datasetExternallyReleased;
     
-    public FinalizeDatasetPublicationCommand(Dataset aDataset, String aDoiProvider, DataverseRequest aRequest) {
-        this( aDataset, aDoiProvider, aRequest, false );
+    public FinalizeDatasetPublicationCommand(Dataset aDataset, DataverseRequest aRequest) {
+        this( aDataset, aRequest, false );
     }
-    public FinalizeDatasetPublicationCommand(Dataset aDataset, String aDoiProvider, DataverseRequest aRequest, boolean isPidPrePublished) {
+    public FinalizeDatasetPublicationCommand(Dataset aDataset, DataverseRequest aRequest, boolean isPidPrePublished) {
         super(aDataset, aRequest);
-        doiProvider = aDoiProvider;
 	datasetExternallyReleased = isPidPrePublished;
     }
 
@@ -87,7 +84,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         // comes from there. There's a chance that the final merge, at the end of this
         // command, would be sufficient. -- L.A. Sep. 6 2017
         theDataset = ctxt.em().merge(theDataset);
-        
+        setDataset(theDataset);
         updateDatasetUser(ctxt);
         
         //if the publisher hasn't contributed to this version
@@ -105,9 +102,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         ctxt.em().merge(ddu);
         
         updateParentDataversesSubjectsField(theDataset, ctxt);
-	if (!datasetExternallyReleased){
-		publicizeExternalIdentifier(theDataset, ctxt);
-	}
 
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
         if (privateUrl != null) {
@@ -135,9 +129,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
         }
         
+        final Dataset ds = ctxt.em().merge(theDataset);
+        
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
-                ctxt.workflows().start(wf, buildContext(doiProvider, TriggerType.PostPublishDataset));
+                ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased));
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);
             }
