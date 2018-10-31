@@ -363,9 +363,10 @@ public class JsonParser {
 
     public List<DatasetField> parseMetadataBlocks(JsonObject json) throws JsonParseException {
         logger.log(Level.INFO, "within parseMetadataBlocks");
-        logger.log(Level.INFO, "json={0}",xstream.toXML(json));
+        logger.log(Level.FINE, "json={0}",xstream.toXML(json));
         
         Set<String> keys = json.keySet();
+        logger.log(Level.INFO, "keys={0}", xstream.toXML(keys));
         List<DatasetField> fields = new LinkedList<>();
 
         for (String blockName : keys) {
@@ -391,6 +392,7 @@ public class JsonParser {
     }
     
     private List<DatasetField> parseFieldsFromArray(JsonArray fieldsArray, Boolean testType) throws JsonParseException {
+        logger.log(Level.INFO, "entering parseFieldsFromArray method:testType={0}", testType);
             List<DatasetField> fields = new LinkedList<>();
             for (JsonObject fieldJson : fieldsArray.getValuesAs(JsonObject.class)) {
                 try {
@@ -805,17 +807,22 @@ public class JsonParser {
     
     
     public DatasetField parseField(JsonObject json, Boolean testType) throws JsonParseException {
+        logger.log(Level.INFO, "parseField: testType={0}", testType);
         if (json == null) {
             return null;
         }
 
         DatasetField ret = new DatasetField();
         DatasetFieldType type = datasetFieldSvc.findByNameOpt(json.getString("typeName", ""));
-    
+
 
         if (type == null) {
             throw new JsonParseException("Can't find type '" + json.getString("typeName", "") + "'");
         }
+        logger.log(Level.INFO, "DatasetFieldType:name={0}", type.getName());
+        logger.log(Level.INFO, "testType={0}", testType);
+        logger.log(Level.INFO, "type.isAllowMultiples()={0}", type.isAllowMultiples());
+        logger.log(Level.INFO, "json={0}", xstream.toXML(json));
         if (testType && type.isAllowMultiples() != json.getBoolean("multiple")) {
             throw new JsonParseException("incorrect multiple   for field " + json.getString("typeName", ""));
         }

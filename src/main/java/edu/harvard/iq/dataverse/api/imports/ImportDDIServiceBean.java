@@ -40,6 +40,8 @@ import org.apache.commons.lang.StringUtils;
 // -- L.A. 4.5
 @Stateless
 public class ImportDDIServiceBean {
+    
+    private static final Logger logger = Logger.getLogger(ImportDDIServiceBean.class.getName());
     public static final String SOURCE_DVN_3_0 = "DVN_3_0";
     
     public static final String NAMING_PROTOCOL_HANDLE = "hdl";
@@ -817,7 +819,7 @@ public class ImportDDIServiceBean {
     
     private void handleChildField(MetadataBlockDTO customBlock, DatasetFieldType dsfType, String fieldValue) throws ImportException {
         DatasetFieldType parent = dsfType.getParentDatasetFieldType();
-
+        logger.log(Level.INFO, "fieldValue={0}", fieldValue);
         // Create child Field
         FieldDTO child = null;
         if (dsfType.isAllowControlledVocabulary()) {

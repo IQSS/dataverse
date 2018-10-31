@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
+import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportFileType;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -153,13 +154,18 @@ public class ImportServiceBean {
     }
 
     @TransactionAttribute(REQUIRES_NEW)
-    public JsonObjectBuilder handleFile(DataverseRequest dataverseRequest, Dataverse owner, File file, ImportType importType, PrintWriter validationLog, PrintWriter cleanupLog) throws ImportException, IOException {
+    public JsonObjectBuilder handleFile(DataverseRequest dataverseRequest, Dataverse owner, File file, ImportType importType, PrintWriter validationLog, PrintWriter cleanupLog, ImportFileType importFileType) throws ImportException, IOException {
 
         System.out.println("handling file: " + file.getAbsolutePath());
-        String ddiXMLToParse;
+        String fileToParse;
+        JsonObjectBuilder status;
         try {
-            ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
-            JsonObjectBuilder status = doImport(dataverseRequest, owner, ddiXMLToParse,file.getParentFile().getName() + "/" + file.getName(), importType, cleanupLog);
+            fileToParse = new String(Files.readAllBytes(file.toPath()));
+            if (importFileType == ImportUtil.ImportFileType.JSON) {
+                status = doImportJson(dataverseRequest, owner, fileToParse, file.getParentFile().getName() + "/" + file.getName(), importType, cleanupLog);
+            } else {
+                status = doImport(dataverseRequest, owner, fileToParse, file.getParentFile().getName() + "/" + file.getName(), importType, cleanupLog);
+            }
             status.add("file", file.getName());
             logger.log(Level.INFO, "completed doImport {0}/{1}", new Object[]{file.getParentFile().getName(), file.getName()});
             return status;
@@ -386,7 +392,7 @@ public class ImportServiceBean {
         }
         return importedDataset;
     }
-    
+/*
     public JsonObjectBuilder doImport(DataverseRequest dataverseRequest, Dataverse owner, String xmlToParse, String fileName, ImportType importType, PrintWriter cleanupLog) throws ImportException, IOException {
 
         String status = "";
@@ -524,7 +530,165 @@ public class ImportServiceBean {
         return Json.createObjectBuilder().add("message", status);
     }
     
+*/
+    
+    public JsonObjectBuilder doImport(DataverseRequest dataverseRequest, Dataverse owner, String xmlToParse, String fileName, ImportType importType, PrintWriter cleanupLog) throws ImportException, IOException {
+        String status = "";
+        Long createdId = null;
+        DatasetDTO dsDTO = null;
+        try {
+           
+            dsDTO = importDDIService.doImport(importType, xmlToParse);
+        } catch (XMLStreamException e) {
+            throw new ImportException("XMLStreamException" + e);
+        }
+        // convert DTO to Json, 
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String json = gson.toJson(dsDTO);
+        return doImportJson(dataverseRequest, owner, json, fileName, importType, cleanupLog);
+    }
+    
+    
+    public JsonObjectBuilder doImportJson(DataverseRequest dataverseRequest, Dataverse owner, String json, String fileName, ImportType importType, PrintWriter cleanupLog) throws ImportException, IOException {
 
+        String status = "";
+        Long createdId = null;
+//        DatasetDTO dsDTO = null;
+//        try {
+//           
+//            dsDTO = importDDIService.doImport(importType, xmlToParse);
+//        } catch (XMLStreamException e) {
+//            throw new ImportException("XMLStreamException" + e);
+//        }
+//        // convert DTO to Json, 
+//        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//        String json = gson.toJson(dsDTO);
+        JsonReader jsonReader = Json.createReader(new StringReader(json));
+        JsonObject obj = jsonReader.readObject();
+        //and call parse Json to read it into a dataset   
+        try {
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
+            parser.setLenient(!importType.equals(ImportType.NEW));
+            Dataset ds = parser.parseDataset(obj);
+
+            // For ImportType.NEW, if the user supplies a global identifier, and it's not a protocol
+            // we support, it will be rejected.
+            if (importType.equals(ImportType.NEW)) {
+                if (ds.getGlobalIdString() != null && !ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""))) {
+                    throw new ImportException("Could not register id " + ds.getGlobalIdString() + ", protocol not supported");
+                }
+            }
+
+            ds.setOwner(owner);
+            ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
+
+            // Check data against required contraints
+            List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
+            if (!violations.isEmpty()) {
+                if ( importType.equals(ImportType.HARVEST) ) {
+                    // For migration and harvest, add NA for missing required values
+                    for (ConstraintViolation<DatasetField> v : violations) {
+                        DatasetField f = v.getRootBean();
+                         f.setSingleValue(DatasetField.NA_VALUE);
+                    }
+                } else {
+                    // when importing a new dataset, the import will fail
+                    // if required values are missing.
+                    String errMsg = "Error importing data:";
+                    for (ConstraintViolation<DatasetField> v : violations) {
+                        errMsg += " " + v.getMessage();
+                    }
+                    throw new ImportException(errMsg);
+                }
+            }
+
+            // Check data against validation constraints
+            // If we are migrating and "scrub migration data" is true we attempt to fix invalid data
+            // if the fix fails stop processing of this file by throwing exception
+            Set<ConstraintViolation> invalidViolations = ds.getVersions().get(0).validate();
+            ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+            Validator validator = factory.getValidator();
+            if (!invalidViolations.isEmpty()) {
+                for (ConstraintViolation<DatasetFieldValue> v : invalidViolations) {
+                    DatasetFieldValue f = v.getRootBean();
+                    boolean fixed = false;
+                    boolean converted = false;
+                    if ( importType.equals(ImportType.HARVEST) && 
+                         settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
+                        fixed = processMigrationValidationError(f, cleanupLog, fileName);
+                        converted = true;
+                        if (fixed) {
+                            Set<ConstraintViolation<DatasetFieldValue>> scrubbedViolations = validator.validate(f);
+                            if (!scrubbedViolations.isEmpty()) {
+                                fixed = false;
+                            }
+                        }
+                    }
+                    if (!fixed) {
+                        if (importType.equals(ImportType.HARVEST)) {
+                            String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                                    + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + DatasetField.NA_VALUE + "'";
+                            cleanupLog.println(msg);
+                            f.setValue(DatasetField.NA_VALUE);
+
+                        } else {
+                            String msg = " Validation error for ";
+                            if (converted) {
+                                msg += "converted ";
+                            }
+                            msg += "value: " + f.getValue() + ", " + f.getValidationMessage();
+                            throw new ImportException(msg);
+                        }
+                    }
+                }
+            }
+
+
+            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalIdString());
+
+            if (existingDs != null) {
+                if (importType.equals(ImportType.HARVEST)) {
+                    // For harvested datasets, there should always only be one version.
+                    // We will replace the current version with the imported version.
+                    if (existingDs.getVersions().size() != 1) {
+                        throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDs.getVersions().size() + " versions");
+                    }
+                    engineSvc.submit(new DestroyDatasetCommand(existingDs, dataverseRequest));
+                    Dataset managedDs = engineSvc.submit(new CreateHarvestedDatasetCommand(ds, dataverseRequest));
+                    status = " updated dataset, id=" + managedDs.getId() + ".";
+                    
+                } else {
+                    // If we are adding a new version to an existing dataset,
+                    // check that the version number isn't already in the dataset
+                    for (DatasetVersion dsv : existingDs.getVersions()) {
+                        if (dsv.getVersionNumber().equals(ds.getLatestVersion().getVersionNumber())) {
+                            throw new ImportException("VersionNumber " + ds.getLatestVersion().getVersionNumber() + " already exists in dataset " + existingDs.getGlobalIdString());
+                        }
+                    }
+                    DatasetVersion dsv = engineSvc.submit(new CreateDatasetVersionCommand(dataverseRequest, existingDs, ds.getVersions().get(0)));
+                    status = " created datasetVersion, for dataset "+ dsv.getDataset().getGlobalIdString();
+                    createdId = dsv.getId();
+                }
+
+            } else {
+                Dataset managedDs = engineSvc.submit(new CreateNewDatasetCommand(ds, dataverseRequest));
+                status = " created dataset, id=" + managedDs.getId() + ".";
+                createdId = managedDs.getId();
+            }
+
+        } catch (JsonParseException ex) {
+            logger.log(Level.INFO, "Error parsing datasetVersion: {0}", ex.getMessage());
+            throw new ImportException("Error parsing datasetVersion: " + ex.getMessage(), ex);
+        } catch (CommandException ex) {
+            logger.log(Level.INFO, "Error excuting Create dataset command: {0}", ex.getMessage());
+            throw new ImportException("Error excuting dataverse command: " + ex.getMessage(), ex);
+        }
+        return Json.createObjectBuilder().add("message", status);
+    }
+    
+
+    
+    
     
     private boolean processMigrationValidationError(DatasetFieldValue f, PrintWriter cleanupLog, String fileName) {
         if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {

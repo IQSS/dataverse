@@ -18,5 +18,11 @@ public interface ImportUtil {
        HARVEST
    };
      
+   
+   public enum ImportFileType{
+       XML,
+       JSON
+   };
+   
 }
  
