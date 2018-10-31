@@ -140,6 +140,11 @@
                                     </p:commandLink>
                                 </div>
                             </div>
+                            <script type="text/javascript" jsf:rendered="#{harvestClient.harvestingNow or harvestClient.deleteInProgress}">
+                                if (window.refreshTimer === undefined){
+                                    window.refreshTimer = setTimeout(function(){window.location.reload();},5000);
+                                }
+                            </script>
                         </p:column>
                     </p:dataTable>
 
