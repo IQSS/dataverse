@@ -141,7 +141,7 @@ public class DataCitation {
     }
 
     public String getAuthorsString() {
-        return String.join(";", authors);
+        return String.join("; ", authors);
     }
 
     public String getTitle() {
