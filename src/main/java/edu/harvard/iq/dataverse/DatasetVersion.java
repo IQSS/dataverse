@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -785,10 +786,8 @@ public class DatasetVersion implements Serializable {
                             contributorName = subField.getDisplayValue();
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributorType)) {
-                            contributorType = subField.getDisplayValue();
-                            // TODO: Consider how this will work in French, Chinese, etc.
-                            String funderString = "Funder";
-                            if (funderString.equals(contributorType)) {
+                            String identifier = subField.getSingleControlledVocabularyValue().getIdentifier();
+                            if (DatasetFieldConstant.contributorTypeIdentifierFunder.equals(identifier)) {
                                 addFunder = true;
                             }
                         }

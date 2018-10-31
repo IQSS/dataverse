@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.export;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -23,8 +25,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -42,7 +46,7 @@ import static org.junit.Assert.*;
 public class SchemaDotOrgExporterTest {
 
     private final SchemaDotOrgExporter schemaDotOrgExporter;
-    DDIExporterTest.MockDatasetFieldSvc datasetFieldTypeSvc = null;
+    MockDatasetFieldSvc datasetFieldTypeSvc = null;
 
     public SchemaDotOrgExporterTest() {
         schemaDotOrgExporter = new SchemaDotOrgExporter();
@@ -58,7 +62,7 @@ public class SchemaDotOrgExporterTest {
 
     @Before
     public void setUp() {
-        datasetFieldTypeSvc = new DDIExporterTest.MockDatasetFieldSvc();
+        datasetFieldTypeSvc = new MockDatasetFieldSvc();
 
         DatasetFieldType titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", DatasetFieldType.FieldType.TEXTBOX, false));
         DatasetFieldType authorType = datasetFieldTypeSvc.add(new DatasetFieldType("author", DatasetFieldType.FieldType.TEXT, true));
@@ -150,9 +154,10 @@ public class SchemaDotOrgExporterTest {
                 new ControlledVocabularyValue(1l, "Data Collector", contributorTypes),
                 new ControlledVocabularyValue(2l, "Data Curator", contributorTypes),
                 new ControlledVocabularyValue(3l, "Data Manager", contributorTypes),
-                new ControlledVocabularyValue(3l, "Editor", contributorTypes),
-                new ControlledVocabularyValue(3l, "Funder", contributorTypes),
-                new ControlledVocabularyValue(3l, "Hosting Institution", contributorTypes)
+                new ControlledVocabularyValue(4l, "Editor", contributorTypes),
+                // "Funder" is the special one. See MockDatasetFieldSvc below.
+                new ControlledVocabularyValue(5l, "Funder", contributorTypes),
+                new ControlledVocabularyValue(6l, "Hosting Institution", contributorTypes)
         // Etc. There are more.
         ));
         contributorChildTypes.add(datasetFieldTypeSvc.add(contributorTypes));
@@ -445,6 +450,42 @@ public class SchemaDotOrgExporterTest {
         String name = "";
         Object value = null;
         schemaDotOrgExporter.setParam(name, value);
+    }
+
+    static class MockDatasetFieldSvc extends DatasetFieldServiceBean {
+
+        Map<String, DatasetFieldType> fieldTypes = new HashMap<>();
+        long nextId = 1;
+
+        public DatasetFieldType add(DatasetFieldType t) {
+            if (t.getId() == null) {
+                t.setId(nextId++);
+            }
+            fieldTypes.put(t.getName(), t);
+            return t;
+        }
+
+        @Override
+        public DatasetFieldType findByName(String name) {
+            return fieldTypes.get(name);
+        }
+
+        @Override
+        public DatasetFieldType findByNameOpt(String name) {
+            return findByName(name);
+        }
+
+        @Override
+        public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue, boolean lenient) {
+            ControlledVocabularyValue cvv = new ControlledVocabularyValue();
+            cvv.setDatasetFieldType(dsft);
+            cvv.setStrValue(strValue);
+            if (strValue.equals("Funder")) {
+                cvv.setIdentifier(DatasetFieldConstant.contributorTypeIdentifierFunder);
+            }
+            return cvv;
+        }
+
     }
 
 }
