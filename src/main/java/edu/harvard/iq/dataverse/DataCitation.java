@@ -256,17 +256,16 @@ public class DataCitation {
         out.write(publisher);
         out.write("},\r\n");
         if(getFileTitle() !=null && isDirect()) {
-        out.write("title = {");
-        out.write(fileTitle);
-        out.write("},\r\n");
-        out.write("booktitle = {");
-        out.write(title);
-        out.write("},\r\n");
+            out.write("title = {");
+            out.write(fileTitle);
+            out.write("},\r\n");
+            out.write("booktitle = {");
+            out.write(title);
+            out.write("},\r\n");
         } else {
             out.write("title = {");
             out.write(title);
             out.write("},\r\n");
-            
         }
         out.write("year = {");
         out.write(year);
