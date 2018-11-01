@@ -142,15 +142,27 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             
             FileUtil.generateStorageIdentifier(packageFile);
             
-            
             String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
             String dvDatasetKey = getS3DatasetKey(dataset);
-            S3Object s3object = null; 
+            S3Object s3FilesSha = null; 
 
-            s3object = s3.getObject(new GetObjectRequest(dvBucketName, dvDatasetKey+"/files.sha"));
+            //String fileName = folderName.substring(folderName.lastIndexOf('/') + 1);
+            //FK2/BST918/package_FK2BST918.zip
+
+            //This is a brittle calculation, changes of the dcm post_upload script will blow this up
+            String rootPackageName = "package_" + folderName.replace("/", "");
+            
+            //getting the name of the .sha file via substring, ${packageName}.sha
+            logger.log(Level.INFO, "shaname {0}", new Object[]{rootPackageName  + ".sha"});
+
+
+            s3FilesSha = s3.getObject(new GetObjectRequest(dvBucketName, dvDatasetKey + "/" + rootPackageName  + ".sha"));
            
-            InputStream in = s3object.getObjectContent();
-            String checksumVal = FileUtil.CalculateChecksum(in, packageFile.getChecksumType());
+            InputStream inSha = s3FilesSha.getObjectContent();
+            String checksumVal = FileUtil.CalculateChecksum(inSha, packageFile.getChecksumType());
+
+            logger.log(Level.INFO, "Checksum value for the package in Dataset {0} is: {1}", 
+               new Object[]{dataset.getIdentifier(), checksumVal});
 
             packageFile.setChecksumValue(checksumVal); 
 
@@ -165,7 +177,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
 
             // set metadata and add to latest version
             FileMetadata fmd = new FileMetadata();
-            fmd.setLabel(folderName.substring(folderName.lastIndexOf('/') + 1));
+            fmd.setLabel(rootPackageName + ".zip");
             
             fmd.setDataFile(packageFile);
             packageFile.getFileMetadatas().add(fmd);
