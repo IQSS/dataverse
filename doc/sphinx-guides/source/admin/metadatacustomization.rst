@@ -592,4 +592,6 @@ Footnotes
 
 .. [5]
    "displayoncreate" was "showabovefold" in Dataverse versions before 4.3.1 (see
-   `#3073 <https://github.com/IQSS/dataverse/issues/3073>`__).
+   `#3073 <https://github.com/IQSS/dataverse/issues/3073>`__) but parsing is
+   done based on column order rather than name so this only matters to the
+   person reading the TSV file.
