@@ -486,6 +486,19 @@ Metadata Block Setup
 
 Now that you understand the TSV format used for metadata blocks, the next step is to attempt to make improvements to existing metadata blocks or create entirely new metadata blocks. For either task, you should have a Dataverse environment set up for testing where you can drop the database frequently while you make edits to TSV files. Once you have tested your TSV files, you should consider making a pull request to contribute your improvement back to the community.
 
+Exploring Metadata Blocks
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In addition to studying the TSV files themselves you might find the following highly experimental and subject-to-change API endpoints useful to understand the metadata blocks that have already been loaded into your installation of Dataverse:
+
+You can get a dump of metadata fields (yes, the output is odd, please open a issue) like this:
+
+``curl http://localhost:8080/api/admin/datasetfield``
+
+To see details about an individual field such as "title" in the example below:
+
+``curl http://localhost:8080/api/admin/datasetfield/title``
+
 Setting Up a Dev Environment for Testing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
