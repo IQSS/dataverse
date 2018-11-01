@@ -24,9 +24,7 @@ import static org.junit.Assert.assertNotNull;
 public class IngestFrequencyTest {
 
     @EJB
-    DatasetServiceBean datasetService;
-    @EJB
-    IngestServiceBean ingestService = new IngestServiceBean();
+    IngestServiceBean ingestService;
 
     @Test
     /**
