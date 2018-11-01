@@ -553,6 +553,15 @@ See the :doc:`/installation/prerequisites/` section of the Installation Guide fo
 
 Please note that if you are going to make a pull request updating ``conf/solr/7.3.0/schema.xml`` with fields you have added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you don't care about) to create a complete list of fields.
 
+Tips from the Dataverse Community
+---------------------------------
+
+If there are tips that you feel are omitted from this document, please open an issue at https://github.com/IQSS/dataverse/issues and consider making a pull request to make improvements. You can find this document at https://github.com/IQSS/dataverse/blob/develop/doc/sphinx-guides/source/admin/metadatacustomization.rst
+
+Alternatively, you are welcome to request "edit" access to this "Tips for Dataverse metadata blocks from the community" Google doc: https://docs.google.com/document/d/1XpblRw0v0SvV-Bq6njlN96WyHJ7tqG0WWejqBdl7hE0/edit?usp=sharing
+
+The thinking is that the tips can become issues and the issues can eventually be worked on as features to improve the Dataverse metadata system.
+
 Footnotes
 ---------
 
