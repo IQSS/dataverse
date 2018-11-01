@@ -41,8 +41,8 @@ good organizational practice to define only one in each file.
 The metadata block TSVs shipped with Dataverse are in `this folder in
 the Dataverse github
 repo <https://github.com/IQSS/dataverse/tree/develop/scripts/api/data/metadatablocks>`__.
-Human-readable copies are maintained in `this Google Sheets
-document <https://docs.google.com/spreadsheets/d/13HP-jI_cwLDHBetn9UKTREPJ_F4iHdAvhjmlvmYdSSw/edit#gid=0>`__.
+Human-readable copies are available in `this Google Sheets
+document <https://docs.google.com/spreadsheets/d/13HP-jI_cwLDHBetn9UKTREPJ_F4iHdAvhjmlvmYdSSw/edit#gid=0>`__ but they tend to get out of sync with the TSV files, which should be considered authoritative. The Dataverse installation process operates on the TSVs, not the Google spreadsheet.
 
 About the metadata block TSV
 ----------------------------
@@ -514,7 +514,7 @@ To get a clean environment in Vagrant, you'll be running ``vagrant destroy``. In
 Editing TSV files
 ~~~~~~~~~~~~~~~~~
 
-Early in Dataverse 4 development metadata blocks were edited in a Google spreadsheet and then exported in TSV format. (See https://github.com/IQSS/dataverse/issues/4451 for a discussion of non-TSV formats.) This should still work but you are also welcome to use whatever tool you wish to edit the TSV files.
+Early in Dataverse 4 development metadata blocks were edited in the Google spreadsheet mentioned above and then exported in TSV format. This worked fine when there was only one person editing the Google spreadsheet but now that contributions are coming in from all over, the TSV files are edited directly. We are somewhat painfully aware that another format such as XML might make more sense these days. Please see https://github.com/IQSS/dataverse/issues/4451 for a discussion of non-TSV formats.
 
 Please note that metadata fields share a common namespace so they must be unique. The following curl command will print list of metadata fields already available in the system:
 
