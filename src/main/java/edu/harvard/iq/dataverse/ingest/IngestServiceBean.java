@@ -628,7 +628,9 @@ public class IngestServiceBean {
         }
     }
 
-    public void produceFrequencyStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
+    public static void produceFrequencyStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
+
+
 
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
 
@@ -636,7 +638,7 @@ public class IngestServiceBean {
             if (cats.size() > 0) {
                 String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                 if (variableVector != null) {
-                    Hashtable<String, Double> freq = calculateFrequency(dataFile, i, variableVector);
+                    Hashtable<String, Double> freq = calculateFrequency(variableVector);
                     for (VariableCategory cat : cats) {
                         String catValue = cat.getValue();
                         Double numberFreq = freq.get(catValue);
@@ -654,7 +656,7 @@ public class IngestServiceBean {
 
     }
 
-    public Hashtable<String, Double> calculateFrequency(DataFile dataFile, int i, String[] variableVector) {
+    public static Hashtable<String, Double> calculateFrequency( String[] variableVector) {
         Hashtable<String, Double> freq = new Hashtable<String, Double>();
 
         for (int j = 0; j < variableVector.length; j++) {

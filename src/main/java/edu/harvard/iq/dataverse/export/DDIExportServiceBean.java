@@ -12,18 +12,27 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.dataaccess.DataConverter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.Collection;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.ejb.EJB;
@@ -61,6 +70,9 @@ public class DDIExportServiceBean {
 
     @EJB
     VariableServiceBean variableService;
+
+    @EJB
+    IngestServiceBean ingestService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -419,6 +431,11 @@ public class DDIExportServiceBean {
 
         if (checkField("var", excludedFieldSet, includedFieldSet)) {
             List<DataVariable> vars = variableService.findByDataTableId(dt.getId());
+            if (checkField("catgry", excludedFieldSet, includedFieldSet)) {
+                if (checkIsWithoutFrequencies(vars)) {
+                    calculateFrequencies(df, vars);
+                }
+            }
 
             for (DataVariable var : vars) {
                 createVarDDI(xmlw, excludedFieldSet, null, var);
@@ -428,6 +445,56 @@ public class DDIExportServiceBean {
         xmlw.writeEndElement(); // dataDscr
         xmlw.writeEndElement(); // codeBook
 
+    }
+
+    private boolean checkIsWithoutFrequencies(List<DataVariable> vars) {
+        boolean IsWithoutFrequencies = true;
+        boolean found = false;
+        for (DataVariable dv : vars) {
+            for (VariableCategory cat : dv.getCategories()) {
+                found = true;
+                if (cat.getFrequency() == null) {
+                    IsWithoutFrequencies = true;
+                } else {
+                    IsWithoutFrequencies = false;
+                }
+                break;
+            }
+            if (found)
+                break;
+        }
+        return IsWithoutFrequencies;
+    }
+
+    private void calculateFrequencies(DataFile df, List<DataVariable> vars)
+    {
+        try {
+            DataConverter dc = new DataConverter();
+            File tabFile = dc.downloadFromStorageIO(df.getStorageIO());
+            for (int i = 0; i < vars.size(); i++) {
+
+                Collection<VariableCategory> cats = vars.get(i).getCategories();
+                if (cats.size() > 0) {
+
+                    String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(tabFile), i, df.getDataTable().getCaseQuantity().intValue());
+                    Hashtable<String, Double> freq = ingestService.calculateFrequency(variableVector);
+
+                    for (VariableCategory cat : cats) {
+                        String catValue = cat.getValue();
+                        Double numberFreq = freq.get(catValue);
+                        if (numberFreq != null) {
+                            cat.setFrequency(numberFreq);
+                        } else {
+                            cat.setFrequency(0D);
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex)
+        {
+            logger.warning(ex.getMessage());
+            return;
+        }
     }
     
     private void createDatasetDDI(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DatasetVersion version) throws XMLStreamException {
