@@ -553,6 +553,17 @@ See the :doc:`/installation/prerequisites/` section of the Installation Guide fo
 
 Please note that if you are going to make a pull request updating ``conf/solr/7.3.0/schema.xml`` with fields you have added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you don't care about) to create a complete list of fields.
 
+Reloading a Metadata Block
+--------------------------
+
+As mentioned above, changes to metadata blocks that ship with Dataverse will be made over time to improve them and release notes will sometimes instruct you to reload an existing metadata block. The syntax for reloading is the same as reloading. Here's an example with the "citation" metadata block:
+
+``curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file --upload-file citation.tsv``
+
+Great care must be taken when reloading a metadata block. Matching is done on field names (or names and then identifiers in the case of controlled vocabulary values) so it's easy to accidentally create duplicate fields.
+
+The ability to reload metadata blocks means that SQL update scripts don't need to be written for these changes. See also the :doc:`/developers/sql-upgrade-scripts` section of the Dev Guide.
+
 Tips from the Dataverse Community
 ---------------------------------
 
