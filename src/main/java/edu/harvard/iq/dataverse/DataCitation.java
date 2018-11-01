@@ -279,6 +279,7 @@ public class DataCitation {
         out.write("url = {");
         out.write(persistentId.toURL().toString());
         out.write("}\r\n");
+        out.write("}\r\n");
         out.flush();
     }
 
