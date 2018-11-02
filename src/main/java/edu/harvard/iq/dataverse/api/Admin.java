@@ -86,6 +86,8 @@ import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import src.main.java.edu.harvard.iq.dataverse.Long;
+import src.main.java.edu.harvard.iq.dataverse.String;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1279,13 +1281,15 @@ public class Admin extends AbstractApiBean {
 	}
 
     @GET
-    @Path("/submitDataVersionToDPN/{dvid}")
-    public Response submitDatasetVersionToDPN(@PathParam("dvid") long dvid) {
+    @Path("/submitDataVersionToDPN/{id}/{version}")
+    public Response submitDatasetVersionToDPN(@PathParam("id") long dsid, @PathParam("version") String versionNumber) {
 
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
             if (au.isSuperuser()) {
-                DatasetVersion dv = datasetversionService.retrieveDatasetVersionByVersionId(dvid).getDatasetVersion();
+                Dataset ds = findDatasetOrDie(dsid);
+                
+                DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
                 if (dv.getArchivalCopyLocation() == null) {
                     SubmitToArchiveCommand cmd = new SubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
                     try {
