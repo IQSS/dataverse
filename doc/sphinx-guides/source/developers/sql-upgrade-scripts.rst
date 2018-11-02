@@ -30,8 +30,6 @@ If no SQL upgrade script exists, look at https://github.com/IQSS/dataverse/miles
 
 As with any task related to Dataverse development, if you need any help writing SQL upgrade scripts, please reach out using any of the channels mentioned under "Getting Help" in the :doc:`intro` section.
 
-Please note that we are aware of the problem of merge conflicts in the SQL update script as well as how the next version number can change at any time. Please see the :doc:`making-releases` section for how we are running an experiment having to do with release notes that might help inform an improvement of our process for developing SQL upgrade scripts.
-
 Communicating the Need to Run SQL Updates
 -----------------------------------------
 

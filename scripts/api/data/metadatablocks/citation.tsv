@@ -111,23 +111,23 @@
 	publicationIDType	upc		14											
 	publicationIDType	url		15											
 	publicationIDType	urn		16											
-	contributorType	Data Collector	0	0											
-	contributorType	Data Curator	1	1											
-	contributorType	Data Manager	2	2											
-	contributorType	Editor	3	3											
-	contributorType	Funder	4	4											
-	contributorType	Hosting Institution	5	5											
-	contributorType	Project Leader	6	6											
-	contributorType	Project Manager	7	7											
-	contributorType	Project Member	8	8											
-	contributorType	Related Person	9	9											
-	contributorType	Researcher	10	10											
-	contributorType	Research Group	11	11											
-	contributorType	Rights Holder	12	12											
-	contributorType	Sponsor	13	13											
-	contributorType	Supervisor	14	14											
-	contributorType	Work Package Leader	15	15											
-	contributorType	Other	16	16											
+	contributorType	Data Collector		0											
+	contributorType	Data Curator		1											
+	contributorType	Data Manager		2											
+	contributorType	Editor		3											
+	contributorType	Funder		4											
+	contributorType	Hosting Institution		5											
+	contributorType	Project Leader		6											
+	contributorType	Project Manager		7											
+	contributorType	Project Member		8											
+	contributorType	Related Person		9											
+	contributorType	Researcher		10											
+	contributorType	Research Group		11											
+	contributorType	Rights Holder		12											
+	contributorType	Sponsor		13											
+	contributorType	Supervisor		14											
+	contributorType	Work Package Leader		15											
+	contributorType	Other		16											
 	authorIdentifierScheme	ORCID		0											
 	authorIdentifierScheme	ISNI		1											
 	authorIdentifierScheme	LCNA		2											
