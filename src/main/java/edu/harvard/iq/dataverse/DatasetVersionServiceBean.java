@@ -168,7 +168,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
         if (minorVersionNumber == null) {
             // Minor version defaults to 0 in the db
-            minorVersionNumber = 0;
+            minorVersionNumber = new Long(0);
         }
 
         String queryStr = "SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber and v.minorVersionNumber= :minorVersionNumber";
