@@ -118,7 +118,7 @@ public class SearchServiceBean {
      * @throws SearchException
      */
     public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
-        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true); //MAD: Orig, entities searched
+        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
     }
     
     /**
@@ -243,19 +243,28 @@ public class SearchServiceBean {
          * if advancedSearchField is true or false
          *
          */
-        for(Dataverse dataverse : dataverses) {
-            // -----------------------------------
-            // PERMISSION FILTER QUERY
-            // -----------------------------------
-            String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
+        
+        //I'm not sure if just adding null here is good for hte permissions system... i think it needs something
+        if(dataverses != null) {
+            for(Dataverse dataverse : dataverses) {
+                // -----------------------------------
+                // PERMISSION FILTER QUERY
+                // -----------------------------------
+                String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
+                if (permissionFilterQuery != null) {
+                    solrQuery.addFilterQuery(permissionFilterQuery);
+                }
+                if (dataverse != null) {
+                    for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
+                        DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
+                        solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
+                    }
+                }
+            }
+        } else {
+            String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, null, onlyDatatRelatedToMe);
             if (permissionFilterQuery != null) {
                 solrQuery.addFilterQuery(permissionFilterQuery);
-            }
-            if (dataverse != null) {
-                for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
-                    DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
-                    solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
-                }
             }
         }
         
