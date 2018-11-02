@@ -146,7 +146,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     }
 
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
-        //FIXME: this logic doesn't work
         Long majorVersionNumber = null;
         Long minorVersionNumber = null;
 
@@ -163,59 +162,31 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         } catch (NumberFormatException n) {
             return null;
         }
-
-        if (minorVersionNumber != null) {
-            String queryStr = "SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber and v.minorVersionNumber= :minorVersionNumber";
-            DatasetVersion foundDatasetVersion = null;
-            try {
-                Query query = em.createQuery(queryStr);
-                query.setParameter("datasetId", datasetId);
-                query.setParameter("majorVersionNumber", majorVersionNumber);
-                query.setParameter("minorVersionNumber", minorVersionNumber);
-                foundDatasetVersion = (DatasetVersion) query.getSingleResult();
-            } catch (javax.persistence.NoResultException e) {
-                logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
-                // DO nothing, just return null.
-            }
-            return foundDatasetVersion;
-
-        }
-        
-        if (majorVersionNumber == null && minorVersionNumber == null) {
-
+        if (majorVersionNumber == null) {
+            // Must always have a major version
             return null;
-
+        }
+        if (minorVersionNumber == null) {
+            // Minor version defaults to 0 in the db
+            minorVersionNumber = 0;
         }
 
-        if (majorVersionNumber != null && minorVersionNumber == null) {
-
-            try {
-                TypedQuery<DatasetVersion> typedQuery = em.createQuery("SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber", DatasetVersion.class);
-                typedQuery.setParameter("datasetId", datasetId);
-                typedQuery.setParameter("majorVersionNumber", majorVersionNumber);
-                DatasetVersion retVal = null;
-                List<DatasetVersion> versionsList = typedQuery.getResultList();
-                for (DatasetVersion dsvTest : versionsList) {
-                    if (retVal == null) {
-                        retVal = dsvTest;
-                    } else {
-                        if (retVal.getMinorVersionNumber().intValue() < dsvTest.getMinorVersionNumber().intValue()) {
-                            retVal = dsvTest;
-                        }
-                    }
-                }
-
-                return retVal;
-
-            } catch (javax.persistence.NoResultException e) {
-                logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
-                // DO nothing, just return null.
-            }
-
+        String queryStr = "SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber and v.minorVersionNumber= :minorVersionNumber";
+        DatasetVersion foundDatasetVersion = null;
+        try {
+            Query query = em.createQuery(queryStr);
+            query.setParameter("datasetId", datasetId);
+            query.setParameter("majorVersionNumber", majorVersionNumber);
+            query.setParameter("minorVersionNumber", minorVersionNumber);
+            foundDatasetVersion = (DatasetVersion) query.getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
+            // DO nothing, just return null.
         }
+        return foundDatasetVersion;
 
-        return null;
     }
+
     
     /** 
      *   Parse a Persistent Id and return as 3 strings.        
