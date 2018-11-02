@@ -147,6 +147,7 @@
     <field name="isHarvested" type="boolean" stored="true" indexed="true" multiValued="false"/>
 
     <field name="dvName" type="text_en" stored="true" indexed="true" multiValued="false"/>
+    <field name="dvAlias" type="text_en" stored="true" indexed="true" multiValued="false"/>
     <field name="dvAffiliation" type="text_en" stored="true" indexed="true" multiValued="false"/>
     <field name="dvDescription" type="text_en" stored="true" indexed="true" multiValued="false"/>
 
@@ -456,6 +457,7 @@
     <copyField source="variableLabel" dest="_text_" maxChars="3000"/>
     <!-- Make dataverse subject and affiliation searchable from basic search: https://github.com/IQSS/dataverse/issues/1431 -->
     <copyField source="dvSubject" dest="_text_" maxChars="3000"/>
+    <copyField source="dvAlias" dest="_text_" maxChars="3000"/>
     <copyField source="dvAffiliation" dest="_text_" maxChars="3000"/>
     <copyField source="dsPersistentId" dest="_text_" maxChars="3000"/>
     <!-- copyField commands copy one field to another at the time a document
