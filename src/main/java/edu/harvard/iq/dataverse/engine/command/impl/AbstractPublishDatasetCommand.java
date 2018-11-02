@@ -17,8 +17,8 @@ public abstract class AbstractPublishDatasetCommand<T> extends AbstractDatasetCo
         super(aRequest, datasetIn);
     }
     
-    protected WorkflowContext buildContext( Dataset theDataset, WorkflowContext.TriggerType triggerType) {
-        return new WorkflowContext(getRequest(), theDataset, triggerType);
+    protected WorkflowContext buildContext( Dataset theDataset, WorkflowContext.TriggerType triggerType, boolean datasetExternallyReleased) {
+        return new WorkflowContext(getRequest(), theDataset, triggerType, datasetExternallyReleased);
     }
     
 }
