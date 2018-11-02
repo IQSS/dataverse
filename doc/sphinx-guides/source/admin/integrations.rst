@@ -85,6 +85,34 @@ SHARE
 
 `SHARE <http://www.share-research.org>`_ is building a free, open, data set about research and scholarly activities across their life cycle. It's possible to add and installation of Dataverse as one of the `sources <https://share.osf.io/sources>`_ they include if you contact the SHARE team.
 
+Preservation
+------------
+
+Digital Preservation Network
+++++++++++++++++++++++++++++
+
+Dataverse can be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to the `Digital Preservation Network <https://dpn.org>`_
+
+This integration is occurs through an internal Dataverse workflow that can be configured as a PostPublication workflow to submit the bag to DPN's Duracloud interface using your organization's credentials. An admin API call exists that can manually submit previously published Datasets, and prior versions, to DPN. The workflow leverages new functionality in Dataverse to create a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse web interface.
+
+Note that while the current implementation generates the bag and submits it to DPN's Duracloud interface, the step to make a 'snapshot' of the space containing the Bag (and verify it's successful submission) are actions a curator must take in the Duracloud interface.
+
+The minimal configuration to support DPN integration involves adding one Dataverse Key and two Glassfish jvm options\:
+
+\:DuraCloudHost - the URL for your organization's DPN Duracloud site. For example: 
+
+    `curl http://localhost:8080/api/admin/settings/:DuraCloudHost -X PUT -d "qdr.duracloud.org"`
+
+:DuraCloudPort and :DuraCloudContext are also defined if you are not using the defaults ("443" and "duracloud" respectively).
+
+The username and password associated with your organization's DPN account should be configured in Glassfish:
+
+    `./asadmin create-jvm-options '-Dduracloud.username=YOUR_USERNAME_HERE'`
+    
+    `./asadmin create-jvm-options '-Dduracloud.password=YOUR_PASSWORD_HERE'`
+
+Once this configuration is complete, you, as a superuser, should be able to use the API call to manually submit a DatasetVersion for processing 
+
 Future Integrations
 -------------------
 
