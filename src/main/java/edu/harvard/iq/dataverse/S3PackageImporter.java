@@ -23,11 +23,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,7 +36,6 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import org.apache.commons.io.IOUtils;
 
 /**
  * This class is for importing files added to s3 outside of dataverse.
@@ -148,6 +144,10 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             
             String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
             String dvDatasetKey = getS3DatasetKey(dataset);
+            S3Object s3FilesSha = null; 
+
+            //String fileName = folderName.substring(folderName.lastIndexOf('/') + 1);
+            //FK2/BST918/package_FK2BST918.zip
 
             //This is a brittle calculation, changes of the dcm post_upload script will blow this up
             String rootPackageName = "package_" + folderName.replace("/", "");
@@ -155,47 +155,11 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             //getting the name of the .sha file via substring, ${packageName}.sha
             logger.log(Level.INFO, "shaname {0}", new Object[]{rootPackageName  + ".sha"});
 
-            S3Object s3FilesSha = s3.getObject(new GetObjectRequest(dvBucketName, dvDatasetKey + "/" + rootPackageName  + ".sha"));
+
+            s3FilesSha = s3.getObject(new GetObjectRequest(dvBucketName, dvDatasetKey + "/" + rootPackageName  + ".sha"));
            
-
-            InputStreamReader str = new InputStreamReader(s3FilesSha.getObjectContent());
-            BufferedReader reader = new BufferedReader(str);
-            String checksumVal = "";
-            try {
-                String line;
-                while((line = reader.readLine()) != null && checksumVal.isEmpty()) {
-                    logger.log(Level.INFO, "line {0}", new Object[]{line});
-                    String[] splitLine = line.split("  ");
-                    //logger.log(Level.INFO, "root package name {0}", new Object[]{rootPackageName + ".zip"});
-                    //logger.log(Level.INFO, "splitline {0} | {1}", new Object[]{splitLine[0], splitLine[1]});
-                    
-                    //the sha file should only contain one line, but incase it doesn't we will check for the one for our zip
-                    if(splitLine[1].contains(rootPackageName + ".zip")) { 
-                        checksumVal = splitLine[0];
-                        logger.log(Level.INFO, "checksumVal found {0}", new Object[]{checksumVal});
-                    }
-                }
-                if(checksumVal.isEmpty()) {
-                    logger.log(Level.SEVERE, "No checksum found for uploaded DCM S3 zip on dataset {0}", new Object[]{dataset.getIdentifier()});
-                }                
-            } catch (IOException ex){
-                logger.log(Level.SEVERE, "Error parsing DCM s3 checksum file on dataset {0} . Error: {1} ", new Object[]{dataset.getIdentifier(), ex});
-            } finally {
-                try {
-                    str.close();
-                    reader.close();
-                } catch (IOException ex) {
-                    logger.log(Level.WARNING, "errors closing s3 DCM object reader stream: {0}", new Object[]{ex});
-                }
-                
-            }
-            
-            //MAD: CLOSE THINGS
-            
-            //String shaFileContents = IOUtils.toString(s3FilesSha.getObjectContent(), StandardCharsets.UTF_8);
-
-            //We parse the checksum from the passed sha 1
-            //String checksumVal = shaFileContents.
+            InputStream inSha = s3FilesSha.getObjectContent();
+            String checksumVal = FileUtil.CalculateChecksum(inSha, packageFile.getChecksumType());
 
             logger.log(Level.INFO, "Checksum value for the package in Dataset {0} is: {1}", 
                new Object[]{dataset.getIdentifier(), checksumVal});
