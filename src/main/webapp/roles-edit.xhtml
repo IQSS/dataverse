@@ -60,7 +60,7 @@
                 <h:selectManyCheckbox value="#{managePermissionsPage.selectedPermissions}"
                                       layout="pageDirection" styleClass="selectManyCheckboxBlock">
                     <f:selectItems value="#{managePermissionsPage.permissions}" var="pmsn"
-                                   itemLabel="#{pmsn.humanName} &#160; &#60;span class=&#34;label label-default&#34;&#62;#{pmsn.name()}&#60;/span&#62; #{not(pmsn.requiresAuthenticatedUser()) ? authOnlyRemark : '' }"
+                                   itemLabel="#{pmsn.humanName} &#160; &#60;span class=&#34;label label-default&#34;&#62;#{pmsn.displayName}&#60;/span&#62; #{not(pmsn.requiresAuthenticatedUser()) ? authOnlyRemark : '' }"
                                    itemValue="#{pmsn.name()}"
                                    itemLabelEscaped="false"/>
                 </h:selectManyCheckbox>

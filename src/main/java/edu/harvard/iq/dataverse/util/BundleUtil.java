@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class BundleUtil {
@@ -27,19 +28,30 @@ public class BundleUtil {
         ResourceBundle bundle = getResourceBundle(defaultBundleFile );
         return getStringFromBundle(key, arguments, bundle);
     }
-
+    
     public static String getStringFromBundle(String key, List<String> arguments, ResourceBundle bundle) {
+        try {
+          return getStringFromBundleNoMissingCheck(key, arguments, bundle);
+        } catch (MissingResourceException ex) {
+            logger.warning("Could not find key \"" + key + "\" in bundle file: ");
+            logger.log(Level.CONFIG, ex.getMessage(), ex);
+            return null;
+        }
+    }
+    
+    /**
+     * This call was added to allow bypassing the exception catch, for filetype indexing needs the exception to bubble up
+     * --MAD 4.9.4
+     */
+    private static String getStringFromBundleNoMissingCheck(String key, List<String> arguments, ResourceBundle bundle) throws MissingResourceException {
         if (key == null || key.isEmpty()) {
             return null;
         }
         String stringFromBundle = null;
-        try {
-            stringFromBundle = bundle.getString(key);
-            logger.fine("string found: " + stringFromBundle);
-        } catch (MissingResourceException ex) {
-            logger.warning("Could not find key \"" + key + "\" in bundle file.");
-            return null;
-        }
+
+        stringFromBundle = bundle.getString(key);
+        logger.fine("string found: " + stringFromBundle);
+            
         if (arguments != null) {
             Object[] argArray = new String[arguments.size()];
             argArray = arguments.toArray(argArray);
@@ -49,9 +61,9 @@ public class BundleUtil {
         }
     }
 
-    public static String getStringFromPropertyFile(String key, String propertyFileName  ) {
+    public static String getStringFromPropertyFile(String key, String propertyFileName  ) throws MissingResourceException {
         ResourceBundle bundle = getResourceBundle(propertyFileName);
-        return getStringFromBundle(key, null, bundle);
+        return getStringFromBundleNoMissingCheck(key, null, bundle);
     }
 
     public static ResourceBundle getResourceBundle(String propertyFileName)
