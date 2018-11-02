@@ -101,6 +101,17 @@ public class ImportDDIServiceBean {
     @EJB DatasetFieldServiceBean datasetFieldService;
     
     
+    // required field flags
+    // subject
+    boolean isSubjectAdded=false;
+    String subjectText; 
+    String defaultSubjectText="Other";
+    // email
+    boolean isContactEmailAdded = false;
+    String defaultEmailAddress = "emailAddressNotFound@dataverse.org";
+    boolean isAbstractAdded = false;
+    String defaultAbsractText="Required description text(abstract tag) was not found";
+    
     // TODO: stop passing the xml source as a string; (it could be huge!) -- L.A. 4.5
     // TODO: what L.A. Said.
     public DatasetDTO doImport(ImportType importType, String xmlToParse) throws XMLStreamException, ImportException {
@@ -191,15 +202,29 @@ public class ImportDDIServiceBean {
         processCodeBook(importType, xmlr,  datasetDTO, filesMap);
         MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get("citation");
      
-         if (codeBookLevelId != null && !codeBookLevelId.isEmpty()) {
+         if (StringUtils.isNotBlank(codeBookLevelId)) {
             if (citationBlock.getField("otherId")==null) {
+                logger.log(Level.INFO, "field:otherId does not exist");
+                List<HashSet<FieldDTO>> otherIds = new ArrayList<>();
+                HashSet<FieldDTO> set = new HashSet<>();
+                addToSet(set, "otherIdValue", codeBookLevelId);
+                if (!set.isEmpty()){
+                    otherIds.add(set);
+                }
+                citationBlock.addField(FieldDTO.createMultipleCompoundFieldDTO("otherId", otherIds));
                 // this means no ids were found during the parsing of the 
                 // study description section. we'll use the one we found in 
                 // the codeBook entry:
-                FieldDTO otherIdValue = FieldDTO.createPrimitiveFieldDTO("otherIdValue", codeBookLevelId);
-                FieldDTO otherId = FieldDTO.createCompoundFieldDTO("otherId", otherIdValue);
-                citationBlock.getFields().add(otherId);
+                // FieldDTO otherIdValue = FieldDTO.createPrimitiveFieldDTO("otherIdValue", codeBookLevelId);
+                // FieldDTO otherId = FieldDTO.createCompoundFieldDTO("otherId", otherIdValue);
+                // citationBlock.getFields().add(otherId);
                 
+                
+                
+                
+                
+            } else {
+                logger.log(Level.INFO, "field:otherId already exits");
             }
         }
          if (isHarvestImport(importType)) {
@@ -482,21 +507,63 @@ public class ImportDDIServiceBean {
        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("subject")) {
-                             processSubject(xmlr, getCitation(dvDTO));
+//                    subjectText = parseText(xmlr);
+//                    if (StringUtils.isBlank(subjectText)){
+//                        subjectText = defaultSubjectText;
+//                        logger.log(Level.INFO, "subject is set to default");
+//                    } else {
+//                        logger.log(Level.INFO, "subjectText={0}", subjectText);
+//                    }
+                    
+                    processSubject(xmlr, getCitation(dvDTO));
                 } else if (xmlr.getLocalName().equals("abstract")) {
                     HashSet<FieldDTO> set = new HashSet<>();
-                    addToSet(set,"dsDescriptionDate", xmlr.getAttributeValue(null, "date"));
-                    addToSet(set,"dsDescriptionValue",  parseText(xmlr, "abstract"));
+                    addToSet(set, "dsDescriptionDate", xmlr.getAttributeValue(null, "date"));
+                    addToSet(set, "dsDescriptionValue", parseText(xmlr, "abstract"));
                     if (!set.isEmpty()) {
+                        isAbstractAdded=true;
                         descriptions.add(set);
                     }
+
+                } else if (xmlr.getLocalName().equals("sumDscr")) {
+                    processSumDscr(xmlr, dvDTO);
+                } else if (xmlr.getLocalName().equals("notes")) {
+                    processNotes(xmlr, dvDTO);
                     
-                } else if (xmlr.getLocalName().equals("sumDscr")) processSumDscr(xmlr, dvDTO);
-            
-                 else if (xmlr.getLocalName().equals("notes")) processNotes(xmlr,dvDTO);
+                } else if (xmlr.getLocalName().equals("contact")) {
+                    HashSet<FieldDTO> set = new HashSet<>();
+
+                    String emailText = xmlr.getAttributeValue(null, "email");
+                    if (StringUtils.isBlank(emailText)) {
+                        emailText = defaultEmailAddress;
+                    }
+
+                    addToSet(set, "datasetContactEmail", emailText);
+                    addToSet(set, "datasetContactAffiliation", xmlr.getAttributeValue(null, "affiliation"));
+                    addToSet(set, "datasetContactName", parseText(xmlr));
+                    if (!set.isEmpty()) {
+                        
+                        if (getCitation(dvDTO).getField("datasetContact") == null) {
+                            List<HashSet<FieldDTO>> datasetContacts = new ArrayList<>();
+                            datasetContacts.add(set);
+                            getCitation(dvDTO).addField(FieldDTO.createMultipleCompoundFieldDTO("datasetContact", datasetContacts));
+                        } else {
+                            getCitation(dvDTO).getField("datasetContact").getMultipleCompound().add(set);
+                        }
+                    }
+                }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("stdyInfo") ) {
-                    if (descriptions.size()>0) {
+                    if (!isAbstractAdded) {
+                        logger.log(Level.INFO, "abstract tag was not found; default text is supplied because this is one of the required fields");
+                        HashSet<FieldDTO> set = new HashSet<>();
+                        addToSet(set, "dsDescriptionDate", null);
+                        addToSet(set, "dsDescriptionValue", defaultAbsractText);
+                        if (!set.isEmpty()) {
+                            descriptions.add(set);
+                        }
+                    }
+                    if (descriptions.size() > 0) {
                         getCitation(dvDTO).getFields().add(FieldDTO.createMultipleCompoundFieldDTO("dsDescription", descriptions));
                     }
                     return;
@@ -505,6 +572,8 @@ public class ImportDDIServiceBean {
         }
     } 
     private void processSubject(XMLStreamReader xmlr, MetadataBlockDTO citation) throws XMLStreamException {
+        logger.log(Level.INFO, "processSubject is called");
+        List<String> subjects = new ArrayList<>();
         List<HashSet<FieldDTO>> keywords = new ArrayList<>();
         List<HashSet<FieldDTO>> topicClasses = new ArrayList<>();
           for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
@@ -530,6 +599,11 @@ public class ImportDDIServiceBean {
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("subject")) {
+                    subjectText=defaultSubjectText;
+                    subjects.add(subjectText);
+                    citation.getFields().add(FieldDTO.createMultipleVocabFieldDTO("subject", subjects));
+                    
+                    
                     if (keywords.size()>0) {
                         citation.getFields().add(FieldDTO.createMultipleCompoundFieldDTO("keyword", keywords));
                     }
@@ -1184,7 +1258,13 @@ public class ImportDDIServiceBean {
 
                 } else if (xmlr.getLocalName().equals("contact")) {
                     HashSet<FieldDTO> set = new HashSet<>();
-                    addToSet(set, "datasetContactEmail", xmlr.getAttributeValue(null, "email"));
+                    
+                    String emailText = xmlr.getAttributeValue(null, "email"); 
+                    if (StringUtils.isBlank(emailText)){
+                        emailText=defaultEmailAddress;
+                    }
+                    //addToSet(set, "datasetContactEmail", xmlr.getAttributeValue(null, "email"));
+                    addToSet(set, "datasetContactEmail", emailText);
                     addToSet(set, "datasetContactAffiliation", xmlr.getAttributeValue(null, "affiliation"));
                     addToSet(set, "datasetContactName", parseText(xmlr));
                     datasetContacts.add(set);

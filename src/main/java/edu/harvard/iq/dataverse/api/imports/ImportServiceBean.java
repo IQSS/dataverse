@@ -584,6 +584,7 @@ public class ImportServiceBean {
 
             // Check data against required contraints
             List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
+            logger.log(Level.INFO, "DatasetField: how many violations:{0}", violations.size());
             if (!violations.isEmpty()) {
                 if ( importType.equals(ImportType.HARVEST) ) {
                     // For migration and harvest, add NA for missing required values

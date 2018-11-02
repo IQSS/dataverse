@@ -823,6 +823,8 @@ public class JsonParser {
         logger.log(Level.INFO, "testType={0}", testType);
         logger.log(Level.INFO, "type.isAllowMultiples()={0}", type.isAllowMultiples());
         logger.log(Level.INFO, "json={0}", xstream.toXML(json));
+        
+        
         if (testType && type.isAllowMultiples() != json.getBoolean("multiple")) {
             throw new JsonParseException("incorrect multiple   for field " + json.getString("typeName", ""));
         }
