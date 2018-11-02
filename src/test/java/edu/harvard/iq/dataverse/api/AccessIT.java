@@ -148,6 +148,20 @@ public class AccessIT {
         assertEquals(200, deleteUserResponse.getStatusCode());
     }
     
+    @Test
+    public void testRequestAccess(){
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+        String apiTokenRando = UtilIT.getApiTokenFromResponse(createUser);
+        
+        //Finally good 
+        Response requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestricted.toString(), apiTokenRando);
+        assertEquals(200, requestFileAccessResponse.getStatusCode());
+        
+        
+    }
+    
     //This test does a lot of testing of non-original downloads as well
     @Test
     public void testDownloadSingleFile() {

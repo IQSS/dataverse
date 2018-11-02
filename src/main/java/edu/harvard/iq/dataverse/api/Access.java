@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -34,8 +35,12 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StoredOriginalFile;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -50,6 +55,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -69,10 +75,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.PUT;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.ServiceUnavailableException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.StreamingOutput;
 
 /*
@@ -880,7 +888,68 @@ public class Access extends AbstractApiBean {
     }
     */
     
-    
+    /**
+     * Restrict or Unrestrict an Existing File
+     *
+     * @author sekmiller
+     *
+     * @param fileToRequestAccessId
+     * @param apiToken
+     * @param headers
+     * @return
+     */
+    @GET
+    @Path("/datafile/{id}/requestAccess")
+    public Response requestFileAccess(@PathParam("id") String fileToRequestAccessId, @QueryParam("key") String apiToken, @Context HttpHeaders headers) {
+        //create request
+        DataverseRequest dataverseRequest;
+        //get the datafile
+        DataFile dataFile;    
+        
+        try {
+            dataFile = findDataFileOrDie(fileToRequestAccessId);
+        } catch (WrappedResponse ex) {
+            List<String> args = Arrays.asList(fileToRequestAccessId);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
+        }
+        
+        if (apiToken == null || apiToken.equals("")) {                   
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
+        }
+        
+        if (apiToken == null || apiToken.equals("")) {
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.noKey"));
+        }
+        
+        if (!dataFile.getOwner().isFileAccessRequest()){
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.requestsNotAccepted"));
+        }
+/*
+        if (isAccessAuthorized(dataFile, apiToken)) {
+
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.invalidRequest"));
+        }
+*/
+        
+        try {
+            dataverseRequest = createDataverseRequest(findUserOrDie());
+        } catch (WrappedResponse wr) {
+            return error(BAD_REQUEST, "Couldn't find user to execute command: " + wr.getLocalizedMessage());
+        }
+
+        // try to request access to the datafile
+        try {
+            engineSvc.submit(new RequestAccessCommand(dataverseRequest, dataFile, true));
+        } catch (CommandException ex) {
+
+            return error(BAD_REQUEST, "Problem trying request access on " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
+        }
+
+        List<String> args = Arrays.asList(dataFile.getDisplayName());
+        return ok(BundleUtil.getStringFromBundle("access.api.requestAccess.success.for.single.file", args));
+
+    }
+            
     // checkAuthorization is a convenience method; it calls the boolean method
     // isAccessAuthorized(), the actual workhorse, tand throws a 403 exception if not.
     
@@ -891,7 +960,7 @@ public class Access extends AbstractApiBean {
         }        
     }
     
-    
+
     
     private boolean isAccessAuthorized(DataFile df, String apiToken) {
     // First, check if the file belongs to a released Dataset version: 
@@ -971,7 +1040,7 @@ public class Access extends AbstractApiBean {
         }
         
         User user = null;
-       
+        
         /** 
          * Authentication/authorization:
          * 
@@ -1039,7 +1108,7 @@ public class Access extends AbstractApiBean {
                     return true;
                 }
             }
-            
+
             if (apiTokenUser != null) {
                 // used in an API context
                 if (permissionService.requestOn( createDataverseRequest(apiTokenUser), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
@@ -1047,7 +1116,7 @@ public class Access extends AbstractApiBean {
                     return true;
                 }
             }
-            
+
             // last option - guest user in either contexts
             // Guset user is impled by the code above.
             if ( permissionService.requestOn(dvRequestService.getDataverseRequest(), df.getOwner()).has(Permission.ViewUnpublishedDataset) ) {

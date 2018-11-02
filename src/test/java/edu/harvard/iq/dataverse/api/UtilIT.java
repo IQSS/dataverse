@@ -1054,6 +1054,24 @@ public class UtilIT {
                 .put("/api/files/" + idInPath + "/restrict" + optionalQueryParam);
         return response;
     }
+    
+    static Response requestFileAccess (String fileIdOrPersistentId,  String apiToken) {
+        
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
+        System.out.print("/api/access/datafile/" + idInPath + "/requestAccess" + "&key=" + apiToken);
+        String keySeparator = "&";
+        if (optionalQueryParam.isEmpty()){
+            keySeparator="?";
+        }
+        Response response = given()
+                .get("/api/access/" + idInPath + "/requestAccess" +  optionalQueryParam + keySeparator +  "key=" + apiToken);
+        return response;
+    }
 
     static Response moveDataverse(String movedDataverseAlias, String targetDataverseAlias, Boolean force, String apiToken) {
         Response response = given()
