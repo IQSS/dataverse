@@ -10,61 +10,69 @@ Metrics API
 
 .. _CORS: https://www.w3.org/TR/cors/
 
-Counts
-------
-
-For all count metrics, ``$type`` can be set to ``dataverses``, ``datasets``, ``files`` or ``downloads``.
-
-
-All-Time
-~~~~~~~~
+Total
+-----
 
 Returns a count of various objects in dataverse over all-time::
 
     GET https://$SERVER/api/info/metrics/$type
 
+``$type`` can be set to ``dataverses``, ``datasets``, ``files`` or ``downloads``.
+
 Example: ``curl https://demo.dataverse.org/api/info/metrics/downloads``
 
-To-Month Counts
-~~~~~~~~~~~~~~~
+To-Month
+--------
 
 Returns a count of various objects in dataverse up to a specified month ``$YYYY-DD`` in YYYY-MM format (i.e. ``2018-01``)::
 
     GET https://$SERVER/api/info/metrics/$type/toMonth/$YYYY-DD
 
+``$type`` can be set to ``dataverses``, ``datasets``, ``files`` or ``downloads``.
+
 Example: ``curl https://demo.dataverse.org/api/info/metrics/dataverses/toMonth/2018-01``
 
 
-Past Days Counts
-~~~~~~~~~~~~~~~~
+Past Days
+---------
 
 Returns a count of various objects in dataverse for the past ``$days`` (i.e. ``30``):: 
 
     GET https://$SERVER/api/info/metrics/$type/pastDays/$days
 
+``$type`` can be set to ``dataverses``, ``datasets``, ``files`` or ``downloads``.
+
 Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/pastDays/30``
 
-Other
------
+
+Dataverse Specific Commands
+---------------------------
 
 By Subject
 ~~~~~~~~~~~~~~~
 
-Returns the number of various objects by each subject. ``$type`` can be set to ``dataverses`` or ``datasets``::
+Returns the number of dataverses by each subject::
 
-    GET https://$SERVER/api/info/metrics/$type/bySubject
-
-Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/bySubject``
+    GET https://$SERVER/api/info/metrics/dataverses/bySubject
 
 
 By Category
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Returns the number an object by each category. ``$type`` can only be set to ``dataverses`` at this time::
+Returns the number of dataverses by each category::
 
     GET https://$SERVER/api/info/metrics/dataverses/byCategory
 
-Example: ``curl https://demo.dataverse.org/api/info/metrics/dataverses/byCategory``
+
+Dataset Specific Commands
+-------------------------
+
+By Subject
+~~~~~~~~~~~~~~~
+
+Returns the number of datasetsby each subject::
+
+    GET https://$SERVER/api/info/metrics/datasets/bySubject
 
 .. |CORS| raw:: html
 
