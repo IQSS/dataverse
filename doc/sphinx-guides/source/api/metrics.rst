@@ -70,7 +70,7 @@ Dataset Specific Commands
 By Subject
 ~~~~~~~~~~~~~~~
 
-Returns the number of datasetsby each subject::
+Returns the number of datasets by each subject::
 
     GET https://$SERVER/api/info/metrics/datasets/bySubject
 
