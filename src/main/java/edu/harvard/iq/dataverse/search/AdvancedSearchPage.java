@@ -44,6 +44,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private Map<Long, List<DatasetFieldType>> metadataFieldMap = new HashMap<>();
     private List<DatasetFieldType> metadataFieldList;
     private String dvFieldName;
+    private String dvFieldAlias;
     private String dvFieldDescription;
     private String dvFieldAffiliation;
     private List<String> dvFieldSubject;
@@ -122,6 +123,9 @@ public class AdvancedSearchPage implements java.io.Serializable {
         List<String> queryStrings = new ArrayList<>();
         if (StringUtils.isNotBlank(dvFieldName)) {
             queryStrings.add(constructQuery(SearchFields.DATAVERSE_NAME, dvFieldName));
+        }
+        if (StringUtils.isNotBlank(dvFieldAlias)) {
+            queryStrings.add(constructQuery(SearchFields.DATAVERSE_ALIAS, dvFieldAlias));
         }
 
         if (StringUtils.isNotBlank(dvFieldAffiliation)) {
@@ -276,6 +280,14 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     public void setDvFieldName(String dvFieldName) {
         this.dvFieldName = dvFieldName;
+    }
+
+    public String getDvFieldAlias() {
+        return dvFieldAlias;
+    }
+
+    public void setDvFieldAlias(String dvFieldAlias) {
+        this.dvFieldAlias = dvFieldAlias;
     }
 
     public String getDvFieldDescription() {
