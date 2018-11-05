@@ -313,7 +313,7 @@ public class SchemaDotOrgExporterTest {
         assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("identifier"));
         assertEquals("2002/2005", json2.getJsonArray("temporalCoverage").getString(0));
         assertEquals("2001-10-01/2015-11-15", json2.getJsonArray("temporalCoverage").getString(1));
-        assertEquals("https://schema.org/version/3.3", json2.getString("schemaVersion"));
+        assertEquals(null, json2.getString("schemaVersion", null));
         assertEquals("Dataset", json2.getJsonObject("license").getString("@type"));
         assertEquals("CC0", json2.getJsonObject("license").getString("text"));
         assertEquals("https://creativecommons.org/publicdomain/zero/1.0/", json2.getJsonObject("license").getString("url"));

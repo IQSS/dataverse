@@ -1690,14 +1690,16 @@ public class DatasetVersion implements Serializable {
         }
 
         /**
-         * Should "schemaVersion" be removed? https://schema.org/version/3.4/
-         * says, "Note that schema.org release numbers are not generally
-         * included when you use schema.org. In contexts (e.g. related standards
-         * work) when a particular release needs to be cited, this document
-         * provides the appropriate URL."
+         * https://schema.org/version/3.4/ says, "Note that schema.org release
+         * numbers are not generally included when you use schema.org. In
+         * contexts (e.g. related standards work) when a particular release
+         * needs to be cited, this document provides the appropriate URL."
+         *
+         * For the reason above we decided to take out schemaVersion but we're
+         * leaving this Javadoc in here to remind us that we made this decision.
+         * We used to include "https://schema.org/version/3.3" in the output for
+         * "schemaVersion".
          */
-        job.add("schemaVersion", "https://schema.org/version/3.3");
-        
         TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess();
         if (terms != null) {
             JsonObjectBuilder license = Json.createObjectBuilder().add("@type", "Dataset");
