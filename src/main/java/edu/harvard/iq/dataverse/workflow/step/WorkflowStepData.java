@@ -38,6 +38,11 @@ public class WorkflowStepData implements Serializable {
     @Column(length = 2048)
     private Map<String,String> stepParameters;
 
+    @ElementCollection( fetch=FetchType.EAGER )
+    @Column(length = 2048)
+    private Map<String,String> stepSettings;
+
+
     public Workflow getParent() {
         return parent;
     }
@@ -80,7 +85,15 @@ public class WorkflowStepData implements Serializable {
 
     @Override
     public String toString() {
-        return "WorkflowStepData{" + "parent=" + parent + ", providerId=" + providerId + ", stepType=" + stepType + ", parameters=" + stepParameters + '}';
+        return "WorkflowStepData{" + "parent=" + parent + ", providerId=" + providerId + ", stepType=" + stepType + ", parameters=" + stepParameters + ", settings=" + stepSettings + '}';
+    }
+
+    public void setStepSettings(Map<String, String> settingsMap) {
+        this.stepSettings=settingsMap;
+    }
+
+    public Map<String, String> getStepSettings() {
+        return stepSettings;
     }
     
     

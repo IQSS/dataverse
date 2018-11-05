@@ -145,6 +145,16 @@ public class SearchIT {
                 .body("data.items[0].name", CoreMatchers.is("Darwin's Finches"))
                 .statusCode(OK.getStatusCode());
 
+        Response publishedDataverseSearchableByAlias = UtilIT.search("dvAlias:" + dataverseAlias, nullToken);
+        publishedDataverseSearchableByAlias.prettyPrint();
+        publishedDataverseSearchableByAlias.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.is(1))
+                .body("data.count_in_response", CoreMatchers.is(1))
+                .body("data.items[0].name", CoreMatchers.is(dataverseAlias))
+                .body("data.items[0].type", CoreMatchers.is("dataverse"))
+                .body("data.items[0].identifier", CoreMatchers.is(dataverseAlias));
+
         Response disableTokenlessSearch = UtilIT.setSetting(SettingsServiceBean.Key.SearchApiRequiresToken, "true");
         disableTokenlessSearch.then().assertThat()
                 .statusCode(OK.getStatusCode());

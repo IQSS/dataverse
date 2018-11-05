@@ -178,6 +178,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
         solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dataverse.getName());
+        solrInputDocument.addField(SearchFields.DATAVERSE_ALIAS, dataverse.getAlias());
         solrInputDocument.addField(SearchFields.DATAVERSE_CATEGORY, dataverse.getIndexableCategoryName());
         if (dataverse.isReleased()) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
@@ -918,7 +919,7 @@ public class IndexServiceBean {
 
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
-                        if (!fileMetadata.getDataFile().isRestricted()&& !fileMetadata.getDataFile().isFilePackage()) {
+                        if (!dataset.isHarvested() && !fileMetadata.getDataFile().isRestricted() && !fileMetadata.getDataFile().isFilePackage()) {
                             StorageIO<DataFile> accessObject = null;
                             InputStream instream = null;
                             ContentHandler textHandler = null;

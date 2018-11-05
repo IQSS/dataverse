@@ -1164,6 +1164,10 @@ Set custom text a user will view when publishing a dataset. Note that this text 
 
 ``curl -X PUT -d "Deposit License Requirements" http://localhost:8080/api/admin/settings/:DatasetPublishPopupCustomText``
 
+If you have a long text string, you can upload it as a file as in the example below.
+
+``curl -X PUT --upload-file /tmp/long.txt http://localhost:8080/api/admin/settings/:DatasetPublishPopupCustomText``
+
 :DatasetPublishPopupCustomTextOnAllVersions
 +++++++++++++++++++++++++++++++++++++++++++
 
