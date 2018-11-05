@@ -1280,7 +1280,7 @@ public class Admin extends AbstractApiBean {
 
     @GET
     @Path("/submitDataVersionToDPN/{id}/{version}")
-    public Response submitDatasetVersionToDPN(@PathParam("id") long dsid, @PathParam("version") String versionNumber) {
+    public Response submitDatasetVersionToDPN(@PathParam("id") String dsid, @PathParam("version") String versionNumber) {
 
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
