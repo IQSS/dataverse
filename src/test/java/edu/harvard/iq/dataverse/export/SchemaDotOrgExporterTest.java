@@ -285,7 +285,6 @@ public class SchemaDotOrgExporterTest {
         assertEquals("Dataset", json2.getString("@type"));
         assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("@id"));
         assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("identifier"));
-        assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("url"));
         assertEquals("Darwin's Finches", json2.getString("name"));
         assertEquals("Finch, Fiona", json2.getJsonArray("creator").getJsonObject(0).getString("name"));
         assertEquals("Birds Inc.", json2.getJsonArray("creator").getJsonObject(0).getString("affiliation"));

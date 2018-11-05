@@ -1544,7 +1544,6 @@ public class DatasetVersion implements Serializable {
         job.add("@type", "Dataset");
         job.add("@id", this.getDataset().getPersistentURL());
         job.add("identifier", this.getDataset().getPersistentURL());
-        job.add("url", this.getDataset().getPersistentURL());
         job.add("name", this.getTitle());
         JsonArrayBuilder authors = Json.createArrayBuilder();
         for (DatasetAuthor datasetAuthor : this.getDatasetAuthors()) {

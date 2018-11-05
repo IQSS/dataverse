@@ -130,7 +130,6 @@ public class DatasetVersionTest {
         assertEquals("Dataset", obj.getString("@type"));
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("identifier"));
-        assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("url"));
         assertEquals(null, obj.getString("schemaVersion", null));
         assertEquals("Dataset", obj.getJsonObject("license").getString("@type"));
         assertEquals("CC0", obj.getJsonObject("license").getString("text"));
@@ -188,7 +187,6 @@ public class DatasetVersionTest {
         assertEquals("Dataset", obj.getString("@type"));
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("identifier"));
-        assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("url"));
         assertEquals(null, obj.getString("schemaVersion", null));
         assertEquals("Dataset", obj.getJsonObject("license").getString("@type"));
         assertEquals("Call me maybe", obj.getJsonObject("license").getString("text"));
