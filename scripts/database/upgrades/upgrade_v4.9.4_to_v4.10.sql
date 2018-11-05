@@ -8,3 +8,5 @@ ALTER TABLE datasetversion ADD COLUMN archivalcopylocation text;
 INSERT INTO setting(
            name, content)
    VALUES (':UploadMethods', 'native/http');
+   
+UPDATE dataverserole SET permissionbits=16383 WHERE id=1;
