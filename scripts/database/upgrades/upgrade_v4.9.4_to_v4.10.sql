@@ -7,3 +7,4 @@ ALTER TABLE pendingworkflowinvocation ADD COLUMN datasetexternallyreleased BOOLE
 INSERT INTO setting(
            name, content)
    VALUES (':UploadMethods', 'native/http');
+ALTER TABLE dataset ADD COLUMN githuburl text;

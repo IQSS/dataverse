@@ -30,6 +30,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import javax.persistence.Column;
 
 /**
  *
@@ -108,6 +109,20 @@ public class Dataset extends DvObjectContainer {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "guestbook_id", unique = false, nullable = true, insertable = true, updatable = true)
     private Guestbook guestbook;
+
+    /**
+     * A single repo on GitHub (i.e. https://github.com/IQSS/dataverse)
+     * associated with the dataset for the "code deposit" or "GitHub import"
+     * feature
+     *
+     * TODO: Consider changing this to gitUrl to support GitLab and other git
+     * providers
+     *
+     * TODO: Consider changing this to vcsUrl to support even non-git version
+     * control systems like Subversion. VCS is "version control system".
+     */
+    @Column(nullable = true)
+    private String githubUrl;
     
     @OneToMany(mappedBy="dataset", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLinkingDataverse> datasetLinkingDataverses;
@@ -216,6 +231,14 @@ public class Dataset extends DvObjectContainer {
 
     public void setGuestbook(Guestbook guestbook) {
         this.guestbook = guestbook;
+    }
+
+    public String getGithubUrl() {
+        return githubUrl;
+    }
+
+    public void setGithubUrl(String githubUrl) {
+        this.githubUrl = githubUrl;
     }
 
     public boolean isFileAccessRequest() {

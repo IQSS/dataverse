@@ -1162,7 +1162,62 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/datasets/:persistentId/thumbnail" + "?persistentId=" + datasetPersistentId);
     }
-    
+
+    static Response getGithubUrl(String idOrPersistentId, String apiToken) {
+        logger.info("Getting GitHub URL");
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/datasets/" + idInPath + "/github" + optionalQueryParam);
+    }
+
+    static Response setGithubUrl(String idOrPersistentId, String githubUrl, String apiToken) {
+        logger.info("Setting GitHub URL");
+        JsonObjectBuilder roleBuilder = Json.createObjectBuilder();
+        roleBuilder.add("githubUrl", githubUrl);
+        JsonObject roleObject = roleBuilder.build();
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification
+                .body(roleObject.toString())
+                .contentType(ContentType.JSON)
+                .post("/api/datasets/" + idInPath + "/github/setUrl" + optionalQueryParam);
+    }
+
+    static Response importGithubRepo(String idOrPersistentId, String apiToken) {
+        logger.info("Importing GitHub repo into dataset " + idOrPersistentId);
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification
+                .post("/api/datasets/" + idInPath + "/github/import" + optionalQueryParam);
+    }
+
     static Response getDatasetVersions(String idOrPersistentId, String apiToken) {
         logger.info("Getting Dataset Versions");
         String idInPath = idOrPersistentId; // Assume it's a number.
