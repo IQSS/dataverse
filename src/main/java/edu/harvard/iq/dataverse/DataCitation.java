@@ -141,7 +141,7 @@ public class DataCitation {
     }
 
     public String getAuthorsString() {
-        return String.join(";", authors);
+        return String.join("; ", authors);
     }
 
     public String getTitle() {
@@ -257,17 +257,16 @@ public class DataCitation {
         out.write(publisher);
         out.write("},\r\n");
         if(getFileTitle() !=null && isDirect()) {
-        out.write("title = {");
-        out.write(fileTitle);
-        out.write("},\r\n");
-        out.write("booktitle = {");
-        out.write(title);
-        out.write("},\r\n");
+            out.write("title = {");
+            out.write(fileTitle);
+            out.write("},\r\n");
+            out.write("booktitle = {");
+            out.write(title);
+            out.write("},\r\n");
         } else {
             out.write("title = {");
             out.write(title);
             out.write("},\r\n");
-            
         }
         out.write("year = {");
         out.write(year);
@@ -279,6 +278,7 @@ public class DataCitation {
         out.write("},\r\n");
         out.write("url = {");
         out.write(persistentId.toURL().toString());
+        out.write("}\r\n");
         out.write("}\r\n");
         out.flush();
     }

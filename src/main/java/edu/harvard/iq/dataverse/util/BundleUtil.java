@@ -31,7 +31,7 @@ public class BundleUtil {
     
     public static String getStringFromBundle(String key, List<String> arguments, ResourceBundle bundle) {
         try {
-            return getStringFromBundleNoMissingCheck(key, arguments, bundle);
+          return getStringFromBundleNoMissingCheck(key, arguments, bundle);
         } catch (MissingResourceException ex) {
             logger.warning("Could not find key \"" + key + "\" in bundle file: ");
             logger.log(Level.CONFIG, ex.getMessage(), ex);
