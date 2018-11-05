@@ -7,6 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 import java.util.Comparator;
+import java.util.regex.Pattern;
 
 
 /**
@@ -87,33 +88,52 @@ public class DatasetAuthor {
             && (name==null || name.getValue().trim().equals(""))
            );
     }
-    
+
+    /**
+     * https://support.orcid.org/hc/en-us/articles/360006897674-Structure-of-the-ORCID-Identifier
+     */
+    final public static String REGEX_ORCID = "^\\d{4}-\\d{4}-\\d{4}-(\\d{4}|\\d{3}X)$";
+    final public static String REGEX_ISNI = "^\\d*$";
+    final public static String REGEX_LCNA = "^[a-z]+\\d+$";
+    final public static String REGEX_VIAF = "^\\d*$";
+    /**
+     * GND regex from https://www.wikidata.org/wiki/Property:P227
+     */
+    final public static String REGEX_GND = "^1[01]?\\d{7}[0-9X]|[47]\\d{6}-\\d|[1-9]\\d{0,7}-[0-9X]|3\\d{7}[0-9X]$";
+
+    /**
+     * Each author identification type has its own valid pattern/syntax.
+     */
+    public static Pattern getValidPattern(String regex) {
+        return Pattern.compile(regex);
+    }
+
     public String getIdentifierAsUrl() {
         if (idType != null && !idType.isEmpty() && idValue != null && !idValue.isEmpty()) {
             DatasetFieldValueValidator datasetFieldValueValidator = new DatasetFieldValueValidator();
             switch (idType) {
                 case "ORCID":
-                    if (datasetFieldValueValidator.isValidAuthorIdentifierOrcid(idValue)) {
+                    if (datasetFieldValueValidator.isValidAuthorIdentifier(idValue, getValidPattern(REGEX_ORCID))) {
                         return "https://orcid.org/" + idValue;
                     }
                     break;
                 case "ISNI":
-                    if (datasetFieldValueValidator.isValidAuthorIdentifierIsni(idValue)) {
+                    if (datasetFieldValueValidator.isValidAuthorIdentifier(idValue, getValidPattern(REGEX_ISNI))) {
                         return "http://www.isni.org/isni/" + idValue;
                     }
                     break;
                 case "LCNA":
-                    if (datasetFieldValueValidator.isValidAuthorIdentifierLcna(idValue)) {
+                    if (datasetFieldValueValidator.isValidAuthorIdentifier(idValue, getValidPattern(REGEX_LCNA))) {
                         return "http://id.loc.gov/authorities/names/" + idValue;
                     }
                     break;
                 case "VIAF":
-                    if (datasetFieldValueValidator.isValidAuthorIdentifierViaf(idValue)) {
+                    if (datasetFieldValueValidator.isValidAuthorIdentifier(idValue, getValidPattern(REGEX_VIAF))) {
                         return "https://viaf.org/viaf/" + idValue;
                     }
                     break;
                 case "GND":
-                    if (datasetFieldValueValidator.isValidAuthorIdentifierGnd(idValue)) {
+                    if (datasetFieldValueValidator.isValidAuthorIdentifier(idValue, getValidPattern(REGEX_GND))) {
                         return "https://d-nb.info/gnd/" + idValue;
                     }
                     break;

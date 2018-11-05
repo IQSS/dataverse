@@ -218,41 +218,8 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         return valid;
     }
 
-    public boolean isValidAuthorIdentifierOrcid(String userInput) {
-        // https://support.orcid.org/hc/en-us/articles/360006897674-Structure-of-the-ORCID-Identifier
-        String validRegex = "^\\d{4}-\\d{4}-\\d{4}-(\\d{4}|\\d{3}X)$";
-        Pattern pattern = Pattern.compile(validRegex);
-        Matcher matcher = pattern.matcher(userInput);
-        return matcher.matches();
-    }
-
-    public boolean isValidAuthorIdentifierIsni(String userInput) {
-        String validRegex = "^\\d*$";
-        Pattern pattern = Pattern.compile(validRegex);
-        Matcher matcher = pattern.matcher(userInput);
-        return matcher.matches();
-    }
-
-    public boolean isValidAuthorIdentifierLcna(String userInput) {
-        String validRegex = "^[a-z]+\\d+$";
-        Pattern pattern = Pattern.compile(validRegex);
-        Matcher matcher = pattern.matcher(userInput);
-        return matcher.matches();
-    }
-
-    public boolean isValidAuthorIdentifierViaf(String userInput) {
-        String validRegex = "^\\d*$";
-        Pattern pattern = Pattern.compile(validRegex);
-        Matcher matcher = pattern.matcher(userInput);
-        return matcher.matches();
-    }
-
-    public boolean isValidAuthorIdentifierGnd(String userInput) {
-        // GND regex from https://www.wikidata.org/wiki/Property:P227
-        String validRegex = "^1[01]?\\d{7}[0-9X]|[47]\\d{6}-\\d|[1-9]\\d{0,7}-[0-9X]|3\\d{7}[0-9X]$";
-        Pattern pattern = Pattern.compile(validRegex);
-        Matcher matcher = pattern.matcher(userInput);
-        return matcher.matches();
+    public boolean isValidAuthorIdentifier(String userInput, Pattern pattern) {
+        return pattern.matcher(userInput).matches();
     }
 
 }
