@@ -1286,29 +1286,26 @@ public class Admin extends AbstractApiBean {
 
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
-            if (au.isSuperuser()) {
-                Dataset ds = findDatasetOrDie(dsid);
-                
-                DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
-                if (dv.getArchivalCopyLocation() == null) {
-                    SubmitToArchiveCommand cmd = new SubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
-                    try {
-                        dv = commandEngine.submit(cmd);
-                        if (dv.getArchivalCopyLocation() != null) {
-                            return ok("DatasetVersion id=" + dvid + " submitted to DPN/Duracloud at: "
-                                    + dv.getArchivalCopyLocation());
-                        } else {
-                            return error(Status.CONFLICT, "Error submitting version due to conflict/error at DPN");
-                        }
-                    } catch (CommandException ex) {
-                        logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
-                        return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
+            session.setUser(au);
+            Dataset ds = findDatasetOrDie(dsid);
+
+            DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
+            if (dv.getArchivalCopyLocation() == null) {
+                SubmitToArchiveCommand cmd = new SubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
+                try {
+                    dv = commandEngine.submit(cmd);
+                    if (dv.getArchivalCopyLocation() != null) {
+                        return ok("DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber + " submitted to DPN/Duracloud at: "
+                                + dv.getArchivalCopyLocation());
+                    } else {
+                        return error(Status.CONFLICT, "Error submitting version due to conflict/error at DPN");
                     }
-                } else {
-                    return error(Status.BAD_REQUEST, "Version already archived at: " + dv.getArchivalCopyLocation());
+                } catch (CommandException ex) {
+                    logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
                 }
             } else {
-                return error(Status.UNAUTHORIZED, "must be superuser");
+                return error(Status.BAD_REQUEST, "Version already archived at: " + dv.getArchivalCopyLocation());
             }
         } catch (WrappedResponse e1) {
             return error(Status.UNAUTHORIZED, "api key required");
