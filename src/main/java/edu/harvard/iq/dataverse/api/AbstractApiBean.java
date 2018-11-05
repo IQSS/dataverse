@@ -305,17 +305,6 @@ public abstract class AbstractApiBean {
     }
 
     protected String getRequestApiKey() {
-        Map<String, String[]> params = httpRequest.getParameterMap();
-        for (String key: params.keySet()) {
-            logger.info(key + " : " + String.join(",",params.get(key)));
-        }
-        Enumeration names = httpRequest.getHeaderNames();
-        if(names != null) {
-        while (names.hasMoreElements()) {
-            String name = (String) names.nextElement();
-            logger.info("Header: " + name + ": " + httpRequest.getHeader(name));
-        }
-        }
         String headerParamApiKey = httpRequest.getHeader(DATAVERSE_KEY_HEADER_NAME);
         String queryParamApiKey = httpRequest.getParameter("key");
                 
