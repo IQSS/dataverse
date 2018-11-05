@@ -282,3 +282,25 @@ Available variables are:
 * ``minorVersion``
 * ``majorVersion``
 * ``releaseStatus``
+
+dpn
++++++++
+
+A step that sends an archival copy of a Dataset Version to the DuraCloud interface of the Digital Preservation Network. See the `DPN Integration documentation <http://guides.dataverse.org/en/latest/admin/integrations.html#id15>`_ for further detail.
+
+.. code:: json
+
+
+  {
+    "provider":":internal",
+    "stepType":"dpn",
+    "parameters": {
+      "stepName":"dpn submission"
+    },
+    "requiredSettings": {
+      "DuraCloudHost":"string",
+      "DuraCloudPort":"string",
+      "DuraCloudContext":"string" 
+    }
+  }
+

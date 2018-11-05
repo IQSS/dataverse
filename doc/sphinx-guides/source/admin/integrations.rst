@@ -111,7 +111,38 @@ The username and password associated with your organization's DPN account should
     
     `./asadmin create-jvm-options '-Dduracloud.password=YOUR_PASSWORD_HERE'`
 
-Once this configuration is complete, you, as a superuser, should be able to use the API call to manually submit a DatasetVersion for processing 
+**API Call**
+
+Once this configuration is complete, you, as a user with the *ArchiveDatasetVersion* permission (given to the Admin role by default), should be able to use the API call to manually submit a DatasetVersion for processing:
+
+    `curl -H "X-Dataverse-key:|<key>" http://localhost:8080/api/admin/submitDataVersionToDPN/{id}/{version}`
+    
+    where:
+     {id} is the DatasetId (or :persistentId with the ?persistentId="\<DOI\>" parameter), and
+
+     {version} is the friendly version number, e.g. "1.2".
+     
+The submitDataVersionToDPN API (and the workflow discussed below) attempt to create a Duracloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') and then upload a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete' containing all user-entered metadata and is intended as an archival record.)
+
+Since the transfer from the Duracloud front-end to archival storage in DPN can take significant time, it is currently up to the admin/curator to submit a 'snap-shot' of the space within Duracloud and to monitor its successful transfer. Once transfer is complete the space can be emptied or deleted, at which point the Dataverse APi call can be used to submit a Bag for other versions of the same Dataset. (The space is reused, so that archival copies of different Dataset versions correspond to different snapshots of the same Duracloud space.).
+
+**PostPublication Workflow**
+
+To automate the submission of archival copies to DPN as part of publication, one can setup a Dataverse Workflow using the `"dpn" workflow step <http://guides.dataverse.org/en/latest/developers/big-data-support.html#id16>`_
+. The dpn step uses the configuration information discussed above and requires no additional information.
+
+To active this workflow, one must first install a workflow using the dpn step. A simple workflow that invokes the dpn step as its only action is included in dataverse at /scripts/api/data/workflows/internal-dpn-workflow.json.
+
+Using the `Workflow Native API <http://guides.dataverse.org/en/latest/api/native-api.html#id114>`_ this workflow can be installed using:
+
+    `curl -X POST --upload-file internal-dpn-workflow.json http://localhost:8080/api/admin/workflows`
+    
+The workflow id returned in this call (or available by doing a GET of /api/admin/workflows ) can then be submitted as the default PostPublication workflow:
+
+    `curl -X PUT -d {id} http://localhost:8080/api/admin/workflows/default/PostPublishDataset`
+
+Once these steps are taken, new publication requests will automatically trigger submission of an archival copy to DPN's DuraCloud component. As when using the API, it is currently the admin's responsibility to snap-shot the DuraCloud space and monitor the result. Failure of the workflow, (e.g. if DuraCloud is unavailable, the configuration is wrong, or the space for this dataset already exists due to a prior publication action or use of the API), the workflow will report failure but will not affect publication itself.  
+ 
 
 Future Integrations
 -------------------
