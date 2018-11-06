@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.Serializable;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1545,6 +1546,7 @@ public class DatasetVersion implements Serializable {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("@context", "http://schema.org");
         job.add("@type", "Dataset");
+        // Note that whenever you use "@id" you should also use "identifier" and vice versa.
         job.add("@id", this.getDataset().getPersistentURL());
         job.add("identifier", this.getDataset().getPersistentURL());
         job.add("name", this.getTitle());
@@ -1767,12 +1769,18 @@ public class DatasetVersion implements Serializable {
             String dataverseSiteUrl = SystemConfig.getDataverseSiteUrlStatic();
             for (FileMetadata fileMetadata : fileMetadatasSorted) {
                 JsonObjectBuilder fileObject = NullSafeJsonBuilder.jsonObjectBuilder();
+                String filePidUrlAsString = null;
+                URL filePidUrl = fileMetadata.getDataFile().getGlobalId().toURL();
+                if (filePidUrl != null) {
+                    filePidUrlAsString = filePidUrl.toString();
+                }
                 fileObject.add("@type", "DataDownload");
                 fileObject.add("name", fileMetadata.getLabel());
                 fileObject.add("fileFormat", fileMetadata.getDataFile().getContentType());
                 fileObject.add("contentSize", fileMetadata.getDataFile().getFilesize());
                 fileObject.add("description", fileMetadata.getDescription());
-                fileObject.add("identifier", fileMetadata.getDataFile().getGlobalId().toURL().toString());
+                fileObject.add("@id", filePidUrlAsString);
+                fileObject.add("identifier", filePidUrlAsString);
                 String hideFilesBoolean = System.getProperty(SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS);
                 if (hideFilesBoolean != null && hideFilesBoolean.equals("true")) {
                     // no-op
