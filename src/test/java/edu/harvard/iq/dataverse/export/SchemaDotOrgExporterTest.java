@@ -184,7 +184,9 @@ public class SchemaDotOrgExporterTest {
         ));
         publicationChildTypes.add(datasetFieldTypeSvc.add(publicationIdTypes));
         publicationChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("publicationIDNumber", DatasetFieldType.FieldType.TEXT, false)));
-        publicationChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("publicationURL", DatasetFieldType.FieldType.TEXT, false)));
+        DatasetFieldType publicationURLType = new DatasetFieldType("publicationURL", DatasetFieldType.FieldType.URL, false);
+        publicationURLType.setDisplayFormat("<a href=\"#VALUE\" target=\"_blank\">#VALUE</a>");
+        publicationChildTypes.add(datasetFieldTypeSvc.add(publicationURLType));
         publicationType.setChildDatasetFieldTypes(publicationChildTypes);
 
         DatasetFieldType timePeriodCoveredType = datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCovered", DatasetFieldType.FieldType.NONE, true));

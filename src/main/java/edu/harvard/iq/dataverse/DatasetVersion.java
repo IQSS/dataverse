@@ -1075,6 +1075,8 @@ public class DatasetVersion implements Serializable {
                             relatedPublication.setText(citation);
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
+                            // Prevent href and target=_blank from getting into Schema.org JSON-LD output.
+                            subField.getDatasetFieldType().setDisplayFormat("#VALUE");
                             String url = subField.getDisplayValue();
                             relatedPublication.setUrl(url);
                         }
