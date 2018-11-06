@@ -64,7 +64,18 @@ public class GithubApiIT {
 
         Response importGithubRepo = UtilIT.importGithubRepo(datasetPersistentId, apitoken);
         importGithubRepo.prettyPrint();
+        importGithubRepo.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
+        Response getDatasetAsJson = UtilIT.nativeGet(datasetId, apitoken);
+        getDatasetAsJson.prettyPrint();
+        getDatasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.files[0].label", equalTo("metrics.dataverse.org.zip"))
+                // FIXME: Populate file description with metadata from GitHub.
+                .body("data.latestVersion.files[0].description", equalTo(""))
+                .body("data.latestVersion.files[0].dataFile.filename", equalTo("metrics.dataverse.org.zip"))
+                .body("data.latestVersion.files[0].dataFile.contentType", equalTo("application/zip"));
     }
 
 }
