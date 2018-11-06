@@ -1997,17 +1997,14 @@ public class DatasetPage implements java.io.Serializable {
     private String releaseDataset(boolean minor) {
         if (session.getUser() instanceof AuthenticatedUser) {
             try {
-                logger.info("Commit check 0: " + FacesContext.getCurrentInstance().getExternalContext().isResponseCommitted());
                 final PublishDatasetResult result = commandEngine.submit(
                     new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor)
                 );
-                logger.info("Commit check 1: " + FacesContext.getCurrentInstance().getExternalContext().isResponseCommitted());
                 dataset = result.getDataset();
                 // Sucessfully executing PublishDatasetCommand does not guarantee that the dataset 
                 // has been published. If a publishing workflow is configured, this may have sent the 
                 // dataset into a workflow limbo, potentially waiting for a third party system to complete 
                 // the process. So it may be premature to show the "success" message at this point. 
-                logger.info("Commit check 2: " + FacesContext.getCurrentInstance().getExternalContext().isResponseCommitted());
                 if ( result.isCompleted() ) {
                     JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
                 } else {
@@ -2022,7 +2019,6 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.only.authenticatedUsers"));
         }
-        logger.info("Commit check 3: " + FacesContext.getCurrentInstance().getExternalContext().isResponseCommitted());
         return returnToDatasetOnly();
     }
 
