@@ -195,7 +195,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
         String protocol = getDataset().getProtocol();
-        logger.info("Start: " + new Date().toString());
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
         if (idServiceBean != null) {
             List<String> args = idServiceBean.getProviderInformation();
@@ -215,18 +214,21 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 if ((currentGlobalIdProtocol.equals(protocol) || dataFilePIDFormat.equals("INDEPENDENT"))//TODO(pm) - check authority too
                         && isFilePIDsEnabled) {
                     //A false return value indicates a failure in calling the service
-                    long start = System.currentTimeMillis();
+                    long totalTime=0l;
                     for (DataFile df : dataset.getFiles()) {
                         logger.log(Level.FINE, "registering global id for file {0}", df.getId());
                         //A false return value indicates a failure in calling the service
+                        long start = System.currentTimeMillis();
                         if (!idServiceBean.publicizeIdentifier(df)) {
                             throw new Exception();
                         }
+                        long end = System.currentTimeMillis();
                         df.setGlobalIdCreateTime(getTimestamp());
                         df.setIdentifierRegistered(true);
+                        totalTime+=(end-start);
                     }
-                    long end = System.currentTimeMillis();
-                    logger.info("DataCite time = " + (end-start)/1000.0);
+                    
+                    logger.info("DataCite time = " + totalTime/1000.0);
                 }
                 if (!idServiceBean.publicizeIdentifier(dataset)) {
                     throw new Exception();
@@ -238,7 +240,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
             }
         }
-        logger.info("Finish: " + new Date().toString());
     }
     
     private void updateFiles(Timestamp updateTime, CommandContext ctxt) throws CommandException {
