@@ -117,7 +117,7 @@ public class SearchUtil {
      * @throws SearchException 
      */
     public static String expandQuery(String query) throws SearchException {
-        if (!query.matches(".*[^\\][^\\][:].*")) {
+        if (!query.matches(".*[^\\\\][^\\\\][:].*")) {
             if (!query.matches(".*[\\{\\[\\]\\}].*")) {
                 String[] parts = query.split("\\s*");
                 StringBuilder ftQuery = new StringBuilder();
