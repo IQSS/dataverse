@@ -194,6 +194,8 @@ public class SearchFields {
     public static final String DEFINITION_POINT = "definitionPointDocId";
     public static final String DEFINITION_POINT_DVOBJECT_ID = "definitionPointDvObjectId";
     public static final String DISCOVERABLE_BY = "discoverableBy";
+    public static final String FULL_TEXT_SEARCHABLE_BY = "fullTextSearchableBy";
+
 
     /**
      * i.e. "Unpublished", "Draft" (multivalued)
@@ -234,6 +236,6 @@ public class SearchFields {
 
     public static final String VARIABLE_NAME = "variableName";
     public static final String VARIABLE_LABEL = "variableLabel";
-	public static final String FULL_TEXT = "_text_";
+	public static final String FULL_TEXT = "fulltext";
 
 }

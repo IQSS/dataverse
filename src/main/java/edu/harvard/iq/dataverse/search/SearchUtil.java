@@ -18,28 +18,19 @@ public class SearchUtil {
         if (query == null) {
             return null;
         }
-        String[] colonParts = query.split(":");
-        if (colonParts.length > 0) {
-            String first = colonParts[0];
-            if (first.startsWith("doi")) {
-                query = query.replaceAll("doi:", "doi\\\\:");
-            } else if (first.startsWith("hdl")) {
-                query = query.replaceAll("hdl:", "hdl\\\\:");
-            } else if (first.startsWith("datasetPersistentIdentifier")) {
-                query = query.replaceAll("datasetPersistentIdentifier:doi:", "datasetPersistentIdentifier:doi\\\\:");
-                query = query.replaceAll("datasetPersistentIdentifier:hdl:", "datasetPersistentIdentifier:hdl\\\\:");
-            } else {
-                /**
-                 * No-op, don't mutate the query.
-                 *
-                 * Because we want to support advanced search queries like
-                 * "title:foo" we can't simply escape the whole query with
-                 * `ClientUtils.escapeQueryChars(query)`:
-                 *
-                 * http://lucene.apache.org/solr/4_6_0/solr-solrj/org/apache/solr/client/solrj/util/ClientUtils.html#escapeQueryChars%28java.lang.String%29
-                 */
-            }
-        }
+        /**
+         * In general, don't mutate the query - 
+         * because we want to support advanced search queries like
+         * "title:foo" we can't simply escape the whole query with
+         * `ClientUtils.escapeQueryChars(query)`:
+         *
+         * http://lucene.apache.org/solr/4_6_0/solr-solrj/org/apache/solr/client/solrj/util/ClientUtils.html#escapeQueryChars%28java.lang.String%29
+         */
+
+        query = query.replaceAll("doi:", "doi\\\\:")
+                .replaceAll("hdl:", "hdl\\\\:")
+                .replaceAll("datasetPersistentIdentifier:doi:", "datasetPersistentIdentifier:doi\\\\:")
+                .replaceAll("datasetPersistentIdentifier:hdl:", "datasetPersistentIdentifier:hdl\\\\:");
         return query;
     }
 
@@ -112,6 +103,48 @@ public class SearchUtil {
         } else {
             return userSuppliedQuery;
         }
+    }
+
+    /** expandQuery
+     * 
+     *  This method is only called when full-text indexing is on. It expands a simple query to search for the query items in the default field, where all metadata is indexed,
+     *  and for the same query items in the full text field. 
+     *  For security reasons, if the query is too complex to be parsed correctly by the current implementation, the method throws an exception.
+     *  The current implementation does not parse any query with items restricted to specific fields (e.g. title:"Test"), or with use of range queries.
+     *   
+     * @param query
+     * @return
+     * @throws SearchException 
+     */
+    public static String expandQuery(String query) throws SearchException {
+        if (!query.matches(".*[^\\][^\\][:].*")) {
+            if (!query.matches(".*[\\{\\[\\]\\}].*")) {
+                String[] parts = query.split("\\s*");
+                StringBuilder ftQuery = new StringBuilder();
+                boolean firstTime = true;
+                for (String part : parts) {
+                    if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT"))) {
+                        if(part.startsWith("+")) {
+                        ftQuery.append("+" + SearchFields.FULL_TEXT + ":" + part.substring(1));
+                        } else if(part.startsWith("-")) {
+                            ftQuery.append("-" + SearchFields.FULL_TEXT + ":" + part.substring(1));
+                        }else {
+                            ftQuery.append(SearchFields.FULL_TEXT + ":" + part);
+                        }
+                        if (!firstTime) {
+                            ftQuery.append(" ");
+                            firstTime = false;
+                        }
+                    }
+                }
+                query = query + " OR (" + ftQuery.toString() + ")";
+            } else {
+                throw new SearchException("Range queries not supported with full-text indexing enabled.");
+            }
+        } else {
+            throw new SearchException("Field-specific queries not supported with full-text indexing enabled.");
+        }
+        return query;
     }
 
 }

@@ -6,4 +6,8 @@ public class SearchException extends Exception {
         super(message, cause);
     }
 
+    public SearchException(String message) {
+        super(message);
+    }
+
 }

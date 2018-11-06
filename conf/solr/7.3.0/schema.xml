@@ -55,6 +55,7 @@
        1.5: omitNorms defaults to true for primitive field types 
             (int, float, boolean, string...)
        1.6: useDocValuesAsStored defaults to true.
+       1.7 use separate fulltext field
     -->
 
     <!-- Valid attributes for fields:
@@ -131,7 +132,8 @@
     <field name="text_rev" type="text_general_rev" indexed="true" stored="false" multiValued="true"/>    
     <field name="name" type="text_en" indexed="true" stored="true"/> 
 
-
+	<!--  full text indexing, text_en for stemming, stored to support returning phrases around hits -->
+    <field name="fulltext" type="text_en" indexed="true" stored="true"/>
 
 
 
