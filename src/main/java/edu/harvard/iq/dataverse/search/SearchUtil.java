@@ -119,21 +119,21 @@ public class SearchUtil {
     public static String expandQuery(String query) throws SearchException {
         if (!query.matches(".*[^\\\\][^\\\\][:].*")) {
             if (!query.matches(".*[\\{\\[\\]\\}].*")) {
-                String[] parts = query.split("\\s*");
+                String[] parts = query.split("\\s+");
                 StringBuilder ftQuery = new StringBuilder();
                 boolean firstTime = true;
                 for (String part : parts) {
+                    if (!firstTime) {
+                        ftQuery.append(" ");
+                        firstTime = false;
+                    }
                     if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT"))) {
-                        if(part.startsWith("+")) {
-                        ftQuery.append("+" + SearchFields.FULL_TEXT + ":" + part.substring(1));
-                        } else if(part.startsWith("-")) {
+                        if (part.startsWith("+")) {
+                            ftQuery.append("+" + SearchFields.FULL_TEXT + ":" + part.substring(1));
+                        } else if (part.startsWith("-")) {
                             ftQuery.append("-" + SearchFields.FULL_TEXT + ":" + part.substring(1));
-                        }else {
+                        } else {
                             ftQuery.append(SearchFields.FULL_TEXT + ":" + part);
-                        }
-                        if (!firstTime) {
-                            ftQuery.append(" ");
-                            firstTime = false;
                         }
                     }
                 }
