@@ -155,7 +155,6 @@ public class AccessIT {
         assertEquals(200, createUser.getStatusCode());
         String apiTokenRando = UtilIT.getApiTokenFromResponse(createUser);
         
-        //Finally good 
         Response requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestricted.toString(), apiTokenRando);
         assertEquals(200, requestFileAccessResponse.getStatusCode());
         

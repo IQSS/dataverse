@@ -15,14 +15,22 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
+import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -37,7 +45,10 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -54,12 +65,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import javax.inject.Inject;
+import javax.persistence.TypedQuery;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -131,6 +145,12 @@ public class Access extends AbstractApiBean {
     DataverseRequestServiceBean dvRequestService;
     @EJB
     GuestbookResponseServiceBean guestbookResponseService;
+    @EJB
+    DataverseRoleServiceBean roleService;
+    @EJB
+    UserNotificationServiceBean userNotificationService;
+    @Inject
+    PermissionsWrapper permissionsWrapper;
     
     
     private static final String API_KEY_HEADER = "X-Dataverse-key";    
@@ -889,7 +909,7 @@ public class Access extends AbstractApiBean {
     */
     
     /**
-     * Restrict or Unrestrict an Existing File
+     * Request Access to Restricted File
      *
      * @author sekmiller
      *
@@ -924,32 +944,264 @@ public class Access extends AbstractApiBean {
         if (!dataFile.getOwner().isFileAccessRequest()){
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.requestsNotAccepted"));
         }
-/*
-        if (isAccessAuthorized(dataFile, apiToken)) {
 
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.invalidRequest"));
-        }
-*/
         
         try {
             dataverseRequest = createDataverseRequest(findUserOrDie());
         } catch (WrappedResponse wr) {
-            return error(BAD_REQUEST, "Couldn't find user to execute command: " + wr.getLocalizedMessage());
+            List<String> args = Arrays.asList(wr.getLocalizedMessage());
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
         }
 
         // try to request access to the datafile
         try {
             engineSvc.submit(new RequestAccessCommand(dataverseRequest, dataFile, true));
         } catch (CommandException ex) {
-
-            return error(BAD_REQUEST, "Problem trying request access on " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
+            //access.api.requestAccess.failure.commandError
+            List<String> args = Arrays.asList(dataFile.getDisplayName());
+            args.add(ex.getLocalizedMessage());
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.commandError", args));
         }
 
         List<String> args = Arrays.asList(dataFile.getDisplayName());
         return ok(BundleUtil.getStringFromBundle("access.api.requestAccess.success.for.single.file", args));
 
     }
+    
+    /**
+     * Grant Access to Restricted File
+     *
+     * @author sekmiller
+     *
+     * @param fileToRequestAccessId
+     * @param identifier
+     * @param apiToken
+     * @param headers
+     * @return
+     */
+    @GET
+    @Path("/datafile/{id}/grantAccess/{identifier}")
+    public Response grantFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @QueryParam("key") String apiToken, @Context HttpHeaders headers) {
+        //create request
+        DataverseRequest dataverseRequest;
+        //get the datafile
+        DataFile dataFile;    
+        
+        try {
+            dataFile = findDataFileOrDie(fileToRequestAccessId);
+        } catch (WrappedResponse ex) {
+            List<String> args = Arrays.asList(fileToRequestAccessId);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
+        }
+        
+        if (apiToken == null || apiToken.equals("")) {                   
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
+        }
+        
+        if (apiToken == null || apiToken.equals("")) {
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.noKey"));
+        }
+        
+        
+        RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(identifier);
+        
+        if (ra == null ) {
+            List<String> args = Arrays.asList(identifier);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", args));
+        }
+        
+
+        
+        try {
+            dataverseRequest = createDataverseRequest(findUserOrDie());
+        } catch (WrappedResponse wr) {
+            //access.api.fileAccess.failure.noUser
+            List<String> args = Arrays.asList(identifier);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
+        }
+        
+        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
+
+        // try to request access to the datafile
+        try {
+            engineSvc.submit(new AssignRoleCommand(ra, fileDownloaderRole, dataFile, dataverseRequest, null));
+            if (dataFile.getFileAccessRequesters().remove(ra)) {
+                dataFileService.save(dataFile);
+            }
             
+        } catch (CommandException ex) {
+            List<String> args = Arrays.asList(dataFile.getDisplayName());
+            args.add(ex.getLocalizedMessage());
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.failure.commandError", args));
+        }
+
+        List<String> args = Arrays.asList(dataFile.getDisplayName());
+        return ok(BundleUtil.getStringFromBundle("access.api.grantAccess.success.for.single.file", args));
+
+    } 
+    
+    /**
+     * Revoke Previously Granted Access to Restricted File
+     *
+     * @author sekmiller
+     *
+     * @param fileToRequestAccessId
+     * @param apiToken
+     * @param headers
+     * @return
+     */
+    @GET
+    @Path("/datafile/{id}/revokeAccess/{identifier}")
+    public Response revokeFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifer") String identifier, @QueryParam("key") String apiToken, @Context HttpHeaders headers) {
+        //create request
+        DataverseRequest dataverseRequest;
+        //get the datafile
+        DataFile dataFile;
+
+        try {
+            dataFile = findDataFileOrDie(fileToRequestAccessId);
+        } catch (WrappedResponse ex) {
+            List<String> args = Arrays.asList(fileToRequestAccessId);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
+        }
+
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
+        }
+
+        if (apiToken == null || apiToken.equals("")) {
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.noKey"));
+        }
+
+        try {
+            dataverseRequest = createDataverseRequest(findUserOrDie());
+        } catch (WrappedResponse wr) {
+            List<String> args = Arrays.asList(wr.getLocalizedMessage());
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
+        }
+
+        RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(identifier);
+
+        if (ra == null) {
+            List<String> args = Arrays.asList(identifier);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", args));
+        }
+
+        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
+
+        TypedQuery<RoleAssignment> query = em.createNamedQuery(
+                "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId_RoleId",
+                RoleAssignment.class);
+        query.setParameter("assigneeIdentifier", ra.getIdentifier());
+        query.setParameter("definitionPointId", dataFile.getId());
+        query.setParameter("roleId", fileDownloaderRole.getId());
+        List<RoleAssignment> roles = query.getResultList();
+
+        if (roles == null || roles.isEmpty()) {
+            List<String> args = Arrays.asList(identifier);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.revokeAccess.noRoleFound", args));
+        }
+
+        // try to revoke downloader access
+        try {
+            for (RoleAssignment role : roles) {
+                execCommand(new RevokeRoleCommand(role, dataverseRequest));
+            }
+            engineSvc.submit(new RequestAccessCommand(dataverseRequest, dataFile, true));
+        } catch (CommandException ex) {
+            //access.api.requestAccess.failure.commandError
+            List<String> args = Arrays.asList(dataFile.getDisplayName());
+            args.add(ex.getLocalizedMessage());
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.commandError", args));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        List<String> args = Arrays.asList(ra.getDisplayInfo().getTitle());
+        args.add(dataFile.getDisplayName());
+        return ok(BundleUtil.getStringFromBundle("access.api.revokeAccess.success.for.single.file", args));
+
+    }
+
+    /**
+     * Reject Access request to Restricted File
+     *
+     * @author sekmiller
+     *
+     * @param fileToRequestAccessId
+     * @param identifier
+     * @param apiToken
+     * @param headers
+     * @return
+     */
+    @GET
+    @Path("/datafile/{id}/rejectAccess/{identifier}")
+    public Response rejectFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @QueryParam("key") String apiToken, @Context HttpHeaders headers) {
+
+        //create request
+        DataverseRequest dataverseRequest;
+        //get the datafile
+        DataFile dataFile;    
+        
+        try {
+            dataFile = findDataFileOrDie(fileToRequestAccessId);
+        } catch (WrappedResponse ex) {
+            List<String> args = Arrays.asList(fileToRequestAccessId);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
+        }
+        
+        if (apiToken == null || apiToken.equals("")) {                   
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
+        }
+        
+        if (apiToken == null || apiToken.equals("")) {
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.noKey"));
+        }
+        
+        
+        RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(identifier);
+        
+        if (ra == null ) {
+            List<String> args = Arrays.asList(identifier);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", args));
+        }
+        
+
+        
+        try {
+            dataverseRequest = createDataverseRequest(findUserOrDie());
+        } catch (WrappedResponse wr) {
+            //access.api.fileAccess.failure.noUser
+            List<String> args = Arrays.asList(identifier);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
+        }
+
+        if (!permissionService.on(dataFile.getOwner()).has(Permission.ManageDatasetPermissions)) {
+            List<String> args = Arrays.asList(apiToken);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions", args));
+        }
+
+        if (dataFile.getFileAccessRequesters().contains(ra)) {
+            dataFile.getFileAccessRequesters().remove(ra);
+            dataFileService.save(dataFile);
+
+            try {
+                AuthenticatedUser au = (AuthenticatedUser) ra;
+                userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REJECTFILEACCESS, dataFile.getOwner().getId());
+            } catch (ClassCastException e) {
+                //nothing to do here - can only send a notification to an authenticated user
+            }
+
+            List<String> args = Arrays.asList(dataFile.getDisplayName());
+            return ok(BundleUtil.getStringFromBundle("access.api.grantAccess.success.for.single.file", args));
+
+        } else {
+            List<String> args = Arrays.asList(dataFile.getDisplayName());
+            args.add(ra.getDisplayInfo().getTitle());
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.rejectFailure.noRequest", args));
+        }
+    }
+    
     // checkAuthorization is a convenience method; it calls the boolean method
     // isAccessAuthorized(), the actual workhorse, tand throws a 403 exception if not.
     
