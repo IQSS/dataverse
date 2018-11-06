@@ -215,6 +215,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 if ((currentGlobalIdProtocol.equals(protocol) || dataFilePIDFormat.equals("INDEPENDENT"))//TODO(pm) - check authority too
                         && isFilePIDsEnabled) {
                     //A false return value indicates a failure in calling the service
+                    long start = System.currentTimeMillis();
                     for (DataFile df : dataset.getFiles()) {
                         logger.log(Level.FINE, "registering global id for file {0}", df.getId());
                         //A false return value indicates a failure in calling the service
@@ -224,6 +225,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                         df.setGlobalIdCreateTime(getTimestamp());
                         df.setIdentifierRegistered(true);
                     }
+                    long end = System.currentTimeMillis();
+                    logger.info("DataCite time = " + (end-start)/1000.0);
                 }
                 if (!idServiceBean.publicizeIdentifier(dataset)) {
                     throw new Exception();
