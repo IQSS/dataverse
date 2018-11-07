@@ -82,7 +82,6 @@ public class DOIDataCiteRegisterService {
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
         DOIDataCiteRegisterCache rc = findByDOI(identifier);
         String target = metadata.get("_target");
-        long start = System.currentTimeMillis();
         if (rc != null) {
             rc.setDoi(identifier);
             rc.setXml(xmlMetadata);
@@ -108,8 +107,6 @@ public class DOIDataCiteRegisterService {
                 Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        long end = System.currentTimeMillis();
-logger.info("DataCite Time per Object: " + (end-start) + "miiliseconds");        
         return retString;
     }
 
