@@ -446,7 +446,7 @@ span.search-term-match {font-weight: bold;}
 [id$='resultsTable'] {width:100%;}
 [id$='resultsTable'] div[class*='Result'] {
     font-size: 90%;
-    word-break:break-word;
+    word-break:break-all;
 }
 [id$='resultsTable'] div[class*='Result'] > div.card-title-icon-block, 
 [id$='resultsTable'] div[class*='Result'] > div.card-preview-icon-block, 
@@ -509,7 +509,7 @@ a.facetLink.facetSelected span.glyphicon-remove {vertical-align:text-top; margin
 #my_data_filter_column div.checkbox.facetSelected label, #my_data_filter_column  div.checkbox label.facetSelected {font-weight: bold;}
 #my_data_filter_column div.checkbox label.facetSelected:hover {color: #23527c;}
 #div-card-results {
-    word-break:break-word;
+    word-break:break-all;
 }
 
 table.ui-panelgrid.facetsMoreLess {width:100%;}
@@ -808,11 +808,11 @@ div.dvnDifferanceTable div.ui-datatable-tablewrapper table td.versionDetails {wi
 
 div.dvnDifferanceTable .diffDetailBlock {
     display:block;
-    word-break:break-word;
+    word-break:break-all;
 }
 
 div.dvnDifferanceTable .versionValue {
-    word-break:break-word;
+    word-break:break-all;
 }
 
 .dropin-btn-status.ui-icon {background: url("https://www.dropbox.com/static/images/widgets/dbx-saver-status.png") no-repeat;}
