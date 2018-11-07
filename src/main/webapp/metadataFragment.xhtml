@@ -13,7 +13,7 @@
                    var="metadataBlockVal" varStatus="block">
             <div class="panel panel-default">
                 <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
-                    #{metadataBlockVal.key.displayName} &#160;<span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
+                    #{metadataBlockVal.key.localeDisplayName} &#160;<span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
                 </div>
                 <div id="panelCollapse#{block.index}" class="collapse #{block.first?'in':''}">
                     <div class="panel-body metadata-panel-body">
@@ -101,7 +101,7 @@
                                                                  or metadataBlockVal.key.isHasRequired())
                                                                  or (!datasetPage)}">
                     <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
-                        #{metadataBlockVal.key.displayName} <span class="glyphicon #{block.first || editMode == 'CREATE'  ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
+                        #{metadataBlockVal.key.localeDisplayName} <span class="glyphicon #{block.first || editMode == 'CREATE'  ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
                     </div>
                     <div id="panelCollapse#{block.index}" class="collapse #{block.first || editMode == 'CREATE' ? 'in' : ''}">
                         <div class="panel-body">

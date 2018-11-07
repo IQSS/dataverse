@@ -94,7 +94,7 @@
                         <ui:repeat value="#{AdvancedSearchPage.metadataBlocks}" var="mdb" varStatus="status">
                             <div class="panel panel-default" jsf:rendered="#{not empty AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}">
                                 <div data-toggle="collapse" data-target="#panelCollapseCitationFieldList#{mdb.id}" class="panel-heading">
-                                    <h:outputText value="#{bundle['advanced.search.header.datasets']}: #{mdb.displayName}"/> &#160;<span class="glyphicon #{status.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
+                                    <h:outputText value="#{bundle['advanced.search.header.datasets']}: #{mdb.localeDisplayName}"/> &#160;<span class="glyphicon #{status.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
                                 </div>
                                 <div id="panelCollapseCitationFieldList#{mdb.id}" class="collapse #{status.first?'in':''} panel-body form-horizontal">
                                     <ui:repeat value="#{AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}" var="item">

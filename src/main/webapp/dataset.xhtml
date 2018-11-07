@@ -864,7 +864,7 @@
                             <ui:repeat value="#{DatasetPage.datasetVersionDifference.detailDataByBlock}" var="block">
                                 <div class="panel panel-default">
                                     <div class="panel-heading text-info">
-                                        <h:outputText value="#{block.get(0)[0].datasetFieldType.metadataBlock.displayName}" />
+                                        <h:outputText value="#{block.get(0)[0].datasetFieldType.metadataBlock.localeDisplayName}" />
                                     </div>
                                     <p:dataTable id="byBlockInner" styleClass="dvnDifferanceTable" var="dsfArray" value="#{block}">
                                         <p:column styleClass="versionValue">
