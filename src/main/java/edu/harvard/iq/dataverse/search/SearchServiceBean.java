@@ -158,8 +158,13 @@ public class SearchServiceBean {
         query = SearchUtil.sanitizeQuery(query);
         if(settingsService.isTrueForKey(SettingsServiceBean.Key.SolrFullTextIndexing, false)) {
             query = SearchUtil.expandQuery(query);
+            String permissionFilterGroups = getPermissionFilterGroups(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
+            if(permissionFilterGroups!=null) {
+              solrQuery.add("q1", permissionFilterGroups);
+            }
         }
-        logger.info("Sanitaized, Expanded Query: " + query);
+        logger.info("Sanitized, Expanded Query: " + query);
+        
         solrQuery.setQuery(query);
 //        SortClause foo = new SortClause("name", SolrQuery.ORDER.desc);
 //        if (query.equals("*") || query.equals("*:*")) {
@@ -227,9 +232,9 @@ public class SearchServiceBean {
         // -----------------------------------
         // PERMISSION FILTER QUERY
         // -----------------------------------
-        String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
-        if (permissionFilterQuery != null) {
-            solrQuery.addFilterQuery(permissionFilterQuery);
+        String permissionFilterGroups = this.getPermissionFilterGroups(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe) + ")";
+        if(permissionFilterGroups!=null) {
+            solrQuery.addFilterQuery("{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" +permissionFilterGroups);
         }
 
         // -----------------------------------
@@ -763,7 +768,7 @@ public class SearchServiceBean {
      *
      * @return
      */
-    private String getPermissionFilterQuery(DataverseRequest dataverseRequest, SolrQuery solrQuery, Dataverse dataverse, boolean onlyDatatRelatedToMe) {
+    private String getPermissionFilterGroups(DataverseRequest dataverseRequest, SolrQuery solrQuery, Dataverse dataverse, boolean onlyDatatRelatedToMe) {
 
         User user = dataverseRequest.getUser();
         if (user == null) {
@@ -779,7 +784,8 @@ public class SearchServiceBean {
          */
 //        String allUsersString = IndexServiceBean.getGroupPrefix() + AllUsers.get().getAlias();
 //        String publicOnly = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + allUsersString + ")";
-        String publicOnly = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + ")";
+        //String publicOnly = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + ")";
+        String publicOnly = "(" + IndexServiceBean.getPublicGroupString() + ")";
 //        String publicOnly = "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getPublicGroupString();
         // initialize to public only to be safe
         String dangerZoneNoSolrJoin = null;
@@ -807,7 +813,7 @@ public class SearchServiceBean {
             }
             groupsFromProviders = sb.toString();
             logger.fine("groupsFromProviders:" + groupsFromProviders);
-            String guestWithGroups = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + groupsFromProviders + ")";
+            String guestWithGroups = "(" + IndexServiceBean.getPublicGroupString() + groupsFromProviders + ")";
             logger.fine(guestWithGroups);
             return guestWithGroups;
         }
@@ -902,7 +908,7 @@ public class SearchServiceBean {
             /**
              * @todo get rid of "experimental" in name
              */
-            String experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + groupsFromProviders + ")";
+            String experimentalJoin = "(" + IndexServiceBean.getPublicGroupString() + " OR " + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + groupsFromProviders + ")";
             publicPlusUserPrivateGroup = experimentalJoin;
         }
 

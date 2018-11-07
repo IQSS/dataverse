@@ -117,32 +117,36 @@ public class SearchUtil {
      * @throws SearchException 
      */
     public static String expandQuery(String query) throws SearchException {
-        if (!query.matches(".*[^\\\\][^\\\\][:].*")) {
-            if (!query.matches(".*[\\{\\[\\]\\}].*")) {
-                String[] parts = query.split("\\s+");
-                StringBuilder ftQuery = new StringBuilder();
-                boolean firstTime = true;
-                for (String part : parts) {
-                    if (!firstTime) {
-                        ftQuery.append(" ");
-                        firstTime = false;
-                    }
-                    if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT"))) {
-                        if (part.startsWith("+")) {
-                            ftQuery.append("+" + SearchFields.FULL_TEXT + ":" + part.substring(1));
-                        } else if (part.startsWith("-")) {
-                            ftQuery.append("-" + SearchFields.FULL_TEXT + ":" + part.substring(1));
-                        } else {
-                            ftQuery.append(SearchFields.FULL_TEXT + ":" + part);
+        if (!query.equals("*")) {
+            if (!query.matches(".*[^\\\\][^\\\\][:].*")) {
+                if (!query.matches(".*[\\{\\[\\]\\}].*")) {
+                    String[] parts = query.split("\\s+");
+                    StringBuilder ftQuery = new StringBuilder();
+                    boolean firstTime = true;
+                    for (String part : parts) {
+                        if (!firstTime) {
+                            ftQuery.append(" ");
+                            firstTime = false;
+                        }
+                        if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT"))) {
+                            if (part.startsWith("+")) {
+                                ftQuery.append("+" + SearchFields.FULL_TEXT + ":" + part.substring(1));
+                            } else if (part.startsWith("-")) {
+                                ftQuery.append("-" + SearchFields.FULL_TEXT + ":" + part.substring(1));
+                            } else {
+                                ftQuery.append(SearchFields.FULL_TEXT + ":" + part);
+                            }
                         }
                     }
+                    query = query + " OR (" + ftQuery.toString() + "{!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})";
+                    // {!join from=definitionPointDocId to=id v=$q1}
+
+                } else {
+                    throw new SearchException("Range queries not supported with full-text indexing enabled.");
                 }
-                query = query + " OR (" + ftQuery.toString() + ")";
             } else {
-                throw new SearchException("Range queries not supported with full-text indexing enabled.");
+                throw new SearchException("Field-specific queries not supported with full-text indexing enabled.");
             }
-        } else {
-            throw new SearchException("Field-specific queries not supported with full-text indexing enabled.");
         }
         return query;
     }
