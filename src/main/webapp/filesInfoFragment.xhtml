@@ -1,0 +1,94 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+    <!-- Contains the thumbnail and file descriptions, for use in the dataset page and other places -->
+    
+    <p:column class="col-file-thumb" style="width:64px !important;">
+        <div class="thumbnail-block text-center">
+            <!-- Thumbnail Preview -->
+            <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and DatasetPage.isThumbnailAvailable(fileMetadata)}"
+                  data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
+
+                <h:graphicImage value="#{DatasetPage.getDataFileThumbnailAsBase64(fileMetadata)}" />  
+            </span>
+
+            <!-- Default Icon -->
+            <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !DatasetPage.isThumbnailAvailable(fileMetadata)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType))}"/>
+
+            <!-- the "temp preview" is for new, not yet saved files; these should never appear on this page - as we now have the editfilespage for that, correct? -->
+            <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType)}">
+                <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.storageIdentifier}?mimetype=#{fileMetadata.dataFile.contentType}"/>
+                <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info text-center show"/>
+            </ui:fragment>
+
+            <!-- Restricted File Icon -->
+            <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata)}">                  
+                <span class="glyphicon glyphicon-lock text-danger"/>
+            </div>
+            <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileMetadata) }">
+                <span class="icon-unlock text-success"/>
+            </div>
+        </div>
+    </p:column>
+    <p:column class="col-file-metadata">
+
+        <ui:fragment rendered="#{!empty fileMetadata.dataFile.globalIdString}">
+            <!-- rendered="# {!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" -->
+            <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(fileMetadata.dataFile.globalIdString).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
+                #{fileMetadata.label}
+            </a>
+        </ui:fragment>
+        <ui:fragment rendered="#{empty fileMetadata.dataFile.globalIdString}">
+            <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
+                #{fileMetadata.label}
+            </a>
+        </ui:fragment>
+
+        <!-- TYPE + SIZE + DATE + CHECKSUM -->
+        <div class="text-muted small">
+            <!-- id:#{fileMetadata.dataFile.id} -->
+            <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
+            <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{fileMetadata.dataFile.tabularData}"/>
+            <h:outputText id="fileSize" value=" - #{fileMetadata.dataFile.friendlySize}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+
+            <h:outputText id="fileCreatePublishDate" value=" - #{fileMetadata.getFileDateToDisplay()}" rendered="#{!(empty fileMetadata.id)}"/>
+
+            <h:outputFormat id="fileDownloadCount" value=" - {0} #{bundle['metrics.downloads']}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE' or settingsWrapper.rsyncOnly)}">
+                <f:param value="#{DatasetPage.getGuestbookResponseCount(fileMetadata)}"/>
+            </h:outputFormat>
+
+            <div class="checksum-block" jsf:rendered="#{!fileMetadata.dataFile.tabularData}">
+                <h:outputText id="file-checksum" value="#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}" rendered="#{!(empty fileMetadata.dataFile.checksumValue) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
+            </div>
+        </div>
+        <!-- UNF + Variables, Obsersvations -->
+        <div class="text-muted small" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
+            <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, " rendered="#{fileMetadata.dataFile.tabularData}"/>
+            <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty fileMetadata.dataFile.unf ? ' - ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
+            <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
+        </div>
+
+        <div class="fileDescription small" jsf:rendered="#{!(empty fileMetadata.description)}">
+            <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.description)}"/>
+        </div>
+
+        <div class="file-tags-block #{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE' ? 'margin-top-half' : ''}" jsf:rendered="#{!(empty fileMetadata.categories) or !(empty fileMetadata.dataFile.tags)}">
+            <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
+                <ui:repeat value="#{fileMetadata.categories}" var="cat">
+                    <h:outputText value="#{cat.name}" styleClass="label label-default"/>
+                </ui:repeat> 
+            </ui:fragment>
+            <ui:fragment >
+                <ui:repeat value="#{fileMetadata.dataFile.tags}" var="tag">
+                    <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
+                </ui:repeat>
+            </ui:fragment>
+        </div>
+    </p:column>
+</ui:composition>
