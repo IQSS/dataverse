@@ -232,7 +232,7 @@ public class SearchServiceBean {
         // -----------------------------------
         // PERMISSION FILTER QUERY
         // -----------------------------------
-        String permissionFilterGroups = this.getPermissionFilterGroups(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe) + ")";
+        String permissionFilterGroups = this.getPermissionFilterGroups(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
         if(permissionFilterGroups!=null) {
             solrQuery.addFilterQuery("{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" +permissionFilterGroups);
         }
