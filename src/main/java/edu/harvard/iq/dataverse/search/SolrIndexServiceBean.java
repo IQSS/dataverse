@@ -104,7 +104,7 @@ public class SolrIndexServiceBean {
      * See also https://github.com/IQSS/dataverse/issues/50
      */
     @Deprecated
-    private boolean unpublishedDataRelatedToMeModeEnabled = true;
+    private final boolean unpublishedDataRelatedToMeModeEnabled = true;
 
     public List<DvObjectSolrDoc> determineSolrDocs(DvObject dvObject) {
         List<DvObjectSolrDoc> emptyList = new ArrayList<>();
@@ -187,7 +187,8 @@ public class SolrIndexServiceBean {
                 String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
                 String solrId = solrIdStart + solrIdEnd;
                 List<String> perms = new ArrayList<>();
-                if (unpublishedDataRelatedToMeModeEnabled && !dataFile.isRestricted()) {
+                List<String> ftperms = new ArrayList<>();
+                if (unpublishedDataRelatedToMeModeEnabled) {
                     List<String> cachedPerms = null;
                     if (permStringByDatasetVersion != null) {
                         cachedPerms = permStringByDatasetVersion.get(datasetVersionFileIsAttachedTo.getId());
@@ -203,13 +204,13 @@ public class SolrIndexServiceBean {
                         logger.fine("no cached perms, file is not public, finding perms for file " + dataFile.getId());
                         perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
                     }
-                } else {
-                    // This should never be executed per the deprecation notice on the boolean.
-                    //except in qdr test
+                } 
+                if(dataFile.isRestricted()) {
+
                     logger.info("constructing doc for restricted file: " + dataFile.getId());
-                    perms = searchPermissionsService.findDataFilePermsforDatasetVersion(dataFile, datasetVersionFileIsAttachedTo);
+                    ftperms = searchPermissionsService.findDataFilePermsforDatasetVersion(dataFile, datasetVersionFileIsAttachedTo);
                 }
-                DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(dataFile.getId().toString(), solrId, datasetVersionFileIsAttachedTo.getId(), dataFile.getDisplayName(), perms);
+                DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(dataFile.getId().toString(), solrId, datasetVersionFileIsAttachedTo.getId(), dataFile.getDisplayName(), perms, ftperms);
                 datafileSolrDocs.add(dataFileSolrDoc);
             }
         }
@@ -233,12 +234,18 @@ public class SolrIndexServiceBean {
                 } else {
                     perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
                 }
+                
                 for (FileMetadata fileMetadata : datasetVersionFileIsAttachedTo.getFileMetadatas()) {
                     Long fileId = fileMetadata.getDataFile().getId();
                     String solrIdStart = IndexServiceBean.solrDocIdentifierFile + fileId;
                     String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
                     String solrId = solrIdStart + solrIdEnd;
-                    DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(fileId.toString(), solrId, datasetVersionFileIsAttachedTo.getId(), fileMetadata.getLabel(), perms);
+                    List<String> ftperms = new ArrayList<>();
+                    if(fileMetadata.getDataFile().isRestricted()) {
+                        logger.info("constructing doc for restricted file: " + fileId);
+                        ftperms = searchPermissionsService.findDataFilePermsforDatasetVersion(fileMetadata.getDataFile(), datasetVersionFileIsAttachedTo);
+                    }
+                    DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(fileId.toString(), solrId, datasetVersionFileIsAttachedTo.getId(), fileMetadata.getLabel(), perms, ftperms);
                     logger.fine("adding fileid " + fileId);
                     datafileSolrDocs.add(dataFileSolrDoc);
                 }
@@ -481,7 +488,7 @@ public class SolrIndexServiceBean {
                         List<DvObjectSolrDoc> fileSolrDocs = constructDatafileSolrDocs((DataFile) file, permStringByDatasetVersion);
                         for (DvObjectSolrDoc fileSolrDoc : fileSolrDocs) {
                             Long datasetVersionId = fileSolrDoc.getDatasetVersionId();
-                            if (datasetVersionId != null) {
+                            if (datasetVersionId != null && !file.isRestricted()) {
                                 permStringByDatasetVersion.put(datasetVersionId, fileSolrDoc.getPermissions());
                                 SolrInputDocument solrDoc = SearchUtil.createSolrDoc(fileSolrDoc);
                                 docs.add(solrDoc);

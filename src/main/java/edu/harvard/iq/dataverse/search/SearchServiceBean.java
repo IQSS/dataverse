@@ -161,8 +161,8 @@ public class SearchServiceBean {
             query = SearchUtil.expandQuery(query, permissionFilterGroups!=null);
             logger.info("Sanitized, Expanded Query: " + query);
             if(permissionFilterGroups!=null) {
-              solrQuery.add("q1",  SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups);
-              logger.info("q1: " + SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups);
+              solrQuery.add("q1",  SearchFields.FULL_TEXT_SEARCHABLE_BY + ":" + permissionFilterGroups);
+              logger.info("q1: " + SearchFields.FULL_TEXT_SEARCHABLE_BY + ":" + permissionFilterGroups);
             }
         }
 
