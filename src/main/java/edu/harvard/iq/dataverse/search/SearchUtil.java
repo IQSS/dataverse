@@ -43,10 +43,14 @@ public class SearchUtil {
         solrInputDocument.addField(SearchFields.DEFINITION_POINT, dvObjectSolrDoc.getSolrId());
         solrInputDocument.addField(SearchFields.DEFINITION_POINT_DVOBJECT_ID, dvObjectSolrDoc.getDvObjectId());
         solrInputDocument.addField(SearchFields.DISCOVERABLE_BY, dvObjectSolrDoc.getPermissions());
-        if(dvObjectSolrDoc.getFTPermissions().size( )> 0) {
-            solrInputDocument.addField(SearchFields.FULL_TEXT_SEARCHABLE_BY, dvObjectSolrDoc.getFTPermissions());
-        } else {
-            solrInputDocument.addField(SearchFields.FULL_TEXT_SEARCHABLE_BY, dvObjectSolrDoc.getPermissions());
+        
+
+        if (dvObjectSolrDoc.getFTPermissions() != null) {
+            if (dvObjectSolrDoc.getFTPermissions().size() > 0) {
+                solrInputDocument.addField(SearchFields.FULL_TEXT_SEARCHABLE_BY, dvObjectSolrDoc.getFTPermissions());
+            } else {
+                solrInputDocument.addField(SearchFields.FULL_TEXT_SEARCHABLE_BY, dvObjectSolrDoc.getPermissions());
+            }
         }
         return solrInputDocument;
     }
