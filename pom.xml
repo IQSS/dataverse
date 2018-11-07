@@ -34,6 +34,7 @@
         <junit.vintage.version>5.3.1</junit.vintage.version>
         <junit.platform.version>1.3.1</junit.platform.version>
         <mockito.version>2.22.0</mockito.version>
+        <jacoco.version>0.8.2</jacoco.version>
     </properties>
 
     <!--Maven checks for dependendies from these repos in the order shown in the pom.xml
@@ -398,11 +399,6 @@
             <version>2.4.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.7.5.201505241946</version>
-        </dependency>
         <!-- Added specific versionf of SLF4J jars; otherwise we end up with
         conflicting versions of slf4j-api and slf4j-log4j12, loaded as
         dependencies for different packages; which was causing some incompatibility
@@ -640,7 +636,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.5.201505241946</version>
+                <version>${jacoco.version}</version>
                 <configuration>
                     <destfile>${basedir}/target/coverage-reports/jacoco-unit.exec</destfile>
                     <datafile>${basedir}/target/coverage-reports/jacoco-unit.exec</datafile>
