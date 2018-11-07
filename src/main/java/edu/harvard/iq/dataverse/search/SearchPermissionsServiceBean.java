@@ -74,7 +74,9 @@ public class SearchPermissionsServiceBean {
 
     public List<String> findDataFilePermsforDatasetVersion(DataFile dataFile, DatasetVersion version) {
         if (dataFile.isRestricted()) {
-            return (findDvObjectPerms(version.getDataset()));
+            List<String> perms = findDvObjectPerms(version.getDataset());
+            perms.addAll(findDvObjectPerms(dataFile));
+            return (perms);
         } else {
             return findDatasetVersionPerms(version);
         }
@@ -94,7 +96,7 @@ public class SearchPermissionsServiceBean {
     public List<String> findDvObjectPerms(DvObject dvObject) {
         List<String> permStrings = new ArrayList<>();
         if (dvObject instanceof DataFile) logger.info("File sent to findDvObjectPerms: id: " + dvObject.getId());
-        if (!((dvObject instanceof DataFile) && ((DataFile) dvObject).isRestricted())) {
+        if (!((dvObject instanceof DataFile) && !((DataFile) dvObject).isRestricted())) {
             resetRoleAssigneeCache();
             Set<RoleAssignment> roleAssignments = rolesSvc.rolesAssignments(dvObject);
             for (RoleAssignment roleAssignment : roleAssignments) {
