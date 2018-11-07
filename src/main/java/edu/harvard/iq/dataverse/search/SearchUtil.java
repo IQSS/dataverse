@@ -113,10 +113,11 @@ public class SearchUtil {
      *  The current implementation does not parse any query with items restricted to specific fields (e.g. title:"Test"), or with use of range queries.
      *   
      * @param query
+     * @param joinNeeded 
      * @return
      * @throws SearchException 
      */
-    public static String expandQuery(String query) throws SearchException {
+    public static String expandQuery(String query, boolean joinNeeded) throws SearchException {
         if (!query.equals("*")) {
             if (!query.matches(".*[^\\\\][^\\\\][:].*")) {
                 if (!query.matches(".*[\\{\\[\\]\\}].*")) {
@@ -138,7 +139,7 @@ public class SearchUtil {
                             }
                         }
                     }
-                    query = query + " OR (" + ftQuery.toString() + "{!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})";
+                    query = query + " OR (" + ftQuery.toString() + (joinNeeded ? "{!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})": ")");
                     // {!join from=definitionPointDocId to=id v=$q1}
 
                 } else {

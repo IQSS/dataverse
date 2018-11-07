@@ -157,13 +157,15 @@ public class SearchServiceBean {
         SolrQuery solrQuery = new SolrQuery();
         query = SearchUtil.sanitizeQuery(query);
         if(settingsService.isTrueForKey(SettingsServiceBean.Key.SolrFullTextIndexing, false)) {
-            query = SearchUtil.expandQuery(query);
             String permissionFilterGroups = getPermissionFilterGroups(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
+            query = SearchUtil.expandQuery(query, permissionFilterGroups!=null);
+            logger.info("Sanitized, Expanded Query: " + query);
             if(permissionFilterGroups!=null) {
-              solrQuery.add("q1", permissionFilterGroups);
+              solrQuery.add("q1",  SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups);
+              logger.info("q1: " + SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups);
             }
         }
-        logger.info("Sanitized, Expanded Query: " + query);
+
         
         solrQuery.setQuery(query);
 //        SortClause foo = new SortClause("name", SolrQuery.ORDER.desc);
