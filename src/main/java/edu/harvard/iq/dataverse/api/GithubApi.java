@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.mashape.unirest.http.exceptions.UnirestException;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.github.GithubUtil;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -17,10 +19,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.ejb.EJB;
@@ -34,6 +38,8 @@ import javax.ws.rs.core.Response;
 
 @Path("datasets")
 public class GithubApi extends AbstractApiBean {
+
+    private static final Logger logger = Logger.getLogger(GithubApi.class.getCanonicalName());
 
     @EJB
     IngestServiceBean ingestService;
@@ -72,13 +78,14 @@ public class GithubApi extends AbstractApiBean {
 
     @POST
     @Path("{id}/github/import")
-    public Response importGithubRepo(@PathParam("id") String idSupplied) throws IOException, CommandException, URISyntaxException {
+    public Response importGithubRepo(@PathParam("id") String idSupplied) throws IOException, CommandException, URISyntaxException, MalformedURLException, UnirestException {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             String githubUrl = dataset.getGithubUrl();
             // FIXME: First try to download the latest release, if any are available, then try the default branch, which may not be "master".
             String zipUrl = githubUrl + "/archive/master.zip";
-            String gitRepoName = new URI(githubUrl).getPath().split("/")[2];
+            URI gitRepoAsUrl = new URI(githubUrl);
+            String gitRepoName = gitRepoAsUrl.getPath().split("/")[2];
             String filename = "/tmp/" + gitRepoName + ".zip";
             boolean downloadFile = true;
             if (downloadFile) {
@@ -110,6 +117,7 @@ public class GithubApi extends AbstractApiBean {
             String uploadedZipFilename = gitRepoName + ".zip";
             String guessContentTypeForMe = null;
             List<DataFile> dataFilesIn = FileUtil.createDataFiles(editVersion, targetStream, uploadedZipFilename, guessContentTypeForMe, systemConfig);
+            dataFilesIn.get(0).setDescription(GithubUtil.fetchGithubMetadata(gitRepoAsUrl).build().getString("metadata"));
             List<DataFile> dataFilesOut = ingestService.saveAndAddFilesToDataset(editVersion, dataFilesIn);
             DataverseRequest dataverseRequest = createDataverseRequest(findAuthenticatedUserOrDie());
             UpdateDatasetVersionCommand updateDatasetVersionCommand = new UpdateDatasetVersionCommand(dataset, dataverseRequest);
