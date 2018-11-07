@@ -488,7 +488,7 @@ public class SolrIndexServiceBean {
                         List<DvObjectSolrDoc> fileSolrDocs = constructDatafileSolrDocs((DataFile) file, permStringByDatasetVersion);
                         for (DvObjectSolrDoc fileSolrDoc : fileSolrDocs) {
                             Long datasetVersionId = fileSolrDoc.getDatasetVersionId();
-                            if (datasetVersionId != null && !file.isRestricted()) {
+                            if (datasetVersionId != null) {
                                 permStringByDatasetVersion.put(datasetVersionId, fileSolrDoc.getPermissions());
                                 SolrInputDocument solrDoc = SearchUtil.createSolrDoc(fileSolrDoc);
                                 docs.add(solrDoc);
