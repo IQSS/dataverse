@@ -142,7 +142,7 @@ public class SearchUtil {
                             }
                         }
                     }
-                    query = query + " OR (" + ftQuery.toString() + (joinNeeded ? "{!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})": ")");
+                    query = query + " OR (" + ftQuery.toString() + " AND " + (joinNeeded ? "{!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})": ")");
                     // {!join from=definitionPointDocId to=id v=$q1}
 
                 } else {
