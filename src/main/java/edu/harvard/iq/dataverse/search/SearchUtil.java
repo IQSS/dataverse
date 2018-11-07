@@ -127,9 +127,13 @@ public class SearchUtil {
      * @throws SearchException 
      */
     public static String expandQuery(String query, boolean joinNeeded) throws SearchException {
+        //If it isn't 'find all'
         if (!query.equals("*")) {
+            //If it has a : that is not part of an escaped doi or handle (e.g. doi\:)
             if (!query.matches(".*[^\\\\][^\\\\][:].*")) {
+                //If it doesn't have range identifiers [,{,}, or ] 
                 if (!query.matches(".*[\\{\\[\\]\\}].*")) {
+                     // what about && || ! ( )  ^ " ~ * ?  \ /
                     String[] parts = query.split("\\s+");
                     StringBuilder ftQuery = new StringBuilder();
                     boolean firstTime = true;
@@ -148,7 +152,7 @@ public class SearchUtil {
                             }
                         }
                     }
-                    query = query + " OR (" + ftQuery.toString() + " AND " + (joinNeeded ? "{!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})": ")");
+                    query = query + " OR (" + ftQuery.toString() +  (joinNeeded ? " AND {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})": ")");
                     // {!join from=definitionPointDocId to=id v=$q1}
 
                 } else {
