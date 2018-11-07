@@ -45,6 +45,8 @@ public class SearchUtil {
         solrInputDocument.addField(SearchFields.DISCOVERABLE_BY, dvObjectSolrDoc.getPermissions());
         if(dvObjectSolrDoc.getFTPermissions()!=null) {
             solrInputDocument.addField(SearchFields.FULL_TEXT_SEARCHABLE_BY, dvObjectSolrDoc.getFTPermissions());
+        } else {
+            solrInputDocument.addField(SearchFields.FULL_TEXT_SEARCHABLE_BY, dvObjectSolrDoc.getPermissions());
         }
         return solrInputDocument;
     }
