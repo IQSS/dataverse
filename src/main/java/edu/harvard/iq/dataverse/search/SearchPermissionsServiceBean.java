@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,9 +75,7 @@ public class SearchPermissionsServiceBean {
 
     public List<String> findDataFilePermsforDatasetVersion(DataFile dataFile, DatasetVersion version) {
         if (dataFile.isRestricted()) {
-            List<String> perms = findDvObjectPerms(version.getDataset());
-            perms.addAll(findDvObjectPerms(dataFile));
-            return (perms);
+            return(findDvObjectPerms(dataFile));
         } else {
             return findDatasetVersionPerms(version);
         }
@@ -95,29 +94,41 @@ public class SearchPermissionsServiceBean {
 
     public List<String> findDvObjectPerms(DvObject dvObject) {
         List<String> permStrings = new ArrayList<>();
-        if (dvObject instanceof DataFile) logger.info("File sent to findDvObjectPerms: id: " + dvObject.getId());
+        if (dvObject instanceof DataFile)
+            logger.info("File sent to findDvObjectPerms: id: " + dvObject.getId());
+
+        Set<RoleAssignment> roleAssignments = null;
         if (!((dvObject instanceof DataFile) && !((DataFile) dvObject).isRestricted())) {
-            resetRoleAssigneeCache();
-            Set<RoleAssignment> roleAssignments = rolesSvc.rolesAssignments(dvObject);
-            for (RoleAssignment roleAssignment : roleAssignments) {
-                logger.fine("role assignment on dvObject " + dvObject.getId() + ": " + roleAssignment.getAssigneeIdentifier());
-                if (roleAssignment.getRole().permissions().contains(getRequiredSearchPermission(dvObject))) {
-                    RoleAssignee userOrGroup = getRoleAssignee(roleAssignment.getAssigneeIdentifier());
-                    String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(userOrGroup);
-                    if (indexableUserOrGroupPermissionString != null) {
-                        permStrings.add(indexableUserOrGroupPermissionString);
-                    }
-                }
+            roleAssignments = rolesSvc.rolesAssignments(dvObject);
+        } else {
+            roleAssignments = rolesSvc.rolesAssignments(dvObject.getOwner());
+        }
+        // Use a set to avoid duplicates - taking size and load factor from original ra cache
+        Set<String> assigneeIdStrings = new HashSet<String>(100, 0.7f);
+
+        for (RoleAssignment roleAssignment : roleAssignments) {
+            logger.fine("role assignment on dvObject " + dvObject.getId() + ": " + roleAssignment.getAssigneeIdentifier());
+            if (roleAssignment.getRole().permissions().contains(getRequiredSearchPermission(dvObject))) {
+                assigneeIdStrings.add(roleAssignment.getAssigneeIdentifier());
             }
-            resetRoleAssigneeCache();
+        }
+        for (String id : assigneeIdStrings) {
+            // Don't need to cache RoleAssignees since each is unique
+            RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(id);
+            String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(userOrGroup);
+            if (indexableUserOrGroupPermissionString != null) {
+                permStrings.add(indexableUserOrGroupPermissionString);
+            }
         }
         return permStrings;
     }
 
+    @Deprecated
     private void resetRoleAssigneeCache() {
         roleAssigneeCache.clear();
     }
 
+    @Deprecated
     private RoleAssignee getRoleAssignee(String idtf) {
         RoleAssignee ra = roleAssigneeCache.get(idtf);
         if (ra != null) {
@@ -238,8 +249,10 @@ public class SearchPermissionsServiceBean {
     private Permission getRequiredSearchPermission(DvObject dvObject) {
         if (dvObject.isInstanceofDataverse()) {
             return Permission.ViewUnpublishedDataverse;
-        } else {
+        } else if(dvObject.isInstanceofDataset()) {
             return Permission.ViewUnpublishedDataset;
+        } else {
+            return Permission.DownloadFile;
         }
 
     }
