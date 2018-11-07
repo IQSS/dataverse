@@ -213,6 +213,16 @@
             <version>2.2.4</version>
             <scope>compile</scope>
         </dependency>
+        <!-- Should be refactored and removed once on Java EE 8 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <!-- Should be refactored and removed once on Java EE 8 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
         <dependency>
             <!-- required by org.swordapp.server.sword2-server -->
             <groupId>com.io7m.xom</groupId>
