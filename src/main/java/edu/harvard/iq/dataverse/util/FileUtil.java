@@ -28,6 +28,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import static edu.harvard.iq.dataverse.dataaccess.S3AccessIO.S3_IDENTIFIER_PREFIX;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
@@ -91,7 +92,7 @@ public class FileUtil implements java.io.Serializable  {
     private static final String[] TABULAR_DATA_FORMAT_SET = {"POR", "SAV", "DTA", "RDA"};
     
     private static Map<String, String> STATISTICAL_FILE_EXTENSION = new HashMap<String, String>();
-   
+    
     /*
      * The following are Stata, SAS and SPSS syntax/control cards: 
      * These are recognized as text files (because they are!) so 
@@ -1130,6 +1131,15 @@ public class FileUtil implements java.io.Serializable  {
         }
 
         return filesTempDirectory;
+    }
+    
+    //MAD: Refactor this again so it reuses code from S3AccessIO.
+    //Also maybe refactor the generic named one to reflect that it creates fileAccessIO on its own.
+    public static void generateS3StorageIdentifier(DataFile dataFile) {
+        String storageId = generateStorageIdentifier();
+        String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
+        storageId = S3_IDENTIFIER_PREFIX + "://" + bucketName + ":" + storageId;
+        dataFile.setStorageIdentifier(storageId);
     }
     
     public static void generateStorageIdentifier(DataFile dataFile) {

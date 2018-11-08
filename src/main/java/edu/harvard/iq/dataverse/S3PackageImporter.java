@@ -63,6 +63,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
     @EJB
     EjbDataverseEngine commandEngine;
     
+    //Copies from another s3 bucket to our own
     public void copyFromS3(Dataset dataset, String s3ImportPath) throws IOException {
         try {
             s3 = AmazonS3ClientBuilder.standard().defaultClient();
@@ -144,7 +145,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
             packageFile.setChecksumType(DataFile.ChecksumType.SHA1);
             
-            FileUtil.generateStorageIdentifier(packageFile);
+            FileUtil.generateS3StorageIdentifier(packageFile);
             
             String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
             String dvDatasetKey = getS3DatasetKey(dataset);
