@@ -7,7 +7,11 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
+//TODO: These tests are fairly flawed as they don't actually add data to compare on.
+//To improve these tests we should try adding data and see if the number DOESN'T
+//go up to show that the caching worked
 public class MetricsIT {
 
     @BeforeClass
@@ -92,16 +96,107 @@ public class MetricsIT {
 
         assertEquals(precache, postcache);
     }
-
+    
+        
     @Test
-    public void testGetDataverseByCategory() {
-        Response response = UtilIT.metricsDataverseByCategory();
+    public void testGetDataversesPastDays() {
+        String days = "30";
+
+        Response response = UtilIT.metricsDataversesPastDays(days);
         String precache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         //Run each query twice and compare results to tests caching
-        response = UtilIT.metricsDataverseByCategory();
+        response = UtilIT.metricsDataversesPastDays(days);
+        String postcache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        assertEquals(precache, postcache);
+    }
+    
+    @Test
+    public void testGetDatasetsPastDays() {
+        String days = "30";
+
+        Response response = UtilIT.metricsDatasetsPastDays(days);
+        String precache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //Run each query twice and compare results to tests caching
+        response = UtilIT.metricsDatasetsPastDays(days);
+        String postcache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        assertEquals(precache, postcache);
+    }
+    
+    
+    @Test
+    public void testGetFilesPastDays() {
+        String days = "30";
+
+        Response response = UtilIT.metricsFilesPastDays(days);
+        String precache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //Run each query twice and compare results to tests caching
+        response = UtilIT.metricsFilesPastDays(days);
+        String postcache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        assertEquals(precache, postcache);
+    }
+    
+    @Test
+    public void testGetDownloadsPastDays() {
+        String days = "30";
+
+        Response response = UtilIT.metricsDownloadsPastDays(days);
+        String precache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //Run each query twice and compare results to tests caching
+        response = UtilIT.metricsDownloadsPastDays(days);
+        String postcache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        assertEquals(precache, postcache);
+    }    
+    
+
+    @Test
+    public void testGetDataverseByCategory() {
+        Response response = UtilIT.metricsDataversesByCategory();
+        String precache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //Run each query twice and compare results to tests caching
+        response = UtilIT.metricsDataversesByCategory();
+        String postcache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        assertEquals(precache, postcache);
+    }
+    
+    @Test
+    public void testGetDataverseBySubject() {
+        Response response = UtilIT.metricsDataversesBySubject();
+        String precache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //Run each query twice and compare results to tests caching
+        response = UtilIT.metricsDataversesBySubject();
         String postcache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
