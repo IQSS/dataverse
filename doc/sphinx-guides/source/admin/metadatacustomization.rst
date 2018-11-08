@@ -24,7 +24,7 @@ Much more customization of metadata is possible, but this is an advanced topic s
 
 -  Changing how saved metadata values are displayed in the UI
 
-Generally speaking it is safer to create your own custom metadata block rather than editing metadata blocks that ship with Dataverse, because changes to these blocks may be made in future releases of Dataverse. If you'd like to make improvements to any of the metadata blocks shipped with Dataverse, please open an issue at https://github.com/IQSS/dataverse/issues so it can be discussed before a pull request is made. If you have developed your own custom metadata block that you think may be of interest to the Dataverse community, please create an issue and consider making a pull request as described in the :doc:`/developers/version-control` section of the Developer Guide.
+Generally speaking it is safer to create your own custom metadata block rather than editing metadata blocks that ship with Dataverse, because changes to these blocks may be made in future releases of Dataverse. If you'd like to make improvements to any of the metadata blocks shipped with Dataverse, please open an issue at https://github.com/IQSS/dataverse/issues so it can be discussed before a pull request is made. Please note that the metadata blocks shipped with Dataverse are based on standards (i.e. DDI for social science) and you can learn more about these standards in the :doc:`/user/appendix` section of the User Guide. If you have developed your own custom metadata block that you think may be of interest to the Dataverse community, please create an issue and consider making a pull request as described in the :doc:`/developers/version-control` section of the Developer Guide.
 
 In Dataverse 4, custom metadata are no longer defined as individual
 fields, as they were in Dataverse Network (DVN) 3.x, but in metadata blocks.
@@ -376,7 +376,7 @@ FieldType definitions
 |                                   | entry control.                    |
 +-----------------------------------+-----------------------------------+
 | date                              | A date, expressed in one of three |
-|                                   | variations of the form            |
+|                                   | resolutions of the form           |
 |                                   | YYYY-MM-DD, YYYY-MM, or YYYY.     |
 +-----------------------------------+-----------------------------------+
 | email                             | A valid email address. Not        |
@@ -506,8 +506,8 @@ You have several options for setting up a dev environment for testing metadata b
 
 - Vagrant: See the :doc:`/developers/tools` section of the Dev Guide.
 - docker-aio: See https://github.com/IQSS/dataverse/tree/develop/conf/docker-aio
-- Full dev environment: See the :doc:`/developers/dev-environment` section of the Dev Guide.
 - AWS deployment: See the :doc:`/developers/deployment` section of the Dev Guide.
+- Full dev environment: See the :doc:`/developers/dev-environment` section of the Dev Guide.
 
 To get a clean environment in Vagrant, you'll be running ``vagrant destroy``. In Docker, you'll use ``docker rm``. For a full dev environment or AWS installation, you might find ``rebuild`` and related scripts at ``scripts/deploy/phoenix.dataverse.org`` useful.
 
@@ -531,16 +531,16 @@ A number of TSV files are loaded into Dataverse on every new installation, becom
 
 If you are improving an existing metadata block, the Dataverse installation process will load the TSV for you, assuming you edited the TSV file in place. The TSV file for the Citation metadata block, for example, can be found at ``scripts/api/data/metadatablocks/citation.tsv``.
 
-If you are creating a new custom metadata block (hopefully with the idea of contributing it back to the community), the Dataverse installation process won't know about your new TSV file so you must load it manually. The script that loads the TSV files into the system is ``scripts/api/setup-datasetfields.sh`` and contains a series of curl commands. Here's an example of the necessary curl command with the new custom metadata block in the "/tmp" directory.
+If you are creating a new custom metadata block (hopefully with the idea of contributing it back to the community if you feel like it would provide value to others), the Dataverse installation process won't know about your new TSV file so you must load it manually. The script that loads the TSV files into the system is ``scripts/api/setup-datasetfields.sh`` and contains a series of curl commands. Here's an example of the necessary curl command with the new custom metadata block in the "/tmp" directory.
 
 ``curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file /tmp/new-metadata-block.tsv``
 
 Enabling a Metadata Block
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Running a curl command like "load" example above should make the new custom metadata block available within the system but in order to start using the fields you must either enable it from the GUI (see "General Information" in the :doc:`/user/dataverse-management` section of the User Guide) or by running a curl command like the one below using a superuser API token. In the example below we are enabling the "citation" and "journal" metadata blocks for the root dataverse:
+Running a curl command like "load" example above should make the new custom metadata block available within the system but in order to start using the fields you must either enable it from the GUI (see "General Information" in the :doc:`/user/dataverse-management` section of the User Guide) or by running a curl command like the one below using a superuser API token. In the example below we are enabling the "journal" and "geospatial" metadata blocks for the root dataverse:
 
-``curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" -d "[\"citation\",\"journal\"]" http://localhost:8080/api/dataverses/:root/metadatablocks``
+``curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" -d "[\"journal\",\"geospatial\"]" http://localhost:8080/api/dataverses/:root/metadatablocks``
 
 Updating the Solr Schema
 ~~~~~~~~~~~~~~~~~~~~~~~~
