@@ -560,7 +560,7 @@ As mentioned above, changes to metadata blocks that ship with Dataverse will be 
 
 ``curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file --upload-file citation.tsv``
 
-Great care must be taken when reloading a metadata block. Matching is done on field names (or names and then identifiers in the case of controlled vocabulary values) so it's easy to accidentally create duplicate fields.
+Great care must be taken when reloading a metadata block. Matching is done on field names (or identifiers and then names in the case of controlled vocabulary values) so it's easy to accidentally create duplicate fields.
 
 The ability to reload metadata blocks means that SQL update scripts don't need to be written for these changes. See also the :doc:`/developers/sql-upgrade-scripts` section of the Dev Guide.
 
