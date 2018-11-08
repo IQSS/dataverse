@@ -3,11 +3,15 @@ package edu.harvard.iq.dataverse.search;
 import edu.harvard.iq.dataverse.api.Util;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.logging.Logger;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
 
 public class SearchUtil {
 
+    private static final Logger logger = Logger.getLogger(SearchUtil.class.getCanonicalName());
+    
     /**
      * @param query The query string that might be mutated before feeding it
      * into Solr.
@@ -149,28 +153,24 @@ public class SearchUtil {
                 boolean needSpace = false;
                 boolean fullTextComponent = false;
                 for (String part : parts) {
+                    logger.info("Parsing found \"" + part + "\"");
                     if (needSpace) {
                         ftQuery.append(" ");
                     } else {
                         needSpace = true;
                     }
-                    if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT") || part.equals("&&") || part.equals("||") || part.equals("!"))) {
+                    //If its a boolean logic entry or
+                    // If it has a : that is not part of an escaped doi or handle (e.g. doi\:), e.g. it is field-specific
+                    if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT") || part.equals("&&") || part.equals("||") || part.equals("!") || part.matches(".*[^\\\\][^\\\\][:].*"))) {
+                        fullTextComponent = true;
                         if (part.startsWith("+")) {
                             ftQuery.append("+" + SearchFields.FULL_TEXT + ":" + part.substring(1));
-                            fullTextComponent = true;
                         } else if (part.startsWith("-")) {
                             ftQuery.append("-" + SearchFields.FULL_TEXT + ":" + part.substring(1));
-                            fullTextComponent = true;
                         } else if (part.startsWith("-")) {
                             ftQuery.append("!" + SearchFields.FULL_TEXT + ":" + part.substring(1));
-                            fullTextComponent = true;
                         } else {
-                            // If it has a : that is not part of an escaped doi or handle (e.g. doi\:), e.g. it is field-specific
-                            if (part.matches(".*[^\\\\][^\\\\][:].*")) {
-                                ftQuery.append(part);
-                            } else
-                                ftQuery.append(SearchFields.FULL_TEXT + ":" + part);
-                            fullTextComponent = true;
+                           ftQuery.append(SearchFields.FULL_TEXT + ":" + part);
                         }
                     } else {
                         ftQuery.append(part);
