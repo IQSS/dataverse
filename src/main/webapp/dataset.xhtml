@@ -374,7 +374,7 @@
                                         
                                         <div id="keywords" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay and dsf.datasetFieldType.id==DatasetPage.datasetVersionUI.keyword.datasetFieldType.id}">
                                             <label class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.description}">#{bundle['dataset.keywordDisplay.title']}</span>
+                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.localeDescription}">#{bundle['dataset.keywordDisplay.title']}</span>
                                             </label>
                                             <div class="col-sm-9">#{DatasetPage.datasetVersionUI.keywordDisplay}</div>
                                         </div>
@@ -390,8 +390,8 @@
                                      
                                         <div class="form-group" jsf:rendered="#{dsf.datasetFieldType.name!='publication' and dsf.datasetFieldType.name!='keyword'  }">
                                             <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.description}">
-                                                        #{dsf.datasetFieldType.title}
+                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.localeDescription}">
+                                                        #{dsf.datasetFieldType.localeTitle}
                                                 </span>
                                             </label>
                                             <!-- Primitive datasetFields -->
@@ -868,7 +868,7 @@
                                     </div>
                                     <p:dataTable id="byBlockInner" styleClass="dvnDifferanceTable" var="dsfArray" value="#{block}">
                                         <p:column styleClass="versionValue">
-                                            <h:outputText value="#{dsfArray[0].datasetFieldType.title}" />
+                                            <h:outputText value="#{dsfArray[0].datasetFieldType.localeTitle}" />
                                         </p:column>
                                         <p:column styleClass="versionDetails">
                                             <h:outputText rendered="#{dsfArray[0].datasetFieldType.primitive and !(dsfArray[0].isEmpty())}" value="#{dsfArray[0].displayValue}" />

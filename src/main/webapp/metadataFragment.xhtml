@@ -54,8 +54,8 @@
                         <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
                             <div class="form-group">
                                 <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.description}">
-                                        #{dsf.datasetFieldType.title}
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.localeDescription}">
+                                        #{dsf.datasetFieldType.localeTitle}
                                     </span>
                                 </label>
                                 <!-- Primitive datasetFields -->
@@ -111,8 +111,8 @@
                                                          or (!datasetPage and dsf.include)}">
                                     <div class="form-group">
                                         <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.description}">
-                                                #{dsf.datasetFieldType.title}
+                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.localeDescription}">
+                                                #{dsf.datasetFieldType.localeTitle}
                                             </span>
                                             <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required  or dsf.datasetFieldType.hasRequiredChildren }" />
                                         </label>
@@ -193,7 +193,7 @@
                                                                     </p>
                                                                 </ui:fragment>
                                                                 <label class="control-label" for="metadata_#{subdsf.datasetFieldType.name}">
-                                                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{subdsf.datasetFieldType.description}">#{subdsf.datasetFieldType.title}</span>
+                                                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{subdsf.datasetFieldType.localeDescription}">#{subdsf.datasetFieldType.localeTitle}</span>
                                                                     <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.required}" />
                                                                 </label>
                                                                 <ui:fragment rendered="#{!subdsf.datasetFieldType.controlledVocabulary}">

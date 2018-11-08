@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.SolrField;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.util.Collection;
 
 import java.io.Serializable;
@@ -507,9 +509,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     
     public String getDisplayName() {
         if (isHasParent() && !parentDatasetFieldType.getTitle().equals(title)) {
-        return parentDatasetFieldType.getTitle() + " " + title;
+        return parentDatasetFieldType.getLocaleTitle()  + " " + getLocaleTitle();
         } else {
-            return title;
+            return getLocaleTitle();
         }
     }
 
@@ -553,6 +555,33 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             boolean makeSolrFieldMultivalued = false;
             SolrField solrField = new SolrField(oddValue, solrType, makeSolrFieldMultivalued, facetable);
             return solrField;
+        }
+    }
+
+    public String getLocaleTitle() {
+        if(getMetadataBlock()  == null){
+            return title;
+        }
+        else {
+            return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".title", getMetadataBlock().getName());
+        }
+    }
+
+    public String getLocaleDescription() {
+        if(getMetadataBlock()  == null){
+            return description;
+        }
+        else {
+            return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".description", getMetadataBlock().getName());
+        }
+    }
+
+    public String getLocaleWatermark()    {
+        if(getMetadataBlock()  == null){
+            return watermark;
+        }
+        else {
+            return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".watermark", getMetadataBlock().getName());
         }
     }
 
