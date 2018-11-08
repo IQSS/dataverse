@@ -142,8 +142,9 @@ public class SearchUtil {
         // Note that this query is used to populate the main Dataverse view and, without
         // this check, Dataverse assumes its a real search and displays the hit hints
         // instead of the normal summary
+        StringBuilder ftQuery = new StringBuilder();
         if (!query.equals("*")) {
-            // what about ( )  ~ * ? \ /
+            // what about ( ) ~ * ? \ /
             // (\\"[^\\"]*\"|'[^']*'|[\\{\\[][^\\}\\]]*[\\}\\]] | [\\S]+)+
             // Split on any whitespace, but also grab any comma, do not split on comma only
             // (since comma only means the second term is still affected by any field:
@@ -152,10 +153,7 @@ public class SearchUtil {
             // String[] parts = query.split("(\"[^\"]*\"|'[^']*'|[\\{\\[][^\\}\\]]*[\\}\\]]
             // | ,*[\\s]+,*)");
 
-            StringBuilder ftQuery = new StringBuilder();
             boolean needSpace = false;
-            boolean fullTextComponent = false;
-
             Pattern regex = Pattern.compile("[+-]?[\\{\\[][^\\}\\]]*[\\}\\]]|[+-]?\\\"[^\\\"]*\\\"|([^\\s\"\\[\\{',]+([,]?([^\\s,\\[\\{'\":+-]|[:][\\{\\[][^\\}\\]]*[\\}\\]]|[:]\\\"[^\\\"]*\\\")+)+)+|[^\\s\"',]+");
             Matcher regexMatcher = regex.matcher(query);
             while (regexMatcher.find()) {
@@ -170,10 +168,8 @@ public class SearchUtil {
                 // If its a boolean logic entry or
                 // If it has a : that is not part of an escaped doi or handle (e.g. doi\:), e.g.
                 // it is field-specific
-                
-                
+
                 if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT") || part.equals("&&") || part.equals("||") || part.equals("!") || part.matches(".*[^\\\\][^\\\\][:].*"))) {
-                    fullTextComponent = true;
                     if (part.startsWith("+")) {
                         ftQuery.append(expandPart("+" + SearchFields.FULL_TEXT + ":" + part.substring(1), joinNeeded));
                     } else if (part.startsWith("-")) {
@@ -184,16 +180,19 @@ public class SearchUtil {
                         ftQuery.append(expandPart(SearchFields.FULL_TEXT + ":" + part, joinNeeded));
                     }
                 } else {
-                    if(part.contains(SearchFields.FULL_TEXT + ":")) {
-                        //Any reference to the FULL_TEXT field has to be joined with the permission term
+                    if (part.contains(SearchFields.FULL_TEXT + ":")) {
+                        // Any reference to the FULL_TEXT field has to be joined with the permission
+                        // term
                         ftQuery.append(expandPart(part, joinNeeded));
                     } else {
-                      ftQuery.append(part);
+                        ftQuery.append(part);
                     }
                 }
             }
+        } else {
+            ftQuery.append("*");
         }
-        return query;
+        return ftQuery.toString();
     }
 
     private static Object expandPart(String part, boolean joinNeeded) {
