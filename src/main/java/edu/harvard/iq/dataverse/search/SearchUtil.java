@@ -156,7 +156,7 @@ public class SearchUtil {
             boolean needSpace = false;
             boolean fullTextComponent = false;
 
-            Pattern regex = Pattern.compile("[\\{\\[][^\\}\\]]*[\\}\\]]|\\\"[^\\\"]*\\\"|([^\\s\"\\[\\{',]+([,]*([^\\s,\\[\\{'\":]|[\\S:][\\{\\[][^\\}\\]]*[\\}\\]]|[:]\\\"[^\\\"]*\\\")+)+)+|[^\\s\"',]+");
+            Pattern regex = Pattern.compile("[+-]?[\\{\\[][^\\}\\]]*[\\}\\]]|[+-]?\\\"[^\\\"]*\\\"|([^\\s\"\\[\\{',]+([,]?([^\\s,\\[\\{'\":+-]|[:][\\{\\[][^\\}\\]]*[\\}\\]]|[:]\\\"[^\\\"]*\\\")+)+)+|[^\\s\"',]+");
             Matcher regexMatcher = regex.matcher(query);
             while (regexMatcher.find()) {
 
