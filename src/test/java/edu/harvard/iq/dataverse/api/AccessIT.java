@@ -130,36 +130,18 @@ public class AccessIT {
     }
     
     @AfterClass
-    public static void tearDown() {        
+    public static void tearDown() {   
+
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
-        
+
         Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
-        //Deleting dataset cleaning up the files
 
-        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
-        deleteDataverseResponse.prettyPrint();
-        assertEquals(200, deleteDataverseResponse.getStatusCode());
-
-        Response deleteUserResponse = UtilIT.deleteUser(username);
-        deleteUserResponse.prettyPrint();
-        assertEquals(200, deleteUserResponse.getStatusCode());
     }
     
-    @Test
-    public void testRequestAccess(){
-        Response createUser = UtilIT.createRandomUser();
-        createUser.prettyPrint();
-        assertEquals(200, createUser.getStatusCode());
-        String apiTokenRando = UtilIT.getApiTokenFromResponse(createUser);
-        
-        Response requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestricted.toString(), apiTokenRando);
-        assertEquals(200, requestFileAccessResponse.getStatusCode());
-        
-        
-    }
+
     
     //This test does a lot of testing of non-original downloads as well
     @Test
@@ -415,5 +397,59 @@ public class AccessIT {
         return fileStreams;
     }
     
+    @Test
+    public void testRequestAccess() throws InterruptedException {
+        
+        String pathToJsonFile = "scripts/api/data/dataset-create-new.json";
+        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.prettyPrint();
+       Integer datasetIdNew = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        
+        
+        String tabFile3NameRestrictedNew = "stata13-auto-withstrls.dta";
+        String tab3PathToFile = "scripts/search/data/tabular/" + tabFile3NameRestrictedNew;
+        Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
+        Response tab3AddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), tab3PathToFile, apiToken);
+        Integer tabFile3IdRestrictedNew = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        Thread.sleep(3000); //Dataverse needs more time...
+        Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestrictedNew.toString(), true, apiToken);
+        restrictResponse.prettyPrint();
+        restrictResponse.then().assertThat()
+        //        .body("data.message", equalTo("File stata13-auto.tab restricted."))
+                .statusCode(OK.getStatusCode());
+        
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+        String apiTokenRando = UtilIT.getApiTokenFromResponse(createUser);
+        String apiIdentifierRando = UtilIT.getUsernameFromResponse(createUser);
+
+        Response requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        //Cannot request until we set the dataset to allow requests
+        assertEquals(400, requestFileAccessResponse.getStatusCode());
+        //Update Dataset to allow requests
+        Response allowAccessRequestsResponse = UtilIT.allowAccessRequests(datasetIdNew.toString(), true, apiToken);
+        assertEquals(200, allowAccessRequestsResponse.getStatusCode());
+        //Must republish to get it to work
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetIdNew, "major", apiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+
+        requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        assertEquals(200, requestFileAccessResponse.getStatusCode());
+
+        Response rejectFileAccessResponse = UtilIT.rejectFileAccessRequest(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
+        assertEquals(200, rejectFileAccessResponse.getStatusCode());
+
+        requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        //grant file access
+        Response grantFileAccessResponse = UtilIT.grantFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
+        assertEquals(200, grantFileAccessResponse.getStatusCode());
+
+        //revokeFileAccess        
+        Response revokeFileAccessResponse = UtilIT.revokeFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
+        assertEquals(200, revokeFileAccessResponse.getStatusCode());
+    }
+
 
 }

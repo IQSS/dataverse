@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -49,6 +50,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -87,6 +89,7 @@ import javax.ws.rs.core.UriInfo;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PUT;
@@ -909,6 +912,49 @@ public class Access extends AbstractApiBean {
     */
     
     /**
+     * Allow (or disallow) access requests to Dataset
+     * @author sarahferry
+     * 
+     * @param datasetToAllowAccessId
+     * @param requestStr
+     * @return
+     */
+    @PUT
+    @Path("{id}/allowAccessRequest")
+    public Response allowAccessRequest(@PathParam("id") String datasetToAllowAccessId, String requestStr) {
+        //create request
+        DataverseRequest dataverseRequest = null;
+        //get the datafile
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(datasetToAllowAccessId);
+        } catch (WrappedResponse ex) {
+            return error(BAD_REQUEST, "Could not find dataset with id " + datasetToAllowAccessId);
+        }
+
+        boolean allowRequest = Boolean.valueOf(requestStr);
+  
+        try {
+            dataverseRequest = createDataverseRequest(findUserOrDie());
+        } catch (WrappedResponse wr) {
+            return error(BAD_REQUEST, "Couldn't find user to execute command: " + wr.getLocalizedMessage());
+        }
+        
+        dataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
+
+
+        // update the dataset
+        try {
+            engineSvc.submit(new UpdateDatasetVersionCommand(dataset, dataverseRequest));
+        } catch (CommandException ex) {
+            return error(BAD_REQUEST, "Problem saving dataset " + dataset.getDisplayName() + ": " + ex.getLocalizedMessage());
+        }
+
+        String text =  allowRequest ? " allows file access requests." : "disallows file access requests.";
+        return ok("Dataset " + dataset.getDisplayName() + " " + text);
+    }
+    
+    /**
      * Request Access to Restricted File
      *
      * @author sekmiller
@@ -925,7 +971,6 @@ public class Access extends AbstractApiBean {
         DataverseRequest dataverseRequest;
         //get the datafile
         DataFile dataFile;    
-        
         try {
             dataFile = findDataFileOrDie(fileToRequestAccessId);
         } catch (WrappedResponse ex) {
@@ -936,7 +981,6 @@ public class Access extends AbstractApiBean {
         if (apiToken == null || apiToken.equals("")) {                   
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
-        
         if (apiToken == null || apiToken.equals("")) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.noKey"));
         }
@@ -958,11 +1002,9 @@ public class Access extends AbstractApiBean {
             engineSvc.submit(new RequestAccessCommand(dataverseRequest, dataFile, true));
         } catch (CommandException ex) {
             //access.api.requestAccess.failure.commandError
-            List<String> args = Arrays.asList(dataFile.getDisplayName());
-            args.add(ex.getLocalizedMessage());
+            List<String> args = Arrays.asList(dataFile.getDisplayName(), ex.getLocalizedMessage());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.commandError", args));
         }
-
         List<String> args = Arrays.asList(dataFile.getDisplayName());
         return ok(BundleUtil.getStringFromBundle("access.api.requestAccess.success.for.single.file", args));
 
@@ -1010,12 +1052,9 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", args));
         }
         
-
-        
         try {
             dataverseRequest = createDataverseRequest(findUserOrDie());
         } catch (WrappedResponse wr) {
-            //access.api.fileAccess.failure.noUser
             List<String> args = Arrays.asList(identifier);
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
         }
@@ -1030,8 +1069,7 @@ public class Access extends AbstractApiBean {
             }
             
         } catch (CommandException ex) {
-            List<String> args = Arrays.asList(dataFile.getDisplayName());
-            args.add(ex.getLocalizedMessage());
+            List<String> args = Arrays.asList(dataFile.getDisplayName(), ex.getLocalizedMessage());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.failure.commandError", args));
         }
 
@@ -1046,13 +1084,14 @@ public class Access extends AbstractApiBean {
      * @author sekmiller
      *
      * @param fileToRequestAccessId
+     * @param identifier
      * @param apiToken
      * @param headers
      * @return
      */
-    @GET
+    @DELETE
     @Path("/datafile/{id}/revokeAccess/{identifier}")
-    public Response revokeFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifer") String identifier, @QueryParam("key") String apiToken, @Context HttpHeaders headers) {
+    public Response revokeFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @QueryParam("key") String apiToken, @Context HttpHeaders headers) {
         //create request
         DataverseRequest dataverseRequest;
         //get the datafile
@@ -1079,16 +1118,18 @@ public class Access extends AbstractApiBean {
             List<String> args = Arrays.asList(wr.getLocalizedMessage());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
         }
+        
+        if (identifier == null || identifier.equals("")) {
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.noKey"));
+        }
 
         RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(identifier);
-
         if (ra == null) {
             List<String> args = Arrays.asList(identifier);
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", args));
         }
 
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
-
         TypedQuery<RoleAssignment> query = em.createNamedQuery(
                 "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId_RoleId",
                 RoleAssignment.class);
@@ -1107,18 +1148,12 @@ public class Access extends AbstractApiBean {
             for (RoleAssignment role : roles) {
                 execCommand(new RevokeRoleCommand(role, dataverseRequest));
             }
-            engineSvc.submit(new RequestAccessCommand(dataverseRequest, dataFile, true));
-        } catch (CommandException ex) {
-            //access.api.requestAccess.failure.commandError
-            List<String> args = Arrays.asList(dataFile.getDisplayName());
-            args.add(ex.getLocalizedMessage());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.commandError", args));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-
-        List<String> args = Arrays.asList(ra.getDisplayInfo().getTitle());
-        args.add(dataFile.getDisplayName());
+        
+        List<String> args = Arrays.asList(ra.getIdentifier(), dataFile.getDisplayName());
+         
         return ok(BundleUtil.getStringFromBundle("access.api.revokeAccess.success.for.single.file", args));
 
     }
@@ -1171,12 +1206,11 @@ public class Access extends AbstractApiBean {
         try {
             dataverseRequest = createDataverseRequest(findUserOrDie());
         } catch (WrappedResponse wr) {
-            //access.api.fileAccess.failure.noUser
             List<String> args = Arrays.asList(identifier);
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
         }
 
-        if (!permissionService.on(dataFile.getOwner()).has(Permission.ManageDatasetPermissions)) {
+        if (!dataverseRequest.getAuthenticatedUser().isSuperuser() && !permissionService.on(dataFile.getOwner()).has(Permission.ManageDatasetPermissions)) {
             List<String> args = Arrays.asList(apiToken);
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions", args));
         }
@@ -1196,8 +1230,7 @@ public class Access extends AbstractApiBean {
             return ok(BundleUtil.getStringFromBundle("access.api.grantAccess.success.for.single.file", args));
 
         } else {
-            List<String> args = Arrays.asList(dataFile.getDisplayName());
-            args.add(ra.getDisplayInfo().getTitle());
+            List<String> args = Arrays.asList(dataFile.getDisplayName(), ra.getDisplayInfo().getTitle());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.rejectFailure.noRequest", args));
         }
     }
