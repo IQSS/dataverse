@@ -143,7 +143,8 @@ public class SearchUtil {
                     for (String part : parts) {
                         if (!firstTime) {
                             ftQuery.append(" ");
-                            firstTime = false;
+                        } else {
+                            firstTime=false;
                         }
                         if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT") || part.equals("&&") || part.equals("||") || part.equals("!"))) {
                             if (part.startsWith("+")) {
