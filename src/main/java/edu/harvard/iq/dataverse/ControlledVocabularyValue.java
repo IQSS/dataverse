@@ -6,6 +6,9 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -107,6 +110,12 @@ public class ControlledVocabularyValue implements Serializable  {
         this.controlledVocabAlternates = controlledVocabAlternates;
     }
 
+    public String getLocaleStrValue()
+    {
+        String key = strValue.toLowerCase().replace(" " , "_");
+        key = StringUtils.stripAccents(key);
+        return BundleUtil.getStringFromPropertyFile("controlledvocabulary." + this.datasetFieldType.getName() + "." + key, getDatasetFieldType().getMetadataBlock().getName());
+    }
 
     @Override
     public int hashCode() {
