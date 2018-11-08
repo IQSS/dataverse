@@ -157,7 +157,7 @@ public class SearchUtil {
                 boolean needSpace = false;
                 boolean fullTextComponent = false;
                
-                Pattern regex = Pattern.compile("[\\{\\[][^\\}\\]]*[\\}\\]]|\\\"[^\\\"]*\\\"|'[^']*'|([^\\s\"\\[\\{',]+([,]*([^\\s,\\[\\{'\"]|[\\{\\[][^\\}\\]]*[\\}\\]]|\\\"[^\\\"]*\\\"|'[^']*')+)+)+|[^\\s\"',]+");
+                Pattern regex = Pattern.compile("(([^\\s\"\\[\\{',]+)*([,]*([^\\s,\\[\\{'\"]|[\\{\\[][^\\}\\]]*[\\}\\]]|\\\"[^\\\"]*\\\"|'[^']*')+)+)+|[^\\s\"',]+");
                 Matcher regexMatcher = regex.matcher(query);
                 while (regexMatcher.find()) {
                
@@ -186,7 +186,7 @@ public class SearchUtil {
                     }
                 }
                 if (fullTextComponent) {
-                    query = query + " OR (" + ftQuery.toString() + (joinNeeded ? " AND {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})" : ")");
+                    query = query + " OR ((" + ftQuery.toString() +") " + (joinNeeded ? " AND {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})" : ")");
                 }
             } else {
                 throw new SearchException("Field-specific queries not supported with full-text indexing enabled.");
