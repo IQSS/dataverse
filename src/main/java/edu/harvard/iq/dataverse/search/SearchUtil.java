@@ -2,8 +2,11 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.api.Util;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
@@ -148,11 +151,17 @@ public class SearchUtil {
                 // (since comma only means the second term is still affected by any field:
                 // prefix (in the original and when we expand below)
                 //String[] parts = query.split(",*[\\s]+,*");
-                String[] parts = query.split("(\"[^\"]*\"|'[^']*'|[\\{\\[][^\\}\\]]*[\\}\\]] | [\\S]+)+");
+                //String[] parts = query.split("(\"[^\"]*\"|'[^']*'|[\\{\\[][^\\}\\]]*[\\}\\]] | ,*[\\s]+,*)");
+               
                 StringBuilder ftQuery = new StringBuilder();
                 boolean needSpace = false;
                 boolean fullTextComponent = false;
-                for (String part : parts) {
+               
+                Pattern regex = Pattern.compile("[\\{\\[][^\\}\\]]*[\\}\\]]|\\\"[^\\\"]*\\\"|'[^']*'|([^\\s\"\\[\\{',]+([,]*([^\\s,\\[\\{'\"]|[\\{\\[][^\\}\\]]*[\\}\\]]|\\\"[^\\\"]*\\\"|'[^']*')+)+)+|[^\\s\"',]+");
+                Matcher regexMatcher = regex.matcher(query);
+                while (regexMatcher.find()) {
+               
+                    String part=regexMatcher.group();
                     logger.info("Parsing found \"" + part + "\"");
                     if (needSpace) {
                         ftQuery.append(" ");
