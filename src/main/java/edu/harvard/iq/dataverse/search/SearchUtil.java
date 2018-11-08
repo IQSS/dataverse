@@ -114,62 +114,71 @@ public class SearchUtil {
         }
     }
 
-    /** expandQuery
+    /**
+     * expandQuery
      * 
-     *  This method is only called when full-text indexing is on. It expands a simple query to search for the query items in the default field, where all metadata is indexed,
-     *  and for the same query items in the full text field. 
-     *  For security reasons, if the query is too complex to be parsed correctly by the current implementation, the method throws an exception.
-     *  The current implementation does not parse any query with items restricted to specific fields (e.g. title:"Test"), or with use of range queries.
-     *   
+     * This method is only called when full-text indexing is on. It expands a simple
+     * query to search for the query items in the default field, where all metadata
+     * is indexed, and for the same query items in the full text field. For security
+     * reasons, if the query is too complex to be parsed correctly by the current
+     * implementation, the method throws an exception. The current implementation
+     * does not parse any query with items restricted to specific fields (e.g.
+     * title:"Test"), or with use of range queries.
+     * 
      * @param query
-     * @param joinNeeded 
+     * @param joinNeeded
      * @return
-     * @throws SearchException 
+     * @throws SearchException
      */
     public static String expandQuery(String query, boolean joinNeeded) throws SearchException {
-        //If it isn't 'find all'
-        //Note that this query is used to populate the main Dataverse view and, without this check, Dataverse assumes its a real search and displays the hit hints instead of the normal summary 
+        // If it isn't 'find all'
+        // Note that this query is used to populate the main Dataverse view and, without
+        // this check, Dataverse assumes its a real search and displays the hit hints
+        // instead of the normal summary
         if (!query.equals("*")) {
-            //If it has a : that is not part of an escaped doi or handle (e.g. doi\:)
-            //if (!query.matches(".*[^\\\\][^\\\\][:].*")) {
-                //If it doesn't have range identifiers [,{,}, or ] 
-                if (!query.matches(".*[\\{\\[\\]\\}].*")) {
-                     // what about ( )   " ~ * ?  \ /
-                    //  (\"[^\"]*\"|'[^']*'|[\\{\\[][^\\}\\]]*[\\}\\]] | [\\S]+)+
-                    //Split on any whitespace, but also grab any comma, do not split on comma only (since comma only means the second term is still affected by any field: prefix (in the original and when we expand below)
-                    String[] parts = query.split(",*[\\s]+,*");
-                    StringBuilder ftQuery = new StringBuilder();
-                    boolean needSpace = false;
-                    for (String part : parts) {
-                        if (needSpace) {
-                            ftQuery.append(" ");
-                        } else {
-                            needSpace=true;
-                        }
-                        if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT") || part.equals("&&") || part.equals("||") || part.equals("!") )) {
-                            if(part.matches(".*[^\\\\][^\\\\][:].*")) {
-                                //Just skip it - it's a field-specific term
-                                //Don't add an extra space
-                                needSpace=false;
-                            }else if (part.startsWith("+")) {
-                                ftQuery.append("+" + SearchFields.FULL_TEXT + ":" + part.substring(1));
-                            } else if (part.startsWith("-")) {
-                                ftQuery.append("-" + SearchFields.FULL_TEXT + ":" + part.substring(1));
-                            } else if (part.startsWith("-")) {
-                                ftQuery.append("!" + SearchFields.FULL_TEXT + ":" + part.substring(1));
-                            }else {
-                                ftQuery.append(SearchFields.FULL_TEXT + ":" + part);
-                            }
-                        } else {
-                            ftQuery.append(part);
-                        }
+            // If it doesn't have range identifiers [,{,}, or ]
+            if (!query.matches(".*[\\{\\[\\]\\}].*")) {
+                // what about ( ) " ~ * ? \ /
+                // (\\"[^\\"]*\"|'[^']*'|[\\{\\[][^\\}\\]]*[\\}\\]] | [\\S]+)+
+                // Split on any whitespace, but also grab any comma, do not split on comma only
+                // (since comma only means the second term is still affected by any field:
+                // prefix (in the original and when we expand below)
+                //String[] parts = query.split(",*[\\s]+,*");
+                String[] parts = query.split("(\"[^\"]*\"|'[^']*'|[\\{\\[][^\\}\\]]*[\\}\\]] | [\\S]+)+");
+                StringBuilder ftQuery = new StringBuilder();
+                boolean needSpace = false;
+                boolean fullTextComponent = false;
+                for (String part : parts) {
+                    if (needSpace) {
+                        ftQuery.append(" ");
+                    } else {
+                        needSpace = true;
                     }
-                    query = query + " OR (" + ftQuery.toString() +  (joinNeeded ? " AND {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})": ")");
-                    // {!join from=definitionPointDocId to=id v=$q1}
-
-               // } else {
-             //       throw new SearchException("Range queries not supported with full-text indexing enabled.");
-             //   }
+                    if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT") || part.equals("&&") || part.equals("||") || part.equals("!"))) {
+                        if (part.startsWith("+")) {
+                            ftQuery.append("+" + SearchFields.FULL_TEXT + ":" + part.substring(1));
+                            fullTextComponent = true;
+                        } else if (part.startsWith("-")) {
+                            ftQuery.append("-" + SearchFields.FULL_TEXT + ":" + part.substring(1));
+                            fullTextComponent = true;
+                        } else if (part.startsWith("-")) {
+                            ftQuery.append("!" + SearchFields.FULL_TEXT + ":" + part.substring(1));
+                            fullTextComponent = true;
+                        } else {
+                            // If it has a : that is not part of an escaped doi or handle (e.g. doi\:), e.g. it is field-specific
+                            if (part.matches(".*[^\\\\][^\\\\][:].*")) {
+                                ftQuery.append(part);
+                            } else
+                                ftQuery.append(SearchFields.FULL_TEXT + ":" + part);
+                            fullTextComponent = true;
+                        }
+                    } else {
+                        ftQuery.append(part);
+                    }
+                }
+                if (fullTextComponent) {
+                    query = query + " OR (" + ftQuery.toString() + (joinNeeded ? " AND {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})" : ")");
+                }
             } else {
                 throw new SearchException("Field-specific queries not supported with full-text indexing enabled.");
             }
