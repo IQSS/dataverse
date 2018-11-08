@@ -211,7 +211,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
         String qParam = "";
         if (query != null) {
-            logger.info("Query in redirect: " + query);
             qParam = "&q=" + URLEncoder.encode(query, "UTF-8");
         }
 
@@ -248,7 +247,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 selectedTypesString = "dataverses:datasets";
             }
         } else if (mode.equals(searchModeString)) {
-            logger.info("Query in search: " + query);
             queryToPassToSolr = query;
             if (sortField == null) {
                 sortField = searchFieldRelevance;
@@ -581,7 +579,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public void setQuery(String query) {
-        logger.info("Setting: " + query);
         this.query = query;
     }
 
