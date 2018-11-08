@@ -131,7 +131,7 @@ public class SearchUtil {
         //Note that this query is used to populate the main Dataverse view and, without this check, Dataverse assumes its a real search and displays the hit hints instead of the normal summary 
         if (!query.equals("*")) {
             //If it has a : that is not part of an escaped doi or handle (e.g. doi\:)
-            if (!query.matches(".*[^\\\\][^\\\\][:].*")) {
+            //if (!query.matches(".*[^\\\\][^\\\\][:].*")) {
                 //If it doesn't have range identifiers [,{,}, or ] 
                 if (!query.matches(".*[\\{\\[\\]\\}].*")) {
                      // what about ( )   " ~ * ?  \ /
@@ -139,15 +139,19 @@ public class SearchUtil {
                     //Split on any whitespace, but also grab any comma, do not split on comma only (since comma only means the second term is still affected by any field: prefix (in the original and when we expand below)
                     String[] parts = query.split(",*[\\s]+,*");
                     StringBuilder ftQuery = new StringBuilder();
-                    boolean firstTime = true;
+                    boolean needSpace = false;
                     for (String part : parts) {
-                        if (!firstTime) {
+                        if (needSpace) {
                             ftQuery.append(" ");
                         } else {
-                            firstTime=false;
+                            needSpace=true;
                         }
-                        if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT") || part.equals("&&") || part.equals("||") || part.equals("!"))) {
-                            if (part.startsWith("+")) {
+                        if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT") || part.equals("&&") || part.equals("||") || part.equals("!") )) {
+                            if(part.matches(".*[^\\\\][^\\\\][:].*")) {
+                                //Just skip it - it's a field-specific term
+                                //Don't add an extra space
+                                needSpace=false;
+                            }else if (part.startsWith("+")) {
                                 ftQuery.append("+" + SearchFields.FULL_TEXT + ":" + part.substring(1));
                             } else if (part.startsWith("-")) {
                                 ftQuery.append("-" + SearchFields.FULL_TEXT + ":" + part.substring(1));
@@ -163,9 +167,9 @@ public class SearchUtil {
                     query = query + " OR (" + ftQuery.toString() +  (joinNeeded ? " AND {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})": ")");
                     // {!join from=definitionPointDocId to=id v=$q1}
 
-                } else {
-                    throw new SearchException("Range queries not supported with full-text indexing enabled.");
-                }
+               // } else {
+             //       throw new SearchException("Range queries not supported with full-text indexing enabled.");
+             //   }
             } else {
                 throw new SearchException("Field-specific queries not supported with full-text indexing enabled.");
             }
