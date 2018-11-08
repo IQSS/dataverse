@@ -128,13 +128,16 @@ public class SearchUtil {
      */
     public static String expandQuery(String query, boolean joinNeeded) throws SearchException {
         //If it isn't 'find all'
+        //Note that this query is used to populate the main Dataverse view and, without this check, Dataverse assumes its a real search and displays the hit hints instead of the normal summary 
         if (!query.equals("*")) {
             //If it has a : that is not part of an escaped doi or handle (e.g. doi\:)
             if (!query.matches(".*[^\\\\][^\\\\][:].*")) {
                 //If it doesn't have range identifiers [,{,}, or ] 
                 if (!query.matches(".*[\\{\\[\\]\\}].*")) {
-                     // what about && || ! ( )  ^ " ~ * ?  \ /
-                    String[] parts = query.split("\\s+");
+                     // what about ( )   " ~ * ?  \ /
+                    //  (\"[^\"]*\"|'[^']*'|[\\{\\[][^\\}\\]]*[\\}\\]] | [\\S]+)+
+                    //Split on any whitespace, but also grab any comma, do not split on comma only (since comma only means the second term is still affected by any field: prefix (in the original and when we expand below)
+                    String[] parts = query.split(",*[\\s]+,*");
                     StringBuilder ftQuery = new StringBuilder();
                     boolean firstTime = true;
                     for (String part : parts) {
@@ -142,14 +145,18 @@ public class SearchUtil {
                             ftQuery.append(" ");
                             firstTime = false;
                         }
-                        if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT"))) {
+                        if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT") || part.equals("&&") || part.equals("||") || part.equals("!"))) {
                             if (part.startsWith("+")) {
                                 ftQuery.append("+" + SearchFields.FULL_TEXT + ":" + part.substring(1));
                             } else if (part.startsWith("-")) {
                                 ftQuery.append("-" + SearchFields.FULL_TEXT + ":" + part.substring(1));
-                            } else {
+                            } else if (part.startsWith("-")) {
+                                ftQuery.append("!" + SearchFields.FULL_TEXT + ":" + part.substring(1));
+                            }else {
                                 ftQuery.append(SearchFields.FULL_TEXT + ":" + part);
                             }
+                        } else {
+                            ftQuery.append(part);
                         }
                     }
                     query = query + " OR (" + ftQuery.toString() +  (joinNeeded ? " AND {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})": ")");
