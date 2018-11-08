@@ -171,11 +171,11 @@ public class SearchUtil {
 
                 if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT") || part.equals("&&") || part.equals("||") || part.equals("!") || part.matches(".*[^\\\\][^\\\\][:].*"))) {
                     if (part.startsWith("+")) {
-                        ftQuery.append(expandPart("+" + SearchFields.FULL_TEXT + ":" + part.substring(1), joinNeeded));
+                        ftQuery.append(expandPart("(" + part + "AND +" + SearchFields.FULL_TEXT + ":" + part.substring(1)+")", joinNeeded));
                     } else if (part.startsWith("-")) {
-                        ftQuery.append(expandPart("-" + SearchFields.FULL_TEXT + ":" + part.substring(1), joinNeeded));
+                        ftQuery.append(expandPart("(" + part + "AND -" + SearchFields.FULL_TEXT + ":" + part.substring(1)+")", joinNeeded));
                     } else if (part.startsWith("-")) {
-                        ftQuery.append(expandPart("!" + SearchFields.FULL_TEXT + ":" + part.substring(1), joinNeeded));
+                        ftQuery.append(expandPart("(" + part + "AND !" + SearchFields.FULL_TEXT + ":" + part.substring(1)+")", joinNeeded));
                     } else {
                         ftQuery.append(expandPart(SearchFields.FULL_TEXT + ":" + part, joinNeeded));
                     }
@@ -197,7 +197,7 @@ public class SearchUtil {
 
     private static Object expandPart(String part, boolean joinNeeded) {
         // TODO Auto-generated method stub
-        return "((" + part + (joinNeeded ? ") AND {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})" : "))");
+        return "(" + part + (joinNeeded ? " AND {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})" : ")");
     }
 
 }
