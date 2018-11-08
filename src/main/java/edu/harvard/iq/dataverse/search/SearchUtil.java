@@ -143,53 +143,50 @@ public class SearchUtil {
         // this check, Dataverse assumes its a real search and displays the hit hints
         // instead of the normal summary
         if (!query.equals("*")) {
-            // If it doesn't have range identifiers [,{,}, or ]
-            if (!query.matches(".*[\\{\\[\\]\\}].*")) {
-                // what about ( ) " ~ * ? \ /
-                // (\\"[^\\"]*\"|'[^']*'|[\\{\\[][^\\}\\]]*[\\}\\]] | [\\S]+)+
-                // Split on any whitespace, but also grab any comma, do not split on comma only
-                // (since comma only means the second term is still affected by any field:
-                // prefix (in the original and when we expand below)
-                //String[] parts = query.split(",*[\\s]+,*");
-                //String[] parts = query.split("(\"[^\"]*\"|'[^']*'|[\\{\\[][^\\}\\]]*[\\}\\]] | ,*[\\s]+,*)");
-               
-                StringBuilder ftQuery = new StringBuilder();
-                boolean needSpace = false;
-                boolean fullTextComponent = false;
-               
-                Pattern regex = Pattern.compile("(([^\\s\"\\[\\{',]+)*([,]*([^\\s,\\[\\{'\"]|[\\{\\[][^\\}\\]]*[\\}\\]]|\\\"[^\\\"]*\\\"|'[^']*')+)+)+|[^\\s\"',]+");
-                Matcher regexMatcher = regex.matcher(query);
-                while (regexMatcher.find()) {
-               
-                    String part=regexMatcher.group();
-                    logger.info("Parsing found \"" + part + "\"");
-                    if (needSpace) {
-                        ftQuery.append(" ");
-                    } else {
-                        needSpace = true;
-                    }
-                    //If its a boolean logic entry or
-                    // If it has a : that is not part of an escaped doi or handle (e.g. doi\:), e.g. it is field-specific
-                    if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT") || part.equals("&&") || part.equals("||") || part.equals("!") || part.matches(".*[^\\\\][^\\\\][:].*"))) {
-                        fullTextComponent = true;
-                        if (part.startsWith("+")) {
-                            ftQuery.append("+" + SearchFields.FULL_TEXT + ":" + part.substring(1));
-                        } else if (part.startsWith("-")) {
-                            ftQuery.append("-" + SearchFields.FULL_TEXT + ":" + part.substring(1));
-                        } else if (part.startsWith("-")) {
-                            ftQuery.append("!" + SearchFields.FULL_TEXT + ":" + part.substring(1));
-                        } else {
-                           ftQuery.append(SearchFields.FULL_TEXT + ":" + part);
-                        }
-                    } else {
-                        ftQuery.append(part);
-                    }
+            // what about ( )  ~ * ? \ /
+            // (\\"[^\\"]*\"|'[^']*'|[\\{\\[][^\\}\\]]*[\\}\\]] | [\\S]+)+
+            // Split on any whitespace, but also grab any comma, do not split on comma only
+            // (since comma only means the second term is still affected by any field:
+            // prefix (in the original and when we expand below)
+            // String[] parts = query.split(",*[\\s]+,*");
+            // String[] parts = query.split("(\"[^\"]*\"|'[^']*'|[\\{\\[][^\\}\\]]*[\\}\\]]
+            // | ,*[\\s]+,*)");
+
+            StringBuilder ftQuery = new StringBuilder();
+            boolean needSpace = false;
+            boolean fullTextComponent = false;
+
+            Pattern regex = Pattern.compile("(([^\\s\"\\[\\{',]+)*([,]*([^\\s,\\[\\{'\"]|[\\{\\[][^\\}\\]]*[\\}\\]]|\\\"[^\\\"]*\\\"|'[^']*')+)+)+|[^\\s\"',]+");
+            Matcher regexMatcher = regex.matcher(query);
+            while (regexMatcher.find()) {
+
+                String part = regexMatcher.group();
+                logger.info("Parsing found \"" + part + "\"");
+                if (needSpace) {
+                    ftQuery.append(" ");
+                } else {
+                    needSpace = true;
                 }
-                if (fullTextComponent) {
-                    query = query + " OR ((" + ftQuery.toString() +") " + (joinNeeded ? " AND {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})" : ")");
+                // If its a boolean logic entry or
+                // If it has a : that is not part of an escaped doi or handle (e.g. doi\:), e.g.
+                // it is field-specific
+                if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT") || part.equals("&&") || part.equals("||") || part.equals("!") || part.matches(".*[^\\\\][^\\\\][:].*"))) {
+                    fullTextComponent = true;
+                    if (part.startsWith("+")) {
+                        ftQuery.append("+" + SearchFields.FULL_TEXT + ":" + part.substring(1));
+                    } else if (part.startsWith("-")) {
+                        ftQuery.append("-" + SearchFields.FULL_TEXT + ":" + part.substring(1));
+                    } else if (part.startsWith("-")) {
+                        ftQuery.append("!" + SearchFields.FULL_TEXT + ":" + part.substring(1));
+                    } else {
+                        ftQuery.append(SearchFields.FULL_TEXT + ":" + part);
+                    }
+                } else {
+                    ftQuery.append(part);
                 }
-            } else {
-                throw new SearchException("Field-specific queries not supported with full-text indexing enabled.");
+            }
+            if (fullTextComponent) {
+                query = query + " OR ((" + ftQuery.toString() + ") " + (joinNeeded ? " AND {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})" : ")");
             }
         }
         return query;
