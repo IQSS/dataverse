@@ -19,19 +19,18 @@ import java.util.Base64;
 import javax.json.JsonArray;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import org.hamcrest.CoreMatchers;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.hamcrest.Matchers;
 import org.junit.After;
+import static org.junit.Assert.assertNotEquals;
 
 public class SearchIT {
 
@@ -220,6 +219,13 @@ public class SearchIT {
 
     }
 
+    /*
+     * Note: this test does a lot of checking for permissions with / without privlidged api key.
+     * Thumbnails access is the same with/without that access as of 4.9.4 --MAD
+     * 
+     * If permissions come into play for thumbnails, the deprecated UtilIT.getInputStreamFromUnirest
+     * should be repaired to actually use api keys
+     */
     @Test
     public void testDatasetThumbnail() {
         logger.info("BEGIN testDatasetThumbnail");
@@ -283,17 +289,27 @@ public class SearchIT {
                 .statusCode(200);
 
         String thumbnailUrl = RestAssured.baseURI + "/api/datasets/" + datasetId + "/thumbnail";
+        
+        File trees = new File("scripts/search/data/binary/trees.png");
+        String treesAsBase64 = null;
+        treesAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(trees, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+
+        if (treesAsBase64 == null) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file trees.png");
+        }
+        
         InputStream inputStream1creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
-        assertNull(inputStream1creator);
+        assertNotEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream1creator));
 
         InputStream inputStream1guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
-        assertNull(inputStream1guest);
+        assertNotEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream1guest));
+ 
 
-        Response getThumbnailImage1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken); //
+        Response getThumbnailImage1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken); 
         getThumbnailImage1.prettyPrint();
         getThumbnailImage1.then().assertThat()
                 .contentType("")
-                .statusCode(NO_CONTENT.getStatusCode());
+                .statusCode(NOT_FOUND.getStatusCode());
 
         Response attemptToGetThumbnailCandidates = UtilIT.showDatasetThumbnailCandidates(datasetPersistentId, noSpecialAcessApiToken);
         attemptToGetThumbnailCandidates.prettyPrint();
@@ -312,7 +328,7 @@ public class SearchIT {
         getThumbnailImageNoAccess1.prettyPrint();
         getThumbnailImageNoAccess1.then().assertThat()
                 .contentType("")
-                .statusCode(NO_CONTENT.getStatusCode());
+                .statusCode(NOT_FOUND.getStatusCode());
 
         Response uploadFile = UtilIT.uploadFile(datasetPersistentId, "trees.zip", apiToken);
         uploadFile.prettyPrint();
@@ -324,14 +340,6 @@ public class SearchIT {
                 .statusCode(200);
 
         logger.info("DataFile uploaded, should automatically become the thumbnail:");
-
-        File trees = new File("scripts/search/data/binary/trees.png");
-        String treesAsBase64 = null;
-        treesAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(trees, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-
-        if (treesAsBase64 == null) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file trees.png");
-        }
 
         Response search2 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
         search2.prettyPrint();
@@ -374,8 +382,14 @@ public class SearchIT {
                 .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
 
+        
+        Response getThumbnailImageA = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken); //
+        getThumbnailImageA.prettyPrint();
+        getThumbnailImageA.then().assertThat()
+                .contentType("image/png")
+                .statusCode(OK.getStatusCode());
+
         InputStream inputStream2creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
-        assertNotNull(inputStream2creator);
         assertEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream2creator));
 
         InputStream inputStream2guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
@@ -543,12 +557,18 @@ public class SearchIT {
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(true))
                 .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
-
+        
         InputStream inputStream5creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
-        assertNull(inputStream5creator);
+        assertNotEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream5creator));
 
         InputStream inputStream5guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
-        assertNull(inputStream5guest);
+        assertNotEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream5guest));
+        
+        Response getThumbnailImageB = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken); //
+        getThumbnailImageB.prettyPrint();
+        getThumbnailImageB.then().assertThat()
+                .contentType("")
+                .statusCode(NOT_FOUND.getStatusCode());
 
         Response search5 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
         search5.prettyPrint();
@@ -657,6 +677,249 @@ public class SearchIT {
 
     }
 
+    @Test
+    public void testNestedSubtree() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        //(String alias, String category, String apiToken, String parentDV)
+        Response createDataverseResponse2 = UtilIT.createSubDataverse("subDV" + UtilIT.getRandomIdentifier(), null, apiToken, dataverseAlias);
+        createDataverseResponse2.prettyPrint();
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
+
+        String searchPart = "*"; 
+
+        Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
+        searchUnpublishedSubtree.prettyPrint();
+        searchUnpublishedSubtree.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // It's expected that you can't find it because it hasn't been published.
+                .body("data.total_count", CoreMatchers.equalTo(0));
+        
+        Response searchUnpublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
+        searchUnpublishedSubtree2.prettyPrint();
+        searchUnpublishedSubtree2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // It's expected that you can't find it because it hasn't been published.
+                .body("data.total_count", CoreMatchers.equalTo(0));
+        
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response publishDataverse2 = UtilIT.publishDataverseViaNativeApi(dataverseAlias2, apiToken);
+        publishDataverse2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response searchPublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
+        searchPublishedSubtree.prettyPrint();
+        searchPublishedSubtree.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+        
+        Response searchPublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
+        searchPublishedSubtree2.prettyPrint();
+        searchPublishedSubtree2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(0));
+        
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias2, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        System.out.println("id: " + datasetId);
+        String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
+        System.out.println("datasetPid: " + datasetPid);
+        
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response searchPublishedSubtreeWDS = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
+        searchPublishedSubtreeWDS.prettyPrint();
+        searchPublishedSubtreeWDS.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(2));
+        
+        Response searchPublishedSubtreeWDS2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
+        searchPublishedSubtreeWDS2.prettyPrint();
+        searchPublishedSubtreeWDS2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+        
+        
+                
+    }
+    
+    @Test
+    public void testSubtreePermissions() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        System.out.println("id: " + datasetId);
+        String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
+        System.out.println("datasetPid: " + datasetPid);
+        
+        Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse2.prettyPrint();
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
+
+        Response createDatasetResponse2 = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias2, apiToken);
+        createDatasetResponse2.prettyPrint();
+        Integer datasetId2 = UtilIT.getDatasetIdFromResponse(createDatasetResponse2);
+        System.out.println("id: " + datasetId2);
+        String datasetPid2 = JsonPath.from(createDatasetResponse2.getBody().asString()).getString("data.persistentId");
+        System.out.println("datasetPid: " + datasetPid2);
+
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response datasetAsJson2 = UtilIT.nativeGet(datasetId2, apiToken);
+        datasetAsJson2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        String identifier2 = JsonPath.from(datasetAsJson2.getBody().asString()).getString("data.identifier"); 
+
+        String searchPart = "*"; 
+
+        Response searchFakeSubtree = UtilIT.search(searchPart, apiToken, "&subtree=fake");
+        searchFakeSubtree.prettyPrint();
+        searchFakeSubtree.then().assertThat()
+                .statusCode(400);
+        
+        Response searchFakeSubtreeNoAPI = UtilIT.search(searchPart, null, "&subtree=fake");
+        searchFakeSubtreeNoAPI.prettyPrint();
+        searchFakeSubtreeNoAPI.then().assertThat()
+                .statusCode(400);
+        
+        Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
+        searchUnpublishedSubtree.prettyPrint();
+        searchUnpublishedSubtree.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // It's expected that you can't find it because it hasn't been published.
+                .body("data.total_count", CoreMatchers.equalTo(0));
+        
+        Response searchUnpublishedSubtreeNoAPI = UtilIT.search(searchPart, null, "&subtree="+dataverseAlias);
+        searchUnpublishedSubtreeNoAPI.prettyPrint();
+        searchUnpublishedSubtreeNoAPI.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // It's expected that you can't find it because it hasn't been published.
+                .body("data.total_count", CoreMatchers.equalTo(0));
+        
+        Response searchUnpublishedSubtrees = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias +"&subtree="+dataverseAlias2);
+        searchUnpublishedSubtrees.prettyPrint();
+        searchUnpublishedSubtrees.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // It's expected that you can't find them because they haven't been published.
+                .body("data.total_count", CoreMatchers.equalTo(0));
+        
+        Response searchUnpublishedSubtreesNoAPI = UtilIT.search(searchPart, null, "&subtree="+dataverseAlias +"&subtree="+dataverseAlias2);
+        searchUnpublishedSubtreesNoAPI.prettyPrint();
+        searchUnpublishedSubtreesNoAPI.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // It's expected that you can't find them because they haven't been published.
+                .body("data.total_count", CoreMatchers.equalTo(0));
+
+        Response searchUnpublishedRootSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "&subtree=root");
+        searchUnpublishedRootSubtreeForDataset.prettyPrint();
+        searchUnpublishedRootSubtreeForDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // It's expected that you can't find it because it hasn't been published.
+                .body("data.total_count", CoreMatchers.equalTo(0));
+
+        Response searchUnpublishedRootSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "&subtree=root");
+        searchUnpublishedRootSubtreeForDatasetNoAPI.prettyPrint();
+        searchUnpublishedRootSubtreeForDatasetNoAPI.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // It's expected that you can't find it because it hasn't been published.
+                .body("data.total_count", CoreMatchers.equalTo(0));
+        
+        Response searchUnpublishedNoSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "");
+        searchUnpublishedNoSubtreeForDataset.prettyPrint();
+        searchUnpublishedNoSubtreeForDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // It's expected that you can't find it because it hasn't been published.
+                .body("data.total_count", CoreMatchers.equalTo(0));
+        
+        Response searchUnpublishedNoSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "");
+        searchUnpublishedNoSubtreeForDatasetNoAPI.prettyPrint();
+        searchUnpublishedNoSubtreeForDatasetNoAPI.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // It's expected that you can't find it because it hasn't been published.
+                .body("data.total_count", CoreMatchers.equalTo(0));
+        
+        //PUBLISH
+        
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response publishDataverse2 = UtilIT.publishDataverseViaNativeApi(dataverseAlias2, apiToken);
+        publishDataverse2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDataset2 = UtilIT.publishDatasetViaNativeApi(datasetPid2, "major", apiToken);
+        publishDataset2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response searchPublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
+        searchPublishedSubtree.prettyPrint();
+        searchPublishedSubtree.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+        
+        Response searchPublishedSubtreeNoAPI = UtilIT.search(searchPart, null, "&subtree="+dataverseAlias);
+        searchPublishedSubtreeNoAPI.prettyPrint();
+        searchPublishedSubtreeNoAPI.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+        
+        Response searchPublishedSubtrees = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias+"&subtree="+dataverseAlias2);
+        searchPublishedSubtrees.prettyPrint();
+        searchPublishedSubtrees.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(2));
+        
+        Response searchPublishedSubtreesNoAPI = UtilIT.search(searchPart, null, "&subtree="+dataverseAlias+"&subtree="+dataverseAlias2);
+        searchPublishedSubtreesNoAPI.prettyPrint();
+        searchPublishedSubtreesNoAPI.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(2));
+        
+        Response searchPublishedRootSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "&subtree=root");
+        searchPublishedRootSubtreeForDataset.prettyPrint();
+        searchPublishedRootSubtreeForDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+        
+        Response searchPublishedRootSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "&subtree=root");
+        searchPublishedRootSubtreeForDatasetNoAPI.prettyPrint();
+        searchPublishedRootSubtreeForDatasetNoAPI.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+    }
+    
     @After
     public void tearDownDataverse() {
         File treesThumb = new File("scripts/search/data/binary/trees.png.thumb48");

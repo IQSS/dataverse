@@ -152,7 +152,9 @@
     <field name="dvDescription" type="text_en" stored="true" indexed="true" multiValued="false"/>
 
     <field name="dvCategory" type="string" stored="true" indexed="true" multiValued="false"/>
-
+    <field name="categoryOfDataverse" type="string" stored="true" indexed="true" multiValued="false"/>
+    <field name="identifierOfDataverse" type="string" stored="true" indexed="true" multiValued="false"/>
+    
     <field name="publicationDate" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="dsPublicationDate" type="string" stored="true" indexed="true" multiValued="false"/>
 
