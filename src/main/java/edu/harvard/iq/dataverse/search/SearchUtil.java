@@ -171,19 +171,19 @@ public class SearchUtil {
 
                 if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT") || part.equals("&&") || part.equals("||") || part.equals("!") || part.matches(".*[^\\\\][^\\\\][:].*"))) {
                     if (part.startsWith("+")) {
-                        ftQuery.append(expandPart("(" + part + " OR +" + SearchFields.FULL_TEXT + ":" + part.substring(1) + ")", joinNeeded));
+                        ftQuery.append(expandPart(part + " OR (+" + SearchFields.FULL_TEXT + ":" + part.substring(1), joinNeeded));
                     } else if (part.startsWith("-")) {
-                        ftQuery.append(expandPart("(" + part + " OR -" + SearchFields.FULL_TEXT + ":" + part.substring(1) + ")", joinNeeded));
+                        ftQuery.append(expandPart(part + " OR (-" + SearchFields.FULL_TEXT + ":" + part.substring(1), joinNeeded));
                     } else if (part.startsWith("-")) {
-                        ftQuery.append(expandPart("(" + part + " OR !" + SearchFields.FULL_TEXT + ":" + part.substring(1) + ")", joinNeeded));
+                        ftQuery.append(expandPart(part + " OR (!" + SearchFields.FULL_TEXT + ":" + part.substring(1), joinNeeded));
                     } else {
-                        ftQuery.append(expandPart("(" + part + " OR " + SearchFields.FULL_TEXT + ":" + part + ")", joinNeeded));
+                        ftQuery.append(expandPart(part + " OR (" + SearchFields.FULL_TEXT + ":" + part, joinNeeded));
                     }
                 } else {
                     if (part.contains(SearchFields.FULL_TEXT + ":")) {
                         // Any reference to the FULL_TEXT field has to be joined with the permission
                         // term
-                        ftQuery.append(expandPart(part, joinNeeded));
+                        ftQuery.append(expandPart("(" + part, joinNeeded));
                     } else {
                         ftQuery.append(part);
                     }
@@ -197,7 +197,7 @@ public class SearchUtil {
 
     private static Object expandPart(String part, boolean joinNeeded) {
         // TODO Auto-generated method stub
-        return "(" + part + (joinNeeded ? " AND {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})" : ")");
+        return "(" + part + (joinNeeded ? " AND {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})" : "))");
     }
 
 }
