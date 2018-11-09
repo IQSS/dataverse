@@ -197,7 +197,7 @@ public class SearchUtil {
 
     private static Object expandPart(String part, boolean joinNeeded) {
         // TODO Auto-generated method stub
-        return "(" + part + (joinNeeded ? " AND {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1})" : "))");
+        return "(" + part + (joinNeeded ? " AND {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1}))" : "))");
     }
 
 }
