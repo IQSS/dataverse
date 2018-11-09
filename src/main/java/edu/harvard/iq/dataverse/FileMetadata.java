@@ -32,6 +32,8 @@ import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
+
+import edu.harvard.iq.dataverse.util.DateUtil;
 import org.hibernate.validator.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -319,7 +321,7 @@ public class FileMetadata implements Serializable {
             }
         }
         if (fileDate != null) {
-            return displayDateFormat.format(fileDate);
+            return DateUtil.formatDate(fileDate);
         }
         return "";
     }

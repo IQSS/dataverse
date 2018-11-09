@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.Serializable;
@@ -300,7 +301,7 @@ public class DatasetVersion implements Serializable {
         if (this.lastUpdateTime == null){
             return null; 
         }
-        return new SimpleDateFormat("MMMM d, yyyy").format(lastUpdateTime);
+        return DateUtil.formatDate(lastUpdateTime);
     }
 
     public String getVersionYear() {
