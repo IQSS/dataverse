@@ -40,6 +40,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
@@ -489,15 +490,15 @@ public class DatasetPage implements java.io.Serializable {
         SolrQueryResponse solrQueryResponse;
         List<String> filterQueries = new ArrayList<>();
         try {
-
+            SortBy sb = SearchUtil.getSortBy("name", SortBy.ASCENDING);
             filterQueries.add(SearchFields.PARENT_ID + ":" + dataset.getId());
             solrQueryResponse = searchService.search(
                     dvRequestService.getDataverseRequest(),
                     null,
                     this.fileLabelSearchTerm,
                     filterQueries,
-                    null,
-                    null,
+                    sb.getField(),
+                    sb.getOrder(),
                     0,
                     false,
                     1000000
@@ -517,6 +518,9 @@ public class DatasetPage implements java.io.Serializable {
             }
             String message = "Exception running search for [" + this.fileLabelSearchTerm + "] with filterQueries " + filterQueries + " and paginationStart [" + 0 + "]: " + sb.toString();
             logger.info(message);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
         
         logger.info("updating file search list");
