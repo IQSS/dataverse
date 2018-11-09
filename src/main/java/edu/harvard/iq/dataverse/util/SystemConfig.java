@@ -532,8 +532,11 @@ public class SystemConfig {
     
     public String getApplicationTermsOfUse() {
         String saneDefaultForAppTermsOfUse = BundleUtil.getStringFromBundle("system.app.terms");
-        String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
-        return appTermsOfUse;
+        String appTermsOfUse = BundleUtil.getStringFromPropertyFile("app.termsofuse" , "termsofuse");
+        if(appTermsOfUse != null)
+            return appTermsOfUse;
+        else
+            return saneDefaultForAppTermsOfUse;
     }
 
     public String getApiTermsOfUse() {
