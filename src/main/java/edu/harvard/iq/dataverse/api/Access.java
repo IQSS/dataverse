@@ -75,6 +75,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import javax.persistence.TypedQuery;
 
 import javax.ws.rs.GET;
@@ -1007,6 +1010,68 @@ public class Access extends AbstractApiBean {
         }
         List<String> args = Arrays.asList(dataFile.getDisplayName());
         return ok(BundleUtil.getStringFromBundle("access.api.requestAccess.success.for.single.file", args));
+
+    }
+    
+    /*
+     * List Reqeusts to restricted file
+     *
+     * @author sekmiller
+     *
+     * @param fileToRequestAccessId
+     * @param apiToken
+     * @param headers
+     * @return
+     */
+    @GET
+    @Path("/datafile/{id}/listRequests")
+    public Response listFileAccessRequests(@PathParam("id") String fileToRequestAccessId, @QueryParam("key") String apiToken, @Context HttpHeaders headers) {
+        //create request
+        DataverseRequest dataverseRequest;
+        //get the datafile
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(fileToRequestAccessId);
+        } catch (WrappedResponse ex) {
+            List<String> args = Arrays.asList(fileToRequestAccessId);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.fileNotFound", args));
+        }
+
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
+        }
+        if (apiToken == null || apiToken.equals("")) {
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.noKey"));
+        }
+
+        try {
+            dataverseRequest = createDataverseRequest(findUserOrDie());
+        } catch (WrappedResponse wr) {
+            List<String> args = Arrays.asList(wr.getLocalizedMessage());
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
+        }
+
+        if (!dataverseRequest.getAuthenticatedUser().isSuperuser() && !permissionService.on(dataFile.getOwner()).has(Permission.ManageDatasetPermissions)) {
+            List<String> args = Arrays.asList(apiToken);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions", args));
+        }
+        
+
+
+        // try to get requesters fro a  given datafile
+        JsonObjectBuilder resp = Json.createObjectBuilder();
+        List<AuthenticatedUser> requesters = dataFile.getFileAccessRequesters();
+        
+        if (requesters == null || requesters.isEmpty()) {
+            List<String> args = Arrays.asList(dataFile.getDisplayName());
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound"));
+        }
+        
+        for (AuthenticatedUser r : requesters) {
+            resp.add("authenticatedUser", json(r));
+        }
+
+        return ok(resp);
 
     }
     

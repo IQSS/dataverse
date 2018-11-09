@@ -1088,7 +1088,6 @@ public class UtilIT {
     }
     
     static Response grantFileAccess (String fileIdOrPersistentId, String identifier,  String apiToken) {
-        //"/datafile/{id}/grantAccess/{identifier}"
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
@@ -1101,6 +1100,22 @@ public class UtilIT {
         }
         Response response = given()
                 .get("/api/access/datafile/" + idInPath + "/grantAccess/" + identifier + "/" +  optionalQueryParam + keySeparator +  "key=" + apiToken);
+        return response;
+    }
+    
+    static Response getAccessRequestList (String fileIdOrPersistentId,  String apiToken) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
+        String keySeparator = "&";
+        if (optionalQueryParam.isEmpty()){
+            keySeparator="?";
+        }
+        Response response = given()
+                .get("/api/access/datafile/" + idInPath + "/listRequests/"  +  optionalQueryParam + keySeparator +  "key=" + apiToken);
         return response;
     }
     

@@ -415,7 +415,6 @@ public class AccessIT {
         Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestrictedNew.toString(), true, apiToken);
         restrictResponse.prettyPrint();
         restrictResponse.then().assertThat()
-        //        .body("data.message", equalTo("File stata13-auto.tab restricted."))
                 .statusCode(OK.getStatusCode());
         
         
@@ -437,7 +436,14 @@ public class AccessIT {
 
         requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
         assertEquals(200, requestFileAccessResponse.getStatusCode());
-
+        
+        Response listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken);
+        assertEquals(200, listAccessRequestResponse.getStatusCode());
+        listAccessRequestResponse.prettyPrint();
+        
+        listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        assertEquals(400, listAccessRequestResponse.getStatusCode());
+        
         Response rejectFileAccessResponse = UtilIT.rejectFileAccessRequest(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
         assertEquals(200, rejectFileAccessResponse.getStatusCode());
 
@@ -449,6 +455,9 @@ public class AccessIT {
         //revokeFileAccess        
         Response revokeFileAccessResponse = UtilIT.revokeFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
         assertEquals(200, revokeFileAccessResponse.getStatusCode());
+        
+        listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken);
+        assertEquals(400, listAccessRequestResponse.getStatusCode());
     }
 
 
