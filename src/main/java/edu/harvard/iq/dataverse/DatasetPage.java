@@ -37,7 +37,11 @@ import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
-import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
+import edu.harvard.iq.dataverse.search.SearchException;
+import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SolrQueryResponse;
+import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -182,7 +186,7 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     DatasetLinkingServiceBean dsLinkingService;
     @EJB
-    SearchFilesServiceBean searchFilesService;
+    SearchServiceBean searchService;
     @EJB
     DataverseRoleServiceBean dataverseRoleService;
     @EJB
@@ -482,6 +486,39 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void updateFileSearch(){  
+        SolrQueryResponse solrQueryResponse;
+        List<String> filterQueries = new ArrayList<>();
+        try {
+
+            filterQueries.add(SearchFields.PARENT_ID + ":" + dataset.getId());
+            solrQueryResponse = searchService.search(
+                    dvRequestService.getDataverseRequest(),
+                    null,
+                    this.fileLabelSearchTerm,
+                    filterQueries,
+                    null,
+                    null,
+                    0,
+                    false,
+                    1000000
+            );
+            for(SolrSearchResult result: solrQueryResponse.getSolrSearchResults()) {
+                logger.info("Found: " + result.getEntityId());
+            }
+        } catch (SearchException ex) {
+            Throwable cause = ex;
+            StringBuilder sb = new StringBuilder();
+            sb.append(cause + " ");
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                sb.append(cause.getClass().getCanonicalName() + " ");
+                sb.append(cause + " ");
+                // if you search for a colon you see RemoteSolrException: org.apache.solr.search.SyntaxError: Cannot parse ':'
+            }
+            String message = "Exception running search for [" + this.fileLabelSearchTerm + "] with filterQueries " + filterQueries + " and paginationStart [" + 0 + "]: " + sb.toString();
+            logger.info(message);
+        }
+        
         logger.info("updating file search list");
         if (readOnly) {
             this.fileMetadatasSearch = selectFileMetadatasForDisplay(this.fileLabelSearchTerm); 
