@@ -198,4 +198,30 @@ Request Access:
 ~~~~~~~~~~~~~~~
 ``/api/access/datafile/$id/requestAccess``
 
-This method requests access to the datafile whose id is passed on the behalf of an authenticated user whose key is passed.  
+This method requests access to the datafile whose id is passed on the behalf of an authenticated user whose key is passed. Note that not all datasets allow access requests to restricted files. 
+
+A curl example using an ``id``::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET -d true http://$SERVER/api/access/datafile/{id}/requestAccess
+    
+Grant File Access:
+~~~~~~~~~~~~~~~~~~ 
+
+``/api/access/datafile/{id}/grantAccess/{identifier}``
+
+This method grants access to the datafile whose id is passed on the behalf of an authenticated user whose identifier is passed. The key of a user who can manage permissions of the datafile is required to use this method.
+
+A curl example using an ``id``::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET -d true http://$SERVER/api/access/datafile/{id}/grantAccess/{identifier}
+    
+Reject File Access:
+~~~~~~~~~~~~~~~~~~~ 
+
+``/api/access/datafile/{id}/rejecttAccess/{identifier}``
+
+This method rejects the access request to the datafile whose id is passed on the behalf of an authenticated user whose identifier is passed. The key of a user who can manage permissions of the datafile is required to use this method.
+
+A curl example using an ``id``::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET -d true http://$SERVER/api/access/datafile/{id}/rejectAccess/{identifier}
