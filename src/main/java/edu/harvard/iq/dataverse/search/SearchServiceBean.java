@@ -328,10 +328,11 @@ public class SearchServiceBean {
             String error = "Search Syntax Error: ";
             String stringToHide = "org.apache.solr.search.SyntaxError: ";
             //If it is a syntax error, tell the user rather than silently showing no results
-            // (May be a better option for other types of errors as well?)
             if(messageFromSolr.contains(stringToHide)) {
                 throw new SearchException(BundleUtil.getStringFromBundle("dataverse.search.syntax.error"));
             }
+            // (May be a better option for other types of errors as well?)
+            // e.g. throw new SearchException(BundleUtil.getStringFromBundle("dataverse.results.solrIsDown"));
             if (messageFromSolr.startsWith(stringToHide)) {
                 // hide "org.apache.solr..."
                 error += messageFromSolr.substring(stringToHide.length());
@@ -356,7 +357,7 @@ public class SearchServiceBean {
             exceptionSolrQueryResponse.setSpellingSuggestionsByToken(emptySpellingSuggestion);
             return exceptionSolrQueryResponse;
         } catch (SolrServerException | IOException ex) {
-            throw new SearchException("Internal Dataverse Search Engine Error", ex);
+            throw new SearchException("Internal Dataverse Search Engine Error " + BundleUtil.getStringFromBundle("dataverse.results.solrIsDown"), ex);
         }
 
         SolrDocumentList docs = queryResponse.getResults();
