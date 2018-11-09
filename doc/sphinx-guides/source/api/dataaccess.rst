@@ -187,3 +187,15 @@ Data Access API supports both session- and API key-based authentication.
 
 If a session is available, and it is already associated with an authenticated user, it will be used for access authorization. If not, or if the user in question is not authorized to access the requested object, an attempt will be made to authorize based on an API key, if supplied. 
 All of the API verbs above support the key parameter ``key=...`` as well as the newer ``X-Dataverse-key`` header. For more details, see "Authentication" in the :doc:`intro` section.
+
+Access Requests and Processing
+------------------------------
+
+All of the following endpoints take the persistent identifier as a parameter in place of 'id'.
+
+Request Access
+--------------
+
+``/api/access/datafile/$id/requestAccess``
+
+This method requests access to the datafile whose id is passed.  
