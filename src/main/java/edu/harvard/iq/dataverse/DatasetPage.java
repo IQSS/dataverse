@@ -528,7 +528,7 @@ public class DatasetPage implements java.io.Serializable {
         List<FileMetadata> retList = new ArrayList<>();
 
         for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
-            if (searchResultsIdSet.contains(fileMetadata.getId())) {
+            if (searchResultsIdSet.contains(fileMetadata.getDataFile().getId())) {
                 retList.add(fileMetadata);
             }
         }
