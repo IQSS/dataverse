@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -144,7 +146,7 @@ public class SearchUtil {
         // instead of the normal summary
         StringBuilder ftQuery = new StringBuilder();
         if (!query.equals("*")) {
-            // what about ( ) ~ * ? \ /
+            // what about ~ * ? \ /
             // (\\"[^\\"]*\"|'[^']*'|[\\{\\[][^\\}\\]]*[\\}\\]] | [\\S]+)+
             // Split on any whitespace, but also grab any comma, do not split on comma only
             // (since comma only means the second term is still affected by any field:
@@ -154,8 +156,22 @@ public class SearchUtil {
             // | ,*[\\s]+,*)");
 
             boolean needSpace = false;
-            Pattern regex = Pattern.compile("[+-]?[\\{\\[][^\\}\\]]*[\\}\\]]|[+-]?\\\"[^\\\"]*\\\"|([^\\s\"\\[\\{',]+([,]?([^\\s,\\[\\{'\":+-]|[:][\\{\\[][^\\}\\]]*[\\}\\]]|[:]\\\"[^\\\"]*\\\")+)+)+|[^\\s\"',]+");
-            Matcher regexMatcher = regex.matcher(query);
+            /* Find:
+             * 
+             * A range query starting with an optional + or - with [ or { at the start and a } or ] at the end (can be mixed, e.g. {...])
+             * A quoted phrase starting with an optional + or -
+             * A text term that may include an initial : separated fieldname prefix and comma separated parts, but may not include phrases or ranges (which are treated by solr as new terms despite being ina comma-separated list)
+             * See https://regexr.com/ to parse and test the patterns
+             * 
+             * This term is found by searching for strings of characters that don't include whitespace or "[{' or , (with ' being an ignored separator character for solr),
+             * followed optionally by a comma and more characters that are not in the above list or a ":+ or - OR
+             * a : and a range query OR
+             * a : and a quoted string
+             */
+            Pattern termPattern = Pattern.compile("[+-]?[\\{\\[][^\\}\\]]*[\\}\\]](\\^\\d+)?|[+-]?\\\"[^\\\"]*\\\"(\\^\\d+)?|(([^\\s\"\\[\\{',\\(\\)\\\\]|[\\\\][\\[\\{\\(\\)\\\\+:'])+([,]?(([^\\s,\\[\\{'\":+\\(\\)\\\\-]|[\\\\][\\[\\{\\(\\)\\\\+:'])|[:][\\{\\[][^\\}\\]]*[\\}\\]]|[:]\\\"[^\\\"]*\\\")+)+)+|([^\\s\"',\\(\\)\\\\]|[\\\\][\\[\\{\\(\\)\\\\+:'])+");
+            Matcher regexMatcher = termPattern.matcher(query);
+            Pattern specialTokenPattern = Pattern.compile("\\(|\\)|OR|NOT|AND|&&|\\|\\||!|\\\\|\\/|.*[^\\][^\\][:].*");
+            Pattern forbiddenTokenPattern = Pattern.compile("\\\\|\\/|\\^|~|*|?");
             while (regexMatcher.find()) {
 
                 String part = regexMatcher.group();
@@ -165,11 +181,15 @@ public class SearchUtil {
                 } else {
                     needSpace = true;
                 }
+                // Don't proceed if there are special characters that are not part of another term (
+                if (forbiddenTokenPattern.matcher(part).matches()) {
+                    throw new SearchException(BundleUtil.getStringFromBundle("dataverse.search.fullText.error"));
+                }
                 // If its a boolean logic entry or
                 // If it has a : that is not part of an escaped doi or handle (e.g. doi\:), e.g.
                 // it is field-specific
-
-                if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT") || part.equals("&&") || part.equals("||") || part.equals("!") || part.matches(".*[^\\\\][^\\\\][:].*"))) {
+                    
+                if (!(specialTokenPattern.matcher(part).matches())) {
                     if (part.startsWith("+")) {
                         ftQuery.append(expandPart(part + " OR (+" + SearchFields.FULL_TEXT + ":" + part.substring(1), joinNeeded));
                     } else if (part.startsWith("-")) {
@@ -185,7 +205,9 @@ public class SearchUtil {
                         // term
                         ftQuery.append(expandPart("(" + part, joinNeeded));
                     } else {
+                        if(!(part.equals("\\") || part.equals("/"))) {
                         ftQuery.append(part);
+                        }
                     }
                 }
             }

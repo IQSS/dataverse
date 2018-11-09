@@ -327,6 +327,11 @@ public class SearchServiceBean {
             String messageFromSolr = ex.getLocalizedMessage();
             String error = "Search Syntax Error: ";
             String stringToHide = "org.apache.solr.search.SyntaxError: ";
+            //If it is a syntax error, tell the user rather than silently showing no results
+            // (May be a better option for other types of errors as well?)
+            if(messageFromSolr.contains(stringToHide)) {
+                throw new SearchException(BundleUtil.getStringFromBundle("dataverse.search.syntax.error"));
+            }
             if (messageFromSolr.startsWith(stringToHide)) {
                 // hide "org.apache.solr..."
                 error += messageFromSolr.substring(stringToHide.length());
