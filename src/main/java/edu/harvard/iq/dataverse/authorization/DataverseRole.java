@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.Set;
 import javax.persistence.Column;
@@ -118,47 +119,48 @@ public class DataverseRole implements Serializable  {
 		this.id = id;
 	}
 
-	public String getName() {
-		if (alias != null )
-		{
-			String key = "role." + alias.toLowerCase() +".name";
-			String _name = BundleUtil.getStringFromPropertyFile(key,"BuiltInRoles" );
-			if(_name == null)
-			{
-				return name;
-			}
-			else
-			{
-				return _name;
-			}
-		}
-		else {
-			return name;
-		}
-	}
+    public String getName() {
+        if (alias != null) {
+            try {
+                String key = "role." + alias.toLowerCase() + ".name";
+                String _name = BundleUtil.getStringFromPropertyFile(key, "BuiltInRoles");
+                if (_name == null) {
+                    return name;
+                } else {
+                    return _name;
+                }
+            } catch (MissingResourceException mre) {
+                return name;
+            }
+
+        } else {
+            return name;
+        }
+    }
 
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	public String getDescription() {
-		if (alias != null )
-		{
-			String key = "role." + alias.toLowerCase() +".description";
-			String _description = BundleUtil.getStringFromPropertyFile(key,"BuiltInRoles" );
-			if(_description == null)
-			{
-				return description;
-			}
-			else
-			{
-				return _description;
-			}
-		}
-		else {
-			return description;
-		}
-	}
+    public String getDescription() {
+        if (alias != null) {
+            String key = "role." + alias.toLowerCase() + ".description";
+            try {
+                String _description = BundleUtil.getStringFromPropertyFile(key, "BuiltInRoles");
+                if (_description == null) {
+                    return description;
+                } else {
+                    return _description;
+                }
+
+            } catch (MissingResourceException mre) {
+                return description;
+            }
+
+        } else {
+            return description;
+        }
+    }
 
 	public void setDescription(String description) {
 		this.description = description;
