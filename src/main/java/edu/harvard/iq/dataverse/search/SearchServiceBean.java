@@ -766,6 +766,67 @@ public class SearchServiceBean {
         return solrQueryResponse;
     }
 
+    public SolrDocumentList simpleSearch(DataverseRequest dataverseRequest, String returnField, String query, List<String> filterQueries, int paginationStart, int numResultsPerPage) throws SearchException {
+
+        if (paginationStart < 0) {
+            throw new IllegalArgumentException("paginationStart must be 0 or greater");
+        }
+        if (numResultsPerPage < 1) {
+            throw new IllegalArgumentException("numResultsPerPage must be 1 or greater");
+        }
+
+        SolrQuery solrQuery = new SolrQuery();
+        query = SearchUtil.sanitizeQuery(query);
+        String permissionFilterGroups = getPermissionFilterGroups(dataverseRequest, solrQuery, false);
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.SolrFullTextIndexing, false)) {
+            query = SearchUtil.expandQuery(query, permissionFilterGroups != null);
+            logger.info("Sanitized, Expanded Query: " + query);
+            if (permissionFilterGroups != null) {
+                solrQuery.add("q1", SearchFields.FULL_TEXT_SEARCHABLE_BY + ":" + permissionFilterGroups);
+                logger.info("q1: " + SearchFields.FULL_TEXT_SEARCHABLE_BY + ":" + permissionFilterGroups);
+            }
+        }
+
+        solrQuery.setQuery(query);
+        solrQuery.setParam("fl", returnField);
+        solrQuery.setParam("qt", "/select");
+
+        for (String filterQuery : filterQueries) {
+            solrQuery.addFilterQuery(filterQuery);
+        }
+
+        // -----------------------------------
+        // PERMISSION FILTER QUERY
+        // -----------------------------------
+        if (permissionFilterGroups != null) {
+            solrQuery.addFilterQuery("{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups);
+        }
+
+        solrQuery.setStart(paginationStart);
+        solrQuery.setRows(numResultsPerPage);
+        logger.fine("Solr query:" + solrQuery);
+
+        // -----------------------------------
+        // Make the solr query
+        // -----------------------------------
+        QueryResponse queryResponse = null;
+        try {
+
+            queryResponse = solrServer.query(solrQuery);
+        } catch (RemoteSolrException ex) {
+            String messageFromSolr = ex.getLocalizedMessage();
+            if (messageFromSolr.contains("org.apache.solr.search.SyntaxError")) {
+                throw new SearchException(BundleUtil.getStringFromBundle("dataverse.search.syntax.error"));
+            }
+            throw new SearchException(messageFromSolr + " " + BundleUtil.getStringFromBundle("dataverse.results.solrIsDown"));
+        } catch (SolrServerException | IOException ex) {
+            throw new SearchException("Internal Dataverse Search Engine Error " + BundleUtil.getStringFromBundle("dataverse.results.solrIsDown"), ex);
+        }
+
+        return queryResponse.getResults();
+    }
+
+    
     public String getCapitalizedName(String name) {
         return Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }

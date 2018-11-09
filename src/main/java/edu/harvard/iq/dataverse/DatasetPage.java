@@ -114,6 +114,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.commons.io.IOUtils;
 
 import org.primefaces.component.tabview.TabView;
@@ -486,25 +488,27 @@ public class DatasetPage implements java.io.Serializable {
         this.fileMetadatasSearch = fileMetadatasSearch;
     }
     
-    public void updateFileSearch(){  
-        SolrQueryResponse solrQueryResponse;
+    public void updateFileSearch() {
+        SolrDocumentList solrDocs;
+        if (this.fileLabelSearchTerm == null || this.fileLabelSearchTerm.length() == 0) {
+            this.fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
+            return;
+        }
         List<String> filterQueries = new ArrayList<>();
+        Set<Long> searchResultsIdSet = new HashSet<Long>();
         try {
-            SortBy sb = SearchUtil.getSortBy("name", SortBy.ASCENDING);
             filterQueries.add(SearchFields.PARENT_ID + ":" + dataset.getId());
-            solrQueryResponse = searchService.search(
+            // The normal search
+            solrDocs = searchService.simpleSearch(
                     dvRequestService.getDataverseRequest(),
-                    null,
+                    SearchFields.ENTITY_ID,
                     this.fileLabelSearchTerm,
                     filterQueries,
-                    sb.getField(),
-                    sb.getOrder(),
                     0,
-                    false,
-                    1000000
-            );
-            for(SolrSearchResult result: solrQueryResponse.getSolrSearchResults()) {
-                logger.info("Found: " + result.getEntityId());
+                    1000000);
+
+            for (SolrDocument solrDocument : solrDocs) {
+                searchResultsIdSet.add((Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID));
             }
         } catch (SearchException ex) {
             Throwable cause = ex;
@@ -514,21 +518,21 @@ public class DatasetPage implements java.io.Serializable {
                 cause = cause.getCause();
                 sb.append(cause.getClass().getCanonicalName() + " ");
                 sb.append(cause + " ");
-                // if you search for a colon you see RemoteSolrException: org.apache.solr.search.SyntaxError: Cannot parse ':'
+                // if you search for a colon you see RemoteSolrException:
+                // org.apache.solr.search.SyntaxError: Cannot parse ':'
             }
             String message = "Exception running search for [" + this.fileLabelSearchTerm + "] with filterQueries " + filterQueries + " and paginationStart [" + 0 + "]: " + sb.toString();
             logger.info(message);
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
-        
-        logger.info("updating file search list");
-        if (readOnly) {
-            this.fileMetadatasSearch = selectFileMetadatasForDisplay(this.fileLabelSearchTerm); 
-        } else {
-            this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), this.fileLabelSearchTerm, "", "");
+        List<FileMetadata> retList = new ArrayList<>();
+
+        for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
+            if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getId())) {
+                retList.add(fileMetadata);
+            }
         }
+
+        this.fileMetadatasSearch = retList;
     }
     
         private Long numberOfFilesToShow = (long) 25;
@@ -543,28 +547,6 @@ public class DatasetPage implements java.io.Serializable {
     
     public void showAll(){
         setNumberOfFilesToShow(new Long(fileMetadatasSearch.size()));
-    }
-    
-    private List<FileMetadata> selectFileMetadatasForDisplay(String searchTerm) {
-        Set<Long> searchResultsIdSet = null; 
-        
-        if (searchTerm != null && !searchTerm.equals("")) {
-            List<Integer> searchResultsIdList = datafileService.findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), searchTerm, "", "");
-            searchResultsIdSet = new HashSet<>();
-            for (Integer id : searchResultsIdList) {
-                searchResultsIdSet.add(id.longValue());
-            }
-        }
-        
-        List<FileMetadata> retList = new ArrayList<>(); 
-        
-        for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
-            if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getId())) {
-                retList.add(fileMetadata);
-            }
-        }
-        
-        return retList;
     }
     
     /*
