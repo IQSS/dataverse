@@ -171,7 +171,7 @@ public class SearchUtil {
             Pattern termPattern = Pattern.compile("[+-]?[\\{\\[][^\\}\\]]*[\\}\\]](\\^\\d+)?|[+-]?\\\"[^\\\"]*\\\"(\\^\\d+)?|(([^\\s\"\\[\\{',\\(\\)\\\\]|[\\\\][\\[\\{\\(\\)\\\\+:'])+([,]?(([^\\s,\\[\\{'\":+\\(\\)\\\\-]|[\\\\][\\[\\{\\(\\)\\\\+:'])|[:][\\{\\[][^\\}\\]]*[\\}\\]]|[:]\\\"[^\\\"]*\\\")+)+)+|([^\\s\"',\\(\\)\\\\]|[\\\\][\\[\\{\\(\\)\\\\+:'])+");
             Matcher regexMatcher = termPattern.matcher(query);
             Pattern specialTokenPattern = Pattern.compile("\\(|\\)|OR|NOT|AND|&&|\\|\\||!|.*[^\\\\][^\\\\][:].*");
-            Pattern forbiddenTokenPattern = Pattern.compile("\\\\|\\/|\\^|~|*|?");
+            Pattern forbiddenTokenPattern = Pattern.compile("\\\\|\\/|\\^|~|\\*|\\?");
             while (regexMatcher.find()) {
 
                 String part = regexMatcher.group();
