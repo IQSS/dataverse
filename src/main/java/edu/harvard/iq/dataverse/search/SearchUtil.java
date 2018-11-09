@@ -168,10 +168,10 @@ public class SearchUtil {
              * a : and a range query OR
              * a : and a quoted string
              */
-            Pattern termPattern = Pattern.compile("[+-]?[\\{\\[][^\\}\\]]*[\\}\\]](\\^\\d+)?|[+-]?\\\"[^\\\"]*\\\"(\\^\\d+)?|(([^\\s\"\\[\\{',\\(\\)\\\\]|[\\\\][\\[\\{\\(\\)\\\\+:'])+([,]?(([^\\s,\\[\\{'\":+\\(\\)\\\\-]|[\\\\][\\[\\{\\(\\)\\\\+:'])|[:][\\{\\[][^\\}\\]]*[\\}\\]]|[:]\\\"[^\\\"]*\\\")+)+)+|([^\\s\"',\\(\\)\\\\]|[\\\\][\\[\\{\\(\\)\\\\+:'])+");
+            Pattern termPattern = Pattern.compile("[+-]?[\\{\\[][^\\}\\]]*[\\}\\]](\\^\\d+)?|[+-]?\\\"[^\\\"]*\\\"(\\^\\d+)?|(([^\\s\"\\[\\{',\\(\\)\\\\]|[\\\\][\\[\\{\\(\\)\\\\+:'])+(,?(([^\\s,\\[\\{'\":+\\(\\)\\\\-]|\\\\[\\[\\{\\(\\)\\\\+:'])|:[\\{\\[][^\\}\\]]*[\\}\\]]|:\\\"[^\\\"]*\\\"|:\\s*[\\(][^:]+[\\)])+)+)+|([^\\s\"',\\(\\)\\\\]|\\\\[\\[\\{\\(\\)\\\\+:'])+");
             Matcher regexMatcher = termPattern.matcher(query);
             Pattern specialTokenPattern = Pattern.compile("\\(|\\)|OR|NOT|AND|&&|\\|\\||!|.*[^\\\\][^\\\\][:].*");
-            Pattern forbiddenTokenPattern = Pattern.compile("\\\\|\\/|\\^|~|\\*|\\?");
+            Pattern forbiddenTokenPattern = Pattern.compile("\\\\|\\/|\\^|~|\\*|\\?|:\\s*\\(.*:.*\\)");
             while (regexMatcher.find()) {
 
                 String part = regexMatcher.group();
