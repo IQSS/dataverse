@@ -193,9 +193,9 @@ Access Requests and Processing
 
 All of the following endpoints take the persistent identifier as a parameter in place of 'id'.
 
-Request Access
---------------
 
+Request Access:
+~~~~~~~~~~~~~~~
 ``/api/access/datafile/$id/requestAccess``
 
-This method requests access to the datafile whose id is passed.  
+This method requests access to the datafile whose id is passed on the behalf of an authenticated user whose key is passed.  
