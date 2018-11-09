@@ -156,8 +156,8 @@ public class SearchServiceBean {
 
         SolrQuery solrQuery = new SolrQuery();
         query = SearchUtil.sanitizeQuery(query);
+        String permissionFilterGroups = getPermissionFilterGroups(dataverseRequest, solrQuery, onlyDatatRelatedToMe);
         if(settingsService.isTrueForKey(SettingsServiceBean.Key.SolrFullTextIndexing, false)) {
-            String permissionFilterGroups = getPermissionFilterGroups(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
             query = SearchUtil.expandQuery(query, permissionFilterGroups!=null);
             logger.info("Sanitized, Expanded Query: " + query);
             if(permissionFilterGroups!=null) {
@@ -234,7 +234,6 @@ public class SearchServiceBean {
         // -----------------------------------
         // PERMISSION FILTER QUERY
         // -----------------------------------
-        String permissionFilterGroups = this.getPermissionFilterGroups(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
         if(permissionFilterGroups!=null) {
             solrQuery.addFilterQuery("{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" +permissionFilterGroups);
         }
@@ -776,7 +775,7 @@ public class SearchServiceBean {
      *
      * @return
      */
-    private String getPermissionFilterGroups(DataverseRequest dataverseRequest, SolrQuery solrQuery, Dataverse dataverse, boolean onlyDatatRelatedToMe) {
+    private String getPermissionFilterGroups(DataverseRequest dataverseRequest, SolrQuery solrQuery, boolean onlyDatatRelatedToMe) {
 
         User user = dataverseRequest.getUser();
         if (user == null) {
