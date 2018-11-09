@@ -171,13 +171,13 @@ public class SearchUtil {
 
                 if (!(part.equals("OR") || part.equals("AND") || part.equals("NOT") || part.equals("&&") || part.equals("||") || part.equals("!") || part.matches(".*[^\\\\][^\\\\][:].*"))) {
                     if (part.startsWith("+")) {
-                        ftQuery.append(expandPart("(" + part + " AND +" + SearchFields.FULL_TEXT + ":" + part.substring(1) + ")", joinNeeded));
+                        ftQuery.append(expandPart("(" + part + " OR +" + SearchFields.FULL_TEXT + ":" + part.substring(1) + ")", joinNeeded));
                     } else if (part.startsWith("-")) {
-                        ftQuery.append(expandPart("(" + part + " AND -" + SearchFields.FULL_TEXT + ":" + part.substring(1) + ")", joinNeeded));
+                        ftQuery.append(expandPart("(" + part + " OR -" + SearchFields.FULL_TEXT + ":" + part.substring(1) + ")", joinNeeded));
                     } else if (part.startsWith("-")) {
-                        ftQuery.append(expandPart("(" + part + " AND !" + SearchFields.FULL_TEXT + ":" + part.substring(1) + ")", joinNeeded));
+                        ftQuery.append(expandPart("(" + part + " OR !" + SearchFields.FULL_TEXT + ":" + part.substring(1) + ")", joinNeeded));
                     } else {
-                        ftQuery.append(expandPart("(" + part + " AND " + SearchFields.FULL_TEXT + ":" + part + ")", joinNeeded));
+                        ftQuery.append(expandPart("(" + part + " OR " + SearchFields.FULL_TEXT + ":" + part + ")", joinNeeded));
                     }
                 } else {
                     if (part.contains(SearchFields.FULL_TEXT + ":")) {
