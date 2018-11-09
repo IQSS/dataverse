@@ -27,19 +27,14 @@ import java.io.InputStream;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.util.Base64;
 import org.apache.commons.io.IOUtils;
-import static com.jayway.restassured.RestAssured.given;
-import static com.jayway.restassured.path.xml.XmlPath.from;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
+import static com.jayway.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -247,7 +242,12 @@ public class UtilIT {
         return response;
     }
 
+    //This method creates a dataverse off root, for more nesting use createSubDataverse
     static Response createDataverse(String alias, String category, String apiToken) {
+        return createSubDataverse(alias, category, apiToken, ":root");
+    }
+    
+    static Response createSubDataverse(String alias, String category, String apiToken, String parentDV) {
         JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
         contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", getEmailFromUserName(getRandomIdentifier())));
         JsonArrayBuilder subjectArrayBuilder = Json.createArrayBuilder();
@@ -262,7 +262,7 @@ public class UtilIT {
                 .build();
         Response createDataverseResponse = given()
                 .body(dvData.toString()).contentType(ContentType.JSON)
-                .when().post("/api/dataverses/:root?key=" + apiToken);
+                .when().post("/api/dataverses/" + parentDV + "?key=" + apiToken);
         return createDataverseResponse;
     }
 
@@ -1374,14 +1374,18 @@ public class UtilIT {
                 //                .get("/api/datasets/:persistentId/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
                 .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
     }
-
-    static Response search(String query, String apiToken) {
+    
+    static Response search(String query, String apiToken, String parameterString) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
-        return requestSpecification.get("/api/search?q=" + query);
+        return requestSpecification.get("/api/search?q=" + query + parameterString);
+    }
+
+    static Response search(String query, String apiToken) {
+        return search(query, apiToken, "");
     }
 
     static Response searchAndShowFacets(String query, String apiToken) {
@@ -1516,8 +1520,9 @@ public class UtilIT {
     }
 
     /**
-     * @todo figure out how to get an InputStream from REST Assured instead.
+     * Deprecated as the apiToken is not used by the call.
      */
+    @Deprecated
     static InputStream getInputStreamFromUnirest(String url, String apiToken) {
         GetRequest unirestOut = Unirest.get(url);
         try {
@@ -1687,7 +1692,6 @@ public class UtilIT {
             optionalYyyyMm = "/" + yyyymm;
         }
         RequestSpecification requestSpecification = given();
-        requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/dataverses/toMonth" + optionalYyyyMm);
     }
 
@@ -1697,7 +1701,6 @@ public class UtilIT {
             optionalYyyyMm = "/" + yyyymm;
         }
         RequestSpecification requestSpecification = given();
-        requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/datasets/toMonth" + optionalYyyyMm);
     }
 
@@ -1707,7 +1710,6 @@ public class UtilIT {
             optionalYyyyMm = "/" + yyyymm;
         }
         RequestSpecification requestSpecification = given();
-        requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/files/toMonth" + optionalYyyyMm);
     }
 
@@ -1717,25 +1719,46 @@ public class UtilIT {
             optionalYyyyMm = "/" + yyyymm;
         }
         RequestSpecification requestSpecification = given();
-        requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/downloads/toMonth" + optionalYyyyMm);
     }
-
-    static Response metricsDataverseByCategory() {
+    
+    static Response metricsDataversesPastDays(String days) {
         RequestSpecification requestSpecification = given();
-        requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/dataverses/pastDays/" + days);
+    }
+    
+    static Response metricsDatasetsPastDays(String days) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/datasets/pastDays/" + days);
+    }
+        
+    static Response metricsFilesPastDays(String days) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/files/pastDays/" + days);
+    }
+            
+    static Response metricsDownloadsPastDays(String days) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/downloads/pastDays/" + days);
+    }
+
+    static Response metricsDataversesByCategory() {
+        RequestSpecification requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/dataverses/byCategory");
+    }
+    
+    static Response metricsDataversesBySubject() {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/dataverses/bySubject");
     }
 
     static Response metricsDatasetsBySubject() {
         RequestSpecification requestSpecification = given();
-        requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/datasets/bySubject");
     }
     
     static Response clearMetricCache() {
         RequestSpecification requestSpecification = given();
-        requestSpecification = given();
         return requestSpecification.delete("/api/admin/clearMetricsCache");
     }
 

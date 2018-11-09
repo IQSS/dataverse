@@ -52,6 +52,19 @@ public class MetricsUtil {
         }
         return jab;
     }
+    
+    public static JsonArrayBuilder dataversesBySubjectToJson(List<Object[]> listOfObjectArrays){
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        for (Object[] objectArray : listOfObjectArrays) {
+            JsonObjectBuilder job = Json.createObjectBuilder();
+            String subject = (String) objectArray[0];
+            long count = (long) objectArray[1];
+            job.add(SUBJECT, subject);
+            job.add(COUNT, count);
+            jab.add(job);
+        }
+        return jab;
+    }
 
     public static JsonArrayBuilder datasetsBySubjectToJson(List<Object[]> listOfObjectArrays) {
         JsonArrayBuilder jab = Json.createArrayBuilder();

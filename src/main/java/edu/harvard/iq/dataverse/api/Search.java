@@ -18,10 +18,12 @@ import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
@@ -57,7 +59,7 @@ public class Search extends AbstractApiBean {
     public Response search(
             @QueryParam("q") String query,
             @QueryParam("type") final List<String> types,
-            @QueryParam("subtree") String subtreeRequested,
+            @QueryParam("subtree") final List<String> subtrees,
             @QueryParam("sort") String sortField,
             @QueryParam("order") String sortOrder,
             @QueryParam("per_page") final int numResultsPerPageRequested,
@@ -68,6 +70,7 @@ public class Search extends AbstractApiBean {
             @QueryParam("show_entity_ids") boolean showEntityIds,
             @QueryParam("show_api_urls") boolean showApiUrls,
             @QueryParam("show_my_data") boolean showMyData,
+            @QueryParam("query_entities") boolean queryEntities,
             @Context HttpServletResponse response
     ) {
 
@@ -83,42 +86,49 @@ public class Search extends AbstractApiBean {
             // sanity checking on user-supplied arguments
             SortBy sortBy;
             int numResultsPerPage;
-            Dataverse subtree;
+            List<Dataverse> dataverseSubtrees = new ArrayList<>();
+
             try {
                 if (!types.isEmpty()) {
                     filterQueries.add(getFilterQueryFromTypes(types));
                 }
                 sortBy = SearchUtil.getSortBy(sortField, sortOrder);
                 numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
-                subtree = getSubtree(subtreeRequested);
-                if (!subtree.equals(dataverseService.findRootDataverse())) {
-                    String dataversePath = dataverseService.determineDataversePath(subtree);
-                    String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
-                    /**
-                     * @todo Should filterDownToSubtree logic be centralized in
-                     * SearchServiceBean?
-                     */
-                    filterQueries.add(filterDownToSubtree);
+                
+                 // we have to add "" (root) otherwise there is no permissions check
+                if(subtrees.isEmpty()) {
+                    dataverseSubtrees.add(getSubtree(""));
                 }
+                else {
+                    for(String subtree : subtrees) {
+                        dataverseSubtrees.add(getSubtree(subtree));
+                    }
+                }
+                filterQueries.add(getFilterQueryFromSubtrees(dataverseSubtrees));
+                
+                if(filterQueries.isEmpty()) { //Extra sanity check just in case someone else touches this
+                    throw new IOException("Filter is empty, which should never happen, as this allows unfettered searching of our index");
+                }
+                
             } catch (Exception ex) {
                 return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
             }
 
             // users can't change these (yet anyway)
             boolean dataRelatedToMe = showMyData; //getDataRelatedToMe();
-
+            
             SolrQueryResponse solrQueryResponse;
             try {
-                solrQueryResponse = searchService.search(
-                        createDataverseRequest(user),
-                        subtree,
+                solrQueryResponse = searchService.search(createDataverseRequest(user),
+                        dataverseSubtrees,
                         query,
                         filterQueries,
                         sortBy.getField(),
                         sortBy.getOrder(),
                         paginationStart,
                         dataRelatedToMe,
-                        numResultsPerPage
+                        numResultsPerPage,
+                        queryEntities
                 );
             } catch (SearchException ex) {
                 Throwable cause = ex;
@@ -245,7 +255,7 @@ public class Search extends AbstractApiBean {
         /**
          * @todo should maxLimit be configurable?
          */
-        int maxLimit = 1000;
+        int maxLimit = 1000; 
         if (numResultsPerPage == 0) {
             /**
              * @todo should defaultLimit be configurable?
@@ -294,6 +304,37 @@ public class Search extends AbstractApiBean {
         }
         filterQuery = SearchFields.TYPE + ":(" + StringUtils.join(typeRequested, " OR ") + ")";
         return filterQuery;
+    }
+    
+    //Only called when there is content
+    /**
+    * @todo (old) Should filterDownToSubtree logic be centralized in
+    * SearchServiceBean?
+    */
+    private String getFilterQueryFromSubtrees(List<Dataverse> subtrees) throws Exception {
+        String subtreesFilter = "";
+        
+        for(Dataverse dv : subtrees) {
+            if (!dv.equals(dataverseService.findRootDataverse())) {
+                String dataversePath = dataverseService.determineDataversePath(dv);
+
+                subtreesFilter += "\"" + dataversePath + "\" OR ";
+
+            }
+        }
+        try{
+            subtreesFilter = subtreesFilter.substring(0, subtreesFilter.lastIndexOf("OR"));
+        } catch (StringIndexOutOfBoundsException ex) {
+            //This case should only happen the root subtree is searched 
+            //and there are no ORs in the string
+            subtreesFilter = "";
+        }
+        
+        if(!subtreesFilter.equals("")) {
+            subtreesFilter =  SearchFields.SUBTREE + ":(" + subtreesFilter + ")";
+        }
+        
+        return subtreesFilter;
     }
 
     private Dataverse getSubtree(String alias) throws Exception {
