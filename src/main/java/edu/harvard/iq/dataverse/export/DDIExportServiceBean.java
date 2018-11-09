@@ -471,27 +471,9 @@ public class DDIExportServiceBean {
         try {
             DataConverter dc = new DataConverter();
             File tabFile = dc.downloadFromStorageIO(df.getStorageIO());
-            for (int i = 0; i < vars.size(); i++) {
 
-                Collection<VariableCategory> cats = vars.get(i).getCategories();
-                if (cats.size() > 0) {
+            ingestService.produceFrequencies(tabFile, vars );
 
-                    String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(tabFile), i, df.getDataTable().getCaseQuantity().intValue());
-                    if (variableVector != null) {
-                        Hashtable<String, Double> freq = ingestService.calculateFrequency(variableVector);
-
-                        for (VariableCategory cat : cats) {
-                            String catValue = cat.getValue();
-                            Double numberFreq = freq.get(catValue);
-                            if (numberFreq != null) {
-                                cat.setFrequency(numberFreq);
-                            } else {
-                                cat.setFrequency(0D);
-                            }
-                        }
-                    }
-                }
-            }
         } catch (Exception ex)
         {
             logger.warning(ex.getMessage());

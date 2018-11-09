@@ -630,13 +630,19 @@ public class IngestServiceBean {
 
     public static void produceFrequencyStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
 
+        List<DataVariable> vars = dataFile.getDataTable().getDataVariables();
 
+        produceFrequencies(generatedTabularFile, vars);
+    }
 
-        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
+    public static void produceFrequencies( File generatedTabularFile, List<DataVariable> vars) throws IOException {
 
-            Collection<VariableCategory> cats = dataFile.getDataTable().getDataVariables().get(i).getCategories();
+        for (int i = 0; i < vars.size(); i++) {
+
+            Collection<VariableCategory> cats = vars.get(i).getCategories();
+            int caseQuantity = vars.get(i).getDataTable().getCaseQuantity().intValue();
             if (cats.size() > 0) {
-                String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
+                String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, caseQuantity);
                 if (variableVector != null) {
                     Hashtable<String, Double> freq = calculateFrequency(variableVector);
                     for (VariableCategory cat : cats) {
@@ -649,11 +655,10 @@ public class IngestServiceBean {
                         }
                     }
                 } else {
-                    logger.fine("variableVector is null for variable " + dataFile.getDataTable().getDataVariables().get(i).getName());
+                    logger.fine("variableVector is null for variable " + vars.get(i).getName());
                 }
             }
         }
-
     }
 
     public static Hashtable<String, Double> calculateFrequency( String[] variableVector) {
