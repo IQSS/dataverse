@@ -462,7 +462,9 @@ Once you have the location of your custom homepage HTML file, run this curl comm
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
 
-Note that the ``custom-homepage.html`` file provided has a "Browse Data" button that assumes that your root dataverse still has an alias of "root". While you were branding your root dataverse, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the ``custom-homepage.html`` file as needed.
+If you prefer to start with less of a blank slate, you can download the :download:`custom-homepage-dynamic.html </_static/installation/files/var/www/dataverse/branding/custom-homepage-dynamic.html>` template which was built for the Harvard Dataverse, and includes branding messaging, action buttons, search input, subject links, and recent dataset links. This page was built to utilize the :doc:`/api/metrics` to deliver dynamic content to the page via javascript.
+
+Note that the ``custom-homepage.html`` and ``custom-homepage-dynamic.html`` files provided have multiple elements that assume your root dataverse still has an alias of "root". While you were branding your root dataverse, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the custom homepage code as needed.
 
 For more background on what this curl command above is doing, see the "Database Settings" section below. If you decide you'd like to remove this setting, use the following curl command:
 
@@ -1485,7 +1487,7 @@ Enable the collection of provenance metadata on Dataverse via the provenance pop
 :MetricsCacheTimeoutMinutes
 +++++++++++++++++++++++++++
 
-Sets how long a cached metrics result is used before re-running the query for a request. Note this only effects queries on the current month, previous months queries are cached indefinitely. The default timeout is 7 days (10080 minutes).
+Sets how long a cached metrics result is used before re-running the query for a request. This timeout is only applied to some of the metrics that query the current state of the system, previous months queries are cached indefinitely. See :doc:`/api/metrics` for more info. The default timeout value is 7 days (10080 minutes). 
 
 ``curl -X PUT -d 10080 http://localhost:8080/api/admin/settings/:MetricsCacheTimeoutMinutes``
 
