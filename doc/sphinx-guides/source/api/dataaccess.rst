@@ -218,10 +218,21 @@ A curl example using an ``id``::
 Reject File Access:
 ~~~~~~~~~~~~~~~~~~~ 
 
-``/api/access/datafile/{id}/rejecttAccess/{identifier}``
+``/api/access/datafile/{id}/rejectAccess/{identifier}``
 
 This method rejects the access request to the datafile whose id is passed on the behalf of an authenticated user whose identifier is passed. The key of a user who can manage permissions of the datafile is required to use this method.
 
 A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X GET -d true http://$SERVER/api/access/datafile/{id}/rejectAccess/{identifier}
+    
+List File Access Requests:
+~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+``/api/access/datafile/{id}/listRequests``
+
+This method reurns a list of Authenticated Users who have requested access to the datafile whose id is passed. The key of a user who can manage permissions of the datafile is required to use this method.
+
+A curl example using an ``id``::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET -d true http://$SERVER/api/access/datafile/{id}/listRequests
