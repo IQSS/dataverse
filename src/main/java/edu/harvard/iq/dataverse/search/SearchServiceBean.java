@@ -816,7 +816,11 @@ public class SearchServiceBean {
         } catch (RemoteSolrException ex) {
             String messageFromSolr = ex.getLocalizedMessage();
             if (messageFromSolr.contains("org.apache.solr.search.SyntaxError")) {
+                if(settingsService.isTrueForKey(SettingsServiceBean.Key.SolrFullTextIndexing, false)) {
+                    throw new SearchException(BundleUtil.getStringFromBundle("dataverse.search.fullText.error"));
+                } else {
                 throw new SearchException(BundleUtil.getStringFromBundle("dataverse.search.syntax.error"));
+                }
             }
             throw new SearchException(messageFromSolr + " " + BundleUtil.getStringFromBundle("dataverse.results.solrIsDown"));
         } catch (SolrServerException | IOException ex) {
