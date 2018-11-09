@@ -497,7 +497,7 @@ public class DatasetPage implements java.io.Serializable {
         List<String> filterQueries = new ArrayList<>();
         Set<Long> searchResultsIdSet = new HashSet<Long>();
         try {
-            filterQueries.add(SearchFields.PARENT_ID + ":" + dataset.getId());
+            filterQueries.add(SearchFields.PARENT_ID + ":" + dataset.getId().toString());
             // The normal search
             solrDocs = searchService.simpleSearch(
                     dvRequestService.getDataverseRequest(),
@@ -508,6 +508,7 @@ public class DatasetPage implements java.io.Serializable {
                     1000000);
 
             for (SolrDocument solrDocument : solrDocs) {
+                logger.info("Found: " + (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID));
                 searchResultsIdSet.add((Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID));
             }
         } catch (SearchException ex) {
@@ -527,7 +528,7 @@ public class DatasetPage implements java.io.Serializable {
         List<FileMetadata> retList = new ArrayList<>();
 
         for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
-            if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getId())) {
+            if (searchResultsIdSet.contains(fileMetadata.getId())) {
                 retList.add(fileMetadata);
             }
         }
