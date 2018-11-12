@@ -84,7 +84,7 @@
                                         </ui:fragment>
                                         <ui:fragment>
                                             <ui:repeat value="#{fileToReplace.fileMetadata.dataFile.tags}" var="tag">
-                                                <h:outputText value="#{bundle[tag.typeLabel]}" styleClass="label label-info"/>
+                                                <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
                                             </ui:repeat>
                                         </ui:fragment>
                                     </div>
