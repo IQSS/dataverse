@@ -227,7 +227,7 @@ public abstract class StorageIO<T extends DvObject> {
 
     // getters:
     
-    public Channel getChannel() {
+    public Channel getChannel() throws IOException {
         return channel;
     }
 
@@ -276,7 +276,7 @@ public abstract class StorageIO<T extends DvObject> {
         return size;
     }
 
-    public InputStream getInputStream() {
+    public InputStream getInputStream() throws IOException {
         return in;
     }
     

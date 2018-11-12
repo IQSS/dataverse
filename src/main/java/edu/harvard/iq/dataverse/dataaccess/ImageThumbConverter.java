@@ -271,12 +271,12 @@ public class ImageThumbConverter {
 
         try {
             storageIO.open();
+            return generateImageThumbnailFromInputStream(storageIO, size, storageIO.getInputStream());
         } catch (IOException ioex) {
             logger.warning("caught IOException trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier() + ioex);
             return false;
         }
-
-        return generateImageThumbnailFromInputStream(storageIO, size, storageIO.getInputStream());
+        
     }
 
     /*
