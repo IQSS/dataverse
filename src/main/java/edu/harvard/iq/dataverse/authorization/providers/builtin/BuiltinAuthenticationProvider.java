@@ -23,8 +23,8 @@ import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 public class BuiltinAuthenticationProvider implements CredentialsAuthenticationProvider {
     
     public static final String PROVIDER_ID = "builtin";
-    private static String KEY_USERNAME_OR_EMAIL;
-    private static String KEY_PASSWORD;
+    private static final String KEY_USERNAME_OR_EMAIL = "login.builtin.credential.usernameOrEmail";
+    private static final String KEY_PASSWORD = "login.builtin.credential.password";
     private static List<Credential> CREDENTIALS_LIST;
       
     final BuiltinUserServiceBean bean;
@@ -35,8 +35,6 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
         this.bean = aBean;
         this.authBean = auBean;
         this.passwordValidatorService = passwordValidatorService;
-        KEY_USERNAME_OR_EMAIL = BundleUtil.getStringFromBundle("login.builtin.credential.usernameOrEmail");
-        KEY_PASSWORD = BundleUtil.getStringFromBundle("login.builtin.credential.password");
         CREDENTIALS_LIST = Arrays.asList(new Credential(KEY_USERNAME_OR_EMAIL), new Credential(KEY_PASSWORD, true));
     }
 
@@ -100,6 +98,9 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
         
         if(u == null) { //If can't find by username in builtin, get the auth user and then the builtin
             authUser = authBean.getAuthenticatedUserByEmail(authReq.getCredential(KEY_USERNAME_OR_EMAIL));
+            if (authUser == null) { //if can't find by email return bad username, etc.
+                return AuthenticationResponse.makeFail("Bad username, email address, or password");
+            }
             u = bean.findByUserName(authUser.getUserIdentifier());
         }
         
@@ -123,7 +124,7 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
 //        } else {
 //            return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
         }
-        final List<String> errors = passwordValidatorService.validate(authReq.getCredential("Password"));
+        final List<String> errors = passwordValidatorService.validate(authReq.getCredential(KEY_PASSWORD));
         if (!errors.isEmpty()) {
             try {
                 String passwordResetUrl = bean.requestPasswordComplianceLink(u);

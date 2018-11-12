@@ -4,49 +4,75 @@ Metrics API
 .. contents:: |toctitle|
     :local:
 
-The Metrics API
-
 .. note:: |CORS| The Metrics API can be used from scripts running in web browsers, as it allows cross-origin resource sharing (CORS).
+
+.. note:: For all metrics `besides` Past Days Count (``/pastDays/$days``), Database setting ``MetricsCacheTimeoutMinutes`` defines how long the cached value will be returned by subsequent queries.
 
 .. _CORS: https://www.w3.org/TR/cors/
 
-dataverses/toMonth
-----------------------
+Total
+-----
 
-Returns a count up to the current month or append a date in YYYY-MM format (i.e. ``/2018-01``) for a specific month.
+Returns a count of various objects in dataverse over all-time::
 
-``curl https://demo.dataverse.org/api/info/metrics/dataverses/toMonth``
+    GET https://$SERVER/api/info/metrics/$type
 
-datasets/toMonth
-------------------------
+``$type`` can be set to ``dataverses``, ``datasets``, ``files`` or ``downloads``.
 
-Returns a count up to the current month or append a date in YYYY-MM format (i.e. ``/2018-01``) for a specific month.
+Example: ``curl https://demo.dataverse.org/api/info/metrics/downloads``
 
-``curl https://demo.dataverse.org/api/info/metrics/datasets/toMonth``
+To-Month
+--------
 
-files/toMonth
-------------------------
+Returns a count of various objects in dataverse up to a specified month ``$YYYY-DD`` in YYYY-MM format (i.e. ``2018-01``)::
 
-Returns a count up to the current month or append a date in YYYY-MM format (i.e. ``/2018-01``) for a specific month.
+    GET https://$SERVER/api/info/metrics/$type/toMonth/$YYYY-DD
 
-``curl https://demo.dataverse.org/api/info/metrics/files/toMonth``
+``$type`` can be set to ``dataverses``, ``datasets``, ``files`` or ``downloads``.
 
-downloads/toMonth
-------------------------
+Example: ``curl https://demo.dataverse.org/api/info/metrics/dataverses/toMonth/2018-01``
 
-Returns a count up to the current month or append a date in YYYY-MM format (i.e. ``/2018-01``) for a specific month.
 
-``curl https://demo.dataverse.org/api/info/metrics/downloads/toMonth``
+Past Days
+---------
 
-dataverses/byCategory
-------------------------
+Returns a count of various objects in dataverse for the past ``$days`` (i.e. ``30``):: 
 
-``curl https://demo.dataverse.org/api/info/metrics/dataverses/byCategory``
+    GET https://$SERVER/api/info/metrics/$type/pastDays/$days
 
-datasets/bySubject
-------------------------
+``$type`` can be set to ``dataverses``, ``datasets``, ``files`` or ``downloads``.
 
-``curl https://demo.dataverse.org/api/info/metrics/datasets/bySubject``
+Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/pastDays/30``
+
+
+Dataverse Specific Commands
+---------------------------
+
+By Subject
+~~~~~~~~~~~~~~~
+
+Returns the number of dataverses by each subject::
+
+    GET https://$SERVER/api/info/metrics/dataverses/bySubject
+
+
+By Category
+~~~~~~~~~~~~~~~~~~~~~~
+
+Returns the number of dataverses by each category::
+
+    GET https://$SERVER/api/info/metrics/dataverses/byCategory
+
+
+Dataset Specific Commands
+-------------------------
+
+By Subject
+~~~~~~~~~~~~~~~
+
+Returns the number of datasets by each subject::
+
+    GET https://$SERVER/api/info/metrics/datasets/bySubject
 
 .. |CORS| raw:: html
 

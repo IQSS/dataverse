@@ -245,9 +245,15 @@ public class FileUtil implements java.io.Serializable  {
                 String typeClass = fileType.split("/")[0];
                 return Character.toUpperCase(typeClass.charAt(0)) + typeClass.substring(1);
             }
+        } else {
+            try {
+                return BundleUtil.getStringFromPropertyFile("application/octet-stream","MimeTypeFacets"  );
+            } catch (MissingResourceException ex) {
+                logger.warning("Could not find \"" + fileType + "\" in bundle file: ");
+                logger.log(Level.CONFIG, ex.getMessage(), ex);
+                return null;
+            }
         }
-        
-        return BundleUtil.getStringFromPropertyFile("application/octet-stream","MimeTypeFacets"  );
     }
     
     public static String getUserFriendlyOriginalType(DataFile dataFile) {

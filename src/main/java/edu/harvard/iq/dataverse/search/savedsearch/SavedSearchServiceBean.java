@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -205,9 +206,11 @@ public class SavedSearchServiceBean {
         int paginationStart = 0;
         boolean dataRelatedToMe = false;
         int numResultsPerPage = Integer.MAX_VALUE;
+        List<Dataverse> dataverses = new ArrayList<>();
+        dataverses.add(savedSearch.getDefinitionPoint());
         SolrQueryResponse solrQueryResponse = searchService.search(
                 new DataverseRequest(savedSearch.getCreator(), getHttpServletRequest()),
-                savedSearch.getDefinitionPoint(),
+                dataverses,
                 savedSearch.getQuery(),
                 savedSearch.getFilterQueriesAsStrings(),
                 sortBy.getField(),

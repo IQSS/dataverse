@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
@@ -2326,7 +2327,22 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         return datafileService.isThumbnailAvailable(fileMetadata.getDataFile());
     }
+    
 
+    
+    private Boolean lockedFromEditsVar;
+    
+    public boolean isLockedFromEdits() {
+        if(null == lockedFromEditsVar ) {
+            try {
+                permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest()));
+                lockedFromEditsVar = false;
+            } catch (IllegalCommandException ex) {
+                lockedFromEditsVar = true;
+            }
+        }
+        return lockedFromEditsVar;
+    }
     
     // Methods for edit functions that are performed on one file at a time, 
     // in popups that block the rest of the page:
