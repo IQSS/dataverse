@@ -226,6 +226,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return super.getInputStream();
     }
     
+    @Override
     public Channel getChannel() throws IOException {
         if(super.getChannel()==null) {
             getInputStream();
