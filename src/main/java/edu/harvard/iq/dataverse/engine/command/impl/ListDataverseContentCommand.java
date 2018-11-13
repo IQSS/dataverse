@@ -35,7 +35,7 @@ public class ListDataverseContentCommand extends AbstractCommand<List<DvObject>>
         if (getRequest().getUser().isSuperuser()) {
             return ctxt.dvObjects().findByOwnerId(dvToList.getId());
         } else {
-            return ctxt.permissions().whichChildrenHasPermissionsFor(getRequest(), dvToList, EnumSet.of(Permission.ViewUnpublishedDataverse, Permission.ViewUnpublishedDataset));
+            return ctxt.permissions().whichChildrenHasPermissionsForOrReleased(getRequest(), dvToList, EnumSet.of(Permission.ViewUnpublishedDataverse, Permission.ViewUnpublishedDataset));
         }
     }
 

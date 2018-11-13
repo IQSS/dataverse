@@ -42,8 +42,8 @@ import javax.persistence.Query;
 /**
  * Your one-stop-shop for deciding which user can do what action on which
  * objects (TM). Note that this bean accesses the permissions/user assignment on
- * a read-only basis. Changing the permissions a user has is done via roles and
- * groups, over at {@link DataverseRoleServiceBean}.
+ a read-only basis. Changing the permissions a user has is done via roles and
+ ras, over at {@link DataverseRoleServiceBean}.
  *
  * @author michael
  */
@@ -89,7 +89,7 @@ public class PermissionServiceBean {
     DataverseRequestServiceBean dvRequestService;
 
     /**
-     * A request-level permission query (e.g includes IP groups).
+     * A request-level permission query (e.g includes IP ras).
      */
     public class RequestPermissionQuery {
 
@@ -226,9 +226,10 @@ public class PermissionServiceBean {
      * @param req The request whose permissions are queried
      * @param dvo The objects whose children we list
      * @param required (sub)set of permissions {@code req} has on the objects in the returned list
+     * @param includeReleased include released dataverses and datasets without checking permissions
      * @return list of {@code dvo} children over which {@code req} has at least {@code required} permissions.
      */
-    public List<DvObject> whichChildrenHasPermissionsFor(DataverseRequest req, DvObjectContainer dvo, Set<Permission> required) {
+    public List<DvObject> whichChildrenHasPermissionsFor(DataverseRequest req, DvObjectContainer dvo, Set<Permission> required, boolean includeReleased) {
         List<DvObject> children = dvObjectServiceBean.findByOwnerId(dvo.getId());
         User user = req.getUser();
         
@@ -245,8 +246,9 @@ public class PermissionServiceBean {
               
         // Actually look at permissions
         Set<DvObject> parents = getPermissionAncestors(dvo);
-        Set<? extends RoleAssignee> groups = groupService.groupsFor(req);
-        List<RoleAssignment> parentsAsignments = roleService.directRoleAssignments(groups, parents);
+        Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(req));
+        ras.add(user);
+        List<RoleAssignment> parentsAsignments = roleService.directRoleAssignments(ras, parents);
         
         for (RoleAssignment asmnt : parentsAsignments) {
             required.removeAll(asmnt.getRole().permissions());
@@ -258,7 +260,10 @@ public class PermissionServiceBean {
         
         // Looking at each child at a time now.
         // 1. Map childs to permissions
-        List<RoleAssignment> childrenAssignments = roleService.directRoleAssignments(groups, children);
+        List<RoleAssignment> childrenAssignments = roleService.directRoleAssignments(ras, 
+                includeReleased ? children.stream().filter( child ->
+                (!child.isReleased())).collect( toList()) : children);
+        
         Map<DvObject, Set<Permission>> roleMap = new HashMap<>();
         childrenAssignments.forEach( assignment -> {
             DvObject definitionPoint = assignment.getDefinitionPoint();
@@ -271,10 +276,24 @@ public class PermissionServiceBean {
         
         // 2. Filter by permission map created at (1).
         return children.stream().filter( child -> 
-            (roleMap.containsKey(child)) &&
-            (roleMap.get(child).containsAll(required.stream().filter(perm -> perm.appliesTo(child.getClass())).collect(Collectors.toSet())))
+                ((includeReleased && child.isReleased()) 
+                        || ((roleMap.containsKey(child)) &&
+                            (roleMap.get(child).containsAll(required.stream().filter(perm -> perm.appliesTo(child.getClass())).collect(Collectors.toSet())))))
         ).collect( toList() );
         
+    }
+    
+    // Convenience versions of the method above:  
+    // Same as above - but defaults to relying on permissions only 
+    // (i.e., does not automatically return released dataverses and datasets)
+    public List<DvObject> whichChildrenHasPermissionsFor(DataverseRequest req, DvObjectContainer dvo, Set<Permission> required) {
+        return whichChildrenHasPermissionsFor(req, dvo, required, false);
+    }
+    
+    // A shortcut for calling the method above, with the assumption that all the
+    // released dataverses and datasets should be included: 
+    public List<DvObject> whichChildrenHasPermissionsForOrReleased(DataverseRequest req, DvObjectContainer dvo, Set<Permission> required) {
+        return whichChildrenHasPermissionsFor(req, dvo, required, true);
     }
 
     public boolean hasPermissionsFor(DataverseRequest req, DvObject dvo, Set<Permission> required) {
@@ -339,7 +358,7 @@ public class PermissionServiceBean {
 
         Set<Permission> permissions = getInferredPermissions(dvo);
 
-        // Add permissions gained from groups
+        // Add permissions gained from ras
         Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(req, dvo));
         ras.add(req.getUser());
         addGroupPermissionsFor(ras, dvo, permissions);
@@ -353,7 +372,7 @@ public class PermissionServiceBean {
     /**
      * Returns the set of permission a user/group has over a dataverse object.
      * This method takes into consideration group memberships as well, but does
-     * not look into request-level groups.
+ not look into request-level ras.
      *
      * @param ra The role assignee.
      * @param dvo The {@link DvObject} on which the user wants to operate

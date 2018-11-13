@@ -23,7 +23,6 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import org.ocpsoft.common.util.Strings;
 //import javax.validation.constraints.NotNull;
 
 /**
@@ -34,7 +33,7 @@ import org.ocpsoft.common.util.Strings;
 @Named
 public class DataverseRoleServiceBean implements java.io.Serializable {
 
-    private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DataverseRoleServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -254,9 +253,13 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      */
     //public List<RoleAssignment> directRoleAssignments(@NotNull Set<? extends RoleAssignee> roleAssignees, @NotNull Collection<DvObject> dvos) {
     public List<RoleAssignment> directRoleAssignments(Set<? extends RoleAssignee> roleAssignees, Collection<DvObject> dvos) {
+        if (dvos.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
         List<String> raIds = roleAssignees.stream().map(roas -> roas.getIdentifier()).collect(Collectors.toList());
         List<Long> dvoIds = dvos.stream().filter(dvo -> !(dvo.getId() == null)).map(dvo -> dvo.getId()).collect(Collectors.toList());
-                
+        
         return em.createNamedQuery("RoleAssignment.listByAssigneeIdentifiers", RoleAssignment.class)
                         .setParameter("assigneeIdentifiers", raIds)
                         .setParameter("definitionPointIds", dvoIds)
