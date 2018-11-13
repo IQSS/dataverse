@@ -444,6 +444,7 @@ The name of your root dataverse is the brand of your installation of Dataverse a
 - Header
 - Footer
 - CSS stylesheet
+- General Terms of Use
 
 Downloadable sample HTML and CSS files are provided below which you can edit as you see fit. It's up to you to create a directory in which to store these files, such as ``/var/www/dataverse`` in the examples below.
 
@@ -516,6 +517,14 @@ Download this sample: :download:`custom-stylesheet.css </_static/installation/fi
 Once you have the location of your custom CSS file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
+
+Custom General Terms of Use
++++++++++++++++++
+
+To customize the "General Terms of Use" information which displays in dataverse Sign Up page, add the property file named termsofuse to the path as specified in ``dataverse.files.directory`` JVM option.
+And follow the details from the section ``:dataverse.lang.directory`` described below.
+
+By default, the Sign Up page will show the “Harvard Dataverse General Terms of Use”.
 
 Going Live: Launching Your Production Deployment
 ------------------------------------------------
@@ -972,15 +981,6 @@ Note that in either case, when using the ``sequentialNumber`` option, datasets a
 Enable/disable the publishing of file based PIDs for the whole installation. This is enabled by default
 
 ``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
-
-:ApplicationTermsOfUse
-++++++++++++++++++++++
-
-Upload an HTML file containing the Terms of Use to be displayed at sign up. Supported HTML tags are listed under the :doc:`/user/dataset-management` section of the User Guide.
-
-``curl -X PUT -d@/tmp/apptou.html http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse``
-
-Unfortunately, in most cases, the text file will probably be too big to upload (>1024 characters) due to a bug. A workaround has been posted to https://github.com/IQSS/dataverse/issues/2669
 
 :ApplicationPrivacyPolicyUrl
 ++++++++++++++++++++++++++++

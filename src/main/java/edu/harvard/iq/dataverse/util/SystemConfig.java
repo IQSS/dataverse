@@ -533,10 +533,11 @@ public class SystemConfig {
     public String getApplicationTermsOfUse() {
         String saneDefaultForAppTermsOfUse = BundleUtil.getStringFromBundle("system.app.terms");
         String appTermsOfUse = BundleUtil.getStringFromPropertyFile("app.termsofuse" , "termsofuse");
-        if(appTermsOfUse != null)
+        if (appTermsOfUse != null) {
             return appTermsOfUse;
-        else
+        } else {
             return saneDefaultForAppTermsOfUse;
+        }
     }
 
     public String getApiTermsOfUse() {
@@ -1008,8 +1009,7 @@ public class SystemConfig {
         }        
     }
     
-    public boolean isRsyncDownload()
-    {
+    public boolean isRsyncDownload() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
     }
