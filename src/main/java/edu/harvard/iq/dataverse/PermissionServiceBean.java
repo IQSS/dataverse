@@ -262,7 +262,7 @@ public class PermissionServiceBean {
         // 1. Map childs to permissions
         List<RoleAssignment> childrenAssignments = roleService.directRoleAssignments(ras, 
                 includeReleased ? children.stream().filter( child ->
-                (!child.isReleased())).collect( toList()) : children);
+                    (!child.isReleased())).collect( toList()) : children);
         
         Map<DvObject, Set<Permission>> roleMap = new HashMap<>();
         childrenAssignments.forEach( assignment -> {
