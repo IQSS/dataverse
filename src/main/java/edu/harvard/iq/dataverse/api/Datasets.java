@@ -74,6 +74,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
@@ -86,6 +87,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -355,7 +357,7 @@ public class Datasets extends AbstractApiBean {
         });
     }
     
-    @GET
+    @POST
     @Path("/modifyRegistrationAll")
     public Response updateDatasetTargetURLAll() {
         return response( req -> {
@@ -367,6 +369,41 @@ public class Datasets extends AbstractApiBean {
                 }
             });
             return ok("Update All Dataset target url completed");
+        });
+    }
+    
+    @POST
+    @Path("{id}/modifyRegistrationMetadata")
+    public Response updateDatasetPIDMetadata(@PathParam("id") String id) {
+
+        try {
+            Dataset dataset = findDatasetOrDie(id);
+            if (!dataset.isReleased()) {
+                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.failure.dataset.must.be.released"));
+            }
+        } catch (WrappedResponse ex) {
+            Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return response(req -> {
+            execCommand(new UpdateDvObjectPIDMetadataCommand(findDatasetOrDie(id), req));
+            List<String> args = Arrays.asList(id);
+            return ok(BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.success.for.single.dataset", args));
+        });
+    }
+    
+    @GET
+    @Path("/modifyRegistrationPIDMetadataAll")
+    public Response updateDatasetPIDMetadataAll() {
+        return response( req -> {
+            datasetService.findAll().forEach( ds -> {
+                try {
+                    execCommand(new UpdateDvObjectPIDMetadataCommand(findDatasetOrDie(ds.getId().toString()), req));
+                } catch (WrappedResponse ex) {
+                    Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });           
+            return ok(BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.success.for.update.all"));
         });
     }
   
@@ -939,12 +976,16 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Produces({"image/png"})
     @Path("{id}/thumbnail")
-    public InputStream getDatasetThumbnail(@PathParam("id") String idSupplied) {
+    public Response getDatasetThumbnail(@PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
-            return DatasetUtil.getThumbnailAsInputStream(dataset);
-        } catch (WrappedResponse ex) {
-            return null;
+            InputStream is = DatasetUtil.getThumbnailAsInputStream(dataset);
+            if(is == null) {
+                return notFound("Thumbnail not available");
+            }
+            return Response.ok(is).build();
+        } catch (WrappedResponse wr) {
+            return notFound("Thumbnail not available");
         }
     }
 

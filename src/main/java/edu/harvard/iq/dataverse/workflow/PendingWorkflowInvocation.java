@@ -47,10 +47,10 @@ public class PendingWorkflowInvocation implements Serializable {
     
     int pendingStepIdx;
     
-    String doiProvider;
     String userId;
     String ipAddress;
     int typeOrdinal;
+    boolean datasetExternallyReleased;
 
     /** Empty constructor for JPA */
     public PendingWorkflowInvocation(){
@@ -66,15 +66,14 @@ public class PendingWorkflowInvocation implements Serializable {
         userId = ctxt.getRequest().getUser().getIdentifier();
         ipAddress = ctxt.getRequest().getSourceAddress().toString();
         localData = new HashMap<>(result.getData());
-        doiProvider = ctxt.getDoiProvider();
         typeOrdinal = ctxt.getType().ordinal();
+        datasetExternallyReleased=ctxt.getDatasetExternallyReleased();
     }
     
     public WorkflowContext reCreateContext(RoleAssigneeServiceBean roleAssignees) {
         DataverseRequest aRequest = new DataverseRequest((User)roleAssignees.getRoleAssignee(userId), IpAddress.valueOf(ipAddress));
         final WorkflowContext workflowContext = new WorkflowContext(aRequest, dataset, nextVersionNumber, 
-                nextMinorVersionNumber, WorkflowContext.TriggerType.values()[typeOrdinal], 
-                doiProvider);
+                nextMinorVersionNumber, WorkflowContext.TriggerType.values()[typeOrdinal], null, null, datasetExternallyReleased);
         workflowContext.setInvocationId(invocationId);
         return workflowContext;
     }
@@ -149,14 +148,6 @@ public class PendingWorkflowInvocation implements Serializable {
 
     public void setPendingStepIdx(int pendingStepIdx) {
         this.pendingStepIdx = pendingStepIdx;
-    }
-
-    public String getDoiProvider() {
-        return doiProvider;
-    }
-
-    public void setDoiProvider(String doiProvider) {
-        this.doiProvider = doiProvider;
     }
 
     public int getTypeOrdinal() {

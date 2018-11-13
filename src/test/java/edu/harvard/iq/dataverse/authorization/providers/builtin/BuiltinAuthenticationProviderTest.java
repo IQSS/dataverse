@@ -124,8 +124,8 @@ public class BuiltinAuthenticationProviderTest {
     @Test
     public void testAuthenticate() {
         bean.save(makeBuiltInUser());
-        String crdUsername = sut.getRequiredCredentials().get(0).getTitle();
-        String crdPassword = sut.getRequiredCredentials().get(1).getTitle();
+        String crdUsername = sut.getRequiredCredentials().get(0).getKey();
+        String crdPassword = sut.getRequiredCredentials().get(1).getKey();
         AuthenticationRequest req = new AuthenticationRequest();
         req.putCredential(crdUsername, "username");
         req.putCredential(crdPassword, "password");

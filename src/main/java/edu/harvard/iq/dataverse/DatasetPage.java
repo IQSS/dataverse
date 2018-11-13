@@ -457,6 +457,8 @@ public class DatasetPage implements java.io.Serializable {
     public void setFileLabelSearchTerm(String fileLabelSearchTerm) {
         if (fileLabelSearchTerm != null) {
             this.fileLabelSearchTerm = fileLabelSearchTerm.trim();
+        } else {
+            this.fileLabelSearchTerm="";
         }
     }
     
@@ -2376,10 +2378,11 @@ public class DatasetPage implements java.io.Serializable {
                 requestContext.execute("PF('selectFilesForRestrict').show()");           
             return "";
         } else {           
-            boolean validSelection = false;
+            boolean validSelection = true;
             for (FileMetadata fmd : selectedFiles) {
-                if (!fmd.isRestricted() ){
-                    validSelection = true;
+                if (fmd.isRestricted() == true) {
+                    validSelection = false;
+                    break;
                 }
             }
             if (!validSelection) {
@@ -2406,8 +2409,9 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             boolean validSelection = true;
             for (FileMetadata fmd : selectedFiles) {
-                if ((fmd.isRestricted() && restricted) || (!fmd.isRestricted() && !restricted)) {
+                if (fmd.isRestricted() == restricted) {
                     validSelection = false;
+                    break;
                 }
             }
             if (!validSelection) {
@@ -2433,61 +2437,16 @@ public class DatasetPage implements java.io.Serializable {
         return  returnToDraftVersion();
     }
 
-    public void restrictFiles(boolean restricted) throws CommandException {
-   
-        //if (previouslyRestrictedFiles == null) {
-        // we don't need to buther with this "previously restricted" business 
-        // when in Create mode... because all the files are new, so none could 
-        // have been restricted previously;
-        // (well, it looks like the code below should never be called in the 
-        // CREATE mode in the first place... the edit files fragment uses
-        // its own restrictFiles() method there; also, the fmd.getDataFile().equals(fmw.getDataFile()))
-        // line is not going to work on a new file... so be mindful of all this
-        // when the code between the 2 beans is merged in 4.3.
-        if (editMode != EditMode.CREATE) {
-            previouslyRestrictedFiles = new ArrayList<>();
-            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                if (fmd.isRestricted()) {
-                    previouslyRestrictedFiles.add(fmd);
-                }
+    private void restrictFiles(boolean restricted) throws CommandException {
+        Command<Void> cmd;
+        previouslyRestrictedFiles = new ArrayList<>();
+        for (FileMetadata fmd : this.getSelectedFiles()) {
+            if(fmd.isRestricted()) {
+                previouslyRestrictedFiles.add(fmd);
             }
-            
-            Command cmd;
-            String fileNames = null;
-            for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
-                for (FileMetadata fmd : this.getSelectedFiles()) {
-                    if (restricted && !fmw.isRestricted()) {
-                    // collect the names of the newly-restrticted files, 
-                        // to show in the success message:
-                        // I don't think this does the right thing: 
-                        // (adds too many files to the message; good thing this 
-                        // message isn't used, normally)
-                        if (fileNames == null) {
-                            fileNames = fmd.getLabel();
-                        } else {
-                            fileNames = fileNames.concat(fmd.getLabel());
-                        }
-                    }
-                    if (fmd.getDataFile().equals(fmw.getDataFile())) {
-                        cmd = new RestrictFileCommand(fmw.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
-                        commandEngine.submit(cmd);
-                        
-                        
-//                        fmw.setRestricted(restricted);
-//                        if (workingVersion.isDraft() && !fmw.getDataFile().isReleased()) {
-//                            // We do not really need to check that the working version is 
-//                            // a draft here - it must be a draft, if we've gotten this
-//                            // far. But just in case. -- L.A. 4.2.1
-//                            fmw.getDataFile().setRestricted(restricted);
-//                        }
-                    }
-                }
-            }
-            if (fileNames != null) {
-                String successMessage = JH.localize("file.restricted.success");
-                logger.fine(successMessage);
-                successMessage = successMessage.replace("{0}", fileNames);
-                JsfHelper.addFlashMessage(successMessage);
+            if (restricted  != fmd.isRestricted()) {
+                cmd = new RestrictFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
+                commandEngine.submit(cmd);
             }
         }
     }
@@ -2569,6 +2528,33 @@ public class DatasetPage implements java.io.Serializable {
            - but we will do this inside the UpdateDatasetCommand.
         */
     }
+    
+    private String enteredTermsOfAccess;
+
+    public String getEnteredTermsOfAccess() {
+        return enteredTermsOfAccess;
+    }
+
+    public void setEnteredTermsOfAccess(String enteredTermsOfAccess) {
+        this.enteredTermsOfAccess = enteredTermsOfAccess;
+    }
+    
+    private Boolean enteredFileAccessRequest;
+
+    public Boolean getEnteredFileAccessRequest() {
+        return enteredFileAccessRequest;
+    }
+
+    public void setEnteredFileAccessRequest(Boolean fileAccessRequest) {
+        this.enteredFileAccessRequest = fileAccessRequest;
+    }
+    
+    
+     public String saveWithTermsOfUse() {
+        workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(enteredTermsOfAccess);
+        workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(enteredFileAccessRequest);
+        return save();
+    }
 
     public String save() {
          //Before dataset saved, write cached prov freeform to version
@@ -2584,7 +2570,7 @@ public class DatasetPage implements java.io.Serializable {
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
             return "";
         }
-
+        
         // Use the Create or Update command to save the dataset: 
         Command<Dataset> cmd;
         try {
