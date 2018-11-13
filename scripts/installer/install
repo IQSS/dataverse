@@ -961,8 +961,13 @@ sub setup_glassfish {
     print STDERR $DOMAIN_DOWN . "\n";
     if ($DOMAIN_DOWN) {
 	print "Trying to start domain up...\n";
-	system( "sudo -u $CONFIG_DEFAULTS{'GLASSFISH_USER'} " . $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
-	
+	if ( $current_user eq $CONFIG_DEFAULTS{'GLASSFISH_USER'} ){
+		system( $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
+	}
+	else
+	{
+		system( "sudo -u $CONFIG_DEFAULTS{'GLASSFISH_USER'} " . $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
+	}
 	# TODO: (?) - retest that the domain is running now? 
     }
     else
