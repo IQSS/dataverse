@@ -124,9 +124,13 @@
     </servlet-mapping>
 
     <session-config>
-        <session-timeout>
-            1440
-        </session-timeout>
+	    <session-timeout>
+		    1440
+	    </session-timeout>
+	    <!-- down with `;jsessionid` URLs-->
+	    <tracking-mode>
+		    COOKIE
+	    </tracking-mode>
     </session-config>
     <!-- web fonts -->
     <mime-mapping>
