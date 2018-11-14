@@ -519,12 +519,9 @@ Once you have the location of your custom CSS file, run this curl command to add
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
 
 Custom General Terms of Use
-+++++++++++++++++
++++++++++++++++++++++++++++
 
-To customize the "General Terms of Use" information which displays in dataverse Sign Up page, add the property file named termsofuse to the path as specified in ``dataverse.files.directory`` JVM option.
-And follow the details from the section ``:dataverse.lang.directory`` described below.
-
-By default, the Sign Up page will show the “Harvard Dataverse General Terms of Use”.
+By default, "General Terms of Use" on the Sign Up page will show "There are no Terms of Use for this Dataverse installation." To customize this, follow the steps in the :ref:`dataverse.lang.directory` section below, add a file called "termsofuse.properties" to the path you specified for the ``dataverse.lang.directory`` JVM option, and then restart Glassfish.
 
 Going Live: Launching Your Production Deployment
 ------------------------------------------------
