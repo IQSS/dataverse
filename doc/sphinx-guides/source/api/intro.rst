@@ -9,12 +9,13 @@ We encourage anyone interested in building tools that interoperate with Datavers
 How This Guide is Organized
 ---------------------------
 
-We document the Dataverse API in four sections:
+We document the Dataverse API in five sections:
 
 - :doc:`sword`: For depositing data using a standards-based approach rather than the :doc:`native-api`.
 - :doc:`search`: For searching dataverses, datasets, and files.
 - :doc:`dataaccess`: For downloading and subsetting data.
 - :doc:`native-api`: For performing most tasks that are possible in the GUI.
+- :doc:`metrics`: For query statisics about usage of a Dataverse installation.
 
 We use the term "native" to mean that the API is not based on any standard. For this reason, the :doc:`search` and :doc:`dataaccess` could also be considered "native" and in the future we may reorganize the API Guide to split the :doc:`native-api` section into "Datasets API", "Files" API, etc.
 

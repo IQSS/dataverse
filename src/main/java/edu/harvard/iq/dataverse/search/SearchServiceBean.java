@@ -96,7 +96,7 @@ public class SearchServiceBean {
             solrServer = null;
         }
     }
-
+    
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
      * access to Private Data for the correct user
@@ -106,7 +106,7 @@ public class SearchServiceBean {
      *
      *
      * @param dataverseRequest
-     * @param dataverse
+     * @param dataverses
      * @param query
      * @param filterQueries
      * @param sortField
@@ -117,8 +117,8 @@ public class SearchServiceBean {
      * @return
      * @throws SearchException
      */
-    public SolrQueryResponse search(DataverseRequest dataverseRequest, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
-        return search(dataverseRequest, dataverse, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
+    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
+        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
     }
     
     /**
@@ -129,8 +129,8 @@ public class SearchServiceBean {
      * related to permissions
      *
      *
-     * @param user
-     * @param dataverse
+     * @param dataverseRequest
+     * @param dataverses
      * @param query
      * @param filterQueries
      * @param sortField
@@ -142,7 +142,7 @@ public class SearchServiceBean {
      * @return
      * @throws SearchException
      */
-    public SolrQueryResponse search(DataverseRequest dataverseRequest, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities) throws SearchException {
+    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities) throws SearchException {
 
         if (paginationStart < 0) {
             throw new IllegalArgumentException("paginationStart must be 0 or greater");
@@ -217,13 +217,7 @@ public class SearchServiceBean {
             solrQuery.addFilterQuery(filterQuery);
         }
 
-        // -----------------------------------
-        // PERMISSION FILTER QUERY
-        // -----------------------------------
-        String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
-        if (permissionFilterQuery != null) {
-            solrQuery.addFilterQuery(permissionFilterQuery);
-        }
+
 
         // -----------------------------------
         // Facets to Retrieve
@@ -249,12 +243,31 @@ public class SearchServiceBean {
          * if advancedSearchField is true or false
          *
          */
-        if (dataverse != null) {
-            for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
-                DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
-                solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
+        
+        //I'm not sure if just adding null here is good for hte permissions system... i think it needs something
+        if(dataverses != null) {
+            for(Dataverse dataverse : dataverses) {
+                // -----------------------------------
+                // PERMISSION FILTER QUERY
+                // -----------------------------------
+                String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
+                if (permissionFilterQuery != null) {
+                    solrQuery.addFilterQuery(permissionFilterQuery);
+                }
+                if (dataverse != null) {
+                    for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
+                        DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
+                        solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
+                    }
+                }
+            }
+        } else {
+            String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, null, onlyDatatRelatedToMe);
+            if (permissionFilterQuery != null) {
+                solrQuery.addFilterQuery(permissionFilterQuery);
             }
         }
+        
         solrQuery.addFacetField(SearchFields.FILE_TYPE);
         /**
          * @todo: hide the extra line this shows in the GUI... at least it's
@@ -365,6 +378,7 @@ public class SearchServiceBean {
         Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
         String baseUrl = systemConfig.getDataverseSiteUrl();
 
+        //Going through the results
         for (SolrDocument solrDocument : docs) {
             String id = (String) solrDocument.getFieldValue(SearchFields.ID);
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
@@ -388,6 +402,9 @@ public class SearchServiceBean {
             Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
             String dateToDisplayOnCard = (String) solrDocument.getFirstValue(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT);
             String dvTree = (String) solrDocument.getFirstValue(SearchFields.SUBTREE);
+            String identifierOfDataverse = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER_OF_DATAVERSE);
+            String nameOfDataverse = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_NAME);
+
             List<String> matchedFields = new ArrayList<>();
             List<Highlight> highlights = new ArrayList<>();
             Map<SolrField, Highlight> highlightsMap = new HashMap<>();
@@ -496,6 +513,10 @@ public class SearchServiceBean {
 
                 solrSearchResult.setCitation(citation);
                 solrSearchResult.setCitationHtml(citationPlainHtml);
+                
+                solrSearchResult.setIdentifierOfDataverse(identifierOfDataverse);
+                solrSearchResult.setNameOfDataverse(nameOfDataverse);
+                
                 if (title != null) {
 //                    solrSearchResult.setTitle((String) titles.get(0));
                     solrSearchResult.setTitle(title);
