@@ -73,6 +73,18 @@ Every non-index page should use the following code to display a table of content
 
 This code should be placed below any introductory text/images and directly above the first subheading, much like a Wikipedia page.
 
+GraphViz based images
+---------------------
+
+In some parts of the documentation, graphs are rendered as images via Sphinx GraphViz extension.
+
+This needs `GraphViz <http://graphviz.org/>`_ installed and either ``dot`` on the path or
+`adding options to the make call <https://groups.google.com/forum/#!topic/sphinx-users/yXgNey_0M3I>`_.
+
+On Mac and Linux this should "just work", on Windows this is currently untested. The worst thing that might happen
+is a warning and missing images in your local documentation build.
+
+
 Versions
 --------
 
@@ -86,4 +98,4 @@ In order to make it clear to the crawlers that we only want the latest version d
 
 ----
 
-Previous: :doc:`testing` | Next: :doc:`debugging`
+Previous: :doc:`testing` | Next: :doc:`dependencies`
