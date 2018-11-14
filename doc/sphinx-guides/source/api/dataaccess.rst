@@ -202,9 +202,9 @@ A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X GET -d true http://$SERVER/api/access/{id}/allowAccessRequest
     
-A curl example using a ``pid``:
+A curl example using a ``pid``::
 
-curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/:persistentId/allowAccessRequest?persistentId={pid}    
+   curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/:persistentId/allowAccessRequest?persistentId={pid}    
     
 
 Request Access:
@@ -238,6 +238,17 @@ This method rejects the access request to the datafile whose id is passed on the
 A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X GET -d true http://$SERVER/api/access/datafile/{id}/rejectAccess/{identifier}
+    
+Revoke File Access:
+~~~~~~~~~~~~~~~~~~~ 
+
+``/api/access/datafile/{id}/revokeAccess/{identifier}``
+
+This method revokes previously granted access to the datafile whose id is passed on the behalf of an authenticated user whose identifier is passed. The key of a user who can manage permissions of the datafile is required to use this method.
+
+A curl example using an ``id``::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET -d true http://$SERVER/api/access/datafile/{id}/rejectAccess/{identifier}    
     
 List File Access Requests:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~ 
