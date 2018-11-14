@@ -34,7 +34,7 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
         if (((dsfType.isPrimitive() && dsfType.isRequired())  || (dsfType.isPrimitive() && value.isRequired())) 
                 && StringUtils.isBlank(value.getValue())) {
             try{
-                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + BundleUtil.getStringFromBundle("isrequired")).addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + BundleUtil.getStringFromBundle("isrequired")).addConstraintViolation();
             } catch (NullPointerException npe){
                 //if there's no context for the error we can't put it anywhere....
             }
