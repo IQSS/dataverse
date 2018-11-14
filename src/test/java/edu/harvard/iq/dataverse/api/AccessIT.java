@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.hamcrest.collection.IsMapContaining;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.is;
@@ -423,6 +424,9 @@ public class AccessIT {
         assertEquals(200, createUser.getStatusCode());
         String apiTokenRando = UtilIT.getApiTokenFromResponse(createUser);
         String apiIdentifierRando = UtilIT.getUsernameFromResponse(createUser);
+        
+       Response randoDownload = UtilIT.downloadFile(tabFile3IdRestrictedNew, apiTokenRando);
+        assertEquals(403, randoDownload.getStatusCode());
 
         Response requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
         //Cannot request until we set the dataset to allow requests
@@ -451,6 +455,10 @@ public class AccessIT {
         //grant file access
         Response grantFileAccessResponse = UtilIT.grantFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
         assertEquals(200, grantFileAccessResponse.getStatusCode());
+        
+        //Now should be able to download
+        randoDownload = UtilIT.downloadFile(tabFile3IdRestrictedNew, apiTokenRando);
+        assertEquals(OK.getStatusCode(), randoDownload.getStatusCode());
 
         //revokeFileAccess        
         Response revokeFileAccessResponse = UtilIT.revokeFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);

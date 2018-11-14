@@ -1083,7 +1083,7 @@ public class UtilIT {
             keySeparator="?";
         }
         Response response = given()
-                .get("/api/access/datafile/" + idInPath + "/requestAccess" +  optionalQueryParam + keySeparator +  "key=" + apiToken);
+                .put("/api/access/datafile/" + idInPath + "/requestAccess" +  optionalQueryParam + keySeparator +  "key=" + apiToken);
         return response;
     }
     
@@ -1099,7 +1099,7 @@ public class UtilIT {
             keySeparator="?";
         }
         Response response = given()
-                .get("/api/access/datafile/" + idInPath + "/grantAccess/" + identifier + "/" +  optionalQueryParam + keySeparator +  "key=" + apiToken);
+                .put("/api/access/datafile/" + idInPath + "/grantAccess/" + identifier + "/" +  optionalQueryParam + keySeparator +  "key=" + apiToken);
         return response;
     }
     
@@ -1131,7 +1131,7 @@ public class UtilIT {
             keySeparator="?";
         }
         Response response = given()
-                .get("/api/access/datafile/" + idInPath + "/rejectAccess/" + identifier + "/" +  optionalQueryParam + keySeparator +  "key=" + apiToken);
+                .put("/api/access/datafile/" + idInPath + "/rejectAccess/" + identifier + "/" +  optionalQueryParam + keySeparator +  "key=" + apiToken);
         return response;
     }
 

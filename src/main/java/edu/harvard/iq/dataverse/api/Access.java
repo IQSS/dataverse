@@ -965,7 +965,7 @@ public class Access extends AbstractApiBean {
      * @param headers
      * @return
      */
-    @GET
+    @PUT
     @Path("/datafile/{id}/requestAccess")
     public Response requestFileAccess(@PathParam("id") String fileToRequestAccessId, @QueryParam("key") String apiToken, @Context HttpHeaders headers) {
         //create request
@@ -1084,7 +1084,7 @@ public class Access extends AbstractApiBean {
      * @param headers
      * @return
      */
-    @GET
+    @PUT
     @Path("/datafile/{id}/grantAccess/{identifier}")
     public Response grantFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @QueryParam("key") String apiToken, @Context HttpHeaders headers) {
         //create request
@@ -1232,7 +1232,7 @@ public class Access extends AbstractApiBean {
      * @param headers
      * @return
      */
-    @GET
+    @PUT
     @Path("/datafile/{id}/rejectAccess/{identifier}")
     public Response rejectFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @QueryParam("key") String apiToken, @Context HttpHeaders headers) {
 
