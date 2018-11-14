@@ -193,6 +193,19 @@ Access Requests and Processing
 
 All of the following endpoints take the persistent identifier as a parameter in place of 'id'.
 
+Allow Access Requests:
+~~~~~~~~~~~~~~~~~~~~~~
+
+Allow or disallow users from requesting access to restricted files in a dataset where id is the database id of the dataset or pid is the persistent id (DOI or Handle) of the dataset to update. 
+
+A curl example using an ``id``::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET -d true http://$SERVER/api/access/{id}/allowAccessRequest
+    
+A curl example using a ``pid``:
+
+curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/:persistentId/allowAccessRequest?persistentId={pid}    
+    
 
 Request Access:
 ~~~~~~~~~~~~~~~
