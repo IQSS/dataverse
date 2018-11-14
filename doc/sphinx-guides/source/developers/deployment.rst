@@ -88,6 +88,8 @@ Edit the file at ``~/.dataverse/ec2.env`` and fill in username and password from
 - dataverse_doi_username
 - dataverse_doi_password
 
+Please note that DataCite may require you to change ``:Authority`` from the default value of "10.5072".
+
 Download and Run the "Create Instance" Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

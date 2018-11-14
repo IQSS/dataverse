@@ -171,6 +171,8 @@ Configure Your Development Environment for Publishing
 
 In order to publish datasets, you must configure Dataverse with a username and password for a persistent ID provider. The installer configures your development environment to use DOIs (rather than Handles) for persistent IDs with DataCite's test server at https://mds.test.datacite.org as the provider. In order to publish datasets with this provider, you must email support@datacite.org and ask for a test account. Once you have your DataCite username and password, you must add them as JVM options (``doi.username`` and ``doi.password``) as described under "Persistent Identifiers and Publishing Datasets" in the :doc:`/installation/config` section of the Installation Guide.
 
+Please note that DataCite may require you to change ``:Authority`` from the default value of "10.5072".
+
 Next Steps
 ----------
 

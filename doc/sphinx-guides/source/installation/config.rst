@@ -111,6 +111,8 @@ By default, the installer configures a test DOI namespace (10.5072) with DataCit
 
 and restart Glassfish. Once this is done, you will be able to publish datasets and files, but the persistent identifiers will not be citable or guaranteed to be preserved. Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured. 
 
+Please note that even during testing, DataCite may require you to change ``:Authority`` from the default value of "10.5072".
+
 To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider. **DataCite** (https://www.datacite.org) is the recommended DOI provider (see https://dataverse.org/global-dataverse-community-consortium for more on joining DataCite) but **EZID** (http://ezid.cdlib.org) is an option for the University of California according to https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/ . **Handle.Net** (https://www.handle.net) is the HDL provider.
 
 Once you have your DOI or Handle account credentials and a namespace, configure Dataverse to use them using the JVM options and database settings below.
