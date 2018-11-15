@@ -6,22 +6,22 @@ Dependency Management
 	:local:
 
 Dataverse is (currently) a Java EE 7 based application, that uses a lot of additional libraries for special purposes.
-This includes features like support of SWORD-API, S3 storage and many others.
+This includes features like support for SWORD-API, S3 storage and many others.
 
 Besides the code that glues together the single pieces, any developer needs to describe used dependencies for the
-Maven-based build system. Familiar to any Maven user, this happens inside the "Project Object Model" (POM) living in
+Maven-based build system. As is familiar to any Maven user, this happens inside the "Project Object Model" (POM) living in
 ``pom.xml`` at the root of the project repository. Recursive and convergent dependency resolution makes dependency
-management with Maven very easy. But sometimes, in projects with a lot, complex dependencies like Dataverse, you have
+management with Maven very easy. But sometimes, in projects with many complex dependencies like Dataverse, you have
 to help Maven make the right choices.
 
 Terms
 -----
 
-As a developer, you should make yourself familiar with the following terms:
+As a developer, you should familiarize yourself with the following terms:
 
 - **Direct dependencies**: things *you use* yourself in your own code for Dataverse.
 - **Transitive dependencies**: things *others use* for things you use, pulled in recursively.
-  See also at `Maven docs <https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Transitive_Dependencies>`_.
+  See also: `Maven docs <https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Transitive_Dependencies>`_.
 
 .. graphviz::
 
@@ -73,7 +73,7 @@ dependency definition does not change.
 **Rules to follow:**
 
 1. You should only use direct dependencies for **things you are actually using** in your code.
-2. **Cleanup** direct dependencies no longer in use. It will bloat the deployment package otherwise!
+2. **Clean up** direct dependencies no longer in use. It will bloat the deployment package otherwise!
 3. Care about the **scope**. Do not include "testing only" dependencies in the package - it will hurt you in IDEs [#ide]_ and bloat things.
 4. Avoid using different dependencies for the **same purpose**, e. g. different JSON parsing libraries.
 5. Refactor your code to **use Java EE** standards as much as possible.
@@ -88,8 +88,8 @@ dependency definition does not change.
 Transitive dependencies
 -----------------------
 
-Maven is comfortable for developers as it handles recursive resolution, downloading and adding "dependencies of dependencies".
-But as life is a box of chocolates, you might find yourself in *version conflict hell* sooner than later without even
+Maven is comfortable for developers; it handles recursive resolution, downloading, and adding "dependencies of dependencies".
+However, as life is a box of chocolates, you might find yourself in *version conflict hell* sooner than later without even
 knowing, but experiencing unintended side effects.
 
 When you look at the graph above, imagine *B* and *TB* rely on different *versions* of *TC*. How does Maven decide
@@ -148,7 +148,7 @@ A reduced example, only showing bits relevant to the above cases and usage of an
     <properties>
         <aws.version>1.11.172</aws.version>
         <!-- We need to ensure that our choosen version is compatible with every dependency relying on it.
-             This is manual work and needs testing, but a good invest in stability and up-to-date dependencies. -->
+             This is manual work and needs testing, but a good investment in stability and up-to-date dependencies. -->
         <jackson.version>2.9.6</jackson.version>
         <joda.version>2.10.1</joda.version>
     </properties>
@@ -209,7 +209,7 @@ A reduced example, only showing bits relevant to the above cases and usage of an
     </dependencies>
 
 
-Helpfull tools
+Helpful tools
 --------------
 
 Maven provides some plugins that are of great help to detect possible conflicts and implicit usage.
@@ -222,15 +222,14 @@ great caution and double check.
 If you want to see the dependencies both direct and transitive in a *dependency tree format*, use `mvn dependency:tree`.
 
 This will however not help you with detecting possible version conflicts. For this you need to use the `Enforcer Plugin
-<https://maven.apache.org/enforcer/maven-enforcer-plugin/index.html>`_ with its builtin `dependency convergence rule
-<https://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html>`_. It might be considered in a future
-version of Dataverse to make this a default step in the build lifecycle of Dataverse.
+<https://maven.apache.org/enforcer/maven-enforcer-plugin/index.html>`_ with its built in `dependency convergence rule
+<https://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html>`_. 
 
 Repositories
 ------------
 
 Maven receives all dependencies from *repositories*. Those can be public like `Maven Central <https://search.maven.org/>`_
-and other, but you can also use a private repository on premises or in the cloud. Last but not least, you can use
+and others, but you can also use a private repository on premises or in the cloud. Last but not least, you can use
 local repositories, which can live next to your application code (see ``local_lib`` dir within Dataverse codebase).
 
 Repositories are defined within the Dataverse POM like this:
@@ -259,8 +258,8 @@ Repositories are defined within the Dataverse POM like this:
 
 You can also add repositories to your local Maven settings, see `docs <https://maven.apache.org/ref/3.6.0/maven-settings/settings.html>`_.
 
-Typically you will skip the addition of the central repository, but adding it to the POM has the benefit, that
-dependencies are first looked up there (which in theory can speed up downloads). You should keep in mind, that repositories
+Typically you will skip the addition of the central repository, but adding it to the POM has the benefit that
+dependencies are first looked up there (which in theory can speed up downloads). You should keep in mind that repositories
 are used in the order they appear.
 
 ----
