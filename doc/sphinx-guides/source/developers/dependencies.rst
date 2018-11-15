@@ -226,8 +226,44 @@ This will however not help you with detecting possible version conflicts. For th
 <https://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html>`_. It might be considered in a future
 version of Dataverse to make this a default step in the build lifecycle of Dataverse.
 
-----
+Repositories
+------------
 
+Maven receives all dependencies from *repositories*. Those can be public like `Maven Central <https://search.maven.org/>`_
+and other, but you can also use a private repository on premises or in the cloud. Last but not least, you can use
+local repositories, which can live next to your application code (see ``local_lib`` dir within Dataverse codebase).
+
+Repositories are defined within the Dataverse POM like this:
+
+.. code:: xml
+
+    <repositories>
+        <repository>
+            <id>central-repo</id>
+            <name>Central Repository</name>
+            <url>http://repo1.maven.org/maven2</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>prime-repo</id>
+            <name>PrimeFaces Maven Repository</name>
+            <url>http://repository.primefaces.org</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>dvn.private</id>
+            <name>Local repository for hosting jars not available from network repositories.</name>
+            <url>file://${project.basedir}/local_lib</url>
+        </repository>
+    </repositories>
+
+You can also add repositories to your local Maven settings, see `docs <https://maven.apache.org/ref/3.6.0/maven-settings/settings.html>`_.
+
+Typically you will skip the addition of the central repository, but adding it to the POM has the benefit, that
+dependencies are first looked up there (which in theory can speed up downloads). You should keep in mind, that repositories
+are used in the order they appear.
+
+----
 .. [#ide] Modern IDEs import your Maven POM and offer import autocompletion for classes based on direct dependencies
           in the model. You might end up using legacy or repackaged classes because of a wrong scope.
 .. [#ide2] This is going to bite back in modern IDEs when importing classes from transitive dependencies by "autocompletion accident".
