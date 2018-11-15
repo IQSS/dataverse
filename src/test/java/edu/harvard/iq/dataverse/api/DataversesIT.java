@@ -300,4 +300,45 @@ public class DataversesIT {
                 .statusCode(200);
     }
     
+    @Test
+    public void testUpdateDefaultContributorRole() {
+        Response createUser = UtilIT.createRandomUser();
+
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response superuserResponse = UtilIT.makeSuperUser(username);
+
+        Response createUserRando = UtilIT.createRandomUser();
+
+        createUserRando.prettyPrint();
+        String apiTokenRando = UtilIT.getApiTokenFromResponse(createUserRando);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        //Try no perms user
+        Response updateDataverseDefaultRoleNoPerms = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "curator", apiTokenRando);
+        updateDataverseDefaultRoleNoPerms.prettyPrint();
+        updateDataverseDefaultRoleNoPerms.then().assertThat()
+                .statusCode(401);
+
+        //for test use an existing role. In practice this likely will be a custom role
+        Response updateDataverseDefaultRole = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "curator", apiToken);
+        updateDataverseDefaultRole.prettyPrint();
+        updateDataverseDefaultRole.then().assertThat()
+                .body("data.message", equalTo("Default contributor role for Dataverse " + dataverseAlias + " has been set to Curator."))
+                .statusCode(200);
+
+        // try bad role alias
+        Response updateDataverseDefaultRoleBadRoleAlias = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "colonel", apiToken);
+        updateDataverseDefaultRoleBadRoleAlias.prettyPrint();
+        updateDataverseDefaultRoleBadRoleAlias.then().assertThat()
+                .body("message", equalTo("Role colonel not found."))
+                .statusCode(404);
+
+    }
+    
 }

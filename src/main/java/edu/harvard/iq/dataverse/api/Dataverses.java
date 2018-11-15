@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -50,6 +51,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveRoleAssigneesFromExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -93,8 +95,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
+import javax.persistence.NoResultException;
 
 /**
  * A REST API for dataverses.
@@ -109,8 +113,10 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
-//    @EJB
-//    SystemConfig systemConfig;
+    
+    @EJB
+    DataverseRoleServiceBean roleService;
+
 
     @POST
     public Response addRoot(String body) {
@@ -742,6 +748,47 @@ public class Dataverses extends AbstractApiBean {
         return response(req -> ok(json(execCommand(
                 new UpdateExplicitGroupCommand(req,
                         groupDto.apply(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)))))));
+    }
+    
+    @PUT
+    @Path("{identifier}/defaultContributorRole/{roleAlias}")
+    public Response updateDefaultContributorRole(
+            @PathParam("identifier") String dvIdtf,
+            @PathParam("roleAlias") String roleAlias) {
+
+        try {
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            System.out.print("###################################");
+            System.out.print(dv);
+            System.out.print(dv.getId());
+            
+            DataverseRole testGetRole = roleService.findCustomRoleByAliasAndOwner(roleAlias, dv.getId());
+        } catch (Exception nre) {
+            List<String> args = Arrays.asList(roleAlias);
+            String retStringError = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.failure.role.not.found", args);
+            return error(Status.NOT_FOUND, retStringError);
+        }
+
+        try {
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            DataverseRole defaultRole = roleService.findCustomRoleByAliasAndOwner(roleAlias, dv.getId());
+            if (defaultRole == null) {
+                List<String> args = Arrays.asList(roleAlias);
+                String retStringError = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.failure.role.not.found", args);
+                return error(Status.NOT_FOUND, retStringError);
+            }
+
+            return response(req -> {
+                execCommand(new UpdateDataverseDefaultContributorRoleCommand(defaultRole, req, dv));
+                List<String> args = Arrays.asList(dv.getDisplayName(), defaultRole.getName());
+                String retString = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.success", args);
+                return ok(retString);
+            });
+
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
     }
 
     @DELETE

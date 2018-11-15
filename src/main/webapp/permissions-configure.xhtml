@@ -25,7 +25,7 @@
             #{bundle['dataverse.permissions.Q2']}
         </label>
         <div class="col-sm-offset-1">
-            <p:selectOneRadio id="defaultContributorRoleRadio" value="#{managePermissionsPage.defaultContributorRoleAlias}" layout="custom">
+            <p:selectOneRadio id="defaultContributorRoleRadio" value="#{managePermissionsPage.defaultContributorRoleAlias}" layout="custom" disabled="#{managePermissionsPage.isCustomDefaultConributorRole()}">
                 <f:selectItem itemLabel="#{bundle.editor}" itemValue="editor" />
                 <f:selectItem itemLabel="#{bundle.curator}" itemValue="curator" />
             </p:selectOneRadio>
@@ -44,5 +44,11 @@
                 </label>
             </div>
         </div>
+        <ui:fragment rendered="#{managePermissionsPage.isCustomDefaultConributorRole()}">
+            <h:outputText
+                value='#{managePermissionsPage.customDefaultContributorRoleName}  - #{managePermissionsPage.customDefaultContributorRoleDescription}'/>
+        </ui:fragment>
+        
+        
     </div>    
 </ui:composition>

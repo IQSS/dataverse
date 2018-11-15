@@ -249,6 +249,34 @@ public class ManagePermissionsPage implements java.io.Serializable {
     public String getDefaultContributorRoleAlias() {
         return defaultContributorRoleAlias;
     }
+    
+    public Boolean isCustomDefaultConributorRole(){
+        return !( defaultContributorRoleAlias.equals(DataverseRole.EDITOR) || defaultContributorRoleAlias.equals(DataverseRole.CURATOR));
+    }
+    
+    public String getCustomDefaultContributorRoleName(){
+        if (dvObject instanceof Dataverse && isCustomDefaultConributorRole()){
+            return roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId() ).getName();
+        } else {
+            return "";
+        }
+    }
+    
+    public void  setCustomDefaultContributorRoleName(String dummy){
+        //dummy method for interface
+    }
+    
+    public String getCustomDefaultContributorRoleDescription(){
+        if (dvObject instanceof Dataverse  && isCustomDefaultConributorRole()){
+            return roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId() ).getDescription();
+        } else {
+            return "";
+        }
+    }
+    
+    public void  setCustomDefaultContributorRoleDescription(String dummy){
+        //dummy method for interface
+    }
 
     public void setDefaultContributorRoleAlias(String defaultContributorRoleAlias) {
         this.defaultContributorRoleAlias = defaultContributorRoleAlias;
