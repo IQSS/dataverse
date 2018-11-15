@@ -74,12 +74,12 @@ dependency definition does not change.
 
 1. You should only use direct dependencies for **things you are actually using** in your code.
 2. **Clean up** direct dependencies no longer in use. It will bloat the deployment package otherwise!
-3. Care about the **scope**. Do not include "testing only" dependencies in the package - it will hurt you in IDEs [#ide]_ and bloat things.
+3. Care about the **scope**. Do not include "testing only" dependencies in the package - it will hurt you in IDEs and bloat things. [#f1]_
 4. Avoid using different dependencies for the **same purpose**, e. g. different JSON parsing libraries.
 5. Refactor your code to **use Java EE** standards as much as possible.
 6. When you rely on big SDKs or similar big cool stuff, try to **include the smallest portion possible**. Complete SDK
    bundles are typically heavyweight and most of the time unnecessary.
-7. **Don't include transitive dependencies.** [#ide2]_
+7. **Don't include transitive dependencies.** [#f2]_
 
    * Exception: if you are relying on it in your code (see *Z* in the graph above), you must declare it. See below
      for proper handling in these (rare) cases.
@@ -263,9 +263,11 @@ dependencies are first looked up there (which in theory can speed up downloads).
 are used in the order they appear.
 
 ----
-.. [#ide] Modern IDEs import your Maven POM and offer import autocompletion for classes based on direct dependencies
-          in the model. You might end up using legacy or repackaged classes because of a wrong scope.
-.. [#ide2] This is going to bite back in modern IDEs when importing classes from transitive dependencies by "autocompletion accident".
+
+.. rubric:: Footnotes
+
+.. [#f1] Modern IDEs import your Maven POM and offer import autocompletion for classes based on direct dependencies in the model. You might end up using legacy or repackaged classes because of a wrong scope.
+.. [#f2] This is going to bite back in modern IDEs when importing classes from transitive dependencies by "autocompletion accident".
 
 ----
 
