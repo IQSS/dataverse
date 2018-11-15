@@ -145,14 +145,12 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
             packageFile.setChecksumType(DataFile.ChecksumType.SHA1);
             
-            FileUtil.generateS3StorageIdentifier(packageFile);
-            
+                //This is a brittle calculation, changes of the dcm post_upload script will blow this up
+            String rootPackageName = "package_" + folderName.replace("/", "");
+
             String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
             String dvDatasetKey = getS3DatasetKey(dataset);
 
-            //This is a brittle calculation, changes of the dcm post_upload script will blow this up
-            String rootPackageName = "package_" + folderName.replace("/", "");
-            
             //getting the name of the .sha file via substring, ${packageName}.sha
             logger.log(Level.INFO, "shaname {0}", new Object[]{rootPackageName  + ".sha"});
 
@@ -211,17 +209,20 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             dataset.getFiles().add(packageFile);
 
             packageFile.setIngestDone();
-
+            
             // set metadata and add to latest version
+            // Set early so we can generate the storage id with the info
             FileMetadata fmd = new FileMetadata();
             fmd.setLabel(rootPackageName + ".zip");
             
             fmd.setDataFile(packageFile);
             packageFile.getFileMetadatas().add(fmd);
             if (dataset.getLatestVersion().getFileMetadatas() == null) dataset.getLatestVersion().setFileMetadatas(new ArrayList<>());
-
+            
             dataset.getLatestVersion().getFileMetadatas().add(fmd);
             fmd.setDatasetVersion(dataset.getLatestVersion());
+            
+            FileUtil.generateS3PackageStorageIdentifier(packageFile);
             
             GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
             if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {

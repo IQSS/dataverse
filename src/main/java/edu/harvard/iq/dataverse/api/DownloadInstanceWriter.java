@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 
+//MAD: WHY DOES THIS LIVE IN API
 package edu.harvard.iq.dataverse.api;
 
 import java.lang.reflect.Type;
@@ -33,6 +34,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.RedirectionException;
@@ -75,6 +77,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     storageIO.open();
                 } catch (IOException ioex) {
                     //throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+                    logger.log(Level.INFO, "Datafile {0}: Failed to locate and/or open physical file. Error message: {1}", new Object[]{dataFile.getId(), ioex.getLocalizedMessage()});
                     throw new NotFoundException("Datafile "+dataFile.getId()+": Failed to locate and/or open physical file.");
                 }
                 

@@ -551,6 +551,17 @@
                              </ui:include>
                         </div>
                     </p:dialog>
+<!--MAD HERE -->
+                    <p:dialog id="downloadS3PackagePopup" styleClass="largePopUp" header="#{bundle['s3packagedownload.title']}" widgetVar="downloadS3PackagePopup" modal="true">
+                         <ui:include src="s3-package-download-popup-fragment.xhtml">
+                            <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
+                            <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                            <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
+                            <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
+                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                            <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
+                        </ui:include>
+                    </p:dialog>
                     
                     <p:dialog header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
                         id="configureToolPopup" styleClass="smallPopUp" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">
