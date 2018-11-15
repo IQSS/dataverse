@@ -112,25 +112,31 @@
     <h:outputLink value="#{DatasetPage.getComputeUrl(fileMetadata)}" type="button" class="btn btn-default" target="_blank" rendered="#{!isFilePg and DatasetPage.showComputeButton(fileMetadata) and fileDownloadHelper.canDownloadFile(fileMetadata)}"> 
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
     </h:outputLink>
-   
-<!--MAD: New logic here
-    Does the package file need to work with "downloadPopupRequired"-->
-<!--MAD RENENABLE RENDER -->
-    <!--<p:commandLink rendered="# { fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
-                              and fileMetadata.dataFile.filePackage and DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')}" -->
-    <p:commandLink 
-                  type="button" styleClass="btn btn-default"
+
+    <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
+                              and fileMetadata.dataFile.filePackage and DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')}"
+                   type="button" styleClass="btn btn-default"
                    process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
-                   action="#{guestbookResponseService.modifyDatafile(guestbookResponse, fileMetadata)}"
+                   actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 's3Package')}"
                    update="@widgetVar(downloadS3PackagePopup)" oncomplete="PF('downloadS3PackagePopup').show();handleResizeDialog('downloadS3PackagePopup');">
         <f:actionListener binding="#{s3PackagePopupFragmentBean.setDataFile(fileMetadata.dataFile)}" /> 
-        <!-- non-tabular data file: -->
-        <!-- no guest book/terms of use/etc. - straight to the download API url: -->
+        <!-- s3 package data file: -->
+        <!-- no guest book/terms of use/etc. - straight s3 package popup -->
         <span class="glyphicon glyphicon-download-alt"/> S3 Download #{fileMetadata.dataFile}
     </p:commandLink>
 
-    
+    <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and (downloadPopupRequired) 
+                              and fileMetadata.dataFile.filePackage and DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')}"
+                    type="button" styleClass="btn btn-default"
+                   process="@this"
+                   disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
+                   action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 's3Package')}"
+                   update="@widgetVar(downloadPopup)" oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+        <!-- s3 package data file: -->
+        <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
+        <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
+    </p:commandLink>
 
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
                                 and !(fileMetadata.dataFile.filePackage and DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://'))}"
@@ -143,7 +149,8 @@
         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
     </p:commandLink>
 
-    <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and downloadPopupRequired }"
+    <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and downloadPopupRequired 
+                                and !(fileMetadata.dataFile.filePackage and DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://'))}"
                    type="button" styleClass="btn btn-default"
                    process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 

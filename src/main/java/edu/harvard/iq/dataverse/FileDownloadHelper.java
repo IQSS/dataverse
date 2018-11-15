@@ -297,7 +297,22 @@ public class FileDownloadHelper implements java.io.Serializable {
          }
          fileDownloadService.explore(guestbookResponse, fmd, externalTool);
          requestContext.execute("PF('downloadPopup').hide()");
-     }
+    }
+     
+    public void writeGuestbookAndLaunchS3PackagePopup(GuestbookResponse guestbookResponse) {
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        boolean valid = validateGuestbookResponse(guestbookResponse);
+
+        if (!valid) {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));
+        } else {
+            requestContext.execute("PF('downloadPopup').hide()");
+            requestContext.execute("PF('downloadS3PackagePopup').show()");
+            requestContext.execute("handleResizeDialog('downloadS3PackagePopup')");
+
+            fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
+        }
+    }
 
     public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
         
