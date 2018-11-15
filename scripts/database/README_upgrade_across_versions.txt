@@ -18,16 +18,16 @@ Where
 NOTE: it is your responsibility to make sure VERSION_1 is the actual
 version of your current database!
 
-[PG_HOST] is the server running PostgresQL used by your Dataverse
-[PG_PORT] the port on the PostgresQL server
-[PG_DB]   the name of the PostgresQL database used by your Dataverse
-[PG_USER] the name of the PostgresQL user used by your Dataverse
+[PG_HOST] is the server running PostgreSQL used by your Dataverse
+[PG_PORT] the port on the PostgreSQL server
+[PG_DB]   the name of the PostgreSQL database used by your Dataverse
+[PG_USER] the name of the PostgreSQL user used by your Dataverse
 
 The script will also ask you to provide the password for access to the
 database above (so that you don't have to enter it on the command
 line).
 
-If in doubt as to which PostgresQL credentials to use for the above,
+If in doubt as to which PostgreSQL credentials to use for the above,
 just use the values listed in the dvnDbPool section of your Glassfish
 domain.xml file, for example:
 
@@ -46,7 +46,7 @@ An example of the final command line, using the values above:
 
 The script will attempt to validate the values you supply. It will
 alert you if the version tags you provided do not correspond to valid
-Dataverse releases; or if it fails to connect to the PostgresQL
+Dataverse releases; or if it fails to connect to the PostgreSQL
 database with the credentials you entered. It will exit with an error
 message if any of the database scripts fail to run.
 
