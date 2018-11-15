@@ -32,7 +32,7 @@ public class StorageIOTest {
     StorageIO<Dataset> instance = new FileAccessIO<>();
 
     @Test
-    public void testGetChannel() throws FileNotFoundException {
+    public void testGetChannel() throws IOException {
         assertEquals(null, instance.getChannel());
         Channel c = new RandomAccessFile("src/main/java/Bundle.properties", "r").getChannel();
         instance.setChannel(c);
@@ -104,7 +104,7 @@ public class StorageIOTest {
     }
 
     @Test
-    public void testInputStream() {
+    public void testInputStream() throws IOException {
         assertEquals(null, instance.getInputStream());
         InputStream is = new ByteArrayInputStream("Test".getBytes());
         instance.setInputStream(is);
