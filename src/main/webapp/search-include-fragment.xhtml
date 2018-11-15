@@ -174,10 +174,12 @@
             <!--NON-TYPE FACETS-->
             <h:form id="facetCategoryForm" rendered="#{SearchIncludeFragment.searchResultsCount > 0}">
                 <p:dataList id="facetCategoryList" value="#{SearchIncludeFragment.facetCategoryList}" var="facetCategory">
-                    <h:outputText value="#{facetCategory.friendlyName}" styleClass="facetCategoryName"/>
+                    <h:outputText value='#{(bundle[facetCategory.friendlyName].startsWith("???")) ? facetCategory.friendlyName : bundle[facetCategory.friendlyName]}'
+                                  styleClass="facetCategoryName"/>  <!-- Hack to translate values from the database -->
+
                     <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5)}">
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
-                            <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
+                            <h:outputFormat value='#{(bundle[facetLabel.name].startsWith("???")) ? facetLabel.name : bundle[facetLabel.name]} &#40;{0}&#41;'>
                                 <f:param value="#{facetLabel.count}"/>
                             </h:outputFormat>
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
@@ -191,7 +193,7 @@
                         </h:outputLink>
 
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
-                            <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
+                            <h:outputFormat value='#{(bundle[facetLabel.name].startsWith("???")) ? facetLabel.name : bundle[facetLabel.name]} &#40;{0}&#41;'>
                                 <f:param value="#{facetLabel.count}"/>
                             </h:outputFormat>
                             <span class="glyphicon glyphicon-remove"></span>
@@ -326,7 +328,9 @@
                 <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery" rendered="#{!SearchIncludeFragment.wasSolrErrorEncountered()}">
                     <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
                     <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected" rendered="#{not empty friendlyNames}">
-                        <h:outputText value="#{friendlyNames.get(0)}: #{friendlyNames.get(1)}"/> <span class="glyphicon glyphicon-remove"></span>
+
+                        <h:outputText value='#{(bundle[friendlyNames.get(0)].startsWith("???")) ? friendlyNames.get(0) : bundle[friendlyNames.get(0)]} : #{(bundle[friendlyNames.get(1)].startsWith("???")) ? friendlyNames.get(1) : bundle[friendlyNames.get(1)]}' />
+                        <span class="glyphicon glyphicon-remove"></span>
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}' disable="#{clickedFilterQuery == filterQuery}"/>
