@@ -200,11 +200,11 @@ Allow or disallow users from requesting access to restricted files in a dataset 
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X GET -d true http://$SERVER/api/access/{id}/allowAccessRequest
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/{id}/allowAccessRequest
     
 A curl example using a ``pid``::
 
-   curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/:persistentId/allowAccessRequest?persistentId={pid}    
+   curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/:persistentId/allowAccessRequest?persistentId={pid}    
     
 
 Request Access:
@@ -215,7 +215,7 @@ This method requests access to the datafile whose id is passed on the behalf of 
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X GET -d true http://$SERVER/api/access/datafile/{id}/requestAccess
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/datafile/{id}/requestAccess
     
 Grant File Access:
 ~~~~~~~~~~~~~~~~~~ 
@@ -226,7 +226,7 @@ This method grants access to the datafile whose id is passed on the behalf of an
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X GET -d true http://$SERVER/api/access/datafile/{id}/grantAccess/{identifier}
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/datafile/{id}/grantAccess/{identifier}
     
 Reject File Access:
 ~~~~~~~~~~~~~~~~~~~ 
@@ -237,7 +237,7 @@ This method rejects the access request to the datafile whose id is passed on the
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X GET -d true http://$SERVER/api/access/datafile/{id}/rejectAccess/{identifier}
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/datafile/{id}/rejectAccess/{identifier}
     
 Revoke File Access:
 ~~~~~~~~~~~~~~~~~~~ 
@@ -248,14 +248,14 @@ This method revokes previously granted access to the datafile whose id is passed
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X GET -d true http://$SERVER/api/access/datafile/{id}/rejectAccess/{identifier}    
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/datafile/{id}/rejectAccess/{identifier}    
     
 List File Access Requests:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
 ``/api/access/datafile/{id}/listRequests``
 
-This method reurns a list of Authenticated Users who have requested access to the datafile whose id is passed. The key of a user who can manage permissions of the datafile is required to use this method.
+This method returns a list of Authenticated Users who have requested access to the datafile whose id is passed. The key of a user who can manage permissions of the datafile is required to use this method.
 
 A curl example using an ``id``::
 
