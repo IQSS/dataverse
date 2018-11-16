@@ -251,6 +251,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
     
     public Boolean isCustomDefaultConributorRole(){
+        if (defaultContributorRoleAlias == null){
+            initAccessSettings();
+        }
         return !( defaultContributorRoleAlias.equals(DataverseRole.EDITOR) || defaultContributorRoleAlias.equals(DataverseRole.CURATOR));
     }
     
@@ -260,6 +263,18 @@ public class ManagePermissionsPage implements java.io.Serializable {
         } else {
             return "";
         }
+    }
+    
+    public String getCustomDefaultContributorRoleAlias(){
+        if (dvObject instanceof Dataverse && isCustomDefaultConributorRole()){
+            return roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId()).getAlias();
+        } else {
+            return "";
+        }
+    }
+    
+    public void  setCustomDefaultContributorRoleAlias(String dummy){
+        //dummy method for interface
     }
     
     public void  setCustomDefaultContributorRoleName(String dummy){
