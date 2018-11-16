@@ -94,6 +94,13 @@ List Role Assignments in a Dataverse
 List all the role assignments at the given dataverse::
 
   GET http://$SERVER/api/dataverses/$id/assignments?key=$apiKey
+  
+Assign Default Role to User Creating a Dataset in a Dataverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Assign a default role to a user creating a dataset in a dataverse ``id`` where ``roleAlias`` is the database alias of the role to be assigned::
+
+  GET http://$SERVER/api/dataverses/$id/defaultContributorRole/$roleAlias?key=$apiKey
 
 Assign a New Role on a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
