@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
+    <!--
+    If you are doing more than bumping the version number, please read
+    doc/sphinx-guides/source/developers/dependencies.rst	
+    -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
     <version>4.9.4</version>
