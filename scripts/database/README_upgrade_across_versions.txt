@@ -7,9 +7,9 @@ to run the corresponding database upgrade scripts manually.
 One more time, it is *EXPERIMENTAL*! DO NOT attempt to run this script
 on your production database WITHOUT BACKING IT UP first!
 
-The script, upgrade.sh, must be run in this directory, as follows:
+The script, dbupgrade.sh, must be run in this directory, as follows:
 
-./upgrade.sh [VERSION_1] [VERSION_2] [PG_HOST] [PG_PORT] [PG_DB] [PG_USER]
+./dbupgrade.sh [VERSION_1] [VERSION_2] [PG_HOST] [PG_PORT] [PG_DB] [PG_USER]
 
 Where 
 
@@ -42,7 +42,7 @@ domain.xml file, for example:
 
 An example of the final command line, using the values above: 
 
-./upgrade.sh v4.8.6 v4.9.4 localhost 5432 dvndb dvnapp
+./dbupgrade.sh v4.8.6 v4.9.4 localhost 5432 dvndb dvnapp
 
 The script will attempt to validate the values you supply. It will
 alert you if the version tags you provided do not correspond to valid

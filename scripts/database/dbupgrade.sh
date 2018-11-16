@@ -14,6 +14,8 @@ pg_port=$4
 pg_database=$5
 pg_user=$6
 
+log_file=dbupgrade.$$.log
+
 echo "IMPORTANT!"
 echo "Make sure you BACK UP YOUR DATABASE before attempting this upgrade!"
 echo 
@@ -91,9 +93,9 @@ do
 	    exit 1
 	fi
 
-	echo "Attempting to run the script create/create_${version}.sql..."
+	echo "Attempting to run the script create/create_${version}.sql..." | tee -a $log_file
 
-	if ! psql -w d ${pg_database} -U ${pg_user} -h ${pg_host} -p ${pg_port} -f create/create_${version}.sql >/dev/null 2>&1
+	if ! psql -w -d ${pg_database} -U ${pg_user} -h ${pg_host} -p ${pg_port} -f create/create_${version}.sql >>$log_file 2>&1
 	then
 	    echo >&2 "Failed to run the create database script for version ${version}"
 	    exit 1
@@ -108,9 +110,9 @@ do
 
 	if [ -f upgrades/upgrade_v*_to_${version}.sql ]
 	then
-	    echo "Attempting to execute the upgrade script:" upgrades/upgrade_v*_to_${version}.sql
+	    echo "Attempting to execute the upgrade script:" upgrades/upgrade_v*_to_${version}.sql | tee -a $log_file
 
-	    if ! psql -w -d ${pg_database} -U ${pg_user} -h ${pg_host} -p ${pg_port} -f upgrades/upgrade_v*_to_${version}.sql >/dev/null 2>&1
+	    if ! psql -w -d ${pg_database} -U ${pg_user} -h ${pg_host} -p ${pg_port} -f upgrades/upgrade_v*_to_${version}.sql >>$log_file 2>&1
 	    then
 		echo >&2 "Failed to run the upgrade database script for version ${version}"
 		exit 1
