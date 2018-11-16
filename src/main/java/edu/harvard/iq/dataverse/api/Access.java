@@ -967,7 +967,7 @@ public class Access extends AbstractApiBean {
      */
     @PUT
     @Path("/datafile/{id}/requestAccess")
-    public Response requestFileAccess(@PathParam("id") String fileToRequestAccessId, @QueryParam("key") String apiToken, @Context HttpHeaders headers) {
+    public Response requestFileAccess(@PathParam("id") String fileToRequestAccessId,  @Context HttpHeaders headers) {
         //create request
         DataverseRequest dataverseRequest;
         //get the datafile
@@ -977,13 +977,6 @@ public class Access extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             List<String> args = Arrays.asList(fileToRequestAccessId);
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
-        }
-        
-        if (apiToken == null || apiToken.equals("")) {                   
-            apiToken = headers.getHeaderString(API_KEY_HEADER);
-        }
-        if (apiToken == null || apiToken.equals("")) {
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.noKey"));
         }
         
         if (!dataFile.getOwner().isFileAccessRequest()){
@@ -1023,7 +1016,9 @@ public class Access extends AbstractApiBean {
      */
     @GET
     @Path("/datafile/{id}/listRequests")
-    public Response listFileAccessRequests(@PathParam("id") String fileToRequestAccessId, @QueryParam("key") String apiToken, @Context HttpHeaders headers) {
+    public Response listFileAccessRequests(@PathParam("id") String fileToRequestAccessId,  @Context HttpHeaders headers) {
+        
+        System.out.print("in list access requests method");
         //create request
         DataverseRequest dataverseRequest;
         //get the datafile
@@ -1035,13 +1030,6 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.fileNotFound", args));
         }
 
-        if (apiToken == null || apiToken.equals("")) {
-            apiToken = headers.getHeaderString(API_KEY_HEADER);
-        }
-        if (apiToken == null || apiToken.equals("")) {
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.noKey"));
-        }
-
         try {
             dataverseRequest = createDataverseRequest(findUserOrDie());
         } catch (WrappedResponse wr) {
@@ -1050,8 +1038,8 @@ public class Access extends AbstractApiBean {
         }
 
         if (!dataverseRequest.getAuthenticatedUser().isSuperuser() && !permissionService.on(dataFile.getOwner()).has(Permission.ManageDatasetPermissions)) {
-            List<String> args = Arrays.asList(apiToken);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions", args));
+
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
         
 
@@ -1086,7 +1074,7 @@ public class Access extends AbstractApiBean {
      */
     @PUT
     @Path("/datafile/{id}/grantAccess/{identifier}")
-    public Response grantFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @QueryParam("key") String apiToken, @Context HttpHeaders headers) {
+    public Response grantFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier,  @Context HttpHeaders headers) {
         //create request
         DataverseRequest dataverseRequest;
         //get the datafile
@@ -1097,14 +1085,6 @@ public class Access extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             List<String> args = Arrays.asList(fileToRequestAccessId);
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
-        }
-        
-        if (apiToken == null || apiToken.equals("")) {                   
-            apiToken = headers.getHeaderString(API_KEY_HEADER);
-        }
-        
-        if (apiToken == null || apiToken.equals("")) {
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.noKey"));
         }
         
         
@@ -1154,7 +1134,7 @@ public class Access extends AbstractApiBean {
      */
     @DELETE
     @Path("/datafile/{id}/revokeAccess/{identifier}")
-    public Response revokeFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @QueryParam("key") String apiToken, @Context HttpHeaders headers) {
+    public Response revokeFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
         //create request
         DataverseRequest dataverseRequest;
         //get the datafile
@@ -1165,14 +1145,6 @@ public class Access extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             List<String> args = Arrays.asList(fileToRequestAccessId);
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
-        }
-
-        if (apiToken == null || apiToken.equals("")) {
-            apiToken = headers.getHeaderString(API_KEY_HEADER);
-        }
-
-        if (apiToken == null || apiToken.equals("")) {
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.noKey"));
         }
 
         try {
@@ -1234,7 +1206,7 @@ public class Access extends AbstractApiBean {
      */
     @PUT
     @Path("/datafile/{id}/rejectAccess/{identifier}")
-    public Response rejectFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @QueryParam("key") String apiToken, @Context HttpHeaders headers) {
+    public Response rejectFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier,  @Context HttpHeaders headers) {
 
         //create request
         DataverseRequest dataverseRequest;
@@ -1248,13 +1220,6 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
         }
         
-        if (apiToken == null || apiToken.equals("")) {                   
-            apiToken = headers.getHeaderString(API_KEY_HEADER);
-        }
-        
-        if (apiToken == null || apiToken.equals("")) {
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.noKey"));
-        }
         
         
         RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(identifier);
@@ -1274,8 +1239,7 @@ public class Access extends AbstractApiBean {
         }
 
         if (!dataverseRequest.getAuthenticatedUser().isSuperuser() && !permissionService.on(dataFile.getOwner()).has(Permission.ManageDatasetPermissions)) {
-            List<String> args = Arrays.asList(apiToken);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
         if (dataFile.getFileAccessRequesters().contains(ra)) {
