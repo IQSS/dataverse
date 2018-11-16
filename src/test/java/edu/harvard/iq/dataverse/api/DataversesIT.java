@@ -324,6 +324,13 @@ public class DataversesIT {
         updateDataverseDefaultRoleNoPerms.prettyPrint();
         updateDataverseDefaultRoleNoPerms.then().assertThat()
                 .statusCode(401);
+        
+        // try role with no dataset permissions alias
+        Response updateDataverseDefaultRoleBadRolePermissions = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "dvContributor", apiToken);
+        updateDataverseDefaultRoleBadRolePermissions.prettyPrint();
+        updateDataverseDefaultRoleBadRolePermissions.then().assertThat()
+                .body("message", equalTo("Role dvContributor does not have dataset permissions."))
+                .statusCode(400);
 
         //for test use an existing role. In practice this likely will be a custom role
         Response updateDataverseDefaultRole = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "curator", apiToken);
