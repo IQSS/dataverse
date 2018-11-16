@@ -757,11 +757,7 @@ public class Dataverses extends AbstractApiBean {
             @PathParam("roleAlias") String roleAlias) {
 
         try {
-            Dataverse dv = findDataverseOrDie(dvIdtf);
-            System.out.print("###################################");
-            System.out.print(dv);
-            System.out.print(dv.getId());
-            
+            Dataverse dv = findDataverseOrDie(dvIdtf);           
             DataverseRole testGetRole = roleService.findCustomRoleByAliasAndOwner(roleAlias, dv.getId());
         } catch (Exception nre) {
             List<String> args = Arrays.asList(roleAlias);
