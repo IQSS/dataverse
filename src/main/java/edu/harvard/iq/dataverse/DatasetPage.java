@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
+import edu.harvard.iq.dataverse.S3PackagePopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -196,7 +197,9 @@ public class DatasetPage implements java.io.Serializable {
     SettingsWrapper settingsWrapper; 
     @Inject 
     ProvPopupFragmentBean provPopupFragmentBean;
-
+//MAD: Does this even do anything? Does the prov one for that matter?
+//    @Inject 
+//    S3PackagePopupFragmentBean s3PopupFragmentBean;
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
@@ -1470,6 +1473,7 @@ public class DatasetPage implements java.io.Serializable {
                 logger.fine("Checking if rsync support is enabled.");
                 if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
                     try {
+//MAD: I think this is the spot that keeps checking for rsync even though its gone thru the process
                         ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
                         logger.fine("script: " + scriptRequestResponse.getScript());
                         if(scriptRequestResponse.getScript()!=null && !scriptRequestResponse.getScript().isEmpty()){

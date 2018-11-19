@@ -113,8 +113,9 @@
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
     </h:outputLink>
 
+    <!-- MAD: RENDER WAS DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://') -->
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
-                              and fileMetadata.dataFile.filePackage and DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')}"
+                              and fileMetadata.dataFile.filePackage and fileMetadata.datasetVersion.dataset.getStorageIdentifier().startsWith('s3://')}"
                    type="button" styleClass="btn btn-default"
                    process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
@@ -127,7 +128,7 @@
     </p:commandLink>
 
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and (downloadPopupRequired) 
-                              and fileMetadata.dataFile.filePackage and DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')}"
+                              and fileMetadata.dataFile.filePackage and fileMetadata.datasetVersion.dataset.getStorageIdentifier().startsWith('s3://')}"
                     type="button" styleClass="btn btn-default"
                    process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
@@ -139,8 +140,8 @@
     </p:commandLink>
 
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
-                                and !(fileMetadata.dataFile.filePackage and DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://'))}"
-                   type="button" styleClass="btn btn-default"
+                                and !(fileMetadata.dataFile.filePackage and fileMetadata.datasetVersion.dataset.getStorageIdentifier().startsWith('s3://'))}"
+                   type="button" styleClass="b    tn btn-default"
                    process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                    actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'Download')}">
@@ -150,7 +151,7 @@
     </p:commandLink>
 
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and downloadPopupRequired 
-                                and !(fileMetadata.dataFile.filePackage and DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://'))}"
+                                and !(fileMetadata.dataFile.filePackage and fileMetadata.datasetVersion.dataset.getStorageIdentifier().startsWith('s3://'))}"
                    type="button" styleClass="btn btn-default"
                    process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
