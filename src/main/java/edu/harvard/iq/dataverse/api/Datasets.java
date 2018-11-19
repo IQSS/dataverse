@@ -75,6 +75,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
@@ -1519,6 +1520,26 @@ public class Datasets extends AbstractApiBean {
 
         });
     }
-    
+
+    @GET
+    @Path("{id}/makeDataCount/{metric}")
+    public Response getMakeDataCountMetric(@PathParam("id") String idSupplied, @PathParam("metric") String metricSupplied) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+            MakeDataCountUtil.MetricType metricType = null;
+            try {
+                metricType = MakeDataCountUtil.MetricType.fromString(metricSupplied);
+            } catch (IllegalArgumentException ex) {
+                return error(Response.Status.BAD_REQUEST, ex.getMessage());
+            }
+            String description = metricType.name() + " metric for dataset " + dataset.getId();
+            jsonObjectBuilder.add("description", description);
+            return allowCors(ok(jsonObjectBuilder));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
 }
 

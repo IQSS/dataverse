@@ -1767,4 +1767,29 @@ public class UtilIT {
         String apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
         return given().get(apiPath);
     }
+
+    static Response makeDataCountSendDataToHub() {
+        return given().post("/api/admin/makeDataCount/sendToHub");
+    }
+
+    static Response makeDataCountDownloadFromHub(String metric) {
+        return given().post("/api/admin/makeDataCount/downloadFromHub/" + metric);
+    }
+
+    static Response makeDataCountGetMetricForDataset(String idOrPersistentIdOfDataset, String metric, String apiToken) {
+        System.out.println("metric: " + metric);
+        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDataset;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/datasets/" + idInPath + "/makeDataCount/" + metric + optionalQueryParam);
+    }
+
 }

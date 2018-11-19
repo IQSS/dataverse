@@ -1,6 +1,8 @@
 Metrics API
 ===========
 
+The Metrics API provides counts of downloads, datasets created, files uploaded, and more, as described below. Dataverse also supports Make Data Count, which is described in the :doc:`/admin/make-data-count` section of the Admin Guide.
+
 .. contents:: |toctitle|
     :local:
 
