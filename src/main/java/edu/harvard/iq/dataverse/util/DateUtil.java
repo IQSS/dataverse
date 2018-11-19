@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.DataverseLocaleBean;
 
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,5 +44,24 @@ public class DateUtil {
             e.printStackTrace();
             return null;
         }
+     }
+
+     public static String formatDate(Timestamp datetimeToformat)
+     {
+         String formattedDate;
+         DateFormat dateFormatter;
+         try{
+             DataverseLocaleBean d = new DataverseLocaleBean();
+             Locale currentLocale = new Locale(d.getLocaleCode());
+             dateFormatter = DateFormat.getDateTimeInstance(
+                                                     DateFormat.DEFAULT,
+                                                     DateFormat.DEFAULT,
+                                                     currentLocale);
+             formattedDate = dateFormatter.format(datetimeToformat);
+             return formattedDate;
+         } catch (Exception e) {
+             e.printStackTrace();
+             return null;
+         }
      }
 }
