@@ -55,6 +55,7 @@
        1.5: omitNorms defaults to true for primitive field types 
             (int, float, boolean, string...)
        1.6: useDocValuesAsStored defaults to true.
+       1.7 QDR: use separate fulltext field, add hypothesis fields
     -->
 
     <!-- Valid attributes for fields:
@@ -131,7 +132,8 @@
     <field name="text_rev" type="text_general_rev" indexed="true" stored="false" multiValued="true"/>    
     <field name="name" type="text_en" indexed="true" stored="true"/> 
 
-
+	<!--  full text indexing, text_en for stemming, stored to support returning phrases around hits -->
+    <field name="fulltext" type="text_en" indexed="true" stored="true"/>
 
 
 
@@ -141,6 +143,7 @@
     <field name="definitionPointDocId" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="definitionPointDvObjectId" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="discoverableBy" type="string" stored="true" indexed="true" multiValued="true"/>
+    <field name="fullTextSearchableBy" type="string" stored="true" indexed="true" multiValued="true"/>
 
     <field name="dvObjectType" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="metadataSource" type="string" stored="true" indexed="true" multiValued="false"/>
@@ -239,6 +242,10 @@
     <field name="actionsToMinimizeLoss" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="alternativeTitle" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="alternativeURL" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="annotations" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="annotationsGroup" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="annotationsJSON" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="annotationsSource" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="astroFacility" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="astroInstrument" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="astroObject" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -523,6 +530,10 @@
     <copyField source="actionsToMinimizeLoss" dest="_text_" maxChars="3000"/>
     <copyField source="alternativeTitle" dest="_text_" maxChars="3000"/>
     <copyField source="alternativeURL" dest="_text_" maxChars="3000"/>
+    <copyField source="annotations" dest="_text_" maxChars="3000"/>
+    <copyField source="annotationsGroup" dest="_text_" maxChars="3000"/>
+    <copyField source="annotationsJSON" dest="_text_" maxChars="3000"/>
+    <copyField source="annotationsSource" dest="_text_" maxChars="3000"/>
     <copyField source="astroFacility" dest="_text_" maxChars="3000"/>
     <copyField source="astroInstrument" dest="_text_" maxChars="3000"/>
     <copyField source="astroObject" dest="_text_" maxChars="3000"/>

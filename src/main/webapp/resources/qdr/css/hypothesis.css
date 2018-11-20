@@ -1,0 +1,60 @@
+.annotation-card {
+    font-size: 13px;
+    line-height: 15px;
+    font-weight: 400;
+    border: 1px solid #ececec;
+    list-style: none;
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+    background: #fff;
+    overflow-wrap: break-word;
+}
+.annotation-card__text {
+    overflow-wrap: break-word;
+}
+.annotation-card__quote {
+    padding: 0 10px;
+    overflow-wrap: break-word;
+    color: #a6a6a6;
+    font-family: sans-serif;
+    font-size: 12px;
+    font-style: italic;
+    letter-spacing: .1px;
+    border-left: 3px solid #dbdbdb;
+    margin-bottom: 10px;
+}
+.annotation-card__header {
+    margin-bottom: 15px;
+    -ms-flex-align: baseline;
+    align-items: baseline;
+}
+.annotation-card__timestamp {
+    font-size: 11px;
+    line-height: 12px;
+    font-weight: 400;
+    letter-spacing: .2px;
+    color: #a6a6a6;
+}
+.annotation-card__tags {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+.annotation-card__tag {
+    text-decoration: none;
+    border: 1px solid #dbdbdb;
+    border-radius: 2px;
+    padding: 0 5px 2px;
+    color: #7a7a7a;
+    background: #f2f2f2;
+    margin: 0 5px 5px 0;
+    font-size: 11px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
