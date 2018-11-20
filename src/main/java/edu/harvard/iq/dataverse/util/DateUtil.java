@@ -34,7 +34,7 @@ public class DateUtil {
 
     public static String formatDate(String dateToformat){
         String formattedDate = "";
-        DateFormat inputFormat = DateFormat.getDateInstance(DateFormat.DEFAULT);
+        DateFormat inputFormat = new SimpleDateFormat("MMM dd, yyyy");
         Date _date = null;
         try {
             _date = inputFormat.parse(dateToformat);
