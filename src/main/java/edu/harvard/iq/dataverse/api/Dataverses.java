@@ -326,7 +326,6 @@ public class Dataverses extends AbstractApiBean {
                 return badRequest("Error parsing datas as Json: "+jpe.getMessage());
             }
             ds.setOwner(owner);
-
             if (nonEmpty(pidParam)) {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {
                     return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
@@ -339,11 +338,21 @@ public class Dataverses extends AbstractApiBean {
                     return badRequest("Cannot parse the PID parameter '" + pidParam + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
                 }
             }
-            else {
 
-            }
             boolean shouldRelease = StringUtil.isTrue(releaseParam);
             DataverseRequest request = createDataverseRequest(u);
+
+            Dataset managedDs = null;
+            if (nonEmpty(pidParam)) {
+                managedDs = execCommand(new ImportDatasetCommand(ds, request));
+            }
+            else {
+                managedDs = execCommand(new CreateNewDatasetCommand(ds, request));
+            }
+
+            JsonObjectBuilder responseBld = Json.createObjectBuilder()
+                    .add("id", managedDs.getId())
+                    .add("persistentId", managedDs.getGlobalIdString());
 
             if (shouldRelease) {
                 DatasetVersion latestVersion = ds.getLatestVersion();
@@ -356,14 +365,6 @@ public class Dataverses extends AbstractApiBean {
                 if (latestVersion.getLastUpdateTime() != null) {
                     latestVersion.setLastUpdateTime(new Date());
                 }
-            }
-
-            Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, request));
-            JsonObjectBuilder responseBld = Json.createObjectBuilder()
-                    .add("id", managedDs.getId())
-                    .add("persistentId", managedDs.getGlobalIdString());
-
-            if (shouldRelease) {
                 PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
                 responseBld.add("releaseCompleted", res.isCompleted());
             }
