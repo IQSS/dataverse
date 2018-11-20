@@ -758,32 +758,34 @@ public class Dataverses extends AbstractApiBean {
 
         DataverseRole defaultRole;
         
-        try {
-            Dataverse dv = findDataverseOrDie(dvIdtf);           
-            defaultRole = roleService.findCustomRoleByAliasAndOwner(roleAlias, dv.getId());
-        } catch (Exception nre) {
-            List<String> args = Arrays.asList(roleAlias);
-            String retStringError = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.failure.role.not.found", args);
-            return error(Status.NOT_FOUND, retStringError);
-        }
-        
-        if (!defaultRole.doesDvObjectClassHavePermissionForObject(Dataset.class)){
-                List<String> args = Arrays.asList(roleAlias);
-                String retStringError = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.failure.role.does.not.have.dataset.permissions", args);
-                return error(Status.BAD_REQUEST, retStringError);            
-        }
-
-        try {
-            Dataverse dv = findDataverseOrDie(dvIdtf);
-            if (defaultRole == null) {
+        if (roleAlias.equals("none")) {
+            defaultRole = null;
+        } else {
+            try {
+                Dataverse dv = findDataverseOrDie(dvIdtf);
+                defaultRole = roleService.findCustomRoleByAliasAndOwner(roleAlias, dv.getId());
+            } catch (Exception nre) {
                 List<String> args = Arrays.asList(roleAlias);
                 String retStringError = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.failure.role.not.found", args);
                 return error(Status.NOT_FOUND, retStringError);
             }
 
+            if (!defaultRole.doesDvObjectClassHavePermissionForObject(Dataset.class)) {
+                List<String> args = Arrays.asList(roleAlias);
+                String retStringError = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.failure.role.does.not.have.dataset.permissions", args);
+                return error(Status.BAD_REQUEST, retStringError);
+            }
+
+        }
+
+        try {
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            
+            String defaultRoleName = defaultRole == null ? "None" : defaultRole.getName();
+
             return response(req -> {
                 execCommand(new UpdateDataverseDefaultContributorRoleCommand(defaultRole, req, dv));
-                List<String> args = Arrays.asList(dv.getDisplayName(), defaultRole.getName());
+                List<String> args = Arrays.asList(dv.getDisplayName(), defaultRoleName);
                 String retString = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.success", args);
                 return ok(retString);
             });

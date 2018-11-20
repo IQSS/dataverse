@@ -258,8 +258,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
     
     public String getCustomDefaultContributorRoleName(){
-        if (dvObject instanceof Dataverse && isCustomDefaultConributorRole()){
-            return roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId() ).getName();
+        if (dvObject instanceof Dataverse && isCustomDefaultConributorRole() ){           
+            return defaultContributorRoleAlias.equals("none") ? "None" : roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId()).getName();
         } else {
             return "";
         }
@@ -267,7 +267,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
     
     public String getCustomDefaultContributorRoleAlias(){
         if (dvObject instanceof Dataverse && isCustomDefaultConributorRole()){
-            return roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId()).getAlias();
+            return defaultContributorRoleAlias.equals("none") ? "none" : roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId()).getAlias();
         } else {
             return "";
         }
@@ -283,7 +283,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
     
     public String getCustomDefaultContributorRoleDescription(){
         if (dvObject instanceof Dataverse  && isCustomDefaultConributorRole()){
-            return roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId() ).getDescription();
+            return defaultContributorRoleAlias.equals("none") ? "Something scary from the bundle" :roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId() ).getDescription();
         } else {
             return "";
         }
@@ -308,8 +308,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 break;
                 // @todo handle case where more than one role has been assigned to the AutenticatedUsers group!
             }
-
-            defaultContributorRoleAlias = ((Dataverse) dvObject).getDefaultContributorRole().getAlias();
+           
+            defaultContributorRoleAlias = ((Dataverse) dvObject).getDefaultContributorRole() == null ? "none" : ((Dataverse) dvObject).getDefaultContributorRole().getAlias();
         }
     }
 
