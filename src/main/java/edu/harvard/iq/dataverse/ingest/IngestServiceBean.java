@@ -641,12 +641,24 @@ public class IngestServiceBean {
 
             Collection<VariableCategory> cats = vars.get(i).getCategories();
             int caseQuantity = vars.get(i).getDataTable().getCaseQuantity().intValue();
+            boolean isNumeric = vars.get(i).isTypeNumeric();
+            Object[] variableVector = null;
             if (cats.size() > 0) {
-                String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, caseQuantity);
+                if (isNumeric) {
+                    variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(generatedTabularFile), i, caseQuantity);
+                }
+                else {
+                    variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, caseQuantity);
+                }
                 if (variableVector != null) {
-                    Hashtable<String, Double> freq = calculateFrequency(variableVector);
+                    Hashtable<Object, Double> freq = calculateFrequency(variableVector);
                     for (VariableCategory cat : cats) {
-                        String catValue = cat.getValue();
+                        Object catValue;
+                        if (isNumeric) {
+                            catValue = new Float(cat.getValue());
+                        } else {
+                            catValue = cat.getValue();
+                        }
                         Double numberFreq = freq.get(catValue);
                         if (numberFreq != null) {
                             cat.setFrequency(numberFreq);
@@ -661,8 +673,8 @@ public class IngestServiceBean {
         }
     }
 
-    public static Hashtable<String, Double> calculateFrequency( String[] variableVector) {
-        Hashtable<String, Double> freq = new Hashtable<String, Double>();
+    public static Hashtable<Object, Double> calculateFrequency( Object[] variableVector) {
+        Hashtable<Object, Double> freq = new Hashtable<Object, Double>();
 
         for (int j = 0; j < variableVector.length; j++) {
             if (variableVector[j] != null) {
