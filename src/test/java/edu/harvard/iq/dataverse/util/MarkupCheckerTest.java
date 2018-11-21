@@ -100,13 +100,6 @@ public class MarkupCheckerTest {
         this.msgu("safeStr: " + safeStr + "\nsanitized: " + sanitized);
         assertTrue(safeStr.equals(sanitized));      
         
-        unsafeStr = "\"text\": \"<a href=\"https://qdr.syr.edu/ati\">\n<img src=\"https://qdr.syr.edu/drupal_data/public/ati_banner_long.png\" align=\"left\"/></a>\n<br/>\nThis is an Annotation for Transparent Inquiry project, published by the <a href=\"https://qdr.syr.edu\">Qualitative Data Repository</a>.";
-        safeStr =   "\"text\": \"<a href=\"https://qdr.syr.edu/ati\"  rel=\"nofollow\" target=\"_blank\">\n<img src=\"https://qdr.syr.edu/drupal_data/public/ati_banner_long.png\" align=\"left\"/></a>\n<br/>\nThis is an Annotation for Transparent Inquiry project, published by the <a href=\"https://qdr.syr.edu\">Qualitative Data Repository</a>.";
-        sanitized = MarkupChecker.sanitizeBasicHTML(unsafeStr);
-        this.msgu("safeStr: " + safeStr + "\nsanitized: " + sanitized);
-        assertTrue(safeStr.equals(sanitized));      
-        
-        
         //test null
         unsafeStr = null;
         sanitized = MarkupChecker.sanitizeBasicHTML(unsafeStr);
