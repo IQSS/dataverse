@@ -2,6 +2,6 @@
 	hypothesis		Hypothesis Annotations	https://dataverse.org/schema/hypothesis/											
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
 	annotations	Annotations	The Hypothesis annotations created by the specified group on the specified document.		none	1		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		hypothesis	
-	annotationsSource	Annotated Document	An annotated document relevant to this Data Project.	URL or DOI	url	2	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	annotations	hypothesis
-	annotationsGroup	Group	A Hypothesis group that can view the annotations.	Group ID (not the name)	text	3	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	annotations	hypothesis
-	annotationsJSON	Raw Annotations	The automatically retrieved JSON form of the annotations	Do Not Enter	text	4	<div class="hypothesis">#VALUE</div>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	annotations	hypothesis
+	annotationsSource	Annotated Document	An annotated document relevant to this Data Project.	URL or DOI	url	2	<div><div class='annotation__source'>Source: <a href="#VALUE" target="_blank">#VALUE</a></div>	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	annotations	hypothesis
+	annotationsGroup	Group	A Hypothesis group that can view the annotations.	Group ID (not the name)	text	3	<div class='annotation__group'>Group: <a href="https://hypothes.is/groups/#VALUE">#VALUE</a></div>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	annotations	hypothesis
+	annotationsJSON	Raw Annotations	The automatically retrieved JSON form of the annotations	Do Not Enter	textbox	4	<div class="hypothesis">#VALUE</div></div>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	annotations	hypothesis
