@@ -420,32 +420,27 @@ public class RoleTagRetriever {
 
     private List<String> getFormattedRoleListForId(Long dvId, 
                                                 boolean withDatasetPerms, 
-                                                boolean withFilePerms){
-        
-        if (dvId==null){
+                                                boolean withFilePerms) {
+        if (dvId==null) {
             return null;
         }
-        if (!this.idToRoleListHash.containsKey(dvId)){
+        if (!this.idToRoleListHash.containsKey(dvId)) {
             return null;
         }
         
         List<String> roleNames = new ArrayList<>();
         for (Long roleId : this.idToRoleListHash.get(dvId) ){
             if ((withDatasetPerms && this.rolePermissionHelper.hasDatasetPermissions(roleId))
-                || (withFilePerms && this.rolePermissionHelper.hasFilePermissions(roleId)))
-            {
+                || (withFilePerms && this.rolePermissionHelper.hasFilePermissions(roleId))) {
                 String roleName = this.rolePermissionHelper.getRoleName(roleId);
-                if (roleName != null){
+                if (roleName != null) {
                     roleNames.add(roleName);
                 }
             }
         }
         return roleNames;
-        
     }
 
-    
-    
     public boolean hasRolesForCard(Long dvObjectId){
         if (dvObjectId == null){
             return false;
@@ -473,10 +468,7 @@ public class RoleTagRetriever {
         }
         return jsonArray;             
     }
-    
-    
-            
-    
+
     /**
      * For the cards, make a dict of { dv object id : [role name, role name, etc ]}
      * 

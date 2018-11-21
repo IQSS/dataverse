@@ -145,7 +145,7 @@ public class DownloadInfo {
     }
     
     public List<OptionalAccessService> getServicesAvailable() {
-	return optionalServicesAvailable; 
+        return optionalServicesAvailable;
     }
     
     public void addServiceAvailable(OptionalAccessService accessService) {

@@ -64,9 +64,9 @@ public class ControlledVocabularyValue implements Serializable  {
     public String getStrValue() {
         return strValue;
     }
+
     public void setStrValue(String strValue) {
         this.strValue = strValue;
-        
     }
     
     private String identifier;
@@ -78,20 +78,24 @@ public class ControlledVocabularyValue implements Serializable  {
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
-    
-    
-    
+
     private int displayOrder;
-    public int getDisplayOrder() { return this.displayOrder;}
-    public void setDisplayOrder(int displayOrder) {this.displayOrder = displayOrder;} 
-       
-    
+
+    public int getDisplayOrder() {
+        return this.displayOrder;
+    }
+
+    public void setDisplayOrder(int displayOrder) {
+        this.displayOrder = displayOrder;
+    }
+
     @ManyToOne
     // @JoinColumn( nullable = false ) TODO this breaks for the N/A value. need to create an N/A type for that value.
     private DatasetFieldType datasetFieldType;
     public DatasetFieldType getDatasetFieldType() {
         return datasetFieldType;
     }
+
     public void setDatasetFieldType(DatasetFieldType datasetFieldType) {
         this.datasetFieldType = datasetFieldType;
     }
@@ -106,7 +110,6 @@ public class ControlledVocabularyValue implements Serializable  {
     public void setControlledVocabAlternates(Collection<ControlledVocabAlternate> controlledVocabAlternates) {
         this.controlledVocabAlternates = controlledVocabAlternates;
     }
-
 
     @Override
     public int hashCode() {
@@ -128,5 +131,5 @@ public class ControlledVocabularyValue implements Serializable  {
     public String toString() {
         return "edu.harvard.iq.dataverse.ControlledVocabularyValue[ id=" + id + " ]";
     }     
-    
+
 }

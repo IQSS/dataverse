@@ -1708,7 +1708,11 @@ public class PORFileReader  extends TabularDataFileReader{
             return null;
         } finally {
             if (labelsFileReader != null) {
-                try {labelsFileReader.close();}catch(Exception x){};
+                try {
+                    labelsFileReader.close();
+                } catch(Exception x) {
+
+                };
             }
         }
 

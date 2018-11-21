@@ -66,10 +66,7 @@ public abstract class StorageIO<T extends DvObject> {
         }
     }
 
-    
-    
     // Abstract methods to be implemented by the storage drivers:
-
     public abstract void open(DataAccessOption... option) throws IOException;
 
     protected boolean isReadAccess = false;
@@ -247,8 +244,7 @@ public abstract class StorageIO<T extends DvObject> {
         return (ReadableByteChannel) channel;
     }
     
-    public DvObject getDvObject()
-    {
+    public DvObject getDvObject() {
         return dvObject;
     }
     

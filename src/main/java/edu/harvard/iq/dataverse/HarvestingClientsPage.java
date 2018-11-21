@@ -225,12 +225,13 @@ public class HarvestingClientsPage implements java.io.Serializable {
         // for it:
         // (looks like we need to sleep for a few milliseconds here, to make sure 
         // it has already been updated with the "inprogress" setting)
-        try{Thread.sleep(500L);}catch(Exception e){}
-        
-        
+        try {
+            Thread.sleep(500L);
+        } catch(Exception e) {
+
+        }
+
         configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
-        
-        
     }
     
     public void editClient(HarvestingClient harvestingClient) {

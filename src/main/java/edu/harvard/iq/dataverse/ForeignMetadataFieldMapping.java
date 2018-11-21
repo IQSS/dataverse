@@ -15,13 +15,15 @@ import java.util.TreeMap;
  *
  * @author Leonid Andreev
  */
-@Table( uniqueConstraints = @UniqueConstraint(columnNames={"foreignMetadataFormatMapping_id","foreignFieldXpath"}) 
-      , indexes = {@Index(columnList="foreignmetadataformatmapping_id")
-		, @Index(columnList="foreignfieldxpath")
-		, @Index(columnList="parentfieldmapping_id")})
+@Table(uniqueConstraints = @UniqueConstraint(columnNames={"foreignMetadataFormatMapping_id","foreignFieldXpath"}),
+   indexes = {
+       @Index(columnList="foreignmetadataformatmapping_id"),
+       @Index(columnList="foreignfieldxpath"),
+       @Index(columnList="parentfieldmapping_id")
+})
 @NamedQueries({
-  @NamedQuery( name="ForeignMetadataFieldMapping.findByPath",
-               query="SELECT fmfm FROM ForeignMetadataFieldMapping fmfm WHERE fmfm.foreignMetadataFormatMapping.name=:formatName AND fmfm.foreignFieldXPath=:xPath")  
+    @NamedQuery(name="ForeignMetadataFieldMapping.findByPath",
+        query="SELECT fmfm FROM ForeignMetadataFieldMapping fmfm WHERE fmfm.foreignMetadataFormatMapping.name=:formatName AND fmfm.foreignFieldXPath=:xPath")
 })
 @Entity
 public class ForeignMetadataFieldMapping implements Serializable {

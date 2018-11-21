@@ -51,6 +51,7 @@ public class TokenApplicationTypeServiceBean {
         
         //return null;
     }
+
     public TokenApplicationType find(Object pk) {
         if (pk==null){
             return null;
@@ -92,17 +93,17 @@ public class TokenApplicationTypeServiceBean {
        
     }
             
-    public TokenApplicationType save( TokenApplicationType tokenApp ) {
+    public TokenApplicationType save(TokenApplicationType tokenApp) {
         
-        if (tokenApp==null){
+        if (tokenApp == null) {
             return null;
         }
         
-        if (tokenApp.getName()==null){
+        if (tokenApp.getName() == null) {
             tokenApp.setName(TokenApplicationType.DEFAULT_GEOCONNECT_APPLICATION_NAME);
         }
         
-        if (tokenApp.getMapitLink()==null){
+        if (tokenApp.getMapitLink() == null) {
             logger.warning("mapitLink is missing for tokenApp");
             return null;
         }
@@ -117,33 +118,31 @@ public class TokenApplicationTypeServiceBean {
         // set md5
         tokenApp.setMd5(this.getMD5Hash(tokenApp.getName()));
         
-        if ( tokenApp.getId() == null ) {
+        if (tokenApp.getId() == null) {
             tokenApp.setCreated();
             em.persist(tokenApp);
             logger.fine("New tokenApp saved");
             return tokenApp;
-	} else {
+        } else {
             tokenApp.setModified();
             logger.fine("Existing tokenApp saved");
             return em.merge( tokenApp );
-	}
+        }
     }
-	        
-   
+
     public TokenApplicationType findByName(String name){
-        if (name == null){
+        if (name == null) {
             return null;
         }
-        try{
+        try {
             return em.createQuery("select m from TokenApplicationType m WHERE m.name=:name", TokenApplicationType.class)
-					.setParameter("name", name)
-					.getSingleResult();
-        } catch ( NoResultException nre ) {
+                    .setParameter("name", name)
+                    .getSingleResult();
+        } catch (NoResultException nre) {
             return null;
         }    
     }
-    
-    
+
     public List<TokenApplicationType> getAllTokenApplicationTypes(){
         String qr = "select object(o) from TokenApplicationType order by o.modified desc";
         TypedQuery<TokenApplicationType> query = em.createQuery(qr, TokenApplicationType.class);

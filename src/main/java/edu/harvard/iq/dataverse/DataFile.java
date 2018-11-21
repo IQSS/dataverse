@@ -54,16 +54,18 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author gdurand
  */
 @NamedQueries({
-	@NamedQuery( name="DataFile.removeFromDatasetVersion",
-		query="DELETE FROM FileMetadata f WHERE f.datasetVersion.id=:versionId and f.dataFile.id=:fileId"),
-        @NamedQuery(name="DataFile.findDataFileByIdProtocolAuth", 
-                query="SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority")
+    @NamedQuery(name="DataFile.removeFromDatasetVersion",
+        query="DELETE FROM FileMetadata f WHERE f.datasetVersion.id=:versionId and f.dataFile.id=:fileId"),
+    @NamedQuery(name="DataFile.findDataFileByIdProtocolAuth",
+        query="SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority")
 })
 @Entity
-@Table(indexes = {@Index(columnList="ingeststatus")
-		, @Index(columnList="checksumvalue")
-		, @Index(columnList="contenttype")
-		, @Index(columnList="restricted")})
+@Table(indexes = {
+    @Index(columnList="ingeststatus"),
+    @Index(columnList="checksumvalue"),
+    @Index(columnList="contenttype"),
+    @Index(columnList="restricted")
+})
 public class DataFile extends DvObject implements Comparable {
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
     private static final long serialVersionUID = 1L;
@@ -80,7 +82,6 @@ public class DataFile extends DvObject implements Comparable {
     @Column( nullable = false )
     @Pattern(regexp = "^.*/.*$", message = "{contenttype.slash}")
     private String contentType;
-    
 
 //    @Expose    
 //    @SerializedName("storageIdentifier")
@@ -141,7 +142,6 @@ public class DataFile extends DvObject implements Comparable {
     @Column(nullable = false)
     private String checksumValue;
 
-    
     /* start: FILE REPLACE ATTRIBUTES */
     
     // For the initial version of a file, this will be equivalent to the ID
@@ -160,9 +160,7 @@ public class DataFile extends DvObject implements Comparable {
     @Column(nullable=true)
     private Long previousDataFileId;
     /* endt: FILE REPLACE ATTRIBUTES */
-    
-    
-    
+
     @Expose
     @Column(nullable=true)
     private Long filesize;      // Number of bytes in file.  Allows 0 and null, negative numbers not permitted
@@ -225,8 +223,7 @@ public class DataFile extends DvObject implements Comparable {
         this.fileMetadatas = new ArrayList<>();
         initFileReplaceAttributes();
     }
-    
-    
+
     /**
      * All constructors should use this method
      * to initialize this file replace attributes
@@ -301,6 +298,7 @@ public class DataFile extends DvObject implements Comparable {
         }
         return builder;
     }
+
     public void setTags(List<DataFileTag> dataFileTags) {
         this.dataFileTags = dataFileTags;
     }
@@ -633,7 +631,6 @@ public class DataFile extends DvObject implements Comparable {
         }
         return null; 
     }
-    
 
     @ManyToMany
     @JoinTable(name = "fileaccessrequests",
@@ -701,12 +698,12 @@ public class DataFile extends DvObject implements Comparable {
         FileMetadata fmd = getLatestFileMetadata();
         return "label:" + (fmd!=null? fmd.getLabel() : "[no metadata]");
     }
-	
-	@Override
-	public <T> T accept( Visitor<T> v ) {
-		return v.visit(this);
-	}
-        
+
+    @Override
+    public <T> T accept( Visitor<T> v ) {
+        return v.visit(this);
+    }
+
     @Override
     public String getDisplayName() {
        return getLatestFileMetadata().getLabel(); 
@@ -734,7 +731,6 @@ public class DataFile extends DvObject implements Comparable {
         return false;
     }
 
-    
     /**
      *  Set rootDataFileId
      *  @param rootDataFileId
@@ -792,9 +788,7 @@ public class DataFile extends DvObject implements Comparable {
         
         return serializeAsJSON(false);
     }
-    
-    
-    
+
     public JsonObject asGsonObject(boolean prettyPrint){
         
         String overarchingKey = "data";
@@ -876,7 +870,6 @@ public class DataFile extends DvObject implements Comparable {
         jsonObj.getAsJsonObject().add("checksum", checkSumJSONMap);
         
         return jsonObj.getAsJsonObject();
-        
     }
     
     /**
@@ -890,7 +883,6 @@ public class DataFile extends DvObject implements Comparable {
               
         //return fullFileJSON.
         return fullFileJSON.toString();
-        
     }
     
     public String getPublicationDateFormattedYYYYMMDD() {
@@ -906,8 +898,6 @@ public class DataFile extends DvObject implements Comparable {
         }
         return null;
     }
-    
-
 } // end of class
     
 

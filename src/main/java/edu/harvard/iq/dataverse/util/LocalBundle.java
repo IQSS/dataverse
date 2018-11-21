@@ -1,4 +1,5 @@
 package edu.harvard.iq.dataverse.util;
+
 import edu.harvard.iq.dataverse.DataverseLocaleBean;
 
 import java.io.File;
@@ -21,9 +22,7 @@ public class LocalBundle extends ResourceBundle {
     private static ResourceBundle bundle;
     private static Locale bundle_locale;
 
-
-
-    public LocalBundle(){
+    public LocalBundle() {
         DataverseLocaleBean d = new DataverseLocaleBean();
         bundle_locale= new Locale(d.getLocaleCode());
 
@@ -33,12 +32,10 @@ public class LocalBundle extends ResourceBundle {
         }
         File bundleFileDir = new File(filesRootDirectory);
 
-        if (!bundleFileDir.exists())
-        {
+        if (!bundleFileDir.exists()) {
             bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale);
         }
         else {
-
             URL[] urls = null;
             try {
                 urls = new URL[]{bundleFileDir.toURI().toURL()};

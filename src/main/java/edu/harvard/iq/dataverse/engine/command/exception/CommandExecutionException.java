@@ -8,12 +8,12 @@ import edu.harvard.iq.dataverse.engine.command.Command;
  */
 public class CommandExecutionException extends CommandException {
 
-	public CommandExecutionException(String message, Throwable cause, Command aCommand) {
-		super(message, cause, aCommand);
-	}
-	
-	public CommandExecutionException(String message, Command aCommand) {
-		super(message, aCommand);
-	}
-	
+    public CommandExecutionException(String message, Throwable cause, Command aCommand) {
+        super(message, cause, aCommand);
+    }
+    
+    public CommandExecutionException(String message, Command aCommand) {
+        super(message, aCommand);
+    }
+
 }

@@ -109,8 +109,12 @@ public class ImportGenericServiceBean {
             Logger.getLogger(ImportGenericServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                if (xmlr != null) { xmlr.close(); }
-            } catch (XMLStreamException ex) {}
+                if (xmlr != null) {
+                    xmlr.close();
+                }
+            } catch (XMLStreamException ex) {
+
+            }
         }
     }
     
@@ -148,12 +152,20 @@ public class ImportGenericServiceBean {
             Logger.getLogger(ImportGenericServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                if (xmlr != null) { xmlr.close(); }
-            } catch (XMLStreamException ex) {}
+                if (xmlr != null) {
+                    xmlr.close();
+                }
+            } catch (XMLStreamException ex) {
+
+            }
 
             try {
-                if (in != null) { in.close();}
-            } catch (IOException ex) {}
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException ex) {
+
+            }
         }
 
     }
@@ -587,12 +599,20 @@ public class ImportGenericServiceBean {
             throw new EJBException("ERROR occurred in mapDDI.", ex);
         } finally {
             try {
-                if (xmlr != null) { xmlr.close(); }
-            } catch (XMLStreamException ex) {}
+                if (xmlr != null) {
+                    xmlr.close();
+                }
+            } catch (XMLStreamException ex) {
+
+            }
 
             try {
-                if (in != null) { in.close();}
-            } catch (IOException ex) {}
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException ex) {
+
+            }
         }
 
         return filesMap;

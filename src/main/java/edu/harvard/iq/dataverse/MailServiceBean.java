@@ -88,10 +88,10 @@ public class MailServiceBean implements java.io.Serializable {
             String[] recipientStrings = to.split(",");
             InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
             try {
-            	InternetAddress fromAddress=getSystemAddress();
-            	fromAddress.setPersonal(BundleUtil.getStringFromBundle("contact.delegation", Arrays.asList(
+                InternetAddress fromAddress=getSystemAddress();
+                fromAddress.setPersonal(BundleUtil.getStringFromBundle("contact.delegation", Arrays.asList(
                         fromAddress.getPersonal(), reply)), charset);
-            	msg.setFrom(fromAddress);
+                msg.setFrom(fromAddress);
                 msg.setReplyTo(new Address[] {new InternetAddress(reply, charset)});
                 for (int i = 0; i < recipients.length; i++) {
                     recipients[i] = new InternetAddress(recipientStrings[i], "", charset);
@@ -170,7 +170,7 @@ public class MailServiceBean implements java.io.Serializable {
     public void sendMail(String reply, String to, String subject, String messageText, Map<Object, Object> extraHeaders) {
         try {
             MimeMessage msg = new MimeMessage(session);
-            //Always send from system address to avoid email being blocked
+            // Always send from system address to avoid email being blocked
             InternetAddress fromAddress=getSystemAddress();
             try {
               fromAddress.setPersonal(BundleUtil.getStringFromBundle("contact.delegation", Arrays.asList(
@@ -180,10 +180,10 @@ public class MailServiceBean implements java.io.Serializable {
             }
             msg.setFrom(fromAddress);
             if (EMailValidator.isEmailValid(reply, null)) {
-            	//But set the reply-to address to direct replies to the requested 'from' party if it is a valid email address	
+                // But set the reply-to address to direct replies to the requested 'from' party if it is a valid email address
                 msg.setReplyTo(new Address[] {new InternetAddress(reply)});
             } else {
-                //Otherwise include the invalid 'from' address in the message
+                // Otherwise include the invalid 'from' address in the message
                 messageText = "From: " + reply + "\n\n" + messageText;
             }
             msg.setSentDate(new Date());

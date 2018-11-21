@@ -51,7 +51,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     }
     public FinalizeDatasetPublicationCommand(Dataset aDataset, DataverseRequest aRequest, boolean isPidPrePublished) {
         super(aDataset, aRequest);
-	datasetExternallyReleased = isPidPrePublished;
+        datasetExternallyReleased = isPidPrePublished;
     }
 
     @Override
@@ -108,13 +108,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
         }
         
-	if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
-		// some imported datasets may already be released.
-		if (!datasetExternallyReleased){
-			publicizeExternalIdentifier(theDataset, ctxt);
-		}
-		theDataset.getLatestVersion().setVersionState(RELEASED);
-	}
+        if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
+            // some imported datasets may already be released.
+            if (!datasetExternallyReleased) {
+                publicizeExternalIdentifier(theDataset, ctxt);
+            }
+            theDataset.getLatestVersion().setVersionState(RELEASED);
+        }
         
         exportMetadata(ctxt.settings());
         boolean doNormalSolrDocCleanUp = true;

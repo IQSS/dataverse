@@ -47,8 +47,6 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
         return -1;
     }
 
-    
-    
     @Override
     public void writeTo(BundleDownloadInstance di, Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream outstream) throws IOException, WebApplicationException {
 
@@ -116,8 +114,16 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                         logger.warning("failed to retrieve saved original for " + fileName);
                     } finally {
                         if (instream != null) {
-                            try {instream.close();} catch (IOException ioex) {}
-                            try {zout.closeEntry();} catch (IOException ioex) {}
+                            try {
+                                instream.close();
+                            } catch (IOException ioex) {
+
+                            }
+                            try {
+                                zout.closeEntry();
+                            } catch (IOException ioex) {
+
+                            }
                         }
                     }
                    
@@ -150,8 +156,16 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                             logger.warning("failed to convert tabular data file "+fileName+" to RData.");
                         } finally {
                             if (instream != null) {
-                                try{instream.close();}catch(IOException ioex){}
-                                try{zout.closeEntry();}catch(IOException ioex){}
+                                try {
+                                    instream.close();
+                                } catch(IOException ioex) {
+
+                                }
+                                try {
+                                    zout.closeEntry();
+                                } catch(IOException ioex) {
+
+                                }
                             }
                         }
                     }

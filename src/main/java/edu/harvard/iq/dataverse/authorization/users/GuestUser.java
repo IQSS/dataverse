@@ -11,9 +11,13 @@ public class GuestUser implements User {
     
     private static final GuestUser INSTANCE = new GuestUser();
     
-    public static GuestUser get() { return INSTANCE; }
+    public static GuestUser get() {
+        return INSTANCE;
+    }
     
-    private GuestUser(){}
+    private GuestUser() {
+
+    }
     
     @Override
     public String getIdentifier() {
@@ -26,7 +30,9 @@ public class GuestUser implements User {
     }
 
     @Override
-    public boolean isAuthenticated() { return false; }
+    public boolean isAuthenticated() {
+        return false;
+    }
     
     @Override
     public boolean isSuperuser() {
@@ -34,7 +40,7 @@ public class GuestUser implements User {
     }
    
     @Override
-    public boolean equals( Object o ) {
+    public boolean equals(Object o) {
         return (o instanceof GuestUser);
     }
     

@@ -45,8 +45,8 @@ public interface Exporter {
     
     public void setParam(String name, Object value);
 
-	public default String getMediaType() {
-	    return MediaType.APPLICATION_XML;
-	};
+    public default String getMediaType() {
+        return MediaType.APPLICATION_XML;
+    };
     
 }

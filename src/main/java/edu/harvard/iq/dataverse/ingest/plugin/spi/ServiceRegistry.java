@@ -195,8 +195,7 @@ public class ServiceRegistry {
      * <code>providerClass</code> is <code>null</code>.
      */
     public static <T> Iterator<T> lookupProviders(Class<T> providerClass,
-                                                  ClassLoader loader)
-    {
+                                                  ClassLoader loader) {
         if (providerClass == null) {
             throw new IllegalArgumentException("providerClass == null!");
         }

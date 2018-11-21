@@ -978,10 +978,10 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (retList.size() > 1);
     }
     
-    public void deleteFromVersion( DatasetVersion d, DataFile f ) {
-		em.createNamedQuery("DataFile.removeFromDatasetVersion")
-			.setParameter("versionId", d.getId()).setParameter("fileId", f.getId())
-				.executeUpdate();
+    public void deleteFromVersion(DatasetVersion d, DataFile f) {
+        em.createNamedQuery("DataFile.removeFromDatasetVersion")
+           .setParameter("versionId", d.getId()).setParameter("fileId", f.getId())
+           .executeUpdate();
     }
 
     /* 
@@ -1357,12 +1357,11 @@ public class DataFileServiceBean implements java.io.Serializable {
        
         return MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(contentType);
     }
-    
+
     public void populateFileSearchCard(SolrSearchResult solrSearchResult) {
         solrSearchResult.setEntity(this.findCheapAndEasy(solrSearchResult.getEntityId()));
     }
-        
-    
+
     /**
      * Does this file have a replacement.  
      * Any file should have AT MOST 1 replacement
@@ -1389,19 +1388,15 @@ public class DataFileServiceBean implements java.io.Serializable {
             return false;
         }
         
-         if (!df.isReleased()){
+        if (!df.isReleased()){
             // An unpublished SHOULD NOT have a replacment
             String errMsg = "DataFile with id: [" + df.getId() + "] is UNPUBLISHED with a REPLACEMENT.  This should NOT happen.";
             logger.severe(errMsg);
             
             throw new Exception(errMsg);
-        }
-
-        
-        
-        else if (dataFiles.size() == 1){
+        } else if (dataFiles.size() == 1) {
             return true;
-        }else{
+        } else {
         
             String errMsg = "DataFile with id: [" + df.getId() + "] has more than one replacment!";
             logger.severe(errMsg);
@@ -1465,7 +1460,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             prepend = datafile.getOwner().getIdentifier() + "/";
         } else {
             //If there's a shoulder prepend independent identifiers with it
-        	prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
+            prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
         }
  
         switch (doiIdentifierType) {
@@ -1482,7 +1477,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                 return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
         }
     }
-    
+
     private String generateIdentifierAsRandomString(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier = null;
         do {
@@ -1491,7 +1486,6 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         return identifier;
     }
-
 
     private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier; 
@@ -1562,7 +1556,6 @@ public class DataFileServiceBean implements java.io.Serializable {
             //we can live with failure - means identifier not found remotely
         }
 
-       
         return u;
     }
     

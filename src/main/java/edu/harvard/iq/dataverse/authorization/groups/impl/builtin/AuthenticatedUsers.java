@@ -14,7 +14,9 @@ public class AuthenticatedUsers implements Group {
     private AuthenticatedUsers() {
     }
     
-    public static AuthenticatedUsers get() { return instance; }
+    public static AuthenticatedUsers get() {
+        return instance;
+    }
     
     @Override
     public boolean contains(DataverseRequest ra) {

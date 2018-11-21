@@ -24,7 +24,9 @@ public final class AllUsers implements Group {
     
     private final String displayInfo = "Everyone (including guests)";
     
-    public static final AllUsers get() { return instance; }
+    public static final AllUsers get() {
+        return instance;
+    }
     
     /**
      * Prevent instance creation

@@ -59,8 +59,8 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     public HarvestingClient findByNickname(String nickName) {
         try {
             return em.createNamedQuery("HarvestingClient.findByNickname", HarvestingClient.class)
-					.setParameter("nickName", nickName.toLowerCase())
-					.getSingleResult();
+                    .setParameter("nickName", nickName.toLowerCase())
+                    .getSingleResult();
         } catch ( NoResultException|NonUniqueResultException ex ) {
             logger.fine("Unable to find a single harvesting client by nickname \"" + nickName + "\": " + ex);
             return null;

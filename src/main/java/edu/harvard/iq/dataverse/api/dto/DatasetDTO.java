@@ -8,17 +8,17 @@ import java.util.List;
  * @author michael
  */
 public class DatasetDTO implements java.io.Serializable {
-	private String id;
-        private String identifier;
-        private String protocol;
-        private String authority;
-        private String globalIdCreateTime;
-        private String publisher;
-        private String publicationDate;
-        private DatasetVersionDTO datasetVersion;
-        private List<DataFileDTO> dataFiles;
-	public static final String DOI_PROTOCOL = "doi";
-	public static final String HDL_PROTOCOL = "hdl";
+    private String id;
+    private String identifier;
+    private String protocol;
+    private String authority;
+    private String globalIdCreateTime;
+    private String publisher;
+    private String publicationDate;
+    private DatasetVersionDTO datasetVersion;
+    private List<DataFileDTO> dataFiles;
+    public static final String DOI_PROTOCOL = "doi";
+    public static final String HDL_PROTOCOL = "hdl";
 
     public String getId() {
         return id;

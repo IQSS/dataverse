@@ -83,11 +83,11 @@ public class FeaturedDataverseServiceBean {
         em.remove(em.merge(dataverseFeaturedDataverse));
     }
     
-	public void deleteFeaturedDataversesFor( Dataverse d ) {
-		em.createNamedQuery("DataverseFeaturedDataverse.removeByOwnerId")
-			.setParameter("ownerId", d.getId())
-				.executeUpdate();
-	}
+    public void deleteFeaturedDataversesFor( Dataverse d ) {
+        em.createNamedQuery("DataverseFeaturedDataverse.removeByOwnerId")
+          .setParameter("ownerId", d.getId())
+          .executeUpdate();
+    }
         
     public void create(int diplayOrder, Long featuredDataverseId, Long dataverseId) {
         DataverseFeaturedDataverse dataverseFeaturedDataverse = new DataverseFeaturedDataverse();
@@ -101,7 +101,5 @@ public class FeaturedDataverseServiceBean {
         dataverseFeaturedDataverse.setFeaturedDataverse(featuredDataverse);
 
         em.persist(dataverseFeaturedDataverse);
-    }	
-    
-    
+    }
 }

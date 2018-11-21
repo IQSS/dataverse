@@ -18,19 +18,19 @@ import java.util.Set;
  */
 // no annotations here, since permissions are dynamically decided
 public class RevokeRoleCommand extends AbstractVoidCommand {
-	
-	private final RoleAssignment toBeRevoked;
+    
+    private final RoleAssignment toBeRevoked;
 
-	public RevokeRoleCommand(RoleAssignment toBeRevoked, DataverseRequest aRequest) {
+    public RevokeRoleCommand(RoleAssignment toBeRevoked, DataverseRequest aRequest) {
         // for data file check permission on owning dataset
         super(aRequest, toBeRevoked.getDefinitionPoint() instanceof DataFile ? toBeRevoked.getDefinitionPoint().getOwner() : toBeRevoked.getDefinitionPoint());
-		this.toBeRevoked = toBeRevoked;
-	}
-	
-	@Override
-	protected void executeImpl(CommandContext ctxt) throws CommandException {
-		ctxt.roles().revoke(toBeRevoked);
-	}
+        this.toBeRevoked = toBeRevoked;
+    }
+    
+    @Override
+    protected void executeImpl(CommandContext ctxt) throws CommandException {
+        ctxt.roles().revoke(toBeRevoked);
+    }
         
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
@@ -38,5 +38,5 @@ public class RevokeRoleCommand extends AbstractVoidCommand {
         return Collections.singletonMap("",
                 toBeRevoked.getDefinitionPoint() instanceof Dataverse ? Collections.singleton(Permission.ManageDataversePermissions)
                 : Collections.singleton(Permission.ManageDatasetPermissions));
-    }	
+    }    
 }

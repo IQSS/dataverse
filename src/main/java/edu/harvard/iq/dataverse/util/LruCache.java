@@ -26,7 +26,9 @@ public class LruCache<K,V> {
         try {
             cacheLock.lock();
             return cache.get(k);
-        } finally { cacheLock.unlock(); }
+        } finally {
+            cacheLock.unlock();
+        }
     }
     
     /**
@@ -41,14 +43,18 @@ public class LruCache<K,V> {
             cache.put(k, v);
             shrinkToMaxSize();
             return v;
-        } finally { cacheLock.unlock(); }
+        } finally {
+            cacheLock.unlock();
+        }
     }
 
     public long size() {
         try {
             cacheLock.lock();
             return cache.size();
-        } finally { cacheLock.unlock(); }
+        } finally {
+            cacheLock.unlock();
+        }
     }
         
     public long getMaxSize() {
@@ -63,21 +69,27 @@ public class LruCache<K,V> {
             cacheLock.lock();
             this.maxSize = maxSize;
             shrinkToMaxSize();
-        } finally { cacheLock.unlock(); }
+        } finally {
+            cacheLock.unlock();
+        }
     }
     
     public void invalidate() {
         try {
             cacheLock.lock();
             cache.clear();
-        } finally { cacheLock.unlock(); }
+        } finally {
+            cacheLock.unlock();
+        }
     }
     
     public void invalidate( K k ) {
         try {
             cacheLock.lock();
             cache.remove(k);
-        } finally { cacheLock.unlock(); }
+        } finally {
+            cacheLock.unlock();
+        }
     }
     
     private void shrinkToMaxSize() {

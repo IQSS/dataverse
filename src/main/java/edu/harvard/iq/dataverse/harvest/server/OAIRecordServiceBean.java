@@ -233,8 +233,11 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             logger.log(Level.FINE, "Attempting to run export on dataset {0}", dataset.getGlobalId());
             exportServiceInstance.exportAllFormats(dataset);
             datasetService.updateLastExportTimeStamp(dataset.getId());
-        } catch (ExportException ee) {logger.fine("Caught export exception while trying to export. (ignoring)");}
-        catch (Exception e) {logger.fine("Caught unknown exception while trying to export (ignoring)");}
+        } catch (ExportException ee) {
+            logger.fine("Caught export exception while trying to export. (ignoring)");
+        } catch (Exception e) {
+            logger.fine("Caught unknown exception while trying to export (ignoring)");
+        }
     }
     
     @TransactionAttribute(REQUIRES_NEW)
@@ -257,10 +260,11 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         queryString += setName != null ? " and h.setName = :setName" : ""; // and h.setName is null";
         
         logger.fine("findOAIRecordBySetNameandGlobalId; query: "+queryString+"; globalId: "+globalId+"; setName: "+setName);
-                
-        
+
         TypedQuery query = em.createQuery(queryString, OAIRecord.class).setParameter("globalId",globalId);
-        if (setName != null) { query.setParameter("setName",setName); }        
+        if (setName != null) {
+            query.setParameter("setName",setName);
+        }
         
         try {
            oaiRecord = (OAIRecord) query.setMaxResults(1).getSingleResult();
@@ -314,8 +318,12 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         logger.fine("Query: "+queryString);
         
         TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
-        if (setName != null) { query.setParameter("setName",setName); }
-        if (from != null) { query.setParameter("from",from,TemporalType.TIMESTAMP); }
+        if (setName != null) {
+            query.setParameter("setName",setName);
+        }
+        if (from != null) {
+            query.setParameter("from",from,TemporalType.TIMESTAMP);
+        }
         // In order to achieve inclusivity on the "until" matching, we need to do 
         // the following (if the "until" parameter is supplied):
         // 1) if the supplied "until" parameter has the time portion (and is not just
@@ -355,14 +363,14 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     
     // This method is to only get the records NOT marked as "deleted":
     public List<OAIRecord> findActiveOaiRecordsBySetName(String setName) {
-        
-        
         String queryString ="SELECT object(h) from OAIRecord as h WHERE (h.removed != true)";
         queryString += setName != null ? " and (h.setName = :setName)" : "and (h.setName is null)";
         logger.fine("Query: "+queryString);
         
         TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
-        if (setName != null) { query.setParameter("setName",setName); }
+        if (setName != null) {
+            query.setParameter("setName",setName);
+        }
         
         try {
             return query.getResultList();      
@@ -374,14 +382,14 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     
     // This method is to only get the records marked as "deleted":
     public List<OAIRecord> findDeletedOaiRecordsBySetName(String setName) {
-        
-        
         String queryString ="SELECT object(h) from OAIRecord as h WHERE (h.removed = true)";
         queryString += setName != null ? " and (h.setName = :setName)" : "and (h.setName is null)";
         logger.fine("Query: "+queryString);
         
         TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
-        if (setName != null) { query.setParameter("setName",setName); }
+        if (setName != null) {
+            query.setParameter("setName",setName);
+        }
         
         try {
             return query.getResultList();      

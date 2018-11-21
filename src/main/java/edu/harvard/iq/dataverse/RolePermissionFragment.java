@@ -178,8 +178,8 @@ public class RolePermissionFragment implements java.io.Serializable {
     }
     
     public void grantAccess(ActionEvent evt) {
-        //RoleAssignee assignRoleRoleAssignee = roleAssigneeService.getRoleAssignee(assignRoleUsername);
-	// Find the built in file downloader role (currently by alias)        
+        // RoleAssignee assignRoleRoleAssignee = roleAssigneeService.getRoleAssignee(assignRoleUsername);
+        // Find the built in file downloader role (currently by alias)
         assignRole(assignRoleRoleAssignee, roleService.findBuiltinRoleByAlias("fileDownloader"));
     }
     public void assignRole(ActionEvent evt) {

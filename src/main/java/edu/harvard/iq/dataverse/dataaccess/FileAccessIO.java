@@ -33,7 +33,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-
 // Dataverse imports:
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
@@ -45,7 +44,6 @@ import java.nio.channels.Channel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-
 
 public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
@@ -572,10 +570,9 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
         InputStream in = null;
 
-        if(this.isAuxObjectCached(auxItemTag))
-        {
-            Path path=getAuxObjectAsPath(auxItemTag);
-            in=Files.newInputStream(path);
+        if (this.isAuxObjectCached(auxItemTag)) {
+            Path path = getAuxObjectAsPath(auxItemTag);
+            in = Files.newInputStream(path);
         }
         return in;
     }

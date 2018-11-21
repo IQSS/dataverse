@@ -56,10 +56,9 @@ public class DatasetUtil {
 //                    byte[] bytes = Files.readAllBytes(file.toPath());
             StorageIO<Dataset> dataAccess = null;
 
-            try{
+            try {
                 dataAccess = DataAccess.getStorageIO(dataset);
-            }
-            catch(IOException ioex){
+            } catch(IOException ioex) {
             }
 
             InputStream in = null;
@@ -81,7 +80,7 @@ public class DatasetUtil {
             } else {
                 logger.fine("There is no thumbnail created from a dataset logo");
             }
-	    IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(in);
         }
         for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();
@@ -145,10 +144,9 @@ public class DatasetUtil {
             } catch (IOException ex) {
                 logger.fine("Unable to read thumbnail image from file: " + ex);
                 return null;
-            } finally
-	    {
-		    IOUtils.closeQuietly(in);
-	    }
+            } finally {
+                IOUtils.closeQuietly(in);
+            }
         } else {
             DataFile thumbnailFile = dataset.getThumbnailFile();
 
@@ -404,22 +402,22 @@ public class DatasetUtil {
         List<DatasetField> datasetFields = new ArrayList<>();
         
         //if customFields are empty, go with default fields. 
-        if(customFields==null || customFields.isEmpty()){
-               customFields="dsDescription,subject,keyword,publication,notesText";
+        if (customFields==null || customFields.isEmpty()) {
+            customFields="dsDescription,subject,keyword,publication,notesText";
         }
         
-        String[] customFieldList= customFields.split(",");
+        String[] customFieldList = customFields.split(",");
         Map<String,DatasetField> DatasetFieldsSet=new HashMap<>(); 
         
         for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
             DatasetFieldsSet.put(dsf.getDatasetFieldType().getName(),dsf); 
         }
         
-        for(String cfl : customFieldList)
-        {
-                DatasetField df = DatasetFieldsSet.get(cfl);
-                if(df!=null)
+        for(String cfl : customFieldList) {
+            DatasetField df = DatasetFieldsSet.get(cfl);
+            if (df != null) {
                 datasetFields.add(df);
+            }
         }
             
         return datasetFields;

@@ -28,28 +28,51 @@ public interface AuthenticationProvider {
         
     AuthenticationProviderDisplayInfo getInfo();
     
-    default boolean isPasswordUpdateAllowed() { return false; };
-    default boolean isUserInfoUpdateAllowed() { return false; };
-    default boolean isUserDeletionAllowed() { return false; };
-    default boolean isOAuthProvider() { return false; };
+    default boolean isPasswordUpdateAllowed() {
+        return false;
+    };
+    default boolean isUserInfoUpdateAllowed() {
+        return false;
+    };
+    default boolean isUserDeletionAllowed() {
+        return false;
+    };
+    default boolean isOAuthProvider() {
+        return false;
+    };
+
     /** @todo Consider moving some or all of these to AuthenticationProviderDisplayInfo.*/
     /** The identifier is only displayed in the UI if it's meaningful, such as an ORCID iD.*/
-    default boolean isDisplayIdentifier() { return false; };
+    default boolean isDisplayIdentifier() {
+        return false;
+    };
+
     /** ORCID calls their persistent id an "ORCID iD".*/
-    default String getPersistentIdName() { return null; };
+    default String getPersistentIdName() {
+        return null;
+    };
+
     /** ORCID has special language to describe their ID: http://members.orcid.org/logos-web-graphics */
-    default String getPersistentIdDescription() { return null; };
+    default String getPersistentIdDescription() {
+        return null;
+    };
+
     /** An ORCID example would be the "http://orcid.org/" part of http://orcid.org/0000-0002-7874-374X*/
-    default String getPersistentIdUrlPrefix() { return null; };
-    default String getLogo() { return null; };
-    
-    
-    
+    default String getPersistentIdUrlPrefix() {
+        return null;
+    };
+
+    default String getLogo() {
+        return null;
+    };
+
     /**
      * Some providers (e.g organizational ones) provide verified email addresses.
      * @return {@code true} if we can treat email addresses coming from this provider as verified, {@code false} otherwise.
      */
-    default boolean isEmailVerified() { return false; };
+    default boolean isEmailVerified() {
+        return false;
+    };
     
     
 
@@ -60,7 +83,7 @@ public interface AuthenticationProvider {
      * @throws UnsupportedOperationException if the provider does not support updating passwords.
      * @see #isPasswordUpdateAllowed() 
      */
-    default void updatePassword( String userIdInProvider, String newPassword ) {
+    default void updatePassword(String userIdInProvider, String newPassword) {
         throw new UnsupportedOperationException(this.toString() + " does not implement password updates");
     };
     
@@ -74,7 +97,7 @@ public interface AuthenticationProvider {
      * @throws UnsupportedOperationException if the provider does not support updating passwords.
      * @see #isPasswordUpdateAllowed()
      */
-    default Boolean verifyPassword( String userIdInProvider, String password ) {
+    default Boolean verifyPassword(String userIdInProvider, String password) {
         throw new UnsupportedOperationException(this.toString() + " does not implement password updates");
     };
     

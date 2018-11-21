@@ -122,7 +122,7 @@ public class HarvestingServer extends AbstractApiBean {
     @Path("{specname}")
     public Response createOaiSet(String jsonBody, @PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         /*
-	     * authorization modeled after the UI (aka HarvestingSetsPage)
+         * authorization modeled after the UI (aka HarvestingSetsPage)
          */
         AuthenticatedUser dvUser;
         try {
@@ -135,53 +135,51 @@ public class HarvestingServer extends AbstractApiBean {
         }
 
         StringReader rdr = new StringReader(jsonBody);
-        
-	try( JsonReader jrdr = Json.createReader(rdr) )
-	{
-		JsonObject json = jrdr.readObject();
 
-		OAISet set = new OAISet();
-		//Validating spec 
-		if (!StringUtils.isEmpty(spec)) {
-			if (spec.length() > 30) {
-				return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.sizelimit"));
-			}
-			if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", spec)) {
-				return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.invalid"));
-				// If it passes the regex test, check 
-			}
-			if (oaiSetService.findBySpec(spec) != null) {
-				return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.alreadyused"));
-			}
+        try (JsonReader jrdr = Json.createReader(rdr)) {
+            JsonObject json = jrdr.readObject();
+            OAISet set = new OAISet();
+            // Validating spec
+            if (!StringUtils.isEmpty(spec)) {
+                if (spec.length() > 30) {
+                    return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.sizelimit"));
+                }
+                if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", spec)) {
+                    return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.invalid"));
+                    // If it passes the regex test, check
+                }
+                if (oaiSetService.findBySpec(spec) != null) {
+                    return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.alreadyused"));
+                }
+            } else {
+                return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
+            }
+            set.setSpec(spec);
+            String name, desc, defn;
 
-		} else {
-			return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
-		}
-		set.setSpec(spec);
-		String name, desc, defn;
+            try {
+                name = json.getString("name");
+            } catch (NullPointerException npe_name) {
+                return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
+            }
 
-		try {
-			name = json.getString("name");
-		} catch (NullPointerException npe_name) {
-			return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
-		}
-		try {
-			defn = json.getString("definition");
-		} catch (NullPointerException npe_defn) {
-			throw new JsonParseException("definition unspecified");
-		}
-		try {
-			desc = json.getString("description");
-		} catch (NullPointerException npe_desc) {
-			desc = ""; //treating description as optional
-		}
-		set.setName(name);
-		set.setDescription(desc);
-		set.setDefinition(defn);
-		oaiSetService.save(set);
-		return created("/harvest/server/oaisets" + spec, oaiSetAsJson(set));
-	}
-	
+            try {
+                defn = json.getString("definition");
+            } catch (NullPointerException npe_defn) {
+                throw new JsonParseException("definition unspecified");
+            }
+
+            try {
+                desc = json.getString("description");
+            } catch (NullPointerException npe_desc) {
+                desc = ""; //treating description as optional
+            }
+            set.setName(name);
+            set.setDescription(desc);
+            set.setDefinition(defn);
+            oaiSetService.save(set);
+            return created("/harvest/server/oaisets" + spec, oaiSetAsJson(set));
+        }
     }
 
     @PUT

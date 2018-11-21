@@ -196,23 +196,23 @@ public class DataverseServiceBean implements java.io.Serializable {
     public Dataverse findByAlias(String anAlias) {
         try {
             return (anAlias.toLowerCase().equals(":root"))
-				? findRootDataverse()
-				: em.createNamedQuery("Dataverse.findByAlias", Dataverse.class)
-					.setParameter("alias", anAlias.toLowerCase())
-					.getSingleResult();
+               ? findRootDataverse()
+               : em.createNamedQuery("Dataverse.findByAlias", Dataverse.class)
+                   .setParameter("alias", anAlias.toLowerCase())
+                   .getSingleResult();
         } catch ( NoResultException|NonUniqueResultException ex ) {
             logger.fine("Unable to find a single dataverse using alias \"" + anAlias + "\": " + ex);
             return null;
         }
     }
     
-	public boolean hasData( Dataverse dv ) {
-		TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
-								.setParameter("id", dv.getId());
-		
-		return (amountQry.getSingleResult()>0);
-	}
-	
+    public boolean hasData( Dataverse dv ) {
+        TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
+           .setParameter("id", dv.getId());
+
+        return (amountQry.getSingleResult()>0);
+    }
+
     public boolean isRootDataverseExists() {
         long count = em.createQuery("SELECT count(dv) FROM Dataverse dv WHERE dv.owner.id=null", Long.class).getSingleResult();
         return (count == 1);

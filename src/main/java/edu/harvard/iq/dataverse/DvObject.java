@@ -17,19 +17,17 @@ import javax.persistence.*;
  */
 @NamedQueries({
     @NamedQuery(name = "DvObject.findAll",
-            query = "SELECT o FROM DvObject o ORDER BY o.id"),
+        query = "SELECT o FROM DvObject o ORDER BY o.id"),
     @NamedQuery(name = "DvObject.findById",
-            query = "SELECT o FROM DvObject o WHERE o.id=:id"),
+        query = "SELECT o FROM DvObject o WHERE o.id=:id"),
     @NamedQuery(name = "DvObject.ownedObjectsById",
-			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
+        query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
     @NamedQuery(name = "DvObject.findByGlobalId",
-            query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
-
+        query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
     @NamedQuery(name = "DvObject.findByAlternativeGlobalId",
-            query = "SELECT o FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype"),
-
+        query = "SELECT o FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype"),
     @NamedQuery(name = "DvObject.findByProtocolIdentifierAuthority",
-            query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol")
+        query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol")
 })
 @Entity
 // Inheritance strategy "JOINED" will create 4 db tables - 
@@ -38,11 +36,14 @@ import javax.persistence.*;
 // in the child tables. (i.e., the id sequences will be "sparse" in the 3 
 // child tables). Tested, appears to be working properly. -- L.A. Nov. 4 2014
 @Inheritance(strategy=InheritanceType.JOINED)
-@Table(indexes = {@Index(columnList="dtype")
-		, @Index(columnList="owner_id")
-		, @Index(columnList="creator_id")
-		, @Index(columnList="releaseuser_id")},
-		uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier"}))
+@Table(indexes = {
+        @Index(columnList="dtype"),
+        @Index(columnList="owner_id"),
+        @Index(columnList="creator_id"),
+        @Index(columnList="releaseuser_id")
+    },
+    uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier"})
+)
 public abstract class DvObject extends DataverseEntity implements java.io.Serializable {
     
     public static final String DATAVERSE_DTYPE_STRING = "Dataverse";

@@ -22,10 +22,12 @@ import javax.persistence.Table;
  * @author Leonid Andreev
  */
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="harvesttype")
-		, @Index(columnList="harveststyle")
-		, @Index(columnList="harvestingurl")})
+@Table(indexes = {
+    @Index(columnList="dataverse_id"),
+    @Index(columnList="harvesttype"),
+    @Index(columnList="harveststyle"),
+    @Index(columnList="harvestingurl")
+})
 public class HarvestingDataverseConfig implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

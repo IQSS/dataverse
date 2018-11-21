@@ -17,12 +17,12 @@ import javax.persistence.*;
  * @author Stephen Kraffmiller
  */
 @NamedQueries({
-        @NamedQuery(name="DatasetFieldType.findByName",
-                            query= "SELECT dsfType FROM DatasetFieldType dsfType WHERE dsfType.name=:name"),
-	@NamedQuery(name = "DatasetFieldType.findAllFacetable",
-			    query= "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true and dsfType.title != '' order by dsfType.id"),
-        @NamedQuery(name = "DatasetFieldType.findFacetableByMetadaBlock",
-			    query= "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true and dsfType.title != '' and dsfType.metadataBlock.id = :metadataBlockId order by dsfType.id")
+    @NamedQuery(name="DatasetFieldType.findByName",
+        query= "SELECT dsfType FROM DatasetFieldType dsfType WHERE dsfType.name=:name"),
+    @NamedQuery(name = "DatasetFieldType.findAllFacetable",
+        query= "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true and dsfType.title != '' order by dsfType.id"),
+    @NamedQuery(name = "DatasetFieldType.findFacetableByMetadaBlock",
+        query= "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true and dsfType.title != '' and dsfType.metadataBlock.id = :metadataBlockId order by dsfType.id")
 })
 @Entity
 @Table(indexes = {@Index(columnList="metadatablock_id"),@Index(columnList="parentdatasetfieldtype_id")})
@@ -46,7 +46,6 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setId(Long id) {
         this.id = id;
     }
-
 
     /**
      * The internal, DDI-like name, no spaces, etc.
@@ -130,11 +129,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setOptionSelectItems(List<SelectItem> optionSelectItems) {
         this.optionSelectItems = optionSelectItems;
     }
-    
-    
-    
 
-    
     public DatasetFieldType() {}
 
     public DatasetFieldType(String name, FieldType fieldType, boolean allowMultiples) {
@@ -301,11 +296,11 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     private String uri;
 
     public String getUri() {
-    	return uri;
+        return uri;
     }
 
     public void setUri(String uri) {
-    	this.uri=uri;
+         this.uri=uri;
     }
     
     /**
@@ -324,13 +319,13 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         this.controlledVocabularyValues = controlledVocabularyValues;
     }
     
-    public ControlledVocabularyValue getControlledVocabularyValue( String strValue ) {
-        if ( ! isControlledVocabulary() ) {
+    public ControlledVocabularyValue getControlledVocabularyValue(String strValue) {
+        if (! isControlledVocabulary()) {
             throw new IllegalStateException("getControlledVocabularyValue() called on a non-controlled vocabulary type.");
         }
-        if ( controlledVocabularyValuesByStrValue == null ) {
+        if (controlledVocabularyValuesByStrValue == null) {
             controlledVocabularyValuesByStrValue = new TreeMap<>();               
-            for ( ControlledVocabularyValue cvv : getControlledVocabularyValues() ) {
+            for (ControlledVocabularyValue cvv : getControlledVocabularyValues()) {
                 controlledVocabularyValuesByStrValue.put( cvv.getStrValue(), cvv);
             }
         }
@@ -364,7 +359,6 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setParentDatasetFieldType(DatasetFieldType parentDatasetFieldType) {
         this.parentDatasetFieldType = parentDatasetFieldType;
     }
-
 
     public Set<DataverseFacet> getDataverseFacets() {
         return dataverseFacets;

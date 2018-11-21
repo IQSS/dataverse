@@ -19,14 +19,16 @@ import javax.persistence.Table;
  */
 
 @NamedQueries({
-	@NamedQuery( name="DataverseFeaturedDataverse.removeByOwnerId",
-				 query="DELETE FROM DataverseFeaturedDataverse f WHERE f.dataverse.id=:ownerId")
+    @NamedQuery(name="DataverseFeaturedDataverse.removeByOwnerId",
+        query="DELETE FROM DataverseFeaturedDataverse f WHERE f.dataverse.id=:ownerId")
 })
 
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="featureddataverse_id")
-		, @Index(columnList="displayorder")})
+@Table(indexes = {
+    @Index(columnList="dataverse_id"),
+    @Index(columnList="featureddataverse_id"),
+    @Index(columnList="displayorder")
+})
 public class DataverseFeaturedDataverse implements Serializable {
         private static final long serialVersionUID = 1L;
 
@@ -96,5 +98,4 @@ public class DataverseFeaturedDataverse implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.DataverseFeaturedDataverse[ id=" + id + " ]";
     }
-    
 }

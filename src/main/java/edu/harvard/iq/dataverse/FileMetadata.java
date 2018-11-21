@@ -48,7 +48,6 @@ public class FileMetadata implements Serializable {
     private static final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);    
     private static final Logger logger = Logger.getLogger(FileMetadata.class.getCanonicalName());
 
-
     @Expose
     @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$", 
             message = "{filename.illegalCharacters}")
@@ -301,7 +300,7 @@ public class FileMetadata implements Serializable {
         }
     }
     
-     public String getFileDateToDisplay() {
+    public String getFileDateToDisplay() {
         Date fileDate = null;
         DataFile datafile = this.getDataFile();
         if (datafile != null) {
@@ -325,18 +324,15 @@ public class FileMetadata implements Serializable {
     }
      
     public String getFileCitation(){
-         return getFileCitation(false);
-     }
-     
+        return getFileCitation(false);
+    }
 
-    
-     
     public String getFileCitation(boolean html){
-         return new DataCitation(this).toString(html);
-     }
+        return new DataCitation(this).toString(html);
+    }
     
     public String getDirectFileCitation(boolean html){
-    	return new DataCitation(this, true).toString(html);
+        return new DataCitation(this, true).toString(html);
     }
     
         
@@ -348,8 +344,6 @@ public class FileMetadata implements Serializable {
         this.datasetVersion = datasetVersion;
     }
 
-
-
     public DataFile getDataFile() {
         return dataFile;
     }
@@ -357,7 +351,6 @@ public class FileMetadata implements Serializable {
     public void setDataFile(DataFile dataFile) {
         this.dataFile = dataFile;
     }
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -511,16 +504,12 @@ public class FileMetadata implements Serializable {
             return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
         }
     };
-    
-    
-    
-    public String toPrettyJSON(){
-        
+
+    public String toPrettyJSON() {
         return serializeAsJSON(true);
     }
 
-    public String toJSON(){
-        
+    public String toJSON() {
         return serializeAsJSON(false);
     }
     
@@ -530,21 +519,15 @@ public class FileMetadata implements Serializable {
      * @return 
      */
     private String serializeAsJSON(boolean prettyPrint){
-        
         JsonObject jsonObj = asGsonObject(prettyPrint);
-                
         return jsonObj.toString();
-       
     }
 
-    
     public JsonObject asGsonObject(boolean prettyPrint){
-
-        
         GsonBuilder builder;
-        if (prettyPrint){  // Add pretty printing
+        if (prettyPrint) {  // Add pretty printing
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();
-        }else{
+        } else {
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();                        
         }
         

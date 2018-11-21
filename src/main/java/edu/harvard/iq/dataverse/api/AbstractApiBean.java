@@ -177,8 +177,8 @@ public abstract class AbstractApiBean {
     @EJB
     protected UserServiceBean userSvc;
 
-	@EJB
-	protected DataverseRoleServiceBean rolesSvc;
+    @EJB
+    protected DataverseRoleServiceBean rolesSvc;
 
     @EJB
     protected SettingsServiceBean settingsSvc;
@@ -493,16 +493,17 @@ public abstract class AbstractApiBean {
         return new DataverseRequest(u, httpRequest);
     }
 
-	protected Dataverse findDataverse( String idtf ) {
-		return isNumeric(idtf) ? dataverseSvc.find(Long.parseLong(idtf))
-	 							  : dataverseSvc.findByAlias(idtf);
-	}
+    protected Dataverse findDataverse( String idtf ) {
+        return isNumeric(idtf)
+           ? dataverseSvc.find(Long.parseLong(idtf))
+           : dataverseSvc.findByAlias(idtf);
+    }
 
-	protected DvObject findDvo( Long id ) {
-		return em.createNamedQuery("DvObject.findById", DvObject.class)
-				.setParameter("id", id)
-				.getSingleResult();
-	}
+    protected DvObject findDvo( Long id ) {
+        return em.createNamedQuery("DvObject.findById", DvObject.class)
+                 .setParameter("id", id)
+                 .getSingleResult();
+    }
 
     /**
      * Tries to find a DvObject. If the passed id can be interpreted as a number,
@@ -511,16 +512,15 @@ public abstract class AbstractApiBean {
      * @param id a value identifying the DvObject, either numeric of textual.
      * @return A DvObject, or {@code null}
      */
-	protected DvObject findDvo( String id ) {
-        if ( isNumeric(id) ) {
+    protected DvObject findDvo(String id) {
+        if (isNumeric(id)) {
             return findDvo( Long.valueOf(id)) ;
         } else {
             Dataverse d = dataverseSvc.findByAlias(id);
-            return ( d != null ) ?
+            return (d != null) ?
                     d : datasetSvc.findByGlobalId(id);
-
         }
-	}
+    }
 
     protected <T> T failIfNull( T t, String errorMessage ) throws WrappedResponse {
         if ( t != null ) return t;

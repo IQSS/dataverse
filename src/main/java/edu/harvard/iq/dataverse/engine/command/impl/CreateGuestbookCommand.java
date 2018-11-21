@@ -20,19 +20,18 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  */
 @RequiredPermissions( Permission.EditDataverse )
 public class CreateGuestbookCommand extends AbstractCommand<Guestbook> {
-    	private final Guestbook created;
-	private final Dataverse dv;
-	
-	public CreateGuestbookCommand(Guestbook guestbook, DataverseRequest aRequest, Dataverse anAffectedDataverse) {
-		super(aRequest, anAffectedDataverse);
-		created = guestbook;
-		dv = anAffectedDataverse;
-	}
-
-	@Override
-	public Guestbook execute(CommandContext ctxt) throws CommandException {
-                
-		return ctxt.guestbooks().save(created);
-	}
+    private final Guestbook created;
+    private final Dataverse dv;
     
+    public CreateGuestbookCommand(Guestbook guestbook, DataverseRequest aRequest, Dataverse anAffectedDataverse) {
+        super(aRequest, anAffectedDataverse);
+        created = guestbook;
+        dv = anAffectedDataverse;
+    }
+
+    @Override
+    public Guestbook execute(CommandContext ctxt) throws CommandException {
+        return ctxt.guestbooks().save(created);
+    }
+
 }

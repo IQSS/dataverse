@@ -679,8 +679,9 @@ public class JsonParser {
             }
 
         } else {
-            try {json.getString("value");}
-            catch (ClassCastException cce) {
+            try {
+                json.getString("value");
+            } catch (ClassCastException cce) {
                 throw new JsonParseException("Invalid value submitted for " + dft.getName() + ". It should be a single value.");
             }            
             DatasetFieldValue datasetFieldValue = new DatasetFieldValue();

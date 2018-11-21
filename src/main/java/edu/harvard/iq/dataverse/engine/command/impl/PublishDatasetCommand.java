@@ -108,9 +108,9 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                     (currentGlobalIdProtocol.equals(theDataset.getProtocol()) || dataFilePIDFormat.equals("INDEPENDENT")) 
                     && ctxt.systemConfig().isFilePIDsEnabled();
             
-            if ( registerGlobalIdsForFiles ){
+            if (registerGlobalIdsForFiles) {
                 registerGlobalIdsForFiles = currentGlobalAuthority.equals( theDataset.getAuthority() );
-	    }
+            }
 
             if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount() && registerGlobalIdsForFiles) {     
                 String info = "Adding File PIDs asynchronously";

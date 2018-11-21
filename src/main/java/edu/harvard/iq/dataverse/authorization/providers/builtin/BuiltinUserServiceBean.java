@@ -95,7 +95,7 @@ public class BuiltinUserServiceBean {
             return null;
         }
     }
-	
+
     public List<BuiltinUser> listByUsernamePart ( String part ) {
             return em.createNamedQuery("BuiltinUser.listByUserNameLike", BuiltinUser.class)
                             .setParameter("userNameLike", "%" + part + "%")
@@ -103,8 +103,8 @@ public class BuiltinUserServiceBean {
     }
     
     public List<BuiltinUser> findAll() {
-		return em.createNamedQuery("BuiltinUser.findAll", BuiltinUser.class).getResultList();
-	}
+        return em.createNamedQuery("BuiltinUser.findAll", BuiltinUser.class).getResultList();
+    }
     
     public String requestPasswordUpgradeLink( BuiltinUser aUser ) throws PasswordResetException {
         PasswordResetInitResponse prir = passwordResetService.requestPasswordReset(aUser, false, PasswordResetData.Reason.UPGRADE_REQUIRED );

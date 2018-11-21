@@ -40,21 +40,21 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author rmp553
  */
 @NamedQueries({
-    @NamedQuery( name="AuthenticatedUser.findAll",
+    @NamedQuery(name="AuthenticatedUser.findAll",
                 query="select au from AuthenticatedUser au"),
-    @NamedQuery( name="AuthenticatedUser.findSuperUsers",
+    @NamedQuery(name="AuthenticatedUser.findSuperUsers",
                 query="SELECT au FROM AuthenticatedUser au WHERE au.superuser = TRUE"),
-    @NamedQuery( name="AuthenticatedUser.findByIdentifier",
+    @NamedQuery(name="AuthenticatedUser.findByIdentifier",
                 query="select au from AuthenticatedUser au WHERE au.userIdentifier=:identifier"),
-    @NamedQuery( name="AuthenticatedUser.findByEmail",
+    @NamedQuery(name="AuthenticatedUser.findByEmail",
                 query="select au from AuthenticatedUser au WHERE LOWER(au.email)=LOWER(:email)"),
-    @NamedQuery( name="AuthenticatedUser.countOfIdentifier",
+    @NamedQuery(name="AuthenticatedUser.countOfIdentifier",
                 query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE a.userIdentifier=:identifier"),
-    @NamedQuery( name="AuthenticatedUser.filter",
+    @NamedQuery(name="AuthenticatedUser.filter",
                 query="select au from AuthenticatedUser au WHERE ("
                         + "au.userIdentifier like :query OR "
                         + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query))"),
-    @NamedQuery( name="AuthenticatedUser.findAdminUser",
+    @NamedQuery(name="AuthenticatedUser.findAdminUser",
                 query="select au from AuthenticatedUser au WHERE "
                         + "au.superuser = true "
                         + "order by au.id")
@@ -126,7 +126,7 @@ public class AuthenticatedUser implements User, Serializable {
     
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLock> datasetLocks;
-	
+
     public List<DatasetLock> getDatasetLocks() {
         return datasetLocks;
     }
@@ -194,11 +194,11 @@ public class AuthenticatedUser implements User, Serializable {
     public void setAuthProviderFactoryAlias(String authProviderFactoryAlias) {
         this.authProviderFactoryAlias = authProviderFactoryAlias;
     }
-    
-    
-    
+
     @Override
-    public boolean isAuthenticated() { return true; }
+    public boolean isAuthenticated() {
+        return true;
+    }
 
     public Long getId() {
         return id;

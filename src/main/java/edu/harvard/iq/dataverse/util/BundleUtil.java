@@ -66,8 +66,7 @@ public class BundleUtil {
         return getStringFromBundleNoMissingCheck(key, null, bundle);
     }
 
-    public static ResourceBundle getResourceBundle(String propertyFileName)
-    {
+    public static ResourceBundle getResourceBundle(String propertyFileName) {
         DataverseLocaleBean d = new DataverseLocaleBean();
         ResourceBundle bundle;
         bundle_locale = new Locale(d.getLocaleCode());

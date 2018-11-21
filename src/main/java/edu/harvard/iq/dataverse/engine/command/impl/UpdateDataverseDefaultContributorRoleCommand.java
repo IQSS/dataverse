@@ -18,8 +18,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 @RequiredPermissions( Permission.ManageDataversePermissions )
 public class UpdateDataverseDefaultContributorRoleCommand extends AbstractCommand<Dataverse> {
 
-    	private final DataverseRole role;
-        private  Dataverse dv;
+    private final DataverseRole role;
+    private  Dataverse dv;
         
     public UpdateDataverseDefaultContributorRoleCommand(DataverseRole role, DataverseRequest aRequest, Dataverse anAffectedDataverse) {
         super(aRequest, anAffectedDataverse);

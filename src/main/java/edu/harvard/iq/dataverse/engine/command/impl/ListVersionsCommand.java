@@ -27,19 +27,19 @@ public class ListVersionsCommand extends AbstractCommand<List<DatasetVersion>>{
     
     private final Dataset ds;
     
-	public ListVersionsCommand(DataverseRequest aRequest, Dataset aDataset) {
-		super(aRequest, aDataset);
-		ds = aDataset;
-	}
+    public ListVersionsCommand(DataverseRequest aRequest, Dataset aDataset) {
+        super(aRequest, aDataset);
+        ds = aDataset;
+    }
 
-	@Override
-	public List<DatasetVersion> execute(CommandContext ctxt) throws CommandException {
-		List<DatasetVersion> outputList = new LinkedList<>();
-		for ( DatasetVersion dsv : ds.getVersions() ) {
+    @Override
+    public List<DatasetVersion> execute(CommandContext ctxt) throws CommandException {
+        List<DatasetVersion> outputList = new LinkedList<>();
+        for ( DatasetVersion dsv : ds.getVersions() ) {
             if (dsv.isReleased() || ctxt.permissions().request( getRequest() ).on(ds).has(Permission.EditDataset)) {
                 outputList.add(dsv);
             }
-		}
+        }
         return outputList;
-	}
+    }
 }

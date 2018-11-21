@@ -205,9 +205,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
         if (user==null){
             return error(Response.Status.FORBIDDEN, "Not logged in");
         }
-        
-        
-        if (true){
+
+        if (true) {
             //return okResponse( "Looks good " + datafile_id);
            //tokenAppServiceBean.getGeoConnectApplication();           
            //return okResponse("Currently deactivated (mapDataFile)");
@@ -215,26 +214,26 @@ public class WorldMapRelatedData extends AbstractApiBean {
 
         // Check if the user exists
         AuthenticatedUser dvUser = dataverseUserService.findByID(dvuser_id);
-	if ( dvUser == null ){
+        if (dvUser == null) {
             return error(Response.Status.FORBIDDEN, "Invalid user");
         }
 
         // Check if this file exists
         DataFile dfile = dataFileService.find(datafile_id);
-        if (dfile==null){
+        if (dfile==null) {
            return error(Response.Status.NOT_FOUND, "DataFile not found for id: " + datafile_id);
         }
         
         /*
             Is the dataset public?
         */
-        if (!dfile.getOwner().isReleased()){
+        if (!dfile.getOwner().isReleased()) {
            return error(Response.Status.FORBIDDEN, "Mapping is only permitted for public datasets/files");
             
         }
         
         // Does this user have permission to edit metadata for this file?    
-        if (!permissionService.request(createDataverseRequest(dvUser)).on(dfile.getOwner()).has(Permission.EditDataset)){
+        if (!permissionService.request(createDataverseRequest(dvUser)).on(dfile.getOwner()).has(Permission.EditDataset)) {
            String errMsg = "The user does not have permission to edit metadata for this file.";
            return error(Response.Status.FORBIDDEN, errMsg);
         }

@@ -21,13 +21,13 @@ import javax.persistence.TypedQuery;
  */
 @RequiredPermissions( Permission.EditDataverse )
 public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
-	
-	private final Dataverse editedDv;
-	private final List<DatasetFieldType> facetList;
+
+    private final Dataverse editedDv;
+    private final List<DatasetFieldType> facetList;
         private final List<Dataverse> featuredDataverseList;
         private final List<DataverseFieldTypeInputLevel> inputLevelList;
 
-	public UpdateDataverseCommand(Dataverse editedDv, List<DatasetFieldType> facetList, List<Dataverse> featuredDataverseList, 
+    public UpdateDataverseCommand(Dataverse editedDv, List<DatasetFieldType> facetList, List<Dataverse> featuredDataverseList,
                     DataverseRequest aRequest,  List<DataverseFieldTypeInputLevel> inputLevelList ) {
             super(aRequest, editedDv);
             this.editedDv = editedDv;
@@ -48,10 +48,10 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
             } else {
                this.inputLevelList = null;
             }
-	}
-	
-	@Override
-	public Dataverse execute(CommandContext ctxt) throws CommandException {
+    }
+
+    @Override
+    public Dataverse execute(CommandContext ctxt) throws CommandException {
             DataverseType oldDvType = ctxt.dataverses().find(editedDv.getId()).getDataverseType();
             String oldDvAlias = ctxt.dataverses().find(editedDv.getId()).getAlias();
             String oldDvName = ctxt.dataverses().find(editedDv.getId()).getName();
@@ -93,5 +93,5 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
             }
             
             return result;
-	}
+    }
 }

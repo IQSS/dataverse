@@ -38,8 +38,7 @@ import javax.persistence.TypedQuery;
 @Stateless
 @Named
 public class MapLayerMetadataServiceBean {
-    
-   
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -73,31 +72,28 @@ public class MapLayerMetadataServiceBean {
         if ( layer_metadata.getId() == null ) {
             em.persist(layer_metadata);
             return layer_metadata;
-	} else {
+        } else {
             return em.merge( layer_metadata );
-	}
+        }
     }
-    
-    
-    
+
     /*
         Given a datafile id, return the associated MapLayerMetadata object
-    
     */
     public MapLayerMetadata findMetadataByDatafile(DataFile datafile){
         
-        if (datafile == null){
+        if (datafile == null) {
             return null;
         }
      
-        try{
+        try {
  //           String sqlStatement = 
             Query query = em.createQuery("select m from MapLayerMetadata m WHERE m.dataFile=:datafile",  MapLayerMetadata.class);
             query.setParameter("datafile", datafile);
             query.setMaxResults(1);
             //entityManager.createQuery(SQL_QUERY).setParameter(arg0,arg1).setMaxResults(10).getResultList();
             return (MapLayerMetadata) query.getSingleResult();
-        } catch ( NoResultException nre ) {
+        } catch (NoResultException nre) {
             return null;
         }    
     }
@@ -131,35 +127,31 @@ public class MapLayerMetadataServiceBean {
         }
         return false;
     }
-    
-    
-    public MapLayerMetadata findMetadataByLayerNameAndDatafile(String layer_name){//, DataFile datafile) {
-        if ((layer_name == null)){//||(datafile==null)){
+
+    public MapLayerMetadata findMetadataByLayerNameAndDatafile(String layer_name) { //, DataFile datafile) {
+        if ((layer_name == null)) { // ||(datafile==null)){
             return null;
         }
-        //Query query = em.createQuery("select o.id from MapLayerMetadta as o where o.layer_name =:layerName and o.datafile_id =:datafileID;");
-        //Query query = em.createQuery("select m from MapLayerMetadata m where m.layer_name =:layerName ;");
-        try{
+        // Query query = em.createQuery("select o.id from MapLayerMetadta as o where o.layer_name =:layerName and o.datafile_id =:datafileID;");
+        // Query query = em.createQuery("select m from MapLayerMetadata m where m.layer_name =:layerName ;");
+        try {
             return em.createQuery("select m from MapLayerMetadata m WHERE m.layerName=:layerName", MapLayerMetadata.class)
-					.setParameter("layerName", layer_name)
-					.getSingleResult();
-        } catch ( NoResultException nre ) {
+                     .setParameter("layerName", layer_name)
+                     .getSingleResult();
+        } catch (NoResultException nre) {
             return null;
         }    
     }
-    
-    
-    
-    public List<MapLayerMetadata> getMapLayerMetadataForDataset(Dataset dataset){
-        if (dataset == null){
+
+    public List<MapLayerMetadata> getMapLayerMetadataForDataset(Dataset dataset) {
+        if (dataset == null) {
             return null;
         }
         TypedQuery<MapLayerMetadata> query = em.createQuery("select object(o) from MapLayerMetadata as o where o.dataset=:dataset", MapLayerMetadata.class);// order by o.name");
         query.setParameter("dataset", dataset);
         return query.getResultList();
-    }    
-    
-    
+    }
+
     /**
      * Before downloading a file for map icons (see "retrieveMapImageForIcon" below),
      * first remove any existing .img and .img.* files
@@ -307,12 +299,16 @@ public class MapLayerMetadataServiceBean {
         logger.info("try to open InputStream");
         InputStream is = null;
         
-        try{
+        try {
             is = url.openStream();
-        }catch(IOException exio){
+        } catch(IOException exio) {
             logger.warning("Error when retrieving map icon image. Exception: " + exio.getMessage());
-            if (is!=null){
-                try { is.close(); } catch (IOException ignore) {}
+            if (is!=null) {
+                try {
+                    is.close();
+                } catch (IOException ignore) {
+
+                }
             }
             return false;
         }

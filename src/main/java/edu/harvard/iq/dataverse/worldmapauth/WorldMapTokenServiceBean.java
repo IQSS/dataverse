@@ -53,8 +53,8 @@ public class WorldMapTokenServiceBean {
      * @return WorldMapToken
      */
     @TransactionAttribute(REQUIRES_NEW) 
-    public WorldMapToken getNewToken(DataFile dataFile, AuthenticatedUser dvUser){
-        if ((dataFile==null)||(dvUser==null)){
+    public WorldMapToken getNewToken(DataFile dataFile, AuthenticatedUser dvUser) {
+        if ((dataFile == null) || (dvUser == null)) {
             logger.severe("dataFile or dvUser is null");
             return null;
         }
@@ -68,7 +68,7 @@ public class WorldMapTokenServiceBean {
     }
 
     public WorldMapToken find(Object pk) {
-        if (pk==null){
+        if (pk == null) {
             return null;
         }
         return em.find(WorldMapToken.class, pk);
@@ -80,8 +80,8 @@ public class WorldMapTokenServiceBean {
      * 
      * @param wmToken 
      */
-    public void expireToken(WorldMapToken wmToken){
-        if (wmToken==null){
+    public void expireToken(WorldMapToken wmToken) {
+        if (wmToken == null) {
             return;
         }
         wmToken.expireToken();
@@ -94,9 +94,8 @@ public class WorldMapTokenServiceBean {
      * 
      * @param wmToken 
      */
-    public void deleteToken(WorldMapToken wmToken){
-    
-        if (wmToken==null){
+    public void deleteToken(WorldMapToken wmToken) {
+        if (wmToken == null) {
             return;
         }
         em.remove(em.merge(wmToken));
@@ -110,59 +109,56 @@ public class WorldMapTokenServiceBean {
         TypedQuery<WorldMapToken> query = em.createQuery("select object(w) from WorldMapToken as w where w.hasExpired IS TRUE", WorldMapToken.class);// order by o.name");
         List<WorldMapToken> tokenList = query.getResultList();
         for (WorldMapToken wmToken : tokenList) {
-           // em.remove(token);
+            // em.remove(token);
             em.remove(em.merge(wmToken));
-	}
+        }
     }
 
-     public WorldMapToken save( WorldMapToken dvToken ) {
+    public WorldMapToken save( WorldMapToken dvToken ) {
         
-         if (dvToken==null){
+        if (dvToken == null){
             return null;
         }
         
-        if (dvToken.getToken()==null){
+        if (dvToken.getToken() == null){
             dvToken.setToken();
         }
         
-        if (dvToken.getApplication().getMapitLink()==null){
+        if (dvToken.getApplication().getMapitLink() == null) {
             logger.warning("mapitLink is missing for token_application");
             return null;
         }
         
         TokenApplicationType dat = dvToken.getApplication();
-        if (dat==null){
+        if (dat == null){
             logger.warning("TokenApplicationType is null for WorldMapToken");
             return null;
         }
         
-        if ( dvToken.getId()== null ) {            
+        if (dvToken.getId() == null) {
             em.persist(dvToken);
             logger.fine("New token_application saved");
             return dvToken;
-	} else {
+        } else {
             logger.fine("Existing token_application saved");
             return em.merge( dvToken );
-	}
+        }
     }
-	        
-   
+
     public WorldMapToken findByName(String token){
-        if (token == null){
+        if (token == null) {
             return null;
         }
 
-        try{
+        try {
             return em.createQuery("select m from WorldMapToken m WHERE m.token=:token", WorldMapToken.class)
-					.setParameter("token", token)
-					.getSingleResult();
+                    .setParameter("token", token)
+                    .getSingleResult();
         } catch ( NoResultException nre ) {
             return null;
         }    
     }
 
-    
-    
     /**
      * Given a string token, retrieve the related WorldMapToken object
      * 
@@ -170,16 +166,16 @@ public class WorldMapTokenServiceBean {
      * @return WorldMapToken object (if it hasn't expired)
      */
     public WorldMapToken retrieveAndRefreshValidToken(String worldmapTokenParam){
-        if (worldmapTokenParam==null){
+        if (worldmapTokenParam == null) {
             logger.warning("worldmapTokenParam is null.  Permission denied.");
             return null;
         }
         WorldMapToken wmToken = this.findByName(worldmapTokenParam);
-        if (wmToken==null){
+        if (wmToken == null) {
             logger.warning("WorldMapToken not found for '" + worldmapTokenParam + "'.  Permission denied.");
             return null;
         }
-        if (wmToken.hasTokenExpired()){
+        if (wmToken.hasTokenExpired()) {
             em.remove(em.merge(wmToken));   // Delete expired token from the database.
             logger.warning("WorldMapToken has expired.  Permission denied.");
             return null;
@@ -191,14 +187,13 @@ public class WorldMapTokenServiceBean {
         
         return wmToken;
     }
-    
-    
-    /*
-        Can the user connected to the WorldMapToken still
-            edit the dataset for the file connected to the token?         
+
+    /**
+     * Can the user connected to the WorldMapToken still
+     * edit the dataset for the file connected to the token?
     */
     public boolean canTokenUserEditFile(WorldMapToken wmToken){
-        if (wmToken==null){
+        if (wmToken == null) {
             return false;
         }
         if (permissionService.userOn(wmToken.getDataverseUser(), wmToken.getDatafile()).has(Permission.EditDataset)) { 
@@ -206,15 +201,14 @@ public class WorldMapTokenServiceBean {
             return true;
         }
         return false;
-        
     }
 
-    /*
-        Can the user connected to the WorldMapToken still
-            download the file connected to the token?         
+    /**
+     * Can the user connected to the WorldMapToken still
+     * download the file connected to the token?
     */
     private boolean canTokenUserDownloadFile(WorldMapToken wmToken){
-        if (wmToken==null){
+        if (wmToken == null) {
             return false;
         }
         if (permissionService.userOn(wmToken.getDataverseUser(), wmToken.getDatafile()).has(Permission.DownloadFile)) { 
@@ -222,23 +216,20 @@ public class WorldMapTokenServiceBean {
             return true;
         }
         return false;
-        
     }
 
-    
-    /*
-        Given a string for a WorldMapToken and DataFile, check:
-    
-            (1) Is this token valid?
-            (2) Does the token correspond to this DataFile?
-    
-        @return boolean if token is valid and corresponds to the given DataFile
-    
-    */
+    /**
+     * Given a string for a WorldMapToken and DataFile, check:
+     *
+     * (1) Is this token valid?
+     * (2) Does the token correspond to this DataFile?
+     *
+     * @return boolean if token is valid and corresponds to the given DataFile
+     */
     public boolean isWorldMapTokenAuthorizedForDataFileDownload(String worldmapTokenParam, DataFile df){
         logger.info("-- isWorldMapTokenAuthorizedForDataFileworldmapTokenParam " + worldmapTokenParam);
         
-        if ((worldmapTokenParam == null)||(df == null)){
+        if ((worldmapTokenParam == null) || (df == null)) {
             logger.info("nope: worldmapTokenParam or data file is null");
             return false;
         }
@@ -246,7 +237,7 @@ public class WorldMapTokenServiceBean {
         // Check 1:  Is this a valid WorldMap token?
         //
         WorldMapToken token = this.retrieveAndRefreshValidToken(worldmapTokenParam);
-        if (token==null){
+        if (token == null) {
             logger.info("WorldMap token-based auth: Token is not invalid.");
             return false;
         }
@@ -254,37 +245,33 @@ public class WorldMapTokenServiceBean {
 
         // Check 2:  Does this WorldMap token's datafile match the requested datafile?
         //
-        if (!(token.getDatafile().getId().equals(df.getId()))){
+        if (!(token.getDatafile().getId().equals(df.getId()))) {
             logger.info("WorldMap token-based auth: Token's datafile does not match the requested datafile.");
             return false;
         }
         
         // Check 3:  Does this WorldMap token's user have permission for the requested datafile?
         //
-        if (!(this.canTokenUserDownloadFile(token))){ 
+        if (!(this.canTokenUserDownloadFile(token))) {
             logger.info("WorldMap token-based auth: Token's User is not authorized for the requested datafile.");
             return false;
         }
-            
-        
+
         logger.info("WorldMap token-based auth: Token is valid for the requested datafile");
         return true;
-        
     }
     
-    
-    /*
-        Given a string for a WorldMapToken, check:
-    
-            (1) Is this token valid?
-            (2) Re-verify that can edit the Dataset connected to the token's DataFile
-    
-        @return boolean if token is valid and corresponds to the given DataFile
-    
-    */
+    /**
+     * Given a string for a WorldMapToken, check:
+     *
+     * (1) Is this token valid?
+     * (2) Re-verify that can edit the Dataset connected to the token's DataFile
+     *
+     * @return boolean if token is valid and corresponds to the given DataFile
+     */
     public boolean isWorldMapTokenAuthorizedForMetadataRetrievalAndUpdates(String worldmapTokenParam){
         logger.info("-- isWorldMapTokenAuthorizedForDataFile?");
-        if (worldmapTokenParam == null){
+        if (worldmapTokenParam == null) {
             logger.info("nope: worldmapTokenParam or data file is null");
             return false;
         }
@@ -292,23 +279,19 @@ public class WorldMapTokenServiceBean {
         // Check 1:  Is this a valid WorldMap token?
         //
         WorldMapToken token = this.retrieveAndRefreshValidToken(worldmapTokenParam);
-        if (token==null){
+        if (token == null) {
             logger.info("WorldMap token-based auth: Token is not invalid.");
             return false;
         }
-        
-               
-   
+
         // Check 2:  Does this WorldMap token's user still have edit permission for the requested datafile?
         //
         if (!(this.canTokenUserEditFile(token))){ 
             logger.info("WorldMap token-based auth: Token's User is not authorized for the requested datafile.");
             return false;
         }
-            
-        
+
         logger.info("WorldMap token-based auth: Token is valid for the requested datafile");
         return true;
-        
     }
 } // end of class

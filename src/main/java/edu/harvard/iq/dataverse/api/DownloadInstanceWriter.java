@@ -222,7 +222,11 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         // emphasizes that it is very important not to leave these
                         // lying around un-closed, since they are going to fill 
                         // up the S3 connection pool!
-                        try {storageIO.getInputStream().close();} catch (IOException ioex) {}
+                        try {
+                            storageIO.getInputStream().close();
+                        } catch (IOException ioex) {
+
+                        }
                         // [attempt to] redirect: 
                         String redirect_url_str; 
                         try {

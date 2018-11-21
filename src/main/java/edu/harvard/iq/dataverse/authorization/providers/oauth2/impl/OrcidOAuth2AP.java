@@ -196,28 +196,28 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
      * retrieve email from ORCID 2.0 response document, or empty string if no primary email is present
      */
     private String getPrimaryEmail(Document doc) {
-	    // `xmlstarlet sel -t -c "/record:record/person:person/email:emails/email:email[@primary='true']/email:email"`, if you're curious
-	    String p = "/person/emails/email[@primary='true']/email/text()";
-	    NodeList emails = xpathMatches( doc, p );
-	    String primaryEmail  = "";
-	    if ( 1 == emails.getLength() ) {
-		    primaryEmail = emails.item(0).getTextContent();
-	    }
-	    // if there are no (or somehow more than 1) primary email(s), then we've already at failure value
-	    return primaryEmail;
+        // `xmlstarlet sel -t -c "/record:record/person:person/email:emails/email:email[@primary='true']/email:email"`, if you're curious
+        String p = "/person/emails/email[@primary='true']/email/text()";
+        NodeList emails = xpathMatches( doc, p );
+        String primaryEmail  = "";
+        if ( 1 == emails.getLength() ) {
+            primaryEmail = emails.item(0).getTextContent();
+        }
+        // if there are no (or somehow more than 1) primary email(s), then we've already at failure value
+        return primaryEmail;
     }
     
     /**
      * retrieve all emails (including primary) from ORCID 2.0 response document
      */
     private List<String> getAllEmails(Document doc) {
-	    String p = "/person/emails/email/email/text()";
-	    NodeList emails = xpathMatches( doc, p );
-	    List<String> rs = new ArrayList<>();
-	    for(int i=0;i<emails.getLength(); ++i) { // no iterator in NodeList
-		    rs.add( emails.item(i).getTextContent() );
-	    }
-	    return rs;
+        String p = "/person/emails/email/email/text()";
+        NodeList emails = xpathMatches( doc, p );
+        List<String> rs = new ArrayList<>();
+        for(int i=0;i<emails.getLength(); ++i) { // no iterator in NodeList
+            rs.add( emails.item(i).getTextContent() );
+        }
+        return rs;
     }
     
     /**
@@ -225,17 +225,17 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
      * if there are no matches)
      */
     private NodeList xpathMatches(Document doc, String pattern) {
-	    XPathFactory xpf = XPathFactory.newInstance();
-	    XPath xp = xpf.newXPath();
-	    NodeList matches = null;
-	    try {
-		    XPathExpression srch = xp.compile( pattern );
-		    matches = (NodeList) srch.evaluate(doc, XPathConstants.NODESET);
+        XPathFactory xpf = XPathFactory.newInstance();
+        XPath xp = xpf.newXPath();
+        NodeList matches = null;
+        try {
+            XPathExpression srch = xp.compile( pattern );
+            matches = (NodeList) srch.evaluate(doc, XPathConstants.NODESET);
             
-	    } catch( javax.xml.xpath.XPathExpressionException xpe ) {
-		    //no-op; intended for hard-coded xpath expressions that won't change at runtime
-	    }
-	    return matches;
+        } catch( javax.xml.xpath.XPathExpressionException xpe ) {
+            //no-op; intended for hard-coded xpath expressions that won't change at runtime
+        }
+        return matches;
     }
 
     @Override

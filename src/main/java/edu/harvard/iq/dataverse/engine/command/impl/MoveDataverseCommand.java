@@ -36,8 +36,8 @@ import java.util.logging.Logger;
 // checks that would need to be revisited if regular users were able to use this
 @RequiredPermissionsMap({
     @RequiredPermissions(dataverseName = "moved", value = {Permission.ManageDataversePermissions, Permission.EditDataverse}),
-	@RequiredPermissions(dataverseName = "source", value = Permission.DeleteDataverse),
-	@RequiredPermissions(dataverseName = "destination", value = Permission.AddDataverse)
+    @RequiredPermissions(dataverseName = "source", value = Permission.DeleteDataverse),
+    @RequiredPermissions(dataverseName = "destination", value = Permission.AddDataverse)
 })
 public class MoveDataverseCommand extends AbstractVoidCommand {
     private static final Logger logger = Logger.getLogger(MoveDataverseCommand.class.getName());

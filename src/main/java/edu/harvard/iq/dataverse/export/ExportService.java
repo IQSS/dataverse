@@ -364,19 +364,19 @@ public class ExportService {
         return null;
     }
 
-	public String getMediaType(String provider) {
-		 try {
-	            Iterator<Exporter> exporters = loader.iterator();
-	            while (exporters.hasNext()) {
-	                Exporter e = exporters.next();
-	                if (e.getProviderName().equals(provider)) {
-	                    return e.getMediaType();
-	                }
-	            }
-	        } catch (ServiceConfigurationError serviceError) {
-	            serviceError.printStackTrace();
-	        }
-	        return MediaType.TEXT_PLAIN;
-	}
+    public String getMediaType(String provider) {
+         try {
+             Iterator<Exporter> exporters = loader.iterator();
+             while (exporters.hasNext()) {
+                 Exporter e = exporters.next();
+                 if (e.getProviderName().equals(provider)) {
+                     return e.getMediaType();
+                 }
+             }
+         } catch (ServiceConfigurationError serviceError) {
+             serviceError.printStackTrace();
+         }
+         return MediaType.TEXT_PLAIN;
+    }
 
 }

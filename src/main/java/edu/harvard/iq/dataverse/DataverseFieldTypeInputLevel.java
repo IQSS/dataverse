@@ -24,21 +24,23 @@ import javax.persistence.UniqueConstraint;
  */
 @NamedQueries({
     @NamedQuery(name = "DataverseFieldTypeInputLevel.removeByOwnerId",
-            query = "DELETE FROM DataverseFieldTypeInputLevel f WHERE f.dataverse.id=:ownerId"),
+        query = "DELETE FROM DataverseFieldTypeInputLevel f WHERE f.dataverse.id=:ownerId"),
     @NamedQuery(name = "DataverseFieldTypeInputLevel.findByDataverseId",
-            query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId"),
+        query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId"),
     @NamedQuery(name = "DataverseFieldTypeInputLevel.findByDataverseIdDatasetFieldTypeId",
-            query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId and f.datasetFieldType.id = :datasetFieldTypeId"),
+        query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId and f.datasetFieldType.id = :datasetFieldTypeId"),
     @NamedQuery(name = "DataverseFieldTypeInputLevel.findByDataverseIdAndDatasetFieldTypeIdList",
-            query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId and f.datasetFieldType.id in :datasetFieldIdList")
- 
+        query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId and f.datasetFieldType.id in :datasetFieldIdList")
 })
-@Table(name="DataverseFieldTypeInputLevel"
-        ,  uniqueConstraints={
-            @UniqueConstraint(columnNames={"dataverse_id", "datasetfieldtype_id"})}
-        , indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="datasetfieldtype_id")
-		, @Index(columnList="required")}
+@Table(name="DataverseFieldTypeInputLevel",
+   uniqueConstraints={
+       @UniqueConstraint(columnNames={"dataverse_id", "datasetfieldtype_id"})
+   },
+   indexes = {
+       @Index(columnList="dataverse_id"),
+       @Index(columnList="datasetfieldtype_id"),
+       @Index(columnList="required")
+   }
 )
 @Entity
 public class DataverseFieldTypeInputLevel implements Serializable {

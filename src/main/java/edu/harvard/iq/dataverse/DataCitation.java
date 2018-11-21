@@ -69,7 +69,6 @@ public class DataCitation {
         this(dsv, false);
     }
 
-
     public DataCitation(DatasetVersion dsv, boolean direct) {
         this.direct = direct;
         getCommonValuesFrom(dsv);
@@ -196,7 +195,7 @@ public class DataCitation {
         }
 
         if (persistentId != null) {
-        	// always show url format
+            // always show url format
             citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html)); 
         }
         citationList.add(formatString(publisher, html));
@@ -596,13 +595,13 @@ public class DataCitation {
 
     }
 
-	public Map<String, String> getDataCiteMetadata() {
+    public Map<String, String> getDataCiteMetadata() {
         Map<String, String> metadata = new HashMap<>();
         String authorString = getAuthorsString();
 
         if (authorString.isEmpty()) {
             authorString = ":unav";
-    }
+        }
         String producerString = getPublisher();
 
         if (producerString.isEmpty()) {
@@ -614,10 +613,9 @@ public class DataCitation {
         metadata.put("datacite.publisher", producerString);
         metadata.put("datacite.publicationyear", getYear());
         return metadata;
-	}
+    }
 
-	
-    // helper methods   
+    // helper methods
     private String formatString(String value, boolean escapeHtml) {
         return formatString(value, escapeHtml, "");
     }

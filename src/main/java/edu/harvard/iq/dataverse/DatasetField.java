@@ -290,12 +290,12 @@ public class DatasetField implements Serializable {
         }
         return returnList;
     }
+
     /**
      * list of values (as opposed to display values).
      * used for passing to solr for indexing
      */
-    public List<String> getValues_nondisplay()
-    {
+    public List<String> getValues_nondisplay() {
         List returnList = new ArrayList();
         if (!datasetFieldValues.isEmpty()) {
             for (DatasetFieldValue dsfv : datasetFieldValues) {
@@ -335,7 +335,7 @@ public class DatasetField implements Serializable {
 
     private boolean isEmpty(boolean forDisplay) {
         if (datasetFieldType.isPrimitive()) { // primitive
-        	List<String> values = forDisplay ? getValues() : getValues_nondisplay();
+            List<String> values = forDisplay ? getValues() : getValues_nondisplay();
             for (String value : values) {
                 if (!StringUtils.isBlank(value) && !(forDisplay && DatasetField.NA_VALUE.equals(value))) {
                     return false;

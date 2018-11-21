@@ -15,8 +15,8 @@ public class ScriptRequestResponse {
         this.script = null;
         this.datasetIdentifier = null;
     }
-    public ScriptRequestResponse(int httpStatusCode, String datasetIdentifier, long userId, String script)
-    {
+
+    public ScriptRequestResponse(int httpStatusCode, String datasetIdentifier, long userId, String script) {
         this.httpStatusCode = httpStatusCode;
         this.datasetIdentifier = datasetIdentifier;
         this.userId = userId;
@@ -40,8 +40,7 @@ public class ScriptRequestResponse {
         return script;
     }
 
-    public String getDatasetIdentifier()
-    {
+    public String getDatasetIdentifier() {
         return datasetIdentifier;
     }
 

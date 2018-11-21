@@ -149,13 +149,13 @@ public class MetricsServiceBean implements Serializable {
             "from datasetversion\n" +
             "where datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n" +
             "(\n" +
-            "	select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n" +
-            "	from datasetversion\n" +
-            "	join dataset on dataset.id = datasetversion.dataset_id\n" +
-            "	where versionstate='RELEASED' \n" +
-            "	and releasetime > current_date - interval '"+days+"' day\n" +
-            "	and dataset.harvestingclient_id is null\n" +
-            "	group by dataset_id \n" +
+            "    select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n" +
+            "    from datasetversion\n" +
+            "    join dataset on dataset.id = datasetversion.dataset_id\n" +
+            "    where versionstate='RELEASED' \n" +
+            "    and releasetime > current_date - interval '"+days+"' day\n" +
+            "    and dataset.harvestingclient_id is null\n" +
+            "    group by dataset_id \n" +
             ");"
         );
         logger.fine("query: " + query);

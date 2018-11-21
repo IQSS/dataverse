@@ -24,9 +24,11 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author gdurand
  */
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="contactemail")
-		, @Index(columnList="displayorder")})
+@Table(indexes = {
+    @Index(columnList="dataverse_id"),
+    @Index(columnList="contactemail"),
+    @Index(columnList="displayorder")
+})
 public class DataverseContact implements Serializable {
 
     private static final long serialVersionUID = 1L;

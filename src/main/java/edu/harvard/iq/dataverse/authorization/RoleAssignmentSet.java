@@ -13,46 +13,46 @@ import java.util.Set;
  * @author michael
  */
 public class RoleAssignmentSet implements Iterable<RoleAssignment> {
-	
-	private final RoleAssignee roas;
-	private final Set<RoleAssignment> assignments = new HashSet<>();
-	
-	public RoleAssignmentSet( RoleAssignee aRoleAssignee) {
-		roas = aRoleAssignee;
-	}
-	
-	public void add( Iterable<RoleAssignment> ras ) {
-		for ( RoleAssignment ra : ras ) {
-			assignments.add(ra);
-		}
-	}
-	
-	public void add( RoleAssignment ra ) {
-		assignments.add( ra );
-	}
-	
-	public Set<Permission> getPermissions() {
-		BitSet acc = new BitSet();
-		for ( RoleAssignment ra : assignments ) {
-			acc.union( new BitSet(ra.getRole().getPermissionsBits()) );
-		}
-		return acc.asSetOf( Permission.class );
-	}
+
+    private final RoleAssignee roas;
+    private final Set<RoleAssignment> assignments = new HashSet<>();
+
+    public RoleAssignmentSet( RoleAssignee aRoleAssignee) {
+        roas = aRoleAssignee;
+    }
+
+    public void add( Iterable<RoleAssignment> ras ) {
+        for ( RoleAssignment ra : ras ) {
+            assignments.add(ra);
+        }
+    }
+
+    public void add( RoleAssignment ra ) {
+        assignments.add( ra );
+    }
+
+    public Set<Permission> getPermissions() {
+        BitSet acc = new BitSet();
+        for ( RoleAssignment ra : assignments ) {
+            acc.union( new BitSet(ra.getRole().getPermissionsBits()) );
+        }
+        return acc.asSetOf( Permission.class );
+    }
 
     public RoleAssignee getRoleAssignee() {
         return roas;
     }
 
-	public Set<RoleAssignment> getAssignments() {
-		return assignments;
-	}
+    public Set<RoleAssignment> getAssignments() {
+        return assignments;
+    }
 
-	@Override
-	public Iterator<RoleAssignment> iterator() {
-		return assignments.iterator();
-	}
-	
-	public boolean isEmpty() {
-		return assignments.isEmpty();
-	}
+    @Override
+    public Iterator<RoleAssignment> iterator() {
+        return assignments.iterator();
+    }
+
+    public boolean isEmpty() {
+        return assignments.isEmpty();
+    }
 }

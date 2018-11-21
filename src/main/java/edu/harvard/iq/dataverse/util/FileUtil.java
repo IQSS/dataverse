@@ -171,8 +171,12 @@ public class FileUtil implements java.io.Serializable  {
             }
             
         } finally {
-            if (in != null) { in.close(); }
-            if (out != null) { out.close(); }
+            if (in != null) {
+                in.close();
+            }
+            if (out != null) {
+                out.close();
+            }
         }
     }
 
@@ -388,7 +392,11 @@ public class FileUtil implements java.io.Serializable  {
                 }
             } catch (IOException ioex) {
                 if (uncompressedIn != null) {
-                    try {uncompressedIn.close();} catch (IOException e) {}
+                    try {
+                        uncompressedIn.close();
+                    } catch (IOException e) {
+
+                    }
                 }
             }
         } 
@@ -590,7 +598,11 @@ public class FileUtil implements java.io.Serializable  {
             // the size limit for each of the individual unpacked files)
             Long fileSize = tempFile.toFile().length();
             if (fileSizeLimit != null && fileSize > fileSizeLimit) {
-                try {tempFile.toFile().delete();} catch (Exception ex) {}
+                try {
+                    tempFile.toFile().delete();
+                } catch (Exception ex) {
+
+                }
                 throw new IOException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)));  
             }
             
@@ -681,7 +693,11 @@ public class FileUtil implements java.io.Serializable  {
                 datafile = null;
             } finally {
                 if (uncompressedIn != null) {
-                    try {uncompressedIn.close();} catch (IOException e) {}
+                    try {
+                        uncompressedIn.close();
+                    } catch (IOException e) {
+
+                    }
                 }
             }
             
@@ -842,7 +858,11 @@ public class FileUtil implements java.io.Serializable  {
                 datafiles.clear();
             } finally {
                 if (unZippedIn != null) {
-                    try {unZippedIn.close();} catch (Exception zEx) {}
+                    try {
+                        unZippedIn.close();
+                    } catch (Exception zEx) {
+
+                    }
                 }
             }
             if (datafiles.size() > 0) {
@@ -964,8 +984,16 @@ public class FileUtil implements java.io.Serializable  {
             // (note that "no size limit set" = "unlimited")
             Long fileSize = tempFile.toFile().length();
             if (fileSizeLimit != null && fileSize > fileSizeLimit) {
-                try {tempFile.toFile().delete();} catch (Exception ex) {}
-                throw new FileExceedsMaxSizeException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)));  
+                try {
+                    tempFile.toFile().delete();
+                } catch (Exception ex) {
+
+                }
+                throw new FileExceedsMaxSizeException(
+                   MessageFormat.format(
+                      BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"),
+                      bytesToHumanReadable(fileSize),
+                      bytesToHumanReadable(fileSizeLimit)));
             }
             
             return tempFile.toFile();
@@ -1186,9 +1214,10 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     public static String getCiteDataFileFilename(String fileTitle, FileCitationExtension fileCitationExtension) {
-    	if((fileTitle==null) || (fileCitationExtension == null)) {
-    		return null;
-    	}
+        if ((fileTitle==null) || (fileCitationExtension == null)) {
+            return null;
+        }
+
         if (fileTitle.endsWith("tab")) {
             return fileTitle.replaceAll("\\.tab$", fileCitationExtension.text);
         } else {
@@ -1359,14 +1388,14 @@ public class FileUtil implements java.io.Serializable  {
             return null;
         }
         File file = File.createTempFile(UUID.randomUUID().toString(), UUID.randomUUID().toString());
-        try(OutputStream outputStream = new FileOutputStream(file)){
-        int read = 0;
-        byte[] bytes = new byte[1024];
-        while ((read = inputStream.read(bytes)) != -1) {
-            outputStream.write(bytes, 0, read);
+        try (OutputStream outputStream = new FileOutputStream(file)) {
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            while ((read = inputStream.read(bytes)) != -1) {
+                outputStream.write(bytes, 0, read);
+            }
+            return file;
         }
-        return file;
-	}
     }
 
     /* 

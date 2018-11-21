@@ -336,8 +336,7 @@ public class FileRecordWriter extends AbstractItemWriter {
             jobContext.setExitStatus("FAILED");
             return null;
         }
-   
-            
+
         packageFile.setFilesize(totalSize);
         packageFile.setModificationTime(new Timestamp(new Date().getTime()));
         packageFile.setCreateDate(new Timestamp(new Date().getTime()));
@@ -353,44 +352,45 @@ public class FileRecordWriter extends AbstractItemWriter {
         
         fmd.setDataFile(packageFile);
         packageFile.getFileMetadatas().add(fmd);
-        if (dataset.getLatestVersion().getFileMetadatas() == null) dataset.getLatestVersion().setFileMetadatas(new ArrayList<>());
+        if (dataset.getLatestVersion().getFileMetadatas() == null) {
+            dataset.getLatestVersion().setFileMetadatas(new ArrayList<>());
+        }
         
         dataset.getLatestVersion().getFileMetadatas().add(fmd);
         fmd.setDatasetVersion(dataset.getLatestVersion());
         
-	String isFilePIDsEnabled = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.FilePIDsEnabled, "true"); //default value for file PIDs is 'true'
-	if ("true".contentEquals( isFilePIDsEnabled )) {
-	
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
-        if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
-            packageFile.setIdentifier(dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean));
-        }
-        String nonNullDefaultIfKeyNotFound = "";
-        String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        if (packageFile.getProtocol() == null) {
-            packageFile.setProtocol(protocol);
-        }
-        if (packageFile.getAuthority() == null) {
-            packageFile.setAuthority(authority);
-        }
+        String isFilePIDsEnabled = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.FilePIDsEnabled, "true"); //default value for file PIDs is 'true'
+        if ("true".contentEquals(isFilePIDsEnabled)) {
 
-        if (!packageFile.isIdentifierRegistered()) {
-            String doiRetString = "";
-            idServiceBean = GlobalIdServiceBean.getBean(commandEngine.getContext());
-            try {
-                doiRetString = idServiceBean.createIdentifier(packageFile);
-            } catch (Throwable e) {
-                
+            GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
+            if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
+                packageFile.setIdentifier(dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean));
+            }
+            String nonNullDefaultIfKeyNotFound = "";
+            String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+            String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+            if (packageFile.getProtocol() == null) {
+                packageFile.setProtocol(protocol);
+            }
+            if (packageFile.getAuthority() == null) {
+                packageFile.setAuthority(authority);
             }
 
-            // Check return value to make sure registration succeeded
-            if (!idServiceBean.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
-                packageFile.setIdentifierRegistered(true);
-                packageFile.setGlobalIdCreateTime(new Date());
+            if (!packageFile.isIdentifierRegistered()) {
+                String doiRetString = "";
+                idServiceBean = GlobalIdServiceBean.getBean(commandEngine.getContext());
+                try {
+                    doiRetString = idServiceBean.createIdentifier(packageFile);
+                } catch (Throwable e) {
+                }
+
+                // Check return value to make sure registration succeeded
+                if (!idServiceBean.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
+                    packageFile.setIdentifierRegistered(true);
+                    packageFile.setGlobalIdCreateTime(new Date());
+                }
             }
         }
-	}
 
         getJobLogger().log(Level.INFO, "Successfully created a file of type package");
         

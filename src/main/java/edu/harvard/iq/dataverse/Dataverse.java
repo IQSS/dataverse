@@ -48,17 +48,19 @@ import org.hibernate.validator.constraints.NotEmpty;
     @NamedQuery(name = "Dataverse.filterByName", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.name) LIKE :name  order by dv.alias")
 })
 @Entity
-@Table(indexes = {@Index(columnList="defaultcontributorrole_id")
-		, @Index(columnList="defaulttemplate_id")
-		, @Index(columnList="alias")
-		, @Index(columnList="affiliation")
-		, @Index(columnList="dataversetype")
-		, @Index(columnList="facetroot")
-		, @Index(columnList="guestbookroot")
-		, @Index(columnList="metadatablockroot")
-		, @Index(columnList="templateroot")
-		, @Index(columnList="permissionroot")
-		, @Index(columnList="themeroot")})
+@Table(indexes = {
+    @Index(columnList="defaultcontributorrole_id"),
+    @Index(columnList="defaulttemplate_id"),
+    @Index(columnList="alias"),
+    @Index(columnList="affiliation"),
+    @Index(columnList="dataversetype"),
+    @Index(columnList="facetroot"),
+    @Index(columnList="guestbookroot"),
+    @Index(columnList="metadatablockroot"),
+    @Index(columnList="templateroot"),
+    @Index(columnList="permissionroot"),
+    @Index(columnList="themeroot")
+})
 public class Dataverse extends DvObjectContainer {
 
     public enum DataverseType {
@@ -143,7 +145,7 @@ public class Dataverse extends DvObjectContainer {
 
     private String affiliation;
 
-	// Note: We can't have "Remove" here, as there are role assignments that refer
+    // Note: We can't have "Remove" here, as there are role assignments that refer
     //       to this role. So, adding it would mean violating a forign key contstraint.
     @OneToMany(cascade = {CascadeType.MERGE},
             fetch = FetchType.LAZY,

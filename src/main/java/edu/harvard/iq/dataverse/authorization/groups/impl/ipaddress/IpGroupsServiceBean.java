@@ -26,15 +26,15 @@ import javax.persistence.PersistenceContext;
 @Named
 @Stateless
 public class IpGroupsServiceBean {
-    
+
     private static final Logger logger = Logger.getLogger(IpGroupsServiceBean.class.getName());
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
-	protected EntityManager em;
-    
+    protected EntityManager em;
+
     @EJB
     ActionLogServiceBean actionLogSvc;
-	
+
     @EJB
     RoleAssigneeServiceBean roleAssigneeSvc;
     

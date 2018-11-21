@@ -367,7 +367,11 @@ public class HarvesterServiceBean {
             if (tempFile != null) {
                 // temporary - let's not delete the temp metadata file if anything went wrong, for now:
                 if (errMessage == null) {
-                    try{tempFile.delete();}catch(Throwable t){};
+                    try{
+                        tempFile.delete();
+                    } catch(Throwable t) {
+
+                    };
                 }
             }
         }

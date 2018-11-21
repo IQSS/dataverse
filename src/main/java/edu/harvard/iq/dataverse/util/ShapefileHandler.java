@@ -62,7 +62,7 @@ import org.apache.commons.io.FileUtils;
  *
  * 
  */
-public class ShapefileHandler{
+public class ShapefileHandler {
 
     private static final Logger logger = Logger.getLogger(ShapefileHandler.class.getCanonicalName());
 
@@ -132,17 +132,16 @@ public class ShapefileHandler{
             return;
         }
         
-       this.examineZipfile(zip_file_stream);
-
+        this.examineZipfile(zip_file_stream);
     }
 
    
-   /*
-        Constructor, start with FileInputStream
-    */
-   public ShapefileHandler(FileInputStream zip_file_stream){
+    /**
+     * Constructor, start with FileInputStream
+     */
+    public ShapefileHandler(FileInputStream zip_file_stream){
 
-        if (zip_file_stream==null){
+        if (zip_file_stream==null) {
             this.addErrorMessage("The zip_file_stream was null");
             return;
         }
@@ -166,54 +165,52 @@ public class ShapefileHandler{
         this.finalRezippedFiles.add(finalFile);
     };
 
-    
     private void addErrorMessage(String m){
-        if (m == null){
+        if (m == null) {
             return;
         }
         logger.severe("ShapeFileHandler Error: " + m);
         this.errorFound = true;
         this.errorMessage = m;
     }
-    /*
-        Create a directory, if one doesn"t exist
-    */
+
+    /**
+     * Create a directory, if one doesn"t exist
+     */
     private boolean createDirectory(String fname){
         if (fname == null){
             return false;
         }
-      	File folder_obj = new File(fname);
+          File folder_obj = new File(fname);
         msg("ShapefileHandler. Folder created: " + folder_obj.getAbsolutePath());
-      	return createDirectory(folder_obj);
-      	
+          return createDirectory(folder_obj);
+
     } // createDirectory
     
-    private boolean createDirectory(File folder){
-        if (folder == null){
+    private boolean createDirectory(File folder) {
+        if (folder == null) {
             return false;
         }
-        try{
-          	if(!folder.exists()){
-          	    msg("Creating folder: " + folder.getName());
-          		folder.mkdirs();	    
-          	}else{
-          	    msg("Folder exists: " + folder.getName());
-          	}
-         }catch(SecurityException ex){
+        try {
+            if (!folder.exists()) {
+                msg("Creating folder: " + folder.getName());
+                folder.mkdirs();
+            } else {
+               msg("Folder exists: " + folder.getName());
+            }
+        } catch(SecurityException ex) {
            this.addErrorMessage("Tried to create directory but resulted in SecurityException");
            return false;
-        }catch(NullPointerException ex){
+        } catch(NullPointerException ex) {
             this.addErrorMessage("Tried to create directory but resulted in NullPointerException");
-
             return false;
         }
         return true;
     } // createDirectory    
 
-    
-    /*
-        Print out the key/value pairs of the Hash of filenames and sizes
-    */
+    /**
+     * Print out the key/value pairs of the Hash of filenames and sizes
+     */
     private void showFileNamesSizes(){
         msgt("Hash: file names + sizes");
         Iterator<String> keySetIterator = this.filesizeHash.keySet().iterator();
@@ -273,20 +270,20 @@ public class ShapefileHandler{
         }
         return unzipFileName;
     }
-    /*
-        Unzip the files to the directory, FLATTENING the directory structure
-        
-        Any colliding names will result  in overwrites
-    
-    */
+
+    /**
+     * Unzip the files to the directory, FLATTENING the directory structure.
+     *
+     * Any colliding names will result in overwrites.
+     */
     private boolean unzipFilesToDirectory(FileInputStream zipfile_input_stream, File target_directory){
         //logger.info("unzipFilesToDirectory: " + target_directory.getAbsolutePath() );
 
-        if (zipfile_input_stream== null){
+        if (zipfile_input_stream== null) {
             this.addErrorMessage("unzipFilesToDirectory. The zipfile_input_stream is null.");
             return false;
         }
-        if (!target_directory.isDirectory()){
+        if (!target_directory.isDirectory()) {
              this.addErrorMessage("This directory does not exist: " + target_directory.getAbsolutePath());
             return false;
         }
@@ -352,11 +349,11 @@ public class ShapefileHandler{
         }
 
         try {
-             zipStream.close();
+            zipStream.close();
         } catch (IOException ex) {
-             Logger.getLogger(ShapefileHandler.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ShapefileHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
-    return true;
+        return true;
     }
     /*
         Rezip the shapefile(s) into a given directory
@@ -456,12 +453,12 @@ public class ShapefileHandler{
         logger.fine("redistributeFilesFromZip. source: '" + source_dirname + "'  target: '" + target_dirname + "'");
 
         int cnt =0;
-       /* START: Redistribute files by iterating through the Map of basenames + extensions
+        /* START: Redistribute files by iterating through the Map of basenames + extensions
         
-        example key: "shape1"
-        example ext_list: ["shp", "shx", "dbf", "prj"]
-       */
-       for (Map.Entry<String, List<String>> entry : fileGroups.entrySet()){
+         example key: "shape1"
+         example ext_list: ["shp", "shx", "dbf", "prj"]
+        */
+        for (Map.Entry<String, List<String>> entry : fileGroups.entrySet()){
             cnt++;
             String key = entry.getKey();
             List<String> ext_list = entry.getValue();
@@ -624,7 +621,7 @@ public class ShapefileHandler{
         }
     } // end updateFileGroupHash
     
-    private boolean isFileToSkip(String fname){
+    private boolean isFileToSkip(String fname) {
         if ((fname==null)||(fname.equals(""))){
             return true;
         }
@@ -731,7 +728,7 @@ public class ShapefileHandler{
 
    } // end examineFile
 
-  public static void main(String[] args){
+   public static void main(String[] args){
 
         // Example usage
        if (args.length == 0){

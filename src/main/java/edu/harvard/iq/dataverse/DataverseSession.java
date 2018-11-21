@@ -27,8 +27,8 @@ public class DataverseSession implements Serializable{
 
     @EJB
     BuiltinUserServiceBean usersSvc;
-	
-    @EJB 
+
+    @EJB
     ActionLogServiceBean logSvc;
     
     private boolean statusDismissed = false;

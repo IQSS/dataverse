@@ -125,12 +125,17 @@ public class DatasetFieldDefaultValue implements Serializable {
         return "edu.harvard.iq.dataverse.DatasetFieldDefaultValue[ id=" + id + " ]";
     }
     
-     public boolean isEmpty() {
+    public boolean isEmpty() {
         return ((strValue==null || strValue.trim().equals("")));
     }
     
     private int displayOrder;
-    public int getDisplayOrder() { return this.displayOrder;}
-    public void setDisplayOrder(int displayOrder) {this.displayOrder = displayOrder;} 
-    
+
+    public int getDisplayOrder() {
+        return this.displayOrder;
+    }
+
+    public void setDisplayOrder(int displayOrder) {
+        this.displayOrder = displayOrder;
+    }
 }

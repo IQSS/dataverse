@@ -106,7 +106,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                     Logger.getLogger(UpdateDatasetThumbnailCommand.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 Dataset datasetWithNewThumbnail = ctxt.datasets().setNonDatasetFileAsThumbnail(dataset, fileAsStream);
-		IOUtils.closeQuietly(fileAsStream);
+                IOUtils.closeQuietly(fileAsStream);
                 if (datasetWithNewThumbnail != null) {
                     return datasetWithNewThumbnail.getDatasetThumbnail();
                 } else {
@@ -121,6 +121,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                 } else {
                     throw new CommandException("User wanted to remove the thumbnail it still has one!", this);
                 }
+
             default:
                 throw new IllegalCommandException("Whatever you are trying to do to the dataset thumbnail is not supported.", this);
         }

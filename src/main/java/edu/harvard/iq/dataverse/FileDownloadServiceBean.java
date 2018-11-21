@@ -73,11 +73,11 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(FileDownloadServiceBean.class.getCanonicalName());   
     
-    public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse){ 
+    public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse) {
         writeGuestbookAndStartBatchDownload(guestbookResponse, false);
     }
     
-    public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse, Boolean doNotSaveGuestbookRecord){
+    public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse, Boolean doNotSaveGuestbookRecord) {
         if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null) {
             return;
         }
@@ -126,7 +126,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
-        if(!fileMetadata.getDatasetVersion().isDraft()){
+        if (!fileMetadata.getDatasetVersion().isDraft()) {
             guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
             writeGuestbookResponseRecord(guestbookResponse);
         }
@@ -172,14 +172,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     // But note that this may change - there may be some future situations where it will 
     // become necessary again, to pass the job of creating the access record 
     // to the API.
-    private void redirectToBatchDownloadAPI(String multiFileString, Boolean guestbookRecordsAlreadyWritten, Boolean downloadOriginal){
+    private void redirectToBatchDownloadAPI(String multiFileString, Boolean guestbookRecordsAlreadyWritten, Boolean downloadOriginal) {
 
         String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
-        if (guestbookRecordsAlreadyWritten && !downloadOriginal){
+        if (guestbookRecordsAlreadyWritten && !downloadOriginal) {
             fileDownloadUrl += "?gbrecs=true";
-        } else if (guestbookRecordsAlreadyWritten && downloadOriginal){
+        } else if (guestbookRecordsAlreadyWritten && downloadOriginal) {
             fileDownloadUrl += "?gbrecs=true&format=original";
-        } else if (!guestbookRecordsAlreadyWritten && downloadOriginal){
+        } else if (!guestbookRecordsAlreadyWritten && downloadOriginal) {
             fileDownloadUrl += "?format=original";
         }
         
@@ -205,7 +205,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         redirectToDownloadAPI(downloadType, fileId, true);
     }
     
-    private void redirectToBatchDownloadAPI(String multiFileString, Boolean downloadOriginal){
+    private void redirectToBatchDownloadAPI(String multiFileString, Boolean downloadOriginal) {
         redirectToBatchDownloadAPI(multiFileString, true, downloadOriginal);
     }
 
@@ -252,22 +252,22 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
 
-    public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
+    public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd) {
                 
-        if (guestbookResponse != null  && guestbookResponse.isWriteResponse() && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
-            if(guestbookResponse.getDataFile() == null && fmd != null){
+        if (guestbookResponse != null  && guestbookResponse.isWriteResponse() && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)) {
+            if (guestbookResponse.getDataFile() == null && fmd != null) {
                 guestbookResponse.setDataFile(fmd.getDataFile());
             }
-            if (fmd == null || !fmd.getDatasetVersion().isDraft()){
+            if (fmd == null || !fmd.getDatasetVersion().isDraft()) {
                 writeGuestbookResponseRecord(guestbookResponse);
             }
         }
         DataFile file = null;
-        if (fmd != null){
-            file  = fmd.getDataFile();
+        if (fmd != null) {
+            file = fmd.getDataFile();
         }
-        if (guestbookResponse != null && guestbookResponse.getDataFile() != null && file == null){
-            file  = guestbookResponse.getDataFile();
+        if (guestbookResponse != null && guestbookResponse.getDataFile() != null && file == null) {
+            file = guestbookResponse.getDataFile();
         }
         
 
@@ -282,12 +282,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         return retVal;
     }
 
-    public Boolean canSeeTwoRavensExploreButton(){
+    public Boolean canSeeTwoRavensExploreButton() {
         return false;
     }
     
     
-    public Boolean canUserSeeExploreWorldMapButton(){
+    public Boolean canUserSeeExploreWorldMapButton() {
         return false;
     }
     
@@ -304,9 +304,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     public void downloadCitationXML(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
-    	DataCitation citation=null;
-        if (dataset != null){
-        	citation = new DataCitation(dataset.getLatestVersion());
+        DataCitation citation = null;
+        if (dataset != null) {
+            citation = new DataCitation(dataset.getLatestVersion());
         } else {
             citation= new DataCitation(fileMetadata, direct);
         }
@@ -333,9 +333,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void downloadDatasetCitationRIS(Dataset dataset) {
-
         downloadCitationRIS(null, dataset, false);
-
     }
 
     public void downloadDatafileCitationRIS(FileMetadata fileMetadata) {
@@ -347,11 +345,11 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     public void downloadCitationRIS(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
-    	DataCitation citation=null;
-        if (dataset != null){
-        	citation = new DataCitation(dataset.getLatestVersion());
+        DataCitation citation = null;
+        if (dataset != null) {
+            citation = new DataCitation(dataset.getLatestVersion());
         } else {
-            citation= new DataCitation(fileMetadata, direct);
+            citation = new DataCitation(fileMetadata, direct);
         }
 
         FacesContext ctx = FacesContext.getCurrentInstance();
@@ -397,11 +395,11 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void downloadCitationBibtex(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
-    	DataCitation citation=null;
-        if (dataset != null){
-        	citation = new DataCitation(dataset.getLatestVersion());
+        DataCitation citation = null;
+        if (dataset != null) {
+            citation = new DataCitation(dataset.getLatestVersion());
         } else {
-            citation= new DataCitation(fileMetadata, direct);
+            citation = new DataCitation(fileMetadata, direct);
         }
         
         FacesContext ctx = FacesContext.getCurrentInstance();
@@ -427,9 +425,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         }
     }
-    
+
     public boolean requestAccess(Long fileId) {   
-        if (dvRequestService.getDataverseRequest().getAuthenticatedUser() == null){
+        if (dvRequestService.getDataverseRequest().getAuthenticatedUser() == null) {
             return false;
         }
         DataFile file = datafileService.find(fileId);
@@ -441,7 +439,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 logger.info("Unable to request access for file id " + fileId + ". Exception: " + ex);
             }             
         }
-        
         return false;
     }    
     
@@ -449,9 +446,5 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
             userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId);
         });
-
-    }    
-
-
-    
+    }
 }

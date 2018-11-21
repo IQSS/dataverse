@@ -17,25 +17,24 @@ import java.util.Set;
 // no annotations here, since permissions are dynamically decided
 public class UpdatePermissionRootCommand extends AbstractCommand<Dataverse> {
     
-	private final boolean newValue;
-	private final Dataverse dvoc;
+    private final boolean newValue;
+    private final Dataverse dvoc;
     
-	public UpdatePermissionRootCommand(boolean newValue, DataverseRequest aRequest, Dataverse anAffectedDataverse) {
-		super(aRequest, anAffectedDataverse);
-		this.newValue = newValue;
-		dvoc = anAffectedDataverse;
-	}
-	
-	@Override
-	public Dataverse execute( final CommandContext ctxt) throws CommandException {
-		if ( dvoc.isPermissionRoot() == newValue ) {
-            return dvoc;
+    public UpdatePermissionRootCommand(boolean newValue, DataverseRequest aRequest, Dataverse anAffectedDataverse) {
+        super(aRequest, anAffectedDataverse);
+        this.newValue = newValue;
+        dvoc = anAffectedDataverse;
+    }
 
+    @Override
+    public Dataverse execute( final CommandContext ctxt) throws CommandException {
+        if ( dvoc.isPermissionRoot() == newValue ) {
+            return dvoc;
         } else {
-			dvoc.setPermissionRoot(newValue);
+            dvoc.setPermissionRoot(newValue);
             return ctxt.dataverses().save(dvoc);
-		}
-	}
+        }
+    }
 
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {

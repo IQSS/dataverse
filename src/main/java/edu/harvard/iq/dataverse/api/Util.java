@@ -29,17 +29,17 @@ public class Util {
         VALID_BOOLEAN_VALUES.add("0");
     }
 
-    static JsonArray asJsonArray( String str ) {
+    static JsonArray asJsonArray(String str) {
         try ( JsonReader rdr = Json.createReader(new StringReader(str)) ) {
             return rdr.readArray();
         }
     }
 
-    static boolean isBoolean( String s ) {
+    static boolean isBoolean(String s) {
         return VALID_BOOLEAN_VALUES.contains(s.toLowerCase());
     }
 
-    static boolean isTrue( String s ) {
+    static boolean isTrue(String s) {
         return BOOLEAN_TRUE_VALUES.contains(s.toLowerCase());
     }
 
@@ -63,23 +63,21 @@ public class Util {
      * http://apiux.com/2013/03/20/5-laws-api-dates-and-times/
      *
      */
-    private static final  String DATE_TIME_FORMAT_STRING = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+    private static final String DATE_TIME_FORMAT_STRING = "yyyy-MM-dd'T'HH:mm:ss'Z'";
     private static final String DATE_FORMAT_STRING = "yyyy-MM-dd";
 
-    private static final ThreadLocal<SimpleDateFormat> DATETIME_FORMAT_TL = new ThreadLocal<SimpleDateFormat>(){
+    private static final ThreadLocal<SimpleDateFormat> DATETIME_FORMAT_TL = new ThreadLocal<SimpleDateFormat>() {
         @Override
-        protected SimpleDateFormat initialValue()
-        {
+        protected SimpleDateFormat initialValue() {
             SimpleDateFormat format =  new SimpleDateFormat(DATE_TIME_FORMAT_STRING);
             format.setTimeZone(TimeZone.getTimeZone("UTC"));
             return format;
         }
     };
 
-    private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT_TL = new ThreadLocal<SimpleDateFormat>(){
+    private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT_TL = new ThreadLocal<SimpleDateFormat>() {
         @Override
-        protected SimpleDateFormat initialValue()
-        {
+        protected SimpleDateFormat initialValue() {
             SimpleDateFormat format =  new SimpleDateFormat(DATE_FORMAT_STRING);
             format.setTimeZone(TimeZone.getTimeZone("UTC"));
             return format;
@@ -108,9 +106,9 @@ public class Util {
      * @return
      */
 
-    public static List<String> removeDuplicatesNullsEmptyStrings(List<String> stringsToCheck){
+    public static List<String> removeDuplicatesNullsEmptyStrings(List<String> stringsToCheck) {
 
-        if (stringsToCheck == null){
+        if (stringsToCheck == null) {
             throw new NullPointerException("stringsToCheck cannot be null");
         }
 

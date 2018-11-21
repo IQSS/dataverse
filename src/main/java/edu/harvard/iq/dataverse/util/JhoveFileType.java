@@ -37,12 +37,10 @@ import java.util.logging.Logger;
 public class JhoveFileType implements java.io.Serializable  {
     private static final Logger logger = Logger.getLogger(JhoveFileType.class.getCanonicalName());
 
-     
     public JhoveFileType() {
         
     }
-    
-    
+
     public static String getJhoveConfigFile() {
         Properties p = System.getProperties();
         String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
@@ -151,7 +149,7 @@ public class JhoveFileType implements java.io.Serializable  {
                                     info.copy(infc);
                                     break;
                                 } else {
-			            // We want to know what modules matched the
+                                    // We want to know what modules matched the
                                     // signature, so we force the sigMatch
                                     // property
                                     // to be persistent.

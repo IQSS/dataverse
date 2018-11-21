@@ -24,16 +24,18 @@ import javax.persistence.Table;
  * @author gdurand
  */
 @NamedQueries({
-	@NamedQuery( name="DataverseFacet.removeByOwnerId",
-				 query="DELETE FROM DataverseFacet f WHERE f.dataverse.id=:ownerId"),
-    @NamedQuery( name="DataverseFacet.findByDataverseId",
-                 query="select f from DataverseFacet f where f.dataverse.id = :dataverseId order by f.displayOrder")
+    @NamedQuery(name="DataverseFacet.removeByOwnerId",
+        query="DELETE FROM DataverseFacet f WHERE f.dataverse.id=:ownerId"),
+    @NamedQuery(name="DataverseFacet.findByDataverseId",
+        query="select f from DataverseFacet f where f.dataverse.id = :dataverseId order by f.displayOrder")
 })
 
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="datasetfieldtype_id")
-		, @Index(columnList="displayorder")})
+@Table(indexes = {
+    @Index(columnList="dataverse_id"),
+    @Index(columnList="datasetfieldtype_id"),
+    @Index(columnList="displayorder")
+})
 public class DataverseFacet implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -49,16 +51,15 @@ public class DataverseFacet implements Serializable {
         this.id = id;
     }
 
-  @ManyToOne
-  @JoinColumn(name="dataverse_id")
-  private Dataverse dataverse;
+    @ManyToOne
+    @JoinColumn(name="dataverse_id")
+    private Dataverse dataverse;
 
-  @ManyToOne
-  @JoinColumn(name="datasetfieldtype_id")
-  private DatasetFieldType datasetFieldType;
+    @ManyToOne
+    @JoinColumn(name="datasetfieldtype_id")
+    private DatasetFieldType datasetFieldType;
 
-
-  private int displayOrder;
+    private int displayOrder;
 
     public Dataverse getDataverse() {
         return dataverse;
@@ -106,4 +107,3 @@ public class DataverseFacet implements Serializable {
     }
     
 }
-

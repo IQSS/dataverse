@@ -16,16 +16,16 @@ import java.util.List;
  */
 @RequiredPermissions( Permission.ManageDataversePermissions )
 public class ListRoleAssignments extends AbstractCommand<List<RoleAssignment>> {
-	
-	private final DvObject definitionPoint;
-	public ListRoleAssignments(DataverseRequest aRequest, DvObject aDefinitionPoint) {
-		super(aRequest, aDefinitionPoint);
-		definitionPoint = aDefinitionPoint;
-	}
 
-	@Override
-	public List<RoleAssignment> execute(CommandContext ctxt) throws CommandException {
-		return ctxt.permissions().assignmentsOn(definitionPoint);
-	}
-	
+    private final DvObject definitionPoint;
+    public ListRoleAssignments(DataverseRequest aRequest, DvObject aDefinitionPoint) {
+        super(aRequest, aDefinitionPoint);
+        definitionPoint = aDefinitionPoint;
+    }
+
+    @Override
+    public List<RoleAssignment> execute(CommandContext ctxt) throws CommandException {
+        return ctxt.permissions().assignmentsOn(definitionPoint);
+    }
+    
 }

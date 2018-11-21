@@ -316,35 +316,33 @@ public class Pager {
         return this.addCommasToNumber(endCardNumber);
 
     }
+
     /**
      * @param endCardNumber
      */
-    public void setEndCardNumber(int endCardNumber){
+    public void setEndCardNumber(int endCardNumber) {
         this.endCardNumber = endCardNumber;
     }
 
-    public void showClasspaths(){
+    public void showClasspaths() {
         ClassLoader cl = ClassLoader.getSystemClassLoader();
  
         URL[] urls = ((URLClassLoader)cl).getURLs();
  
-        for(URL url: urls){
-        	System.out.println(url.getFile());
+        for (URL url: urls) {
+            System.out.println(url.getFile());
         }
     }
-    
-    public String asJSONString(){
+
+    public String asJSONString() {
         return this.asJsonObjectBuilder().build().toString();
     }
-    
-    
-    public String addCommasToNumber(int count){
-        
+
+    public String addCommasToNumber(int count) {
         return NumberFormat.getInstance().format(count);
     }
-    
-    
-    /** 
+
+    /**
      * Originally used for mydata. 
      * 
      * Variables are named using the idea of cards--as in Dataverse cards,
@@ -352,8 +350,7 @@ public class Pager {
      * 
      * @return 
      */
-    public JsonObjectBuilder asJsonObjectBuilderUsingCardTerms(){
-    
+    public JsonObjectBuilder asJsonObjectBuilderUsingCardTerms() {
         return asJsonObjectBuilderCore(true);
     }
 
@@ -363,17 +360,14 @@ public class Pager {
      * 
      * @return 
      */
-    public JsonObjectBuilder asJsonObjectBuilder(){
-    
+    public JsonObjectBuilder asJsonObjectBuilder() {
         return asJsonObjectBuilderCore(false);
     }
 
-    
-    private JsonObjectBuilder asJsonObjectBuilderCore(boolean useCardTerms){
-        
+    private JsonObjectBuilder asJsonObjectBuilderCore(boolean useCardTerms) {
+
         JsonObjectBuilder jsonPageInfo = Json.createObjectBuilder();
-                
-       
+
         jsonPageInfo.add("isNecessary", this.isPagerNecessary())
                     .add("numResults", this.numResults)
                     .add("numResultsString", this.addCommasToNumber(numResults))
@@ -385,13 +379,13 @@ public class Pager {
                     .add("hasNextPageNumber", this.hasNextPageNumber())
                     .add("nextPageNumber", this.nextPageNumber);
         
-        if (useCardTerms){
+        if (useCardTerms) {
             jsonPageInfo.add("startCardNumber", this.startCardNumber)
                     .add("endCardNumber", this.endCardNumber)
                     .add("startCardNumberString", this.addCommasToNumber(this.startCardNumber))
                     .add("endCardNumberString", this.addCommasToNumber(this.endCardNumber))
                     .add("remainingCards", this.remainingCards);
-        }else{
+        } else {
             jsonPageInfo.add("startResultNumber", this.startCardNumber)
                     .add("endResultNumber", this.endCardNumber)
                     .add("startResultNumberString", this.addCommasToNumber(this.startCardNumber))

@@ -44,8 +44,8 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
             throw new IllegalCommandException("Cannot delete non-empty dataverses", this);
         }
 
-	// if we got here, we can delete
-	// Metadata blocks - cant delete metadatablocks
+        // if we got here, we can delete
+        // Metadata blocks - cant delete metadatablocks
          /* Don't seem to need to do this SEK 10/23/14
          for (MetadataBlock block : doomed.getMetadataBlocks(true) ) {
          MetadataBlock merged =  ctxt.em().merge(block);

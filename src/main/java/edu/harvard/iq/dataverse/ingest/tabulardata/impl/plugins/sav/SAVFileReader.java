@@ -329,89 +329,89 @@ public class SAVFileReader  extends TabularDataFileReader{
          /* ingest happens here ... */ 
         
         // the following methods are now executed, in this order:
-	    
-	// decodeHeader -- this method doesn't read any [meta]data and 
-	//    doesn't initialize any values; its only purpose is to 
-	//    make sure that the file is indeed an SPSS/SAV file. 
-	// 
-	// decodeRecordType1 -- there's always one RT1 record; it is 
-	//    always 176 byte long. it contains the very basic metadata
-	//    about the data file. most notably, the number of observations
-	//    and the number of OBS (8 byte values) per observation.
-	//
-	// decodeRecordType2 -- there are multiple RT2 records. there's 
-	//    one RT2 for every OBS (8 byte value); i.e. one per variable,
-	//    or more per every String variable split into multiple OBS
-	//    segments. this one is a 400 line method, that may benefit 
-	//    from being split into smaller methods.
-	//
-	// decodeRecordType3and4 -- these sections come in pairs, each
-	//    pair dedicated to one set of variable labels. 
-	// decodeRecordType6,
-	//
-	// decodeRecordType7 -- this RT contains some extended 
-	//    metadata for the data file. (including the information 
-	//    about the extended variables, i.e. variables longer than
-	//    255 bytes split into 255 byte fragments that are stored 
-	//    in the data file as independent variables). 
-	//
-	// decodeRecordType999 -- this RT does not contain any data; 
-	//    its sole function is to indicate that the metadata portion 
-	//    of the data file is over and the data section follows. 
-	// 
-	// decodeRecordTypeData -- this method decodes the data section 
-	//    of the file. Inside this method, 2 distinct methods are 
-	//    called to process compressed or uncompressed data, depending
-	//    on which method is used in this data file. 
+
+    // decodeHeader -- this method doesn't read any [meta]data and
+    //    doesn't initialize any values; its only purpose is to
+    //    make sure that the file is indeed an SPSS/SAV file.
+    //
+    // decodeRecordType1 -- there's always one RT1 record; it is
+    //    always 176 byte long. it contains the very basic metadata
+    //    about the data file. most notably, the number of observations
+    //    and the number of OBS (8 byte values) per observation.
+    //
+    // decodeRecordType2 -- there are multiple RT2 records. there's
+    //    one RT2 for every OBS (8 byte value); i.e. one per variable,
+    //    or more per every String variable split into multiple OBS
+    //    segments. this one is a 400 line method, that may benefit
+    //    from being split into smaller methods.
+    //
+    // decodeRecordType3and4 -- these sections come in pairs, each
+    //    pair dedicated to one set of variable labels.
+    // decodeRecordType6,
+    //
+    // decodeRecordType7 -- this RT contains some extended
+    //    metadata for the data file. (including the information
+    //    about the extended variables, i.e. variables longer than
+    //    255 bytes split into 255 byte fragments that are stored
+    //    in the data file as independent variables).
+    //
+    // decodeRecordType999 -- this RT does not contain any data;
+    //    its sole function is to indicate that the metadata portion
+    //    of the data file is over and the data section follows.
+    //
+    // decodeRecordTypeData -- this method decodes the data section
+    //    of the file. Inside this method, 2 distinct methods are
+    //    called to process compressed or uncompressed data, depending
+    //    on which method is used in this data file.
 
 
-	String methodCurrentlyExecuted = null; 
+    String methodCurrentlyExecuted = null;
 
-	try {
-	    methodCurrentlyExecuted = "decodeHeader";
-	    dbgLog.fine("***** SAVFileReader: executing method decodeHeader");
-	    decodeHeader(stream); 
+    try {
+        methodCurrentlyExecuted = "decodeHeader";
+        dbgLog.fine("***** SAVFileReader: executing method decodeHeader");
+        decodeHeader(stream);
 
-	    methodCurrentlyExecuted = "decodeRecordType1";
-	    dbgLog.fine("***** SAVFileReader: executing method decodeRecordType1");
-	    decodeRecordType1(stream); 
+        methodCurrentlyExecuted = "decodeRecordType1";
+        dbgLog.fine("***** SAVFileReader: executing method decodeRecordType1");
+        decodeRecordType1(stream);
 
-	    methodCurrentlyExecuted = "decodeRecordType2";
-	    dbgLog.fine("***** SAVFileReader: executing method decodeRecordType1");
-	    decodeRecordType2(stream); 
+        methodCurrentlyExecuted = "decodeRecordType2";
+        dbgLog.fine("***** SAVFileReader: executing method decodeRecordType1");
+        decodeRecordType2(stream);
 
-	    methodCurrentlyExecuted = "decodeRecordType3and4"; 
-	    dbgLog.fine("***** SAVFileReader: executing method decodeRecordType3and4");
-	    decodeRecordType3and4(stream); 
+        methodCurrentlyExecuted = "decodeRecordType3and4";
+        dbgLog.fine("***** SAVFileReader: executing method decodeRecordType3and4");
+        decodeRecordType3and4(stream);
 
-	    methodCurrentlyExecuted = "decodeRecordType6";
-	    dbgLog.fine("***** SAVFileReader: executing method decodeRecordType6");
-	    decodeRecordType6(stream); 
+        methodCurrentlyExecuted = "decodeRecordType6";
+        dbgLog.fine("***** SAVFileReader: executing method decodeRecordType6");
+        decodeRecordType6(stream);
 
-	    methodCurrentlyExecuted = "decodeRecordType7";
-	    dbgLog.fine("***** SAVFileReader: executing method decodeRecordType7");
-	    decodeRecordType7(stream);
+        methodCurrentlyExecuted = "decodeRecordType7";
+        dbgLog.fine("***** SAVFileReader: executing method decodeRecordType7");
+        decodeRecordType7(stream);
 
-	    methodCurrentlyExecuted = "decodeRecordType999"; 
-	    dbgLog.fine("***** SAVFileReader: executing method decodeRecordType999");
-	    decodeRecordType999(stream);
+        methodCurrentlyExecuted = "decodeRecordType999";
+        dbgLog.fine("***** SAVFileReader: executing method decodeRecordType999");
+        decodeRecordType999(stream);
 
-	    methodCurrentlyExecuted = "decodeRecordTypeData";
-	    dbgLog.fine("***** SAVFileReader: executing method decodeRecordTypeData");
-	    decodeRecordTypeData(stream); 
+        methodCurrentlyExecuted = "decodeRecordTypeData";
+        dbgLog.fine("***** SAVFileReader: executing method decodeRecordTypeData");
+        decodeRecordTypeData(stream);
 
-		
-	} catch (IllegalArgumentException e) {
-	    //Throwable cause = e.getCause();
-	    dbgLog.fine("***** SAVFileReader: ATTENTION: IllegalArgumentException thrown while executing "+methodCurrentlyExecuted);
-	    e.printStackTrace();
-	    throw new IOException ( "IllegalArgumentException in method "+methodCurrentlyExecuted+": "+e.getMessage() ); 
-	} catch (IOException e) {
-	    dbgLog.fine("***** SAVFileReader: ATTENTION: IOException thrown while executing "+methodCurrentlyExecuted);
-	    e.printStackTrace();
-	    throw new IOException ( "IO Exception in method "+methodCurrentlyExecuted+": "+e.getMessage() ); 
-	} 
-	
+
+    } catch (IllegalArgumentException e) {
+        //Throwable cause = e.getCause();
+        dbgLog.fine("***** SAVFileReader: ATTENTION: IllegalArgumentException thrown while executing "+methodCurrentlyExecuted);
+        e.printStackTrace();
+        throw new IOException ( "IllegalArgumentException in method "+methodCurrentlyExecuted+": "+e.getMessage() );
+    } catch (IOException e) {
+        dbgLog.fine("***** SAVFileReader: ATTENTION: IOException thrown while executing "+methodCurrentlyExecuted);
+        e.printStackTrace();
+        throw new IOException ( "IO Exception in method "+methodCurrentlyExecuted+": "+e.getMessage() );
+    }
+
         /* 
          * Final variable type assignments;
          * TODO: (maybe?) 
@@ -511,14 +511,14 @@ public class SAVFileReader  extends TabularDataFileReader{
         ingesteddata.setDataTable(dataTable);
         } catch (Exception ex) {
             dbgLog.fine("***** SAVFileReader: ATTENTION: unknown exception thrown.");
-	    ex.printStackTrace();
+        ex.printStackTrace();
             String failureMessage = "Unknown exception in SPSS/SAV reader";
             if (ex.getMessage() != null) {
                 failureMessage = failureMessage.concat(": "+ex.getMessage());
             } else {
                 failureMessage = failureMessage.concat("; no further information is available.");
             }
-	    throw new IOException (failureMessage);    
+        throw new IOException (failureMessage);
         }
         dbgLog.info("SAVFileReader: read() end");
         return ingesteddata;
@@ -547,7 +547,7 @@ public class SAVFileReader  extends TabularDataFileReader{
 
         } catch (IOException ex){
             //ex.printStackTrace();
-	    throw ex; 
+        throw ex;
         }
 
         //printHexDump(b, "hex dump of the byte-array");
@@ -590,7 +590,7 @@ public class SAVFileReader  extends TabularDataFileReader{
         // this field consists of 6 distinct blocks
         
         byte[] recordType1 = new byte[LENGTH_RECORDTYPE1];
-	// int caseWeightVariableOBSIndex = 0; 
+    // int caseWeightVariableOBSIndex = 0;
         
         try {
             int nbytes = stream.read(recordType1, 0, LENGTH_RECORDTYPE1);
@@ -711,7 +711,7 @@ public class SAVFileReader  extends TabularDataFileReader{
 
                 bb_fileLayout_code.order(ByteOrder.LITTLE_ENDIAN);
 
-		int2test = bb_fileLayout_code.getInt();
+        int2test = bb_fileLayout_code.getInt();
 
                 if (int2test == 2 || int2test == 3){
                     dbgLog.fine("The sav file was saved on a little endian machine");
@@ -865,7 +865,7 @@ public class SAVFileReader  extends TabularDataFileReader{
             
             
         } catch (IOException ex) {
-	    throw ex; 
+        throw ex;
         }
         
         dbgLog.fine("decodeRecordType1(): end");
@@ -1467,15 +1467,15 @@ public class SAVFileReader  extends TabularDataFileReader{
                 if (stream == null) {
                     throw new IllegalArgumentException("stream == null!");
                 }
-		// this secton may not exit so first check the 4-byte header value
+                // this secton may not exit so first check the 4-byte header value
                 //if (stream.markSupported()){
                 stream.mark(1000);
-		//}
+                //}
                 // 3.0 check the first 4 bytes
                 byte[] headerCode = new byte[LENGTH_RECORD_TYPE3_CODE];
 
                 int nbytes_rt3 = stream.read(headerCode, 0, LENGTH_RECORD_TYPE3_CODE);
-		// to-do check against nbytes
+                  // to-do check against nbytes
                 //printHexDump(headerCode, "RT3 header test");
                 ByteBuffer bb_header_code = ByteBuffer.wrap(headerCode,
                         0, LENGTH_RECORD_TYPE3_CODE);
@@ -1524,14 +1524,14 @@ public class SAVFileReader  extends TabularDataFileReader{
 
                 for (int i = 0; i < numberOfValueLabels; i++) {
 
-                    // read 8-byte as value		    
+                    // read 8-byte as value
                     byte[] value = new byte[LENGTH_RT3_VALUE];
                     int nbytes_3_value = stream.read(value);
 
                     if (nbytes_3_value == 0) {
                         throw new IOException("RT 3: reading recordType3 value: no byte was read");
                     }
-		    // note these 8 bytes are interpreted later
+                    // note these 8 bytes are interpreted later
                     // currently no information about which variable's (=> type unknown)
                     ByteBuffer bb_value = ByteBuffer.wrap(value,
                             0, LENGTH_RT3_VALUE);
@@ -1544,17 +1544,17 @@ public class SAVFileReader  extends TabularDataFileReader{
                      double valueD = bb_value.getDouble();                
                      dbgLog.fine("value="+valueD);
                      */
-		    // read 1st byte as unsigned integer = label_length
+                    // read 1st byte as unsigned integer = label_length
 
                     // read label_length byte as label
                     byte[] labelLengthByte = new byte[LENGTH_RT3_LABEL_LENGTH];
 
                     int nbytes_3_label_length = stream.read(labelLengthByte);
 
-		    // add check-routine here
+                    // add check-routine here
                     dbgLog.fine("labelLengthByte" + Hex.encodeHex(labelLengthByte));
                     dbgLog.fine("label length = " + labelLengthByte[0]);
-		    // the net-length of a value label is saved as
+                    // the net-length of a value label is saved as
                     // unsigned byte; however, the length is less than 127
                     // byte should be ok
                     int rawLabelLength = labelLengthByte[0] & 0xFF;
@@ -1564,7 +1564,7 @@ public class SAVFileReader  extends TabularDataFileReader{
                     byte[] valueLabelBytes = new byte[labelLength];
                     int nbytes_3_value_label = stream.read(valueLabelBytes);
 
-		    // ByteBuffer bb_label = ByteBuffer.wrap(valueLabel,0,labelLength);
+                    // ByteBuffer bb_label = ByteBuffer.wrap(valueLabel,0,labelLength);
                     valueLabel[i] = StringUtils.stripEnd(new String(Arrays.copyOfRange(valueLabelBytes, 0, rawLabelLength), defaultCharSet), " ");
                     dbgLog.fine(i + "-th valueLabel=" + valueLabel[i] + "<-");
 
@@ -1582,7 +1582,7 @@ public class SAVFileReader  extends TabularDataFileReader{
                     throw new IOException("RT4: reading recordType4 value: no byte was read");
                 }
 
-		//printHexDump(headerCode4, "RT4 header test");
+                  //printHexDump(headerCode4, "RT4 header test");
                 ByteBuffer bb_header_code_4 = ByteBuffer.wrap(headerCode4,
                         0, LENGTH_RECORD_TYPE4_CODE);
                 if (isLittleEndian) {
@@ -1776,17 +1776,14 @@ public class SAVFileReader  extends TabularDataFileReader{
                 dbgLog.fine(i+"-th line ="+documentRecord[i]+"<-");
             }
             dbgLog.fine("documentRecord:\n"+StringUtils.join(documentRecord, "\n"));
-
-
         } catch (IOException ex){
             //ex.printStackTrace();
-	    throw ex; 
+            throw ex;
         }
         
         dbgLog.fine("decodeRecordType6(): end");
     }
-    
-    
+
     /*
      * TODO: 
      * Add an explanation note here documenting what "record type 7" is 
@@ -1798,390 +1795,382 @@ public class SAVFileReader  extends TabularDataFileReader{
         int counter=0;
         int[] headerSection = new int[2];
 
-	// the variables below may no longer needed; 
-	// but they may be useful for debugging/logging purposes.
+        // the variables below may no longer needed;
+        // but they may be useful for debugging/logging purposes.
 
-	/// // RecordType 7 
-	/// // Subtype 3
-	/// List<Integer> releaseMachineSpecificInfo = new ArrayList<Integer>();
-	/// List<String> releaseMachineSpecificInfoHex = new ArrayList<String>();
+        /// // RecordType 7
+        /// // Subtype 3
+        /// List<Integer> releaseMachineSpecificInfo = new ArrayList<Integer>();
+        /// List<String> releaseMachineSpecificInfoHex = new ArrayList<String>();
     
-	/// // Subytpe 4
-	/// Map<String, Double> OBSTypeValue = new LinkedHashMap<String, Double>();
-	/// Map<String, String> OBSTypeHexValue = new LinkedHashMap<String, String>();    
-	//Subtype 11
-	/// List<Integer> measurementLevel = new ArrayList<Integer>();
-	/// List<Integer> columnWidth = new ArrayList<Integer>();
-	/// List<Integer> alignment = new ArrayList<Integer>();
+        /// // Subytpe 4
+        /// Map<String, Double> OBSTypeValue = new LinkedHashMap<String, Double>();
+        /// Map<String, String> OBSTypeHexValue = new LinkedHashMap<String, String>();
+        //Subtype 11
+        /// List<Integer> measurementLevel = new ArrayList<Integer>();
+        /// List<Integer> columnWidth = new ArrayList<Integer>();
+        /// List<Integer> alignment = new ArrayList<Integer>();
 
+        while(true){
+            try {
+                if (stream ==null){
+                    throw new IllegalArgumentException("RT7: stream == null!");
+                }
+                // first check the 4-byte header value
+                //if (stream.markSupported()){
+                stream.mark(1000);
+                //}
+                // 7.0 check the first 4 bytes
+                byte[] headerCodeRt7 = new byte[LENGTH_RECORD_TYPE7_CODE];
 
+                int nbytes_rt7 = stream.read(headerCodeRt7, 0,
+                         LENGTH_RECORD_TYPE7_CODE);
+                // to-do check against nbytes
+                //printHexDump(headerCodeRt7, "RT7 header test");
+                ByteBuffer bb_header_code_rt7  = ByteBuffer.wrap(headerCodeRt7,
+                                 0, LENGTH_RECORD_TYPE7_CODE);
+                if (isLittleEndian){
+                    bb_header_code_rt7.order(ByteOrder.LITTLE_ENDIAN);
+                }
 
+                int intRT7test = bb_header_code_rt7.getInt();
+                dbgLog.fine("RT7: header test value="+intRT7test);
+                if (intRT7test != 7) {
+                    //if (stream.markSupported()){
+                    //out.print("iteration="+safteyCounter);
+                    //dbgLog.fine("iteration="+safteyCounter);
+                    dbgLog.fine("intRT7test failed="+intRT7test);
+                    dbgLog.fine("counter="+counter);
+                    stream.reset();
+                    return;
+                    //}
+                }
 
-	while(true){
-	    try {
-		if (stream ==null){
-		    throw new IllegalArgumentException("RT7: stream == null!");
-		}
-		// first check the 4-byte header value
-		//if (stream.markSupported()){
-		stream.mark(1000);
-		//}
-		// 7.0 check the first 4 bytes
-		byte[] headerCodeRt7 = new byte[LENGTH_RECORD_TYPE7_CODE];
+                // 7.1 check 4-byte integer Sub-Type Code
+                byte[] length_sub_type_code = new byte[LENGTH_RT7_SUB_TYPE_CODE];
 
-		int nbytes_rt7 = stream.read(headerCodeRt7, 0, 
-					     LENGTH_RECORD_TYPE7_CODE);
-		// to-do check against nbytes
-		//printHexDump(headerCodeRt7, "RT7 header test");
-		ByteBuffer bb_header_code_rt7  = ByteBuffer.wrap(headerCodeRt7,
-								 0, LENGTH_RECORD_TYPE7_CODE);
-		if (isLittleEndian){
-		    bb_header_code_rt7.order(ByteOrder.LITTLE_ENDIAN);
-		}
+                int nbytes_rt7_1 = stream.read(length_sub_type_code, 0,
+                           LENGTH_RT7_SUB_TYPE_CODE);
+                // to-do check against nbytes
 
-		int intRT7test = bb_header_code_rt7.getInt();
-		dbgLog.fine("RT7: header test value="+intRT7test);
-		if (intRT7test != 7){
-		    //if (stream.markSupported()){
-		    //out.print("iteration="+safteyCounter);
-		    //dbgLog.fine("iteration="+safteyCounter);
-		    dbgLog.fine("intRT7test failed="+intRT7test);
-		    dbgLog.fine("counter="+counter);
-		    stream.reset();
-		    return;
-		    //}
-		}
-            
-		// 7.1 check 4-byte integer Sub-Type Code
-            
-		byte[] length_sub_type_code = new byte[LENGTH_RT7_SUB_TYPE_CODE];
+                //printHexDump(length_how_many_line_bytes, "RT7 how_many_line_bytes");
+                ByteBuffer bb_sub_type_code = ByteBuffer.wrap(length_sub_type_code,
+                                          0, LENGTH_RT7_SUB_TYPE_CODE);
+                if (isLittleEndian){
+                    bb_sub_type_code.order(ByteOrder.LITTLE_ENDIAN);
+                }
 
-		int nbytes_rt7_1 = stream.read(length_sub_type_code, 0,
-					       LENGTH_RT7_SUB_TYPE_CODE);
-		// to-do check against nbytes
-		
-		//printHexDump(length_how_many_line_bytes, "RT7 how_many_line_bytes");
-		ByteBuffer bb_sub_type_code = ByteBuffer.wrap(length_sub_type_code,
-							      0, LENGTH_RT7_SUB_TYPE_CODE);
-		if (isLittleEndian){
-		    bb_sub_type_code.order(ByteOrder.LITTLE_ENDIAN);
-		}
-		
-		int subTypeCode = bb_sub_type_code.getInt();
-		dbgLog.fine("RT7: subTypeCode="+subTypeCode);
-		
-            
-		switch (subTypeCode) {
-                case 3:
-                    // 3: Release andMachine-Specific Integer Information
-                    
-                    //parseRT7SubTypefield(stream);
-                    
-                    
-                    headerSection = parseRT7SubTypefieldHeader(stream);
-                    if (headerSection != null){
-                        int unitLength = headerSection[0];
-                        int numberOfUnits = headerSection[1];
-                        
-                        
-                        for (int i=0; i<numberOfUnits; i++){
-                            dbgLog.finer(i+"-th fieldData");
-                            byte[] work = new byte[unitLength];
+                int subTypeCode = bb_sub_type_code.getInt();
+                dbgLog.fine("RT7: subTypeCode="+subTypeCode);
 
-                            int nb = stream.read(work);
-                            dbgLog.finer("raw bytes in Hex:"+ new String(Hex.encodeHex(work)));
-                            ByteBuffer bb_field = ByteBuffer.wrap(work);
-                            if (isLittleEndian){
-                                bb_field.order(ByteOrder.LITTLE_ENDIAN);
-                            }
-                            String dataInHex = new String(Hex.encodeHex(bb_field.array()));
-                            /// releaseMachineSpecificInfoHex.add(dataInHex);
+                switch (subTypeCode) {
+                    case 3:
+                        // 3: Release andMachine-Specific Integer Information
+                        //parseRT7SubTypefield(stream);
+                        headerSection = parseRT7SubTypefieldHeader(stream);
+                        if (headerSection != null) {
+                            int unitLength = headerSection[0];
+                            int numberOfUnits = headerSection[1];
+
+                            for (int i=0; i<numberOfUnits; i++){
+                                dbgLog.finer(i+"-th fieldData");
+                                byte[] work = new byte[unitLength];
+
+                                int nb = stream.read(work);
+                                dbgLog.finer("raw bytes in Hex:"+ new String(Hex.encodeHex(work)));
+                                ByteBuffer bb_field = ByteBuffer.wrap(work);
+                                if (isLittleEndian){
+                                    bb_field.order(ByteOrder.LITTLE_ENDIAN);
+                                }
+                                String dataInHex = new String(Hex.encodeHex(bb_field.array()));
+                                /// releaseMachineSpecificInfoHex.add(dataInHex);
                             
-                            dbgLog.finer("raw bytes in Hex:"+ dataInHex);
-                            if (unitLength==4){
-                                int fieldData = bb_field.getInt();
-                                dbgLog.finer("fieldData(int)="+fieldData);
-                                dbgLog.finer("fieldData in Hex=0x"+Integer.toHexString(fieldData));
-                                /// releaseMachineSpecificInfo.add(fieldData);
+                                dbgLog.finer("raw bytes in Hex:"+ dataInHex);
+                                if (unitLength==4){
+                                    int fieldData = bb_field.getInt();
+                                    dbgLog.finer("fieldData(int)="+fieldData);
+                                    dbgLog.finer("fieldData in Hex=0x"+Integer.toHexString(fieldData));
+                                    /// releaseMachineSpecificInfo.add(fieldData);
+                                }
                             }
-                            
+                            /// dbgLog.fine("releaseMachineSpecificInfo="+releaseMachineSpecificInfo);
+                            /// dbgLog.fine("releaseMachineSpecificInfoHex="+releaseMachineSpecificInfoHex);
+                        } else {
+                            // throw new IOException
                         }
-                       
-                        /// dbgLog.fine("releaseMachineSpecificInfo="+releaseMachineSpecificInfo);
-                        /// dbgLog.fine("releaseMachineSpecificInfoHex="+releaseMachineSpecificInfoHex);
-			
-                    } else {
-                        // throw new IOException
-                    }
-                    
-                    
-                    dbgLog.fine("***** end of subType 3 ***** \n");
-                    
-                    break;
-                case 4: 
-                    // Release andMachine-SpecificOBS-Type Information
-                    headerSection = parseRT7SubTypefieldHeader(stream);
-                    if (headerSection != null){
-                        int unitLength = headerSection[0];
-                        int numberOfUnits = headerSection[1];
+                        dbgLog.fine("***** end of subType 3 ***** \n");
+                        break;
 
+                    case 4:
+                        // Release andMachine-SpecificOBS-Type Information
+                        headerSection = parseRT7SubTypefieldHeader(stream);
+                        if (headerSection != null){
+                            int unitLength = headerSection[0];
+                            int numberOfUnits = headerSection[1];
 
-                        for (int i=0; i<numberOfUnits; i++){
-                            dbgLog.finer(i+"-th fieldData:"+RecordType7SubType4Fields.get(i));
-                            byte[] work = new byte[unitLength];
+                            for (int i=0; i<numberOfUnits; i++){
+                                dbgLog.finer(i+"-th fieldData:"+RecordType7SubType4Fields.get(i));
+                                byte[] work = new byte[unitLength];
 
-                            int nb = stream.read(work);
+                                int nb = stream.read(work);
 
-                            dbgLog.finer("raw bytes in Hex:"+ new String(Hex.encodeHex(work)));
-                            ByteBuffer bb_field = ByteBuffer.wrap(work);
-                            dbgLog.finer("byte order="+bb_field.order().toString());
-                            if (isLittleEndian){
-                                bb_field.order(ByteOrder.LITTLE_ENDIAN);
-                            }
-                            ByteBuffer bb_field_dup = bb_field.duplicate();
-                            OBSTypeHexValue.put(RecordType7SubType4Fields.get(i),
-                                new String(Hex.encodeHex(bb_field.array())) );
-//                            dbgLog.finer("raw bytes in Hex:"+
-//                                OBSTypeHexValue.get(RecordType7SubType4Fields.get(i)));
-                            if (unitLength==8){
-                                double fieldData = bb_field.getDouble();
-                                /// OBSTypeValue.put(RecordType7SubType4Fields.get(i), fieldData);
-                                dbgLog.finer("fieldData(double)="+fieldData);
+                                dbgLog.finer("raw bytes in Hex:"+ new String(Hex.encodeHex(work)));
+                                ByteBuffer bb_field = ByteBuffer.wrap(work);
+                                dbgLog.finer("byte order="+bb_field.order().toString());
+                                if (isLittleEndian){
+                                    bb_field.order(ByteOrder.LITTLE_ENDIAN);
+                                }
+                                ByteBuffer bb_field_dup = bb_field.duplicate();
                                 OBSTypeHexValue.put(RecordType7SubType4Fields.get(i),
-						    Double.toHexString(fieldData));
-                                dbgLog.fine("fieldData in Hex="+Double.toHexString(fieldData));
+                                   new String(Hex.encodeHex(bb_field.array())) );
+                                // dbgLog.finer("raw bytes in Hex:"+
+                                // OBSTypeHexValue.get(RecordType7SubType4Fields.get(i)));
+                                if (unitLength==8){
+                                    double fieldData = bb_field.getDouble();
+                                    /// OBSTypeValue.put(RecordType7SubType4Fields.get(i), fieldData);
+                                    dbgLog.finer("fieldData(double)="+fieldData);
+                                    OBSTypeHexValue.put(RecordType7SubType4Fields.get(i),
+                                       Double.toHexString(fieldData));
+                                    dbgLog.fine("fieldData in Hex="+Double.toHexString(fieldData));
+                                }
                             }
+                            /// dbgLog.fine("OBSTypeValue="+OBSTypeValue);
+                            /// dbgLog.fine("OBSTypeHexValue="+OBSTypeHexValue);
+                        } else {
+                            // throw new IOException
                         }
-                        /// dbgLog.fine("OBSTypeValue="+OBSTypeValue);
-                        /// dbgLog.fine("OBSTypeHexValue="+OBSTypeHexValue);
+                        dbgLog.fine("***** end of subType 4 ***** \n");
+                        break;
 
-                    } else {
-                        // throw new IOException
-                    }
-                    
+                    case 5:
+                        // Variable Sets Information
+                        parseRT7SubTypefield(stream);
+                        break;
 
-                    dbgLog.fine("***** end of subType 4 ***** \n");
-                    break;
-                case 5:
-                    // Variable Sets Information
-                    parseRT7SubTypefield(stream);
-                    break;
-                case 6:
-                    // Trends date information
-                    parseRT7SubTypefield(stream);
-                    break;
-                case 7:
-                    // Multiple response groups
-                    parseRT7SubTypefield(stream);
-                    break;
-                case 8:
-                    // Windows Data Entry data
-                    parseRT7SubTypefield(stream);
-                    break;
-                case 9:
-                    //
-                    parseRT7SubTypefield(stream);
-                    break;
-                case 10:
-                    // TextSmart data
-                    parseRT7SubTypefield(stream);
-                    break;
-                case 11:
-                    // Msmt level, col width, & alignment
-                    //parseRT7SubTypefield(stream);
+                    case 6:
+                         // Trends date information
+                        parseRT7SubTypefield(stream);
+                        break;
 
-                    headerSection = parseRT7SubTypefieldHeader(stream);
-                    if (headerSection != null){
-                        int unitLength = headerSection[0];
-                        int numberOfUnits = headerSection[1];
+                    case 7:
+                        // Multiple response groups
+                        parseRT7SubTypefield(stream);
+                        break;
 
-                        for (int i=0; i<numberOfUnits; i++){
-                            dbgLog.finer(i+"-th fieldData");
-                            byte[] work = new byte[unitLength];
+                    case 8:
+                        // Windows Data Entry data
+                        parseRT7SubTypefield(stream);
+                        break;
 
-                            int nb = stream.read(work);
-                            dbgLog.finer("raw bytes in Hex:"+ new String(Hex.encodeHex(work)));
-                            ByteBuffer bb_field = ByteBuffer.wrap(work);
-                            if (isLittleEndian){
-                                bb_field.order(ByteOrder.LITTLE_ENDIAN);
-                            }
-                            dbgLog.finer("raw bytes in Hex:"+ new String(Hex.encodeHex(bb_field.array())));
+                    case 9:
+                        //
+                        parseRT7SubTypefield(stream);
+                        break;
+
+                    case 10:
+                        // TextSmart data
+                        parseRT7SubTypefield(stream);
+                        break;
+
+                    case 11:
+                        // Msmt level, col width, & alignment
+                        //parseRT7SubTypefield(stream);
+
+                        headerSection = parseRT7SubTypefieldHeader(stream);
+                        if (headerSection != null) {
+                            int unitLength = headerSection[0];
+                            int numberOfUnits = headerSection[1];
+
+                            for (int i=0; i<numberOfUnits; i++){
+                                dbgLog.finer(i+"-th fieldData");
+                                byte[] work = new byte[unitLength];
+
+                                int nb = stream.read(work);
+                                dbgLog.finer("raw bytes in Hex:"+ new String(Hex.encodeHex(work)));
+                                ByteBuffer bb_field = ByteBuffer.wrap(work);
+                                if (isLittleEndian){
+                                    bb_field.order(ByteOrder.LITTLE_ENDIAN);
+                                }
+                                dbgLog.finer("raw bytes in Hex:"+ new String(Hex.encodeHex(bb_field.array())));
                             
-                            if (unitLength==4){
-                                int fieldData = bb_field.getInt();
-                                dbgLog.finer("fieldData(int)="+fieldData);
-                                dbgLog.finer("fieldData in Hex=0x"+Integer.toHexString(fieldData));
+                                if (unitLength==4){
+                                    int fieldData = bb_field.getInt();
+                                    dbgLog.finer("fieldData(int)="+fieldData);
+                                    dbgLog.finer("fieldData in Hex=0x"+Integer.toHexString(fieldData));
                                 
-                                int remainder = i%3;
-                                dbgLog.finer("remainder="+remainder);
-                                if (remainder == 0){
-                                    /// measurementLevel.add(fieldData);
-                                } else if (remainder == 1){
-                                    /// columnWidth.add(fieldData);
-                                } else if (remainder == 2){
-                                    /// alignment.add(fieldData);
+                                    int remainder = i%3;
+                                    dbgLog.finer("remainder="+remainder);
+                                    if (remainder == 0){
+                                        /// measurementLevel.add(fieldData);
+                                    } else if (remainder == 1){
+                                        /// columnWidth.add(fieldData);
+                                    } else if (remainder == 2){
+                                        /// alignment.add(fieldData);
+                                    }
+                                }
+                            }
+                        } else {
+                            // throw new IOException
+                        }
+                        /// dbgLog.fine("measurementLevel="+measurementLevel);
+                        /// dbgLog.fine("columnWidth="+columnWidth);
+                        /// dbgLog.fine("alignment="+alignment);
+                        dbgLog.fine("end of subType 11\n");
+                        break;
+
+                    case 12:
+                        // Windows Data Entry GUID
+                        parseRT7SubTypefield(stream);
+                        break;
+
+                    case 13:
+                        // Extended variable names
+                        // parseRT7SubTypefield(stream);
+                        headerSection = parseRT7SubTypefieldHeader(stream);
+
+                        if (headerSection != null){
+                            int unitLength = headerSection[0];
+                            dbgLog.fine("RT7: unitLength="+unitLength);
+                            int numberOfUnits = headerSection[1];
+                            dbgLog.fine("RT7: numberOfUnits="+numberOfUnits);
+                            byte[] work = new byte[unitLength*numberOfUnits];
+                            int nbtyes13 = stream.read(work);
+
+                            String[] variableShortLongNamePairs = new String(work,"US-ASCII").split("\t");
+
+                            for (int i=0; i<variableShortLongNamePairs.length; i++){
+                                dbgLog.fine("RT7: "+i+"-th pair"+variableShortLongNamePairs[i]);
+                                String[] pair = variableShortLongNamePairs[i].split("=");
+                                shortToLongVariableNameTable.put(pair[0], pair[1]);
+                            }
+
+                            dbgLog.fine("RT7: shortToLongVarialbeNameTable" + shortToLongVariableNameTable);
+                            // We are saving the short-to-long name map; at the
+                            // end of ingest, we'll go through the data variables and
+                            // change the names accordingly.
+                        
+                            // smd.setShortToLongVarialbeNameTable(shortToLongVarialbeNameTable);
+                        } else {
+                            // throw new IOException
+                        }
+                        break;
+
+                    case 14:
+                        // Extended strings
+                        //parseRT7SubTypefield(stream);
+                        headerSection = parseRT7SubTypefieldHeader(stream);
+
+                        if (headerSection != null){
+                            int unitLength = headerSection[0];
+                            dbgLog.fine("RT7.14: unitLength="+unitLength);
+                            int numberOfUnits = headerSection[1];
+                            dbgLog.fine("RT7.14: numberOfUnits="+numberOfUnits);
+                            byte[] work = new byte[unitLength*numberOfUnits];
+                            int nbtyes13 = stream.read(work);
+
+                            String[] extendedVariablesSizePairs = new String(work,defaultCharSet).split("\000\t");
+
+                            for (int i=0; i<extendedVariablesSizePairs.length; i++){
+                                dbgLog.fine("RT7.14: "+i+"-th pair"+extendedVariablesSizePairs[i]);
+                                if ( extendedVariablesSizePairs[i].indexOf("=") > 0 ) {
+                                    String[] pair = extendedVariablesSizePairs[i].split("=");
+                                    extendedVariablesSizeTable.put(pair[0], Integer.valueOf(pair[1]));
                                 }
                             }
 
-                        }
-
-                    } else {
-                        // throw new IOException
-                    }
-                    /// dbgLog.fine("measurementLevel="+measurementLevel);
-                    /// dbgLog.fine("columnWidth="+columnWidth);
-                    /// dbgLog.fine("alignment="+alignment);
-                    dbgLog.fine("end of subType 11\n");
-
-                    break;
-                case 12:
-                    // Windows Data Entry GUID
-                    parseRT7SubTypefield(stream);
-                    break;
-                case 13:
-                    // Extended variable names
-                    // parseRT7SubTypefield(stream);
-                    headerSection = parseRT7SubTypefieldHeader(stream);
-
-                    if (headerSection != null){
-                        int unitLength = headerSection[0];
-                        dbgLog.fine("RT7: unitLength="+unitLength);
-                        int numberOfUnits = headerSection[1];
-                        dbgLog.fine("RT7: numberOfUnits="+numberOfUnits);
-                        byte[] work = new byte[unitLength*numberOfUnits];
-                        int nbtyes13 = stream.read(work);
-
-                        String[] variableShortLongNamePairs = new String(work,"US-ASCII").split("\t");
-
-                        for (int i=0; i<variableShortLongNamePairs.length; i++){
-                            dbgLog.fine("RT7: "+i+"-th pair"+variableShortLongNamePairs[i]);
-                            String[] pair = variableShortLongNamePairs[i].split("=");
-                            shortToLongVariableNameTable.put(pair[0], pair[1]);
-                        }
-
-                        dbgLog.fine("RT7: shortToLongVarialbeNameTable"+
-                                shortToLongVariableNameTable);
-                        // We are saving the short-to-long name map; at the
-                        // end of ingest, we'll go through the data variables and
-                        // change the names accordingly. 
-                        
-                        // smd.setShortToLongVarialbeNameTable(shortToLongVarialbeNameTable);
-                    } else {
-                        // throw new IOException
-                    }
-
-                    break;
-                case 14:
-                    // Extended strings
-                    //parseRT7SubTypefield(stream);
-                    headerSection = parseRT7SubTypefieldHeader(stream);
-
-                    if (headerSection != null){
-                        int unitLength = headerSection[0];
-                        dbgLog.fine("RT7.14: unitLength="+unitLength);
-                        int numberOfUnits = headerSection[1];
-                        dbgLog.fine("RT7.14: numberOfUnits="+numberOfUnits);
-                        byte[] work = new byte[unitLength*numberOfUnits];
-                        int nbtyes13 = stream.read(work);
-
-                        String[] extendedVariablesSizePairs = new String(work,defaultCharSet).split("\000\t");
-
-                        for (int i=0; i<extendedVariablesSizePairs.length; i++){
-                            dbgLog.fine("RT7.14: "+i+"-th pair"+extendedVariablesSizePairs[i]);
-			    if ( extendedVariablesSizePairs[i].indexOf("=") > 0 ) {
-				String[] pair = extendedVariablesSizePairs[i].split("=");
-				extendedVariablesSizeTable.put(pair[0], Integer.valueOf(pair[1]));
-			    }
-                        }
-
-                        dbgLog.fine("RT7.14: extendedVariablesSizeTable"+
+                            dbgLog.fine("RT7.14: extendedVariablesSizeTable"+
                                 extendedVariablesSizeTable);
-                    } else {
-                        // throw new IOException
-                    }
-
-                    break;
-                case 15:
-                    // Clementine Metadata
-                    parseRT7SubTypefield(stream);
-                    break;
-                case 16:
-                    // 64 bit N of cases
-                    parseRT7SubTypefield(stream);
-                    break;
-                case 17:
-                    // File level attributes
-                    parseRT7SubTypefield(stream);
-                    break;
-                case 18:
-                    // Variable attributes
-                    parseRT7SubTypefield(stream);
-                    break;
-                case 19:
-                    // Extended multiple response groups
-                    parseRT7SubTypefield(stream);
-                    break;
-                case 20:
-                    // Character encoding, aka code page.
-                    // Must be a version 16+ feature (?).
-                    // Starting v.16, the default character encoding for SAV
-                    // files is UTF-8; but then it is possible to specify an 
-                    // alternative encoding here. 
-                    // A typical use case would be people setting it to "ISO-Latin" 
-                    // or "windows-1252", or a similar 8-bit encoding to store 
-                    // text with standard Western European accents.
-                    // -- L.A.
-                    
-                    headerSection = parseRT7SubTypefieldHeader(stream);
-
-                    if (headerSection != null){
-                        int unitLength = headerSection[0];
-                        dbgLog.fine("RT7-20: unitLength="+unitLength);
-                        int numberOfUnits = headerSection[1];
-                        dbgLog.fine("RT7-20: numberOfUnits="+numberOfUnits);
-                        byte[] rt7st20bytes = new byte[unitLength*numberOfUnits];
-                        int nbytes20 = stream.read(rt7st20bytes);
-
-                        String dataCharSet = new String(rt7st20bytes,"US-ASCII");
-
-                        if (dataCharSet != null && !(dataCharSet.equals(""))) {
-                            dbgLog.fine("RT7-20: data charset: "+ dataCharSet);
-                            defaultCharSet = dataCharSet; 
+                        } else {
+                            // throw new IOException
                         }
-                    } /*else {
-                        // TODO: 
-                        // decide if the exception should actually be thrown here!
-                        // -- L.A. 4.0 beta
-                        // throw new IOException
-                    }*/
-                     
+                        break;
 
-                    break;
-                case 21:
-                    // Value labels for long strings
-                    parseRT7SubTypefield(stream);
-                    break;
-                case 22:
-                    // Missing values for long strings
-                    parseRT7SubTypefield(stream);
-                    break;
-                default:
-                    parseRT7SubTypefield(stream);
+                    case 15:
+                        // Clementine Metadata
+                        parseRT7SubTypefield(stream);
+                        break;
+
+                    case 16:
+                        // 64 bit N of cases
+                        parseRT7SubTypefield(stream);
+                        break;
+
+                    case 17:
+                        // File level attributes
+                        parseRT7SubTypefield(stream);
+                        break;
+
+                    case 18:
+                        // Variable attributes
+                        parseRT7SubTypefield(stream);
+                        break;
+
+                    case 19:
+                        // Extended multiple response groups
+                        parseRT7SubTypefield(stream);
+                        break;
+
+                    case 20:
+                        // Character encoding, aka code page.
+                        // Must be a version 16+ feature (?).
+                        // Starting v.16, the default character encoding for SAV
+                        // files is UTF-8; but then it is possible to specify an
+                        // alternative encoding here.
+                        // A typical use case would be people setting it to "ISO-Latin"
+                        // or "windows-1252", or a similar 8-bit encoding to store
+                        // text with standard Western European accents.
+                        // -- L.A.
+                    
+                        headerSection = parseRT7SubTypefieldHeader(stream);
+
+                        if (headerSection != null){
+                            int unitLength = headerSection[0];
+                            dbgLog.fine("RT7-20: unitLength="+unitLength);
+                            int numberOfUnits = headerSection[1];
+                            dbgLog.fine("RT7-20: numberOfUnits="+numberOfUnits);
+                            byte[] rt7st20bytes = new byte[unitLength*numberOfUnits];
+                            int nbytes20 = stream.read(rt7st20bytes);
+
+                            String dataCharSet = new String(rt7st20bytes,"US-ASCII");
+                            if (dataCharSet != null && !(dataCharSet.equals(""))) {
+                                dbgLog.fine("RT7-20: data charset: "+ dataCharSet);
+                                defaultCharSet = dataCharSet;
+                            }
+                        } /*else {
+                            // TODO:
+                            // decide if the exception should actually be thrown here!
+                            // -- L.A. 4.0 beta
+                            // throw new IOException
+                        }*/
+                        break;
+
+                    case 21:
+                        // Value labels for long strings
+                        parseRT7SubTypefield(stream);
+                        break;
+
+                    case 22:
+                        // Missing values for long strings
+                        parseRT7SubTypefield(stream);
+                        break;
+
+                    default:
+                        parseRT7SubTypefield(stream);
+                }
+
+            } catch (IOException ex){
+                //ex.printStackTrace();
+                throw ex;
             }
 
-        } catch (IOException ex){
-            //ex.printStackTrace();
-	    throw ex; 
+            counter++;
+
+            if (counter > 20){
+                break;
+            }
         }
 
-        counter++;
-
-        if (counter > 20){
-            break;
-        }
-    }
-
-    dbgLog.fine("RT7: counter="+counter);
+        dbgLog.fine("RT7: counter="+counter);
         dbgLog.fine("RT7: decodeRecordType7(): end");
     }
     
@@ -2276,7 +2265,7 @@ public class SAVFileReader  extends TabularDataFileReader{
         } catch (IOException ex){
             //ex.printStackTrace();
             //exit(1);
-	    throw ex; 
+           throw ex;
         }
         
         dbgLog.fine("decodeRecordType999(): end");
@@ -2287,12 +2276,9 @@ public class SAVFileReader  extends TabularDataFileReader{
     void decodeRecordTypeData(BufferedInputStream stream) throws IOException {
         dbgLog.fine("decodeRecordTypeData(): start");
 
-	///String fileUnfValue = null;
-	///String[] unfValues = null;
-
-
-
-        if (stream ==null){
+        ///String fileUnfValue = null;
+        ///String[] unfValues = null;
+        if (stream == null) {
             throw new IllegalArgumentException("stream == null!");
         }
         if (isDataSectionCompressed){
@@ -2308,8 +2294,8 @@ public class SAVFileReader  extends TabularDataFileReader{
 
     PrintWriter createOutputWriter (BufferedInputStream stream) throws IOException {
         PrintWriter pwout = null;
-	FileOutputStream fileOutTab = null;
-	        
+        FileOutputStream fileOutTab = null;
+
         try {
 
             // create a File object to save the tab-delimited data file
@@ -2331,10 +2317,10 @@ public class SAVFileReader  extends TabularDataFileReader{
             ex.printStackTrace();
         } catch (IOException ex){
             //ex.printStackTrace();
-	    throw ex; 
+        throw ex;
         }
 
-	return pwout;
+        return pwout;
 
     }
 
@@ -2370,8 +2356,6 @@ public class SAVFileReader  extends TabularDataFileReader{
 
         dbgLog.fine("printFormatTable:\n" + printFormatTable);
         variableFormatTypeList = new String[varQnty];
-
-
 
         for (int i = 0; i < varQnty; i++) {
             variableFormatTypeList[i] = SPSSConstants.FORMAT_CATEGORY_TABLE.get(
@@ -2608,11 +2592,10 @@ public class SAVFileReader  extends TabularDataFileReader{
                                     sb.append(casewiseRecordForTabFile.get(j - 1));
                                     sb.append(casewiseRecordForTabFile.get(j));
                                     
-				    for (int jc = 1; ; jc++) {
+                                    for (int jc = 1; ; jc++) {
                                         if ((j + jc == nOBS) 
-					    || ((OBSwiseTypelList.get(j + jc) != -1) 
-						&& (OBSwiseTypelList.get(j + jc) != -2))) {
-
+                                            || ((OBSwiseTypelList.get(j + jc) != -1)
+                                            && (OBSwiseTypelList.get(j + jc) != -2))) {
                                             // j is the end unit of this string variable
                                             concatenated = sb.toString();
                                             sb.setLength(0);
@@ -2709,12 +2692,12 @@ public class SAVFileReader  extends TabularDataFileReader{
                             } // end of variable-type check
 
                             if (casewiseRecordForTabFile.get(k) != null && !casewiseRecordForTabFile.get(k).equals(MissingValueForTextDataFileNumeric)) {
-				
+
                                 String variableFormatType = variableFormatTypeList[k];
                                 dbgLog.finer("k=" + k + "th printFormatTable format=" + printFormatTable.get(variableNameList.get(k)));
 
                                 int formatDecimalPointPosition = formatDecimalPointPositionList.get(k);
-				
+
 
                                 if (variableFormatType.equals("date")) {
                                     dbgLog.finer("date case");
@@ -2824,7 +2807,7 @@ public class SAVFileReader  extends TabularDataFileReader{
                                             }
                                         }
                                     }
-				    
+
                                 } else if (variableFormatType.equals("other")) {
                                     dbgLog.finer("other non-date/time case:=" + i);
 
@@ -2844,8 +2827,8 @@ public class SAVFileReader  extends TabularDataFileReader{
                                         dbgLog.finer("month:k=" + k + ":" + casewiseRecordForTabFile.get(k));
                                     }
                                 }
-				
-				
+
+
                             } // end: date-time-datum check
 
 
@@ -2877,31 +2860,27 @@ public class SAVFileReader  extends TabularDataFileReader{
                         }
 
                         // reset the case-wise working objects
-			casewiseRecordForTabFile.clear();
+                        casewiseRecordForTabFile.clear();
 
-			if ( caseQnty > 0 ) {
-			    if ( caseIndex == caseQnty ) {
-				hasReachedEOF = true; 
-			    }
-			}
-
- 			if (hasReachedEOF){
-                            break;
+                        if ( caseQnty > 0 ) {
+                            if ( caseIndex == caseQnty ) {
+                                hasReachedEOF = true;
+                            }
                         }
 
+                        if (hasReachedEOF) {
+                            break;
+                        }
                     } // if(The-end-of-a-case(row)-processing)
-
                 } // loop-i (OBS unit)
 
                 if ((hasReachedEOF) || (stream.available() == 0)) {
                     // reached the end of this file
                     // do exit-processing
-
                     dbgLog.fine("***** reached the end of the file at " + ii + "th iteration *****");
-
                     break OBSERVATION;
                 }
-		
+
                 ii++;
 
             } // while loop
@@ -2910,8 +2889,8 @@ public class SAVFileReader  extends TabularDataFileReader{
         } catch (IOException ex) {
             throw ex;
         }
-	
-	
+
+
         dbgLog.fine("<<<<<<");
         dbgLog.fine("formatCategoryTable = " + formatCategoryTable);
         dbgLog.fine(">>>>>>");
@@ -2958,7 +2937,7 @@ public class SAVFileReader  extends TabularDataFileReader{
 
         for (int i = 0; i < varQnty; i++){
             variableFormatTypeList[i]=SPSSConstants.FORMAT_CATEGORY_TABLE.get(
-									      printFormatTable.get(variableNameList.get(i)));
+                                          printFormatTable.get(variableNameList.get(i)));
             dbgLog.fine("i="+i+"th variableFormatTypeList="+variableFormatTypeList[i]);
             formatCategoryTable.put(variableNameList.get(i), variableFormatTypeList[i]);
         }
@@ -2987,7 +2966,7 @@ public class SAVFileReader  extends TabularDataFileReader{
 
         // data-storage object for sumStat
         ///dataTable2 = new Object[varQnty][caseQnty];
-	// storage of date formats to pass to UNF	
+        // storage of date formats to pass to UNF
         ///dateFormats = new String[varQnty][caseQnty];
 
         try {
@@ -3029,10 +3008,10 @@ public class SAVFileReader  extends TabularDataFileReader{
                         dbgLog.finer("dphex="+ dphex);
                             
                         if ((dphex.equals("ffffffffffffefff"))||
-                            (dphex.equals("ffefffffffffffff"))){
+                            (dphex.equals("ffefffffffffffff"))) {
                             //casewiseRecordForTabFile.add(systemMissingValue);
                             // add the numeric missing value
-			    dbgLog.fine("SAV Reader: adding: Missing Value (numeric)");
+                            dbgLog.fine("SAV Reader: adding: Missing Value (numeric)");
                             casewiseRecordForTabFile.add(MissingValueForTextDataFileNumeric);
                         } else {
                             Double ddatum  = bb_double.getDouble();
@@ -3063,9 +3042,9 @@ public class SAVFileReader  extends TabularDataFileReader{
                 } // k-loop
 
                 // String-variable's continuous block exits:
-                if (hasStringVarContinuousBlock){
-		    // continuous blocks: string case
-		    // concatenating process
+                if (hasStringVarContinuousBlock) {
+                    // continuous blocks: string case
+                    // concatenating process
                     //dbgLog.fine("concatenating process starts");
 
                     //dbgLog.fine("casewiseRecordForTabFile(before)="+casewiseRecordForTabFile);
@@ -3126,23 +3105,23 @@ public class SAVFileReader  extends TabularDataFileReader{
 
                 caseIndex++;
                 dbgLog.finer("caseIndex="+caseIndex);
-                for (int k = 0; k < casewiseRecordForTabFile.size(); k++){
+                for (int k = 0; k < casewiseRecordForTabFile.size(); k++) {
 
                     if (variableTypelList.get(k) > 0) {
 
-			// See my comments for this padding removal logic
-			// in the "compressed" method -- L.A.
+                        // See my comments for this padding removal logic
+                        // in the "compressed" method -- L.A.
 
-			String paddRemoved = StringUtils.stripEnd(casewiseRecordForTabFile.get(k).toString(), null);
-			// TODO: clean this up.  For now, just make sure that strings contain at least one blank space.
-			if (paddRemoved.equals("")) {
-			    paddRemoved = " ";
-			}
+                        String paddRemoved = StringUtils.stripEnd(casewiseRecordForTabFile.get(k).toString(), null);
+                        // TODO: clean this up.  For now, just make sure that strings contain at least one blank space.
+                        if (paddRemoved.equals("")) {
+                            paddRemoved = " ";
+                        }
 
-			//casewiseRecordForTabFile.set(k, "\"" + paddRemoved.replaceAll("\"", Matcher.quoteReplacement("\\\"")) + "\"");
+                        //casewiseRecordForTabFile.set(k, "\"" + paddRemoved.replaceAll("\"", Matcher.quoteReplacement("\\\"")) + "\"");
                         casewiseRecordForTabFile.set(k, escapeCharacterString(paddRemoved));
-			
-			// end of String var case
+
+                        // end of String var case
 
                     } // end of variable-type check
                     
@@ -3279,17 +3258,17 @@ public class SAVFileReader  extends TabularDataFileReader{
                                 dbgLog.finer("month:k="+k+":"+casewiseRecordForTabFile.get(k));
 
                             }
-                        } 
-			// end of date/time block
+                        }
+                        // end of date/time block
                     } // end: date-time-datum check
 
                 } // end: loop-k(2nd: variablte-wise-check)
 
-		// write to tab file
-		if (casewiseRecordForTabFile.size() > 0) {
-		    pwout.println(StringUtils.join(casewiseRecordForTabFile, "\t"));
-		}
-		
+                // write to tab file
+                if (casewiseRecordForTabFile.size() > 0) {
+                    pwout.println(StringUtils.join(casewiseRecordForTabFile, "\t"));
+                }
+
                 // numeric contents-check
                 for (int l = 0; l < casewiseRecordForTabFile.size(); l++){
                     if ( variableFormatTypeList[l].equals("date") ||
@@ -3314,7 +3293,7 @@ public class SAVFileReader  extends TabularDataFileReader{
                     // do exit-processing
 
                     dbgLog.fine("reached the end of the file at "+ii
-				+"th iteration");
+                +"th iteration");
 
                     break;
                 } // if eof processing
@@ -3325,7 +3304,7 @@ public class SAVFileReader  extends TabularDataFileReader{
             
 
         } catch (IOException ex) {
-	    throw ex; 
+            throw ex;
         }
         
         // contents check
@@ -3337,92 +3316,92 @@ public class SAVFileReader  extends TabularDataFileReader{
 
     // Utility Methods  -----------------------------------------------------//
 
-    private boolean variableNameIsAnIncrement (String varNameBase, String variableName){
-	if ( varNameBase == null ) {
-	    return false; 
-	}
+    private boolean variableNameIsAnIncrement (String varNameBase, String variableName) {
+        if ( varNameBase == null ) {
+            return false;
+        }
 
-	if ( varNameBase.concat("0").equals(variableName) ) {
-	    return true; 
-	} 
-	
-	return false; 
+        if ( varNameBase.concat("0").equals(variableName) ) {
+            return true;
+        }
+
+        return false;
     }
 
     private boolean variableNameIsAnIncrement (String varNameBase, String lastExtendedVariable, String currentVariable) {
 
-	if ( varNameBase == null ||
-	     lastExtendedVariable == null || 
-	     currentVariable == null ) {
-	    return false; 
-	}
+        if ( varNameBase == null ||
+             lastExtendedVariable == null ||
+             currentVariable == null ) {
+            return false;
+        }
 
-	if ( varNameBase.length() >= lastExtendedVariable.length() ) {
-	    return false; 
-	}
+        if ( varNameBase.length() >= lastExtendedVariable.length() ) {
+            return false;
+        }
 
-	if ( varNameBase.length() >= currentVariable.length() ) {
-	    return false; 
-	}
+        if ( varNameBase.length() >= currentVariable.length() ) {
+            return false;
+        }
 
-	if ( !(varNameBase.equals(currentVariable.substring(0,varNameBase.length()))) ) {
-	    return false; 
-	}
+        if ( !(varNameBase.equals(currentVariable.substring(0,varNameBase.length()))) ) {
+            return false;
+        }
 
-	String lastSuffix = lastExtendedVariable.substring(varNameBase.length()); 
-	String currentSuffix = currentVariable.substring(varNameBase.length()); 
+        String lastSuffix = lastExtendedVariable.substring(varNameBase.length());
+        String currentSuffix = currentVariable.substring(varNameBase.length());
 
-	if ( currentSuffix.length() > 2 ) {
-	    return false; 
-	}
+        if ( currentSuffix.length() > 2 ) {
+            return false;
+        }
 
-	//if ( !currentSuffix.matches("^[0-9A-Z]*$") ) {
-	//    return false; 
-	//}
+        //if ( !currentSuffix.matches("^[0-9A-Z]*$") ) {
+        //    return false;
+        //}
 
-	return suffixIsAnIncrement (lastSuffix, currentSuffix); 
+        return suffixIsAnIncrement (lastSuffix, currentSuffix);
     }
-	
+
 
     private boolean suffixIsAnIncrement ( String lastSuffix, String currentSuffix ) {
-	// Extended variable suffixes are base-36 number strings in the 
-	// [0-9A-Z] alphabet. I.e. the incremental suffixes go from 
-	// 0 to 9 to A to Z to 10 to 1Z ... etc. 
+        // Extended variable suffixes are base-36 number strings in the
+        // [0-9A-Z] alphabet. I.e. the incremental suffixes go from
+        // 0 to 9 to A to Z to 10 to 1Z ... etc.
 
-	int lastSuffixValue = intBase36 ( lastSuffix ); 
-	int currentSuffixValue = intBase36 ( currentSuffix ); 
+        int lastSuffixValue = intBase36 ( lastSuffix );
+        int currentSuffixValue = intBase36 ( currentSuffix );
 
-	if ( currentSuffixValue - lastSuffixValue > 0 ) {
-	    return true; 
-	}
+        if ( currentSuffixValue - lastSuffixValue > 0 ) {
+            return true;
+        }
 
-	return false; 
+        return false;
     }
-	
+
     private int intBase36 ( String stringBase36 ) {
 
-	// integer value of a base-36 string in [0-9A-Z] alphabet;
-	// i.e. "0" = 0, "9" = 9, "A" = 10, 
-	// "Z"  = 35, "10" = 36, "1Z" = 71 ...
-	
-	byte[] stringBytes = stringBase36.getBytes(); 
+        // integer value of a base-36 string in [0-9A-Z] alphabet;
+        // i.e. "0" = 0, "9" = 9, "A" = 10,
+        // "Z"  = 35, "10" = 36, "1Z" = 71 ...
 
-	int ret = 0; 
+        byte[] stringBytes = stringBase36.getBytes();
 
-	for ( int i = 0; i < stringBytes.length; i++ ) {
-	    int value = 0; 
-	    if (stringBytes[i] >= 48 && stringBytes[i] <= 57 ) {
-		// [0-9]
-		value = (int)stringBytes[i] - 48; 
-	    } else if (stringBytes[i] >= 65 && stringBytes[i] <= 90 ) {
-		// [A-Z] 
-		value = (int)stringBytes[i] - 55; 
-	    }
+        int ret = 0;
 
-	    ret = (ret * 36) + value;
-	}
+        for ( int i = 0; i < stringBytes.length; i++ ) {
+            int value = 0;
+            if (stringBytes[i] >= 48 && stringBytes[i] <= 57 ) {
+                // [0-9]
+                value = (int)stringBytes[i] - 48;
+            } else if (stringBytes[i] >= 65 && stringBytes[i] <= 90 ) {
+                // [A-Z]
+                value = (int)stringBytes[i] - 55;
+            }
 
-	return ret; 
+            ret = (ret * 36) + value;
+        }
+
+        return ret;
     }
 
 
@@ -3454,36 +3433,36 @@ public class SAVFileReader  extends TabularDataFileReader{
         
         byte[] byteStorage = new byte[storage_size];
 
-	try {
-	    int nbytes = stream.read(byteStorage);
-	    // to-do check against nbytes
+        try {
+            int nbytes = stream.read(byteStorage);
+            // to-do check against nbytes
 
-	    //printHexDump(byteStorage, "RT7:storage");
-	    
-	    ByteBuffer bb_data_type = ByteBuffer.wrap(byteStorage,
-						      0, length_unit_length);
-	    if (isLittleEndian){
-		bb_data_type.order(ByteOrder.LITTLE_ENDIAN);
-	    }
+            //printHexDump(byteStorage, "RT7:storage");
 
-	    int unitLength = bb_data_type.getInt();
-	    dbgLog.fine("parseRT7 SubTypefield: unitLength="+unitLength);
-	    
-	    ByteBuffer bb_number_of_units = ByteBuffer.wrap(byteStorage,
-							    length_unit_length, length_number_of_units);
-	    if (isLittleEndian){
-		bb_number_of_units.order(ByteOrder.LITTLE_ENDIAN);
-	    }
+            ByteBuffer bb_data_type = ByteBuffer.wrap(byteStorage,
+                                  0, length_unit_length);
+            if (isLittleEndian) {
+                bb_data_type.order(ByteOrder.LITTLE_ENDIAN);
+            }
 
-	    int numberOfUnits = bb_number_of_units.getInt();
-	    dbgLog.fine("parseRT7 SubTypefield: numberOfUnits="+numberOfUnits);
-	
-	    headerSection[0] = unitLength;
-	    headerSection[1] = numberOfUnits;
-	    return headerSection;
-	} catch (IOException ex) {
-	    throw ex;
-	}
+            int unitLength = bb_data_type.getInt();
+            dbgLog.fine("parseRT7 SubTypefield: unitLength="+unitLength);
+
+            ByteBuffer bb_number_of_units = ByteBuffer.wrap(byteStorage,
+                                    length_unit_length, length_number_of_units);
+            if (isLittleEndian){
+                bb_number_of_units.order(ByteOrder.LITTLE_ENDIAN);
+            }
+
+            int numberOfUnits = bb_number_of_units.getInt();
+            dbgLog.fine("parseRT7 SubTypefield: numberOfUnits="+numberOfUnits);
+
+            headerSection[0] = unitLength;
+            headerSection[1] = numberOfUnits;
+            return headerSection;
+        } catch (IOException ex) {
+            throw ex;
+        }
     }
     
     // TODO: 
@@ -3500,7 +3479,7 @@ public class SAVFileReader  extends TabularDataFileReader{
         
         byte[] byteStorage = new byte[storage_size];
 
-        try{
+        try {
             int nbytes = stream.read(byteStorage);
             // to-do check against nbytes
 
@@ -3549,12 +3528,10 @@ public class SAVFileReader  extends TabularDataFileReader{
                 }
                 dbgLog.finer("");
             }
-           
         } catch (IOException ex) {
             //ex.printStackTrace();
-	    throw ex; 
+            throw ex;
         }
-        
     }
     
     private List<byte[]> getRT7SubTypefieldData(BufferedInputStream stream) throws IOException {
@@ -3566,7 +3543,7 @@ public class SAVFileReader  extends TabularDataFileReader{
         
         byte[] byteStorage = new byte[storage_size];
 
-        try{
+        try {
             int nbytes = stream.read(byteStorage);
             // to-do check against nbytes
 
@@ -3594,17 +3571,14 @@ public class SAVFileReader  extends TabularDataFileReader{
             headerSection[1] = numberOfUnits;
 
             for (int i=0; i<numberOfUnits; i++){
-
                 byte[] work = new byte[unitLength];
                 int nb = stream.read(work);
                 dbgLog.finer(new String(Hex.encodeHex(work)));
                 dataList.add(work);
             }
-
-
         } catch (IOException ex) {
             //ex.printStackTrace();
-	    throw ex; 
+            throw ex;
         }
         return dataList;
     }    

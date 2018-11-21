@@ -35,11 +35,13 @@ public class ShibGroupServiceBean {
 
     @EJB
     RoleAssigneeServiceBean roleAssigneeSvc;
+
     @EJB
     GroupServiceBean groupService;
+
     @EJB
     ActionLogServiceBean actionLogSvc;
-	
+
     /**
      * @return A ShibGroup or null.
      */

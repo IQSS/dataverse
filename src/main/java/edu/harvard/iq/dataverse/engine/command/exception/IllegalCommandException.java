@@ -10,8 +10,8 @@ import edu.harvard.iq.dataverse.engine.command.Command;
  */
 public class IllegalCommandException extends CommandException {
 
-	public IllegalCommandException(String message, Command aCommand) {
-		super(message, aCommand);
+    public IllegalCommandException(String message, Command aCommand) {
+        super(message, aCommand);
     }
-	
+
 }

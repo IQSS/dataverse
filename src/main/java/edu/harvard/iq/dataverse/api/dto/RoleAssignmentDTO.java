@@ -5,8 +5,8 @@ package edu.harvard.iq.dataverse.api.dto;
  * @author michael
  */
 public class RoleAssignmentDTO {
-	String assignee;
-	String role;
+    String assignee;
+    String role;
 
     public String getAssignee() {
         return assignee;

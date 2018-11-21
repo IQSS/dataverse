@@ -159,7 +159,7 @@ public class MyDataPage implements java.io.Serializable {
             authUser = (AuthenticatedUser) session.getUser();
         } else {
             return permissionsWrapper.notAuthorized();
-	// redirect to login OR give some type ‘you must be logged in message'
+            // redirect to login OR give some type ‘you must be logged in message'
         }
 
         // Initialize a filterParams object to buid the Publication Status checkboxes
@@ -178,14 +178,14 @@ public class MyDataPage implements java.io.Serializable {
         return null;
     }
     
-    public String getAuthUserIdentifier(){
+    public String getAuthUserIdentifier() {
         if (this.authUser==null){
             return null;
         }
         return MyDataUtil.formatUserIdentifierForMyDataForm(this.authUser.getIdentifier());
     }
     
-    private List<DataverseRole> getRolesUsedToCreateCheckboxes(DataverseRequest dataverseRequest){
+    private List<DataverseRole> getRolesUsedToCreateCheckboxes(DataverseRequest dataverseRequest) {
 
         if (dataverseRequest==null){
             throw new NullPointerException("dataverseRequest cannot be null");

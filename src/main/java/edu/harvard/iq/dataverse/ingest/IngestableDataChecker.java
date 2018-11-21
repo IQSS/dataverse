@@ -368,8 +368,8 @@ public class IngestableDataChecker implements java.io.Serializable {
         }
 
         // size test
-	int bufferCapacity = buff.capacity();
-	dbgLog.fine("Subsettable Checker: buffer capacity: "+bufferCapacity);
+        int bufferCapacity = buff.capacity();
+        dbgLog.fine("Subsettable Checker: buffer capacity: "+bufferCapacity);
 
         if (bufferCapacity < 491) {
             if (DEBUG) {
@@ -404,10 +404,10 @@ public class IngestableDataChecker implements java.io.Serializable {
             // 1-char case
             pos1 = baseBias + i;
 
-	    if ( pos1 > bufferCapacity - 1 ) {
-		dbgLog.fine("Subsettable Checker: request to go beyond buffer capacity ("+pos1+")");
-		return result; 
-	    }
+            if ( pos1 > bufferCapacity - 1 ) {
+                dbgLog.fine("Subsettable Checker: request to go beyond buffer capacity ("+pos1+")");
+                return result;
+            }
 
             buff.position(pos1);
             if (DEBUG) {
@@ -425,11 +425,10 @@ public class IngestableDataChecker implements java.io.Serializable {
             // 2-char case
             pos2 = baseBias + 2 * i;
 
-	    if ( pos2 > bufferCapacity - 2 ) {
-		dbgLog.fine("Subsettable Checker: request to read 2 bytes beyond buffer capacity ("+pos2+")");
-		return result; 
-	    }
-
+            if ( pos2 > bufferCapacity - 2 ) {
+                dbgLog.fine("Subsettable Checker: request to read 2 bytes beyond buffer capacity ("+pos2+")");
+                return result;
+            }
 
             buff.position(pos2);
             if (DEBUG) {
@@ -441,11 +440,10 @@ public class IngestableDataChecker implements java.io.Serializable {
             // 3-char case
             pos3 = baseBias + 3 * i;
 
-	    if ( pos3 > bufferCapacity - 3 ) {
-		dbgLog.fine("Subsettable Checker: request to read 3 bytes beyond buffer capacity ("+pos3+")");
-		return result; 
-	    }
-
+            if ( pos3 > bufferCapacity - 3 ) {
+                dbgLog.fine("Subsettable Checker: request to read 3 bytes beyond buffer capacity ("+pos3+")");
+                return result;
+            }
 
             buff.position(pos3);
             if (DEBUG) {

@@ -31,8 +31,8 @@ import java.util.logging.Logger;
  * @author skraffmi
  */
 @RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "moved", value = {Permission.PublishDataset})
-    ,	@RequiredPermissions(dataverseName = "destination", value = {Permission.AddDataset, Permission.PublishDataset})
+    @RequiredPermissions(dataverseName = "moved", value = {Permission.PublishDataset}),
+    @RequiredPermissions(dataverseName = "destination", value = {Permission.AddDataset, Permission.PublishDataset})
 })
 public class MoveDatasetCommand extends AbstractVoidCommand {
 

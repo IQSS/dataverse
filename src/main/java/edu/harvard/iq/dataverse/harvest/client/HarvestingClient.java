@@ -43,13 +43,18 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author Leonid Andreev
  */
 
-@Table(indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="harvesttype")
-		, @Index(columnList="harveststyle")
-		, @Index(columnList="harvestingurl")})
+@Table(indexes = {
+    @Index(columnList="dataverse_id"),
+    @Index(columnList="harvesttype"),
+    @Index(columnList="harveststyle"),
+    @Index(columnList="harvestingurl")
+})
 @Entity
 @NamedQueries({
-    @NamedQuery(name = "HarvestingClient.findByNickname", query="SELECT hc FROM HarvestingClient hc WHERE LOWER(hc.name)=:nickName")
+    @NamedQuery(
+        name = "HarvestingClient.findByNickname",
+        query="SELECT hc FROM HarvestingClient hc WHERE LOWER(hc.name)=:nickName"
+    )
 })
 public class HarvestingClient implements Serializable {
     private static final long serialVersionUID = 1L;

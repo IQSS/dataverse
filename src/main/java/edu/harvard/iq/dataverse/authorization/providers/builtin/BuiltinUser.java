@@ -24,12 +24,12 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author mbarsinai
  */
 @NamedQueries({
-		@NamedQuery( name="BuiltinUser.findAll",
-				query = "SELECT u FROM BuiltinUser u ORDER BY u.userName"),
-		@NamedQuery( name="BuiltinUser.findByUserName",
-				query = "SELECT u FROM BuiltinUser u WHERE u.userName=:userName"),
-		@NamedQuery( name="BuiltinUser.listByUserNameLike",
-				query = "SELECT u FROM BuiltinUser u WHERE u.userName LIKE :userNameLike")
+    @NamedQuery(name="BuiltinUser.findAll",
+        query = "SELECT u FROM BuiltinUser u ORDER BY u.userName"),
+    @NamedQuery(name="BuiltinUser.findByUserName",
+        query = "SELECT u FROM BuiltinUser u WHERE u.userName=:userName"),
+    @NamedQuery(name="BuiltinUser.listByUserNameLike",
+        query = "SELECT u FROM BuiltinUser u WHERE u.userName LIKE :userNameLike")
 })
 @Entity
 @Table(indexes = {@Index(columnList="userName")})  // for sorting the NamedQuery BuiltinUser.findAll

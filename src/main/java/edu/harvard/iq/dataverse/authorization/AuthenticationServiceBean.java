@@ -137,9 +137,8 @@ public class AuthenticationServiceBean {
     }
     
     public void registerProviderFactory(AuthenticationProviderFactory aFactory) 
-            throws AuthorizationSetupException 
-    {
-        if ( providerFactories.containsKey(aFactory.getAlias()) ) {
+            throws AuthorizationSetupException {
+        if (providerFactories.containsKey(aFactory.getAlias())) {
             throw new AuthorizationSetupException(
                     "Duplicate alias " + aFactory.getAlias() + " for authentication provider factory.");
         }

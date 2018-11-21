@@ -67,31 +67,23 @@ public class Metadata extends AbstractApiBean {
      */
     @PUT
     @Path("/exportOAI/{specname}")
-    public Response exportOaiSet( @PathParam("specname") String spec )
-    {
-	    // assuming this belongs here (because it's a metadata export), but open to moving it elsewhere
-	    OAISet set = null;
-	    try
-	    {
-		    set = oaiSetService.findBySpec(spec);
-	    }
-	    catch(Exception ex)
-	    {
-		    return error(Response.Status.BAD_REQUEST,"bad request / invalid OAI set");
-	    }
-	    if ( null == set )
-	    {
-		    return error(Response.Status.NOT_FOUND, "unable to find specified OAI set");
-	    }
-	    try
-	    {
-		    oaiSetService.setUpdateInProgress( set.getId() );
-		    oaiSetService.exportOaiSetAsync(set);
-		    return ok("export started");
-	    }
-	    catch( Exception ex )
-	    {
-		    return error(Response.Status.BAD_REQUEST, "problem exporting OAI set");
-	    }
+    public Response exportOaiSet(@PathParam("specname") String spec) {
+        // assuming this belongs here (because it's a metadata export), but open to moving it elsewhere
+        OAISet set = null;
+        try {
+            set = oaiSetService.findBySpec(spec);
+        } catch(Exception ex) {
+            return error(Response.Status.BAD_REQUEST,"bad request / invalid OAI set");
+        }
+        if (null == set) {
+            return error(Response.Status.NOT_FOUND, "unable to find specified OAI set");
+        }
+        try {
+            oaiSetService.setUpdateInProgress(set.getId());
+            oaiSetService.exportOaiSetAsync(set);
+            return ok("export started");
+        } catch(Exception ex) {
+            return error(Response.Status.BAD_REQUEST, "problem exporting OAI set");
+        }
     }
 }

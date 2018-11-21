@@ -194,38 +194,38 @@ public class GlobalId implements java.io.Serializable {
         return true;
     }
     
-    private static String formatIdentifierString(String str){
+    private static String formatIdentifierString(String str) {
         
-        if (str == null){
+        if (str == null) {
             return null;
         }
         // remove whitespace, single quotes, and semicolons
         return str.replaceAll("\\s+|'|;","");  
         
         /*
-        < 	(%3C)
-> 	(%3E)
-{ 	(%7B)
-} 	(%7D)
-^ 	(%5E)
-[ 	(%5B)
-] 	(%5D)
-` 	(%60)
-| 	(%7C)
-\ 	(%5C)
-+
+        <   (%3C)
+        >   (%3E)
+        {   (%7B)
+        }   (%7D)
+        ^   (%5E)
+        [   (%5B)
+        ]   (%5D)
+        `   (%60)
+        |   (%7C)
+        \   (%5C)
+        +
         */
         // http://www.doi.org/doi_handbook/2_Numbering.html
     }
     
-    private static boolean testforNullTerminator(String str){
-        if(str == null) {
+    private static boolean testforNullTerminator(String str) {
+        if (str == null) {
             return false;
         }
         return str.indexOf('\u0000') > 0;
     }
     
-    private boolean checkDOIAuthority(String doiAuthority){
+    private boolean checkDOIAuthority(String doiAuthority) {
         
         if (doiAuthority==null){
             return false;

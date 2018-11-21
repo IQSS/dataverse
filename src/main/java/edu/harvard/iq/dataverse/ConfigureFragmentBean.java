@@ -28,7 +28,7 @@ import javax.inject.Named;
 
 @ViewScoped
 @Named
-public class ConfigureFragmentBean implements java.io.Serializable{
+public class ConfigureFragmentBean implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger(ConfigureFragmentBean.class.getName());
     
@@ -63,11 +63,11 @@ public class ConfigureFragmentBean implements java.io.Serializable{
     }
     
     public ExternalToolHandler getConfigurePopupToolHandler() {
-        if(fileId == null) {
+        if (fileId == null) {
             //on first UI load, method is called before fileId is set. There may be a better way to handle this
             return null;
         }
-        if(toolHandler != null) {
+        if (toolHandler != null) {
             return toolHandler;
         }
         
@@ -84,8 +84,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
         return toolHandler;
     }
     
-    public void setConfigureFileId(Long setFileId)
-    {
+    public void setConfigureFileId(Long setFileId) {
         fileId = setFileId;
     }
 }

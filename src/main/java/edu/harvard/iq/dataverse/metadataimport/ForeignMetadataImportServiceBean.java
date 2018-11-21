@@ -78,8 +78,12 @@ public class ForeignMetadataImportServiceBean {
             throw new EJBException("ERROR occurred while parsing XML fragment  ("+xmlToParse.substring(0, 64)+"...); ", ex);
         } finally {
             try {
-                if (xmlr != null) { xmlr.close(); }
-            } catch (XMLStreamException ex) {}
+                if (xmlr != null) {
+                    xmlr.close();
+                }
+            } catch (XMLStreamException ex) {
+
+            }
         }
     }
     
@@ -107,12 +111,20 @@ public class ForeignMetadataImportServiceBean {
             throw new EJBException("ERROR occurred while parsing XML (file "+xmlFile.getAbsolutePath()+"); ", ex);
         } finally {
             try {
-                if (xmlr != null) { xmlr.close(); }
-            } catch (XMLStreamException ex) {}
+                if (xmlr != null) {
+                    xmlr.close();
+                }
+            } catch (XMLStreamException ex) {
+
+            }
 
             try {
-                if (in != null) { in.close();}
-            } catch (IOException ex) {}
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException ex) {
+
+            }
         }
 
     }

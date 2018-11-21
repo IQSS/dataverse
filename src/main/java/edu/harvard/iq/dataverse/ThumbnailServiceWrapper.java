@@ -239,10 +239,9 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
                 // (alternatively, we could ignore the exception, and proceed with the 
                 // regular process of selecting the thumbnail from the available 
                 // image files - ?)
-            } finally
-	    {
-		    IOUtils.closeQuietly(in);
-	    }
+            } finally {
+                IOUtils.closeQuietly(in);
+            }
         } 
 
         // If not, see if the dataset has one of its image files already assigned

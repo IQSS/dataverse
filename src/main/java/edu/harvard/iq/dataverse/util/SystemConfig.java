@@ -1005,8 +1005,7 @@ public class SystemConfig {
         }        
     }
     
-    public boolean isRsyncDownload()
-    {
+    public boolean isRsyncDownload() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
     }

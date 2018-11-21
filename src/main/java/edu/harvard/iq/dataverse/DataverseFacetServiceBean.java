@@ -42,14 +42,13 @@ public class DataverseFacetServiceBean implements java.io.Serializable {
         cache.invalidate();
     }
     
-	public void deleteFacetsFor( Dataverse d ) {
-		em.createNamedQuery("DataverseFacet.removeByOwnerId")
-			.setParameter("ownerId", d.getId())
-				.executeUpdate();
+    public void deleteFacetsFor(Dataverse d) {
+        em.createNamedQuery("DataverseFacet.removeByOwnerId")
+           .setParameter("ownerId", d.getId())
+           .executeUpdate();
         cache.invalidate(d.getId());
-        
-	}
-	
+    }
+
     public DataverseFacet create(int displayOrder, DatasetFieldType fieldType, Dataverse ownerDv) {
         DataverseFacet dataverseFacet = new DataverseFacet();
         
