@@ -16,15 +16,22 @@ import java.util.Locale;
 public class DateUtil {
 
     public static String formatDate(Date dateToformat) {
+        return formatDate(dateToformat,null);
+    }
+
+    public static String formatDate(Date dateToformat, String format) {
         String formattedDate;
         DateFormat dateFormatter;
         try{
             DataverseLocaleBean d = new DataverseLocaleBean();
             Locale currentLocale = new Locale(d.getLocaleCode());
-
-            dateFormatter = DateFormat.getDateInstance(DateFormat.DEFAULT, currentLocale);
+            if(format == null)  {
+                dateFormatter = DateFormat.getDateInstance(DateFormat.DEFAULT, currentLocale);
+            }
+            else {
+                dateFormatter = new SimpleDateFormat(format, currentLocale);
+            }
             formattedDate = dateFormatter.format(dateToformat);
-
             return formattedDate;
         }
         catch(Exception e) {
@@ -32,9 +39,9 @@ public class DateUtil {
         }
     }
 
-    public static String formatDate(String dateToformat){
+    public static String formatDate(String dateToformat, String format) {
         String formattedDate = "";
-        DateFormat inputFormat = new SimpleDateFormat("MMM dd, yyyy");
+        DateFormat inputFormat = new SimpleDateFormat(format);
         Date _date = null;
         try {
             _date = inputFormat.parse(dateToformat);
@@ -44,10 +51,9 @@ public class DateUtil {
             e.printStackTrace();
             return null;
         }
-     }
+    }
 
-     public static String formatDate(Timestamp datetimeToformat)
-     {
+    public static String formatDate(Timestamp datetimeToformat) {
          String formattedDate;
          DateFormat dateFormatter;
          try{
@@ -63,5 +69,5 @@ public class DateUtil {
              e.printStackTrace();
              return null;
          }
-     }
+    }
 }
