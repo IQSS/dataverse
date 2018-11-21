@@ -5,6 +5,13 @@ Making Releases
 .. contents:: |toctitle|
 	:local:
 
+Add SQL Script to scripts/database/create for the Next Version
+--------------------------------------------------------------
+
+Deploy the nearly final war file to Glassfish and copy ``domains/domain1/generated/ejb/dataverse/dataverse_VDCNet-ejbPU_createDDL.jdbc`` to ``scripts/database/create/create_v4.10.sql``, for example. In the name of the SQL script, use the version number that is about to be released.
+
+This is a necessary step for our "upgrade across versions" feature, which you can read about at ``scripts/database/README_upgrade_across_versions.txt``.
+
 Bump Version Numbers
 --------------------
 
@@ -13,6 +20,7 @@ Before tagging, ensure the version number has been incremented to the milestone 
 - pom.xml
 - doc/sphinx-guides/source/conf.py
 - doc/sphinx-guides/source/versions.rst 
+- scripts/database/releases.txt
 
 Here's an example commit where all three files were updated at once: https://github.com/IQSS/dataverse/commit/99e23f96ec362ac2f524cb5cd80ca375fa13f196
 
