@@ -67,6 +67,10 @@ max-width:100%;
         word-break:break-all;
         overflow-y:auto;
 }
-.annotation__source a {
+.annotation__source a, .annotation__group a {
         font-weight: normal;
+}
+.annotation__source, .annotation__group {
+        font-weight: bold;
+        color: #31708f;
 }
