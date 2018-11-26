@@ -74,7 +74,7 @@
                                                             <ui:fragment rendered="#{managePermissionsPage.defaultContributorRoleAlias eq 'curator'}">
                                                                 #{bundle.curator} <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.curator.description']}</span>
                                                             </ui:fragment>
-                                                            <ui:fragment rendered="#{managePermissionsPage.isCustomDefaultConributorRole()}">
+                                                            <ui:fragment rendered="#{managePermissionsPage.isCustomDefaultContributorRole()}">
                                                                 #{managePermissionsPage.customDefaultContributorRoleName} <span class="text-muted">#{managePermissionsPage.customDefaultContributorRoleDescription}</span>
                                                             </ui:fragment>
                                                         </p>

@@ -68,6 +68,8 @@ public class DataverseRole implements Serializable  {
     public static final String CURATOR = "curator";
     public static final String MEMBER = "member";
     
+    public static final String NONE = "none";
+    
     
 	public static final Comparator<DataverseRole> CMP_BY_NAME = new Comparator<DataverseRole>(){
 

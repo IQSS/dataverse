@@ -250,7 +250,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         return defaultContributorRoleAlias;
     }
     
-    public Boolean isCustomDefaultConributorRole(){
+    public Boolean isCustomDefaultContributorRole(){
         if (defaultContributorRoleAlias == null){
             initAccessSettings();
         }
@@ -258,16 +258,16 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
     
     public String getCustomDefaultContributorRoleName(){
-        if (dvObject instanceof Dataverse && isCustomDefaultConributorRole() ){           
-            return defaultContributorRoleAlias.equals("none") ? "None" : roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId()).getName();
+        if (dvObject instanceof Dataverse && isCustomDefaultContributorRole() ){           
+            return defaultContributorRoleAlias.equals(DataverseRole.NONE) ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.name") : roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId()).getName();
         } else {
             return "";
         }
     }
     
     public String getCustomDefaultContributorRoleAlias(){
-        if (dvObject instanceof Dataverse && isCustomDefaultConributorRole()){
-            return defaultContributorRoleAlias.equals("none") ? "none" : roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId()).getAlias();
+        if (dvObject instanceof Dataverse && isCustomDefaultContributorRole()){
+            return defaultContributorRoleAlias.equals(DataverseRole.NONE) ? DataverseRole.NONE : roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId()).getAlias();
         } else {
             return "";
         }
@@ -282,8 +282,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
     
     public String getCustomDefaultContributorRoleDescription(){
-        if (dvObject instanceof Dataverse  && isCustomDefaultConributorRole()){
-            return defaultContributorRoleAlias.equals("none") ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none" ) :roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId() ).getDescription();
+        if (dvObject instanceof Dataverse  && isCustomDefaultContributorRole()){
+            return defaultContributorRoleAlias.equals(DataverseRole.NONE) ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.decription" ) :roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId() ).getDescription();
         } else {
             return "";
         }
@@ -309,7 +309,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 // @todo handle case where more than one role has been assigned to the AutenticatedUsers group!
             }
            
-            defaultContributorRoleAlias = ((Dataverse) dvObject).getDefaultContributorRole() == null ? "none" : ((Dataverse) dvObject).getDefaultContributorRole().getAlias();
+            defaultContributorRoleAlias = ((Dataverse) dvObject).getDefaultContributorRole() == null ? DataverseRole.NONE : ((Dataverse) dvObject).getDefaultContributorRole().getAlias();
         }
     }
 

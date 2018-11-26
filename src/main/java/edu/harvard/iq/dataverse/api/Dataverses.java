@@ -113,9 +113,6 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
-    
-    @EJB
-    DataverseRoleServiceBean roleService;
 
 
     @POST
@@ -763,7 +760,7 @@ public class Dataverses extends AbstractApiBean {
         } else {
             try {
                 Dataverse dv = findDataverseOrDie(dvIdtf);
-                defaultRole = roleService.findCustomRoleByAliasAndOwner(roleAlias, dv.getId());
+                defaultRole = rolesSvc.findCustomRoleByAliasAndOwner(roleAlias, dv.getId());
             } catch (Exception nre) {
                 List<String> args = Arrays.asList(roleAlias);
                 String retStringError = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.failure.role.not.found", args);
@@ -781,7 +778,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
             
-            String defaultRoleName = defaultRole == null ? "None" : defaultRole.getName();
+            String defaultRoleName = defaultRole == null ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.name") : defaultRole.getName();
 
             return response(req -> {
                 execCommand(new UpdateDataverseDefaultContributorRoleCommand(defaultRole, req, dv));
