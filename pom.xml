@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>edu.harvard.iq</groupId>
@@ -11,8 +12,8 @@
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
-	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	<additionalparam>-Xdoclint:none</additionalparam>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <additionalparam>-Xdoclint:none</additionalparam>
         <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
         <compilerArgument></compilerArgument>
         <aws.version>1.11.172</aws.version>
@@ -23,8 +24,10 @@
             Moving this from plugin config to global config, because of GH-5122.
             This seems to play well with NetBeans 8.2, IDEA 2018.1 and mvn including compatibility with JaCoCo.
         -->
-        <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
-    
+        <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding}
+            -Duser.language=${project.language} -Duser.region=${project.region}
+        </argLine>
+
         <junit.version>4.12</junit.version>
         <junit.jupiter.version>5.3.1</junit.jupiter.version>
         <junit.vintage.version>5.3.1</junit.vintage.version>
@@ -63,10 +66,10 @@
             <url>file://${project.basedir}/local_lib</url>
         </repository>
     </repositories>
-  
+
     <!--            Due to our old version of glassfish and its version of jackson,
                 we are pointing to an aws sdk with unique references to needed libraries.
-                If we update glassfish, we should return to the normal sdk as well. -->  
+                If we update glassfish, we should return to the normal sdk as well. -->
     <dependencies>
         <dependency>
             <groupId>org.passay</groupId>
@@ -133,10 +136,10 @@
             <version>1.1-SNAPSHOT</version>
             <type>war</type>
             <exclusions>
-              <exclusion>
-                 <groupId>xerces</groupId>  
-                 <artifactId>xercesImpl</artifactId> 
-              </exclusion>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -192,6 +195,11 @@
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.3m</version>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>5.2.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -412,7 +420,7 @@
             <artifactId>commons-codec</artifactId>
             <version>1.9</version>
         </dependency>
-	<!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
+        <!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
         <dependency>
             <groupId>org.javaswift</groupId>
             <artifactId>joss</artifactId>
@@ -444,27 +452,27 @@
             <artifactId>scribejava-apis</artifactId>
             <version>3.1.0</version>
         </dependency>
-	<!-- EXPERIMENTAL: -->
-	<!-- lyncode xoai OAI-PMH implementation: -->
-	<!-- unfortunately, their 4.10 version -->
-	<!-- is still buggy. As an experiment, I'm using -->
-	<!-- a patched version I built locally. -->
-	<!-- (pull requests pending - L.A. -->
-	<dependency>
-	  <groupId>com.lyncode</groupId>
-	  <artifactId>xoai-common</artifactId>
-	  <version>4.1.0-header-patch</version>
-	</dependency>
-	<dependency>
-	  <groupId>com.lyncode</groupId>
-	  <artifactId>xoai-data-provider</artifactId>
-	  <version>4.1.0-header-patch</version>
-	</dependency>
+        <!-- EXPERIMENTAL: -->
+        <!-- lyncode xoai OAI-PMH implementation: -->
+        <!-- unfortunately, their 4.10 version -->
+        <!-- is still buggy. As an experiment, I'm using -->
+        <!-- a patched version I built locally. -->
+        <!-- (pull requests pending - L.A. -->
         <dependency>
-	  <groupId>com.lyncode</groupId>
-	  <artifactId>xoai-service-provider</artifactId>
-	  <version>4.1.0-header-patch</version>
-	</dependency>
+            <groupId>com.lyncode</groupId>
+            <artifactId>xoai-common</artifactId>
+            <version>4.1.0-header-patch</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lyncode</groupId>
+            <artifactId>xoai-data-provider</artifactId>
+            <version>4.1.0-header-patch</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lyncode</groupId>
+            <artifactId>xoai-service-provider</artifactId>
+            <version>4.1.0-header-patch</version>
+        </dependency>
         <!-- Added for AutoService -->
         <dependency>
             <groupId>com.google.auto.service</groupId>
@@ -475,16 +483,16 @@
         </dependency>
         <!-- For API File Upload: 1 of 2 -->
         <dependency>
-           <groupId>org.glassfish.jersey.containers</groupId>
-           <artifactId>jersey-container-servlet</artifactId>
-           <version>2.23.2</version>
-       </dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet</artifactId>
+            <version>2.23.2</version>
+        </dependency>
         <!-- For API File Upload: 2 of 2 -->
-       <dependency>
-           <groupId>org.glassfish.jersey.media</groupId>
-           <artifactId>jersey-media-multipart</artifactId>
-           <version>2.23.2</version>
-       </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+            <version>2.23.2</version>
+        </dependency>
         <dependency>
             <groupId>com.mashape.unirest</groupId>
             <artifactId>unirest-java</artifactId>
@@ -499,22 +507,22 @@
     </dependencies>
 
     <build>
-<!--        <testResources>
-            <testResource>
-                <directory>${project.basedir}/src/main/resources</directory>
-            </testResource>
-        </testResources>-->
-<!--        <testResources>
-            <testResource>
-              <directory>${project.basedir}/src/test/java</directory>
-              <excludes>
-                  <exclude>**/*.java</exclude>
-              </excludes>
-            </testResource>
-            <testResource>
-              <directory>${project.basedir}/src/test/resources</directory>
-            </testResource>
-          </testResources>-->
+        <!--        <testResources>
+                    <testResource>
+                        <directory>${project.basedir}/src/main/resources</directory>
+                    </testResource>
+                </testResources>-->
+        <!--        <testResources>
+                    <testResource>
+                      <directory>${project.basedir}/src/test/java</directory>
+                      <excludes>
+                          <exclude>**/*.java</exclude>
+                      </excludes>
+                    </testResource>
+                    <testResource>
+                      <directory>${project.basedir}/src/test/resources</directory>
+                    </testResource>
+                  </testResources>-->
         <resources>
             <resource>
                 <directory>src/main/java</directory>
@@ -527,6 +535,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
+                    <include>**/*.sql</include>
                     <include>**/*.xml</include>
                 </includes>
             </resource>
@@ -562,9 +571,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.3</version>
+                <version>3.2.2</version>
                 <configuration>
-		    <attachClasses>true</attachClasses>
+                    <attachClasses>true</attachClasses>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                     <archive>
                         <manifest>
@@ -644,7 +653,9 @@
                         <phase>package</phase>
                         <configuration>
                             <fileset>
-                                <directory>target/dataverse-${project.version}/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF</directory>
+                                <directory>
+                                    target/dataverse-${project.version}/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF
+                                </directory>
                                 <includes>
                                     <include>javamail.providers</include>
                                 </includes>
@@ -659,7 +670,9 @@
                         <phase>package</phase>
                         <configuration>
                             <fileset>
-                                <directory>target/dataverse-${project.version}.war/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF</directory>
+                                <directory>
+                                    target/dataverse-${project.version}.war/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF
+                                </directory>
                                 <includes>
                                     <include>javamail.providers</include>
                                 </includes>
@@ -671,7 +684,7 @@
             <plugin>
                 <!-- https://stackoverflow.com/questions/46177921/how-to-run-unit-tests-in-excludedgroups-in-maven -->
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.0</version>
+                <version>3.0.0-M1</version>
                 <configuration>
                     <!-- testsToExclude come from the profile-->
                     <excludedGroups>${testsToExclude}</excludedGroups>
@@ -690,20 +703,20 @@
         </plugins>
     </build>
     <profiles>
-      <profile>
-        <id>dev</id>
-        <activation>
-            <!-- https://stackoverflow.com/questions/11824328/default-build-profile-for-maven -->
-            <!-- We set dev to true to developers don't have to run non-essential tests over and over. -->
-          <activeByDefault>true</activeByDefault>
-        </activation>
-        <properties>
-            <testsToExclude>edu.harvard.iq.dataverse.NonEssentialTests</testsToExclude>
-        </properties>
-      </profile>
-      <profile>
-        <id>all-unit-tests</id>
-      </profile>
-      <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
+        <profile>
+            <id>dev</id>
+            <activation>
+                <!-- https://stackoverflow.com/questions/11824328/default-build-profile-for-maven -->
+                <!-- We set dev to true to developers don't have to run non-essential tests over and over. -->
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <testsToExclude>edu.harvard.iq.dataverse.NonEssentialTests</testsToExclude>
+            </properties>
+        </profile>
+        <profile>
+            <id>all-unit-tests</id>
+        </profile>
+        <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
     </profiles>
 </project>
