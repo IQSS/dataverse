@@ -128,7 +128,7 @@ Since the transfer from the Duracloud front-end to archival storage in DPN can t
 
 **PostPublication Workflow**
 
-To automate the submission of archival copies to DPN as part of publication, one can setup a Dataverse Workflow using the `"dpn" workflow step <http://guides.dataverse.org/en/latest/developers/big-data-support.html#id16>`_
+To automate the submission of archival copies to DPN as part of publication, one can setup a Dataverse Workflow using the `"dpn" workflow step <http://guides.dataverse.org/en/latest/developers/workflows.html>`_
 . The dpn step uses the configuration information discussed above and requires no additional information.
 
 To active this workflow, one must first install a workflow using the dpn step. A simple workflow that invokes the dpn step as its only action is included in dataverse at /scripts/api/data/workflows/internal-dpn-workflow.json.
