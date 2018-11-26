@@ -755,7 +755,7 @@ public class Dataverses extends AbstractApiBean {
 
         DataverseRole defaultRole;
         
-        if (roleAlias.equals("none")) {
+        if (roleAlias.equals(DataverseRole.NONE)) {
             defaultRole = null;
         } else {
             try {
