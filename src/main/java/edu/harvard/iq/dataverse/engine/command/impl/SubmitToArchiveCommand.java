@@ -46,7 +46,7 @@ import org.duracloud.error.ContentStoreException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-@RequiredPermissions(Permission.ArchiveDatasetVersion)
+@RequiredPermissions(Permission.PublishDataset)
 public class SubmitToArchiveCommand implements Command<DatasetVersion> {
 
     private final DatasetVersion version;
