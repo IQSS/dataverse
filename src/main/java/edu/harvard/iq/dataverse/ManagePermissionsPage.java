@@ -283,7 +283,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
     
     public String getCustomDefaultContributorRoleDescription(){
         if (dvObject instanceof Dataverse  && isCustomDefaultConributorRole()){
-            return defaultContributorRoleAlias.equals("none") ? "Something scary from the bundle" :roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId() ).getDescription();
+            return defaultContributorRoleAlias.equals("none") ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none" ) :roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId() ).getDescription();
         } else {
             return "";
         }

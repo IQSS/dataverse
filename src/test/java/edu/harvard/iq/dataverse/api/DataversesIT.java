@@ -338,6 +338,13 @@ public class DataversesIT {
         updateDataverseDefaultRole.then().assertThat()
                 .body("data.message", equalTo("Default contributor role for Dataverse " + dataverseAlias + " has been set to Curator."))
                 .statusCode(200);
+        
+        //for test use an existing role. In practice this likely will be a custom role
+        Response updateDataverseDefaultRoleNone = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "none", apiToken);
+        updateDataverseDefaultRoleNone.prettyPrint();
+        updateDataverseDefaultRoleNone.then().assertThat()
+                .body("data.message", equalTo("Default contributor role for Dataverse " + dataverseAlias + " has been set to None."))
+                .statusCode(200);
 
         // try bad role alias
         Response updateDataverseDefaultRoleBadRoleAlias = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "colonel", apiToken);
