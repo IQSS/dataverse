@@ -8,3 +8,5 @@ ALTER TABLE datasetversion ADD COLUMN archivalcopylocation text;
 INSERT INTO setting(
            name, content)
    VALUES (':UploadMethods', 'native/http');
+
+ALTER TABLE actionlogrecord ALTER COLUMN info TYPE text;
