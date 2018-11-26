@@ -4363,30 +4363,23 @@ public class DatasetPage implements java.io.Serializable {
     public void archiveVersion(Long id) {
         if (session.getUser() instanceof AuthenticatedUser) {
             AuthenticatedUser au = ((AuthenticatedUser) session.getUser());
-            if (au.isSuperuser()) {
-                DatasetVersion dv = datasetVersionService.retrieveDatasetVersionByVersionId(id).getDatasetVersion();
-                SubmitToArchiveCommand cmd = new SubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
-                try {
-                    DatasetVersion version = commandEngine.submit(cmd);
-                    logger.info("Archived to " + version.getArchivalCopyLocation());
-                    if(version.getArchivalCopyLocation()!=null) {
-                    	resetVersionTabList();
-                    	this.setVersionTabListForPostLoad(getVersionTabList());
+
+            DatasetVersion dv = datasetVersionService.retrieveDatasetVersionByVersionId(id).getDatasetVersion();
+            SubmitToArchiveCommand cmd = new SubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
+            try {
+                DatasetVersion version = commandEngine.submit(cmd);
+                logger.info("Archived to " + version.getArchivalCopyLocation());
+                if (version.getArchivalCopyLocation() != null) {
+                    resetVersionTabList();
+                    this.setVersionTabListForPostLoad(getVersionTabList());
                     JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.success"));
-                    } else {
-                        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
-                    }
-                } catch (CommandException ex) {
-                    logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
+                } else {
                     JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
                 }
+            } catch (CommandException ex) {
+                logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
             }
-        } else {
-            logger.warning("Non-superuser calling archiveVersion()");
-            // Shouldn't happen since button only shows for superuser
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Authentication error",
-                    "Contact an administrator");
-            FacesContext.getCurrentInstance().addMessage(null, message);
         }
     }
 }
