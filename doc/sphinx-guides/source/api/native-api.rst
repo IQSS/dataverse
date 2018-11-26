@@ -87,6 +87,17 @@ Create a New Role in a Dataverse
 Creates a new role under dataverse ``id``. Needs a json file with the role description::
 
   POST http://$SERVER/api/dataverses/$id/roles?key=$apiKey
+  
+POSTed JSON example::
+
+  {
+    "alias": "sys1",
+    "name": “Restricted System Role”,
+    "description": “A person who may only add datasets.”,
+    "permissions": [
+      "AddDataset"
+    ]
+  } 
 
 List Role Assignments in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -101,6 +112,9 @@ Assign Default Role to User Creating a Dataset in a Dataverse
 Assign a default role to a user creating a dataset in a dataverse ``id`` where ``roleAlias`` is the database alias of the role to be assigned::
 
   PUT http://$SERVER/api/dataverses/$id/defaultContributorRole/$roleAlias?key=$apiKey
+  
+Note: You may use "none" as the ``roleAlias``. This will prevent a user who creates a dataset from having any role on that dataset. It is not recommended for dataverses with human contributors.
+
 
 Assign a New Role on a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
