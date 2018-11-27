@@ -20,10 +20,13 @@ Make the following changes in the release branch:
 1. Bump Version Numbers
 =======================
 
-Before tagging, ensure the version number has been incremented to the milestone (i.e. 4.6.2) in the following places:
+Increment the version number to the milestone (e.g. 4.6.2) in the following two files:
 
 - pom.xml
-- doc/sphinx-guides/source/conf.py
+- doc/sphinx-guides/source/conf.py (two places)
+
+Add the version being released to the lists in the following two files:
+
 - doc/sphinx-guides/source/versions.rst 
 - scripts/database/releases.txt
 
