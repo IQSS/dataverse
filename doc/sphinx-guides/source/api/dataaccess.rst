@@ -222,33 +222,33 @@ Grant File Access:
 
 ``/api/access/datafile/{id}/grantAccess/{identifier}``
 
-This method grants access to the datafile whose id is passed on the behalf of an authenticated user whose identifier is passed. The key of a user who can manage permissions of the datafile is required to use this method.
+This method grants access to the datafile whose id is passed on the behalf of an authenticated user whose user identifier is passed with an @ prefix. The key of a user who can manage permissions of the datafile is required to use this method.
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/datafile/{id}/grantAccess/{identifier}
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/datafile/{id}/grantAccess/{@userIdentifier}
     
 Reject File Access:
 ~~~~~~~~~~~~~~~~~~~ 
 
 ``/api/access/datafile/{id}/rejectAccess/{identifier}``
 
-This method rejects the access request to the datafile whose id is passed on the behalf of an authenticated user whose identifier is passed. The key of a user who can manage permissions of the datafile is required to use this method.
+This method rejects the access request to the datafile whose id is passed on the behalf of an authenticated user whose user identifier is passed with an @ prefix. The key of a user who can manage permissions of the datafile is required to use this method.
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/datafile/{id}/rejectAccess/{identifier}
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/datafile/{id}/rejectAccess/{@userIdentifier}
     
 Revoke File Access:
 ~~~~~~~~~~~~~~~~~~~ 
 
 ``/api/access/datafile/{id}/revokeAccess/{identifier}``
 
-This method revokes previously granted access to the datafile whose id is passed on the behalf of an authenticated user whose identifier is passed. The key of a user who can manage permissions of the datafile is required to use this method.
+This method revokes previously granted access to the datafile whose id is passed on the behalf of an authenticated user whose user identifier is passed with an @ prefix. The key of a user who can manage permissions of the datafile is required to use this method.
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/datafile/{id}/rejectAccess/{identifier}    
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/datafile/{id}/rejectAccess/{@userIdentifier}    
     
 List File Access Requests:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~ 
