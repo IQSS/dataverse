@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.Serializable;
 import java.net.URL;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -1791,7 +1792,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getLocaleLastUpdateTime() {
-        return DateUtil.formatDate(lastUpdateTime,"EEE MMM dd HH:mm:ss zzz YYYY");
+        return DateUtil.formatDate(new Timestamp(lastUpdateTime.getTime()));
     }
 
 }

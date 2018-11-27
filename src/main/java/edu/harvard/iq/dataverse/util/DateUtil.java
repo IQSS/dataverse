@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  *
@@ -16,21 +17,12 @@ import java.util.Locale;
 public class DateUtil {
 
     public static String formatDate(Date dateToformat) {
-        return formatDate(dateToformat,null);
-    }
-
-    public static String formatDate(Date dateToformat, String format) {
         String formattedDate;
         DateFormat dateFormatter;
         try{
             DataverseLocaleBean d = new DataverseLocaleBean();
             Locale currentLocale = new Locale(d.getLocaleCode());
-            if(format == null)  {
-                dateFormatter = DateFormat.getDateInstance(DateFormat.DEFAULT, currentLocale);
-            }
-            else {
-                dateFormatter = new SimpleDateFormat(format, currentLocale);
-            }
+            dateFormatter = DateFormat.getDateInstance(DateFormat.DEFAULT, currentLocale);
             formattedDate = dateFormatter.format(dateToformat);
             return formattedDate;
         }
@@ -55,15 +47,21 @@ public class DateUtil {
 
     public static String formatDate(Timestamp datetimeToformat) {
          String formattedDate;
-         DateFormat dateFormatter;
          try{
              DataverseLocaleBean d = new DataverseLocaleBean();
              Locale currentLocale = new Locale(d.getLocaleCode());
+
+             //switched to SimpleDateFormat, since the Time zone value was tricky to get using getDateTimeInstance()
+             /*
              dateFormatter = DateFormat.getDateTimeInstance(
                                                      DateFormat.DEFAULT,
                                                      DateFormat.DEFAULT,
                                                      currentLocale);
              formattedDate = dateFormatter.format(datetimeToformat);
+              */
+
+             //copied this format from UserNotification.java , getSendDate()
+             formattedDate = new SimpleDateFormat("MMMM d, yyyy h:mm a z",currentLocale).format(datetimeToformat);
              return formattedDate;
          } catch (Exception e) {
              e.printStackTrace();
