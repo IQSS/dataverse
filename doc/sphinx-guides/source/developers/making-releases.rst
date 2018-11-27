@@ -5,15 +5,20 @@ Making Releases
 .. contents:: |toctitle|
 	:local:
 
-Add SQL Script to scripts/database/create for the Next Version
---------------------------------------------------------------
+Use the number of the milestone with a "v" in front for the relase tag. For example: ``v4.6.2``.
 
-Deploy the nearly final war file to Glassfish and copy ``domains/domain1/generated/ejb/dataverse/dataverse_VDCNet-ejbPU_createDDL.jdbc`` to ``scripts/database/create/create_v4.10.sql``, for example. In the name of the SQL script, use the version number that is about to be released.
+Create the release GitHub issue and branch 
+------------------------------------------
 
-This is a necessary step for our "upgrade across versions" feature, which you can read about at ``scripts/database/README_upgrade_across_versions.txt``.
+Use the GitHub issue number and the release tag for the name of the branch. 
+For example: 4734-update-v-4.8.6-to-4.9
 
-Bump Version Numbers
---------------------
+**Note:** the changes below must be the very last commits merged into the develop branch before it is merged into master and tagged for the release!
+
+Make the following changes in the release branch:
+
+1. Bump Version Numbers
+=======================
 
 Before tagging, ensure the version number has been incremented to the milestone (i.e. 4.6.2) in the following places:
 
@@ -22,7 +27,24 @@ Before tagging, ensure the version number has been incremented to the milestone 
 - doc/sphinx-guides/source/versions.rst 
 - scripts/database/releases.txt
 
-Here's an example commit where all three files were updated at once: https://github.com/IQSS/dataverse/commit/99e23f96ec362ac2f524cb5cd80ca375fa13f196
+Here's an example commit where three of the four files above were updated at once: https://github.com/IQSS/dataverse/commit/99e23f96ec362ac2f524cb5cd80ca375fa13f196
+
+2. Save the EJB Database Create Script
+======================================
+
+Save the script ``domains/domain1/generated/ejb/dataverse/dataverse_VDCNet-ejbPU_createDDL.jdbc`` created by EJB during the deployment of the release candidate. **Important:** add semicolons to the ends of the SQL commands in the EJB-generated file (see below)! Save the resulting file as ``scripts/database/create/create_v{VERSION_TAG}.sql`` using the version number tag for the release. For example: 
+
+.. code-block:: none
+
+	sed 's/$/;/' dataverse_VDCNet-ejbPU_createDDL.jdbc > scripts/database/create/create_v4.10.sql
+
+(We are saving the script above to support the new experimental process for updating the database across multiple versions; see ``scripts/database/README_upgrade_across_versions.txt`` for more information.)
+
+3. Check in the Changes Above... 
+================================
+
+... into the release branch, make a pull request and merge the release branch into develop. 
+
 
 Merge "develop" into "master"
 -----------------------------
