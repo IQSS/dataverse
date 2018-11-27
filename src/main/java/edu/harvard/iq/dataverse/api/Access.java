@@ -57,6 +57,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 
 import java.util.logging.Logger;
@@ -77,7 +78,11 @@ import java.util.logging.Level;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Consumer;
+import javax.json.JsonArrayBuilder;
 import javax.persistence.TypedQuery;
 
 import javax.ws.rs.GET;
@@ -1017,7 +1022,6 @@ public class Access extends AbstractApiBean {
     @Path("/datafile/{id}/listRequests")
     public Response listFileAccessRequests(@PathParam("id") String fileToRequestAccessId, @Context HttpHeaders headers) {
 
-        System.out.print("in list access requests method");
         //create request
         DataverseRequest dataverseRequest;
         //get the datafile
@@ -1041,8 +1045,6 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
-        // try to get requesters fro a  given datafile
-        JsonObjectBuilder resp = Json.createObjectBuilder();
         List<AuthenticatedUser> requesters = dataFile.getFileAccessRequesters();
 
         if (requesters == null || requesters.isEmpty()) {
@@ -1050,11 +1052,13 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound"));
         }
 
-        for (AuthenticatedUser r : requesters) {
-            resp.add("authenticatedUser", json(r));
+        JsonArrayBuilder userArray = Json.createArrayBuilder();
+
+        for (AuthenticatedUser au : requesters) {
+            userArray.add(json(au));
         }
 
-        return ok(resp);
+        return ok(userArray);
 
     }
 
@@ -1246,7 +1250,7 @@ public class Access extends AbstractApiBean {
             }
 
             List<String> args = Arrays.asList(dataFile.getDisplayName());
-            return ok(BundleUtil.getStringFromBundle("access.api.grantAccess.success.for.single.file", args));
+            return ok(BundleUtil.getStringFromBundle("access.api.rejectAccess.success.for.single.file", args));
 
         } else {
             List<String> args = Arrays.asList(dataFile.getDisplayName(), ra.getDisplayInfo().getTitle());

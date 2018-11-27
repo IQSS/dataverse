@@ -1068,26 +1068,26 @@ public class UtilIT {
                 .put("/api/access/" + idInPath + "/allowAccessRequest" + optionalQueryParam);
         return response;
     }
-    
-    static Response requestFileAccess (String fileIdOrPersistentId,  String apiToken) {
-        
+
+    static Response requestFileAccess(String fileIdOrPersistentId, String apiToken) {
+
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
-        
+
         String keySeparator = "&";
-        if (optionalQueryParam.isEmpty()){
-            keySeparator="?";
+        if (optionalQueryParam.isEmpty()) {
+            keySeparator = "?";
         }
         Response response = given()
-                .put("/api/access/datafile/" + idInPath + "/requestAccess" +  optionalQueryParam + keySeparator +  "key=" + apiToken);
+                .put("/api/access/datafile/" + idInPath + "/requestAccess" + optionalQueryParam + keySeparator + "key=" + apiToken);
         return response;
     }
-    
-    static Response grantFileAccess (String fileIdOrPersistentId, String identifier,  String apiToken) {
+
+    static Response grantFileAccess(String fileIdOrPersistentId, String identifier, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
@@ -1095,15 +1095,15 @@ public class UtilIT {
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
         String keySeparator = "&";
-        if (optionalQueryParam.isEmpty()){
-            keySeparator="?";
+        if (optionalQueryParam.isEmpty()) {
+            keySeparator = "?";
         }
         Response response = given()
-                .put("/api/access/datafile/" + idInPath + "/grantAccess/" + identifier + "/" +  optionalQueryParam + keySeparator +  "key=" + apiToken);
+                .put("/api/access/datafile/" + idInPath + "/grantAccess/" + identifier + "/" + optionalQueryParam + keySeparator + "key=" + apiToken);
         return response;
     }
-    
-    static Response getAccessRequestList (String fileIdOrPersistentId,  String apiToken) {
+
+    static Response getAccessRequestList(String fileIdOrPersistentId, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
@@ -1111,15 +1111,15 @@ public class UtilIT {
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
         String keySeparator = "&";
-        if (optionalQueryParam.isEmpty()){
-            keySeparator="?";
+        if (optionalQueryParam.isEmpty()) {
+            keySeparator = "?";
         }
         Response response = given()
-                .get("/api/access/datafile/" + idInPath + "/listRequests/"  +  optionalQueryParam + keySeparator +  "key=" + apiToken);
+                .get("/api/access/datafile/" + idInPath + "/listRequests/" + optionalQueryParam + keySeparator + "key=" + apiToken);
         return response;
     }
-    
-    static Response rejectFileAccessRequest (String fileIdOrPersistentId, String identifier,  String apiToken) {
+
+    static Response rejectFileAccessRequest(String fileIdOrPersistentId, String identifier, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
@@ -1127,11 +1127,11 @@ public class UtilIT {
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
         String keySeparator = "&";
-        if (optionalQueryParam.isEmpty()){
-            keySeparator="?";
+        if (optionalQueryParam.isEmpty()) {
+            keySeparator = "?";
         }
         Response response = given()
-                .put("/api/access/datafile/" + idInPath + "/rejectAccess/" + identifier + "/" +  optionalQueryParam + keySeparator +  "key=" + apiToken);
+                .put("/api/access/datafile/" + idInPath + "/rejectAccess/" + identifier + "/" + optionalQueryParam + keySeparator + "key=" + apiToken);
         return response;
     }
 
