@@ -1,41 +1,43 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
-import edu.harvard.iq.dataverse.engine.command.impl.SubmitToArchiveCommand;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.impl.DPNSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A step that submits a BagIT bag of the newly published dataset version to DPN
- * via he Duracloud Vault API.
+ * A step that submits a BagIT bag of the newly published dataset version via a configured archiver.
  * 
  * @author jimmyers
  */
 
-public class DPNSubmissionWorkflowStep implements WorkflowStep {
+public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
 
-    private static final Logger logger = Logger.getLogger(DPNSubmissionWorkflowStep.class.getName());
+    private static final Logger logger = Logger.getLogger(ArchivalSubmissionWorkflowStep.class.getName());
 
-    public DPNSubmissionWorkflowStep(Map<String, String> paramSet) {
+    public ArchivalSubmissionWorkflowStep(Map<String, String> paramSet) {
     }
 
     @Override
     public WorkflowStepResult run(WorkflowContext context) {
+        Map<String, String> requestedSettings = new HashMap<String, String>();
         String host=(String) context.getSettings().get(":DuraCloudHost");
-        String port = (String) context.getSettings().get(":DuraCloudPort");
-        String dpnContext = (String) context.getSettings().get(":DuraCloudContext");
+        requestedSettings.put(":DuraCloudHost", host);
+        //String port = (String) context.getSettings().get(":DuraCloudPort");
+        //String dpnContext = (String) context.getSettings().get(":DuraCloudContext");
         if(host==null) {
             logger.severe("No DuraCloudHost - DPN Submission not attempted");
             return new Failure("No DuraCloudHost", "DuraCloudHost not found in Settings");
         } else {
-        return SubmitToArchiveCommand.performDPNSubmission(
-                context.getDataset().getReleasedVersion(),
-                context.getRequest().getAuthenticatedUser(), host, port, dpnContext, context.getApiToken());
+        return (new DPNSubmitToArchiveCommand(new DataverseRequest(context.getDataset().getReleasedVersion(), context.getRequest().getAuthenticatedUser())))
+                .performDPNSubmission(context.getDataset().getReleasedVersion() context.getApiToken(), requestedSettings);
         }
     }
 
