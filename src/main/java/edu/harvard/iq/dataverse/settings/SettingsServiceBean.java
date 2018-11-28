@@ -382,9 +382,8 @@ public class SettingsServiceBean {
          * DuraCloudContext, default is "durastore"
          */
         
-        DuraCloudHost,
-        DuraCloudPort,
-        DuraCloudContext,
+        ArchiverClassName,
+        ArchiverSettings,
         /**
          * A comma-separated list of roles for which new dataverses should inherit the
          * corresponding role assignments from the parent dataverse. Also affects

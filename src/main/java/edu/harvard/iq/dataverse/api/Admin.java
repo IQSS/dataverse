@@ -79,7 +79,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.SubmitToArchiveCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DPNSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
@@ -1289,7 +1289,7 @@ public class Admin extends AbstractApiBean {
 
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
             if (dv.getArchivalCopyLocation() == null) {
-                SubmitToArchiveCommand cmd = new SubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
+                DPNSubmitToArchiveCommand cmd = new DPNSubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
                 try {
                     dv = commandEngine.submit(cmd);
                     if (dv.getArchivalCopyLocation() != null) {

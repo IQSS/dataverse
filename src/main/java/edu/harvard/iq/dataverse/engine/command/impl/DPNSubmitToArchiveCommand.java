@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -47,64 +48,29 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 @RequiredPermissions(Permission.PublishDataset)
-public class SubmitToArchiveCommand implements Command<DatasetVersion> {
+public class DPNSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand implements Command<DatasetVersion> {
 
     private final DatasetVersion version;
     private final DataverseRequest request;
     private final Map<String, DvObject> affectedDvObjects;
-    private static final Logger logger = Logger.getLogger(SubmitToArchiveCommand.class.getName());
+    private static final Logger logger = Logger.getLogger(DPNSubmitToArchiveCommand.class.getName());
     private static final String DEFAULT_PORT = "443";
     private static final String DEFAULT_CONTEXT = "durastore";
+    private static final String DURACLOUD_PORT = ":DuraCloudPort";
+    private static final String DURACLOUD_HOST = ":DuraCloudHost";
+    private static final String DURACLOUD_CONTEXT = ":DuraCloudContext";
+    
 
-    public SubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
-        this.request = aRequest;
-        this.version = version;
-        affectedDvObjects = new HashMap<>();
-        affectedDvObjects.put("", version.getDataset());
+    public DPNSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
+        super(aRequest, version);
     }
 
     @Override
-    public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        String host = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DuraCloudHost);
-        String port = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DuraCloudPort);
-        String dpnContext = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DuraCloudContext);
-        AuthenticatedUser user = request.getAuthenticatedUser();
-        ApiToken token = ctxt.authentication().findApiTokenByUser(user);
-        if ((token == null) || (token.getExpireTime().before(new Date()))) {
-            token = ctxt.authentication().generateApiTokenForUser(user);
-        }
-        performDPNSubmission(version, user, host, port, dpnContext, token);
-        return ctxt.em().merge(version);
-    }
+    public WorkflowStepResult performDPNSubmission(DatasetVersion dv, ApiToken token, Map<String, String> requestedSetttings) {
 
-    @Override
-    public Map<String, DvObject> getAffectedDvObjects() {
-
-        return affectedDvObjects;
-    }
-
-    @Override
-    public DataverseRequest getRequest() {
-        return request;
-    }
-
-    @Override
-    public Map<String, Set<Permission>> getRequiredPermissions() {
-        return CH.permissionsRequired(getClass());
-    }
-
-    @Override
-    public String describe() {
-        // Is this ever used?
-        return "DatasetVersion: " + version.getId() + " " + version.getDataset().getDisplayName() + ".v"
-                + version.getFriendlyVersionNumber();
-    }
-
-    public static WorkflowStepResult performDPNSubmission(DatasetVersion dv, AuthenticatedUser user, String host,
-            String aPort, String aDpnContext, ApiToken token) {
-
-        String port = aPort != null ? aPort : DEFAULT_PORT;
-        String dpnContext = aDpnContext != null ? aDpnContext : DEFAULT_CONTEXT;
+        String port = requestedSettings.get(DURACLOUD_PORT) != null ? requestedSettings.get(DURACLOUD_PORT) : DEFAULT_PORT;
+        String dpnContext = requestedSettings.get(DURACLOUD_CONTEXT) != null ? requestedSettings.get(DURACLOUD_CONTEXT) : DEFAULT_CONTEXT;
+        String host = requestedSettings.get(DURACLOUD_HOST);
         if (host != null) {
             Dataset dataset = dv.getDataset();
             if (dataset.getLockFor(Reason.pidRegister) == null) {
@@ -241,7 +207,7 @@ public class SubmitToArchiveCommand implements Command<DatasetVersion> {
             }
             return WorkflowStepResult.OK;
         } else {
-            return new Failure("DPN Submission not configured.");
+            return new Failure("DPN Submission not configured - no \":DuraCloudHost\".");
         }
     }
 }

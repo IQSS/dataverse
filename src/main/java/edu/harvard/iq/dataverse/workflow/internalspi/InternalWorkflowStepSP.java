@@ -20,7 +20,7 @@ public class InternalWorkflowStepSP implements WorkflowStepSPI {
             case "http/sr":
                 return new HttpSendReceiveClientStep(stepParameters);
             case "dpn":
-                return new DPNSubmissionWorkflowStep(stepParameters);
+                return new ArchivalSubmissionWorkflowStep(stepParameters);
             default:
                 throw new IllegalArgumentException("Unsupported step type: '" + stepType + "'.");
         }

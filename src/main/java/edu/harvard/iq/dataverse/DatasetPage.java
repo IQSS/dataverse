@@ -88,7 +88,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.SubmitToArchiveCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DPNSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
@@ -4365,7 +4365,7 @@ public class DatasetPage implements java.io.Serializable {
             AuthenticatedUser au = ((AuthenticatedUser) session.getUser());
 
             DatasetVersion dv = datasetVersionService.retrieveDatasetVersionByVersionId(id).getDatasetVersion();
-            SubmitToArchiveCommand cmd = new SubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
+            DPNSubmitToArchiveCommand cmd = new DPNSubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
             try {
                 DatasetVersion version = commandEngine.submit(cmd);
                 logger.info("Archived to " + version.getArchivalCopyLocation());
