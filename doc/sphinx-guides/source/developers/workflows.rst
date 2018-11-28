@@ -103,21 +103,24 @@ Available variables are:
 * ``majorVersion``
 * ``releaseStatus``
 
-dpn
+archiver
 +++++++
 
-A step that sends an archival copy of a Dataset Version to the DuraCloud interface of the Digital Preservation Network. See the `DPN Integration documentation <http://guides.dataverse.org/en/latest/admin/integrations.html#id15>`_ for further detail.
+A step that sends an archival copy of a Dataset Version to a configured archiver, e.g. the DuraCloud interface of the Digital Preservation Network (DPN). See the `DPN Integration documentation <http://guides.dataverse.org/en/latest/admin/integrations.html#id15>`_ for further detail.
 
+Note - the example step includes two settings required for any archiver and three (Duracloud*) that are specific to DPN.
 .. code:: json
 
 
   {
     "provider":":internal",
-    "stepType":"dpn",
+    "stepType":"archiver",
     "parameters": {
-      "stepName":"dpn submission"
+      "stepName":"archive submission"
     },
     "requiredSettings": {
+      "ArchiverClassName": "String",
+      "ArchiverSettings": "String",
       "DuraCloudHost":"string",
       "DuraCloudPort":"string",
       "DuraCloudContext":"string" 
