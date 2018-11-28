@@ -408,7 +408,7 @@ public class DataversePage implements java.io.Serializable {
         this.editMode = editMode;
         if (editMode == EditMode.INFO) {
             setupForGeneralInfoEdit();
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataverse.edit.msg") , BundleUtil.getStringFromBundle("dataverse.edit.detailmsg")));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataverse.edit.msg"), BundleUtil.getStringFromBundle("dataverse.edit.detailmsg"));
         } else if (editMode == EditMode.FEATURED) {
             initFeaturedDataverses();
         }
