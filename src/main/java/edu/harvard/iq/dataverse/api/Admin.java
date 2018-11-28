@@ -12,19 +12,15 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
-import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -76,22 +72,21 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.engine.command.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DPNSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
+import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.ResourceBundle;
 import javax.inject.Inject;
 import javax.persistence.Query;
 import javax.ws.rs.QueryParam;
@@ -129,6 +124,8 @@ public class Admin extends AbstractApiBean {
     EjbDataverseEngine commandEngine;
     @EJB
     GroupServiceBean groupService;
+    @EJB
+    SettingsServiceBean settingsService;
 
 	// Make the session available
 	@Inject
@@ -1279,8 +1276,8 @@ public class Admin extends AbstractApiBean {
 	}
 
     @GET
-    @Path("/submitDataVersionToDPN/{id}/{version}")
-    public Response submitDatasetVersionToDPN(@PathParam("id") String dsid, @PathParam("version") String versionNumber) {
+    @Path("/submitDataVersionToArchive/{id}/{version}")
+    public Response submitDatasetVersionToArchive(@PathParam("id") String dsid, @PathParam("version") String versionNumber) {
 
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
@@ -1289,18 +1286,24 @@ public class Admin extends AbstractApiBean {
 
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
             if (dv.getArchivalCopyLocation() == null) {
-                DPNSubmitToArchiveCommand cmd = new DPNSubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
-                try {
-                    dv = commandEngine.submit(cmd);
-                    if (dv.getArchivalCopyLocation() != null) {
-                        return ok("DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber + " submitted to DPN/Duracloud at: "
-                                + dv.getArchivalCopyLocation());
-                    } else {
-                        return error(Status.CONFLICT, "Error submitting version due to conflict/error at DPN");
+                String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
+                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
+                if (cmd != null) {
+                    try {
+                        dv = commandEngine.submit(cmd);
+                        if (dv.getArchivalCopyLocation() != null) {
+                            return ok("DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber + " submitted to Archive at: "
+                                    + dv.getArchivalCopyLocation());
+                        } else {
+                            return error(Status.CONFLICT, "Error submitting version due to conflict/error at Archive");
+                        }
+                    } catch (CommandException ex) {
+                        logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
+                        return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
                     }
-                } catch (CommandException ex) {
-                    logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
-                    return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
+                } else {
+                    logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Missing Archiver class: " + className);
                 }
             } else {
                 return error(Status.BAD_REQUEST, "Version already archived at: " + dv.getArchivalCopyLocation());

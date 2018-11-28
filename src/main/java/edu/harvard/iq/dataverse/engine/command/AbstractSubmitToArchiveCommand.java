@@ -1,11 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command;
 
-import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
-import edu.harvard.iq.dataverse.DataCitation;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -15,36 +11,15 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
-import edu.harvard.iq.dataverse.util.bagit.OREMap;
-import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.nio.charset.Charset;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.IOUtils;
-import org.duracloud.client.ContentStore;
-import org.duracloud.client.ContentStoreManager;
-import org.duracloud.client.ContentStoreManagerImpl;
-import org.duracloud.common.model.Credential;
-import org.duracloud.error.ContentStoreException;
-
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 @RequiredPermissions(Permission.PublishDataset)
 public abstract class AbstractSubmitToArchiveCommand implements Command<DatasetVersion> {
@@ -52,11 +27,9 @@ public abstract class AbstractSubmitToArchiveCommand implements Command<DatasetV
     private final DatasetVersion version;
     private final DataverseRequest request;
     private final Map<String, DvObject> affectedDvObjects;
-    private final Map<String, String> requestedSettings;
+    private final Map<String, String> requestedSettings = new HashMap<String, String>();
     private static final Logger logger = Logger.getLogger(AbstractSubmitToArchiveCommand.class.getName());
-    private static final String DEFAULT_PORT = "443";
-    private static final String DEFAULT_CONTEXT = "durastore";
-
+    
     public AbstractSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         this.request = aRequest;
         this.version = version;
@@ -66,23 +39,24 @@ public abstract class AbstractSubmitToArchiveCommand implements Command<DatasetV
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        requestedSettings = new HashMap<String, String>();
-        String settings = ctxt.settings().getValueForKey(SettingsServiceBean.Key.ArchiveSettings);
+
+        String settings = ctxt.settings().getValueForKey(SettingsServiceBean.Key.ArchiverSettings);
         String[] settingsArray = settings.split(",");
         for (String setting : settingsArray) {
             setting = setting.trim();
             if (!setting.startsWith(":")) {
-                logger.warn("Invalid Archiver Setting: " + setting);
+                logger.warning("Invalid Archiver Setting: " + setting);
             } else {
-                requestedSettings.put(setting, ctxt.settings().getValueForKey(setting));
+                requestedSettings.put(setting, ctxt.settings().get(setting));
             }
         }
+        
         AuthenticatedUser user = request.getAuthenticatedUser();
         ApiToken token = ctxt.authentication().findApiTokenByUser(user);
         if ((token == null) || (token.getExpireTime().before(new Date()))) {
             token = ctxt.authentication().generateApiTokenForUser(user);
         }
-        performArchiveSubmission(version, user, token, requestedSettings);
+        performArchiveSubmission(version, token, requestedSettings);
         return ctxt.em().merge(version);
     }
 
@@ -121,4 +95,5 @@ public abstract class AbstractSubmitToArchiveCommand implements Command<DatasetV
      * @param requestedSettings - a map of the names/values for settings required by this archiver (sent because this class is not part of the EJB context (by design) and has no direct access to service beans).
      */
     abstract public WorkflowStepResult performArchiveSubmission(DatasetVersion version, ApiToken token, Map<String, String> requestedSetttings);
+
 }
