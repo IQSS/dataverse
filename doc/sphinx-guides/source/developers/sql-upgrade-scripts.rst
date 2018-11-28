@@ -33,7 +33,7 @@ First, check https://github.com/IQSS/dataverse/tree/develop/src/main/resources/d
 
 As with any task related to Dataverse development, if you need any help writing SQL, please reach out using any of the channels mentioned under "Getting Help" in the :doc:`intro` section.
 
-Please note that we are aware of the problem of merge conflicts in the SQLs as well as how the next number can change at any time. Please see the :doc:`making-releases` section for how we are running an experiment having to do with release notes that might help inform an improvement of our process for developing SQL upgrade scripts.
+Please note that we are aware of the problem of merge conflicts in the SQL numbers. Please see the :doc:`making-releases` section for how we are running an experiment having to do with release notes that might help inform an improvement of our process for developing SQLs.
 
 ----
 
