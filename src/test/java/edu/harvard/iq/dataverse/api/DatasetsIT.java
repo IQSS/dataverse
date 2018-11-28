@@ -19,6 +19,7 @@ import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
+import static javax.ws.rs.core.Response.Status.FOUND;
 import edu.harvard.iq.dataverse.DataFile;
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -33,6 +34,8 @@ import com.jayway.restassured.path.xml.XmlPath;
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.json.Json;
@@ -43,6 +46,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 public class DatasetsIT {
@@ -761,12 +765,47 @@ public class DatasetsIT {
          * asadmin create-jvm-options
          * "-Ddataverse.siteUrl=http\://localhost\:8080"
          */
+        
+        // This should redirect us to the actual dataset page, and 
+        // give us a valid session cookie: 
+        
         Response getDatasetAsUserWhoClicksPrivateUrl = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .redirects().follow(false)
                 .get(urlWithToken);
+        // (note that we have purposefully asked not to follow redirects 
+        // automatically; this way we can test that we are being redirected
+        // to the right place, that we've been given the session cookie, etc.
+                
+        assertEquals(FOUND.getStatusCode(), getDatasetAsUserWhoClicksPrivateUrl.getStatusCode());
+        // Yes, javax.ws.rs.core.Response.Status.FOUND is 302!
         String title = getDatasetAsUserWhoClicksPrivateUrl.getBody().htmlPath().getString("html.head.title");
-        assertEquals("Darwin's Finches - " + dataverseAlias, title);
+        assertEquals("Document moved", title);
+        
+        String redirectLink = getDatasetAsUserWhoClicksPrivateUrl.getBody().htmlPath().getString("html.body.a.@href");
+        assertNotNull(redirectLink);
+        assertTrue(redirectLink.contains("dataset.xhtml"));
+        
+        String jsessionid = getDatasetAsUserWhoClicksPrivateUrl.cookie("jsessionid");
+        assertNotNull(jsessionid);
+        
+        // ... and now we can try and access the dataset: 
+        
+        try { 
+            redirectLink = URLDecoder.decode(redirectLink, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            // do nothing - try to redirect to the url as is? 
+        }
+        
+        logger.info("redirecting to "+redirectLink+", using jsession "+jsessionid);
+        
+        getDatasetAsUserWhoClicksPrivateUrl = given()
+                .cookies("JSESSIONID", jsessionid)
+                .get(redirectLink);
+        
         assertEquals(OK.getStatusCode(), getDatasetAsUserWhoClicksPrivateUrl.getStatusCode());
+        title = getDatasetAsUserWhoClicksPrivateUrl.getBody().htmlPath().getString("html.head.title");
+        assertEquals("Darwin's Finches - " + dataverseAlias, title);
 
         Response junkPrivateUrlToken = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
