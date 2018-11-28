@@ -145,6 +145,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         logger.fine("issued file download redirect for datafile "+guestbookResponse.getDataFile().getId());
     }
 
+    //MAD: I'm pretty sure we should filter out draft
+    public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
+        if(!fileMetadata.getDatasetVersion().isDraft()){
+            guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
+            writeGuestbookResponseRecord(guestbookResponse);
+        }
+    }
+    
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
 
         try {

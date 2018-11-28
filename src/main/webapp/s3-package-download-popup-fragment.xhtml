@@ -9,23 +9,10 @@
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <!--The p:dialog for this lives in dataset / file . Is that the best way of structuring things? I bet it helps with passing variables... -->
-
-    <p:dataTable id="packageDownloadTable" 
-                 rows="1" paginator="#{DatasetPage.workingVersion.fileMetadatas.size() gt 10}" paginatorPosition="bottom"
-                 paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} #{bundle['file.dynamicCounter.filesPerPage']} {RowsPerPageDropdown}"
-                 rowsPerPageTemplate="10,25,50"
-                 style="margin-right:1px;"
-                 value="#{DatasetPage.fileMetadatasSearch}"
-                 rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
-                 selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="packageDownloadTable"
-                 rendered="#{empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
-                 emptyMessage="#{bundle['file.notFound.tip']}">
-    
-<!--MAD: These two columns were pulled from filesFragment.xhtml . We really want the same thing here so these should be broken out into their own fragment(s) ... --> 
-<!--MAD: Even though package datasets should never have more than 1 file, when we start allowing both options on a dataset level this'll probably get ugly... -->    
-        <ui:include src="filesInfoFragment.xhtml"/>
-
-    </p:dataTable>
+    <div jsf:id="s3DownloadPopupDataFileInfo">
+        <ui:include src="individualFileTable.xhtml">
+            <ui:param name="fileMetadata" value="#{s3PackagePopupFragmentBean.fileMetadata}" />
+        </ui:include>
         <div> 
             <span class="glyphicon glyphicon-info-sign"></span>                                            
             <h:outputFormat value="#{bundle['s3packagedownload.instructions']}" escape="false">
@@ -34,9 +21,10 @@
             </h:outputFormat>
         </div>
         <div></div> 
-        <div>  <label>#{bundle['s3packagedownload.urlHeader']}</label> #{systemConfig.getDataverseSiteUrl()}/api/access/datafile/#{s3PackagePopupFragmentBean.dataFile.id}</div>
+        <div>  <label>#{bundle['s3packagedownload.urlHeader']}</label> #{systemConfig.getDataverseSiteUrl()}/api/access/datafile/#{s3PackagePopupFragmentBean.fileMetadata.dataFile.id}</div>
         <div class="button-block">              
             <p:commandButton styleClass="btn btn-default" id="downloadS3PopupCancelButton" value="#{bundle.close}" update="downloadS3PackagePopup" onclick="PF('downloadS3PackagePopup').hide();" immediate="true" >
             </p:commandButton>
         </div>
+    </div>
 </ui:composition>

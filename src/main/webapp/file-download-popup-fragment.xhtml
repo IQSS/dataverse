@@ -176,11 +176,11 @@
                 <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandLink>    
             
-            <p:commandLink type="button" process="@this" styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 's3Package'}"
-                           actionListener="#{fileDownloadHelper.writeGuestbookAndLaunchS3PackagePopup(guestbookResponse)}"
+            <p:commandLink type="button" process="@this" styleClass="btn btn-default" rendered="#{guestbookResponse.fileFormat == 's3Package'}"
                            update="guestbookUIFragment @form @widgetVar(downloadS3PackagePopup)" >
-                <f:actionListener binding="#{s3PackagePopupFragmentBean.setDataFile(fileMetadata.dataFile)}" /> 
-                <f:param name="DO_GB_VALIDATION" value="true"/>               
+                <f:actionListener binding="#{fileDownloadHelper.writeGuestbookAndLaunchS3PackagePopup(guestbookResponse)}" /> 
+                <f:param name="DO_GB_VALIDATION" value="true"/>  
+                #{bundle['acceptTerms']}
             </p:commandLink>
             
             <button type="button" class="btn btn-default" onclick="PF('downloadPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>

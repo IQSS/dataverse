@@ -6,10 +6,6 @@
 //MAD: This and s3importer should probably be in their own package
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import java.io.IOException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
@@ -22,14 +18,14 @@ import javax.inject.Named;
 @Named
 public class S3PackagePopupFragmentBean implements java.io.Serializable {
     
-    DataFile df;
+    FileMetadata fm;
     
-    public void setDataFile(DataFile dataFile) {
-        df = dataFile;
+    public void setFileMetadata(FileMetadata fileMetadata) {
+        fm = fileMetadata;
     }
     
-    public DataFile getDataFile() {
-        return df;
+    public FileMetadata getFileMetadata() {
+        return fm;
     }
     
 //    public String provideS3OneTimeUrl() throws IOException {
