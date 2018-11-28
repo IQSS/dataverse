@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
@@ -76,6 +77,8 @@ public class SearchServiceBean {
     GroupServiceBean groupService;
     @EJB
     SystemConfig systemConfig;
+    @EJB
+    SettingsServiceBean settingsService;
 
     private SolrClient solrServer;
     
@@ -153,6 +156,17 @@ public class SearchServiceBean {
 
         SolrQuery solrQuery = new SolrQuery();
         query = SearchUtil.sanitizeQuery(query);
+        String permissionFilterGroups = getPermissionFilterGroups(dataverseRequest, solrQuery, onlyDatatRelatedToMe);
+        if(settingsService.isTrueForKey(SettingsServiceBean.Key.SolrFullTextIndexing, false)) {
+            query = SearchUtil.expandQuery(query, permissionFilterGroups!=null);
+            logger.info("Sanitized, Expanded Query: " + query);
+            if(permissionFilterGroups!=null) {
+              solrQuery.add("q1",  SearchFields.FULL_TEXT_SEARCHABLE_BY + ":" + permissionFilterGroups);
+              logger.info("q1: " + SearchFields.FULL_TEXT_SEARCHABLE_BY + ":" + permissionFilterGroups);
+            }
+        }
+
+        
         solrQuery.setQuery(query);
 //        SortClause foo = new SortClause("name", SolrQuery.ORDER.desc);
 //        if (query.equals("*") || query.equals("*:*")) {
@@ -220,9 +234,8 @@ public class SearchServiceBean {
         // -----------------------------------
         // PERMISSION FILTER QUERY
         // -----------------------------------
-        String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
-        if (permissionFilterQuery != null) {
-            solrQuery.addFilterQuery(permissionFilterQuery);
+        if(permissionFilterGroups!=null) {
+            solrQuery.addFilterQuery("{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" +permissionFilterGroups);
         }
 
         // -----------------------------------
@@ -313,6 +326,12 @@ public class SearchServiceBean {
             String messageFromSolr = ex.getLocalizedMessage();
             String error = "Search Syntax Error: ";
             String stringToHide = "org.apache.solr.search.SyntaxError: ";
+            //If it is a syntax error, tell the user rather than silently showing no results
+            if(messageFromSolr.contains(stringToHide)) {
+                throw new SearchException(BundleUtil.getStringFromBundle("dataverse.search.syntax.error"));
+            }
+            // (May be a better option for other types of errors as well?)
+            // e.g. throw new SearchException(BundleUtil.getStringFromBundle("dataverse.results.solrIsDown"));
             if (messageFromSolr.startsWith(stringToHide)) {
                 // hide "org.apache.solr..."
                 error += messageFromSolr.substring(stringToHide.length());
@@ -337,7 +356,7 @@ public class SearchServiceBean {
             exceptionSolrQueryResponse.setSpellingSuggestionsByToken(emptySpellingSuggestion);
             return exceptionSolrQueryResponse;
         } catch (SolrServerException | IOException ex) {
-            throw new SearchException("Internal Dataverse Search Engine Error", ex);
+            throw new SearchException("Internal Dataverse Search Engine Error " + BundleUtil.getStringFromBundle("dataverse.results.solrIsDown"), ex);
         }
 
         SolrDocumentList docs = queryResponse.getResults();
@@ -747,6 +766,71 @@ public class SearchServiceBean {
         return solrQueryResponse;
     }
 
+    public SolrDocumentList simpleSearch(DataverseRequest dataverseRequest, String returnField, String query, List<String> filterQueries, int paginationStart, int numResultsPerPage) throws SearchException {
+
+        if (paginationStart < 0) {
+            throw new IllegalArgumentException("paginationStart must be 0 or greater");
+        }
+        if (numResultsPerPage < 1) {
+            throw new IllegalArgumentException("numResultsPerPage must be 1 or greater");
+        }
+
+        SolrQuery solrQuery = new SolrQuery();
+        query = SearchUtil.sanitizeQuery(query);
+        String permissionFilterGroups = getPermissionFilterGroups(dataverseRequest, solrQuery, false);
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.SolrFullTextIndexing, false)) {
+            query = SearchUtil.expandQuery(query, permissionFilterGroups != null);
+            logger.info("Sanitized, Expanded Query: " + query);
+            if (permissionFilterGroups != null) {
+                solrQuery.add("q1", SearchFields.FULL_TEXT_SEARCHABLE_BY + ":" + permissionFilterGroups);
+                logger.info("q1: " + SearchFields.FULL_TEXT_SEARCHABLE_BY + ":" + permissionFilterGroups);
+            }
+        }
+
+        solrQuery.setQuery(query);
+        solrQuery.setParam("fl", returnField);
+        solrQuery.setParam("qt", "/select");
+
+        for (String filterQuery : filterQueries) {
+            solrQuery.addFilterQuery(filterQuery);
+        }
+
+        // -----------------------------------
+        // PERMISSION FILTER QUERY
+        // -----------------------------------
+        if (permissionFilterGroups != null) {
+            solrQuery.addFilterQuery("{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups);
+        }
+
+        solrQuery.setStart(paginationStart);
+        solrQuery.setRows(numResultsPerPage);
+        logger.fine("Solr query:" + solrQuery);
+
+        // -----------------------------------
+        // Make the solr query
+        // -----------------------------------
+        QueryResponse queryResponse = null;
+        try {
+
+            queryResponse = solrServer.query(solrQuery);
+        } catch (RemoteSolrException ex) {
+            String messageFromSolr = ex.getLocalizedMessage();
+            if (messageFromSolr.contains("org.apache.solr.search.SyntaxError")) {
+                if(settingsService.isTrueForKey(SettingsServiceBean.Key.SolrFullTextIndexing, false)) {
+                    throw new SearchException(BundleUtil.getStringFromBundle("dataverse.search.fullText.error"));
+                } else {
+                throw new SearchException(BundleUtil.getStringFromBundle("dataverse.search.syntax.error"));
+                }
+            }
+            throw new SearchException(messageFromSolr + " " + BundleUtil.getStringFromBundle("dataverse.results.solrIsDown"));
+        } catch (SolrServerException | IOException ex) {
+            throw new SearchException("Internal Dataverse Search Engine Error " + BundleUtil.getStringFromBundle("dataverse.results.solrIsDown"), ex);
+        }
+
+        return queryResponse.getResults();
+    }
+
+    
     public String getCapitalizedName(String name) {
         return Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
@@ -756,7 +840,7 @@ public class SearchServiceBean {
      *
      * @return
      */
-    private String getPermissionFilterQuery(DataverseRequest dataverseRequest, SolrQuery solrQuery, Dataverse dataverse, boolean onlyDatatRelatedToMe) {
+    private String getPermissionFilterGroups(DataverseRequest dataverseRequest, SolrQuery solrQuery, boolean onlyDatatRelatedToMe) {
 
         User user = dataverseRequest.getUser();
         if (user == null) {
@@ -772,7 +856,8 @@ public class SearchServiceBean {
          */
 //        String allUsersString = IndexServiceBean.getGroupPrefix() + AllUsers.get().getAlias();
 //        String publicOnly = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + allUsersString + ")";
-        String publicOnly = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + ")";
+        //String publicOnly = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + ")";
+        String publicOnly = "(" + IndexServiceBean.getPublicGroupString() + ")";
 //        String publicOnly = "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getPublicGroupString();
         // initialize to public only to be safe
         String dangerZoneNoSolrJoin = null;
@@ -800,7 +885,7 @@ public class SearchServiceBean {
             }
             groupsFromProviders = sb.toString();
             logger.fine("groupsFromProviders:" + groupsFromProviders);
-            String guestWithGroups = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + groupsFromProviders + ")";
+            String guestWithGroups = "(" + IndexServiceBean.getPublicGroupString() + groupsFromProviders + ")";
             logger.fine(guestWithGroups);
             return guestWithGroups;
         }
@@ -895,7 +980,7 @@ public class SearchServiceBean {
             /**
              * @todo get rid of "experimental" in name
              */
-            String experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + groupsFromProviders + ")";
+            String experimentalJoin = "(" + IndexServiceBean.getPublicGroupString() + " OR " + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + groupsFromProviders + ")";
             publicPlusUserPrivateGroup = experimentalJoin;
         }
 

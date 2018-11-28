@@ -37,7 +37,12 @@ import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
-import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
+import edu.harvard.iq.dataverse.search.SearchException;
+import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SearchUtil;
+import edu.harvard.iq.dataverse.search.SolrQueryResponse;
+import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -109,6 +114,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.commons.io.IOUtils;
 
 import org.primefaces.component.tabview.TabView;
@@ -182,7 +189,7 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     DatasetLinkingServiceBean dsLinkingService;
     @EJB
-    SearchFilesServiceBean searchFilesService;
+    SearchServiceBean searchService;
     @EJB
     DataverseRoleServiceBean dataverseRoleService;
     @EJB
@@ -481,13 +488,52 @@ public class DatasetPage implements java.io.Serializable {
         this.fileMetadatasSearch = fileMetadatasSearch;
     }
     
-    public void updateFileSearch(){  
-        logger.info("updating file search list");
-        if (readOnly) {
-            this.fileMetadatasSearch = selectFileMetadatasForDisplay(this.fileLabelSearchTerm); 
-        } else {
-            this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), this.fileLabelSearchTerm, "", "");
+    public void updateFileSearch() {
+        SolrDocumentList solrDocs;
+        if (this.fileLabelSearchTerm == null || this.fileLabelSearchTerm.length() == 0) {
+            this.fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
+            return;
         }
+        List<String> filterQueries = new ArrayList<>();
+        Set<Long> searchResultsIdSet = new HashSet<Long>();
+        try {
+            filterQueries.add(SearchFields.PARENT_ID + ":" + dataset.getId().toString());
+            // The normal search
+            solrDocs = searchService.simpleSearch(
+                    dvRequestService.getDataverseRequest(),
+                    SearchFields.ENTITY_ID,
+                    this.fileLabelSearchTerm,
+                    filterQueries,
+                    0,
+                    1000000);
+
+            for (SolrDocument solrDocument : solrDocs) {
+                logger.info("Found: " + (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID));
+                searchResultsIdSet.add((Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID));
+            }
+        } catch (SearchException ex) {
+            Throwable cause = ex;
+            StringBuilder sb = new StringBuilder();
+            sb.append(cause + " ");
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                sb.append(cause.getClass().getCanonicalName() + " ");
+                sb.append(cause + " ");
+                // if you search for a colon you see RemoteSolrException:
+                // org.apache.solr.search.SyntaxError: Cannot parse ':'
+            }
+            String message = "Exception running search for [" + this.fileLabelSearchTerm + "] with filterQueries " + filterQueries + " and paginationStart [" + 0 + "]: " + sb.toString();
+            logger.info(message);
+        }
+        List<FileMetadata> retList = new ArrayList<>();
+
+        for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
+            if (searchResultsIdSet.contains(fileMetadata.getDataFile().getId())) {
+                retList.add(fileMetadata);
+            }
+        }
+
+        this.fileMetadatasSearch = retList;
     }
     
         private Long numberOfFilesToShow = (long) 25;
@@ -502,28 +548,6 @@ public class DatasetPage implements java.io.Serializable {
     
     public void showAll(){
         setNumberOfFilesToShow(new Long(fileMetadatasSearch.size()));
-    }
-    
-    private List<FileMetadata> selectFileMetadatasForDisplay(String searchTerm) {
-        Set<Long> searchResultsIdSet = null; 
-        
-        if (searchTerm != null && !searchTerm.equals("")) {
-            List<Integer> searchResultsIdList = datafileService.findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), searchTerm, "", "");
-            searchResultsIdSet = new HashSet<>();
-            for (Integer id : searchResultsIdList) {
-                searchResultsIdSet.add(id.longValue());
-            }
-        }
-        
-        List<FileMetadata> retList = new ArrayList<>(); 
-        
-        for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
-            if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getId())) {
-                retList.add(fileMetadata);
-            }
-        }
-        
-        return retList;
     }
     
     /*
@@ -1997,17 +2021,14 @@ public class DatasetPage implements java.io.Serializable {
     private String releaseDataset(boolean minor) {
         if (session.getUser() instanceof AuthenticatedUser) {
             try {
-                logger.info("Commit check 0: " + FacesContext.getCurrentInstance().getExternalContext().isResponseCommitted());
                 final PublishDatasetResult result = commandEngine.submit(
                     new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor)
                 );
-                logger.info("Commit check 1: " + FacesContext.getCurrentInstance().getExternalContext().isResponseCommitted());
                 dataset = result.getDataset();
                 // Sucessfully executing PublishDatasetCommand does not guarantee that the dataset 
                 // has been published. If a publishing workflow is configured, this may have sent the 
                 // dataset into a workflow limbo, potentially waiting for a third party system to complete 
                 // the process. So it may be premature to show the "success" message at this point. 
-                logger.info("Commit check 2: " + FacesContext.getCurrentInstance().getExternalContext().isResponseCommitted());
                 if ( result.isCompleted() ) {
                     JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
                 } else {
@@ -2022,7 +2043,6 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.only.authenticatedUsers"));
         }
-        logger.info("Commit check 3: " + FacesContext.getCurrentInstance().getExternalContext().isResponseCommitted());
         return returnToDatasetOnly();
     }
 

@@ -62,10 +62,7 @@
         <div class="col-sm-12">
             <div class="bg-danger padding-12 margin-bottom">
                 <span class="glyphicon glyphicon-warning-sign text-danger"/>&#160;
-
                 <h:outputText value="#{SearchIncludeFragment.searchException.message}" styleClass="text-danger highlightBold"/>
-
-                <h:outputText value=" - #{bundle['dataverse.results.solrIsDown']}" styleClass="text-danger"/>
             </div>
             <pre><h:outputText value="#{SearchIncludeFragment.searchException.cause.message}"/></pre>
         </div>

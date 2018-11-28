@@ -25,6 +25,8 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -144,6 +146,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private boolean solrErrorEncountered = false;
     
     /**
+     * @throws UnsupportedEncodingException 
      * @todo:
      *
      * better style and icons for facets
@@ -169,7 +172,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
      *
      * see also https://trello.com/c/jmry3BJR/28-browse-dataverses
      */
-    public String searchRedirect(String dataverseRedirectPage) {
+    public String searchRedirect(String dataverseRedirectPage) throws UnsupportedEncodingException {
         /**
          * These are our decided-upon search/browse rules, the way we expect
          * users to search/browse and how we want the app behave:
@@ -208,7 +211,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
         String qParam = "";
         if (query != null) {
-            qParam = "&q=" + query;
+            qParam = "&q=" + URLEncoder.encode(query, "UTF-8");
         }
 
         return widgetWrapper.wrapURL(dataverseRedirectPage + "?faces-redirect=true&q=" + qParam + optionalDataverseScope);
