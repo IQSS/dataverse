@@ -24,7 +24,7 @@
     <script type="text/javascript">
         /* Version tab: Retrieve data after page load */
         $(document).ready(function () {
-            preload_message = "(Loading versions...)";
+            preload_message = "#{bundle['preloadmessage']}";
             $('#fileForm\\:tabView\\:versionsTable_data tr.ui-datatable-empty-message td').text(preload_message);
             
         });

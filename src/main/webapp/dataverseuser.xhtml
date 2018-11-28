@@ -34,6 +34,11 @@
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
                 </f:metadata>
                 <h:form id="dataverseUserForm">
+
+                    <h:inputHidden id="mydataresult" value="#{bundle['mydata.result']}" />
+                    <h:inputHidden id="mydataresults" value="#{bundle['mydata.results']}" />
+                    <h:inputHidden id="mydataviewnext" value="#{bundle['mydata.viewnext']}" />
+                    <h:inputHidden id="mydatamore" value="#{bundle['mydata.more']}" />
                     <p:focus context="dataverseUserForm"/>
                     <div class="clearfix" jsf:rendered="#{empty DataverseUserPage.editMode}">
                         <div class="btn-group pull-right" jsf:rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
@@ -651,5 +656,6 @@
                 </h:form>
             </ui:define>
         </ui:composition>
+
     </h:body>
 </html>

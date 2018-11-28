@@ -314,12 +314,14 @@ function updatePagination(json_data){
             $('#lnk_add_more_cards').attr("rel", pagination_json.nextPageNumber);
             //console.log("update link to: " + pagination_json.nextPageNumber);
             $('#div-more-cards-link').show();
-           
-            var result_label = 'Results';
+
+            var view_next = document.getElementById("dataverseUserForm:mydataviewnext").value;
+            var more = document.getElementById("dataverseUserForm:mydatamore").value;
+            var result_label = document.getElementById("dataverseUserForm:mydataresults").value;
             if (pagination_json.numberNextResults == 1){
-                result_label = 'Result';
+                result_label = document.getElementById("dataverseUserForm:mydataresult").value;
             }
-            $('#lnk_add_more_cards').html('View Next ' + pagination_json.numberNextResults + ' ' + result_label + ' (' + pagination_json.remainingCards + ' More)');
+            $('#lnk_add_more_cards').html(view_next + ' ' + pagination_json.numberNextResults + ' ' + result_label + ' (' + pagination_json.remainingCards + ' ' + more +')');
         }
         bindPages();
     }
