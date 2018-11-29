@@ -215,7 +215,7 @@ This method requests access to the datafile whose id is passed on the behalf of 
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/datafile/{id}/requestAccess
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT http://$SERVER/api/access/datafile/{id}/requestAccess
     
 Grant File Access:
 ~~~~~~~~~~~~~~~~~~ 
@@ -226,7 +226,7 @@ This method grants access to the datafile whose id is passed on the behalf of an
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/datafile/{id}/grantAccess/{@userIdentifier}
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT http://$SERVER/api/access/datafile/{id}/grantAccess/{@userIdentifier}
     
 Reject File Access:
 ~~~~~~~~~~~~~~~~~~~ 
@@ -237,7 +237,7 @@ This method rejects the access request to the datafile whose id is passed on the
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/datafile/{id}/rejectAccess/{@userIdentifier}
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT http://$SERVER/api/access/datafile/{id}/rejectAccess/{@userIdentifier}
     
 Revoke File Access:
 ~~~~~~~~~~~~~~~~~~~ 
@@ -248,7 +248,7 @@ This method revokes previously granted access to the datafile whose id is passed
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT -d true http://$SERVER/api/access/datafile/{id}/rejectAccess/{@userIdentifier}    
+    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT http://$SERVER/api/access/datafile/{id}/rejectAccess/{@userIdentifier}    
     
 List File Access Requests:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~ 
@@ -259,4 +259,4 @@ This method returns a list of Authenticated Users who have requested access to t
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X GET -d true http://$SERVER/api/access/datafile/{id}/listRequests
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET http://$SERVER/api/access/datafile/{id}/listRequests

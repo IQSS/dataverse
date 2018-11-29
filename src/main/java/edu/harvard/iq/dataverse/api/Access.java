@@ -929,10 +929,10 @@ public class Access extends AbstractApiBean {
     @PUT
     @Path("{id}/allowAccessRequest")
     public Response allowAccessRequest(@PathParam("id") String datasetToAllowAccessId, String requestStr) {
-        //create request
+
         DataverseRequest dataverseRequest = null;
-        //get the datafile
         Dataset dataset;
+
         try {
             dataset = findDatasetOrDie(datasetToAllowAccessId);
         } catch (WrappedResponse ex) {
@@ -973,10 +973,10 @@ public class Access extends AbstractApiBean {
     @PUT
     @Path("/datafile/{id}/requestAccess")
     public Response requestFileAccess(@PathParam("id") String fileToRequestAccessId, @Context HttpHeaders headers) {
-        //create request
+        
         DataverseRequest dataverseRequest;
-        //get the datafile
         DataFile dataFile;
+        
         try {
             dataFile = findDataFileOrDie(fileToRequestAccessId);
         } catch (WrappedResponse ex) {
@@ -988,21 +988,31 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.requestsNotAccepted"));
         }
 
+        AuthenticatedUser requestor;
+
         try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
+            requestor = findAuthenticatedUserOrDie();
+            dataverseRequest = createDataverseRequest(requestor);
         } catch (WrappedResponse wr) {
             List<String> args = Arrays.asList(wr.getLocalizedMessage());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
         }
 
-        // try to request access to the datafile
+        if (isAccessAuthorized(dataFile, getRequestApiKey())) {
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.invalidRequest"));
+        }
+
+        if (dataFile.getFileAccessRequesters().contains(requestor)) {
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.requestExists"));
+        }
+
         try {
             engineSvc.submit(new RequestAccessCommand(dataverseRequest, dataFile, true));
         } catch (CommandException ex) {
-            //access.api.requestAccess.failure.commandError
             List<String> args = Arrays.asList(dataFile.getDisplayName(), ex.getLocalizedMessage());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.commandError", args));
         }
+        
         List<String> args = Arrays.asList(dataFile.getDisplayName());
         return ok(BundleUtil.getStringFromBundle("access.api.requestAccess.success.for.single.file", args));
 
@@ -1022,9 +1032,8 @@ public class Access extends AbstractApiBean {
     @Path("/datafile/{id}/listRequests")
     public Response listFileAccessRequests(@PathParam("id") String fileToRequestAccessId, @Context HttpHeaders headers) {
 
-        //create request
         DataverseRequest dataverseRequest;
-        //get the datafile
+
         DataFile dataFile;
         try {
             dataFile = findDataFileOrDie(fileToRequestAccessId);
@@ -1076,9 +1085,8 @@ public class Access extends AbstractApiBean {
     @PUT
     @Path("/datafile/{id}/grantAccess/{identifier}")
     public Response grantFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
-        //create request
+        
         DataverseRequest dataverseRequest;
-        //get the datafile
         DataFile dataFile;
 
         try {
@@ -1104,7 +1112,6 @@ public class Access extends AbstractApiBean {
 
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
 
-        // try to request access to the datafile
         try {
             engineSvc.submit(new AssignRoleCommand(ra, fileDownloaderRole, dataFile, dataverseRequest, null));
             if (dataFile.getFileAccessRequesters().remove(ra)) {
@@ -1135,9 +1142,8 @@ public class Access extends AbstractApiBean {
     @DELETE
     @Path("/datafile/{id}/revokeAccess/{identifier}")
     public Response revokeFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
-        //create request
+
         DataverseRequest dataverseRequest;
-        //get the datafile
         DataFile dataFile;
 
         try {
@@ -1178,7 +1184,6 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.revokeAccess.noRoleFound", args));
         }
 
-        // try to revoke downloader access
         try {
             for (RoleAssignment role : roles) {
                 execCommand(new RevokeRoleCommand(role, dataverseRequest));
@@ -1208,9 +1213,7 @@ public class Access extends AbstractApiBean {
     @Path("/datafile/{id}/rejectAccess/{identifier}")
     public Response rejectFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
 
-        //create request
         DataverseRequest dataverseRequest;
-        //get the datafile
         DataFile dataFile;
 
         try {
