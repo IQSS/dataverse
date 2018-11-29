@@ -1127,6 +1127,13 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.failure.commandError", args));
         }
 
+        try {
+            AuthenticatedUser au = (AuthenticatedUser) ra;
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, dataFile.getOwner().getId());
+        } catch (ClassCastException e) {
+            //nothing to do here - can only send a notification to an authenticated user
+        }
+
         List<String> args = Arrays.asList(dataFile.getDisplayName());
         return ok(BundleUtil.getStringFromBundle("access.api.grantAccess.success.for.single.file", args));
 
