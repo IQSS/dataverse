@@ -103,6 +103,9 @@ public class ExplicitGroupProvider implements GroupProvider {
      * @return the passed group, updated.
      */
     ExplicitGroup updateProvider( ExplicitGroup eg ) {
+        if (eg == null) {
+            return null; 
+        }
         eg.setProvider(this);
         return eg;
     }
