@@ -11,10 +11,10 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <p:outputPanel>
-        <div id="filesTableDiv" class="col-sm-10">
-            <div style="" class="pull-left col-file-thumb">
+        <div id="fileInfoInclude-filesTable" class="col-sm-12 row">
+            <div class="pull-left col-file-thumb">
                 <div class="thumbnail-block text-center">  
-                <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!EditDatafilesPage.isThumbnailAvailable(fileMetadata)}"/>
+                    <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!EditDatafilesPage.isThumbnailAvailable(fileMetadata)}"/>
                     <span class="file-thumbnail-preview-img" jsf:rendered="#{EditDatafilesPage.isThumbnailAvailable(fileMetadata)}"
                           data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
                         <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
@@ -27,10 +27,10 @@
                         <span class="icon-unlock text-success"/>
                     </div>
                 </div>
-            </div>  
+            </div>
             <div class="col-sm-10 col-file-metadata">
                 <div class="fileNameOriginal">
-                    <span>#{fileMetadata.label} </span>
+                    <span>#{fileMetadata.label}</span>
                 </div>
                 <div class="text-muted small">
                     <span id="static:fileTypeOutputRegular">#{fileMetadata.dataFile.friendlyType}</span>

@@ -112,9 +112,12 @@
     <h:outputLink value="#{DatasetPage.getComputeUrl(fileMetadata)}" type="button" class="btn btn-default" target="_blank" rendered="#{!isFilePg and DatasetPage.showComputeButton(fileMetadata) and fileDownloadHelper.canDownloadFile(fileMetadata)}"> 
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
     </h:outputLink>
+    
+    <!-- fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
+                              and fileMetadata.dataFile.filePackage and fileMetadata.datasetVersion.dataset.getStorageIdentifier().startsWith('s3://')
+    -->
 
-    <p:commandLink rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
-                              and fileMetadata.dataFile.filePackage and fileMetadata.datasetVersion.dataset.getStorageIdentifier().startsWith('s3://')}"
+    <p:commandLink rendered="#{ true }"
                    type="button" styleClass="btn btn-default" process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                    update="@widgetVar(downloadS3PackagePopup)" oncomplete="PF('downloadS3PackagePopup').show();handleResizeDialog('downloadS3PackagePopup');">
@@ -122,7 +125,7 @@
         <f:actionListener binding="#{fileDownloadService.writeGuestbookResponseRecord(guestbookResponse, fileMetadata, 's3Package')}" />
         <!-- s3 package data file: -->
         <!-- no guest book/terms of use/etc. - straight s3 package popup -->
-        <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
+        <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} S3
     </p:commandLink>
 
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and (downloadPopupRequired) 

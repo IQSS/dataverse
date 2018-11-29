@@ -10,21 +10,26 @@
 
     <!--The p:dialog for this lives in dataset & file -->
     <div jsf:id="s3DownloadPopupDataFileInfo">
-        <ui:include src="individualFileTable.xhtml">
-            <ui:param name="fileMetadata" value="#{s3PackagePopupFragmentBean.fileMetadata}" />
-        </ui:include>
-        <div> 
-            <span class="glyphicon glyphicon-info-sign"></span>                                            
-            <h:outputFormat value="#{bundle['s3packagedownload.instructions']}" escape="false">
-                <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                <f:param value="#{systemConfig.guidesVersion}"/>
-            </h:outputFormat>
+        <div class="col-sm-12">
+            <p class="help-block no-margin-top"> 
+                <span class="glyphicon glyphicon-info-sign"></span>                                            
+                <h:outputFormat value=" #{bundle['s3packagedownload.instructions']}" escape="false">
+                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                    <f:param value="#{systemConfig.guidesVersion}"/>
+                </h:outputFormat>
+            </p>
         </div>
-        <div></div> 
-        <div>  <label>#{bundle['s3packagedownload.urlHeader']}</label> #{systemConfig.getDataverseSiteUrl()}/api/access/datafile/#{s3PackagePopupFragmentBean.fileMetadata.dataFile.id}</div>
-        <div class="button-block">              
-            <p:commandButton styleClass="btn btn-default" id="downloadS3PopupCancelButton" value="#{bundle.close}" update="downloadS3PackagePopup" onclick="PF('downloadS3PackagePopup').hide();" immediate="true" >
-            </p:commandButton>
+        <div class="col-sm-12 margin-bottom">
+            <ui:include src="individualFileTable.xhtml">
+                <ui:param name="fileMetadata" value="#{s3PackagePopupFragmentBean.fileMetadata}" />
+            </ui:include>
+        </div>
+        <div class="col-sm-12">
+            <label>#{bundle['s3packagedownload.urlHeader']}</label> 
+            <p><code>#{systemConfig.getDataverseSiteUrl()}/api/access/datafile/#{s3PackagePopupFragmentBean.fileMetadata.dataFile.id}</code></p>
+        </div>
+        <div class="col-sm-12 button-block margin-top">              
+            <p:commandButton styleClass="btn btn-default" id="downloadS3PopupCancelButton" value="#{bundle.close}" update="downloadS3PackagePopup" onclick="PF('downloadS3PackagePopup').hide();" immediate="true"/>
         </div>
     </div>
 </ui:composition>
