@@ -960,7 +960,7 @@ public class Access extends AbstractApiBean {
 
         String text = allowRequest ? BundleUtil.getStringFromBundle("access.api.allowRequests.allows") : BundleUtil.getStringFromBundle("access.api.allowRequests.disallows");
         List<String> args = Arrays.asList(dataset.getDisplayName(), text);
-        return ok(BundleUtil.getStringFromBundle("access.api.fileAccess.success", args));
+        return ok(BundleUtil.getStringFromBundle("access.api.allowRequests.success", args));
         
     }
 
