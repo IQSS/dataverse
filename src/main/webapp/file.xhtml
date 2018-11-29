@@ -175,8 +175,6 @@
                                                                                             (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset())) 
                                                                                              and (!FilePage.fileMetadata.dataFile.filePackage or
                                                                                                    FilePage.fileMetadata.dataFile.filePackage and FilePage.fileMetadata.getDataFile().getOwner().getStorageIdentifier().startsWith('s3://'))}">
-                                    <!--MAD: The logic above for getting the storage identifier is kinda sketch. There is a dataset var in FilePage, but it doesn't seem to be always set and other methods use that route to set it... 
-                                             see isDraftReplacementFile() -->
                                     <ui:include src="file-download-button-fragment.xhtml">
                                         <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
                                         <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
@@ -554,8 +552,6 @@
                              </ui:include>
                         </div>
                     </p:dialog>
-<!--MAD HERE 
-    I still need code to actually launch the popup-->
                     <p:dialog id="downloadS3PackagePopup" styleClass="largePopUp" header="#{bundle['s3packagedownload.title']}" widgetVar="downloadS3PackagePopup" modal="true">
                          <ui:include src="s3-package-download-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>

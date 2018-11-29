@@ -4,7 +4,6 @@
  * and open the template in the editor.
  */
 
-//MAD: WHY DOES THIS LIVE IN API
 package edu.harvard.iq.dataverse.api;
 
 import java.lang.reflect.Type;

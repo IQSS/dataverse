@@ -309,7 +309,7 @@ public class FileDownloadHelper implements java.io.Serializable {
             requestContext.execute("PF('downloadPopup').hide()");
             requestContext.execute("PF('downloadS3PackagePopup').show()");
             requestContext.execute("handleResizeDialog('downloadS3PackagePopup')");
-
+//MAD: Do I need to check this is draft? Also am I passing that this is s3?
             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
         }
     }
@@ -351,10 +351,8 @@ public class FileDownloadHelper implements java.io.Serializable {
     public void addMultipleFilesForRequestAccess(DataFile dataFile) {
         this.filesForRequestAccess.add(dataFile);
 
-     }
+    }
         
-    
-    
     private String selectedFileId = null;
 
     public String getSelectedFileId() {

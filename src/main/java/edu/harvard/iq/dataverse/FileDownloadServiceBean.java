@@ -145,7 +145,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         logger.fine("issued file download redirect for datafile "+guestbookResponse.getDataFile().getId());
     }
 
-    //MAD: I'm pretty sure we should filter out draft
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         if(!fileMetadata.getDatasetVersion().isDraft()){
             guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
@@ -154,13 +153,11 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
-
         try {
             CreateGuestbookResponseCommand cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset());
             commandEngine.submit(cmd);
         } catch (CommandException e) {
             //if an error occurs here then download won't happen no need for response recs...
-
         }
     }
     

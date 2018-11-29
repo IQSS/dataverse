@@ -21,13 +21,10 @@ import edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordWriter;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import edu.harvard.iq.dataverse.util.FileUtil;;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,9 +34,6 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import org.apache.commons.io.IOUtils;
 
 /**
  * This class is for importing files added to s3 outside of dataverse.
@@ -63,7 +57,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
     @EJB
     EjbDataverseEngine commandEngine;
     
-    //Copies from another s3 bucket to our own
+    //Coppies from another s3 bucket to our own
     public void copyFromS3(Dataset dataset, String s3ImportPath) throws IOException {
         try {
             s3 = AmazonS3ClientBuilder.standard().defaultClient();
@@ -72,11 +66,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
                     "Cannot instantiate a S3 client using; check your AWS credentials and region",
                     e);
         }
-
-        JsonObjectBuilder bld = jsonObjectBuilder();
-
-        String fileMode = FileRecordWriter.FILE_MODE_PACKAGE_FILE;
-
+        
         String dcmBucketName = System.getProperty("dataverse.files.dcm-s3-bucket-name");
         String dcmDatasetKey = s3ImportPath;
         String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
@@ -165,10 +155,8 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
                 while((line = reader.readLine()) != null && checksumVal.isEmpty()) {
                     logger.log(Level.INFO, "line {0}", new Object[]{line});
                     String[] splitLine = line.split("  ");
-                    //logger.log(Level.INFO, "root package name {0}", new Object[]{rootPackageName + ".zip"});
-                    //logger.log(Level.INFO, "splitline {0} | {1}", new Object[]{splitLine[0], splitLine[1]});
-                    
-                    //the sha file should only contain one line, but incase it doesn't we will check for the one for our zip
+
+                    //the sha file should only contain one entry, but incase it doesn't we will check for the one for our zip
                     if(splitLine[1].contains(rootPackageName + ".zip")) { 
                         checksumVal = splitLine[0];
                         logger.log(Level.INFO, "checksumVal found {0}", new Object[]{checksumVal});
@@ -189,13 +177,6 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
                 
             }
             
-            //MAD: CLOSE THINGS !!
-            
-            //String shaFileContents = IOUtils.toString(s3FilesSha.getObjectContent(), StandardCharsets.UTF_8);
-
-            //We parse the checksum from the passed sha 1
-            //String checksumVal = shaFileContents.
-
             logger.log(Level.INFO, "Checksum value for the package in Dataset {0} is: {1}", 
                new Object[]{dataset.getIdentifier(), checksumVal});
 

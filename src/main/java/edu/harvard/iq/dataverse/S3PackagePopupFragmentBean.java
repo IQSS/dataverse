@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-//MAD: This and s3importer should probably be in their own package
+
 package edu.harvard.iq.dataverse;
 
 import javax.faces.view.ViewScoped;
@@ -28,14 +28,5 @@ public class S3PackagePopupFragmentBean implements java.io.Serializable {
         return fm;
     }
     
-//    public String provideS3OneTimeUrl() throws IOException {
-//        if(df != null ) {
-//            StorageIO<DataFile> storageIO = DataAccess.getStorageIO(df);
-//            return ((S3AccessIO)storageIO).generateTemporaryS3Url();
-//        } else {
-//            return "";
-//        }
-//
-//    }
 }
  

@@ -113,8 +113,6 @@
         <span class="glyphicon glyphicon-flash"/> #{bundle['file.compute']}
     </h:outputLink>
 
-
-    <!-- MAD: UNDO TRUE -->
     <p:commandLink rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
                               and fileMetadata.dataFile.filePackage and fileMetadata.datasetVersion.dataset.getStorageIdentifier().startsWith('s3://')}"
                    type="button" styleClass="btn btn-default" process="@this"

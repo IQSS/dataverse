@@ -180,7 +180,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         return selectedFileIdsString;
     }
     
-    //If you change this the getFileMetadataToReplace should be changed in kind
     public DataFile getFileToReplace(){
         if (!this.isFileReplaceOperation()){
             return null;
@@ -189,18 +188,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             return null;
         }
         return this.fileReplacePageHelper.getFileToReplace();
-    }
-    
-    //MAD: This is an attempt to use the same ui for all file cards.
-    //We want that fragment to use fileMetadata because its easier to get from that to the needed info
-    public FileMetadata getFileMetadataToReplace(){
-        if (!this.isFileReplaceOperation()){
-            return null;
-        }
-        if (this.fileReplacePageHelper == null){
-            return null;
-        }
-        return this.fileReplacePageHelper.getFileToReplace().getFileMetadata();
     }
     
     public void setSelectedFileIds(String selectedFileIds) {

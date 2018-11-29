@@ -1133,8 +1133,6 @@ public class FileUtil implements java.io.Serializable  {
         return filesTempDirectory;
     }
     
-    //OLD MAD: Refactor this again so it reuses code from S3AccessIO.
-    //OLD MAD: Also maybe refactor the generic named one to reflect that it creates fileAccessIO on its own.
     public static void generateS3PackageStorageIdentifier(DataFile dataFile) {
         String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
         String storageId = S3_IDENTIFIER_PREFIX + "://" + bucketName + ":" + dataFile.getFileMetadata().getLabel();
