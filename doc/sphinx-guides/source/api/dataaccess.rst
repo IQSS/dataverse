@@ -248,7 +248,7 @@ This method revokes previously granted access to the datafile whose id is passed
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X PUT http://$SERVER/api/access/datafile/{id}/rejectAccess/{@userIdentifier}    
+    curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE http://$SERVER/api/access/datafile/{id}/revokeAccess/{@userIdentifier}    
     
 List File Access Requests:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~ 
