@@ -936,7 +936,8 @@ public class Access extends AbstractApiBean {
         try {
             dataset = findDatasetOrDie(datasetToAllowAccessId);
         } catch (WrappedResponse ex) {
-            return error(BAD_REQUEST, "Could not find dataset with id " + datasetToAllowAccessId);
+            List<String> args = Arrays.asList(datasetToAllowAccessId);
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.allowRequests.failure.noDataset", args));
         }
 
         boolean allowRequest = Boolean.valueOf(requestStr);
