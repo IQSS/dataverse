@@ -945,20 +945,23 @@ public class Access extends AbstractApiBean {
         try {
             dataverseRequest = createDataverseRequest(findUserOrDie());
         } catch (WrappedResponse wr) {
-            return error(BAD_REQUEST, "Couldn't find user to execute command: " + wr.getLocalizedMessage());
+            List<String> args = Arrays.asList(wr.getLocalizedMessage());
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
         }
 
         dataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
 
-        // update the dataset
         try {
             engineSvc.submit(new UpdateDatasetVersionCommand(dataset, dataverseRequest));
         } catch (CommandException ex) {
-            return error(BAD_REQUEST, "Problem saving dataset " + dataset.getDisplayName() + ": " + ex.getLocalizedMessage());
+            List<String> args = Arrays.asList(dataset.getDisplayName(), ex.getLocalizedMessage());
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noSave", args));
         }
 
-        String text = allowRequest ? " allows file access requests." : "disallows file access requests.";
-        return ok("Dataset " + dataset.getDisplayName() + " " + text);
+        String text = allowRequest ? BundleUtil.getStringFromBundle("access.api.allowRequests.allows") : BundleUtil.getStringFromBundle("access.api.allowRequests.disallows");
+        List<String> args = Arrays.asList(dataset.getDisplayName(), text);
+        return ok(BundleUtil.getStringFromBundle("access.api.fileAccess.success", args));
+        
     }
 
     /**
