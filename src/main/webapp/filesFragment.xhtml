@@ -158,7 +158,7 @@
                 <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and DatasetPage.isThumbnailAvailable(fileMetadata)}"
                       data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
                     
-                    <object data="#{DatasetPage.getDataFileThumbnailAsBase64(fileMetadata)}" />  
+                    <img src="#{DatasetPage.getDataFileThumbnailAsBase64(fileMetadata)}" />  
                 </span>
 
                 <!-- Default Icon -->
