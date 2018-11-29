@@ -36,6 +36,7 @@ The following metrics will be sent for each published dataset:
 
 - Views ("investigations" in COUNTER)
 - Downloads ("requests" in COUNTER)
+- Citations ("relatedIdentifier" based on "Related Dataset")
 
 Retrieving Make Data Count Metrics from the DataCite Hub
 --------------------------------------------------------
