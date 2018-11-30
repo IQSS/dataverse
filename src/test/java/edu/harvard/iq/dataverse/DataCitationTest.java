@@ -265,7 +265,7 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion(true, true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "First Last. 1955. Qualitative Data Repository. \"Dataset Title\". https://doi.org/10.5072/FK2/LK0D1H. LibraScholar. V1",
+           "First Last. 1955. \"Dataset Title\". Qualitative Data Repository. https://doi.org/10.5072/FK2/LK0D1H. LibraScholar. V1",
            dataCitation.toString()
         );
     }
