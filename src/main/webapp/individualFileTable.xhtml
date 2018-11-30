@@ -34,8 +34,8 @@
                 </div>
                 <div class="text-muted small">
                     <span id="static:fileTypeOutputRegular">#{fileMetadata.dataFile.friendlyType}</span>
-                    <span id="static:fileSize"> - #{fileMetadata.dataFile.filesize} KB</span>
-                    <span id="static:fileCreatePublishDate"> - #{fileMetadata.fileDateToDisplay}</span> <!--MAD: This doesn't work from dataset page currently -->
+                    <span id="static:fileSize"> - #{fileMetadata.dataFile.friendlySize}</span>
+                    <span id="static:fileCreatePublishDate"> - #{fileMetadata.fileDateToDisplay}</span>
                     <div class="checksum-block"><span id="static:file-checksum">#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}</span></div>
                 </div>
                 <div class="fileDescription small" jsf:rendered="#{!(empty fileMetadata.description)}">
