@@ -166,6 +166,10 @@ public class EjbDataverseEngine {
     @EJB
     WorkflowServiceBean workflowService;
     
+    @EJB
+    FileDownloadServiceBean fileDownloadService;
+    
+    
     @Resource
     EJBContext ejbCtxt;
 
@@ -461,6 +465,11 @@ public class EjbDataverseEngine {
                 @Override
                 public DataCaptureModuleServiceBean dataCaptureModule() {
                     return dataCaptureModule;
+                }
+                
+                @Override
+                public FileDownloadServiceBean fileDownload() {
+                    return fileDownloadService;
                 }
 
             };
