@@ -110,6 +110,14 @@ In a dataset containing a Dataverse Package, at the bottom of the dataset page, 
 After you've downloaded the Dataverse Package, you may want to double-check that your download went perfectly. Under **Verify Data**, you'll find a command that you can run in your terminal that will initiate a checksum to ensure that the data you downloaded matches the data in Dataverse precisely. This way, you can ensure the integrity of the data you're working with. 
 
 
+.. _package_download_url:
+
+Downloading a Dataverse Package via URL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[[ ADD TEXT HERE ]]
+
+
 Explore Data
 ------------
 
