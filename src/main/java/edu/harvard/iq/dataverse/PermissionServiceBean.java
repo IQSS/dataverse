@@ -104,12 +104,21 @@ public class PermissionServiceBean {
         public Set<Permission> get() {
             return permissionsFor(request, subject);
         }
-
+        
         public boolean has(Permission p) {
             return hasPermissionsFor(request, subject, EnumSet.of(p));
         }
 
-        public boolean has(Set<Permission> p) {
+        /*
+         * This is a new and optimized method, for making a quick lookup on 
+         * a SET of permission all at once; it was originally called 
+         * has(Set<Permission> p)... however, while unambiguos in Java, 
+         * the fact that there were 2 has() methods - has(Permission) and 
+         * has(Set<Permission>) - was confusing PrimeFaces and resulting in 
+         * pages failing with "cannot convert "String" to "Set" error messages...
+         * so it had to be renamed to hasPermissions(...)
+        */
+        public boolean hasPermissions(Set<Permission> p) {
             if (p.isEmpty()) {
                 return true;
             }
@@ -138,7 +147,7 @@ public class PermissionServiceBean {
                 return true;
             } else {
                 Set<Permission> requiredPermissionSet = required.get("");
-                return has(requiredPermissionSet);
+                return hasPermissions(requiredPermissionSet);
             }
         }
 
@@ -157,7 +166,7 @@ public class PermissionServiceBean {
                 return true;
             } else {
                 Set<Permission> requiredPermissionSet = required.get("");
-                return has(requiredPermissionSet);
+                return hasPermissions(requiredPermissionSet);
             }
         }
     }
@@ -189,7 +198,7 @@ public class PermissionServiceBean {
          * @deprecated Use DynamicPermissionQuery instead
          * @param commandName
          * @return {@code true} iff the user has the permissions required by the
-         * command on the object.
+ command on the object.
          * @throws ClassNotFoundException
          */
         @Deprecated
@@ -219,7 +228,7 @@ public class PermissionServiceBean {
 
     /**
      * Returns all the children (direct descendants) of {@code dvo}, on which the user 
-     * has all the permissions specified in {@code permissions}. This method takes into
+ has all the permissions specified in {@code permissions}. This method takes into
      * account which permissions apply for which object type, so a permission that 
      * applies only to {@link Dataset}s will not be considered when looking into
      * the question of whether a {@link Dataverse} should be contained in the output list.
@@ -345,7 +354,7 @@ public class PermissionServiceBean {
 
     /**
      * Finds all the permissions the {@link User} in {@code req} has over
-     * {@code dvo}, in the context of {@code req}.
+ {@code dvo}, in the context of {@code req}.
      *
      * @param req
      * @param dvo
@@ -542,12 +551,12 @@ public class PermissionServiceBean {
 
     /**
      * Go from (User, Permission) to a list of Dataverse objects that the user
-     * has the permission on.
+ has the permission on.
      *
      * @param user
      * @param permission
      * @return The list of dataverses {@code user} has permission
-     * {@code permission} on.
+ {@code permission} on.
      */
     public List<Dataverse> getDataversesUserHasPermissionOn(AuthenticatedUser user, Permission permission) {
         Set<Group> groups = groupService.groupsFor(user);

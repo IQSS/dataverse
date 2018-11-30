@@ -96,6 +96,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.util.Date;
 import java.util.Optional;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /**
  * A REST API for dataverses.
