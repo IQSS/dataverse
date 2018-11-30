@@ -5,8 +5,10 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
-      xmlns:jsf="http://xmlns.jcp.org/jsf">
-    
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      lang="#{dataverseLocaleBean.localeCode}"
+      xml:lang="#{dataverseLocaleBean.localeCode}">
+<f:view locale="#{dataverseLocaleBean.localeCode}">
     <h:head>
     </h:head>
 
@@ -137,5 +139,6 @@
             </ui:define>
         </ui:composition>
     </h:body>
+</f:view>
 </html>
 
