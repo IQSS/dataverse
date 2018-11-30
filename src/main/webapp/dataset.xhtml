@@ -1173,7 +1173,7 @@
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                         </ui:include>
                     </p:dialog>
-                    <p:dialog id="downloadS3PackagePopup" styleClass="smallPopUp" header="#{bundle['s3packagedownload.title']}" widgetVar="downloadS3PackagePopup" modal="true">
+                    <p:dialog id="downloadS3PackagePopup" styleClass="smallPopUp" header="#{bundle['s3PackageDownload.title']}" widgetVar="downloadS3PackagePopup" modal="true">
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                         <ui:include src="s3-package-download-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>

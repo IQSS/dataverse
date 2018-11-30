@@ -22,7 +22,7 @@
         <param-name>org.jboss.weld.context.conversation.lazy</param-name>
         <param-value>false</param-value>
     </context-param>
-    <!--MAD: Development UI warnings. Write better doc. https://docs.oracle.com/javaee/6/tutorial/doc/bnaxj.html#giqxl -->
+    <!-- UI warnings. See https://docs.oracle.com/javaee/6/tutorial/doc/bnaxj.html#giqxl -->
     <context-param>
         <param-name>javax.faces.PROJECT_STAGE</param-name>
 <!--        <param-value>Development</param-value>-->
