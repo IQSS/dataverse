@@ -290,7 +290,7 @@ public class DataversePage implements java.io.Serializable {
 
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
         } else { // ownerId != null; create mode for a new child dataverse
-            editMode = EditMode.INFO;
+            editMode = EditMode.CREATE;
             dataverse.setOwner(dataverseService.find(ownerId));
             if (dataverse.getOwner() == null) {
                 return  permissionsWrapper.notFound();
@@ -689,6 +689,20 @@ public class DataversePage implements java.io.Serializable {
         setInheritMetadataBlockFromParent(checkVal);
         if (!dataverse.isMetadataBlockRoot()) {
             refreshAllMetadataBlocks();
+        }
+    }
+    
+    public void resetToInherit() {
+
+        setInheritMetadataBlockFromParent(true);
+        System.out.print("reset to inherit");
+        System.out.print(editMode);
+        if (editMode.equals(DataversePage.EditMode.CREATE)) {
+            System.out.print("Create");
+            refreshAllMetadataBlocks();
+        } else {
+             System.out.print("other");
+            save();
         }
     }
 
