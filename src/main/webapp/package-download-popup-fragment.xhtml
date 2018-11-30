@@ -9,11 +9,11 @@
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <!--The p:dialog for this lives in dataset & file -->
-    <div jsf:id="s3DownloadPopupDataFileInfo">
+    <div jsf:id="packagePopupDownloadInfo">
         <div class="col-sm-12">
             <p class="help-block no-margin-top"> 
                 <span class="glyphicon glyphicon-info-sign"></span>                                            
-                <h:outputFormat value=" #{bundle['s3PackageDownload.instructions']}" escape="false">
+                <h:outputFormat value=" #{bundle['packageDownload.instructions']}" escape="false">
                     <f:param value="#{systemConfig.guidesBaseUrl}"/>
                     <f:param value="#{systemConfig.guidesVersion}"/>
                 </h:outputFormat>
@@ -21,15 +21,15 @@
         </div>
         <div class="col-sm-12 margin-bottom">
             <ui:include src="individualFileTable.xhtml">
-                <ui:param name="fileMetadata" value="#{s3PackagePopupFragmentBean.fileMetadata}" />
+                <ui:param name="fileMetadata" value="#{packagePopupFragmentBean.fileMetadata}" />
             </ui:include>
         </div>
         <div class="col-sm-12">
-            <label>#{bundle['s3PackageDownload.urlHeader']}</label> 
-            <p><code>#{systemConfig.getDataverseSiteUrl()}/api/access/datafile/#{s3PackagePopupFragmentBean.fileMetadata.dataFile.id}</code></p>
+            <label>#{bundle['packageDownload.urlHeader']}</label> 
+            <p><code>#{systemConfig.getDataverseSiteUrl()}/api/access/datafile/#{packagePopupFragmentBean.fileMetadata.dataFile.id}</code></p>
         </div>
         <div class="col-sm-12 button-block margin-top">              
-            <p:commandButton styleClass="btn btn-default" id="downloadS3PopupCancelButton" value="#{bundle.close}" update="downloadS3PackagePopup" onclick="PF('downloadS3PackagePopup').hide();" immediate="true"/>
+            <p:commandButton styleClass="btn btn-default" id="downloadPackagePopupCancelButton" value="#{bundle.close}" update="downloadPackagePopup" onclick="PF('downloadPackagePopup').hide();" immediate="true"/>
         </div>
     </div>
 </ui:composition>

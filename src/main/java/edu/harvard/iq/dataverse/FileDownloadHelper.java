@@ -299,7 +299,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          requestContext.execute("PF('downloadPopup').hide()");
     }
      
-    public void writeGuestbookAndLaunchS3PackagePopup(GuestbookResponse guestbookResponse) {
+    public void writeGuestbookAndLaunchPackagePopup(GuestbookResponse guestbookResponse) {
         RequestContext requestContext = RequestContext.getCurrentInstance();
         boolean valid = validateGuestbookResponse(guestbookResponse);
 
@@ -307,9 +307,9 @@ public class FileDownloadHelper implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));
         } else {
             requestContext.execute("PF('downloadPopup').hide()");
-            requestContext.execute("PF('downloadS3PackagePopup').show()");
-            requestContext.execute("handleResizeDialog('downloadS3PackagePopup')");
-//MAD: Do I need to check this is draft? Also am I passing that this is s3?
+            requestContext.execute("PF('downloadPackagePopup').show()");
+            requestContext.execute("handleResizeDialog('downloadPackagePopup')");
+
             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
         }
     }

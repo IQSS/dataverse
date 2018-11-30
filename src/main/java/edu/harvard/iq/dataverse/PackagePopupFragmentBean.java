@@ -16,7 +16,7 @@ import javax.inject.Named;
 
 @ViewScoped
 @Named
-public class S3PackagePopupFragmentBean implements java.io.Serializable {
+public class PackagePopupFragmentBean implements java.io.Serializable {
     
     FileMetadata fm;
     

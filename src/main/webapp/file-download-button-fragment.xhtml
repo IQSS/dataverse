@@ -117,11 +117,11 @@
                               and fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}"
                    type="button" styleClass="btn btn-default" process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
-                   update="@widgetVar(downloadS3PackagePopup)" oncomplete="PF('downloadS3PackagePopup').show();handleResizeDialog('downloadS3PackagePopup');">
-        <f:actionListener binding="#{s3PackagePopupFragmentBean.setFileMetadata(fileMetadata)}" />
-        <f:actionListener binding="#{fileDownloadService.writeGuestbookResponseRecord(guestbookResponse, fileMetadata, 's3Package')}" />
-        <!-- s3 package data file: -->
-        <!-- no guest book/terms of use/etc. - straight s3 package popup -->
+                   update="@widgetVar(downloadPackagePopup)" oncomplete="PF('downloadPackagePopup').show();handleResizeDialog('downloadPackagePopup');">
+        <f:actionListener binding="#{packagePopupFragmentBean.setFileMetadata(fileMetadata)}" />
+        <f:actionListener binding="#{fileDownloadService.writeGuestbookResponseRecord(guestbookResponse, fileMetadata, 'package')}" />
+        <!-- package data file: -->
+        <!-- no guest book/terms of use/etc. - straight package popup -->
         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
     </p:commandLink>
 
@@ -130,10 +130,10 @@
                     type="button" styleClass="btn btn-default"
                    process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
-                   action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 's3Package')}"
+                   action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'package')}"
                    update="@widgetVar(downloadPopup)" oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-        <f:actionListener binding="#{s3PackagePopupFragmentBean.setFileMetadata(fileMetadata)}" /> 
-        <!-- s3 package data file: -->
+        <f:actionListener binding="#{packagePopupFragmentBean.setFileMetadata(fileMetadata)}" /> 
+        <!-- package data file: -->
         <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
     </p:commandLink>

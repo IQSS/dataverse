@@ -22,7 +22,8 @@
         <param-name>org.jboss.weld.context.conversation.lazy</param-name>
         <param-value>false</param-value>
     </context-param>
-    <!-- UI warnings. See https://docs.oracle.com/javaee/6/tutorial/doc/bnaxj.html#giqxl -->
+    <!-- UI warnings that can be enabled setting to Develop or another level. 
+            See https://docs.oracle.com/javaee/6/tutorial/doc/bnaxj.html#giqxl -->
     <context-param>
         <param-name>javax.faces.PROJECT_STAGE</param-name>
 <!--        <param-value>Development</param-value>-->

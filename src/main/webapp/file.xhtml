@@ -553,8 +553,8 @@
                              </ui:include>
                         </div>
                     </p:dialog>
-                    <p:dialog id="downloadS3PackagePopup" styleClass="smallPopUp" header="#{bundle['s3PackageDownload.title']}" widgetVar="downloadS3PackagePopup" modal="true">
-                         <ui:include src="s3-package-download-popup-fragment.xhtml">
+                    <p:dialog id="downloadPackagePopup" styleClass="smallPopUp" header="#{bundle['packageDownload.title']}" widgetVar="downloadPackagePopup" modal="true">
+                         <ui:include src="package-download-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                             <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
                             <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>

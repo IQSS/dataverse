@@ -150,7 +150,7 @@
             <p:commandLink type="button" process="@this" styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat != 'externalTool'
                                                                                                                             and guestbookResponse.fileFormat != 'subset'
                                                                                                                             and guestbookResponse.fileFormat != 'worldMap'
-                                                                                                                            and guestbookResponse.fileFormat != 's3Package'}"
+                                                                                                                            and guestbookResponse.fileFormat != 'package'}"
                            actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse)}"
                            update="guestbookUIFragment"
                            >
@@ -176,9 +176,9 @@
                 <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandLink>    
             
-            <p:commandLink type="button" process="@this" styleClass="btn btn-default" rendered="#{guestbookResponse.fileFormat == 's3Package'}"
-                           update="guestbookUIFragment @form @widgetVar(downloadS3PackagePopup)" >
-                <f:actionListener binding="#{fileDownloadHelper.writeGuestbookAndLaunchS3PackagePopup(guestbookResponse)}" /> 
+            <p:commandLink type="button" process="@this" styleClass="btn btn-default" rendered="#{guestbookResponse.fileFormat == 'package'}"
+                           update="guestbookUIFragment @form @widgetVar(downloadPackagePopup)" >
+                <f:actionListener binding="#{fileDownloadHelper.writeGuestbookAndLaunchPackagePopup(guestbookResponse)}" /> 
                 <f:param name="DO_GB_VALIDATION" value="true"/>  
                 #{bundle['acceptTerms']}
             </p:commandLink>
