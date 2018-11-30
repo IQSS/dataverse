@@ -285,9 +285,9 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion(true, true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "First Last, 1955, \"Dataset Title\"," +
-           " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>," +
-           " LibraScholar, V1",
+           "First Last. 1955. \"Dataset Title\". Qualitative Data Repository." +
+           " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>." +
+           " LibraScholar. V1",
            dataCitation.toString(true)
         );
     }
@@ -297,9 +297,9 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion(false, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "1955," +
-           " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>," +
-           " LibraScholar, V1",
+           "1955. Qualitative Data Repository." +
+           " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>." +
+           " LibraScholar. V1",
            dataCitation.toString(true)
         );
     }

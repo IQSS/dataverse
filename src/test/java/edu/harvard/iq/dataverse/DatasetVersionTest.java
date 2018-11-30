@@ -147,7 +147,7 @@ public class DatasetVersionTest {
         // TODO: If it ever becomes easier to mock subjects, test them.
         assertEquals(emptyArray, obj.getJsonArray("keywords"));
         assertEquals("Organization", obj.getJsonObject("publisher").getString("@type"));
-        assertEquals("LibraScholar", obj.getJsonObject("publisher").getString("name"));
+        assertEquals("Qualitative Data Repository", obj.getJsonObject("publisher").getString("name"));
         assertEquals("Organization", obj.getJsonObject("provider").getString("@type"));
         String orgName = ResourceBundle.getBundle("Bundle").getString("institution.name"); 
         assertEquals(orgName, obj.getJsonObject("provider").getString("name"));
@@ -204,7 +204,7 @@ public class DatasetVersionTest {
         // TODO: If it ever becomes easier to mock subjects, test them.
         assertEquals(emptyArray, obj.getJsonArray("keywords"));
         assertEquals("Organization", obj.getJsonObject("publisher").getString("@type"));
-        assertEquals("LibraScholar", obj.getJsonObject("publisher").getString("name"));
+        assertEquals("Qualitative Data Repository", obj.getJsonObject("publisher").getString("name"));
         assertEquals("Organization", obj.getJsonObject("provider").getString("@type"));
         String orgName = ResourceBundle.getBundle("Bundle").getString("institution.name"); 
         assertEquals(orgName, obj.getJsonObject("provider").getString("name"));
