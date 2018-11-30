@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.MissingResourceException;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -114,7 +115,11 @@ public class ControlledVocabularyValue implements Serializable  {
     {
         String key = strValue.toLowerCase().replace(" " , "_");
         key = StringUtils.stripAccents(key);
-        return BundleUtil.getStringFromPropertyFile("controlledvocabulary." + this.datasetFieldType.getName() + "." + key, getDatasetFieldType().getMetadataBlock().getName());
+        try {
+            return BundleUtil.getStringFromPropertyFile("controlledvocabulary." + this.datasetFieldType.getName() + "." + key, getDatasetFieldType().getMetadataBlock().getName());
+        } catch (MissingResourceException e) {
+            return strValue;
+        }
     }
 
     @Override

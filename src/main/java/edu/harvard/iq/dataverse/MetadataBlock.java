@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -184,6 +185,10 @@ public class MetadataBlock implements Serializable {
 
     public String getLocaleDisplayName()
     {
-        return BundleUtil.getStringFromPropertyFile("metadatablock.displayName", getName());
+        try {
+            return BundleUtil.getStringFromPropertyFile("metadatablock.displayName", getName());
+        } catch (MissingResourceException e) {
+            return displayName;
+        }
     }
 }

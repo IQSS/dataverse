@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.MissingResourceException;
 import javax.faces.model.SelectItem;
 import javax.persistence.*;
 
@@ -559,29 +560,39 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     public String getLocaleTitle() {
-        if(getMetadataBlock()  == null){
+        if(getMetadataBlock()  == null) {
             return title;
         }
         else {
-            return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".title", getMetadataBlock().getName());
+            try {
+                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".title", getMetadataBlock().getName());
+            } catch (MissingResourceException e) {
+                return title;
+            }
         }
     }
 
     public String getLocaleDescription() {
-        if(getMetadataBlock()  == null){
+        if(getMetadataBlock()  == null) {
             return description;
-        }
-        else {
-            return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".description", getMetadataBlock().getName());
+        } else {
+            try {
+                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".description", getMetadataBlock().getName());
+            } catch (MissingResourceException e) {
+                return description;
+            }
         }
     }
 
     public String getLocaleWatermark()    {
-        if(getMetadataBlock()  == null){
+        if(getMetadataBlock()  == null) {
             return watermark;
-        }
-        else {
-            return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".watermark", getMetadataBlock().getName());
+        } else {
+            try {
+                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".watermark", getMetadataBlock().getName());
+            } catch (MissingResourceException e) {
+                return watermark;
+            }
         }
     }
 
