@@ -114,7 +114,7 @@
     </h:outputLink>
     
     <p:commandLink rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
-                              and fileMetadata.dataFile.filePackage and fileMetadata.datasetVersion.dataset.getStorageIdentifier().startsWith('s3://')}"
+                              and fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}"
                    type="button" styleClass="btn btn-default" process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
                    update="@widgetVar(downloadS3PackagePopup)" oncomplete="PF('downloadS3PackagePopup').show();handleResizeDialog('downloadS3PackagePopup');">
@@ -126,7 +126,7 @@
     </p:commandLink>
 
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and (downloadPopupRequired) 
-                              and fileMetadata.dataFile.filePackage and fileMetadata.datasetVersion.dataset.getStorageIdentifier().startsWith('s3://')}"
+                              and fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}"
                     type="button" styleClass="btn btn-default"
                    process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
@@ -139,7 +139,7 @@
     </p:commandLink>
 
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
-                                and !(fileMetadata.dataFile.filePackage and fileMetadata.datasetVersion.dataset.getStorageIdentifier().startsWith('s3://'))}"
+                                and !(fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}"
                    type="button" styleClass="btn btn-default"
                    process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
@@ -150,7 +150,7 @@
     </p:commandLink>
 
     <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and downloadPopupRequired 
-                                and !(fileMetadata.dataFile.filePackage and fileMetadata.datasetVersion.dataset.getStorageIdentifier().startsWith('s3://'))}"
+                                and !(fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}"
                    type="button" styleClass="btn btn-default"
                    process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 

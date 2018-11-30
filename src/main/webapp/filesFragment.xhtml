@@ -378,7 +378,7 @@
             </ui:fragment>
 
             <div class="btn-group" jsf:rendered="#{!fileMetadata.dataFile.filePackage or
-            fileMetadata.dataFile.filePackage and DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')}">
+                fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}">
                 <ui:include src="file-download-button-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
@@ -391,8 +391,9 @@
                     <ui:param name="exploreTools" value="#{DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)}"/>
                 </ui:include>
             </div>
-            <div class="col-xs-12 text-left small" jsf:rendered="#{fileMetadata.dataFile.filePackage and
-                !DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')}">
+            <div class="col-xs-12 text-left small" jsf:rendered="#{fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload 
+                and !DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://') 
+                }">
                 <!-- Data Access for Rsync Download -->
                 <ui:include src="file-data-access-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
@@ -401,5 +402,5 @@
                 </ui:include>
             </div>
         </p:column>
-    </p:dataTable>    
+    </p:dataTable>
 </ui:composition>
