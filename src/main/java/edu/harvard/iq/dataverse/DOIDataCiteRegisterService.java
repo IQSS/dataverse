@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean.GlobalIdMetadataTemplate;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +20,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -41,10 +43,14 @@ public class DOIDataCiteRegisterService {
 
     @EJB
     DataverseServiceBean dataverseService;
+
+    @EJB
+    DOIDataCiteServiceBean doiDataCiteServiceBean;
     
+        
     //A singleton since it, and the httpClient in it can be reused.
     private DataCiteRESTfullClient client=null;
-
+    
     private DataCiteRESTfullClient getClient() throws IOException {
         if (client == null) {
             client = new DataCiteRESTfullClient(System.getProperty("doi.baseurlstring"), System.getProperty("doi.username"), System.getProperty("doi.password"));
@@ -91,7 +97,7 @@ public class DOIDataCiteRegisterService {
             } else {
                 rc.setUrl(target);
             }
-            try  {
+            try {
                 DataCiteRESTfullClient client = getClient();
                 retString = client.postMetadata(xmlMetadata);
                 client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
@@ -99,7 +105,7 @@ public class DOIDataCiteRegisterService {
                 Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
-            try  {
+            try {
                 DataCiteRESTfullClient client = getClient();
                 retString = client.postMetadata(xmlMetadata);
                 client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
@@ -113,7 +119,7 @@ public class DOIDataCiteRegisterService {
     public String deactivateIdentifier(String identifier, HashMap<String, String> metadata, DvObject dvObject) {
         String retString = "";
         DOIDataCiteRegisterCache rc = findByDOI(identifier);
-        try  {
+        try {
             DataCiteRESTfullClient client = getClient();
             if (rc != null) {
                 rc.setStatus("unavailable");
@@ -250,7 +256,7 @@ public class DOIDataCiteRegisterService {
         try {
             DataCiteRESTfullClient client = getClient();
             String xmlMetadata = client.getMetadata(identifier.substring(identifier.indexOf(":") + 1));
-            DataCiteMetadataTemplate template = new DataCiteMetadataTemplate(xmlMetadata);
+            DOIDataCiteServiceBean.GlobalIdMetadataTemplate template = doiDataCiteServiceBean.new GlobalIdMetadataTemplate(xmlMetadata);
             metadata.put("datacite.creator", Util.getStrFromList(template.getCreators()));
             metadata.put("datacite.title", template.getTitle());
             metadata.put("datacite.publisher", template.getPublisher());
@@ -608,4 +614,5 @@ class Util {
         }
         return str.toString();
     }
+    
 }

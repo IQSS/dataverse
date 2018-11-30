@@ -6,9 +6,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.OutputStream;
-import javax.ejb.EJB;
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -44,9 +42,9 @@ public class DDIExporter implements Exporter {
     @Override
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
         try {
-		XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
-		xmlw.writeStartDocument();
-		xmlw.flush();
+        XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
+        xmlw.writeStartDocument();
+        xmlw.flush();
             DdiExportUtil.datasetJson2ddi(json, version, outputStream);
         } catch (XMLStreamException xse) {
             throw new ExportException ("Caught XMLStreamException performing DDI export");

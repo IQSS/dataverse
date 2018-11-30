@@ -134,6 +134,15 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 parentAllowsMultiplesBoolean = parent.isAllowMultiples();
                 parentAllowsMultiplesDisplay = Boolean.toString(parentAllowsMultiplesBoolean);
             }
+            JsonArrayBuilder controlledVocabularyValues = Json.createArrayBuilder();
+            for (ControlledVocabularyValue controlledVocabularyValue : dsf.getControlledVocabularyValues()) {
+                controlledVocabularyValues.add(NullSafeJsonBuilder.jsonObjectBuilder()
+                        .add("id", controlledVocabularyValue.getId())
+                        .add("strValue", controlledVocabularyValue.getStrValue())
+                        .add("displayOrder", controlledVocabularyValue.getDisplayOrder())
+                        .add("identifier", controlledVocabularyValue.getIdentifier())
+                );
+            }
             return ok(NullSafeJsonBuilder.jsonObjectBuilder()
                     .add("name", dsf.getName())
                     .add("id", id )
@@ -142,6 +151,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                     .add("fieldType", fieldType.name())
                     .add("allowsMultiples", allowsMultiples)
                     .add("hasParent", hasParent)
+                    .add("controlledVocabularyValues", controlledVocabularyValues)
                     .add("parentAllowsMultiples", parentAllowsMultiplesDisplay)
                     .add("solrFieldSearchable", solrFieldSearchable)
                     .add("solrFieldFacetable", solrFieldFacetable)

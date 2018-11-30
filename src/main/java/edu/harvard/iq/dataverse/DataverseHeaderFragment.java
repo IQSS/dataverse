@@ -222,6 +222,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
         
         dataverseSession.setUser(null);
+        dataverseSession.setStatusDismissed(false);
                 
         String safeDefaultIfKeyNotFound = "https://idp.dev-aws.qdr.org/idp/profile/Logout";
         String shibLogoutUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ShibLogoutUrl, safeDefaultIfKeyNotFound);

@@ -73,8 +73,6 @@ public class Workflow implements Serializable {
         return settings;
     }
 
-    
-
     @Override
     public int hashCode() {
         int hash = 7;

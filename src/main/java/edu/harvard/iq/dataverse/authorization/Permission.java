@@ -80,7 +80,11 @@ public enum Permission implements java.io.Serializable {
     }
 
     public String getHumanName() {
-        return humanName;
+        return BundleUtil.getStringFromBundle("permission."+name()+".desc");
+    }
+
+    public String getDisplayName() {
+        return BundleUtil.getStringFromBundle("permission."+name()+".label");
     }
 
     public boolean appliesTo(Class<? extends DvObject> aClass) {

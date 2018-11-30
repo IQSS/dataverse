@@ -22,8 +22,18 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>                       
+<<<<<<< HEAD
                    <!-- QDRCustom- Remove link-to-home logo -->
                     
+=======
+                    <a href="/">
+                        <ui:fragment rendered="#{empty settingsWrapper.get(':LogoCustomizationFile')}">
+                            <span class="navbar-brand" tabindex="1"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
+                        </ui:fragment>
+                        <h:graphicImage rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}"
+                            url="#{settingsWrapper.get(':LogoCustomizationFile')}" styleClass="navbar-brand custom-logo"/>
+                    </a>
+>>>>>>> refs/heads/QDR-953-dpn
                 </div>
                 <!-- QDRCustom- Menu Items -->
                 <div class="collapse navbar-collapse" id="topNavBar">
@@ -314,6 +324,17 @@
                 </div>
             </div>
         </nav>
+        <!-- Status Alert -->
+        <o:form class="form-inline">
+            <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader') and !dataverseSession.isStatusDismissed()}">
+                <div class="alert alert-dismissible container text-warning">
+                    <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.setStatusDismissed(true)}" update="@form" value="&#215;" />
+<!--                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&#215;</span></button>-->
+                    <h:outputText styleClass="highlightBold" value="#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}"/>
+                    <h:outputText rendered="#{!empty settingsWrapper.get(':StatusMessageText')}" value=" – #{settingsWrapper.get(':StatusMessageText')}" escape="false"/>
+                </div>
+            </div>
+        </o:form>
         <!-- Header Panel -->
         <!-- FIXME: Rather than hard-coding "FFFFFF", get it from the backend (ThemeWidgetFragment.DEFAULT_BACKGROUND_COLOR). -->
         <div id="dataverseHeader" class="container bg-muted"
@@ -428,6 +449,9 @@
             </div>
         </ui:remove>
 
+        
+
+        
         <!-- Message Panel -->
         <p:fragment id="messagePanel" rendered="#{showMessagePanel}">
             <div class="container messagePanel">

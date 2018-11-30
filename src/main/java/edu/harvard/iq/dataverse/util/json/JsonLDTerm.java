@@ -3,11 +3,6 @@ package edu.harvard.iq.dataverse.util.json;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-
-import edu.harvard.iq.dataverse.util.SystemConfig;
-
 public class JsonLDTerm {
 
     JsonLDNamespace namespace = null;
@@ -15,7 +10,6 @@ public class JsonLDTerm {
     String term = null;
 
     String url = null;
-    private static Map<String, JsonLDTerm> translations = new HashMap<String, JsonLDTerm>();
 
     public static JsonLDTerm termsOfUse = JsonLDTerm.DVCore("termsOfUse");
     public static JsonLDTerm confidentialityDeclaration = JsonLDTerm.DVCore("confidentialityDeclaration");
@@ -55,45 +49,12 @@ public class JsonLDTerm {
     public static JsonLDTerm fileCount = JsonLDTerm.DVCore("fileCount");
     public static JsonLDTerm maxFileSize = JsonLDTerm.DVCore("maxFileSize");
 
-    static {
-        /*
-         * Translations are intended to support project-specific translations for the
-         * following use case(s): * A project wishes to use a different vocabulary for
-         * export for terms that are not defined in tsv files, e.g. mapping 'DVCore'
-         * entries to schema.org or Dublin core
-         * 
-         * In both cases, the translations map requires the url of the original term and
-         * a JSONLDTerm that should be used as a replacement. 
-         * Example:
-         * 
-         * translations.put(JsonLDTerm.contact.getUrl(), JsonLDTerm.dcTerms("subject"));
-         * 
-         * ToDo - add an api or file to read translations from so they can be set dynamically.
-         * 
-         * Note: Terms in tsv files can be mapped to external vocabularies directly in the tsv file.
-         */
-
-    }
-
     public JsonLDTerm(JsonLDNamespace namespace, String term) {
-        JsonLDTerm translated = translations.get(namespace.getUrl() + term);
-        if (translated != null) {
-            this.namespace = translated.namespace;
-            this.term = translated.term;
-            this.url = translated.url;
-        } else {
-            this.namespace = namespace;
-            this.term = term;
-        }
+        this.namespace = namespace;
+        this.term = term;
     }
 
     public JsonLDTerm(String term, String url) {
-        JsonLDTerm translated = translations.get(url);
-        if (translated != null) {
-            this.namespace = translated.namespace;
-            this.term = translated.term;
-            this.url = translated.url;
-        }
         this.term = term;
         this.url = url;
     }
@@ -133,6 +94,7 @@ public class JsonLDTerm {
     public boolean inNamespace() {
         return (namespace != null);
     }
+    
     public JsonLDNamespace getNamespace() {
         return namespace;
     }

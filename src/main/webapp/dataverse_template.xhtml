@@ -73,7 +73,7 @@
         </p:ajaxStatus>
         <ui:include src="contactFormFragment.xhtml">
         </ui:include>
-        <p:dialog id="statusInfo" header="#{settingsWrapper.get(':StatusMessageHeader')}" widgetVar="statusInfo" modal="true">
+        <p:dialog id="statusInfo" styleClass="smallPopUp" header="#{settingsWrapper.get(':StatusMessageHeader')}" widgetVar="statusInfo" modal="true">
             <p><h:outputText value="#{settingsWrapper.get(':StatusMessageText')}" escape="false"/></p>
             <div class="button-block">
                 <button type="button" onclick="PF('statusInfo').hide()" class="btn btn-default" value="#{bundle.close}">

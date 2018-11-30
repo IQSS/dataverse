@@ -7,9 +7,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import java.io.OutputStream;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import javax.json.JsonObject;
@@ -80,7 +78,7 @@ public class OAI_OREExporter implements Exporter {
     public void setParam(String name, Object value) {
         // this exporter doesn't need/doesn't currently take any parameters
     }
-
+    
     @Override
     public String getMediaType() {
         return MediaType.APPLICATION_JSON;

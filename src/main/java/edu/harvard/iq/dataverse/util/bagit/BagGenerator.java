@@ -328,7 +328,7 @@ public class BagGenerator {
                     if (!checksumMap.containsKey(pidMap.get(resourceIndex.get(i)))) {
 
                         if (!childIsContainer(aggregates.get(i - 1).getAsJsonObject()))
-                            logger.warn("Missing sha1 hash for: " + resourceIndex.get(i));
+                            logger.warn("Missing checksum hash for: " + resourceIndex.get(i));
                         // FixMe - actually generate it before adding the
                         // oremap
                         // to the zip

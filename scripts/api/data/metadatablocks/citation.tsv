@@ -1,6 +1,6 @@
-#metadataBlock	name	dataverseAlias	displayName												
+#metadataBlock	name	dataverseAlias	displayName	blockURI											
 	citation		Citation Metadata	https://dataverse.org/schema/citation/											
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id	termURI
 	title	Title	Full title by which the Data Project is known.	Enter title...	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation	http://purl.org/dc/terms/title
 	alternativeTitle	Alternative Title	A title by which the work is commonly referred, or an abbreviation of the title.		text	1		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	http://purl.org/dc/terms/alternative
 	alternativeURL	Alternative URL	A URL where the Data Project can be viewed, such as a personal or project website.	Enter full URL, starting with http://	url	2	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	https://schema.org/distribution

@@ -10,6 +10,9 @@ package edu.harvard.iq.dataverse.search;
  * http://localhost:8080/api/admin/index/solr/schema` into the file in the
  * source tree when a metadata block update warrants it.
  *
+ * This process of updating schema.xml for new metadata block fields documented
+ * at doc/sphinx-guides/source/admin/metadatacustomization.rst
+ *
  * Generally speaking, we want the search fields to be readable. This is a
  * challenge for long field names but a power user should be able to type
  * "authorAffiliation:Harvard" into the general search box. A regular user is
@@ -90,9 +93,11 @@ public class SearchFields {
     public static final String PERSISTENT_URL = "persistentUrl";
     public static final String UNF = "unf";
     public static final String DATAVERSE_NAME = "dvName";
+    public static final String DATAVERSE_ALIAS = "dvAlias";
     public static final String DATAVERSE_AFFILIATION = "dvAffiliation";
     public static final String DATAVERSE_DESCRIPTION = "dvDescription";
     public static final String DATAVERSE_CATEGORY = "dvCategory";
+    
     /**
      * What is dvSubject_en for? How does it get populated into Solr? The
      * behavior changed so that now the subjects of dataverses are based on
@@ -112,6 +117,20 @@ public class SearchFields {
      * could have a convention like "subjectFacet" for the facets?
      */
     public static final String SUBJECT = "subject_ss";
+    
+    /*
+     * The category of the Dataverse (aka Dataverse Type). Named differently
+     * than DATAVERSE_CATEGORY so it can be searched but doesn't show up on the
+     * homepage facet
+     */
+    public static final String CATEGORY_OF_DATAVERSE = "categoryOfDataverse";
+    
+    /*
+     * The alias of the dataverse. This named differently because IDENTIFIER
+     * is used for dataset for its own identifier.
+     */
+    public static final String IDENTIFIER_OF_DATAVERSE = "identifierOfDataverse";
+    
     /**
      * @todo think about how to tie the fact that this needs to be multivalued
      * (_ss) because a multivalued facet (authorAffilition_ss) will be collapsed
@@ -195,7 +214,6 @@ public class SearchFields {
     public static final String DEFINITION_POINT_DVOBJECT_ID = "definitionPointDvObjectId";
     public static final String DISCOVERABLE_BY = "discoverableBy";
     public static final String FULL_TEXT_SEARCHABLE_BY = "fullTextSearchableBy";
-
 
     /**
      * i.e. "Unpublished", "Draft" (multivalued)

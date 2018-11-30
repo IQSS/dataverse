@@ -126,9 +126,9 @@ List Metadata Blocks Defined on a Dataverse
 Define Metadata Blocks for a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the metadata blocks of the dataverse. Makes the dataverse a metadatablock root. The query body is a JSON array with a list of metadatablocks identifiers (either id or name). ::
+Sets the metadata blocks of the dataverse. Makes the dataverse a metadatablock root. The query body is a JSON array with a list of metadatablocks identifiers (either id or name), such as "journal" and "geospatial" in the example below. Requires "EditDataverse" permission. In this example the "root" dataverse is being modified but you can substitute any dataverse alias:
 
-  POST http://$SERVER/api/dataverses/$id/metadatablocks?key=$apiKey
+``curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" -d "[\"journal\",\"geospatial\"]" http://localhost:8080/api/dataverses/:root/metadatablocks``
 
 Determine if a Dataverse Inherits Its Metadata Blocks from Its Parent
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -251,6 +251,16 @@ Export Metadata of a Dataset in Various Formats
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
 .. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , and ``dataverse_json``.
+
+Schema.org JSON-LD
+^^^^^^^^^^^^^^^^^^
+
+Please note that the ``schema.org`` format has changed in backwards-incompatible ways after Dataverse 4.9.4:
+
+- "description" was a single string and now it is an array of strings.
+- "citation" was an array of strings and now it is an array of objects.
+
+Both forms are valid according to Google's Structured Data Testing Tool at https://search.google.com/structured-data/testing-tool . (This tool will report "The property affiliation is not recognized by Google for an object of type Thing" and this known issue is being tracked at https://github.com/IQSS/dataverse/issues/5029 .) Schema.org JSON-LD is an evolving standard that permits a great deal of flexibility. For example, https://schema.org/docs/gs.html#schemaorg_expected indicates that even when objects are expected, it's ok to just use text. As with all metadata export formats, we will try to keep the Schema.org JSON-LD format Dataverse emits backward-compatible to made integrations more stable, despite the flexibility that's afforded by the standard.
 
 List Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -513,11 +523,11 @@ Dataset Locks
 
 To check if a dataset is locked:: 
 
-    curl -H "$SERVER_URL/api/datasets/{database_id}/locks
+    curl "$SERVER_URL/api/datasets/{database_id}/locks
 
 Optionally, you can check if there's a lock of a specific type on the dataset:: 
 
-    curl -H "$SERVER_URL/api/datasets/{database_id}/locks?type={lock_type}
+    curl "$SERVER_URL/api/datasets/{database_id}/locks?type={lock_type}
 
 Currently implemented lock types are ``Ingest, Workflow, InReview, DcmUpload and pidRegister``. 
 

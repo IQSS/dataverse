@@ -44,7 +44,7 @@ public interface Exporter {
     public String getXMLSchemaVersion() throws ExportException; 
     
     public void setParam(String name, Object value);
-    
+
 	public default String getMediaType() {
 	    return MediaType.APPLICATION_XML;
 	};

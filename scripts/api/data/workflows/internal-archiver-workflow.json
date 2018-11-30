@@ -1,0 +1,19 @@
+{
+  "name": "Archive submission workflow",
+  "steps": [
+    {
+      "provider": ":internal",
+      "stepType": "archiver",
+      "parameters": {
+        "stepName": "archive submission"
+      },
+      "requiredSettings": {
+        "ArchiverClassName": "String",
+        "ArchiverSettings": "String",
+        "DuraCloudHost": "string",
+        "DuraCloudPort": "string",
+        "DuraCloudContext": "string"
+      }
+    }
+  ]
+}

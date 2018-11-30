@@ -42,8 +42,8 @@ public class DataCiteExporter implements Exporter {
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
             throws ExportException {
         try {
-        	DataCitation dc = new DataCitation(version);
-        	
+            DataCitation dc = new DataCitation(version);
+            
             Map<String, String> metadata = dc.getDataCiteMetadata();
             String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(
                     version.getDataset().getGlobalId().asString(), metadata, version.getDataset());
@@ -87,4 +87,5 @@ public class DataCiteExporter implements Exporter {
     public void setParam(String name, Object value) {
         // this exporter does not uses or supports any parameters as of now.
     }
+
 }

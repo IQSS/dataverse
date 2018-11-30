@@ -108,6 +108,9 @@ public class SolrSearchResult {
     private List<String> fileCategories = null;
     private List<String> tabularDataTags = null;
     
+    private String identifierOfDataverse = null;
+    private String nameOfDataverse = null;
+    
     public String getDvTree() {
         return dvTree;
     }
@@ -520,6 +523,8 @@ public class SolrSearchResult {
                 .add("dataset_citation", datasetCitation)
                 .add("deaccession_reason", this.deaccessionReason)
                 .add("citationHtml", this.citationHtml)
+                .add("identifier_of_dataverse", this.identifierOfDataverse)
+                .add("name_of_dataverse", this.nameOfDataverse)
                 .add("citation", this.citation);
         // Now that nullSafeJsonBuilder has been instatiated, check for null before adding to it!
         if (showRelevance) {
@@ -1064,5 +1069,19 @@ public class SolrSearchResult {
         this.userRole = userRole;
     }
 
-
+    public String getIdentifierOfDataverse() {
+        return identifierOfDataverse;
+    }
+    
+    public void setIdentifierOfDataverse(String id) {
+        this.identifierOfDataverse = id;
+    }
+    
+    public String getNameOfDataverse() {
+        return nameOfDataverse;
+    }
+    
+    public void setNameOfDataverse(String id) {
+        this.nameOfDataverse = id;
+    }
 }

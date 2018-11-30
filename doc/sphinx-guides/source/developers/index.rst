@@ -16,6 +16,7 @@ Developer Guide
    tips
    troubleshooting
    version-control
+   sql-upgrade-scripts
    testing
    documentation
    debugging
@@ -29,3 +30,4 @@ Developer Guide
    geospatial
    selinux
    big-data-support
+   workflows

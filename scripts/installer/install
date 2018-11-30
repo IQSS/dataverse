@@ -80,7 +80,11 @@ else
 	'RSERVE_HOST',
 	'RSERVE_PORT',
 	'RSERVE_USER',
-	'RSERVE_PASSWORD'
+	'RSERVE_PASSWORD',
+
+	'DOI_USERNAME',
+	'DOI_PASSWORD',
+	'DOI_BASEURL'
 
 	);
 }
@@ -105,7 +109,11 @@ my %CONFIG_DEFAULTS = (
     'RSERVE_HOST',     'localhost',
     'RSERVE_PORT',     6311,
     'RSERVE_USER',     'rserve',
-    'RSERVE_PASSWORD', 'rserve'
+    'RSERVE_PASSWORD', 'rserve',
+
+    'DOI_USERNAME',    'dataciteuser',
+    'DOI_PASSWORD',    'datacitepassword',
+    'DOI_BASEURL',     'https://mds.test.datacite.org',
 
 );
 
@@ -128,7 +136,11 @@ my %CONFIG_PROMPTS = (
     'RSERVE_HOST',     'Rserve Server',
     'RSERVE_PORT',     'Rserve Server Port',
     'RSERVE_USER',     'Rserve User Name',
-    'RSERVE_PASSWORD', 'Rserve User Password'
+    'RSERVE_PASSWORD', 'Rserve User Password',
+
+    'DOI_USERNAME',    'Datacite username',
+    'DOI_PASSWORD',    'Datacite password',
+    'DOI_BASEURL',    'Datacite URL'
 
 );
 
@@ -152,7 +164,11 @@ my %CONFIG_COMMENTS = (
     'RSERVE_HOST',     '',
     'RSERVE_PORT',     '',
     'RSERVE_USER',     '',
-    'RSERVE_PASSWORD', ''
+    'RSERVE_PASSWORD', '',
+
+    'DOI_USERNAME',    'DataCite or EZID username. Only necessary for publishing / minting DOIs.',
+    'DOI_PASSWORD',    'DataCite or EZID account password.',
+    'DOI_BASEURL',    'DataCite or EZID URL. Probably https://mds.datacite.org'
 
 );
 
@@ -945,8 +961,13 @@ sub setup_glassfish {
     print STDERR $DOMAIN_DOWN . "\n";
     if ($DOMAIN_DOWN) {
 	print "Trying to start domain up...\n";
-	system( "sudo -u $CONFIG_DEFAULTS{'GLASSFISH_USER'} " . $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
-	
+	if ( $current_user eq $CONFIG_DEFAULTS{'GLASSFISH_USER'} ){
+		system( $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
+	}
+	else
+	{
+		system( "sudo -u $CONFIG_DEFAULTS{'GLASSFISH_USER'} " . $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/bin/asadmin start-domain domain1" );
+	}
 	# TODO: (?) - retest that the domain is running now? 
     }
     else

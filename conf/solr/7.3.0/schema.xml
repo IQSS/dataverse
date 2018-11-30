@@ -132,7 +132,7 @@
     <field name="text_rev" type="text_general_rev" indexed="true" stored="false" multiValued="true"/>    
     <field name="name" type="text_en" indexed="true" stored="true"/> 
 
-	<!--  full text indexing, text_en for stemming, stored to support returning phrases around hits -->
+    <!--  full text indexing, text_en for stemming, stored to support returning phrases around hits -->
     <field name="fulltext" type="text_en" indexed="true" stored="true"/>
 
 
@@ -150,10 +150,13 @@
     <field name="isHarvested" type="boolean" stored="true" indexed="true" multiValued="false"/>
 
     <field name="dvName" type="text_en" stored="true" indexed="true" multiValued="false"/>
+    <field name="dvAlias" type="text_en" stored="true" indexed="true" multiValued="false"/>
     <field name="dvAffiliation" type="text_en" stored="true" indexed="true" multiValued="false"/>
     <field name="dvDescription" type="text_en" stored="true" indexed="true" multiValued="false"/>
 
     <field name="dvCategory" type="string" stored="true" indexed="true" multiValued="false"/>
+    <field name="categoryOfDataverse" type="string" stored="true" indexed="true" multiValued="false"/>
+    <field name="identifierOfDataverse" type="string" stored="true" indexed="true" multiValued="false"/>
 
     <field name="publicationDate" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="dsPublicationDate" type="string" stored="true" indexed="true" multiValued="false"/>
@@ -463,6 +466,7 @@
     <copyField source="variableLabel" dest="_text_" maxChars="3000"/>
     <!-- Make dataverse subject and affiliation searchable from basic search: https://github.com/IQSS/dataverse/issues/1431 -->
     <copyField source="dvSubject" dest="_text_" maxChars="3000"/>
+    <copyField source="dvAlias" dest="_text_" maxChars="3000"/>
     <copyField source="dvAffiliation" dest="_text_" maxChars="3000"/>
     <copyField source="dsPersistentId" dest="_text_" maxChars="3000"/>
     <!-- copyField commands copy one field to another at the time a document

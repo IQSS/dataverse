@@ -42,7 +42,6 @@ public class WorkflowStepData implements Serializable {
     @Column(length = 2048)
     private Map<String,String> stepSettings;
 
-
     public Workflow getParent() {
         return parent;
     }

@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -37,8 +38,6 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -75,15 +74,19 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.engine.command.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.SubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
+import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.ResourceBundle;
@@ -124,6 +127,10 @@ public class Admin extends AbstractApiBean {
     DataverseRequestServiceBean dvRequestService;
     @EJB
     EjbDataverseEngine commandEngine;
+    @EJB
+    GroupServiceBean groupService;
+    @EJB
+    SettingsServiceBean settingsService;
 
 	// Make the session available
 	@Inject
@@ -356,12 +363,12 @@ public class Admin extends AbstractApiBean {
 			authUser = this.findUserOrDie();
 		} catch (AbstractApiBean.WrappedResponse ex) {
 			return error(Response.Status.FORBIDDEN,
-					ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.invalid_apikey"));
+					BundleUtil.getStringFromBundle("dashboard.list_users.api.auth.invalid_apikey"));
 		}
 
 		if (!authUser.isSuperuser()) {
 			return error(Response.Status.FORBIDDEN,
-					ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.not_superuser"));
+					BundleUtil.getStringFromBundle("dashboard.list_users.api.auth.not_superuser"));
 		}
 
 		UserListMaker userListMaker = new UserListMaker(userService);
@@ -413,8 +420,8 @@ public class Admin extends AbstractApiBean {
 	@Path("authenticatedUsers/id/{id}/convertShibToBuiltIn")
 	@Deprecated
 	public Response convertShibUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-       try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+                try {
+                        AuthenticatedUser user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -427,7 +434,7 @@ public class Admin extends AbstractApiBean {
 				return error(Response.Status.BAD_REQUEST, "User id " + id
 						+ " could not be converted from Shibboleth to BuiltIn. An Exception was not thrown.");
 			}
-            AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
+                        AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
 			JsonObjectBuilder output = Json.createObjectBuilder();
 			output.add("email", authUser.getEmail());
 			output.add("username", builtinUser.getUserName());
@@ -449,7 +456,7 @@ public class Admin extends AbstractApiBean {
 	@PUT
 	@Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
 	public Response convertOAuthUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-       try {
+        try {
 			AuthenticatedUser user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
@@ -1055,7 +1062,7 @@ public class Admin extends AbstractApiBean {
 	public Response isOrcidEnabled() {
 		return authSvc.isOrcidEnabled() ? ok("Orcid is enabled") : ok("no orcid for you.");
 	}
-        
+
     @POST
     @Path("{id}/reregisterHDLToPID")
     public Response reregisterHdlToPID(@PathParam("id") String id) {
@@ -1063,7 +1070,7 @@ public class Admin extends AbstractApiBean {
         try {
             if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(GlobalId.HDL_PROTOCOL)) {
                 logger.info("Bad Request protocol set to handle  " );
-                return error(Status.BAD_REQUEST, ResourceBundle.getBundle("Bundle").getString("admin.api.migrateHDL.failure.must.be.set.for.doi"));
+                return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
             }
             
             User u = findUserOrDie();
@@ -1175,7 +1182,7 @@ public class Admin extends AbstractApiBean {
 		Integer alreadyUpdated = 0;
 		Integer rehashed = 0;
 		Integer harvested=0;
-		//ToDo - num parameter is not working
+		
 		if (num <= 0)
 			num = Integer.MAX_VALUE;
 		DataFile.ChecksumType cType = null;
@@ -1204,13 +1211,14 @@ public class Admin extends AbstractApiBean {
 				if (df.isHarvested()) {
 					harvested++;
 				} else {
-				if (!df.getChecksumType().equals(cType)) {
-					rehashed++;
+					if (!df.getChecksumType().equals(cType)) {
+
+						rehashed++;
 						logger.fine(rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", "
 								+ df.getIdentifier());
-					// verify hash and calc new one to replace it
-					StorageIO<DataFile> storage = df.getStorageIO();
-					storage.open(DataAccessOption.READ_ACCESS);
+						// verify hash and calc new one to replace it
+						StorageIO<DataFile> storage = df.getStorageIO();
+						storage.open(DataAccessOption.READ_ACCESS);
 						if (!df.isTabularData()) {
 							in = storage.getInputStream();
 						} else {
@@ -1218,13 +1226,13 @@ public class Admin extends AbstractApiBean {
 							// instead:
 							in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
 						}
-					if (in == null)
+						if (in == null)
 							logger.warning("Cannot retrieve file.");
-					String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
-					if (currentChecksum.equals(df.getChecksumValue())) {
+						String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
+						if (currentChecksum.equals(df.getChecksumValue())) {
 							logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
-								+ df.getIdentifier() + " is valid");
-						storage.open(DataAccessOption.READ_ACCESS);
+									+ df.getIdentifier() + " is valid");
+							storage.open(DataAccessOption.READ_ACCESS);
 							if (!df.isTabularData()) {
 								in2 = storage.getInputStream();
 							} else {
@@ -1232,30 +1240,29 @@ public class Admin extends AbstractApiBean {
 								// instead:
 								in2 = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
 							}
-						if (in2 == null)
+							if (in2 == null)
 								logger.warning("Cannot retrieve file to calculate new checksum.");
-						String newChecksum = FileUtil.CalculateChecksum(in2, cType);
+							String newChecksum = FileUtil.CalculateChecksum(in2, cType);
 
-						df.setChecksumType(cType);
-						df.setChecksumValue(newChecksum);
-						successes++;
+							df.setChecksumType(cType);
+							df.setChecksumValue(newChecksum);
+							successes++;
 							if (successes % 100 == 0) {
 								logger.info(
 										successes + " of  " + count + " files rehashed successfully. " + new Date());
 							}
+						} else {
+							logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
+									+ ", " + df.getIdentifier() + " is INVALID");
+						}
 					} else {
-						logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
-								+ ", " + df.getIdentifier() + " is INVALID");
-					}
-				} else {
-					alreadyUpdated++;
-					if (alreadyUpdated % 100 == 0) {
-						logger.info(alreadyUpdated + " of  " + count
-								+ " files are already have hashes with the new algorithm. " + new Date());
+						alreadyUpdated++;
+						if (alreadyUpdated % 100 == 0) {
+							logger.info(alreadyUpdated + " of  " + count
+									+ " files are already have hashes with the new algorithm. " + new Date());
+						}
 					}
 				}
-				}
-
 			} catch (Exception e) {
 				logger.warning("Unexpected Exception: " + e.getMessage());
 
@@ -1275,38 +1282,44 @@ public class Admin extends AbstractApiBean {
 		return ok("Datafile rehashing complete." + successes + " of  " + rehashed + " files successfully rehashed.");
 	}
 
-	@GET
-    @Path("/submitDataVersionToDPN/{id}/{version}")
-    public Response submitDatasetVersionToDPN(@PathParam("id") String dsid, @PathParam("version") String versionNumber) {
+    @GET
+    @Path("/submitDataVersionToArchive/{id}/{version}")
+    public Response submitDatasetVersionToArchive(@PathParam("id") String dsid, @PathParam("version") String versionNumber) {
 
-		try {
+        try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
             session.setUser(au);
             Dataset ds = findDatasetOrDie(dsid);
 
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
             if (dv.getArchivalCopyLocation() == null) {
-                SubmitToArchiveCommand cmd = new SubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
-                try {
-                    dv = commandEngine.submit(cmd);
-                    if (dv.getArchivalCopyLocation() != null) {
-                        return ok("DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber + " submitted to DPN/Duracloud at: "
-                                + dv.getArchivalCopyLocation());
-                    } else {
-                        return error(Status.CONFLICT, "Error submitting version due to conflict/error at DPN");
+                String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
+                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
+                if (cmd != null) {
+                    try {
+                        dv = commandEngine.submit(cmd);
+                        if (dv.getArchivalCopyLocation() != null) {
+                            return ok("DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber + " submitted to Archive at: "
+                                    + dv.getArchivalCopyLocation());
+                        } else {
+                            return error(Status.CONFLICT, "Error submitting version due to conflict/error at Archive");
+                        }
+                    } catch (CommandException ex) {
+                        logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
+                        return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
                     }
-                } catch (CommandException ex) {
-                    logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
-                    return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
+                } else {
+                    logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Missing Archiver class: " + className);
                 }
             } else {
                 return error(Status.BAD_REQUEST, "Version already archived at: " + dv.getArchivalCopyLocation());
             }
-		} catch (WrappedResponse e1) {
-			return error(Status.UNAUTHORIZED, "api key required");
-		}
-	}
-
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
+    }
+    
 	@DELETE
 	@Path("/clearMetricsCache")
 	public Response clearMetricsCache() {
@@ -1323,4 +1336,33 @@ public class Admin extends AbstractApiBean {
 		return ok("metric cache " + name + " cleared.");
 	}
 
+    @GET
+    @Path("/dataverse/{alias}/addRoleAssignmentsToChildren")
+    public Response addRoleAssignementsToChildren(@PathParam("alias") String alias) throws WrappedResponse {
+        Dataverse owner = dataverseSvc.findByAlias(alias);
+        if (owner == null) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+        }
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        boolean inheritAllRoles = false;
+        String rolesString = settingsSvc.getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
+        if (rolesString.length() > 0) {
+            ArrayList<String> rolesToInherit = new ArrayList<String>(Arrays.asList(rolesString.split("\\s*,\\s*")));
+            if (!rolesToInherit.isEmpty()) {
+                if (rolesToInherit.contains("*")) {
+                    inheritAllRoles = true;
+                }
+                return ok(dataverseSvc.addRoleAssignmentsToChildren(owner, rolesToInherit, inheritAllRoles));
+            }
+        }
+        return error(Response.Status.BAD_REQUEST,
+                "InheritParentRoleAssignments does not list any roles on this instance");
+    }
 }

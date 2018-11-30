@@ -366,20 +366,39 @@ public class SettingsServiceBean {
         */
         PIDAsynchRegFileCount,
         /**
-         * Providing a Duracloud host (and optional port) enables manual submission of archival copies of published dataset versions
-         * to that host, e.g. as the first step in archiving through the Digital Preservation Network (DPN.org).
+         * 
+         */
+        FilePIDsEnabled,
+        
+        /**
+         * Archiving can be configured by providing an Archiver class name (class must extend AstractSubmitToArchiverCommand)
+         * and a list of settings that should be passed to the Archiver.
          * Note: 
-         * Configuration also requires adding the username and password as jvm-options in glassfish.
-         * To automate this step as part of publication, a post-publication workflow must also be configured.
+         * Configuration may also require adding Archiver-specific jvm-options (i.e. for username and password) in glassfish.
+         * 
+         * To automate the submission of an archival copy step as part of publication, a post-publication workflow must also be configured.
+         * 
+         * For example:
+         * ArchiverClassName - "DPNSubmitToArchiveCommand"
+         * ArchiverSettings - "DuraCloudHost, DuraCloudPort, DuraCloudContext"
+         * 
+         * Note: Dataverse must be configured with values for these dynamically defined settings as well, e.g. 
          * 
          * DuraCloudHost , eg. "qdr.duracloud.org", a non-null value enables submission
          * DuraCloudPort, default is 443
          * DuraCloudContext, default is "durastore"
          */
         
-        DuraCloudHost,
-        DuraCloudPort,
-        DuraCloudContext,
+        ArchiverClassName,
+        ArchiverSettings,
+        
+        /**
+         * A comma-separated list of roles for which new dataverses should inherit the
+         * corresponding role assignments from the parent dataverse. Also affects
+         * /api/admin/dataverse/{alias}/addRolesToChildren. Default is "", no
+         * inheritance. "*" means inherit assignments for all roles
+         */
+        InheritParentRoleAssignments,
         
         /**
          * QDR Custom settings
@@ -392,11 +411,10 @@ public class SettingsServiceBean {
         /** Url of integrated Drupal Site */
         QDRDrupalSiteURL,
         /** Base Url of this Dataverse Site */
-        QDRDataverseBaseURL,
+        QDRDataverseBaseURL
         
-		FilePIDsEnabled
         ;
-        
+
         @Override
         public String toString() {
             return ":" + name();

@@ -1,23 +1,31 @@
 package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
+import static edu.harvard.iq.dataverse.util.SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.ResourceBundle;
+import java.util.List;
 import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -29,6 +37,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+/**
+ * For docs see {@link SchemaDotOrgExporter}.
+ */
 public class SchemaDotOrgExporterTest {
 
     private final SchemaDotOrgExporter schemaDotOrgExporter;
@@ -89,6 +100,19 @@ public class SchemaDotOrgExporterTest {
         dsDescriptionType.setChildDatasetFieldTypes(dsDescriptionTypes);
 
         DatasetFieldType keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> keywordChildTypes = new HashSet<>();
+        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordValue", DatasetFieldType.FieldType.TEXT, false)));
+        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabulary", DatasetFieldType.FieldType.TEXT, false)));
+        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabularyURI", DatasetFieldType.FieldType.TEXT, false)));
+        keywordType.setChildDatasetFieldTypes(keywordChildTypes);
+
+        DatasetFieldType topicClassificationType = datasetFieldTypeSvc.add(new DatasetFieldType("topicClassification", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> topicClassificationTypes = new HashSet<>();
+        topicClassificationTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("topicClassValue", DatasetFieldType.FieldType.TEXT, false)));
+        topicClassificationTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("topicClassVocab", DatasetFieldType.FieldType.TEXT, false)));
+        topicClassificationTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("topicClassVocabURI", DatasetFieldType.FieldType.TEXT, false)));
+        topicClassificationType.setChildDatasetFieldTypes(topicClassificationTypes);
+
         DatasetFieldType descriptionType = datasetFieldTypeSvc.add(new DatasetFieldType("description", DatasetFieldType.FieldType.TEXTBOX, false));
 
         DatasetFieldType subjectType = datasetFieldTypeSvc.add(new DatasetFieldType("subject", DatasetFieldType.FieldType.TEXT, true));
@@ -116,6 +140,82 @@ public class SchemaDotOrgExporterTest {
             t.setParentDatasetFieldType(compoundSingleType);
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
+
+        DatasetFieldType contributorType = datasetFieldTypeSvc.add(new DatasetFieldType("contributor", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> contributorChildTypes = new HashSet<>();
+        contributorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("contributorName", DatasetFieldType.FieldType.TEXT, false)));
+        DatasetFieldType contributorTypes = datasetFieldTypeSvc.add(new DatasetFieldType("contributorType", DatasetFieldType.FieldType.TEXT, false));
+        contributorTypes.setAllowControlledVocabulary(true);
+        contributorTypes.setControlledVocabularyValues(Arrays.asList(
+                // Why aren't these enforced?
+                new ControlledVocabularyValue(1l, "Data Collector", contributorTypes),
+                new ControlledVocabularyValue(2l, "Data Curator", contributorTypes),
+                new ControlledVocabularyValue(3l, "Data Manager", contributorTypes),
+                new ControlledVocabularyValue(3l, "Editor", contributorTypes),
+                new ControlledVocabularyValue(3l, "Funder", contributorTypes),
+                new ControlledVocabularyValue(3l, "Hosting Institution", contributorTypes)
+        // Etc. There are more.
+        ));
+        contributorChildTypes.add(datasetFieldTypeSvc.add(contributorTypes));
+        for (DatasetFieldType t : contributorChildTypes) {
+            t.setParentDatasetFieldType(contributorType);
+        }
+        contributorType.setChildDatasetFieldTypes(contributorChildTypes);
+
+        DatasetFieldType grantNumberType = datasetFieldTypeSvc.add(new DatasetFieldType("grantNumber", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> grantNumberChildTypes = new HashSet<>();
+        grantNumberChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("grantNumberAgency", DatasetFieldType.FieldType.TEXT, false)));
+        grantNumberChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("grantNumberValue", DatasetFieldType.FieldType.TEXT, false)));
+        grantNumberType.setChildDatasetFieldTypes(grantNumberChildTypes);
+
+        DatasetFieldType publicationType = datasetFieldTypeSvc.add(new DatasetFieldType("publication", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> publicationChildTypes = new HashSet<>();
+        publicationChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("publicationCitation", DatasetFieldType.FieldType.TEXT, false)));
+        DatasetFieldType publicationIdTypes = datasetFieldTypeSvc.add(new DatasetFieldType("publicationIDType", DatasetFieldType.FieldType.TEXT, false));
+        publicationIdTypes.setAllowControlledVocabulary(true);
+        publicationIdTypes.setControlledVocabularyValues(Arrays.asList(
+                // Why aren't these enforced?
+                new ControlledVocabularyValue(1l, "ark", publicationIdTypes),
+                new ControlledVocabularyValue(2l, "arXiv", publicationIdTypes),
+                new ControlledVocabularyValue(3l, "bibcode", publicationIdTypes),
+                new ControlledVocabularyValue(4l, "doi", publicationIdTypes),
+                new ControlledVocabularyValue(5l, "ean13", publicationIdTypes),
+                new ControlledVocabularyValue(6l, "handle", publicationIdTypes)
+        // Etc. There are more.
+        ));
+        publicationChildTypes.add(datasetFieldTypeSvc.add(publicationIdTypes));
+        publicationChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("publicationIDNumber", DatasetFieldType.FieldType.TEXT, false)));
+        DatasetFieldType publicationURLType = new DatasetFieldType("publicationURL", DatasetFieldType.FieldType.URL, false);
+        publicationURLType.setDisplayFormat("<a href=\"#VALUE\" target=\"_blank\">#VALUE</a>");
+        publicationChildTypes.add(datasetFieldTypeSvc.add(publicationURLType));
+        publicationType.setChildDatasetFieldTypes(publicationChildTypes);
+
+        DatasetFieldType timePeriodCoveredType = datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCovered", DatasetFieldType.FieldType.NONE, true));
+        Set<DatasetFieldType> timePeriodCoveredChildTypes = new HashSet<>();
+        timePeriodCoveredChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCoveredStart", DatasetFieldType.FieldType.DATE, false)));
+        timePeriodCoveredChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCoveredEnd", DatasetFieldType.FieldType.DATE, false)));
+        timePeriodCoveredType.setChildDatasetFieldTypes(timePeriodCoveredChildTypes);
+
+        DatasetFieldType geographicCoverageType = datasetFieldTypeSvc.add(new DatasetFieldType("geographicCoverage", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> geographicCoverageChildTypes = new HashSet<>();
+        DatasetFieldType countries = datasetFieldTypeSvc.add(new DatasetFieldType("country", DatasetFieldType.FieldType.TEXT, false));
+        countries.setAllowControlledVocabulary(true);
+        countries.setControlledVocabularyValues(Arrays.asList(
+                // Why aren't these enforced?
+                new ControlledVocabularyValue(1l, "Afghanistan", countries),
+                new ControlledVocabularyValue(2l, "Albania", countries)
+        // And many more countries.
+        ));
+        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(countries));
+        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("state", DatasetFieldType.FieldType.TEXT, false)));
+        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("city", DatasetFieldType.FieldType.TEXT, false)));
+        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("otherGeographicCoverage", DatasetFieldType.FieldType.TEXT, false)));
+        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("geographicUnit", DatasetFieldType.FieldType.TEXT, false)));
+        for (DatasetFieldType t : geographicCoverageChildTypes) {
+            t.setParentDatasetFieldType(geographicCoverageType);
+        }
+        geographicCoverageType.setChildDatasetFieldTypes(geographicCoverageChildTypes);
+
     }
 
     @After
@@ -128,7 +228,7 @@ public class SchemaDotOrgExporterTest {
     @Test
     public void testExportDataset() throws Exception {
         System.out.println("exportDataset");
-        File datasetVersionJson = new File("src/test/resources/json/dataset-finch1.json");
+        File datasetVersionJson = new File("src/test/resources/json/dataset-finch2.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
 
         JsonReader jsonReader1 = Json.createReader(new StringReader(datasetVersionAsJson));
@@ -140,41 +240,112 @@ public class SchemaDotOrgExporterTest {
         Date publicationDate = dateFmt.parse("19551105");
         version.setReleaseTime(publicationDate);
         version.setVersionNumber(1l);
-        // TODO: It might be nice to test TermsOfUseAndAccess some day
-        version.setTermsOfUseAndAccess(null);
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        terms.setLicense(TermsOfUseAndAccess.License.CC0);
+        version.setTermsOfUseAndAccess(terms);
+
         Dataset dataset = new Dataset();
         dataset.setProtocol("doi");
-        dataset.setAuthority("myAuthority");
-        dataset.setIdentifier("myIdentifier");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("IMK5A4");
+        dataset.setPublicationDate(new Timestamp(publicationDate.getTime()));
         version.setDataset(dataset);
         Dataverse dataverse = new Dataverse();
         dataverse.setName("LibraScholar");
         dataset.setOwner(dataverse);
         System.setProperty(SITE_URL, "https://librascholar.org");
+        boolean hideFileUrls = false;
+        if (hideFileUrls) {
+            System.setProperty(FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS, "true");
+        }
+
+        FileMetadata fmd = new FileMetadata();
+        DataFile dataFile = new DataFile();
+        dataFile.setId(42l);
+        dataFile.setFilesize(1234);
+        dataFile.setContentType("text/plain");
+        dataFile.setProtocol("doi");
+        dataFile.setAuthority("10.5072/FK2");
+        dataFile.setIdentifier("7V5MPI");
+        fmd.setDatasetVersion(version);
+        fmd.setDataFile(dataFile);
+        fmd.setLabel("README.md");
+        fmd.setDescription("README file.");
+        List<FileMetadata> fileMetadatas = new ArrayList<>();
+        fileMetadatas.add(fmd);
+        dataFile.setFileMetadatas(fileMetadatas);;
+        dataFile.setOwner(dataset);
+        version.setFileMetadatas(fileMetadatas);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         schemaDotOrgExporter.exportDataset(version, json1, byteArrayOutputStream);
         String jsonLd = byteArrayOutputStream.toString();
-        System.out.println("schema.org JSON-LD: " + JsonUtil.prettyPrint(jsonLd));
+        String prettyJson = JsonUtil.prettyPrint(jsonLd);
+        System.out.println("schema.org JSON-LD: " + prettyJson);
         JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
         JsonObject json2 = jsonReader2.readObject();
         assertEquals("http://schema.org", json2.getString("@context"));
         assertEquals("Dataset", json2.getString("@type"));
-        assertEquals("https://doi.org/myAuthority/myIdentifier", json2.getString("identifier"));
+        assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("@id"));
+        assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("identifier"));
         assertEquals("Darwin's Finches", json2.getString("name"));
+        assertEquals("Finch, Fiona", json2.getJsonArray("creator").getJsonObject(0).getString("name"));
+        assertEquals("Birds Inc.", json2.getJsonArray("creator").getJsonObject(0).getString("affiliation"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("@id"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("identifier"));
         assertEquals("Finch, Fiona", json2.getJsonArray("author").getJsonObject(0).getString("name"));
         assertEquals("Birds Inc.", json2.getJsonArray("author").getJsonObject(0).getString("affiliation"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("@id"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("identifier"));
+        assertEquals("1955-11-05", json2.getString("datePublished"));
         assertEquals("1955-11-05", json2.getString("dateModified"));
         assertEquals("1", json2.getString("version"));
-        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.", json2.getString("description"));
+        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.", json2.getJsonArray("description").getString(0));
+        assertEquals("Bird is the word.", json2.getJsonArray("description").getString(1));
+        assertEquals(2, json2.getJsonArray("description").size());
         assertEquals("Medicine, Health and Life Sciences", json2.getJsonArray("keywords").getString(0));
-        assertEquals("https://schema.org/version/3.3", json2.getString("schemaVersion"));
+        assertEquals("tcTerm1", json2.getJsonArray("keywords").getString(1));
+        assertEquals("KeywordTerm1", json2.getJsonArray("keywords").getString(2));
+        assertEquals("KeywordTerm2", json2.getJsonArray("keywords").getString(3));
+        // This dataset, for example, has multiple keywords separated by commas: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/24034&version=2.0
+        assertEquals("keywords, with, commas", json2.getJsonArray("keywords").getString(4));
+        assertEquals("CreativeWork", json2.getJsonArray("citation").getJsonObject(0).getString("@type"));
+        assertEquals("Finch, Fiona 2018. \"The Finches.\" American Ornithological Journal 60 (4): 990-1005.", json2.getJsonArray("citation").getJsonObject(0).getString("text"));
+        assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("@id"));
+        assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("identifier"));
+        assertEquals("2002/2005", json2.getJsonArray("temporalCoverage").getString(0));
+        assertEquals("2001-10-01/2015-11-15", json2.getJsonArray("temporalCoverage").getString(1));
+        assertEquals(null, json2.getString("schemaVersion", null));
+        assertEquals("Dataset", json2.getJsonObject("license").getString("@type"));
+        assertEquals("CC0", json2.getJsonObject("license").getString("text"));
+        assertEquals("https://creativecommons.org/publicdomain/zero/1.0/", json2.getJsonObject("license").getString("url"));
         assertEquals("DataCatalog", json2.getJsonObject("includedInDataCatalog").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));
         assertEquals("https://librascholar.org", json2.getJsonObject("includedInDataCatalog").getString("url"));
-        assertEquals("Organization", json2.getJsonObject("provider").getString("@type"));
+        assertEquals("Organization", json2.getJsonObject("publisher").getString("@type"));
         String orgName = ResourceBundle.getBundle("Bundle").getString("institution.name"); 
         assertEquals(orgName, json2.getJsonObject("provider").getString("name"));
+        assertEquals("Organization", json2.getJsonObject("provider").getString("@type"));
+        assertEquals("Organization", json2.getJsonArray("funder").getJsonObject(0).getString("@type"));
+        assertEquals("National Science Foundation", json2.getJsonArray("funder").getJsonObject(0).getString("name"));
+        // The NIH grant number is not shown because don't have anywhere in schema.org to put it. :(
+        assertEquals("National Institutes of Health", json2.getJsonArray("funder").getJsonObject(1).getString("name"));
+        assertEquals(2, json2.getJsonArray("funder").size());
+        assertEquals("Columbus, Ohio, United States, North America", json2.getJsonArray("spatialCoverage").getString(0));
+        assertEquals("Wisconsin, United States", json2.getJsonArray("spatialCoverage").getString(1));
+        assertEquals(2, json2.getJsonArray("spatialCoverage").size());
+        assertEquals("DataDownload", json2.getJsonArray("distribution").getJsonObject(0).getString("@type"));
+        assertEquals("README.md", json2.getJsonArray("distribution").getJsonObject(0).getString("name"));
+        assertEquals("text/plain", json2.getJsonArray("distribution").getJsonObject(0).getString("fileFormat"));
+        assertEquals(1234, json2.getJsonArray("distribution").getJsonObject(0).getInt("contentSize"));
+        assertEquals("README file.", json2.getJsonArray("distribution").getJsonObject(0).getString("description"));
+        assertEquals("https://doi.org/10.5072/FK2/7V5MPI", json2.getJsonArray("distribution").getJsonObject(0).getString("@id"));
+        assertEquals("https://doi.org/10.5072/FK2/7V5MPI", json2.getJsonArray("distribution").getJsonObject(0).getString("identifier"));
+        assertEquals("https://librascholar.org/api/access/datafile/42", json2.getJsonArray("distribution").getJsonObject(0).getString("contentUrl"));
+        assertEquals(1, json2.getJsonArray("distribution").size());
+        try (PrintWriter printWriter = new PrintWriter("/tmp/dvjsonld.json")) {
+            printWriter.println(prettyJson);
+        }
     }
 
     /**

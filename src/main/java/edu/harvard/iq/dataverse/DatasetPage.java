@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.engine.command.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
@@ -39,12 +40,14 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -52,10 +55,6 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.workflow.internalspi.DPNSubmissionWorkflowStep;
-import edu.harvard.iq.dataverse.workflow.step.Failure;
-import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -83,9 +82,6 @@ import javax.inject.Named;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 import javax.validation.ConstraintViolation;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.primefaces.context.RequestContext;
 import java.util.Arrays;
@@ -101,7 +97,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.SubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
@@ -188,6 +183,8 @@ public class DatasetPage implements java.io.Serializable {
     DataverseLinkingServiceBean dvLinkingService;
     @EJB
     DatasetLinkingServiceBean dsLinkingService;
+    @EJB
+    SearchFilesServiceBean searchFilesService;
     @EJB
     SearchServiceBean searchService;
     @EJB
@@ -1596,6 +1593,7 @@ public class DatasetPage implements java.io.Serializable {
             if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.summary"),
                         BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
+                lockedDueToDcmUpload = true;
             }
             //This is a hack to remove dataset locks for File PID registration if 
                 //the dataset is released
@@ -2029,6 +2027,7 @@ public class DatasetPage implements java.io.Serializable {
                 // has been published. If a publishing workflow is configured, this may have sent the 
                 // dataset into a workflow limbo, potentially waiting for a third party system to complete 
                 // the process. So it may be premature to show the "success" message at this point. 
+                
                 if ( result.isCompleted() ) {
                     JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
                 } else {
@@ -2618,6 +2617,33 @@ public class DatasetPage implements java.io.Serializable {
            - but we will do this inside the UpdateDatasetCommand.
         */
     }
+    
+    private String enteredTermsOfAccess;
+
+    public String getEnteredTermsOfAccess() {
+        return enteredTermsOfAccess;
+    }
+
+    public void setEnteredTermsOfAccess(String enteredTermsOfAccess) {
+        this.enteredTermsOfAccess = enteredTermsOfAccess;
+    }
+    
+    private Boolean enteredFileAccessRequest;
+
+    public Boolean getEnteredFileAccessRequest() {
+        return enteredFileAccessRequest;
+    }
+
+    public void setEnteredFileAccessRequest(Boolean fileAccessRequest) {
+        this.enteredFileAccessRequest = fileAccessRequest;
+    }
+    
+    
+     public String saveWithTermsOfUse() {
+        workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(enteredTermsOfAccess);
+        workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(enteredFileAccessRequest);
+        return save();
+    }
 
     public String save() {
          //Before dataset saved, write cached prov freeform to version
@@ -2633,7 +2659,7 @@ public class DatasetPage implements java.io.Serializable {
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
             return "";
         }
-
+        
         // Use the Create or Update command to save the dataset: 
         Command<Dataset> cmd;
         try {
@@ -2811,8 +2837,7 @@ public class DatasetPage implements java.io.Serializable {
     
     private String returnToDatasetOnly(){
          dataset = datasetService.find(dataset.getId());
-         editMode = null;   
-         logger.info("Commit check 4: " + FacesContext.getCurrentInstance().getExternalContext().isResponseCommitted());
+         editMode = null;         
          return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString()  +  "&faces-redirect=true";       
     }
     
@@ -2985,6 +3010,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar;    
+    private boolean lockedDueToDcmUpload;
     /**
      * Authors are not allowed to edit but curators are allowed - when Dataset is inReview
      * For all other locks edit should be locked for all editors.
@@ -3025,6 +3051,10 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         return lockedFromDownloadVar;
+    }
+
+    public boolean isLockedDueToDcmUpload() {
+        return lockedDueToDcmUpload;
     }
 
     public void setLocked(boolean locked) {
@@ -3144,7 +3174,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setDatasetVersionDifference(DatasetVersionDifference datasetVersionDifference) {
         this.datasetVersionDifference = datasetVersionDifference;
     }
-
+        
     public void startMultipleFileDownload (){
         
         boolean doNotSaveGuestbookResponse = workingVersion.isDraft();
@@ -4409,19 +4439,30 @@ public class DatasetPage implements java.io.Serializable {
         setRowsPerPage(dt.getRowsToRender());
     }  
     
+    /**
+     * This method can be called from *.xhtml files to allow archiving of a dataset
+     * version from the user interface. It is not currently (11/18) used in the IQSS/develop
+     * branch, but is used by QDR and is kept here in anticipation of including a
+     * GUI option to archive (already published) versions after other dataset page
+     * changes have been completed.
+     * 
+     * @param id - the id of the datasetversion to archive. 
+     */
     public void archiveVersion(Long id) {
         if (session.getUser() instanceof AuthenticatedUser) {
             AuthenticatedUser au = ((AuthenticatedUser) session.getUser());
-            if (au.isSuperuser()) {
-                DatasetVersion dv = datasetVersionService.retrieveDatasetVersionByVersionId(id).getDatasetVersion();
-                SubmitToArchiveCommand cmd = new SubmitToArchiveCommand(dvRequestService.getDataverseRequest(), dv);
+
+            DatasetVersion dv = datasetVersionService.retrieveDatasetVersionByVersionId(id).getDatasetVersion();
+            String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
+            AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
+            if (cmd != null) {
                 try {
                     DatasetVersion version = commandEngine.submit(cmd);
                     logger.info("Archived to " + version.getArchivalCopyLocation());
-                    if(version.getArchivalCopyLocation()!=null) {
-                    	resetVersionTabList();
-                    	this.setVersionTabListForPostLoad(getVersionTabList());
-                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.success"));
+                    if (version.getArchivalCopyLocation() != null) {
+                        resetVersionTabList();
+                        this.setVersionTabListForPostLoad(getVersionTabList());
+                        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.success"));
                     } else {
                         JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
                     }
@@ -4429,13 +4470,11 @@ public class DatasetPage implements java.io.Serializable {
                     logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
                     JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
                 }
+            } else {
+                logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("datasetversion.archive.failure"));
+
             }
-        } else {
-            logger.warning("Non-superuser calling archiveVersion()");
-            // Shouldn't happen since button only shows for superuser
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Authentication error",
-                    "Contact an administrator");
-            FacesContext.getCurrentInstance().addMessage(null, message);
         }
     }
 }

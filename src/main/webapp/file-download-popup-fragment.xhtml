@@ -54,7 +54,7 @@
                         <div class="col-sm-6">
                             <p:inputText id="guestbookuser_nameText" 
                                          required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.nameRequired}"
-                                         styleClass="form-control" value="#{fileDownloadHelper.guestbookResponse.name}"
+                                         styleClass="form-control" value="#{guestbookResponse.name}"
                                          requiredMessage="#{bundle['requiredField']}"                                       
                                          binding="#{fileDownloadHelper.nameField}">
                                 <p:ajax listener="#{fileDownloadHelper.nameValueChangeListener}" />

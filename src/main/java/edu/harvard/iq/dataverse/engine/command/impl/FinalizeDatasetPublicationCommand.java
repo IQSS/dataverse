@@ -36,24 +36,22 @@ import edu.harvard.iq.dataverse.GlobalIdServiceBean;
  *
  * @author michael
  */
-
 @RequiredPermissions(Permission.PublishDataset)
 public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(FinalizeDatasetPublicationCommand.class.getName());
     
-        /**
+    /**
      * mirror field from {@link PublishDatasetCommand} of same name
      */
     final boolean datasetExternallyReleased;
     
-    public FinalizeDatasetPublicationCommand(Dataset aDataset, String aDoiProvider, DataverseRequest aRequest) {
+    public FinalizeDatasetPublicationCommand(Dataset aDataset, DataverseRequest aRequest) {
         this( aDataset, aRequest, false );
     }
-    
     public FinalizeDatasetPublicationCommand(Dataset aDataset, DataverseRequest aRequest, boolean isPidPrePublished) {
         super(aDataset, aRequest);
-        datasetExternallyReleased = isPidPrePublished;
+	datasetExternallyReleased = isPidPrePublished;
     }
 
     @Override
@@ -105,19 +103,18 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         updateParentDataversesSubjectsField(theDataset, ctxt);
 
-
         PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
         if (privateUrl != null) {
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
         }
         
-        if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
-            // some imported datasets may already be released.
-            if (!datasetExternallyReleased){
-                publicizeExternalIdentifier(theDataset, ctxt);
-            }
-            theDataset.getLatestVersion().setVersionState(RELEASED);
-        }
+	if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
+		// some imported datasets may already be released.
+		if (!datasetExternallyReleased){
+			publicizeExternalIdentifier(theDataset, ctxt);
+		}
+		theDataset.getLatestVersion().setVersionState(RELEASED);
+	}
         
         exportMetadata(ctxt.settings());
         boolean doNormalSolrDocCleanUp = true;
@@ -132,12 +129,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
         }
         
-    	final Dataset ds = ctxt.em().merge(theDataset);
-    	
-    	if(ds == null) {
-    		logger.severe("Null DS after merge");
-    	}
-    		ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
+        final Dataset ds = ctxt.em().merge(theDataset);
+        
+        ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
                 ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased));
             } catch (CommandException ex) {
@@ -223,7 +217,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                         df.setGlobalIdCreateTime(getTimestamp());
                         df.setIdentifierRegistered(true);
                     }
-                    
                 }
                 if (!idServiceBean.publicizeIdentifier(dataset)) {
                     throw new Exception();

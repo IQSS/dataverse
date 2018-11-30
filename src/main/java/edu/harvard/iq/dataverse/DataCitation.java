@@ -143,7 +143,7 @@ public class DataCitation {
     }
 
     public String getAuthorsString() {
-        return String.join(";", authors);
+        return String.join("; ", authors);
     }
 
     public String getTitle() {
@@ -202,16 +202,15 @@ public class DataCitation {
         citationList.add(formatString("Qualitative Data Repository", html));
         // QDRCustom: Show persistentID after distributor name
         if (persistentId != null) {
-            citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html)); // always
-                                                                                                                 // show
-                                                                                                                 // url
-                                                                                                                 // format
+        	// always show url format
+            citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html)); 
         }
         citationList.add(formatString(publisher, html));
         citationList.add(version);
 
         StringBuilder citation = new StringBuilder(citationList.stream().filter(value -> !StringUtils.isEmpty(value))
                 .collect(Collectors.joining(separator)));
+
         if ((fileTitle != null) && !isDirect()) {
             citation.append("; " + formatString(fileTitle, html, "") + " [fileName]");
         }
@@ -264,17 +263,16 @@ public class DataCitation {
         out.write(publisher);
         out.write("},\r\n");
         if(getFileTitle() !=null && isDirect()) {
-        out.write("title = {");
-        out.write(fileTitle);
-        out.write("},\r\n");
-        out.write("booktitle = {");
-        out.write(title);
-        out.write("},\r\n");
+            out.write("title = {");
+            out.write(fileTitle);
+            out.write("},\r\n");
+            out.write("booktitle = {");
+            out.write(title);
+            out.write("},\r\n");
         } else {
             out.write("title = {");
             out.write(title);
             out.write("},\r\n");
-            
         }
         out.write("year = {");
         out.write(year);
@@ -286,6 +284,7 @@ public class DataCitation {
         out.write("},\r\n");
         out.write("url = {");
         out.write(persistentId.toURL().toString());
+        out.write("}\r\n");
         out.write("}\r\n");
         out.flush();
     }
@@ -600,6 +599,7 @@ public class DataCitation {
 
         xmlw.writeEndElement(); // records
         xmlw.writeEndElement(); // xml
+
     }
 
 	public Map<String, String> getDataCiteMetadata() {
@@ -624,7 +624,7 @@ public class DataCitation {
 	}
 
 	
-    // helper methods
+    // helper methods   
     private String formatString(String value, boolean escapeHtml) {
         return formatString(value, escapeHtml, "");
     }

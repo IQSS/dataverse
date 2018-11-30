@@ -6,12 +6,10 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.export.OAI_OREExporter;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -24,7 +22,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -78,7 +75,6 @@ public class OREMap {
                 } else {
                     localContext.putIfAbsent(fieldName.getLabel(), fieldName.getUrl());
                 }
-
                 JsonArrayBuilder vals = Json.createArrayBuilder();
                 if (!dfType.isCompound()) {
                     for (String val : field.getValues_nondisplay()) {
@@ -97,8 +93,8 @@ public class OREMap {
                             }
                             // which may have multiple values
                             if (!dsf.isEmpty()) {
-                                // Add context entry
-                                // ToDo - also needs to recurse here?
+                                // Add context entry 
+                                //ToDo - also needs to recurse here?
                                 JsonLDTerm subFieldName = getTermFor(dfType, dsft);
                                 if (subFieldName.inNamespace()) {
                                     localContext.putIfAbsent(subFieldName.getNamespace().getPrefix(),
@@ -106,9 +102,11 @@ public class OREMap {
                                 } else {
                                     localContext.putIfAbsent(subFieldName.getLabel(), subFieldName.getUrl());
                                 }
+
                                 List<String> values = dsf.getValues_nondisplay();
                                 if (values.size() > 1) {
                                     JsonArrayBuilder childVals = Json.createArrayBuilder();
+
                                     for (String val : dsf.getValues_nondisplay()) {
                                         childVals.add(val);
                                     }
@@ -236,7 +234,7 @@ public class OREMap {
                 tabTags = jab.build();
             }
             addIfNotNull(aggRes, JsonLDTerm.tabularTags, tabTags);
-            // Add lates resource to the array
+            //Add latest resource to the array
             aggResArrayBuilder.add(aggRes.build());
         }
         // Build the '@context' object for json-ld based on the localContext entries

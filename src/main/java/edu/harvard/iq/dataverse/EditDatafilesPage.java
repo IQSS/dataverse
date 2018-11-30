@@ -9,24 +9,30 @@ import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
+import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.EjbUtil;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -67,6 +73,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.FacesEvent;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.context.RequestContext;
 
@@ -118,7 +126,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     @Inject PermissionsWrapper permissionsWrapper;
     @Inject FileDownloadHelper fileDownloadHelper;
     @Inject ProvPopupFragmentBean provPopupFragmentBean;
-
+    @Inject
+    SettingsWrapper settingsWrapper;
     private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
     private Dataset dataset = new Dataset();
@@ -476,7 +485,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!permissionService.on(dataset).has(Permission.EditDataset)) {
             return permissionsWrapper.notAuthorized();
         }
-        
+
+        // TODO: Think about why this call to populateFileMetadatas was added. It seems like it isn't needed after all.
+//        populateFileMetadatas();
+
         // -------------------------------------------
         //  Is this a file replacement operation?
         // -------------------------------------------
@@ -535,7 +547,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             logger.fine("The page is called with " + selectedFileIdsList.size() + " file ids.");
 
             populateFileMetadatas();
-
+            setUpRsync();
             // and if no filemetadatas can be found for the specified file ids 
             // and version id - same deal, send them to the "not found" page. 
             // (at least for now; ideally, we probably want to show them a page 
@@ -555,9 +567,17 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         
         saveEnabled = true; 
+        if (mode == FileEditMode.UPLOAD && workingVersion.getFileMetadatas().isEmpty() && settingsWrapper.isRsyncUpload())  {
+            setUpRsync();
+        }
 
         if (mode == FileEditMode.UPLOAD) {
-            JH.addMessage(FacesMessage.SEVERITY_INFO, getBundleString("dataset.message.uploadFiles"));
+            if (settingsWrapper.getUploadMethodsCount() == 1){
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
+            } else if (settingsWrapper.getUploadMethodsCount() > 1) {
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesMultiple.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
+            }
+            
         }
         
         if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
@@ -828,10 +848,14 @@ public class EditDatafilesPage implements java.io.Serializable {
      */
     private String getBundleString(String msgName){
         
-       return ResourceBundle.getBundle("Bundle").getString(msgName);
+       return BundleUtil.getStringFromBundle(msgName);
     }
     
-    
+    // This deleteFilesCompleted method is used in editFilesFragment.xhtml
+    public void deleteFilesCompleted(){
+        
+    }
+        
     public void deleteFiles() {
         logger.fine("entering bulk file delete (EditDataFilesPage)");
         if (isFileReplaceOperation()){
@@ -977,7 +1001,10 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public String saveWithTermsOfUse() {
         logger.fine("saving terms of use, and the dataset version");
-        datasetUpdateRequired = true; 
+        //Set update required only if dataset already exists
+        if (dataset.getId() != null){
+             datasetUpdateRequired = true; 
+        }
         return save();
     }
     
@@ -1033,7 +1060,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public String save() {
         
-      
+        
         /*
         // Validate
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
@@ -1073,6 +1100,27 @@ public class EditDatafilesPage implements java.io.Serializable {
         int nExpectedFilesTotal = nOldFiles + nNewFiles; 
         
         if (nNewFiles > 0) {
+            //SEK 10/15/2018 only apply the following tests if dataset has already been saved.
+            if (dataset.getId() != null) {
+                Dataset lockTest = datasetService.find(dataset.getId());
+                //SEK 09/19/18 Get Dataset again to test for lock just in case the user downloads the rsync script via the api while the 
+                // edit files page is open and has already loaded a file in http upload for Dual Mode
+                if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload) || lockTest.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+                    logger.log(Level.INFO, "Couldn''t save dataset: {0}", "DCM script has been downloaded for this dataset. Additonal files are not permitted."
+                            + "");
+                    populateDatasetUpdateFailureMessage();
+                    return null;
+                }
+                for (DatasetVersion dv : lockTest.getVersions()) {
+                    if (dv.isHasPackageFile()) {
+                        logger.log(Level.INFO, ResourceBundle.getBundle("Bundle").getString("file.api.alreadyHasPackageFile")
+                                + "");
+                        populateDatasetUpdateFailureMessage();
+                        return null;
+                    }
+                }
+            }
+                                
             // Try to save the NEW files permanently: 
             List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles);
             
@@ -1351,12 +1399,12 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     
     private String returnToDraftVersion(){      
-         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&version=DRAFT&faces-redirect=true";    
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() + "&version=DRAFT&faces-redirect=true";    
     }
     
     private String returnToDatasetOnly(){
          dataset = datasetService.find(dataset.getId());
-         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString()  +  "&faces-redirect=true";       
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString()  +  "&faces-redirect=true";       
     }
     
     private String returnToFileLandingPage() {
@@ -1665,11 +1713,96 @@ public class EditDatafilesPage implements java.io.Serializable {
         // uploadStarted() is triggered by PrimeFaces <p:upload onStart=... when an upload is 
         // started. It will be called *once*, even if it is a multiple file upload 
         // (either through drag-and-drop or select menu). 
-       
         logger.fine("upload started");
         
         uploadInProgress = true;        
     }
+    
+    
+    private Boolean hasRsyncScript = false;
+    public Boolean isHasRsyncScript() {
+        return hasRsyncScript;
+    }
+
+    public void setHasRsyncScript(Boolean hasRsyncScript) {
+        this.hasRsyncScript = hasRsyncScript;
+    }
+
+    private  void setUpRsync() {
+        logger.fine("setUpRsync called...");
+        if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
+            try {
+                ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
+                logger.fine("script: " + scriptRequestResponse.getScript());
+                if (scriptRequestResponse.getScript() != null && !scriptRequestResponse.getScript().isEmpty()) {
+                    setRsyncScript(scriptRequestResponse.getScript());
+                    rsyncScriptFilename = DataCaptureModuleUtil.getScriptName(workingVersion);
+                    setHasRsyncScript(true);
+                } else {
+                    setHasRsyncScript(false);
+                }
+            } catch (EJBException ex) {
+                logger.warning("Problem getting rsync script (EJBException): " + EjbUtil.ejbExceptionToString(ex));
+            } catch (RuntimeException ex) {
+                logger.warning("Problem getting rsync script (RuntimeException): " + ex.getLocalizedMessage());
+            } catch (CommandException cex) {
+                logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
+            }
+        }
+    }
+    
+    public void downloadRsyncScript() {
+
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("application/download");
+
+        String contentDispositionString;
+
+        contentDispositionString = "attachment;filename=" + rsyncScriptFilename;
+        response.setHeader("Content-Disposition", contentDispositionString);
+
+        try {
+            ServletOutputStream out = response.getOutputStream();
+            out.write(getRsyncScript().getBytes());
+            out.flush();
+            ctx.responseComplete();
+        } catch (IOException e) {
+            String error = "Problem getting bytes from rsync script: " + e;
+            logger.warning(error);
+            return; 
+        }
+        
+        // If the script has been successfully downloaded, lock the dataset:
+        String lockInfoMessage = "script downloaded";
+        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, session.getUser() != null ? ((AuthenticatedUser)session.getUser()).getId() : null, lockInfoMessage);
+        if (lock != null) {
+            dataset.addLock(lock);
+        } else {
+            logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
+        }
+        
+    }
+    
+        /**
+     * The contents of the script.
+     */
+    private String rsyncScript = "";
+
+    public String getRsyncScript() {
+        return rsyncScript;
+    }
+
+    public void setRsyncScript(String rsyncScript) {
+        this.rsyncScript = rsyncScript;
+    }
+
+    private String rsyncScriptFilename;
+
+    public String getRsyncScriptFilename() {
+        return rsyncScriptFilename;
+    }
+
     
     public void uploadFinished() {
         // This method is triggered from the page, by the <p:upload ... onComplete=...
@@ -1715,7 +1848,13 @@ public class EditDatafilesPage implements java.io.Serializable {
                 FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.file.uploadWorked"), uploadSuccessMessage));
             }
         }
-        
+
+        if(isFileReplaceOperation() && fileReplacePageHelper.hasContentTypeWarning()){
+                    RequestContext context = RequestContext.getCurrentInstance();
+                    RequestContext.getCurrentInstance().update("datasetForm:fileTypeDifferentPopup");
+                    context.execute("PF('fileTypeDifferentPopup').show();");
+        }
+
         // We clear the following duplicate warning labels, because we want to 
         // only inform the user of the duplicates dropped in the current upload 
         // attempt - for ex., one batch of drag-and-dropped files, or a single 
@@ -2190,7 +2329,22 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         return datafileService.isThumbnailAvailable(fileMetadata.getDataFile());
     }
+    
 
+    
+    private Boolean lockedFromEditsVar;
+    
+    public boolean isLockedFromEdits() {
+        if(null == lockedFromEditsVar ) {
+            try {
+                permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest()));
+                lockedFromEditsVar = false;
+            } catch (IllegalCommandException ex) {
+                lockedFromEditsVar = true;
+            }
+        }
+        return lockedFromEditsVar;
+    }
     
     // Methods for edit functions that are performed on one file at a time, 
     // in popups that block the rest of the page:
@@ -2557,7 +2711,14 @@ public class EditDatafilesPage implements java.io.Serializable {
         tabularDataTagsUpdated = true;
     }
     
+    public void handleDescriptionChange(final AjaxBehaviorEvent event) {        
+        datasetUpdateRequired = true;
+    }
     
+    public void handleNameChange(final AjaxBehaviorEvent event) {        
+        datasetUpdateRequired = true;
+    }
+        
     /* 
      * Items for the "Advanced (Ingest) Options" popup. 
      * 
