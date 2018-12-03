@@ -365,7 +365,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         // from the harvesting url:
         newHarvestingClient.setArchiveUrl(makeDefaultArchiveUrl());
         // set default description - they can customize it as they see fit:
-        newHarvestingClient.setArchiveDescription(JH.localize("harvestclients.viewEditDialog.archiveDescription.default.generic"));
+        newHarvestingClient.setArchiveDescription(BundleUtil.getStringFromBundle("harvestclients.viewEditDialog.archiveDescription.default.generic"));
         
         
         // will try to save it now:
