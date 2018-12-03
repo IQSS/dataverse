@@ -81,10 +81,10 @@
                         <p:column sortBy="#{response[3]}" headerText="#{bundle['dataset.guestbooksResponses.file']}">
                             #{response[3]}
                         </p:column>
-                        <p:column sortBy="#{response[4]}" headerText="User">
+                        <p:column sortBy="#{response[4]}" headerText="#{bundle['dataset.guestbooksResponses.user']}">
                             <h:outputText value="#{response[4]}"/>
                         </p:column>
-                        <p:column headerText="Custom Questions" >
+                        <p:column headerText="#{bundle['dataset.guestbooksResponses.customQuestions']}" >
                             <ui:repeat value="#{response[5]}" var="customQResponse"><b>#{customQResponse[0]}: </b>#{customQResponse[1]} <br></br></ui:repeat>
                         </p:column> 
                     </p:dataTable>

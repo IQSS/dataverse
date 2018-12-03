@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
@@ -12,6 +11,9 @@ import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import javax.json.JsonObject;
 import org.junit.Test;
+
+import java.util.Collections;
+
 import static org.junit.Assert.*;
 
 /**
