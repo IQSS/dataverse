@@ -19,14 +19,13 @@ public class DateUtil {
     public static String formatDate(Date dateToformat) {
         String formattedDate;
         DateFormat dateFormatter;
-        try{
+        try {
             DataverseLocaleBean d = new DataverseLocaleBean();
             Locale currentLocale = new Locale(d.getLocaleCode());
             dateFormatter = DateFormat.getDateInstance(DateFormat.DEFAULT, currentLocale);
             formattedDate = dateFormatter.format(dateToformat);
             return formattedDate;
-        }
-        catch(Exception e) {
+        } catch(Exception e) {
             return null;
         }
     }
@@ -46,22 +45,17 @@ public class DateUtil {
     }
 
     public static String formatDate(Timestamp datetimeToformat) {
-         String formattedDate;
-         try{
+        String formattedDate;
+        DateFormat dateFormatter;
+        try {
              DataverseLocaleBean d = new DataverseLocaleBean();
              Locale currentLocale = new Locale(d.getLocaleCode());
-
-             //switched to SimpleDateFormat, since the Time zone value was tricky to get using getDateTimeInstance()
-             /*
              dateFormatter = DateFormat.getDateTimeInstance(
-                                                     DateFormat.DEFAULT,
-                                                     DateFormat.DEFAULT,
+                                                     DateFormat.LONG,
+                                                     DateFormat.LONG,
                                                      currentLocale);
              formattedDate = dateFormatter.format(datetimeToformat);
-              */
 
-             //copied this format from UserNotification.java , getSendDate()
-             formattedDate = new SimpleDateFormat("MMMM d, yyyy h:mm a z",currentLocale).format(datetimeToformat);
              return formattedDate;
          } catch (Exception e) {
              e.printStackTrace();
