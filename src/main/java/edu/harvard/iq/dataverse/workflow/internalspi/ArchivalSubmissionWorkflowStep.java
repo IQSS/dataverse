@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.engine.command.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
