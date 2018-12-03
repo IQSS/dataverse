@@ -101,9 +101,9 @@ Also note that while the current DPN implementation generates the bag and submit
 
 The minimal configuration to support an archiver integration involves adding a minimum of two Dataverse Keys and any required Glassfish jvm options\:
 
-\:ArchiverClassName - the class to be used for archiving. For example: 
+\:ArchiverClassName - the fully qualified class to be used for archiving. For example: 
 
-    `curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "DPNSubmitToArchiveCommand"`
+    `curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.DPNSubmitToArchiveCommand"`
 
 \:ArchiverSettings - the archiver class can access required settings including existing Dataverse settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. Note that this list must include the :ArchiverClassName setting. For example: 
 

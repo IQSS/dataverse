@@ -119,8 +119,8 @@ Note - the example step includes two settings required for any archiver and thre
       "stepName":"archive submission"
     },
     "requiredSettings": {
-      "ArchiverClassName": "String",
-      "ArchiverSettings": "String",
+      "ArchiverClassName": "string",
+      "ArchiverSettings": "string",
       "DuraCloudHost":"string",
       "DuraCloudPort":"string",
       "DuraCloudContext":"string" 

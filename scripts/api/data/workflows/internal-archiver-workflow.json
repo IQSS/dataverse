@@ -8,8 +8,8 @@
         "stepName": "archive submission"
       },
       "requiredSettings": {
-        "ArchiverClassName": "String",
-        "ArchiverSettings": "String",
+        "ArchiverClassName": "string",
+        "ArchiverSettings": "string",
         "DuraCloudHost": "string",
         "DuraCloudPort": "string",
         "DuraCloudContext": "string"
