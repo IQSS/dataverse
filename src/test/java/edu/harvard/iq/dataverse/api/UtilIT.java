@@ -593,6 +593,11 @@ public class UtilIT {
                 .get("/api/access/datafile/" + fileId + "?format=original");
     }
     
+    static Response downloadTabularFileNoVarHeader(Integer fileId) {
+        return given()
+                .get("/api/access/datafile/" + fileId + "?noVarHeader=true");
+    }
+    
     static Response downloadFileOriginal(Integer fileId, String apiToken) {
         return given()
                 .get("/api/access/datafile/" + fileId + "?format=original&key=" + apiToken);
