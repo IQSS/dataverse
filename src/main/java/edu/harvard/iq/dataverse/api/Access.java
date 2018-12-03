@@ -294,12 +294,13 @@ public class Access extends AbstractApiBean {
         }
         for (String key : uriInfo.getQueryParameters().keySet()) {
             String value = uriInfo.getQueryParameters().getFirst(key);
-            
+            logger.fine("is download service supported? key="+key+", value="+value);
+
             if (downloadInstance.checkIfServiceSupportedAndSetConverter(key, value)) {
-                logger.fine("is download service supported? key="+key+", value="+value);
                 // this automatically sets the conversion parameters in 
                 // the download instance to key and value;
                 // TODO: I should probably set these explicitly instead. 
+                logger.fine("yes!");
                 
                 if (downloadInstance.getConversionParam().equals("subset")) {
                     String subsetParam = downloadInstance.getConversionParamValue();

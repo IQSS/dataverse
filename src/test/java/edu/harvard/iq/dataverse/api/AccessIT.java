@@ -179,6 +179,8 @@ public class AccessIT {
         System.out.println("origSize: "+origSizeAuth + " | convertSize: " + convertSizeAuth);
         assertThat(origSizeAuth, is(not(convertSizeAuth)));  
         
+        //
+        
         //Logged in restricted
         Response authDownloadOriginalRestricted = UtilIT.downloadFileOriginal(tabFile3IdRestricted, apiToken);
         Response authDownloadConvertedRestricted = UtilIT.downloadFile(tabFile3IdRestricted, apiToken);
