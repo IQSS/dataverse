@@ -269,8 +269,16 @@ public class DataCitation {
             out.write(title);
             out.write("},\r\n");
         }
+        if(getUNF() != null){
+            out.write("UNF = {");
+            out.write(UNF);
+            out.write("},\r\n");
+        }
         out.write("year = {");
         out.write(year);
+        out.write("},\r\n");
+        out.write("version = {");
+        out.write(version);
         out.write("},\r\n");
         out.write("doi = {");
         out.write(persistentId.getAuthority());
