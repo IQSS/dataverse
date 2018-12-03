@@ -379,7 +379,7 @@ public class SettingsServiceBean {
          * To automate the submission of an archival copy step as part of publication, a post-publication workflow must also be configured.
          * 
          * For example:
-         * ArchiverClassName - "DPNSubmitToArchiveCommand"
+         * ArchiverClassName - "edu.harvard.iq.dataverse.engine.command.impl.DPNSubmitToArchiveCommand"
          * ArchiverSettings - "DuraCloudHost, DuraCloudPort, DuraCloudContext"
          * 
          * Note: Dataverse must be configured with values for these dynamically defined settings as well, e.g. 
