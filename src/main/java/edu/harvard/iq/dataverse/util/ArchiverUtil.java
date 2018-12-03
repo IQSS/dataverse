@@ -4,8 +4,8 @@ import java.lang.reflect.Constructor;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.engine.command.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 
 /**
  * Simple class to reflectively get an instance of the desired class for
