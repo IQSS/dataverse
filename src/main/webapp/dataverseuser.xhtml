@@ -178,6 +178,12 @@
                                                         <o:param>
                                                             <a href="/permissions-manage-files.xhtml?id=#{item.theObject.id}" title="#{item.theObject.displayName}">#{item.theObject.displayName}</a>
                                                         </o:param>
+                                                        <o:param>
+                                                            #{DataverseUserPage.getRequestorName(item)}
+                                                        </o:param>
+                                                        <o:param>
+                                                            #{DataverseUserPage.getRequestorEmail(item)}
+                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'GRANTFILEACCESS'}">
