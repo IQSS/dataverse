@@ -23,15 +23,15 @@
     @media (min-width: 768px) {
         #dataversesBySubject {-webkit-column-count: 3; -moz-column-count: 3; column-count: 3;}
     }
-    #dataversesBySubject p.browse-subjects {display:inline-block; width:100%; padding:0 2px;}
-    #dataversesBySubject p.browse-subjects a {color: #C55B28;}
-    #dataversesBySubject p.browse-subjects a:focus, p.browse-subjects a:hover {color: #9F3502;}
+    #browseBySubject p.browse-subjects {display:inline-block; width:100%; padding:0 2px;}
+    #browseBySubject p.browse-subjects a {color: #C55B28;}
+    #browseBySubject p.browse-subjects a:focus, #browseBySubject p.browse-subjects a:hover {color: #9F3502;}
 
     div.hmpg-recent-col div.col-xs-2.hmpg-recent-thumb {width: 48px !important;padding: 0 !important;}
     div.hmpg-recent-col div.hmpg-recent-thumb img {max-height:48px;max-width:48px;}
     div.hmpg-recent-col div.hmpg-recent-thumb span {font-size:38px;}
 
-	div.hmpg-activity-block .row .lite-header {margin-left:1em;} 
+    div.hmpg-activity-block .row .lite-header {margin-left:1em;}
 </style>
 
     <!-- ACTIONS -->
@@ -73,11 +73,16 @@
         </div>
         
         <!-- BROWSE SUBJECT -->
-        <div class="col-xs-12">
-            <p class="text-muted">Browse dataverses in this repository by subject.</p>
+        <div id="browseBySubject" class="col-xs-12">
+            <div class="h4 lite-header margin-bottom">Browse by subject</div>
             <div class="row margin-bottom">
+                <!-- SUBJECTS -->
                 <div id="dataversesBySubject" class="col-xs-12">
-
+                </div>
+                
+                <!-- VIEW ALL -->
+                <div class="col-xs-12 margin-top">
+                    <p class="browse-subjects small text-muted"><a href= "/dataverse/root">ALL SUBJECTS</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                 </div>
             </div>
         </div>
@@ -195,7 +200,7 @@
             });
             subArray.sort();
             subArray.forEach(function(subject){
-                resultHtml += "<p class=\"browse-subjects\"><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + subject[0] + "%22&types=datasets&sort=dateSort&order=desc\">" + subject[0] + "</a> <span class=\"text-muted\">" + subject[1] + "</span></p>";
+                resultHtml += "<p class=\"browse-subjects\"><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + subject[0] + "%22&types=dataverses%3Adatasets&sort=dateSort&order=desc\">" + subject[0] + "</a> <span class=\"text-muted\">" + subject[1] + "</span></p>";
             });
             document.getElementById(elm).innerHTML = resultHtml;
         });

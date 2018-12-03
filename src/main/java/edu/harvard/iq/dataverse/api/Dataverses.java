@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -17,6 +16,8 @@ import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
+import edu.harvard.iq.dataverse.api.imports.ImportException;
+import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
@@ -114,6 +115,8 @@ public class Dataverses extends AbstractApiBean {
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
 
+    @EJB
+    ImportServiceBean importService;
 
     @POST
     public Response addRoot(String body) {
@@ -295,6 +298,74 @@ public class Dataverses extends AbstractApiBean {
                     .add("persistentId", managedDs.getGlobalIdString());
 
             if (shouldRelease) {
+                PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
+                responseBld.add("releaseCompleted", res.isCompleted());
+            }
+
+            return created("/datasets/" + managedDs.getId(), responseBld);
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    // TODO decide if I merge importddi with import just below (xml and json on same api, instead of 2 api)
+    @POST
+    @Path("{identifier}/datasets/:importddi")
+    public Response importDatasetDdi(String xml, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) throws ImportException {
+        try {
+            User u = findUserOrDie();
+            if (!u.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+            Dataverse owner = findDataverseOrDie(parentIdtf);
+            Dataset ds = null;
+            try {
+                ds = jsonParser().parseDataset(importService.ddiToJson(xml));
+            }
+            catch (JsonParseException jpe) {
+                return badRequest("Error parsing datas as Json: "+jpe.getMessage());
+            }
+            ds.setOwner(owner);
+            if (nonEmpty(pidParam)) {
+                if (!GlobalId.verifyImportCharacters(pidParam)) {
+                    return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
+                }
+                Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
+                if (maybePid.isPresent()) {
+                    ds.setGlobalId(maybePid.get());
+                } else {
+                    // unparsable PID passed. Terminate.
+                    return badRequest("Cannot parse the PID parameter '" + pidParam + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
+                }
+            }
+
+            boolean shouldRelease = StringUtil.isTrue(releaseParam);
+            DataverseRequest request = createDataverseRequest(u);
+
+            Dataset managedDs = null;
+            if (nonEmpty(pidParam)) {
+                managedDs = execCommand(new ImportDatasetCommand(ds, request));
+            }
+            else {
+                managedDs = execCommand(new CreateNewDatasetCommand(ds, request));
+            }
+
+            JsonObjectBuilder responseBld = Json.createObjectBuilder()
+                    .add("id", managedDs.getId())
+                    .add("persistentId", managedDs.getGlobalIdString());
+
+            if (shouldRelease) {
+                DatasetVersion latestVersion = ds.getLatestVersion();
+                latestVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+                latestVersion.setVersionNumber(1l);
+                latestVersion.setMinorVersionNumber(0l);
+                if (latestVersion.getCreateTime() != null) {
+                    latestVersion.setCreateTime(new Date());
+                }
+                if (latestVersion.getLastUpdateTime() != null) {
+                    latestVersion.setLastUpdateTime(new Date());
+                }
                 PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
                 responseBld.add("releaseCompleted", res.isCompleted());
             }

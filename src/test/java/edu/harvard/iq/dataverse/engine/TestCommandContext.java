@@ -218,4 +218,9 @@ public class TestCommandContext implements CommandContext {
     public DataCaptureModuleServiceBean dataCaptureModule() {
         return null;
     }
+    
+    @Override
+    public FileDownloadServiceBean fileDownload() {
+        return null;
+    }
 }

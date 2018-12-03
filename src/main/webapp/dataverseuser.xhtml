@@ -178,6 +178,12 @@
                                                         <o:param>
                                                             <a href="/permissions-manage-files.xhtml?id=#{item.theObject.id}" title="#{item.theObject.displayName}">#{item.theObject.displayName}</a>
                                                         </o:param>
+                                                        <o:param>
+                                                            #{DataverseUserPage.getRequestorName(item)}
+                                                        </o:param>
+                                                        <o:param>
+                                                            #{DataverseUserPage.getRequestorEmail(item)}
+                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'GRANTFILEACCESS'}">
@@ -523,7 +529,7 @@
                                 <!-- Password -->
                                     <label for="inputPassword" class="col-sm-3 control-label">
                                         <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.passwd.illegal.tip']}">
-                                            <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" />
+                                            <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.password'] : bundle['user.newPassword']}" />
                                             <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                         </span>
                                     </label>
