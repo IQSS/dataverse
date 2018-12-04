@@ -51,7 +51,7 @@ public class DateUtil {
              DataverseLocaleBean d = new DataverseLocaleBean();
              Locale currentLocale = new Locale(d.getLocaleCode());
              dateFormatter = DateFormat.getDateTimeInstance(
-                                                     DateFormat.LONG,
+                                                     DateFormat.DEFAULT,
                                                      DateFormat.LONG,
                                                      currentLocale);
              formattedDate = dateFormatter.format(datetimeToformat);
