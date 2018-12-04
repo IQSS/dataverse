@@ -194,7 +194,7 @@ public class SearchUtil {
                         ftQuery.append(expandPart(part + " OR (+" + SearchFields.FULL_TEXT + ":" + part.substring(1), joinNeeded));
                     } else if (part.startsWith("-")) {
                         ftQuery.append(expandPart(part + " OR (-" + SearchFields.FULL_TEXT + ":" + part.substring(1), joinNeeded));
-                    } else if (part.startsWith("-")) {
+                    } else if (part.startsWith("!")) {
                         ftQuery.append(expandPart(part + " OR (!" + SearchFields.FULL_TEXT + ":" + part.substring(1), joinNeeded));
                     } else {
                         ftQuery.append(expandPart(part + " OR (" + SearchFields.FULL_TEXT + ":" + part, joinNeeded));
