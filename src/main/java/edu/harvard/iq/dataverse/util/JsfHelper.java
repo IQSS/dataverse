@@ -55,6 +55,7 @@ public class JsfHelper {
      * the API so consider using the newer, more flexible BundleUtil methods
      * instead.
      */
+    /*
     @Deprecated
     public String localize( String messageKey ) {
         FacesContext facesContext = FacesContext.getCurrentInstance();
@@ -63,5 +64,5 @@ public class JsfHelper {
         ResourceBundle bundle = ResourceBundle.getBundle("Bundle", locale);
         return bundle.getString(messageKey);
     }
-    
+    */
 }

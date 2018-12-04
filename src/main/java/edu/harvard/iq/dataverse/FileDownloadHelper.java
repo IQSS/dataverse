@@ -228,7 +228,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          boolean valid = validateGuestbookResponse(guestbookResponse);
 
          if (!valid) {
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));
+             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
          } else {
              requestContext.execute("PF('downloadPopup').hide()");
              guestbookResponse.setDownloadtype("Download");
@@ -453,7 +453,7 @@ public class FileDownloadHelper implements java.io.Serializable {
              }
          }
          if ( notificationFile != null){
-             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId()); 
+             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId(), (AuthenticatedUser) session.getUser()); 
          }
      }
     
@@ -473,7 +473,7 @@ public class FileDownloadHelper implements java.io.Serializable {
              file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
              // create notification if necessary
              if (sendNotification) {
-                 fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId());
+                 fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId(), (AuthenticatedUser) session.getUser());
              }
          }
      } 
