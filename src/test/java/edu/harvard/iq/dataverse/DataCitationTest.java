@@ -233,7 +233,6 @@ public class DataCitationTest {
            "</contributors>" +
            "<titles><title>Dataset Title</title></titles>" +
            "<section>1955-11-05</section>" +
-           "<abstract />" +
            "<dates><year>1955</year></dates>" +
            "<edition>V1</edition>" +
            "<publisher>LibraScholar</publisher>" +
@@ -259,7 +258,6 @@ public class DataCitationTest {
            "<contributors />" +
            "<titles><title></title></titles>" +
            "<section>1955-11-05</section>" +
-           "<abstract />" +
            "<dates><year>1955</year></dates>" +
            "<edition>V1</edition>" +
            "<publisher>LibraScholar</publisher>" +
