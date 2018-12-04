@@ -160,7 +160,7 @@ public class SearchUtil {
              * 
              * A range query starting with an optional + or - with [ or { at the start and a } or ] at the end (can be mixed, e.g. {...])
              * A quoted phrase starting with an optional + or -
-             * A text term that may include an initial : separated fieldname prefix and comma separated parts, but may not include phrases or ranges (which are treated by solr as new terms despite being ina comma-separated list)
+             * A text term that may include an initial : separated fieldname prefix and comma separated parts, but may not include phrases or ranges (which are treated by solr as new terms despite being in a comma-separated list)
              * See https://regexr.com/ to parse and test the patterns
              * 
              * This term is found by searching for strings of characters that don't include whitespace or "[{' or , (with ' being an ignored separator character for solr),
@@ -168,7 +168,7 @@ public class SearchUtil {
              * a : and a range query OR
              * a : and a quoted string
              */
-            Pattern termPattern = Pattern.compile("[+-]?[\\{\\[][^\\}\\]]*[\\}\\]](\\^\\d+)?|[+-]?\\\"[^\\\"]*\\\"(\\^\\d+)?|(([^\\s\"\\[\\{',\\(\\)\\\\]|[\\\\][\\[\\{\\(\\)\\\\+:'])+(,?(([^\\s,\\[\\{'\":+\\(\\)\\\\-]|\\\\[\\[\\{\\(\\)\\\\+:'])|:[\\{\\[][^\\}\\]]*[\\}\\]]|:\\\"[^\\\"]*\\\"|:\\s*[\\(][^:]+[\\)])+)+)+|([^\\s\"',\\(\\)\\\\]|\\\\[\\[\\{\\(\\)\\\\+:'])+|[\\(\\)]");
+            Pattern termPattern = Pattern.compile("[+-]?[\\{\\[][^\\}\\]]*[\\}\\]](\\^\\d+)?|[+-]?\\\"[^\\\"]*\\\"(\\^\\d+)?|(([^\\s\"\\[\\{,\\(\\)\\\\]|[\\\\][\\[\\{\\(\\)\\\\+:])+(,?(([^\\s,\\[\\{\":+\\(\\)\\\\-]|\\\\[\\[\\{\\(\\)\\\\+:])|:[\\{\\[][^\\}\\]]*[\\}\\]]|:\\\"[^\\\"]*\\\"|:\\s*[\\(][^:]+[\\)])+)+)+|([^\\s\",\\(\\)\\\\]|\\\\[\\[\\{\\(\\)\\\\+:])+|[\\(\\)]");
             Matcher regexMatcher = termPattern.matcher(query);
             Pattern specialTokenPattern = Pattern.compile("\\(|\\)|OR|NOT|AND|&&|\\|\\||!|.*[^\\\\][^\\\\][:].*");
             Pattern forbiddenTokenPattern = Pattern.compile("\\\\|\\/|\\^|~|\\*|\\?|:");
