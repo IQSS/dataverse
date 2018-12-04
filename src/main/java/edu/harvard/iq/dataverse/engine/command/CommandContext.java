@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
+import edu.harvard.iq.dataverse.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
@@ -129,4 +130,6 @@ public interface CommandContext {
     public MapLayerMetadataServiceBean mapLayerMetadata();
 
     public DataCaptureModuleServiceBean dataCaptureModule();
+    
+    public FileDownloadServiceBean fileDownload();
 }
