@@ -101,6 +101,142 @@ At this point you should be able to download a placeholder rsync script. Dataver
 
 Now the files are in place and you need to send JSON to Dataverse with a success or failure message as described above. Make a copy of ``doc/sphinx-guides/source/_static/installation/files/root/big-data-support/checksumValidationSuccess.json`` and put the identifier in place such as "X1METO" under "uploadFolder"). Then use curl as described above to send the JSON.
 
+Steps to set up a DCM via Docker for Development
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you need a fully operating DCM client for development purposes, these steps will guide you to setting one up. This includes steps to set up the DCM on S3 variant.
+
+Docker Image Set-up
+^^^^^^^^^^^^^^^^^^^
+
+- Install docker if you do not have it
+- Here are the steps copied out of docker-aio/readme.md & docker-dcm/readme.txt . If the info on this page is consolidated to a doc, it may be good to look back at the guides themselves :
+
+  - `cd conf/docker-aio` and run `./0prep_deps.sh` to create Glassfish and Solr tarballs in conf/docker-aio/dv/deps.
+  - run `./1prep.sh`
+  - build the docker image: `docker build -t dv0 -f c7.dockerfile .`
+  - `cd ../docker-dcm` and run `./0prep.sh`
+  - build dcm/dv0dcm images with docker-compose: `docker-compose -f docker-compose.yml build`
+  - start containers: `docker-compose -f docker-compose.yml up -d`
+  - wait for container to show "healthy" (aka - `docker ps`), then wait another 4-5 minutes (even though it shows healthy, glassfish is still standing itself up), then run dataverse app installation: `docker exec -it dvsrv /opt/dv/install.bash`
+  - configure dataverse application to use DCM (run from outside the container): `docker exec -it dvsrv /opt/dv/configure_dcm.sh`
+  - The dataverse installation is accessible at `http://localhost:8084`.
+  - You may need to change the DoiProvider inside dvsrv (ezid does not work):
+
+    - `curl -X DELETE -d EZID "localhost:8080/api/admin/settings/:DoiProvider"`
+    - `curl -X PUT -d DataCite "localhost:8080/api/admin/settings/:DoiProvider"`
+    - also change the doi.baseUrlString, doi.username, doi.password
+      
+Setting up the S3 DCM Variant
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Before: Make sure to do the "To run rsync posix in docker" steps first.
+- Before: the default bucket for dcm to hold files in s3 is named test-dcm. It is coded into post_upload.bash (line 30).
+ 
+  - This bucket should exist on our testing environment, but if it is not there go and create it through the browser ui
+
+- `docker cp data-capture-module/scn/post_upload_s3.bash dcmsrv:/opt/dcm/scn/post_upload.bash`
+- Install aws on dcmsrv and symlink it
+
+  - `pip install awscli --upgrade --user`
+  - `export PATH=~/.local/bin:$PATH`
+
+- Configure aws bucket on dcmsrv
+
+  - you need a credentials files in ~/.aws
+
+    - `mkdir ~/.aws`
+    - `yum install nano` (or use a different editor below)
+    - `nano ~/.aws/credentials`
+
+      - Structure like:
+
+        - `[default]`
+        - `aws_access_key_id = `
+        - `aws_secret_access_key =`
+
+- Dataverse configuration (on dvsrv):
+
+  - Set s3 as the storage driver
+
+    - `cd /opt/glassfish4/bin/`
+    - `./asadmin delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"`
+    - `./asadmin create-jvm-options "\-Ddataverse.files.storage-driver-id=s3"`
+
+  - Set up aws configs for dataverse
+
+    - you may need this: `yum install awscli`
+    - `mkdir ~/.aws`
+    - `yum install nano` (or use a different editor below)
+    - `nano ~/.aws/credentials`
+
+      - Structure like:
+
+        - `[default]`
+        - `aws_access_key_id = `
+        - `aws_secret_access_key =`
+
+    - ALSO: create a region file
+
+      - `nano ~/.aws/config`
+      - contents:
+
+        - `[default]`
+        - `region = us-east-1`
+
+  - Add the bucket names to dataverse
+
+    - s3 bucket for dataverse
+
+      - `/usr/local/glassfish4/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.s3-bucket-name=iqsstestdcmbucket"`
+
+    - s3 bucket for dcm (as dataverse needs to do the copy over)
+
+      - `/usr/local/glassfish4/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.dcm-s3-bucket-name=test-dcm"`
+
+  - [set download method to be http]
+
+Using the DCM Docker Containers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Create dataset and download rsync upload script
+- Upload script to dcm_client (if needed, you can probably do all the actions for create/download inside dcm_client)
+
+  - `docker cp ~/Downloads/upload-FK2_NN49YM.bash dcm_client:/tmp`
+
+- Create a folder of files to upload (you just need something...)
+- Run script
+
+  - `bash ./upload-FK2_NN49YM.bash`
+
+- manually run post_upload.bash on dcmsrv
+
+  - `bash ./opt/dcm/scn/post_upload.bash`
+
+Additional DCM docker development tips
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- You can completely blow away all the docker images with these commands (including non dcm ones!)
+
+  - `docker stop dvsrv`
+  - `docker stop dcm_client`
+  - `docker stop dcmsrv`
+  - `docker rm $(docker ps -a -q)`
+  - `docker rmi $(docker images -q)`
+
+- There are a few logs to tail
+
+  - dvsrv : `tail -n 2000 -f /opt/glassfish4/glassfish/domains/domain1/logs/server.log`
+  - dcmsrv : `tail -n 2000 -f /var/log/lighttpd/breakage.log`
+  - dcmsrv : `tail -n 2000 -f /var/log/lighttpd/access.log`
+
+- I have attached a script for redeploying dataverse into your docker image if you just want to update the code. You'll probably need to tweak the paths [deploy_dataverse_into_docker.sh.zip](https://github.com/IQSS/dataverse/files/2237096/deploy_dataverse_into_docker.sh.zip)
+
+  - This script is also currently broken by the installer bug
+
+- Note that by default the docker container will stop running if the process it is following is turned off. For example flask with dcmsrv. You can get around this by having the script being followed never close (e.g. sleep infinity) https://stackoverflow.com/questions/31870222/how-can-i-keep-container-running-on-kubernetes
+- You may have to restart the glassfish domain occasionally to deal with memory filling up. If deployment is getting reallllllly slow, its a good time.
+
 Troubleshooting
 ~~~~~~~~~~~~~~~
 
