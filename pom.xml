@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
+    <!--
+    If you are doing more than bumping the version number, please read
+    doc/sphinx-guides/source/developers/dependencies.rst	
+    -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
     <version>4.9.4</version>
@@ -15,7 +18,6 @@
 	<additionalparam>-Xdoclint:none</additionalparam>
         <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
         <compilerArgument></compilerArgument>
-        <aws.version>1.11.172</aws.version>
         <project.timezone>UTC</project.timezone>
         <project.language>en</project.language>
         <project.region>US</project.region>
@@ -25,27 +27,22 @@
         -->
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
+        <aws.version>1.11.172</aws.version>
+        <jackson.version>2.9.6</jackson.version>
+        <commons.logging.version>1.2</commons.logging.version>
+        <httpcomponents.client.version>4.5.5</httpcomponents.client.version>
+        
         <junit.version>4.12</junit.version>
         <junit.jupiter.version>5.3.1</junit.jupiter.version>
         <junit.vintage.version>5.3.1</junit.vintage.version>
         <junit.platform.version>1.3.1</junit.platform.version>
         <mockito.version>2.22.0</mockito.version>
+        <jacoco.version>0.8.2</jacoco.version>
     </properties>
 
+    <!--Maven checks for dependendies from these repos in the order shown in the pom.xml
+        This isn't well documented and seems to change between maven versions -MAD 4.9.4 -->
     <repositories>
-        <repository>
-            <id>prime-repo</id>
-            <name>PrimeFaces Maven Repository</name>
-            <url>http://repository.primefaces.org</url>
-            <layout>default</layout>
-        </repository>
-        <!-- Geo Toolkit repository is need to obtain the JAI (advanced imaging) libraries; since Oracle kind of abandoned that project, the jars seem to have disappeared from the central repository as well. -->
-        <repository>
-            <id>geotk-repo</id>
-            <name>Geo Toolkit Maven Repository</name>
-            <url>http://maven.geotoolkit.org</url>
-            <layout>default</layout>
-        </repository>
         <repository>
             <id>central-repo</id>
             <name>Central Repository</name>
@@ -53,9 +50,10 @@
             <layout>default</layout>
         </repository>
         <repository>
-            <id>dvn.private</id>
-            <name>Local repository for hosting jars not available from network repositories.</name>
-            <url>file://${project.basedir}/local_lib</url>
+            <id>prime-repo</id>
+            <name>PrimeFaces Maven Repository</name>
+            <url>http://repository.primefaces.org</url>
+            <layout>default</layout>
         </repository>
         <repository>
             <id>dataone.org</id>
@@ -67,12 +65,49 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-
+        <repository>
+            <id>dvn.private</id>
+            <name>Local repository for hosting jars not available from network repositories.</name>
+            <url>file://${project.basedir}/local_lib</url>
+        </repository>
     </repositories>
-  
-    <!--            Due to our old version of glassfish and its version of jackson,
-                we are pointing to an aws sdk with unique references to needed libraries.
-                If we update glassfish, we should return to the normal sdk as well. -->  
+    
+    <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
+         versions of dependencies used both directly and transitive are managed here. -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-bom</artifactId>
+                <version>${aws.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>${commons.logging.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${httpcomponents.client.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
+    <!-- Declare any DIRECT dependencies here.
+         In case the depency is both transitive and direct (e. g. some common lib for logging),
+         manage the version above and add the direct dependency here WITHOUT version tag, too.
+    -->
+    <!-- TODO: Housekeeping is utterly needed. -->
     <dependencies>
         <dependency>
             <groupId>org.passay</groupId>
@@ -110,7 +145,6 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.5</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -147,6 +181,8 @@
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
+            <!-- Once on Eclipse Glassfish 5.1 or Payara 5.x, this should be changed to aws-java-sdk-s3,
+                 rendering the WAR much lighter. The version tag needs to be removed then, too. -->
             <artifactId>aws-java-sdk-bundle</artifactId>
             <version>${aws.version}</version>
         </dependency>
@@ -179,6 +215,16 @@
             <artifactId>gson</artifactId>
             <version>2.2.4</version>
             <scope>compile</scope>
+        </dependency>
+        <!-- Should be refactored and removed once on Java EE 8 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <!-- Should be refactored and removed once on Java EE 8 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
             <!-- required by org.swordapp.server.sword2-server -->
@@ -335,19 +381,9 @@
         </dependency>
         <!-- JAI (Java Advanced Imaging) jars: -->
         <dependency>
-            <groupId>javax.media</groupId>
-            <artifactId>jai_imageio</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.media</groupId>
-            <artifactId>jai_core</artifactId>
-            <version>1.1.3</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.media</groupId>
-            <artifactId>jai_codec</artifactId>
-            <version>1.1.3</version>
+            <groupId>com.github.jai-imageio</groupId>
+            <artifactId>jai-imageio-core</artifactId>
+            <version>1.3.1</version>
         </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
@@ -375,11 +411,6 @@
             <artifactId>rest-assured</artifactId>
             <version>2.4.0</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.7.5.201505241946</version>
         </dependency>
         <!-- Added specific versionf of SLF4J jars; otherwise we end up with
         conflicting versions of slf4j-api and slf4j-log4j12, loaded as
@@ -618,7 +649,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.5.201505241946</version>
+                <version>${jacoco.version}</version>
                 <configuration>
                     <destfile>${basedir}/target/coverage-reports/jacoco-unit.exec</destfile>
                     <datafile>${basedir}/target/coverage-reports/jacoco-unit.exec</datafile>
@@ -645,8 +676,8 @@
                 <version>4.0.0</version>
             </plugin>
             <!-- v4.8: The truezip-maven-plugin below deletes two copies of a file that the AWS SDK bundle
-            includes called javamail.providers which breaks system emails. TODO: make our own AWS SDK without Amazon SES.
-            - bsilverstein 8/8/2017 -->
+            includes called javamail.providers which breaks system emails. - bsilverstein 8/8/2017 -->
+            <!-- Once on Eclipse Glassfish 5.1 or Payara 5.x and changing to aws-java-sdk-s3, this can be deleted. -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>truezip-maven-plugin</artifactId>

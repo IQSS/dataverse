@@ -781,11 +781,12 @@ public class AuthenticationServiceBean {
 
         AuthenticationRequest authReq = new AuthenticationRequest();
         /**
-         * @todo Should this really be coming from a bundle like this? Added
-         * because that's what BuiltinAuthenticationProvider does.
+         * @todo Should the credential key really be a Bundle key?
+         * BuiltinAuthenticationProvider.KEY_USERNAME_OR_EMAIL, for example, is
+         * "login.builtin.credential.usernameOrEmail" as of this writing.
          */
-        authReq.putCredential(BundleUtil.getStringFromBundle("login.builtin.credential.usernameOrEmail"), username);
-        authReq.putCredential(BundleUtil.getStringFromBundle("login.builtin.credential.password"), password);
+        authReq.putCredential(BuiltinAuthenticationProvider.KEY_USERNAME_OR_EMAIL, username);
+        authReq.putCredential(BuiltinAuthenticationProvider.KEY_PASSWORD, password);
         /**
          * @todo Should probably set IP address here.
          */

@@ -10,6 +10,9 @@ package edu.harvard.iq.dataverse.search;
  * http://localhost:8080/api/admin/index/solr/schema` into the file in the
  * source tree when a metadata block update warrants it.
  *
+ * This process of updating schema.xml for new metadata block fields documented
+ * at doc/sphinx-guides/source/admin/metadatacustomization.rst
+ *
  * Generally speaking, we want the search fields to be readable. This is a
  * challenge for long field names but a power user should be able to type
  * "authorAffiliation:Harvard" into the general search box. A regular user is
