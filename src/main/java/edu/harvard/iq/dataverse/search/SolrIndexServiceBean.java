@@ -207,7 +207,6 @@ public class SolrIndexServiceBean {
                 } 
                 if(dataFile.isRestricted()) {
 
-                    logger.info("constructing doc for restricted file: " + dataFile.getId());
                     ftperms = searchPermissionsService.findDataFilePermsforDatasetVersion(dataFile, datasetVersionFileIsAttachedTo);
                 }
                 DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(dataFile.getId().toString(), solrId, datasetVersionFileIsAttachedTo.getId(), dataFile.getDisplayName(), perms, ftperms);
@@ -242,7 +241,6 @@ public class SolrIndexServiceBean {
                     String solrId = solrIdStart + solrIdEnd;
                     List<String> ftperms = new ArrayList<>();
                     if(fileMetadata.getDataFile().isRestricted()) {
-                        logger.info("constructing doc for restricted file: " + fileId);
                         ftperms = searchPermissionsService.findDataFilePermsforDatasetVersion(fileMetadata.getDataFile(), datasetVersionFileIsAttachedTo);
                     }
                     DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(fileId.toString(), solrId, datasetVersionFileIsAttachedTo.getId(), fileMetadata.getLabel(), perms, ftperms);
