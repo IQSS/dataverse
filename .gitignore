@@ -49,3 +49,5 @@ scripts/installer/default.config
 .idea
 **/*.iml
 /bin/
+/.classpath
+/.project
