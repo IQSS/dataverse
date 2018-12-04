@@ -64,17 +64,6 @@
                                 </p>
                             </div>
                             <div class="panel-body" jsf:id="contentOfHttpPanel" jsf:rendered="#{!EditDatafilesPage.workingVersion.hasPackageFile}">
-                                <p class="help-block">
-                                    <span class="glyphicon glyphicon-info-sign"/>
-                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false" 
-                                                    rendered="#{systemConfig.maxFileUploadSize !=null and !empty systemConfig.maxFileUploadSize}">
-                                        <f:param value="#{systemConfig.humanMaxFileUploadSize}"/>
-                                    </h:outputFormat>
-                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipMoreInformation']}" escape="false">
-                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                        <f:param value="#{systemConfig.guidesVersion}"/>
-                                    </h:outputFormat>
-                                </p>
                     
                     <script>
 //<![CDATA[
