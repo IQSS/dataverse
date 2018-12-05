@@ -39,6 +39,18 @@ subset          Column-wise subsetting. You must also supply a comma separated l
 
 ---------------------------
 
+``noVarHeader``
+
+(supported for tabular data files only; ignored for all other file types)
+
+==============  ===========
+Value           Description
+==============  ===========
+true|1          Tab-delimited data file, without the variable name header (added to tab. files by default)
+==============  ===========
+
+---------------------------
+
 ``imageThumb``
 
 the following parameter values are supported (for image and pdf files only): 
