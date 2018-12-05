@@ -73,8 +73,19 @@ Every non-index page should use the following code to display a table of content
 
 This code should be placed below any introductory text/images and directly above the first subheading, much like a Wikipedia page.
 
+Images
+------
+
+A good documentation is just like a website enhanced and upgraded by adding high quality and self-explanatory images.
+Often images depict a lot of written text in a simple manner. Within our Sphinx docs, you can add them in two ways: a) add a
+PNG image directly and include or b) use inline description languages like GraphViz (current only option).
+
+While PNGs in the git repo can be linked directly via URL, Sphinx-generated images do not need a manual step and might
+provide higher visual quality. Especially in terms of quality of content, generated images can be extendend and improved
+by a textbased and reviewable commit, without needing raw data or source files and no diff around.
+
 GraphViz based images
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 In some parts of the documentation, graphs are rendered as images via Sphinx GraphViz extension.
 
