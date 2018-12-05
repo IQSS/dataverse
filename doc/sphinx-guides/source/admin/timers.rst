@@ -3,50 +3,61 @@
 Dataverse Application Timers
 ============================
 
-Dataverse uses timers to automatically run scheduled Harvest and Metadata export jobs. 
+Dataverse uses timers to automatically run scheduled jobs for:
+
+* Harvesting metadata
+   * See :doc:`/admin/harvestserver` and :doc:`/admin/harvestclients`
+   * Created only when scheduling enabled by admin (via "Manage Harvesting Clients" page) and canceled when disabled.
+* :doc:`/admin/metadataexport`
+   * Enabled by default, non configurable.
+
+All timers are created on application startup and are not configurable when to go off. Since Dataverse 4.10 they are not
+persisted to a database, as they had been deleted and re-created on every startup before.
 
 .. contents:: |toctitle|
 	:local:
 
-Dedicated timer server in a Dataverse server cluster
-----------------------------------------------------
+Dataverse server clusters and EJB timers
+----------------------------------------
 
-When running a Dataverse cluster - i.e. multiple Dataverse application
-servers talking to the same database - **only one** of them must act
-as the *dedicated timer server*. This is to avoid starting conflicting
-batch jobs on multiple nodes at the same time.
+In a multi-node cluster, all timers will be created on a dedicated timer node (see below). This is not necessarily on the
+node where configuration of harvesting clients or metadata export has been done by an admin.
+
+Dedicated timer server node
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When running a "cluster" with multiple instances of Dataverse connected to the same database, **only one** of them must
+act as the *dedicated timer server*. This is to avoid starting conflicting batch jobs on multiple nodes at the same time.
+(Might get addressed for automation in a later Dataverse version using cluster support from the application server.)
 
 This does not affect a single-server installation. So you can safely skip this section unless you are running a multi-server cluster. 
 
-The following JVM option instructs the application to act as the dedicated timer server: 
+The following system property instructs the application to act as the dedicated timer server:
 
-``-Ddataverse.timerServer=true``
+``dataverse.timerServer=true``
 
-**IMPORTANT:** Note that this option is automatically set by the Dataverse installer script. That means that when **configuring a multi-server cluster**, it will be the responsibility of the installer to remove the option from the :fixedwidthplain:`domain.xml` of every node except the one intended to be the timer server. We also recommend that the following entry in the :fixedwidthplain:`domain.xml`: ``<ejb-timer-service timer-datasource="jdbc/VDCNetDS">`` is changed back to ``<ejb-timer-service>`` on all the non-timer server nodes. Similarly, this option is automatically set by the installer script. Changing it back to the default setting on a server that doesn't need to run the timer will prevent a potential race condition, where multiple servers try to get a lock on the timer database. 
+**Note** that when using JVM options to set system properties, please use ``-Ddataverse.timerServer=true``. You should
+prefer using ``asadmin`` system properties commands.
 
-**Note** that for the timer to work, the version of the PostgreSQL JDBC driver your instance is using must match the version of your PostgreSQL database. See the 'Timer not working' section of the :doc:`/admin/troubleshooting` guide.
+**IMPORTANT:** This is automatically set by the Dataverse installer script on every node.
 
-Harvesting Timers 
------------------
+That means that *when configuring a multi-server cluster*, it will be the responsibility of the sysadmin to remove
+the option from every node except the one intended to be the timer server. Easiest way to achieve this is by running
+``asadmin delete-system-property "dataverse.timerServer"``.
+(This option will not be set to ``true`` in future Docker images of Dataverse, it needs to be configured.)
 
-These timers are created when scheduled harvesting is enabled by a local admin user (via the "Manage Harvesting Clients" page). 
+As we don't use persistent timers from Dataverse 4.10 onward, when upgrading, it is up to you to follow the former
+recommendation or not. In new installations, this will not be necessary.
 
-In a multi-node cluster, all these timers will be created on the dedicated timer node (and not necessarily on the node where the harvesting clients were created and/or saved). 
-
-A timer will be automatically removed when a harvesting client with an active schedule is deleted, or if the schedule is turned off for an existing client. 
-
-Metadata Export Timer
----------------------
-
-This timer is created automatically whenever the application is deployed or restarted. There is no admin user-accessible configuration for this timer. 
-
-This timer runs a daily job that tries to export all the local, published datasets that haven't been exported yet, in all supported metadata formats, and cache the results on the filesystem. (Note that normally an export will happen automatically whenever a dataset is published. This scheduled job is there to catch any datasets for which that export did not succeed, for one reason or another). Also, since this functionality has been added in version 4.5: if you are upgrading from a previous version, none of your datasets are exported yet. So the first time this job runs, it will attempt to export them all. 
-
-This daily job will also update all the harvestable OAI sets configured on your server, adding new and/or newly published datasets or marking deaccessioned datasets as "deleted" in the corresponding sets as needed. 
-
-This job is automatically scheduled to run at 2AM local time every night. If really necessary, it is possible (for an advanced user) to change that time by directly editing the EJB timer application table in the database.  
+  We also recommend that the following entry in the :fixedwidthplain:`domain.xml`:
+  ``<ejb-timer-service timer-datasource="jdbc/VDCNetDS">`` is changed back to ``<ejb-timer-service>``
+  on all the non-timer server nodes. Similarly, this option is automatically set by the installer script.
+  Changing it back to the default setting on a server that doesn't need to run the timer will prevent a potential
+  race condition, where multiple servers try to get a lock on the timer database.
 
 Known Issues
 ------------
  
-We've received several reports of an intermittent issue where the application fails to deploy with the error message "EJB Timer Service is not available." Please see the :doc:`/admin/troubleshooting` section of this guide for a workaround. 
+Former to Dataverse 4.10, we've received several reports of an intermittent issue where the application fails to deploy
+with the error message "EJB Timer Service is not available." Please see the :doc:`/admin/troubleshooting` section of
+this guide for a workaround.

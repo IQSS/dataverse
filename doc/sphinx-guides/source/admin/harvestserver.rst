@@ -124,7 +124,8 @@ runs every night (at 2AM, by default). This export timer is created
 and activated automatically every time the application is deployed
 or restarted. Once again, this is new in Dataverse 4, and unlike DVN
 v3, where export jobs had to be scheduled and activated by the admin
-user. See the "Export" section of the Admin guide, for more information on the automated metadata exports.
+user. See the :doc:`/admin/metadataexport` section of the Admin guide,
+for more information on the automated metadata exports.
 
 It is still possible however to make changes like this be immediately
 reflected in the OAI server, by going to the *Harvesting Server* page

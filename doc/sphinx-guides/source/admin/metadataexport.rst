@@ -7,14 +7,36 @@ Metadata Export
 Automatic Exports
 -----------------
 
-Publishing a dataset automatically starts a metadata export job, that will run in the background, asynchronously. Once completed, it will make the dataset metadata exported and cached in all the supported formats:
+Publishing a dataset automatically starts a metadata export job, that will run in the background, asynchronously.
+Once completed, it will make the dataset metadata exported and cached in all the supported formats:
 
 - Dublin Core
 - Data Documentation Initiative (DDI)
 - Schema.org JSON-LD
 - native JSON (Dataverse-specific)
 
-A scheduled timer job that runs nightly will attempt to export any published datasets that for whatever reason haven't been exported yet. This timer is activated automatically on the deployment, or restart, of the application. So, again, no need to start or configure it manually. (See the "Application Timers" section of this guide for more information)
+Scheduled Timer Export
+----------------------
+
+A scheduled timer job that runs nightly will attempt to export any published datasets in all supported metadata formats
+that for whatever reason haven't been exported yet and cache the results on the filesystem.
+
+**Note** that normally an export will happen automatically whenever a dataset is published. This scheduled job is there
+to catch any datasets for which that export did not succeed, for one reason or another. Also, since this functionality
+has been added in version 4.5: if you are upgrading from a previous version, none of your datasets are exported yet.
+
+This daily job will also update all the harvestable OAI sets configured on your server, adding new and/or newly
+published datasets or marking deaccessioned datasets as "deleted" in the corresponding sets as needed.
+
+This timer is activated automatically on the deployment, or restart, of the application. So, again, no need to start or
+configure it manually. (See alse :doc:`timers` section of this guide for more information about timer usage in Dataverse.)
+There is no admin user-accessible configuration for this timer.
+
+This job is automatically scheduled to run at 2AM local time every night.
+
+Before Dataverse 4.10 it is possible (for an advanced and adventureous user) to change that time by directly editing
+the EJB timer application table in the database. From 4.10 onward, timers are not persisted any longer. If you have
+a desperate need for a configurable time, please open an issue on GitHub, describing your use case.
 
 Batch exports through the API 
 -----------------------------
