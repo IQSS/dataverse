@@ -16,7 +16,7 @@ Much more customization of metadata is possible, but this is an advanced topic s
 -  Editing and adding metadata fields
 
 -  Editing and adding instructional text (field label tooltips and text
-   box watermarks, but see the note below about internationalization)
+   box watermarks)
 
 -  Editing and adding controlled vocabularies
 
@@ -521,8 +521,6 @@ Please note that metadata fields share a common namespace so they must be unique
 ``curl http://localhost:8080/api/admin/index/solr/schema``
 
 We'll use this command again below to update the Solr schema to accomodate metadata fields we've added.
-
-We are aware that English goes into the TSV files but we are working toward internationalization of metadata blocks in https://github.com/IQSS/dataverse/issues/4684
 
 Loading TSV files into Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
