@@ -18,9 +18,10 @@ Install a DCM
 
 Installation instructions can be found at https://github.com/sbgrid/data-capture-module . Note that a shared filesystem (posix or AWS S3) between Dataverse and your DCM is required. You cannot use a DCM with Swift at this point in time.
 
-Please note that S3 support for DCM is highly experimental. Files can be uploaded to S3 but they cannot be downloaded until https://github.com/IQSS/dataverse/issues/4949 is worked on. If you want to play around with S3 support for DCM, you must configure a JVM option called ``dataverse.files.dcm-s3-bucket-name`` which is a holding area for uploaded files that have not yet passed checksum validation. Search for that JVM option at https://github.com/IQSS/dataverse/issues/4703 for commands on setting that JVM option and related setup. Note that because that GitHub issue has so many comments you will need to click "Load more" where it says "hidden items". FIXME: Document all of this properly.
+Please note that S3 support for DCM is highly experimental. Files can be uploaded to S3 but they cannot be downloaded until https://github.com/IQSS/dataverse/issues/4949 is worked on. If you want to play around with S3 support for DCM, you must configure a JVM option called ``dataverse.files.dcm-s3-bucket-name`` which is a holding area for uploaded files that have not yet passed checksum validation. Search for that JVM option at https://github.com/IQSS/dataverse/issues/4703 for commands on setting that JVM option and related setup. Note that because that GitHub issue has so many comments you will need to click "Load more" where it says "hidden items". 
 
-. FIXME: Explain what ``dataverse.files.dcm-s3-bucket-name`` is for and what it has to do with ``dataverse.files.s3-bucket-name``.
+.. FIXME: Document all of this properly.
+.. FIXME: Explain what ``dataverse.files.dcm-s3-bucket-name`` is for and what it has to do with ``dataverse.files.s3-bucket-name``.
 
 Once you have installed a DCM, you will need to configure two database settings on the Dataverse side. These settings are documented in the :doc:`/installation/config` section of the Installation Guide:
 
@@ -61,7 +62,6 @@ Steps to set up a DCM mock for Development
 
 Install Flask.
 
-
 Download and run the mock. You will be cloning the https://github.com/sbgrid/data-capture-module repo.
 
 - ``git clone git://github.com/sbgrid/data-capture-module.git``
@@ -101,6 +101,13 @@ At this point you should be able to download a placeholder rsync script. Dataver
 
 Now the files are in place and you need to send JSON to Dataverse with a success or failure message as described above. Make a copy of ``doc/sphinx-guides/source/_static/installation/files/root/big-data-support/checksumValidationSuccess.json`` and put the identifier in place such as "X1METO" under "uploadFolder"). Then use curl as described above to send the JSON.
 
+Troubleshooting
+~~~~~~~~~~~~~~~
+
+The following low level command should only be used when troubleshooting the "import" code a DCM uses but is documented here for completeness.
+
+``curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$DV_BASE_URL/api/batch/jobs/import/datasets/files/$DATASET_DB_ID?uploadFolder=$UPLOAD_FOLDER&totalSize=$TOTAL_SIZE"``
+
 Steps to set up a DCM via Docker for Development
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -110,125 +117,122 @@ Docker Image Set-up
 ^^^^^^^^^^^^^^^^^^^
 
 - Install docker if you do not have it
-- Here are the steps copied out of docker-aio/readme.md & docker-dcm/readme.txt . If the info on this page is consolidated to a doc, it may be good to look back at the guides themselves :
+- Follow these steps (extracted from ``docker-aio/readme.md`` & ``docker-dcm/readme.txt``) :
 
-  - `cd conf/docker-aio` and run `./0prep_deps.sh` to create Glassfish and Solr tarballs in conf/docker-aio/dv/deps.
-  - run `./1prep.sh`
-  - build the docker image: `docker build -t dv0 -f c7.dockerfile .`
-  - `cd ../docker-dcm` and run `./0prep.sh`
-  - build dcm/dv0dcm images with docker-compose: `docker-compose -f docker-compose.yml build`
-  - start containers: `docker-compose -f docker-compose.yml up -d`
-  - wait for container to show "healthy" (aka - `docker ps`), then wait another 4-5 minutes (even though it shows healthy, glassfish is still standing itself up), then run dataverse app installation: `docker exec -it dvsrv /opt/dv/install.bash`
-  - configure dataverse application to use DCM (run from outside the container): `docker exec -it dvsrv /opt/dv/configure_dcm.sh`
-  - The dataverse installation is accessible at `http://localhost:8084`.
+  - ``cd conf/docker-aio`` and run ``./0prep_deps.sh`` to create Glassfish and Solr tarballs in conf/docker-aio/dv/deps.
+  - Run ``./1prep.sh``
+  - Build the docker image: ``docker build -t dv0 -f c7.dockerfile .``
+  - ``cd ../docker-dcm`` and run ``./0prep.sh``
+  - Build dcm/dv0dcm images with docker-compose: ``docker-compose -f docker-compose.yml build``
+  - Start containers: ``docker-compose -f docker-compose.yml up -d``
+  - Wait for container to show "healthy" (aka - ``docker ps``), then wait another 5 minutes (even though it shows healthy, glassfish is still standing itself up). Then run Dataverse app installation: ``docker exec -it dvsrv /opt/dv/install.bash``
+  - Configure Dataverse application to use DCM (run from outside the container): ``docker exec -it dvsrv /opt/dv/configure_dcm.sh``
+  - The Dataverse installation is accessible at ``http://localhost:8084``.
   - You may need to change the DoiProvider inside dvsrv (ezid does not work):
 
-    - `curl -X DELETE -d EZID "localhost:8080/api/admin/settings/:DoiProvider"`
-    - `curl -X PUT -d DataCite "localhost:8080/api/admin/settings/:DoiProvider"`
-    - also change the doi.baseUrlString, doi.username, doi.password
+    - ``curl -X DELETE -d EZID "localhost:8080/api/admin/settings/:DoiProvider"``
+    - ``curl -X PUT -d DataCite "localhost:8080/api/admin/settings/:DoiProvider"``
+    - Also change the doi.baseUrlString, doi.username, doi.password
       
-Setting up the S3 DCM Variant
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Optional steps for setting up the S3 Docker DCM Variant
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Before: Make sure to do the "To run rsync posix in docker" steps first.
-- Before: the default bucket for dcm to hold files in s3 is named test-dcm. It is coded into post_upload.bash (line 30).
- 
-  - This bucket should exist on our testing environment, but if it is not there go and create it through the browser ui
+- Before: the default bucket for DCM to hold files in S3 is named test-dcm. It is coded into `post_upload.bash` (line 30). Change to a different bucket if needed.
+- Move the S3 variant of the rsync processing script into docker: ``docker cp data-capture-module/scn/post_upload_s3.bash dcmsrv:/opt/dcm/scn/post_upload.bash``
+- Install AWS on dcmsrv and symlink it
+.. Delete these after testing
+..  - ``pip install awscli --upgrade --user``
+..  - ``export PATH=~/.local/bin:$PATH``
+- Add AWS bucket info to dcmsrv
 
-- `docker cp data-capture-module/scn/post_upload_s3.bash dcmsrv:/opt/dcm/scn/post_upload.bash`
-- Install aws on dcmsrv and symlink it
+  - You need a credentials files in ~/.aws
 
-  - `pip install awscli --upgrade --user`
-  - `export PATH=~/.local/bin:$PATH`
-
-- Configure aws bucket on dcmsrv
-
-  - you need a credentials files in ~/.aws
-
-    - `mkdir ~/.aws`
-    - `yum install nano` (or use a different editor below)
-    - `nano ~/.aws/credentials`
+    - ``mkdir ~/.aws``
+    - ``yum install nano`` (or use a different editor below)
+    - ``nano ~/.aws/credentials``
 
       - Structure like:
 
-        - `[default]`
-        - `aws_access_key_id = `
-        - `aws_secret_access_key =`
+        - ``[default]``
+        - ``aws_access_key_id =``
+        - ``aws_secret_access_key =``
 
 - Dataverse configuration (on dvsrv):
 
-  - Set s3 as the storage driver
+  - Set S3 as the storage driver
 
-    - `cd /opt/glassfish4/bin/`
-    - `./asadmin delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"`
-    - `./asadmin create-jvm-options "\-Ddataverse.files.storage-driver-id=s3"`
+    - ``cd /opt/glassfish4/bin/``
+    - ``./asadmin delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
+    - ``./asadmin create-jvm-options "\-Ddataverse.files.storage-driver-id=s3"``
 
-  - Set up aws configs for dataverse
+  - Add AWS bucket info to Dataverse
 
-    - you may need this: `yum install awscli`
-    - `mkdir ~/.aws`
-    - `yum install nano` (or use a different editor below)
-    - `nano ~/.aws/credentials`
+    - You may need this: ``yum install awscli``
+    - ``mkdir ~/.aws``
+    - ``yum install nano`` (or use a different editor below)
+    - ``nano ~/.aws/credentials``
 
       - Structure like:
 
-        - `[default]`
-        - `aws_access_key_id = `
-        - `aws_secret_access_key =`
+        - ``[default]``
+        - ``aws_access_key_id =``
+        - ``aws_secret_access_key =``
 
     - ALSO: create a region file
 
-      - `nano ~/.aws/config`
-      - contents:
+      - ``nano ~/.aws/config``
+      - Contents:
 
-        - `[default]`
-        - `region = us-east-1`
+        - ``[default]``
+        - ``region = us-east-1``
 
-  - Add the bucket names to dataverse
+  - Add the S3 bucket names to Dataverse
 
-    - s3 bucket for dataverse
+    - S3 bucket for Dataverse
 
-      - `/usr/local/glassfish4/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.s3-bucket-name=iqsstestdcmbucket"`
+      - ``/usr/local/glassfish4/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.s3-bucket-name=iqsstestdcmbucket"``
 
-    - s3 bucket for dcm (as dataverse needs to do the copy over)
+    - S3 bucket for DCM (as Dataverse needs to do the copy over)
 
-      - `/usr/local/glassfish4/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.dcm-s3-bucket-name=test-dcm"`
+      - ``/usr/local/glassfish4/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.dcm-s3-bucket-name=test-dcm"``
 
-  - [set download method to be http]
+  - Set download method to be HTTP, as DCM downloads through S3 are over this protocol ``curl -X PUT "http://localhost:8080/api/admin/settings/:DownloadMethods" -d "native/http"``
 
 Using the DCM Docker Containers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Create dataset and download rsync upload script
+For using these commands, you will need to connect to the shell prompt inside various containers (e.g. ``docker exec -it dvsrv /bin/bash``)
+
+- Create a dataset and download rsync upload script
 - Upload script to dcm_client (if needed, you can probably do all the actions for create/download inside dcm_client)
 
-  - `docker cp ~/Downloads/upload-FK2_NN49YM.bash dcm_client:/tmp`
+  - ``docker cp ~/Downloads/upload-FK2_NN49YM.bash dcm_client:/tmp``
 
-- Create a folder of files to upload (you just need something...)
+- Create a folder of files to upload (files can be empty)
 - Run script
 
-  - `bash ./upload-FK2_NN49YM.bash`
+  - e.g. ``bash ./upload-FK2_NN49YM.bash``
 
-- manually run post_upload.bash on dcmsrv
+- Manually run post_upload.bash on dcmsrv
 
-  - `bash ./opt/dcm/scn/post_upload.bash`
+  - ``bash ./opt/dcm/scn/post_upload.bash``
 
 Additional DCM docker development tips
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- You can completely blow away all the docker images with these commands (including non dcm ones!)
+- You can completely blow away all the docker images with these commands (including non DCM ones!)
 
-  - `docker stop dvsrv`
-  - `docker stop dcm_client`
-  - `docker stop dcmsrv`
-  - `docker rm $(docker ps -a -q)`
-  - `docker rmi $(docker images -q)`
+  - ``docker stop dvsrv``
+  - ``docker stop dcm_client``
+  - ``docker stop dcmsrv``
+  - ``docker rm $(docker ps -a -q)``
+  - ``docker rmi $(docker images -q)``
 
 - There are a few logs to tail
 
-  - dvsrv : `tail -n 2000 -f /opt/glassfish4/glassfish/domains/domain1/logs/server.log`
-  - dcmsrv : `tail -n 2000 -f /var/log/lighttpd/breakage.log`
-  - dcmsrv : `tail -n 2000 -f /var/log/lighttpd/access.log`
+  - dvsrv : ``tail -n 2000 -f /opt/glassfish4/glassfish/domains/domain1/logs/server.log``
+  - dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/breakage.log``
+  - dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/access.log``
 
 - I have attached a script for redeploying dataverse into your docker image if you just want to update the code. You'll probably need to tweak the paths [deploy_dataverse_into_docker.sh.zip](https://github.com/IQSS/dataverse/files/2237096/deploy_dataverse_into_docker.sh.zip)
 
@@ -236,13 +240,6 @@ Additional DCM docker development tips
 
 - Note that by default the docker container will stop running if the process it is following is turned off. For example flask with dcmsrv. You can get around this by having the script being followed never close (e.g. sleep infinity) https://stackoverflow.com/questions/31870222/how-can-i-keep-container-running-on-kubernetes
 - You may have to restart the glassfish domain occasionally to deal with memory filling up. If deployment is getting reallllllly slow, its a good time.
-
-Troubleshooting
-~~~~~~~~~~~~~~~
-
-The following low level command should only be used when troubleshooting the "import" code a DCM uses but is documented here for completeness.
-
-``curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$DV_BASE_URL/api/batch/jobs/import/datasets/files/$DATASET_DB_ID?uploadFolder=$UPLOAD_FOLDER&totalSize=$TOTAL_SIZE"``
 
 Repository Storage Abstraction Layer (RSAL)
 -------------------------------------------
