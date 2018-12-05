@@ -582,7 +582,7 @@ example:
 
 controlledvocabulary.subject.agricultural_sciences=Agricultural Sciences
 
-controlledvocabulary.language.marathi_(marathi)=Marathi (Mar\u0101\u1E6Dh\u012B)
+controlledvocabulary.language.marathi_(marathi)=Marathi (Marāṭhī)
 
 
 Enabling a Metadata Block
