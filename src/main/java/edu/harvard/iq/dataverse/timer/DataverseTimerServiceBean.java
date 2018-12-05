@@ -30,14 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import javax.ejb.*;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
@@ -273,12 +266,6 @@ public class DataverseTimerServiceBean implements Serializable {
             createTimer(initExpirationDate, intervalDuration, new HarvestTimerInfo(harvestingClient.getId(), harvestingClient.getName(), harvestingClient.getSchedulePeriod(), harvestingClient.getScheduleHourOfDay(), harvestingClient.getScheduleDayOfWeek()));
         }
     }
-
-    public void updateHarvestTimer(HarvestingClient harvestingClient) {
-        removeHarvestTimer(harvestingClient);
-        createHarvestTimer(harvestingClient);
-    }
-
     
     public void removeHarvestTimer(HarvestingClient harvestingClient) {
          // Clear dataverse timer, if one exists
@@ -315,15 +302,6 @@ public class DataverseTimerServiceBean implements Serializable {
         
         logger.info("Setting the Export Timer, initial expiration: " + initExpirationDate);
         createTimer(initExpirationDate, intervalDuration, info);
-    }
-
-    public void createExportTimer(Dataverse dataverse) {
-         /* Not yet implemented. The DVN 3 implementation can be used as a model */
-
-    }
-
-     public void removeExportTimer() {
-         /* Not yet implemented. The DVN 3 implementation can be used as a model */
     }
 
     /* Utility methods: */ 
