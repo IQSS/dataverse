@@ -140,9 +140,6 @@ Optional steps for setting up the S3 Docker DCM Variant
 - Before: the default bucket for DCM to hold files in S3 is named test-dcm. It is coded into `post_upload.bash` (line 30). Change to a different bucket if needed.
 - Move the S3 variant of the rsync processing script into docker: ``docker cp data-capture-module/scn/post_upload_s3.bash dcmsrv:/opt/dcm/scn/post_upload.bash``
 - Install AWS on dcmsrv and symlink it
-.. Delete these after testing
-..  - ``pip install awscli --upgrade --user``
-..  - ``export PATH=~/.local/bin:$PATH``
 - Add AWS bucket info to dcmsrv
 
   - You need a credentials files in ~/.aws
