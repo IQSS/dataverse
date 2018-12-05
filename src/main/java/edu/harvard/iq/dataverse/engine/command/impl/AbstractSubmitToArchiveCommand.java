@@ -78,8 +78,8 @@ public abstract class AbstractSubmitToArchiveCommand implements Command<DatasetV
 
     @Override
     public String describe() {
-        return "DatasetVersion: " + version.getId() + " " + version.getDataset().getDisplayName() + ".v"
-                + version.getFriendlyVersionNumber();
+        return "DatasetVersion: [" + version.getId() + " " + version.getDataset().getDisplayName() + ".v"
+                + version.getFriendlyVersionNumber()+"]";
     }
 
     /**
