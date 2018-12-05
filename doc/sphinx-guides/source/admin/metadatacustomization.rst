@@ -546,33 +546,43 @@ To create a new ResourceBundle, here are the steps to generate key=value pair fo
 
 #metadataBlock properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-| metadatablock.name=(the value of **name** property from #metadatablock)
-| metadatablock.displayName=(the value of **displayName** property from #metadatablock)
+metadatablock.name=(the value of **name** property from #metadatablock)
 
-| example:
-| metadatablock.name=citation
-| metadatablock.displayName=Citation Metadata
+metadatablock.displayName=(the value of **displayName** property from #metadatablock)
+
+example:
+
+metadatablock.name=citation
+
+metadatablock.displayName=Citation Metadata
 
 #datasetField (field) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-| datasetfieldtype.(the value of **name** property from #datasetField).title=(the value of **title** property from #datasetField)
-| datasetfieldtype.(the value of **name** property from #datasetField).description=(the value of **description** property from #datasetField)
-| datasetfieldtype.(the value of **name** property from #datasetField).watermark=(the value of **watermark** property from #datasetField)
+datasetfieldtype.(the value of **name** property from #datasetField).title=(the value of **title** property from #datasetField)
 
-| example:
-| datasetfieldtype.title.title=Title
-| datasetfieldtype.title.description=Full title by which the Dataset is known.
-| datasetfieldtype.title.watermark=Enter title...
+datasetfieldtype.(the value of **name** property from #datasetField).description=(the value of **description** property from #datasetField)
 
-| #controlledVocabulary (enumerated) properties
+datasetfieldtype.(the value of **name** property from #datasetField).watermark=(the value of **watermark** property from #datasetField)
+
+example:
+
+datasetfieldtype.title.title=Title
+
+datasetfieldtype.title.description=Full title by which the Dataset is known.
+
+datasetfieldtype.title.watermark=Enter title...
+
+#controlledVocabulary (enumerated) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-| controlledvocabulary.(the value of **DatasetField** property from #controlledVocabulary).(the value of **Value** property from #controlledVocabulary)=(the value of **Value** property from #controlledVocabulary)
+controlledvocabulary.(the value of **DatasetField** property from #controlledVocabulary).(the value of **Value** property from #controlledVocabulary)=(the value of **Value** property from #controlledVocabulary)
 
-| Since the **Value** property from #controlledVocabulary is free text, while creating the key, it has to be converted to lowercase, replace space with underscore, and strip accents.
+Since the **Value** property from #controlledVocabulary is free text, while creating the key, it has to be converted to lowercase, replace space with underscore, and strip accents.
 
-| example:
-| controlledvocabulary.subject.agricultural_sciences=Agricultural Sciences
-| controlledvocabulary.language.marathi_(marathi)=Marathi (Mar\u0101\u1E6Dh\u012B)
+example:
+
+controlledvocabulary.subject.agricultural_sciences=Agricultural Sciences
+
+controlledvocabulary.language.marathi_(marathi)=Marathi (Mar\u0101\u1E6Dh\u012B)
 
 
 Enabling a Metadata Block
