@@ -43,7 +43,7 @@
                                 <span>#{bundle['file.replace.original']}</span>
                             </label>
                             <div class="col-sm-10">
-                                <ui:include src="individualFileTable.xhtml">
+                                <ui:include src="file-info-fragment.xhtml">
                                     <c:if test="#{EditDatafilesPage.getFileToReplace().fileMetadata != null}">
                                         <ui:param name="fileMetadata" value="#{EditDatafilesPage.getFileToReplace().fileMetadata}" />
                                     </c:if>
