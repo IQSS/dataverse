@@ -231,10 +231,6 @@ Additional DCM docker development tips
   - dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/breakage.log``
   - dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/access.log``
 
-- I have attached a script for redeploying dataverse into your docker image if you just want to update the code. You'll probably need to tweak the paths [deploy_dataverse_into_docker.sh.zip](https://github.com/IQSS/dataverse/files/2237096/deploy_dataverse_into_docker.sh.zip)
-
-  - This script is also currently broken by the installer bug
-
 - Note that by default the docker container will stop running if the process it is following is turned off. For example flask with dcmsrv. You can get around this by having the script being followed never close (e.g. sleep infinity) https://stackoverflow.com/questions/31870222/how-can-i-keep-container-running-on-kubernetes
 - You may have to restart the glassfish domain occasionally to deal with memory filling up. If deployment is getting reallllllly slow, its a good time.
 
