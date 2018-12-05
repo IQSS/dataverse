@@ -1020,7 +1020,7 @@
             <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
             <!-- QDR handling non-ascii chars in foreign words and foreign contractions. Note that the Pattern filter should match the one below in the query analyzer -->
             <filter class="solr.ASCIIFoldingFilterFactory" preserveOriginal="true" />
-            <filter class="solr.PatternReplaceFilterFactory" pattern="(l|d|j|t|s|qu|n|c)'(.*)" replacement="$2"/>
+            <filter class="solr.PatternReplaceFilterFactory" pattern="([^i]|qu)'(.*)" replacement="$2"/>
         </analyzer>
         <analyzer type="query">
             <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -1042,7 +1042,7 @@
             <filter class="solr.PorterStemFilterFactory"/>
             <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
             <!--  QDR - handle foreign contractions --> 
-            <filter class="solr.PatternReplaceFilterFactory" pattern="(l|d|j|t|s|qu|n|c)'(.*)" replacement="$2"/>
+            <filter class="solr.PatternReplaceFilterFactory" pattern="([^i]|qu)'(.*)" replacement="$2"/>
         </analyzer>
     </fieldType>
 
