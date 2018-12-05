@@ -269,7 +269,7 @@ public class DataCitation {
             out.write(title);
             out.write("},\r\n");
         }
-        if(getUNF() != null){
+        if(UNF != null){
             out.write("UNF = {");
             out.write(UNF);
             out.write("},\r\n");
