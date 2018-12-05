@@ -1005,14 +1005,12 @@ public class SystemConfig {
         }        
     }
     
-    public boolean isRsyncDownload()
-    {
+    public boolean isRsyncDownload() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
     }
     
-    public boolean isHTTPDownload()
-    {
+    public boolean isHTTPDownload() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         logger.warning("Download Methods:" + downloadMethods);
         return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.NATIVE.toString());

@@ -155,13 +155,13 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         try {
             String line;
             while((line = reader.readLine()) != null && checksumVal.isEmpty()) {
-                logger.log(Level.INFO, "line {0}", new Object[]{line});
+                logger.log(Level.FINE, "line {0}", new Object[]{line});
                 String[] splitLine = line.split("  ");
 
                 //the sha file should only contain one entry, but incase it doesn't we will check for the one for our zip
                 if(splitLine[1].contains(rootPackageName + ".zip")) { 
                     checksumVal = splitLine[0];
-                    logger.log(Level.INFO, "checksumVal found {0}", new Object[]{checksumVal});
+                    logger.log(Level.FINE, "checksumVal found {0}", new Object[]{checksumVal});
                 }
             }
             if(checksumVal.isEmpty()) {
@@ -179,7 +179,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
 
         }
 
-        logger.log(Level.INFO, "Checksum value for the package in Dataset {0} is: {1}", 
+        logger.log(Level.FINE, "Checksum value for the package in Dataset {0} is: {1}", 
            new Object[]{dataset.getIdentifier(), checksumVal});
 
         packageFile.setChecksumValue(checksumVal); 
