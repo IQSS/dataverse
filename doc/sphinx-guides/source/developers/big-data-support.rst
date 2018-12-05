@@ -282,3 +282,7 @@ Available variables are:
 * ``minorVersion``
 * ``majorVersion``
 * ``releaseStatus``
+
+----
+
+Previous: :doc:`selinux` | Next: :doc:`timers`
