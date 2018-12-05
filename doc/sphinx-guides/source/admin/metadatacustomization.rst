@@ -532,7 +532,7 @@ A number of TSV files are loaded into Dataverse on every new installation, becom
 Along with TSV file, there are corresponding ResourceBundle property files with key=value pair `here <https://github.com/IQSS/dataverse/tree/develop/src/main/java>`__.  To add other language files, see the :doc:`/installation/config` for dataverse.lang.directory JVM Options section, and add a file, for example: "citation_lang.properties" to the path you specified for the ``dataverse.lang.directory`` JVM option, and then restart Glassfish.
 
 If you are improving an existing metadata block, the Dataverse installation process will load the TSV for you, assuming you edited the TSV file in place. The TSV file for the Citation metadata block, for example, can be found at ``scripts/api/data/metadatablocks/citation.tsv``.
-If any of the below mentioned property values are changed, corresponsing ResourceBundle property file has to be edited and stored under dataverse.lang.directory location
+If any of the below mentioned property values are changed, corresponsing ResourceBundle property file has to be edited and stored under ``dataverse.lang.directory`` location
 
 - name, displayName property under #metadataBlock
 - name, title, description, watermark properties under #datasetfield
@@ -546,32 +546,33 @@ To create a new ResourceBundle, here are the steps to generate key=value pair fo
 
 #metadataBlock properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-metadatablock.name=(the value of **name** property from #metadatablock)
-metadatablock.displayName=(the value of **displayName** property from #metadatablock)
+| metadatablock.name=(the value of **name** property from #metadatablock)
+| metadatablock.displayName=(the value of **displayName** property from #metadatablock)
 
-example:
-metadatablock.name=citation
-metadatablock.displayName=Citation Metadata
+| example:
+| metadatablock.name=citation
+| metadatablock.displayName=Citation Metadata
 
 #datasetField (field) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-datasetfieldtype.(the value of **name** property from #datasetField).title=(the value of **title** property from #datasetField)
-datasetfieldtype.(the value of **name** property from #datasetField).description=(the value of **description** property from #datasetField)
-datasetfieldtype.(the value of **name** property from #datasetField).watermark=(the value of **watermark** property from #datasetField)
+| datasetfieldtype.(the value of **name** property from #datasetField).title=(the value of **title** property from #datasetField)
+| datasetfieldtype.(the value of **name** property from #datasetField).description=(the value of **description** property from #datasetField)
+| datasetfieldtype.(the value of **name** property from #datasetField).watermark=(the value of **watermark** property from #datasetField)
 
-example:
-datasetfieldtype.title.title=Title
-datasetfieldtype.title.description=Full title by which the Dataset is known.
-datasetfieldtype.title.watermark=Enter title...
+| example:
+| datasetfieldtype.title.title=Title
+| datasetfieldtype.title.description=Full title by which the Dataset is known.
+| datasetfieldtype.title.watermark=Enter title...
 
-#controlledVocabulary (enumerated) properties
+| #controlledVocabulary (enumerated) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-controlledvocabulary.(the value of **DatasetField** property from #controlledVocabulary).(the value of **Value** property from #controlledVocabulary)=(the value of **Value** property from #controlledVocabulary)
+| controlledvocabulary.(the value of **DatasetField** property from #controlledVocabulary).(the value of **Value** property from #controlledVocabulary)=(the value of **Value** property from #controlledVocabulary)
 
-Since the **Value** property from #controlledVocabulary is free text, while creating the key, it has to be converted to lowercase, replace space with underscore, and strip accents.
-example:
-controlledvocabulary.subject.agricultural_sciences=Agricultural Sciences
-controlledvocabulary.language.marathi_(marathi)=Marathi (Mar\u0101\u1E6Dh\u012B)
+| Since the **Value** property from #controlledVocabulary is free text, while creating the key, it has to be converted to lowercase, replace space with underscore, and strip accents.
+
+| example:
+| controlledvocabulary.subject.agricultural_sciences=Agricultural Sciences
+| controlledvocabulary.language.marathi_(marathi)=Marathi (Mar\u0101\u1E6Dh\u012B)
 
 
 Enabling a Metadata Block
