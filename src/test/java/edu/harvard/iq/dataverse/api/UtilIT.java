@@ -1438,6 +1438,14 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get(url);
     }
+    
+    static Response updateDefaultContributorsRoleOnDataverse(String dataverseAliasOrId,String roleAlias, String apiToken) {
+        String url = "/api/dataverses/" + dataverseAliasOrId + "/defaultContributorRole/" + roleAlias;
+        System.out.println("URL: " + url);
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put(url);
+    }
 
     static Response getRoleAssignmentsOnDataset(String datasetId, String persistentId, String apiToken) {
         String url = "/api/datasets/" + datasetId + "/assignments";
