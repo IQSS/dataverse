@@ -31,6 +31,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -742,11 +743,11 @@ public class DataCitation {
         String version = "";
         if (!dsv.getDataset().isHarvested()) {
             if (dsv.isDraft()) {
-                version = "DRAFT VERSION";
+                version = BundleUtil.getStringFromBundle("draftversion");
             } else if (dsv.getVersionNumber() != null) {
                 version = "V" + dsv.getVersionNumber();
                 if (dsv.isDeaccessioned()) {
-                    version += ", DEACCESSIONED VERSION";
+                    version += ", "+ BundleUtil.getStringFromBundle("deaccessionedversion");
                 }
             }
         }

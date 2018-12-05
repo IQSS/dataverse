@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import com.amazonaws.services.lightsail.model.Bundle;
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.PackagePopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
@@ -1884,22 +1885,22 @@ public class DatasetPage implements java.io.Serializable {
         String deacessionReasonDetail = getDeaccessionReasonText() != null ? ( getDeaccessionReasonText()).trim() : "";
         switch (deaccessionReasonCode) {
             case 1:
-                dvIn.setVersionNote("There is identifiable data in one or more files.");
+                dvIn.setVersionNote(BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.identifiable") );
                 break;
             case 2:
-                dvIn.setVersionNote("The research article has been retracted.");
+                dvIn.setVersionNote(BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.beRetracted") );
                 break;
             case 3:
-                dvIn.setVersionNote("The dataset has been transferred to another repository.");
+                dvIn.setVersionNote(BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.beTransferred") );
                 break;
             case 4:
-                dvIn.setVersionNote("IRB request.");
+                dvIn.setVersionNote(BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.IRB"));
                 break;
             case 5:
-                dvIn.setVersionNote("Legal issue or Data Usage Agreement.");
+                dvIn.setVersionNote(BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.legalIssue"));
                 break;
             case 6:
-                dvIn.setVersionNote("Not a valid dataset.");
+                dvIn.setVersionNote(BundleUtil.getStringFromBundle("file.deaccessionDialog.reason.selectItem.notValid"));
                 break;
             case 7:
                 break;
