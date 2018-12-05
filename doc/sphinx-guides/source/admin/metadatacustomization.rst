@@ -40,7 +40,7 @@ good organizational practice to define only one in each file.
 
 The metadata block TSVs shipped with Dataverse are in `this folder in
 the Dataverse github
-repo <https://github.com/IQSS/dataverse/tree/develop/scripts/api/data/metadatablocks>`__ and the corresponding ResourceBundle property files are `here <https://github.com/IQSS/dataverse/tree/develop/src/main/java>`__
+repo <https://github.com/IQSS/dataverse/tree/develop/scripts/api/data/metadatablocks>`__ and the corresponding ResourceBundle property files are `here <https://github.com/IQSS/dataverse/tree/develop/src/main/java>`__.
 Human-readable copies are available in `this Google Sheets
 document <https://docs.google.com/spreadsheets/d/13HP-jI_cwLDHBetn9UKTREPJ_F4iHdAvhjmlvmYdSSw/edit#gid=0>`__ but they tend to get out of sync with the TSV files, which should be considered authoritative. The Dataverse installation process operates on the TSVs, not the Google spreadsheet.
 
@@ -529,10 +529,11 @@ Loading TSV files into Dataverse
 
 A number of TSV files are loaded into Dataverse on every new installation, becoming the metadata blocks you see in the UI. For the list of metadata blocks that are included with Dataverse out of the box, see the :doc:`/user/appendix` section of the User Guide.
 
-Along with TSV file, there are corresponding ResourceBundle property files with key=value pair `here <https://github.com/IQSS/dataverse/tree/develop/src/main/java>`.  To add other language files, see the :doc:`/installation/config/` for dataverse.lang.directory JVM Options section, and add a file, for example: "citation_lang.properties" to the path you specified for the ``dataverse.lang.directory`` JVM option, and then restart Glassfish.
+Along with TSV file, there are corresponding ResourceBundle property files with key=value pair `here <https://github.com/IQSS/dataverse/tree/develop/src/main/java>`__.  To add other language files, see the :doc:`/installation/config` for dataverse.lang.directory JVM Options section, and add a file, for example: "citation_lang.properties" to the path you specified for the ``dataverse.lang.directory`` JVM option, and then restart Glassfish.
 
 If you are improving an existing metadata block, the Dataverse installation process will load the TSV for you, assuming you edited the TSV file in place. The TSV file for the Citation metadata block, for example, can be found at ``scripts/api/data/metadatablocks/citation.tsv``.
 If any of the below mentioned property values are changed, corresponsing ResourceBundle property file has to be edited and stored under dataverse.lang.directory location
+
 - name, displayName property under #metadataBlock
 - name, title, description, watermark properties under #datasetfield
 - DatasetField, Value property under #controlledVocabulary
