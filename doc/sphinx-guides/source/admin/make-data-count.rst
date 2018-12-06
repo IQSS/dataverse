@@ -19,11 +19,12 @@ Data repositories using Handles and other identifiers are not supported by Make 
 
 .. _notes: https://docs.google.com/document/d/1b1itytDVDsI_Ni2LoxrG887YGt0zDc96tpyJEgBN9Q8/
 
-Make Data Count is built on top of existing standards such as COUNTER and SUSHI that come out of the article publishing world. To meet the needs of the data publishing world, Make Data Count created the `COUNTER Code of Practice for Research Data`_ (`preprint`_), which is the standard that Dataverse implements. The Make Data Count project has emphasized that they would like feedback on the code of practice.
+Make Data Count is built on top of existing standards such as COUNTER and SUSHI that come out of the article publishing world. To meet the needs of the data publishing world, Make Data Count created the `COUNTER Code of Practice for Research Data`_ (`PDF`_, `HTML`_), which is the standard that Dataverse implements. The Make Data Count project has emphasized that they would like feedback on the code of practice.
 
 
 .. _COUNTER Code of Practice for Research Data: https://makedatacount.org/counter-code-of-practice-for-research-data/
-.. _preprint: https://doi.org/10.7287/peerj.preprints.26505v1
+.. _PDF: https://doi.org/10.7287/peerj.preprints.26505v1
+.. _HTML: https://www.projectcounter.org/code-of-practice-rd-sections/foreword/
 
 Sending Metrics from Dataverse to the DataCite Hub
 --------------------------------------------------
