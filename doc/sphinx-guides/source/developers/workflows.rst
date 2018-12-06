@@ -106,9 +106,9 @@ Available variables are:
 archiver
 +++++++
 
-A step that sends an archival copy of a Dataset Version to a configured archiver, e.g. the DuraCloud interface of the Digital Preservation Network (DPN). See the `DPN Integration documentation <http://guides.dataverse.org/en/latest/admin/integrations.html#id15>`_ for further detail.
+A step that sends an archival copy of a Dataset Version to a configured archiver, e.g. the DuraCloud interface of Chronopolis. See the `DuraCloud/Chronopolis Integration documentation <http://guides.dataverse.org/en/latest/admin/integrations.html#id15>`_ for further detail.
 
-Note - the example step includes two settings required for any archiver and three (Duracloud*) that are specific to DPN.
+Note - the example step includes two settings required for any archiver and three (DuraCloud*) that are specific to DuraCloud.
 .. code:: json
 
 

@@ -33,16 +33,16 @@ import org.duracloud.common.model.Credential;
 import org.duracloud.error.ContentStoreException;
 
 @RequiredPermissions(Permission.PublishDataset)
-public class DPNSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand implements Command<DatasetVersion> {
+public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand implements Command<DatasetVersion> {
 
-    private static final Logger logger = Logger.getLogger(DPNSubmitToArchiveCommand.class.getName());
+    private static final Logger logger = Logger.getLogger(DuraCloudSubmitToArchiveCommand.class.getName());
     private static final String DEFAULT_PORT = "443";
     private static final String DEFAULT_CONTEXT = "durastore";
     private static final String DURACLOUD_PORT = ":DuraCloudPort";
     private static final String DURACLOUD_HOST = ":DuraCloudHost";
     private static final String DURACLOUD_CONTEXT = ":DuraCloudContext";
 
-    public DPNSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
+    public DuraCloudSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version);
     }
 
