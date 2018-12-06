@@ -886,7 +886,7 @@ public class SolrSearchResult {
     }
 
     public String getDateToDisplayOnCard() {
-        return DateUtil.formatDate(dateToDisplayOnCard,"dd-MMM-yyyy");
+        return DateUtil.formatDate(dateToDisplayOnCard,"MMM dd, yyyy");
     }
 
     public void setDateToDisplayOnCard(String dateToDisplayOnCard) {
