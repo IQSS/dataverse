@@ -21,6 +21,8 @@ import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+
+import edu.harvard.iq.dataverse.util.DateUtil;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -145,7 +147,7 @@ public class Guestbook implements Serializable {
     }
 
     public String getCreateDate() {
-        return new SimpleDateFormat("MMMM d, yyyy").format(createTime);
+        return DateUtil.formatDate(createTime);
     }
         
     public Guestbook copyGuestbook(Guestbook source, Dataverse dataverse) {

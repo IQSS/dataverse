@@ -45,7 +45,7 @@
 
                 <h:form id="dataverseForm">
                     <!-- Edit Mode -->
-                    <ui:fragment rendered="#{DataversePage.editMode == 'INFO'}">
+                    <ui:fragment rendered="#{DataversePage.editMode == 'INFO' or DataversePage.editMode == 'CREATE'}">
                         <p:focus context="dataverseForm"/>
                         <!-- Sample Block -->
                         <!-- Name Panel -->
@@ -222,9 +222,8 @@
                                         </p:commandButton>
                                         <p:commandButton value="Direct" id="resetToInherit"
                                                          style="display:none"
-                                                         update="@widgetVar(optionBlock)"
-                                                         process="@this @widgetVar(optionBlock)"
-                                                         actionListener="#{DataversePage.editMetadataBlocks(true)}">
+                                                         update="@all"
+                                                         action="#{DataversePage.resetToInherit()}">
                                         </p:commandButton>
 
                                         <ui:repeat value="#{DataversePage.allMetadataBlocks}" var="mdb">
@@ -810,7 +809,7 @@
                     }
 
                     function check() {
-                        $('button[id$="resetToInherit"]').trigger('click');
+                            $('button[id$="resetToInherit"]').trigger('click');
                     }
 
                      function uncheck() {

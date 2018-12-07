@@ -7,8 +7,6 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.api.imports.ImportException;
-import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -18,6 +16,8 @@ import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
+import edu.harvard.iq.dataverse.api.imports.ImportException;
+import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
@@ -52,6 +52,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveRoleAssigneesFromExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -95,8 +96,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
+import javax.persistence.NoResultException;
 
 /**
  * A REST API for dataverses.
@@ -114,8 +117,6 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     ImportServiceBean importService;
-//    @EJB
-//    SystemConfig systemConfig;
 
     @POST
     public Response addRoot(String body) {
@@ -815,6 +816,52 @@ public class Dataverses extends AbstractApiBean {
         return response(req -> ok(json(execCommand(
                 new UpdateExplicitGroupCommand(req,
                         groupDto.apply(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)))))));
+    }
+    
+    @PUT
+    @Path("{identifier}/defaultContributorRole/{roleAlias}")
+    public Response updateDefaultContributorRole(
+            @PathParam("identifier") String dvIdtf,
+            @PathParam("roleAlias") String roleAlias) {
+
+        DataverseRole defaultRole;
+        
+        if (roleAlias.equals(DataverseRole.NONE)) {
+            defaultRole = null;
+        } else {
+            try {
+                Dataverse dv = findDataverseOrDie(dvIdtf);
+                defaultRole = rolesSvc.findCustomRoleByAliasAndOwner(roleAlias, dv.getId());
+            } catch (Exception nre) {
+                List<String> args = Arrays.asList(roleAlias);
+                String retStringError = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.failure.role.not.found", args);
+                return error(Status.NOT_FOUND, retStringError);
+            }
+
+            if (!defaultRole.doesDvObjectClassHavePermissionForObject(Dataset.class)) {
+                List<String> args = Arrays.asList(roleAlias);
+                String retStringError = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.failure.role.does.not.have.dataset.permissions", args);
+                return error(Status.BAD_REQUEST, retStringError);
+            }
+
+        }
+
+        try {
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            
+            String defaultRoleName = defaultRole == null ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.name") : defaultRole.getName();
+
+            return response(req -> {
+                execCommand(new UpdateDataverseDefaultContributorRoleCommand(defaultRole, req, dv));
+                List<String> args = Arrays.asList(dv.getDisplayName(), defaultRoleName);
+                String retString = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.success", args);
+                return ok(retString);
+            });
+
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
     }
 
     @DELETE

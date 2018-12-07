@@ -39,6 +39,8 @@ import javax.validation.constraints.Size;
 			    query= "SELECT r FROM DataverseRole r WHERE r.owner is null ORDER BY r.name"),
     @NamedQuery(name = "DataverseRole.findBuiltinRoleByAlias",
 			    query= "SELECT r FROM DataverseRole r WHERE r.alias=:alias AND r.owner is null"),
+        @NamedQuery(name = "DataverseRole.findCustomRoleByAliasAndOwner",
+			    query= "SELECT r FROM DataverseRole r WHERE r.alias=:alias and (r.owner is null or r.owner.id=:ownerId)"),
 	@NamedQuery(name = "DataverseRole.listAll",
 			    query= "SELECT r FROM DataverseRole r"),
 	@NamedQuery(name = "DataverseRole.deleteById",
@@ -65,6 +67,8 @@ public class DataverseRole implements Serializable  {
     public static final String MANAGER = "manager";
     public static final String CURATOR = "curator";
     public static final String MEMBER = "member";
+    
+    public static final String NONE = "none";
     
     
 	public static final Comparator<DataverseRole> CMP_BY_NAME = new Comparator<DataverseRole>(){
