@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import com.amazonaws.services.lightsail.model.Bundle;
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
