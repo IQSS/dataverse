@@ -57,7 +57,7 @@ If you are running el6 (RHEL/CentOS 6):
 Install Shibboleth Via Yum
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``yum install shibboleth-2.6.1 shibboleth-embedded-ds-2.6.1``
+``yum install shibboleth-2.6.1``
 
 Configure Glassfish
 -------------------
