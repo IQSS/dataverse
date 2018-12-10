@@ -93,12 +93,14 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
 import java.util.Collections;
+import javax.faces.component.UIInput;
 
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.io.IOUtils;
 
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
@@ -237,7 +239,6 @@ public class DatasetPage implements java.io.Serializable {
     
     private boolean stateChanged = false;
 
-    private List<Dataverse> dataversesForLinking = new ArrayList<>();
     private Long linkingDataverseId;
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
@@ -262,6 +263,8 @@ public class DatasetPage implements java.io.Serializable {
     
     private Boolean hasRsyncScript = false;
     
+    private Boolean hasTabular = false;
+        
     List<ExternalTool> configureTools = new ArrayList<>();
     List<ExternalTool> exploreTools = new ArrayList<>();
     Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
@@ -735,13 +738,7 @@ public class DatasetPage implements java.io.Serializable {
         this.linkingDataverseId = linkingDataverseId;
     }
 
-    public List<Dataverse> getDataversesForLinking() {
-        return dataversesForLinking;
-    }
 
-    public void setDataversesForLinking(List<Dataverse> dataversesForLinking) {
-        this.dataversesForLinking = dataversesForLinking;
-    }
     
     public void updateReleasedVersions(){
         
@@ -749,45 +746,6 @@ public class DatasetPage implements java.io.Serializable {
         
     }
 
-    public void updateLinkableDataverses() {
-        dataversesForLinking = new ArrayList<>();
-        linkingDVSelectItems = new ArrayList<>();
-        
-        //Since this is a super user we are getting all dataverses
-        dataversesForLinking = dataverseService.findAll();
-        if (dataversesForLinking.isEmpty()) {
-            setNoDVsAtAll(true);
-            return;
-        }
-        
-        dataversesForLinking.remove(dataset.getOwner());
-        Dataverse testDV = dataset.getOwner();
-        while(testDV.getOwner() != null){
-            dataversesForLinking.remove(testDV.getOwner());
-            testDV = testDV.getOwner();
-        }                      
-        
-        for (Dataverse removeLinked : dsLinkingService.findLinkingDataverses(dataset.getId())) {
-            dataversesForLinking.remove(removeLinked);
-        }
-        for (Dataverse removeLinked : dvLinkingService.findLinkingDataverses(dataset.getOwner().getId())) {
-            dataversesForLinking.remove(removeLinked);
-        }
-
-        if (dataversesForLinking.isEmpty()) {
-            setNoDVsRemaining(true);            
-            return;
-        }
-
-        for (Dataverse selectDV : dataversesForLinking) {
-            linkingDVSelectItems.add(new SelectItem(selectDV.getId(), selectDV.getDisplayName()));
-        }
-
-        if (!dataversesForLinking.isEmpty() && dataversesForLinking.size() == 1 && dataversesForLinking.get(0) != null) {
-            linkingDataverse = dataversesForLinking.get(0);
-            linkingDataverseId = linkingDataverse.getId();
-        }
-    }
 
     public void updateSelectedLinkingDV(ValueChangeEvent event) {
         linkingDataverseId = (Long) event.getNewValue();
@@ -1516,6 +1474,7 @@ public class DatasetPage implements java.io.Serializable {
                             setHasRsyncScript(true);
                             setRsyncScript(scriptRequestResponse.getScript());
                             rsyncScriptFilename = "upload-"+ workingVersion.getDataset().getIdentifier() + ".bash";
+                            rsyncScriptFilename = rsyncScriptFilename.replace("/", "_");
                         }
                         else{
                             setHasRsyncScript(false);
@@ -1614,12 +1573,24 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("dataset.publish.workflow.inprogress"));
             }
         }
+        
+        for(DataFile f : dataset.getFiles()) {
+            if(f.isTabularData()) {
+                hasTabular = true;
+                break;
+            }
+        }
 
         configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
         return null;
     }
+    
+    public boolean isHasTabular() {
+        return hasTabular;
+    }
+    
     
     public boolean isReadOnly() {
         return readOnly; 
@@ -2112,6 +2083,16 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedFiles = selectedFiles;
     }
     
+    private Dataverse selectedDataverseForLinking;
+
+    public Dataverse getSelectedDataverseForLinking() {
+        return selectedDataverseForLinking;
+    }
+
+    public void setSelectedDataverseForLinking(Dataverse sdvfl) {
+        this.selectedDataverseForLinking = sdvfl;
+    }
+    
     private List<FileMetadata> selectedRestrictedFiles; // = new ArrayList<>();
 
     public List<FileMetadata> getSelectedRestrictedFiles() {
@@ -2153,7 +2134,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
             
-    public void validateFilesForDownload(boolean guestbookRequired){
+    public void validateFilesForDownload(boolean guestbookRequired, boolean downloadOriginal){
         setSelectedDownloadableFiles(new ArrayList<>());
         setSelectedNonDownloadableFiles(new ArrayList<>());
         
@@ -2170,27 +2151,53 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         
-        if(!getSelectedDownloadableFiles().isEmpty() && getSelectedNonDownloadableFiles().isEmpty()){
-            if (guestbookRequired){
-                modifyGuestbookMultipleResponse();
-            } else{
-                startMultipleFileDownload(false);
-            }        
-        }
-
+        // If some of the files were restricted and we had to drop them off the 
+        // list, and NONE of the files are left on the downloadable list
+        // - we show them a "you're out of luck" popup: 
         if(getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()){
             RequestContext requestContext = RequestContext.getCurrentInstance();
             requestContext.execute("PF('downloadInvalid').show()");
             return;
+        }
+        
+        // Note that the GuestbookResponse object may still have information from 
+        // the last download action performed by the user. For example, it may 
+        // still have the non-null Datafile in it, if the user has just downloaded
+        // a single file; or it may still have the format set to "original" - 
+        // even if that's not what they are trying to do now. 
+        // So make sure to reset these values:
+        guestbookResponse.setDataFile(null);
+        guestbookResponse.setSelectedFileIds(getSelectedDownloadableFilesIdsString());
+        if (downloadOriginal) {
+            guestbookResponse.setFileFormat("original");
+        } else {
+            guestbookResponse.setFileFormat("");
+        }
+        guestbookResponse.setDownloadtype("Download");
+        
+        // If we have a bunch of files that we can download, AND there were no files 
+        // that we had to take off the list, because of permissions - we can 
+        // either send the user directly to the download API (if no guestbook/terms
+        // popup is required), or send them to the download popup:
+        if(!getSelectedDownloadableFiles().isEmpty() && getSelectedNonDownloadableFiles().isEmpty()){
+            if (guestbookRequired){
+                openDownloadPopupForMultipleFileDownload();
+            } else {
+                startMultipleFileDownload();
+            }
+            return;
         } 
         
+        // ... and if some files were restricted, but some are downloadable, 
+        // we are showing them this "you are somewhat in luck" popup; that will 
+        // then direct them to the download, or popup, as needed:
         if(!getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()){
             RequestContext requestContext = RequestContext.getCurrentInstance();
             requestContext.execute("PF('downloadMixed').show()");
         }       
 
     }
-
+    
     private boolean selectAllFiles;
 
     public boolean isSelectAllFiles() {
@@ -2220,7 +2227,7 @@ public class DatasetPage implements java.io.Serializable {
         return downloadIdString;     
     }
     
-        // helper Method
+    // helper Method
     public String getSelectedDownloadableFilesIdsString() {        
         String downloadIdString = "";
         for (FileMetadata fmd : this.selectedDownloadableFiles){
@@ -2232,29 +2239,6 @@ public class DatasetPage implements java.io.Serializable {
         return downloadIdString;     
     }
     
-        // helper Method
-    public String getSelectedFilesIdsStringForDownload() {        
-        String downloadIdString = "";
-        for (FileMetadata fmd : this.selectedFiles){
-            if (!StringUtil.isEmpty(downloadIdString)) {
-                downloadIdString += ",";
-            }
-            downloadIdString += fmd.getDataFile().getId();
-        }
-        return downloadIdString;     
-    }
-    
-    public String getDownloadableFilesIdsString() {        
-        String downloadIdString = "";
-        for (FileMetadata fmd : this.selectedDownloadableFiles){
-            if (!StringUtil.isEmpty(downloadIdString)) {
-                downloadIdString += ",";
-            }
-            downloadIdString += fmd.getDataFile().getId();
-        }
-        return downloadIdString;
-      
-    }
     
     public void updateFileCounts(){
         setSelectedUnrestrictedFiles(new ArrayList<>());
@@ -2273,28 +2257,64 @@ public class DatasetPage implements java.io.Serializable {
     }
     
 
-        private List<String> getSuccessMessageArguments() {
+    private List<String> getSuccessMessageArguments() {
         List<String> arguments = new ArrayList<>();
+        String dataverseString = "";
         arguments.add(StringEscapeUtils.escapeHtml(dataset.getDisplayName()));
-        String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
-        arguments.add(linkString);
+        dataverseString += " <a href=\"/dataverse/" + selectedDataverseForLinking.getAlias() + "\">" + StringEscapeUtils.escapeHtml(selectedDataverseForLinking.getDisplayName()) + "</a>";
+        arguments.add(dataverseString);
         return arguments;
     }
     
-    public String saveLinkedDataset() {
-        if (linkingDataverseId == null) {
-            JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataverse.link.select"));
-            return "";
+        
+    public void saveLinkingDataverses() {
+
+        if (selectedDataverseForLinking == null) {
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dataverse.link.select"));
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            return;
+        }     
+
+        if(saveLink(selectedDataverseForLinking)){
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", getSuccessMessageArguments()));
+        } else{           
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), linkingDataverseErrorMessage);
+            FacesContext.getCurrentInstance().addMessage(null, message);
         }
-        linkingDataverse = dataverseService.find(linkingDataverseId);
+    } 
+    
+    private String linkingDataverseErrorMessage = "";
+
+
+    public String getLinkingDataverseErrorMessage() {
+        return linkingDataverseErrorMessage;
+    }
+
+    public void setLinkingDataverseErrorMessage(String linkingDataverseErrorMessage) {
+        this.linkingDataverseErrorMessage = linkingDataverseErrorMessage;
+    }
+    
+    UIInput selectedLinkingDataverseMenu;
+    
+    public UIInput getSelectedDataverseMenu() {
+        return selectedLinkingDataverseMenu;
+    }
+
+    public void setSelectedDataverseMenu(UIInput selectedDataverseMenu) {
+        this.selectedLinkingDataverseMenu = selectedDataverseMenu;
+    }
+    
+    
+    private Boolean saveLink(Dataverse dataverse){
+        boolean retVal = true;
         if (readOnly) {
             // Pass a "real", non-readonly dataset the the LinkDatasetCommand: 
             dataset = datasetService.find(dataset.getId());
         }
-        LinkDatasetCommand cmd = new LinkDatasetCommand(dvRequestService.getDataverseRequest(), linkingDataverse, dataset);
+        LinkDatasetCommand cmd = new LinkDatasetCommand(dvRequestService.getDataverseRequest(), dataverse, dataset);
+        linkingDataverse = dataverse;
         try {
-            commandEngine.submit(cmd);
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", getSuccessMessageArguments()));
+            commandEngine.submit(cmd);           
         } catch (CommandException ex) {
             String msg = "There was a problem linking this dataset to yours: " + ex;
             logger.severe(msg);
@@ -2302,10 +2322,20 @@ public class DatasetPage implements java.io.Serializable {
             /**
              * @todo how do we get this message to show up in the GUI?
              */
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), msg);
-            FacesContext.getCurrentInstance().addMessage(null, message);
+            linkingDataverseErrorMessage = msg;
+            retVal = false;
         }
-        return returnToLatestVersion();
+        return retVal;
+    }
+
+    
+    public List<Dataverse> completeLinkingDataverse(String query) {
+        dataset = datasetService.find(dataset.getId());
+        if (session.getUser().isAuthenticated()) {
+            return dataverseService.filterDataversesForLinking(query, dvRequestService.getDataverseRequest(), dataset);
+        } else {
+            return null;
+        }
     }
 
     List<FileMetadata> previouslyRestrictedFiles = null;
@@ -2373,10 +2403,10 @@ public class DatasetPage implements java.io.Serializable {
             }
             return "";
         } else {
-            boolean validSelection = false;
+            boolean validSelection = true;
             for (FileMetadata fmd : selectedFiles) {
-                if ((fmd.isRestricted() && !restricted) || (!fmd.isRestricted() && restricted)) {
-                    validSelection = true;
+                if ((fmd.isRestricted() && restricted) || (!fmd.isRestricted() && !restricted)) {
+                    validSelection = false;
                 }
             }
             if (!validSelection) {
@@ -2920,6 +2950,19 @@ public class DatasetPage implements java.io.Serializable {
         return lockedFromEditsVar;
     }
     
+    // TODO: investigate why this method was needed in the first place?
+    // It appears that it was written under the assumption that downloads 
+    // should not be allowed when a dataset is locked... (why?)
+    // There are calls to the method throghout the file-download-buttons fragment; 
+    // except the way it's done there, it's actually disregarded (??) - so the 
+    // download buttons ARE always enabled. The only place where this method is 
+    // honored is on the batch (mutliple file) download buttons in filesFragment.xhtml. 
+    // As I'm working on #4000, I've been asked to re-enable the batch download 
+    // buttons there as well, even when the dataset is locked. I'm doing that - but 
+    // I feel we should probably figure out why we went to the trouble of creating 
+    // this code in the first place... is there some reason we are forgetting now, 
+    // why we do actually want to disable downloads on locked datasets??? 
+    // -- L.A. Aug. 2018
     public boolean isLockedFromDownload(){
         if(null == lockedFromDownloadVar || stateChanged) {
             try {
@@ -3051,10 +3094,14 @@ public class DatasetPage implements java.io.Serializable {
         this.datasetVersionDifference = datasetVersionDifference;
     }
         
-    public void startMultipleFileDownload (Boolean writeGuestbook){
-
-        fileDownloadService.callDownloadServlet(getDownloadableFilesIdsString(), writeGuestbook);
-
+    public void startMultipleFileDownload (){
+        
+        boolean doNotSaveGuestbookResponse = workingVersion.isDraft();
+        // There's a chance that this is not really a batch download - i.e., 
+        // there may only be one file on the downloadable list. But the fileDownloadService 
+        // method below will check for that, and will redirect to the single download, if
+        // that's the case. -- L.A.
+        fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse, doNotSaveGuestbookResponse);
     }
  
     private String downloadType = "";
@@ -3068,16 +3115,19 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     
-    public void modifyGuestbookMultipleResponse(){
+    public void openDownloadPopupForMultipleFileDownload() {
         if (this.selectedFiles.isEmpty()) {
             RequestContext requestContext = RequestContext.getCurrentInstance();
             requestContext.execute("PF('selectFilesForDownload').show()");
             return;
         }
         
-         this.guestbookResponse = this.guestbookResponseService.modifySelectedFileIds(guestbookResponse, getSelectedDownloadableFilesIdsString());
-         this.guestbookResponse.setDownloadtype("Download");
-         this.guestbookResponse.setFileFormat("Download");
+        // There's a chance that this is not really a batch download - i.e., 
+        // there may only be one file on the downloadable list. But the fileDownloadService 
+        // method below will check for that, and will redirect to the single download, if
+        // that's the case. -- L.A.
+        
+        this.guestbookResponse.setDownloadtype("Download");
         RequestContext requestContext = RequestContext.getCurrentInstance();
         requestContext.execute("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
     }
@@ -3747,21 +3797,11 @@ public class DatasetPage implements java.io.Serializable {
                 output.write(buffer, 0, bytesRead);
             }
         } catch (IOException ioex) {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                }
-            }
-            if (output != null) {
-                try {
-                    output.close();
-                } catch (IOException e) {
-                }
-            }
-            return null;
+            return null;//leaving this purely in the spirit of minimizing changes.
+        } finally {
+            IOUtils.closeQuietly(input);
+            IOUtils.closeQuietly(output);
         }
-
         if (labelsFile != null) {
             return labelsFile.getAbsolutePath();
         }
@@ -4162,7 +4202,6 @@ public class DatasetPage implements java.io.Serializable {
     
     public void downloadRsyncScript() {
 
-        String bibFormatDowload = new BibtexCitation(workingVersion).toString();
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");

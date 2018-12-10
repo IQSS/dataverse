@@ -48,6 +48,7 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
 import org.primefaces.util.Base64;
 
 /**
@@ -222,7 +223,7 @@ public class ImageThumbConverter {
             }
 
             File tempFile;
-            FileChannel tempFileChannel;
+            FileChannel tempFileChannel = null;
             try {
                 tempFile = File.createTempFile("tempFileToRescale", ".tmp");
                 tempFileChannel = new FileOutputStream(tempFile).getChannel();
@@ -231,6 +232,8 @@ public class ImageThumbConverter {
             } catch (IOException ioex) {
                 logger.warning("GenerateImageThumb: failed to save pdf bytes in a temporary file.");
                 return false;
+            } finally {
+                IOUtils.closeQuietly(tempFileChannel);
             }
             sourcePdfFile = tempFile;
         }
@@ -673,6 +676,8 @@ public class ImageThumbConverter {
         } catch (Exception ioex) {
             logger.warning("caught Exceptiopn trying to create rescaled image " + outputLocation);
             return null;
+        } finally {
+            IOUtils.closeQuietly(outputFileStream);
         }
 
         return outputLocation;

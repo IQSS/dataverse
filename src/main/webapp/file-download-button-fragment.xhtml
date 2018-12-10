@@ -51,12 +51,16 @@
     <!--exploreTools is set as a ui:param by the file and dataset pages-->
     <!--Note that "WorldMap Explore" is not an explore tool (external tool)-->
     <div class="btn-group" jsf:rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and not empty exploreTools or (worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
-        <button jsf:rendered="#{exploreTools.size()==1}" type="button" class="btn btn-default"  onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
-            <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
-        </button>
-        <button jsf:rendered="#{exploreTools.size()>1}" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-            <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span  class="caret"/>
-        </button>
+        <ui:fragment rendered="#{(exploreTools.size()==1 and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))  or (exploreTools.size()==0 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
+            <button type="button" class="btn btn-default"  onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
+                <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
+            </button>
+        </ui:fragment>
+        <ui:fragment rendered="#{exploreTools.size()>1 or (exploreTools.size()>=1 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span  class="caret"/>
+            </button>
+        </ui:fragment>
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
             <!--external tools-->
             <ui:repeat var="tool" value="#{exploreTools}">
@@ -113,7 +117,7 @@
                    type="button" styleClass="btn btn-default"
                    process="@this"
                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
-                   actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'Download')}">
+                   actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'Download')}">
         <!-- non-tabular data file: -->
         <!-- no guest book/terms of use/etc. - straight to the download API url: -->
         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
@@ -139,7 +143,7 @@
                 <li>
                     <p:commandLink styleClass="highlightBold" rendered="#{!(downloadPopupRequired)}"
                                    process="@this"
-                                   actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'bundle')}">
+                                   actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'bundle')}">
                         #{bundle['file.downloadBtn.format.all']}
                     </p:commandLink>
                     <p:commandLink styleClass="highlightBold" rendered="#{downloadPopupRequired}"
@@ -156,7 +160,7 @@
                 <p:commandLink rendered="#{!downloadPopupRequired and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
-                               actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'original')}">
+                               actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'original')}">
                     <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
                         <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                     </h:outputFormat>
@@ -176,7 +180,7 @@
                 <p:commandLink rendered="#{!downloadPopupRequired}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
-                               actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'tab')}">
+                               actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'tab')}">
                     #{bundle['file.downloadBtn.format.tab']}
                 </p:commandLink>
                 <p:commandLink rendered="#{downloadPopupRequired}"
@@ -192,7 +196,7 @@
                     <p:commandLink rendered="#{!downloadPopupRequired}"
                                    process="@this"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
-                                   actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'RData')}">
+                                   actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'RData')}">
                         #{bundle['file.downloadBtn.format.rdata']}
                     </p:commandLink>
                     <p:commandLink rendered="#{downloadPopupRequired}"
@@ -209,7 +213,7 @@
                 <p:commandLink rendered="#{!downloadPopupRequired}"
                                process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
-                               actionListener="#{fileDownloadService.startFileDownload(guestbookResponse, fileMetadata, 'var')}">
+                               actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'var')}">
                     #{bundle['file.downloadBtn.format.var']}
                 </p:commandLink>
                 <p:commandLink rendered="#{downloadPopupRequired}"

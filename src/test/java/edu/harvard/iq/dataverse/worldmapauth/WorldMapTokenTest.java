@@ -7,12 +7,14 @@
 package edu.harvard.iq.dataverse.worldmapauth;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.NonEssentialTests;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
 import java.util.Date;
 import javax.ejb.embeddable.EJBContainer;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  *
@@ -54,6 +56,7 @@ public class WorldMapTokenTest {
         return token;
     }
     
+    @Category(NonEssentialTests.class)
     @Test
     public void testTokenValues(){
         msgt("WorldMapTokenTest!");
@@ -73,6 +76,7 @@ public class WorldMapTokenTest {
         assertEquals(token2.getToken().equalsIgnoreCase(token3.getToken()), false);
     }
     
+    @Category(NonEssentialTests.class)
     @Test
     public void testTokenTimes(){
         msgt("testTokenTimes");
