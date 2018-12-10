@@ -25,6 +25,8 @@ import org.apache.commons.io.FileUtils;
 import javax.batch.runtime.JobExecution;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
@@ -35,6 +37,7 @@ import java.util.logging.Logger;
 public class LoggingUtil {
 
     private static final Logger logger = Logger.getLogger(LoggingUtil.class.getName());
+    private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
     public static void saveJsonLog(String jobJson, String logDir, String jobId) {
 	    try {
@@ -47,6 +50,21 @@ public class LoggingUtil {
 		    FileUtils.writeStringToFile(reportJson, jobJson);
 	    } catch (Exception e) {
 		    logger.log(Level.SEVERE, "Error saving json report: " + e.getMessage());
+	    }
+    }
+    
+        public static void saveDraftEditLog(String changes, String logDir, String identifier, String datasetId) {
+	    try {
+		    checkCreateLogDirectory( logDir );
+		    File dir = new File(logDir);
+		    if (!dir.exists() && !dir.mkdirs()) {
+			    logger.log(Level.SEVERE, "Couldn't create directory: " + dir.getAbsolutePath());
+		    }
+                    String logTimestamp = logFormatter.format(new Date());
+		    File editDraftLog = new File(dir.getAbsolutePath() + "/edit-draft-" + datasetId + "-" + identifier + "-" +  logTimestamp  + ".txt");
+		    FileUtils.writeStringToFile(editDraftLog, changes);
+	    } catch (Exception e) {
+		    logger.log(Level.SEVERE, "Error saving Edit Draft report: " + e.getMessage());
 	    }
     }
 

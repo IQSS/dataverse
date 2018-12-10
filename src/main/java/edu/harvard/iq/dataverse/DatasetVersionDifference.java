@@ -8,6 +8,7 @@ import org.apache.commons.lang.StringUtils;
 import java.util.ResourceBundle;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
+import java.util.Date;
 
 /**
  *
@@ -1164,9 +1165,10 @@ public final class DatasetVersionDifference {
     }
     
     public String getEditSummaryForLog() {
-        String retVal = "";
         
-        retVal = System.lineSeparator() + this.newVersion.getTitle() + " (" + this.originalVersion.getDataset().getIdentifier() + ") was updated " + this.newVersion.getLastUpdateTime();
+        String retVal = "";        
+        
+        retVal = System.lineSeparator() + this.newVersion.getTitle() + " (" + this.originalVersion.getDataset().getIdentifier() + ") was updated " + new Date();
         
         String valueString = "";
         String groupString = "";
@@ -1209,54 +1211,73 @@ public final class DatasetVersionDifference {
         }
         
         // File Differences
-        String fileDiff = System.lineSeparator() + "File Differences: "+ System.lineSeparator();
+        String fileDiff = System.lineSeparator() + BundleUtil.getStringFromBundle("file.viewDiffDialog.files.header") + ": " + System.lineSeparator();
         if(!this.getDatasetFilesDiffList().isEmpty()){
            
             String itemDiff;
             
             for (datasetFileDifferenceItem item : this.getDatasetFilesDiffList()) {
-                itemDiff = ""; //file.viewDiffDialog.notAvailable
-                itemDiff = System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.fileName") + ": ";
-                itemDiff += item.fileName1 != null ? item.fileName1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                itemDiff += " : ";
-                itemDiff += item.fileName2 != null ? item.fileName2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.fileType") + ": ";
-                itemDiff += item.fileType1 != null ? item.fileType1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                itemDiff += " : ";
-                itemDiff += item.fileType2 != null ? item.fileType2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.fileSize") + ": ";
-                itemDiff += item.fileSize1 != null ? item.fileSize1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                itemDiff += " : ";
-                itemDiff += item.fileSize2 != null ? item.fileSize2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.category") + ": ";
-                itemDiff += item.fileCat1 != null ? item.fileCat1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                itemDiff += " : ";
-                itemDiff += item.fileCat2 != null ? item.fileCat2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.description") + ": ";
-                itemDiff += item.fileDesc1 != null ? item.fileDesc1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                itemDiff += " : ";
-                itemDiff += item.fileDesc2 != null ? item.fileDesc2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.provDescription") + ": ";
-                itemDiff += item.fileProvFree1 != null ? item.fileProvFree1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                itemDiff += " : ";
-                itemDiff += item.fileProvFree2 != null ? item.fileProvFree2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.restricted") + ": ";
-                itemDiff += item.fileRest1 != null ? item.fileRest1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
-                itemDiff += " : ";
-                itemDiff += item.fileRest2 != null ? item.fileRest2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
+                itemDiff = BundleUtil.getStringFromBundle("file.viewDiffDialog.fileID") + ": " + item.fileId; 
+                
+                if (item.fileName1 != null || item.fileName2 != null) {
+                    itemDiff = System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.fileName") + ": ";
+                    itemDiff += item.fileName1 != null ? item.fileName1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
+                    itemDiff += " : ";
+                    itemDiff += item.fileName2 != null ? item.fileName2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
+                }
+
+                if (item.fileType1 != null || item.fileType2 != null) {
+                    itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.fileType") + ": ";
+                    itemDiff += item.fileType1 != null ? item.fileType1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
+                    itemDiff += " : ";
+                    itemDiff += item.fileType2 != null ? item.fileType2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
+                }
+
+                if (item.fileSize1 != null || item.fileSize2 != null) {
+                    itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.fileSize") + ": ";
+                    itemDiff += item.fileSize1 != null ? item.fileSize1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
+                    itemDiff += " : ";
+                    itemDiff += item.fileSize2 != null ? item.fileSize2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
+                }
+                
+                if (item.fileCat1 != null || item.fileCat2 != null) {
+                    itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.category") + ": ";
+                    itemDiff += item.fileCat1 != null ? item.fileCat1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
+                    itemDiff += " : ";
+                    itemDiff += item.fileCat2 != null ? item.fileCat2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
+                }
+                
+                if (item.fileDesc1 != null || item.fileDesc2 != null) {
+                    itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.description") + ": ";
+                    itemDiff += item.fileDesc1 != null ? item.fileDesc1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
+                    itemDiff += " : ";
+                    itemDiff += item.fileDesc2 != null ? item.fileDesc2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
+                }
+
+                if (item.fileProvFree1 != null || item.fileProvFree2 != null) {
+                    itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.provDescription") + ": ";
+                    itemDiff += item.fileProvFree1 != null ? item.fileProvFree1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
+                    itemDiff += " : ";
+                    itemDiff += item.fileProvFree2 != null ? item.fileProvFree2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
+                }
+                
+                if (item.fileRest1 != null || item.fileRest2 != null) {
+                    itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.restricted") + ": ";
+                    itemDiff += item.fileRest1 != null ? item.fileRest1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
+                    itemDiff += " : ";
+                    itemDiff += item.fileRest2 != null ? item.fileRest2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
+
+                }
+                
                 fileDiff += itemDiff;
             }
-            
-            
+                     
             retVal += fileDiff;
         }
         
-                // File Differences
-        String fileReplaced = System.lineSeparator() + "File Replaced: "+ System.lineSeparator();
-        if(!this.getDatasetFilesDiffList().isEmpty()){
-           
-            String itemDiff;
-            
+        String fileReplaced = System.lineSeparator() + BundleUtil.getStringFromBundle("file.viewDiffDialog.filesReplaced")+ ": "+ System.lineSeparator();
+        if(!this.getDatasetFilesReplacementList().isEmpty()){          
+            String itemDiff;          
             for (datasetReplaceFileItem item : this.getDatasetFilesReplacementList()) {
                 itemDiff = "";
                 itemDiff = System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.fileName") + ": ";
@@ -1288,9 +1309,7 @@ public final class DatasetVersionDifference {
                 itemDiff += " : ";
                 itemDiff += item.fdi.fileRest2 != null ? item.fdi.fileRest2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
                 fileReplaced += itemDiff;
-            }
-            
-            
+            }           
             retVal += fileReplaced;
         }
         
