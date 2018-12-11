@@ -145,7 +145,7 @@ public class SearchUtil {
         // this check, Dataverse assumes its a real search and displays the hit hints
         // instead of the normal summary
         StringBuilder ftQuery = new StringBuilder();
-        if (!query.equals("*")) {
+        if (!(query.equals("*")||query.equals("*:*"))) {
             // what about ~ * ? \ /
             // (\\"[^\\"]*\"|'[^']*'|[\\{\\[][^\\}\\]]*[\\}\\]] | [\\S]+)+
             // Split on any whitespace, but also grab any comma, do not split on comma only
@@ -170,7 +170,7 @@ public class SearchUtil {
              */
             Pattern termPattern = Pattern.compile("[+-]?[\\{\\[][^\\}\\]]*[\\}\\]](\\^\\d+)?|[+-]?\\\"[^\\\"]*\\\"(\\^\\d+)?|(([^\\s\"\\[\\{,\\(\\)\\\\]|[\\\\][\\[\\{\\(\\)\\\\+:])+(,?(([^\\s,\\[\\{\":+\\(\\)\\\\-]|\\\\[\\[\\{\\(\\)\\\\+:])|:[\\{\\[][^\\}\\]]*[\\}\\]]|:\\\"[^\\\"]*\\\"|:\\s*[\\(][^:]+[\\)])+)+)+|([^\\s\",\\(\\)\\\\]|\\\\[\\[\\{\\(\\)\\\\+:])+|[\\(\\)]");
             Matcher regexMatcher = termPattern.matcher(query);
-            Pattern specialTokenPattern = Pattern.compile("\\(|\\)|OR|NOT|AND|&&|\\|\\||!|.*[^\\\\][^\\\\][:].*");
+            Pattern specialTokenPattern = Pattern.compile("\\(|\\)|OR|NOT|AND|&&|\\|\\||!|.*[^\\\\][^\\\\][:].*"); // add |\w:.* to allow single char fields
             Pattern forbiddenTokenPattern = Pattern.compile("\\\\|\\/|\\^|~|\\*|:");
             while (regexMatcher.find()) {
 
@@ -212,6 +212,7 @@ public class SearchUtil {
                 }
             }
         } else {
+            // * and *.* both match all documents
             ftQuery.append("*");
         }
         return ftQuery.toString();
