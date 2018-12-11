@@ -113,7 +113,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     private List<Dataset> findByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Dataset> retList = new ArrayList<>();
-        TypedQuery<Dataset>  query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id", Dataset.class);
+        TypedQuery<Dataset>  query = em.createNamedQuery("Dataset.findByOwnerId", Dataset.class);
         query.setParameter("ownerId", ownerId);
         if (!onlyPublished) {
             return query.getResultList();
@@ -134,13 +134,13 @@ public class DatasetServiceBean implements java.io.Serializable {
     private List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Long> retList = new ArrayList<>();
         if (!onlyPublished) {
-            TypedQuery<Long> query = em.createQuery("select o.id from Dataset as o where o.owner.id =:ownerId order by o.id", Long.class);
-            query.setParameter("ownerId", ownerId);
-            return query.getResultList();
+            return em.createNamedQuery("Dataset.findIdByOwnerId")
+                    .setParameter("ownerId", ownerId)
+                    .getResultList();
         } else {
-            TypedQuery<Dataset> query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id", Dataset.class);
-            query.setParameter("ownerId", ownerId);
-            for (Dataset ds : query.getResultList()) {
+            List<Dataset> results = em.createNamedQuery("Dataset.findByOwnerId")
+                    .setParameter("ownerId", ownerId).getResultList();
+            for (Dataset ds : results) {
                 if (ds.isReleased() && !ds.isDeaccessioned()) {
                     retList.add(ds.getId());
                 }
@@ -288,8 +288,8 @@ public class DatasetServiceBean implements java.io.Serializable {
         Long dsId = dataset.getId();
         if (dsId != null) {
             try {
-                idResults = em.createNamedQuery("Dataset.findByOwnerIdentifier")
-                                .setParameter("owner_id", dsId).getResultList();
+                idResults = em.createNamedQuery("Dataset.findIdByOwnerId")
+                                .setParameter("ownerId", dsId).getResultList();
             } catch (NoResultException ex) {
                 logger.log(Level.FINE, "No files found in dataset id {0}. Returning a count of zero.", dsId);
                 return zeroFiles;
