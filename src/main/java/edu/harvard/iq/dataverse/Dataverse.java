@@ -153,7 +153,7 @@ public class Dataverse extends DvObjectContainer {
     private Set<DataverseRole> roles;
     
     @ManyToOne
-    @JoinColumn(nullable = false)
+    @JoinColumn(nullable = true)
     private DataverseRole defaultContributorRole;
 
     public DataverseRole getDefaultContributorRole() {

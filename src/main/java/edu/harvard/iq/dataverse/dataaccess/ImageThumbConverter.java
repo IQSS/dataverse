@@ -146,12 +146,11 @@ public class ImageThumbConverter {
 
         try {
             storageIO.open();
-            Channel cachedThumbnailChannel = storageIO.openAuxChannel(THUMBNAIL_SUFFIX + size);
-            if (cachedThumbnailChannel == null) {
-                logger.warning("Null channel for aux object " + THUMBNAIL_SUFFIX + size);
+            cachedThumbnailInputStream = storageIO.getAuxFileAsInputStream(THUMBNAIL_SUFFIX + size);
+            if (cachedThumbnailInputStream == null) {
+                logger.warning("Null stream for aux object " + THUMBNAIL_SUFFIX + size);
                 return null;
             }
-            cachedThumbnailInputStream = Channels.newInputStream((ReadableByteChannel) cachedThumbnailChannel);
             int cachedThumbnailSize = (int) storageIO.getAuxObjectSize(THUMBNAIL_SUFFIX + size);
 
             InputStreamIO inputStreamIO = new InputStreamIO(cachedThumbnailInputStream, cachedThumbnailSize);
@@ -271,12 +270,12 @@ public class ImageThumbConverter {
 
         try {
             storageIO.open();
+            return generateImageThumbnailFromInputStream(storageIO, size, storageIO.getInputStream());
         } catch (IOException ioex) {
             logger.warning("caught IOException trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier() + ioex);
             return false;
         }
-
-        return generateImageThumbnailFromInputStream(storageIO, size, storageIO.getInputStream());
+        
     }
 
     /*

@@ -124,6 +124,13 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             .setParameter("alias", alias)
             .getSingleResult();
     }
+    
+    public DataverseRole findCustomRoleByAliasAndOwner(String alias, Long ownerId) {
+        return em.createNamedQuery("DataverseRole.findCustomRoleByAliasAndOwner", DataverseRole.class)
+            .setParameter("alias", alias)
+            .setParameter("ownerId", ownerId)
+            .getSingleResult();
+    }
 
     public void revoke(Set<DataverseRole> roles, RoleAssignee assignee, DvObject defPoint) {
         for (DataverseRole role : roles) {

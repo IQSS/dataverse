@@ -37,6 +37,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -87,7 +89,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
     public static final String JSON_ERROR_MSG_FIELD_NAME = "error_message";
     public static final String JSON_DATA_FIELD_NAME = "data";
     
-    public static final String MSG_NO_RESULTS_FOUND = "Sorry, no results were found.";
+    public static final String MSG_NO_RESULTS_FOUND = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
     
     /**
      * Constructor
