@@ -558,7 +558,7 @@ public class DatasetField implements Serializable {
             }
         } else if (this.getDatasetFieldType().isCompound()) {
             for (int i = 0; i < datasetFieldCompoundValues.size(); i++) {
-                DatasetFieldCompoundValue compoundValue = datasetFieldCompoundValues.get(i);                
+                DatasetFieldCompoundValue compoundValue = datasetFieldCompoundValues.get(i);
                 for (DatasetField dsf : compoundValue.getChildDatasetFields()) {
                     dsf.trimTrailingSpaces();
                 }
