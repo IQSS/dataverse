@@ -257,6 +257,10 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static String getUserFriendlyOriginalType(DataFile dataFile) {
+        if (!dataFile.isTabularData()) {
+            return null; 
+        }
+        
         String fileType = dataFile.getOriginalFileFormat();
          
         if (fileType != null && !fileType.equals("")) {
