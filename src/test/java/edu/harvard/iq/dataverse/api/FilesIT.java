@@ -27,6 +27,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
@@ -286,7 +287,8 @@ public class FilesIT {
     }
 
     @Test
-    public void test_006_ReplaceFileGood() {
+    public void test_006_ReplaceFileGood() throws InterruptedException {
+        
         msgt("test_006_ReplaceFileGood");
 
         // Create user
@@ -302,7 +304,7 @@ public class FilesIT {
         // Add initial file
         // -------------------------
         msg("Add initial file");
-        String pathToFile = "scripts/search/data/replace_test/growing_file/2016-01/data.tsv";
+        String pathToFile = "scripts/search/data/replace_test/003.txt";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
         String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
@@ -313,8 +315,8 @@ public class FilesIT {
                  * via API in a consistent location.
                  */
                 //                .body("message", equalTo(successMsgAdd))
-                .body("data.files[0].dataFile.contentType", equalTo("text/tsv"))
-                .body("data.files[0].label", equalTo("data.tsv"))
+                .body("data.files[0].dataFile.contentType", startsWith("text/plain"))
+                .body("data.files[0].label", equalTo("003.txt"))
                 .body("data.files[0].description", equalTo(""))
                 .statusCode(OK.getStatusCode());
         
@@ -349,7 +351,7 @@ public class FilesIT {
         
         msgt(replaceRespWrongCtype.prettyPrint());
         
-        String errMsgCtype = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", Arrays.asList("Tab-Delimited", "GIF Image"));
+        String errMsgCtype = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", Arrays.asList("Plain Text", "GIF Image"));
 
 
         replaceRespWrongCtype.prettyPrint();
@@ -363,11 +365,9 @@ public class FilesIT {
         // Replace file
         // -------------------------
         msg("Replace file - 1st time");
-        String pathToFile2 = "scripts/search/data/replace_test/growing_file/2016-02/data.tsv";
+        String pathToFile2 = "scripts/search/data/replace_test/004.txt";
         JsonObjectBuilder json = Json.createObjectBuilder()
-                // "forceReplace=true required after pull request #4854 was merged
-                .add("forceReplace", true)
-                .add("description", "My Tabular Data")
+                .add("description", "My Text File")
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
@@ -383,9 +383,9 @@ public class FilesIT {
                  * via API in a consistent location.
                  */
                 //                .body("message", equalTo(successMsg2))
-                .body("data.files[0].label", equalTo("data.tsv"))
-                .body("data.files[0].dataFile.contentType", equalTo("text/tsv"))
-                .body("data.files[0].description", equalTo("My Tabular Data"))
+                .body("data.files[0].label", equalTo("004.txt"))
+                .body("data.files[0].dataFile.contentType", startsWith("text/plain"))
+                .body("data.files[0].description", equalTo("My Text File"))
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 //.body("data.rootDataFileId", equalTo(origFileId))              
                 .statusCode(OK.getStatusCode());
@@ -411,10 +411,8 @@ public class FilesIT {
         // Replace file (again)
         // -------------------------
         msg("Replace file (again)");
-        String pathToFile3 = "scripts/search/data/replace_test/growing_file/2016-03/data.tsv";
-        JsonObjectBuilder json2 = Json.createObjectBuilder()
-                // "forceReplace=true" required after pull request #4854 was merged
-                .add("forceReplace", true);
+        String pathToFile3 = "scripts/search/data/replace_test/005.txt";
+        JsonObjectBuilder json2 = Json.createObjectBuilder();
         Response replaceResp2 = UtilIT.replaceFile(newDataFileId.toString(), pathToFile3, json2.build(), apiToken);
         
         msgt("2nd replace: " + replaceResp2.prettyPrint());
@@ -427,7 +425,7 @@ public class FilesIT {
                 //                .body("message", equalTo(successMsg2))
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
-                .body("data.files[0].label", equalTo("data.tsv"))
+                .body("data.files[0].label", equalTo("005.txt"))
                 // yes, replacing a file blanks out the description (and categories)
                 .body("data.files[0].description", equalTo(""))
                 ;
