@@ -216,13 +216,15 @@ public class Files extends AbstractApiBean {
         msg("REPLACE!");
 
         DataverseRequest dvRequest2 = createDataverseRequest(authUser);
+        Boolean unzip = true;
         AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
                                                 this.ingestService,
                                                 this.datasetService,
                                                 this.fileService,
                                                 this.permissionSvc,
                                                 this.commandEngine,
-                                                this.systemConfig);
+                                                this.systemConfig,
+                                                unzip);
 
         //-------------------
         // (5) Run "runReplaceFileByDatasetId"

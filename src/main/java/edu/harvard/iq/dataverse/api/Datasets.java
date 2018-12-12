@@ -1231,6 +1231,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/add")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response addFileToDataset(@PathParam("id") String idSupplied,
+                    @FormDataParam("unzip") Boolean unzip,
                     @FormDataParam("jsonData") String jsonData,
                     @FormDataParam("file") InputStream fileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
@@ -1305,13 +1306,15 @@ public class Datasets extends AbstractApiBean {
         msg("ADD!");
 
         DataverseRequest dvRequest2 = createDataverseRequest(authUser);
+        if(unzip == null || unzip != false) unzip = true;
         AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
                                                 ingestService,
                                                 datasetService,
                                                 fileService,
                                                 permissionSvc,
                                                 commandEngine,
-                                                systemConfig);
+                                                systemConfig,
+                                                unzip);
 
 
         //-------------------

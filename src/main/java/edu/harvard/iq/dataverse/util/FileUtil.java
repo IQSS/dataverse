@@ -565,7 +565,7 @@ public class FileUtil implements java.io.Serializable  {
         return "";
     }
     
-    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, SystemConfig systemConfig) throws IOException {
+    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, SystemConfig systemConfig, Boolean unzip) throws IOException {
         List<DataFile> datafiles = new ArrayList<>(); 
         
         String warningMessage = null; 
@@ -704,7 +704,7 @@ public class FileUtil implements java.io.Serializable  {
                 
         // If it's a ZIP file, we are going to unpack it and create multiple 
         // DataFile objects from its contents:
-          } else if (finalType.equals("application/zip")) {   
+          } else if (finalType.equals("application/zip") && unzip) {
             
             ZipInputStream unZippedIn = null; 
             ZipEntry zipEntry = null; 

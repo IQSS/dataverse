@@ -111,6 +111,7 @@ public class AddReplaceFileHelper{
     private PermissionServiceBean permissionService;
     private EjbDataverseEngine commandEngine;
     private SystemConfig systemConfig;
+    private Boolean unzip;
     
     // -----------------------------------
     // Instance variables directly added
@@ -191,7 +192,8 @@ public class AddReplaceFileHelper{
                             DataFileServiceBean fileService,
                             PermissionServiceBean permissionService,
                             EjbDataverseEngine commandEngine,
-                            SystemConfig systemConfig){
+                            SystemConfig systemConfig,
+                            Boolean unzip){
 
         // ---------------------------------
         // make sure DataverseRequest isn't null and has a user
@@ -233,6 +235,7 @@ public class AddReplaceFileHelper{
         this.permissionService = permissionService;
         this.commandEngine = commandEngine;
         this.systemConfig = systemConfig;
+        this.unzip = unzip;
         
         
         
@@ -1048,7 +1051,8 @@ public class AddReplaceFileHelper{
                     this.newFileInputStream,
                     this.newFileName,
                     this.newFileContentType,
-                    this.systemConfig);
+                    this.systemConfig,
+                    this.unzip);
 
         } catch (IOException ex) {
             if (!Strings.isNullOrEmpty(ex.getMessage())) {

@@ -75,6 +75,9 @@
                                         <f:param value="#{systemConfig.guidesVersion}"/>
                                     </h:outputFormat>
                                 </p>
+                                <p:selectBooleanCheckbox value="#{EditDatafilesPage.unzipEnabled}" itemLabel="Unzip zip files">
+                                    <p:ajax event="change" listener="#{EditDatafilesPage.setUnzipEnabled}"></p:ajax>
+                                </p:selectBooleanCheckbox>
                     
                     <script>
 //<![CDATA[

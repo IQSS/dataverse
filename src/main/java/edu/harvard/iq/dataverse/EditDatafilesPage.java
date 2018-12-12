@@ -156,7 +156,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String versionString = "";
             
     
-    private boolean saveEnabled = false; 
+    private boolean saveEnabled = false;
+    private boolean unzipEnabled = true;
 
     // Used to store results of permissions checks
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
@@ -200,6 +201,14 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public void setMode(FileEditMode mode) {
         this.mode = mode;
+    }
+
+    public void setUnzipEnabled(Boolean unzipEnabled) {
+        this.unzipEnabled = unzipEnabled;
+    }
+
+    public Boolean getUnzipEnabled() {
+        return unzipEnabled;
     }
     
     public List<FileMetadata> getFileMetadatas() {
@@ -508,7 +517,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                                                 datafileService,
                                                 permissionService,
                                                 commandEngine,
-                                                systemConfig);
+                                                systemConfig,
+                                                unzipEnabled);
                         
             fileReplacePageHelper = new FileReplacePageHelper(addReplaceFileHelper,
                                                 dataset, 
@@ -1644,7 +1654,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // for example, multiple files can be extracted from an uncompressed
                 // zip file.
                 //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-                datafiles = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", systemConfig);
+                datafiles = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", systemConfig, unzipEnabled);
                 
             } catch (IOException ex) {
                 this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
@@ -1998,8 +2008,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         try {
             // Note: A single uploaded file may produce multiple datafiles - 
             // for example, multiple files can be extracted from an uncompressed
-            // zip file. 
-            dFileList = FileUtil.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType(), systemConfig);
+            // zip file.
+            dFileList = FileUtil.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType(), systemConfig, unzipEnabled);
             
         } catch (IOException ioex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
