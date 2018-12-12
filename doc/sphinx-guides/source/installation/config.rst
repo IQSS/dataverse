@@ -124,7 +124,9 @@ Once you have your DOI or Handle account credentials and a namespace, configure 
 Configuring Dataverse for DOIs
 ++++++++++++++++++++++++++++++
 
-Out of the box, Dataverse is configured to register DOIs for each dataverse, dataset, and file. Here are the configuration options for DOIs:
+By default Dataverse attempts to register DOIs for each dataverse, dataset, and file under a test authority, though you must register for your own credentials as explained above.
+
+Here are the configuration options for DOIs:
 
 **JVM Options:**
 
