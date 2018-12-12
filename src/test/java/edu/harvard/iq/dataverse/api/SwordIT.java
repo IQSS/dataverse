@@ -501,7 +501,7 @@ public class SwordIT {
                 .statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
 
-        String datasetTitle = "Publish or Perist";
+        String datasetTitle = "Publish or Perish";
         Response createDataset = UtilIT.createDatasetViaSwordApi(dataverseAlias, datasetTitle, apiToken);
         createDataset.prettyPrint();
         createDataset.then().assertThat()
@@ -590,7 +590,7 @@ public class SwordIT {
         thisDataverseContents.prettyPrint();
         thisDataverseContents.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        logger.info("We expect to find \"" + datasetId + "\" from the persistent ID to be present.");
+        logger.info("We expect to find the numeric id of the dataset (\"" + datasetId + "\") in the response.");
         assertTrue(thisDataverseContents.body().asString().contains(datasetId.toString()));
         
         

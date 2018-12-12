@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.ArrayList;
@@ -885,7 +886,7 @@ public class SolrSearchResult {
     }
 
     public String getDateToDisplayOnCard() {
-        return dateToDisplayOnCard;
+        return DateUtil.formatDate(dateToDisplayOnCard,"MMM dd, yyyy");
     }
 
     public void setDateToDisplayOnCard(String dateToDisplayOnCard) {

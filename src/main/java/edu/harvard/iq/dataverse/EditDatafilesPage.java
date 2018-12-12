@@ -2749,7 +2749,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public String getIngestLanguageEncoding() {
         if (ingestLanguageEncoding == null) {
-            return "UTF8 (default)";
+            return BundleUtil.getStringFromBundle("editdatafilepage.defaultLanguageEncoding");
         }
         return ingestLanguageEncoding;
     }
