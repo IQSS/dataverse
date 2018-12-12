@@ -248,6 +248,15 @@
                                     <p:commandButton id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
                                     <p:commandButton id="dropBoxUserButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
                                     <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" redisplay="false" />
+                                    
+                                </div>
+                                <div jsf:id="hypothesisBlock" jsf:rendered="#{settingsWrapper.isHasHypothesisKey() and !lockedFromEdits }"  class="margin-top">
+                                    <!-- Hypothesis upload widget -->
+                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.fromHypothesis.tip']}</p>
+                                    <h:inputText id="hypothesisUrlInput"  value="#{EditDatafilesPage.hypothesisUrl}"/>
+                                    <h:inputText id="hypothesisGroupInput" value="#{EditDatafilesPage.hypothesisGroup}"/>
+                                    <p:commandButton id="hypothesisButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromHypothesis']}" actionListener="#{EditDatafilesPage.handleHypothesisUpload}" oncomplete="javascript:hypothesisUploadFinished();" update="@none" icon="hypothesis-btn-status" />
+                                    <p:message for="hypothesisButton" id="hypothesisUploadMessage" display="text" redisplay="false" />
                                 </div>
                     
                             </div>

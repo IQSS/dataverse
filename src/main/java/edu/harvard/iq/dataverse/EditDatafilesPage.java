@@ -147,6 +147,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     private List<DataFile> uploadedFiles = new ArrayList<>();; 
     private DatasetVersion workingVersion;
     private String dropBoxSelection = "";
+    private String hypothesisUrlSelection = "";
+    private String hypothesisGroupSelection = "";
+    
     private String displayCitation;
     private boolean datasetUpdateRequired = false; 
     private boolean tabularDataTagsUpdated = false; 
@@ -1709,6 +1712,167 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
     }
     
+    /**
+     * Using information from the DropBox choose, ingest the chosen files
+     *  https://www.dropbox.com/developers/dropins/chooser/js
+     * 
+     * @param event
+     */
+    public void handleHypothesisUpload(ActionEvent event) {
+        if (!uploadInProgress) {
+            uploadInProgress = true;
+        }
+        logger.fine("handleHypothesisUpload");
+        uploadHypothesisComponentId = event.getComponent().getClientId();
+        logger.info("In the event of an actual implementation, this would have queried hypo for " + hypothesisUrlSelection + " and "+ hypothesisGroupSelection + ".");
+        /*
+        // -----------------------------------------------------------
+        // Read JSON object from the output of the DropBox Chooser: 
+        // -----------------------------------------------------------
+        JsonReader dbJsonReader = Json.createReader(new StringReader(dropBoxSelection));
+        JsonArray dbArray = dbJsonReader.readArray();
+        dbJsonReader.close();
+
+        // -----------------------------------------------------------
+        // Iterate through the Dropbox file information (JSON)
+        // -----------------------------------------------------------
+        DataFile dFile = null;
+        GetMethod dropBoxMethod = null;
+        String localWarningMessage = null; 
+        for (int i = 0; i < dbArray.size(); i++) {
+            JsonObject dbObject = dbArray.getJsonObject(i);
+
+            // -----------------------------------------------------------
+            // Parse information for a single file
+            // -----------------------------------------------------------
+            String fileLink = dbObject.getString("link");
+            String fileName = dbObject.getString("name");
+            int fileSize = dbObject.getInt("bytes");
+
+            logger.fine("DropBox url: " + fileLink + ", filename: " + fileName + ", size: " + fileSize);
+
+*/
+            /* ----------------------------
+                Check file size
+                - Max size NOT specified in db: default is unlimited
+                - Max size specified in db: check too make sure file is within limits
+            // ---------------------------- */
+/*        
+            if ((!this.isUnlimitedUploadFileSize()) && (fileSize > this.getMaxFileUploadSizeInBytes())) {
+                String warningMessage = "Dropbox file \"" + fileName + "\" exceeded the limit of " + fileSize + " bytes and was not uploaded.";
+                //msg(warningMessage);
+                //FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
+                if (localWarningMessage == null) {
+                    localWarningMessage = warningMessage;
+                } else {
+                    localWarningMessage = localWarningMessage.concat("; " + warningMessage);
+                }
+                continue; // skip to next file, and add error mesage
+            }
+
+            
+            dFile = null;
+            dropBoxMethod = new GetMethod(fileLink);
+
+            // -----------------------------------------------------------
+            // Download the file
+            // -----------------------------------------------------------
+            InputStream dropBoxStream = this.getDropBoxInputStream(fileLink, dropBoxMethod);
+            if (dropBoxStream==null){
+                logger.severe("Could not retrieve dropgox input stream for: " + fileLink);
+                continue;  // Error skip this file
+            }
+            
+            // -----------------------------------------------------------
+            // Is this a FileReplaceOperation?  If so, then diverge!
+            // -----------------------------------------------------------
+            if (this.isFileReplaceOperation()){
+              this.handleReplaceFileUpload(event, dropBoxStream, fileName, FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT, null, event);
+              this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
+              return;
+             }
+            // -----------------------------------------------------------
+
+            
+            List<DataFile> datafiles = new ArrayList<>(); 
+            
+            // -----------------------------------------------------------
+            // Send it through the ingest service
+            // -----------------------------------------------------------
+            try {
+
+                // Note: A single uploaded file may produce multiple datafiles - 
+                // for example, multiple files can be extracted from an uncompressed
+                // zip file.
+                //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
+                datafiles = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", systemConfig);
+                
+            } catch (IOException ex) {
+                this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
+                continue;
+            }//catch (FileExceedsMaxSizeException ex){
+             //   this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}: {2}", new Object[]{fileName, fileLink, ex.getMessage()});
+             //   continue;
+            //}
+             finally {
+                // -----------------------------------------------------------
+                // release connection for dropBoxMethod
+                // -----------------------------------------------------------
+                
+                if (dropBoxMethod != null) {
+                    dropBoxMethod.releaseConnection();
+                }
+                
+                // -----------------------------------------------------------
+                // close the  dropBoxStream
+                // -----------------------------------------------------------
+                try {
+                    dropBoxStream.close();
+                } catch (IOException ex) {
+                    logger.log(Level.WARNING, "Failed to close the dropBoxStream for file: {0}", fileLink);
+                }
+            }
+            
+            if (datafiles == null){
+                this.logger.log(Level.SEVERE, "Failed to create DataFile for DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
+                continue;
+            }else{    
+                // -----------------------------------------------------------
+                // Check if there are duplicate files or ingest warnings
+                // -----------------------------------------------------------
+                uploadWarningMessage = processUploadedFileList(datafiles);
+                logger.fine("Warning message during upload: " + uploadWarningMessage);
+*/              
+                /*if (warningMessage != null){
+                     logger.fine("trying to send faces message to " + event.getComponent().getClientId());
+                     FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
+                     if (uploadWarningMessage == null) {
+                         uploadWarningMessage = warningMessage;
+                     } else {
+                         uploadWarningMessage = uploadWarningMessage.concat("; "+warningMessage);
+                     }
+                }*/
+/*      
+                
+            }
+            if(!uploadInProgress) {
+                logger.warning("Upload in progress cancelled");
+                for (DataFile newFile : datafiles) {
+                    deleteTempFile(newFile);
+                }
+            }
+        }
+        
+        if (localWarningMessage != null) {
+            if (uploadWarningMessage == null) {
+                uploadWarningMessage = localWarningMessage;
+            } else {
+                uploadWarningMessage = localWarningMessage.concat("; " + uploadWarningMessage);
+            }
+        }
+*/      
+    }
+    
     public void uploadStarted() {
         // uploadStarted() is triggered by PrimeFaces <p:upload onStart=... when an upload is 
         // started. It will be called *once*, even if it is a multiple file upload 
@@ -1951,7 +2115,8 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private String uploadWarningMessage = null; 
     private String uploadSuccessMessage = null; 
-    private String uploadComponentId = null; 
+    private String uploadComponentId = null;
+    private String uploadHypothesisComponentId = null; 
     
     
     
@@ -2888,6 +3053,22 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             }
         }
+    }
+
+    public String getHypothesisUrlSelection() {
+        return hypothesisUrlSelection;
+    }
+
+    public void setHypothesisUrlSelection(String hypothesisUrlSelection) {
+        this.hypothesisUrlSelection = hypothesisUrlSelection;
+    }
+
+    public String getHypothesisGroupSelection() {
+        return hypothesisGroupSelection;
+    }
+
+    public void setHypothesisGroupSelection(String hypothesisGroupSelection) {
+        this.hypothesisGroupSelection = hypothesisGroupSelection;
     }
     
 }

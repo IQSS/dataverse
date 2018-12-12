@@ -197,5 +197,19 @@ public class SettingsWrapper implements java.io.Serializable {
         return !getDropBoxKey().isEmpty();
     }
 
+    public String getHypothesisKey() {
+
+        String configuredHypothesisKey = System.getProperty("dataverse.hypothesis.key");
+        if (configuredHypothesisKey != null) {
+            return configuredHypothesisKey;
+        }
+        return "";
+    }
+    
+    public Boolean isHasHypothesisKey() {
+
+        return !getHypothesisKey().isEmpty();
+    }
+
 }
 
