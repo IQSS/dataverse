@@ -26,11 +26,11 @@
             <a href="/file.xhtml?fileId={{ card_info.entity_id }}"><span style="padding:4px 0;">{{ card_info.name }}</span></a>
  {% endif %}
         <!-- publication status -->
-        {#({{ loop.index }})#} {% if card_info.is_draft_state %}<span class="label label-primary">Draft</span> {% endif %}
-        {% if card_info.is_in_review_state %}<span class="label label-success">In Review</span> {% endif %}
-        {% if card_info.is_unpublished_state %}<span class="label label-warning">Unpublished</span> {% endif %}
-        {% if card_info.is_published %} <span class="label label-warning">Published</span> {% endif %}
-        {% if card_info.is_deaccesioned %} <span class="label label-danger">Deaccessioned</span> {% endif %}
+        {#({{ loop.index }})#} {% if card_info.is_draft_state %}<span class="label label-primary"><span name="draft"></span></span> {% endif %}
+        {% if card_info.is_in_review_state %}<span class="label label-success"><span name="inreview"></span></span> {% endif %}
+        {% if card_info.is_unpublished_state %}<span class="label label-warning"><span name="unpublished"></span></span> {% endif %}
+        {% if card_info.is_published %} <span class="label label-warning"><span name="published"></span></span> {% endif %}
+        {% if card_info.is_deaccesioned %} <span class="label label-danger"><span name="deaccessioned"></span></span> {% endif %}
         
         <!-- roles -->
         {% for role_name in card_info.user_roles %}

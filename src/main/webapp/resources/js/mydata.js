@@ -305,7 +305,22 @@ function updatePagination(json_data){
             $("#div-pagination").html(result_msg_html);
             
         }
-   
+
+        if (document.getElementById("result")) {
+            document.getElementById('result').innerHTML = document.getElementById('dataverseUserForm:dataRelatedToMeView:mydataresult').value;
+        }
+        if (document.getElementById("results")) {
+            document.getElementById('results').innerHTML = document.getElementById('dataverseUserForm:dataRelatedToMeView:mydataresults').value;
+        }
+
+        if (document.getElementById("to")) {
+            document.getElementById('to').innerHTML = document.getElementById('dataverseUserForm:dataRelatedToMeView:mydatato').value;
+        }
+        if (document.getElementById("of")) {
+            document.getElementById('of').innerHTML = document.getElementById('dataverseUserForm:dataRelatedToMeView:mydataof').value;
+        }
+
+
         // --------------------------------
         //  If this isn't the last page, show
         //  a "more results" link after the last card
@@ -315,11 +330,11 @@ function updatePagination(json_data){
             //console.log("update link to: " + pagination_json.nextPageNumber);
             $('#div-more-cards-link').show();
 
-            var view_next = document.getElementById("dataverseUserForm:mydataviewnext").value;
-            var more = document.getElementById("dataverseUserForm:mydatamore").value;
-            var result_label = document.getElementById("dataverseUserForm:mydataresults").value;
+            var view_next = document.getElementById("dataverseUserForm:dataRelatedToMeView:mydataviewnext").value;
+            var more = document.getElementById("dataverseUserForm:dataRelatedToMeView:mydatamore").value;
+            var result_label = document.getElementById("dataverseUserForm:dataRelatedToMeView:mydataresults").value;
             if (pagination_json.numberNextResults == 1){
-                result_label = document.getElementById("dataverseUserForm:mydataresult").value;
+                result_label = document.getElementById("dataverseUserForm:dataRelatedToMeView:mydataresult").value;
             }
             $('#lnk_add_more_cards').html(view_next + ' ' + pagination_json.numberNextResults + ' ' + result_label + ' (' + pagination_json.remainingCards + ' ' + more +')');
         }
@@ -441,7 +456,40 @@ function submit_my_data_search(){
             check_card_images();
             // bind_filter_remove_tags();
             $('#ajaxStatusPanel_start').hide();
-            
+
+
+            if (document.getElementsByName("draft")) {
+                var y = document.getElementsByName("draft");
+                for (var i = 0; i < y.length; i++) {
+                    y[i].innerHTML = document.getElementById( 'dataverseUserForm:dataRelatedToMeView:draft' ).value;
+                }
+            }
+            if (document.getElementsByName("inreview")) {
+                var y = document.getElementsByName("inreview");
+                for (var i = 0; i < y.length; i++) {
+                    y[i].innerHTML = document.getElementById( 'dataverseUserForm:dataRelatedToMeView:inreview' ).value;
+                }
+            }
+            if (document.getElementsByName("published")) {
+                var y = document.getElementsByName("published");
+                for (var i = 0; i < y.length; i++) {
+                    y[i].innerHTML = document.getElementById( 'dataverseUserForm:dataRelatedToMeView:published' ).value;
+                }
+            }
+            if (document.getElementsByName("unpublished")) {
+                var y = document.getElementsByName("unpublished");
+                for (var i = 0; i < y.length; i++) {
+                    y[i].innerHTML = document.getElementById( 'dataverseUserForm:dataRelatedToMeView:unpublished' ).value;
+                }
+            }
+            if (document.getElementsByName("deaccessioned")) {
+                var y = document.getElementsByName("deaccessioned");
+                for (var i = 0; i < y.length; i++) {
+                    y[i].innerHTML = document.getElementById( 'dataverseUserForm:dataRelatedToMeView:deaccessioned' ).value;
+                }
+            }
+
+
             // --------------------------------
             // (6) Update address bar
             // --------------------------------
