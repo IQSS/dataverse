@@ -1007,6 +1007,7 @@
             <filter class="solr.KeywordRepeatFilterFactory" />
             <filter class="solr.PorterStemFilterFactory"/>
             <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+            <filter class="solr.ASCIIFoldingFilterFactory" preserveOriginal="true"/>
         </analyzer>
         <analyzer type="query">
             <tokenizer class="solr.StandardTokenizerFactory"/>
