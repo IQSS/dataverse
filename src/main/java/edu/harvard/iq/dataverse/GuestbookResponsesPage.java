@@ -7,6 +7,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
 import java.util.logging.Logger;
@@ -91,8 +93,8 @@ public class GuestbookResponsesPage implements java.io.Serializable {
         responsesAsArray = guestbookResponseService.findArrayByGuestbookIdAndDataverseId(guestbookId, dataverseId, systemConfig.getGuestbookResponsesPageDisplayLimit());
 
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,
-                JH.localize("dataset.guestbooksResponses.tip.title"),
-                JH.localize("dataset.guestbooksResponses.tip.downloadascsv")));
+                BundleUtil.getStringFromBundle("dataset.guestbooksResponses.tip.title"),
+                BundleUtil.getStringFromBundle("dataset.guestbooksResponses.tip.downloadascsv")));
 
         return null;
     }

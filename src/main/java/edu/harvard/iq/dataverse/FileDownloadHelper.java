@@ -228,7 +228,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          boolean valid = validateGuestbookResponse(guestbookResponse);
 
          if (!valid) {
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));
+             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
          } else {
              requestContext.execute("PF('downloadPopup').hide()");
              guestbookResponse.setDownloadtype("Download");
