@@ -11,9 +11,11 @@ import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -42,6 +44,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetVersionServiceBean.class.getCanonicalName());
 
+    private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
     @EJB
     DatasetServiceBean datasetService;
@@ -806,8 +809,10 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         identifier = identifier.substring(identifier.indexOf("/") + 1);
         String datasetId = dvd.getOriginalVersion().getDataset().getId().toString();
         String summary = au.getFirstName() + " " + au.getLastName() + " (" + au.getIdentifier() + ") updated " + dvd.getEditSummaryForLog();
-        LoggingUtil.saveDraftEditLog(summary, logDir, identifier, datasetId);
-
+        String logTimestamp = logFormatter.format(new Date());
+        String fileName = "/edit-draft-" + datasetId + "-" + identifier + "-" + logTimestamp + ".txt";
+        LoggingUtil.saveLogFile(summary, logDir, fileName);
+        
     }
     
     public void populateDatasetSearchCard(SolrSearchResult solrSearchResult) {

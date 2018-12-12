@@ -37,35 +37,30 @@ import java.util.logging.Logger;
 public class LoggingUtil {
 
     private static final Logger logger = Logger.getLogger(LoggingUtil.class.getName());
-    private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
     public static void saveJsonLog(String jobJson, String logDir, String jobId) {
-	    try {
-		    checkCreateLogDirectory( logDir );
-		    File dir = new File(logDir);
-		    if (!dir.exists() && !dir.mkdirs()) {
-			    logger.log(Level.SEVERE, "Couldn't create directory: " + dir.getAbsolutePath());
-		    }
-		    File reportJson = new File(dir.getAbsolutePath() + "/job-" + jobId + ".json");
-		    FileUtils.writeStringToFile(reportJson, jobJson);
-	    } catch (Exception e) {
-		    logger.log(Level.SEVERE, "Error saving json report: " + e.getMessage());
-	    }
+        try {
+            String fileName = "/job-" + jobId + ".json";
+            saveLogFile(jobJson, logDir, fileName);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error saving json report: " + e.getMessage());
+        }
     }
-    
-    public static void saveDraftEditLog(String changes, String logDir, String identifier, String datasetId) {
+
+    public static void saveLogFile(String fileContent, String logDir, String fileName) {
+
         try {
             checkCreateLogDirectory(logDir);
             File dir = new File(logDir);
             if (!dir.exists() && !dir.mkdirs()) {
                 logger.log(Level.SEVERE, "Couldn't create directory: " + dir.getAbsolutePath());
             }
-            String logTimestamp = logFormatter.format(new Date());
-            File editDraftLog = new File(dir.getAbsolutePath() + "/edit-draft-" + datasetId + "-" + identifier + "-" + logTimestamp + ".txt");
-            FileUtils.writeStringToFile(editDraftLog, changes);
+            File logFile = new File(dir.getAbsolutePath() + fileName);
+            FileUtils.writeStringToFile(logFile, fileContent);
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error saving Edit Draft report: " + e.getMessage());
+            logger.log(Level.SEVERE, "Error saving log report: " + fileName + " " + e.getMessage());
         }
+
     }
 
     public static ActionLogRecord getActionLogRecord(String userId, JobExecution jobExec, String jobInfo, String jobId) {
