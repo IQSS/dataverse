@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -18,6 +17,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.Channel;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.methods.GetMethod;
