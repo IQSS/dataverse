@@ -53,19 +53,19 @@ public class LoggingUtil {
 	    }
     }
     
-        public static void saveDraftEditLog(String changes, String logDir, String identifier, String datasetId) {
-	    try {
-		    checkCreateLogDirectory( logDir );
-		    File dir = new File(logDir);
-		    if (!dir.exists() && !dir.mkdirs()) {
-			    logger.log(Level.SEVERE, "Couldn't create directory: " + dir.getAbsolutePath());
-		    }
-                    String logTimestamp = logFormatter.format(new Date());
-		    File editDraftLog = new File(dir.getAbsolutePath() + "/edit-draft-" + datasetId + "-" + identifier + "-" +  logTimestamp  + ".txt");
-		    FileUtils.writeStringToFile(editDraftLog, changes);
-	    } catch (Exception e) {
-		    logger.log(Level.SEVERE, "Error saving Edit Draft report: " + e.getMessage());
-	    }
+    public static void saveDraftEditLog(String changes, String logDir, String identifier, String datasetId) {
+        try {
+            checkCreateLogDirectory(logDir);
+            File dir = new File(logDir);
+            if (!dir.exists() && !dir.mkdirs()) {
+                logger.log(Level.SEVERE, "Couldn't create directory: " + dir.getAbsolutePath());
+            }
+            String logTimestamp = logFormatter.format(new Date());
+            File editDraftLog = new File(dir.getAbsolutePath() + "/edit-draft-" + datasetId + "-" + identifier + "-" + logTimestamp + ".txt");
+            FileUtils.writeStringToFile(editDraftLog, changes);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error saving Edit Draft report: " + e.getMessage());
+        }
     }
 
     public static ActionLogRecord getActionLogRecord(String userId, JobExecution jobExec, String jobInfo, String jobId) {
