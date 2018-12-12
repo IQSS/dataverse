@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.Metric;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -30,7 +31,7 @@ public class MetricsServiceBean implements Serializable {
     SystemConfig systemConfig;
 
     /** Dataverses */
-    
+
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
@@ -46,21 +47,21 @@ public class MetricsServiceBean implements Serializable {
 
         return (long) query.getSingleResult();
     }
-    
+
     public long dataversesPastDays(int days) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(dvobject.id)\n"
                 + "from dataverse\n"
                 + "join dvobject on dvobject.id = dataverse.id\n"
                 + "where dvobject.publicationdate is not null\n"
-                + "and publicationdate > current_date - interval '"+days+"' day;\n"
+                + "and publicationdate > current_date - interval '" + days + "' day;\n"
         );
 
         logger.fine("query: " + query);
 
         return (long) query.getSingleResult();
     }
-    
+
     public List<Object[]> dataversesByCategory() throws Exception {
 
         Query query = em.createNativeQuery(""
@@ -74,21 +75,38 @@ public class MetricsServiceBean implements Serializable {
         logger.fine("query: " + query);
         return query.getResultList();
     }
-    
+
     public List<Object[]> dataversesBySubject() {
         Query query = em.createNativeQuery(""
                 + "select cvv.strvalue, count(dataverse_id) from dataversesubjects\n"
                 + "join controlledvocabularyvalue cvv ON cvv.id = controlledvocabularyvalue_id\n"
                 + "group by cvv.strvalue\n"
                 + "order by count desc;"
-              
+
         );
         logger.info("query: " + query);
 
         return query.getResultList();
     }
-    
-    /** Datasets */
+
+    /**
+     * Datasets
+     */
+
+    // 1. metoda zwracajaca dane (1 SQL)
+    // 2. metody operujace na danych z bazy
+    public List<DatasetsMetrics> countPublishedDatasets() {
+        return em.createQuery("SELECT new edu.harvard.iq.dataverse.metrics.DatasetsMetrics(" +
+                "SQL('EXTRACT(YEAR FROM ?)', dv.publicationDate),\n" +
+                "       SQL('EXTRACT(MONTH FROM ?)', dv.publicationDate),\n" +
+                "       count(dv.id)) as result \n" +
+                "FROM DvObject dv\n" +
+                "WHERE dv.dtype = 'Dataset'\n" +
+                "  AND dv.publicationDate IS NOT NULL\n" +
+                "GROUP BY dv.publicationDate " +
+                "order by dv.publicationDate", DatasetsMetrics.class)
+                .getResultList();
+    }
 
     public List<Object[]> datasetsBySubject() {
         Query query = em.createNativeQuery(""
@@ -118,7 +136,7 @@ public class MetricsServiceBean implements Serializable {
 
         return query.getResultList();
     }
-    
+
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
@@ -141,22 +159,22 @@ public class MetricsServiceBean implements Serializable {
 
         return (long) query.getSingleResult();
     }
-    
+
     public long datasetsPastDays(int days) throws Exception {
 
         Query query = em.createNativeQuery(
-            "select count(*)\n" +
-            "from datasetversion\n" +
-            "where datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n" +
-            "(\n" +
-            "	select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n" +
-            "	from datasetversion\n" +
-            "	join dataset on dataset.id = datasetversion.dataset_id\n" +
-            "	where versionstate='RELEASED' \n" +
-            "	and releasetime > current_date - interval '"+days+"' day\n" +
-            "	and dataset.harvestingclient_id is null\n" +
-            "	group by dataset_id \n" +
-            ");"
+                "select count(*)\n" +
+                        "from datasetversion\n" +
+                        "where datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n" +
+                        "(\n" +
+                        "	select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n" +
+                        "	from datasetversion\n" +
+                        "	join dataset on dataset.id = datasetversion.dataset_id\n" +
+                        "	where versionstate='RELEASED' \n" +
+                        "	and releasetime > current_date - interval '" + days + "' day\n" +
+                        "	and dataset.harvestingclient_id is null\n" +
+                        "	group by dataset_id \n" +
+                        ");"
         );
         logger.fine("query: " + query);
 
@@ -165,7 +183,7 @@ public class MetricsServiceBean implements Serializable {
 
 
     /** Files */
-    
+
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
@@ -188,7 +206,7 @@ public class MetricsServiceBean implements Serializable {
         logger.fine("query: " + query);
         return (long) query.getSingleResult();
     }
-    
+
     public long filesPastDays(int days) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
@@ -200,7 +218,7 @@ public class MetricsServiceBean implements Serializable {
                 + "from datasetversion\n"
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "where versionstate='RELEASED'\n"
-                + "and releasetime > current_date - interval '"+days+"' day\n"
+                + "and releasetime > current_date - interval '" + days + "' day\n"
                 + "and dataset.harvestingclient_id is null\n"
                 + "group by dataset_id \n"
                 + ");"
@@ -212,7 +230,7 @@ public class MetricsServiceBean implements Serializable {
     }
 
     /** Downloads */
-    
+
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
@@ -230,16 +248,18 @@ public class MetricsServiceBean implements Serializable {
         Query query = em.createNativeQuery(""
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
-                + "where responsetime > current_date - interval '"+days+"' day;\n"
+                + "where responsetime > current_date - interval '" + days + "' day;\n"
         );
 
         logger.fine("query: " + query);
 
         return (long) query.getSingleResult();
     }
-    
-    /** Helper functions for metric caching */
-    
+
+    /**
+     * Helper functions for metric caching
+     */
+
     public String returnUnexpiredCacheDayBased(String metricName, String days) throws Exception {
         Metric queriedMetric = getMetric(metricName, days);
 
@@ -248,7 +268,7 @@ public class MetricsServiceBean implements Serializable {
         }
         return null;
     }
-    
+
     public String returnUnexpiredCacheMonthly(String metricName, String yyyymm) throws Exception {
         Metric queriedMetric = getMetric(metricName, yyyymm);
 
@@ -266,7 +286,7 @@ public class MetricsServiceBean implements Serializable {
         }
         return null;
     }
-        
+
     //For day based metrics we check to see if the metric has been pulled today
     public boolean doWeQueryAgainDayBased(Metric queriedMetric) {
         if (null == queriedMetric) { //never queried before
@@ -275,13 +295,13 @@ public class MetricsServiceBean implements Serializable {
 
         LocalDate lastCalled = LocalDate.from(queriedMetric.getLastCalledDate().toInstant().atZone(ZoneId.systemDefault()));
         LocalDate todayDate = LocalDate.now(ZoneId.systemDefault());
-        
 
-        if(!lastCalled.equals(todayDate)) {
+
+        if (!lastCalled.equals(todayDate)) {
             return true;
         } else {
             return false;
-        }        
+        }
     }
 
     //This is for deciding whether to used a cached value on monthly queries

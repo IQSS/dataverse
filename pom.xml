@@ -180,6 +180,18 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>eclipselink</artifactId>
+            <version>2.7.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>org.eclipse.persistence.extension</artifactId>
+            <version>2.7.3</version>
+        </dependency>
+
+
+        <dependency>
             <groupId>com.amazonaws</groupId>
             <!-- Once on Eclipse Glassfish 5.1 or Payara 5.x, this should be changed to aws-java-sdk-s3,
                  rendering the WAR much lighter. The version tag needs to be removed then, too. -->
