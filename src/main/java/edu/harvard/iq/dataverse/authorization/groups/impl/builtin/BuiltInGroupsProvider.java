@@ -40,15 +40,25 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
 
     @Override
     public Set<Group> groupsFor(DataverseRequest req, DvObject dvo ) {
-        return groupsFor(req.getUser(), dvo );
+        return groupsFor(req.getUser());
     }
 
     @Override
     public Set<Group> groupsFor( RoleAssignee ra, DvObject dvo ) {
-        if ( ra instanceof User) {
-            return (Set<Group>) ((ra instanceof AuthenticatedUser)
-                    ? CollectionHelper.asSet(AllUsers.get(), AuthenticatedUsers.get())
-                    : Collections.singleton(AllUsers.get()));
+        return groupsFor(ra);
+    }
+    
+    @Override
+    public Set<Group> groupsFor(DataverseRequest req) {
+        return groupsFor(req.getUser());
+    }
+
+    @Override
+    public Set<Group> groupsFor(RoleAssignee ra) {
+        if (ra instanceof AuthenticatedUser){
+            return CollectionHelper.asSet(AllUsers.get(), AuthenticatedUsers.get());
+        } else if ( ra instanceof User) {
+            return Collections.singleton(AllUsers.get());
         } else {
             return Collections.emptySet();
         }
@@ -64,5 +74,4 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
     public Set<Group> findGlobalGroups() {
         return CollectionHelper.asSet(AllUsers.get(), AuthenticatedUsers.get());
     }
-
 }

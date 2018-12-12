@@ -21,6 +21,7 @@
 package edu.harvard.iq.dataverse.ingest;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
@@ -92,6 +93,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.ListIterator;
 import java.util.logging.Logger;
+import java.util.Hashtable;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -625,6 +627,69 @@ public class IngestServiceBean {
             }
         }
     }
+
+    public static void produceFrequencyStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
+
+        List<DataVariable> vars = dataFile.getDataTable().getDataVariables();
+
+        produceFrequencies(generatedTabularFile, vars);
+    }
+
+    public static void produceFrequencies( File generatedTabularFile, List<DataVariable> vars) throws IOException {
+
+        for (int i = 0; i < vars.size(); i++) {
+
+            Collection<VariableCategory> cats = vars.get(i).getCategories();
+            int caseQuantity = vars.get(i).getDataTable().getCaseQuantity().intValue();
+            boolean isNumeric = vars.get(i).isTypeNumeric();
+            Object[] variableVector = null;
+            if (cats.size() > 0) {
+                if (isNumeric) {
+                    variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(generatedTabularFile), i, caseQuantity);
+                }
+                else {
+                    variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, caseQuantity);
+                }
+                if (variableVector != null) {
+                    Hashtable<Object, Double> freq = calculateFrequency(variableVector);
+                    for (VariableCategory cat : cats) {
+                        Object catValue;
+                        if (isNumeric) {
+                            catValue = new Float(cat.getValue());
+                        } else {
+                            catValue = cat.getValue();
+                        }
+                        Double numberFreq = freq.get(catValue);
+                        if (numberFreq != null) {
+                            cat.setFrequency(numberFreq);
+                        } else {
+                            cat.setFrequency(0D);
+                        }
+                    }
+                } else {
+                    logger.fine("variableVector is null for variable " + vars.get(i).getName());
+                }
+            }
+        }
+    }
+
+    public static Hashtable<Object, Double> calculateFrequency( Object[] variableVector) {
+        Hashtable<Object, Double> freq = new Hashtable<Object, Double>();
+
+        for (int j = 0; j < variableVector.length; j++) {
+            if (variableVector[j] != null) {
+                Double freqNum = freq.get(variableVector[j]);
+                if (freqNum != null) {
+                    freq.put(variableVector[j], freqNum + 1);
+                } else {
+                    freq.put(variableVector[j], 1D);
+                }
+            }
+        }
+
+        return freq;
+
+    }
     
     public void recalculateDataFileUNF(DataFile dataFile) {
         String[] unfValues = new String[dataFile.getDataTable().getVarQuantity().intValue()];
@@ -812,6 +877,7 @@ public class IngestServiceBean {
 
                 try {
                     produceSummaryStatistics(dataFile, tabFile);
+                    produceFrequencyStatistics(dataFile, tabFile);
                     postIngestTasksSuccessful = true;
                 } catch (IOException postIngestEx) {
 

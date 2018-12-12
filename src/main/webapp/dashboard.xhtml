@@ -64,7 +64,7 @@
                                             <p class="small text-muted">#{bundle['harvestserver.service.empty']}</p>
                                         </div>
                                         <div class="col-xs-6" jsf:rendered="#{dashboardPage.numberOfOaiSets gt 0}">
-                                            <h:outputText value="#{dashboardPage.harvestServerEnabled ? 'Enabled' : 'Disabled'}"/>
+                                            <h:outputText value="#{dashboardPage.harvestServerEnabled ? bundle['harvestserver.service.enabled'] : bundle['harvestserver.service.disabled']}"/>
                                             <p class="small text-muted">#{bundle['dashboard.card.harvestingserver.status']}</p>
                                         </div>
                                         <div class="col-xs-6" jsf:rendered="#{dashboardPage.numberOfOaiSets gt 0}">
