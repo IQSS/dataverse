@@ -1,6 +1,11 @@
 package edu.harvard.iq.dataverse.makedatacount;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 /**
  * See doc/sphinx-guides/source/admin/make-data-count.rst for user facing docs
@@ -64,6 +69,16 @@ public class MakeDataCountUtil {
         public String toString() {
             return text;
         }
+    }
+
+    static List<DatasetMetrics> parseSushiReport(JsonObject report) {
+        List<DatasetMetrics> datasetMetrics = new ArrayList<>();
+        JsonArray reportDatasets = report.getJsonArray("report_datasets");
+        for (JsonValue reportDataset : reportDatasets) {
+            // TODO: Populate each DatasetMetrics object properly once that entity has settled down.
+            datasetMetrics.add(new DatasetMetrics());
+        }
+        return datasetMetrics;
     }
 
 }
