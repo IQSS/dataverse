@@ -1000,7 +1000,7 @@ public class Admin extends AbstractApiBean {
         
     @Path("datafiles/integrity/fixmissingoriginalsizes")
     @GET
-    public Response fixMissingOriginalSizes() {
+    public Response fixMissingOriginalSizes(@QueryParam("limit") Integer limit) {
         JsonObjectBuilder info = Json.createObjectBuilder();
 
         List<Long> affectedFileIds = fileService.selectFilesWithMissingOriginalSizes();
@@ -1010,8 +1010,16 @@ public class Admin extends AbstractApiBean {
                     "All the tabular files in the database already have the original sizes set correctly; exiting.");
         } else {
             
-            info.add("message", "Found " + affectedFileIds.size()
-                    + " tabular files with missing original sizes. Kicking off an async job that will repair the files in the background.");
+            int howmany = affectedFileIds.size();
+            String message = "Found " + howmany + " tabular files with missing original sizes. "; 
+            
+            if (limit == null || howmany <= limit) {
+                message = message.concat(" Kicking off an async job that will repair the files in the background.");
+            } else {
+                affectedFileIds.subList(limit, howmany-1).clear();
+                message = message.concat(" Kicking off an async job that will repair the " + limit + " files in the background.");                        
+            }
+            info.add("message", message);
         }
 
         ingestService.fixMissingOriginalSizes(affectedFileIds);

@@ -1684,7 +1684,7 @@ public class IngestServiceBean {
     @Asynchronous
     public void fixMissingOriginalSizes(List<Long> datafileIds) {
         for (Long fileId : datafileIds) {
-            fixMissingOriginalType(fileId);
+            fixMissingOriginalSize(fileId);
             try {
                 Thread.sleep(1000);
             } catch (Exception ex) {}

@@ -1458,7 +1458,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public List<Long> selectFilesWithMissingOriginalSizes() {
-        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND t.originalfilesize IS NULL ORDER BY f.id");
+        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND (t.originalfilesize IS NULL ) AND (t.originalfileformat IS NOT NULL) ORDER BY f.id");
         
         try {
             return query.getResultList();
