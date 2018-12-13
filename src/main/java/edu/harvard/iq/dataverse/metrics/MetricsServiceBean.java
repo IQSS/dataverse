@@ -3,6 +3,12 @@ package edu.harvard.iq.dataverse.metrics;
 import edu.harvard.iq.dataverse.Metric;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+import javax.persistence.NonUniqueResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -11,12 +17,6 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 @Stateless
 public class MetricsServiceBean implements Serializable {
@@ -103,8 +103,7 @@ public class MetricsServiceBean implements Serializable {
                 "FROM DvObject dv\n" +
                 "WHERE dv.dtype = 'Dataset'\n" +
                 "  AND dv.publicationDate IS NOT NULL\n" +
-                "GROUP BY dv.publicationDate " +
-                "order by dv.publicationDate", DatasetsMetrics.class)
+                "GROUP BY dv.publicationDate ", DatasetsMetrics.class)
                 .getResultList();
     }
 
@@ -297,11 +296,7 @@ public class MetricsServiceBean implements Serializable {
         LocalDate todayDate = LocalDate.now(ZoneId.systemDefault());
 
 
-        if (!lastCalled.equals(todayDate)) {
-            return true;
-        } else {
-            return false;
-        }
+        return !lastCalled.equals(todayDate);
     }
 
     //This is for deciding whether to used a cached value on monthly queries

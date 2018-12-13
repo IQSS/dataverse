@@ -11,24 +11,19 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 @Stateless
-class ChartCreator { //TODO Is it proper class name??
+public class ChartCreator { //TODO Is it proper class name??
 
     @EJB
     private MetricsServiceBean metricsServiceBean;
 
-    @EJB
-    private MetricsPage metricsPage;
-
-    BarChartModel changeToYearlyModel() {
+    public BarChartModel changeToYearlyModel() {
         List<DatasetsMetrics> yearlyDatasetStats =
                 MetricsUtil.countDatasetsPerYear(metricsServiceBean.countPublishedDatasets());
-        metricsPage.setYearlyDatasetStats(yearlyDatasetStats);
-        //TODO fix broken pipe exception when assigning variable to other class
 
         return createBarModel(yearlyDatasetStats, "Year", initYearlyBarModel(yearlyDatasetStats));
     }
 
-    BarChartModel changeToMonthlyModel(int selectedYear) {
+    public BarChartModel changeToMonthlyModel(int selectedYear) {
         List<DatasetsMetrics> monthlyDatasetStats =
                 MetricsUtil.fillMissingDatasetMonths(metricsServiceBean.countPublishedDatasets(), selectedYear);
 

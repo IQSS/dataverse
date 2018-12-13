@@ -17,6 +17,9 @@ public class MetricsPage implements Serializable {
     @EJB
     private ChartCreator chartCreator;
 
+    @EJB
+    private MetricsServiceBean repository;
+
     private BarChartModel barModel;
 
     private List<DatasetsMetrics> yearlyDatasetStats = new ArrayList<>();
@@ -26,6 +29,7 @@ public class MetricsPage implements Serializable {
 
     public void init(){
         selectedYear = LocalDate.now().getYear();
+        yearlyDatasetStats = MetricsUtil.countDatasetsPerYear(repository.countPublishedDatasets());
         barModel = chartCreator.changeToYearlyModel();
     }
 
