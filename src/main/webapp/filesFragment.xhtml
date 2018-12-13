@@ -258,8 +258,9 @@
                                     <h:outputText value="#{bundle['file.metadata']}"/>
                                 </p:commandLink>
                             </li>
-                            <ui:fragment rendered="#{!settingsWrapper.publicInstall and !DatasetPage.workingVersion.hasPackageFile }">
-                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                            <!--no restrict on non-s3 package file -->
+                            <ui:fragment rendered="#{!settingsWrapper.publicInstall and (!DatasetPage.workingVersion.hasPackageFile or DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')) }">
+                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}"> 
                                     <p:commandLink oncomplete="toggle_dropdown();" 
                                                    onclick="testFilesSelectedForRestriction()">
                                         <h:outputText value="#{bundle['file.restrict']}"/>

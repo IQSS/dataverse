@@ -165,7 +165,7 @@ Optional steps for setting up the S3 Docker DCM Variant
       - ``aws_access_key_id =``
       - ``aws_secret_access_key =``
 
-    - ALSO: ``nano ~/.aws/config`` to create a region file. Add these contents:
+    - Also: ``nano ~/.aws/config`` to create a region file. Add these contents:
 
       - ``[default]``
       - ``region = us-east-1``
