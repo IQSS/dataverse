@@ -127,6 +127,8 @@
         <session-timeout>
             1440
         </session-timeout>
+        <!-- Uncomment the line below to disble `;jsessionid=` in URLs -->
+	<!-- tracking-mode>COOKIE</tracking-mode -->
     </session-config>
     <!-- web fonts -->
     <mime-mapping>

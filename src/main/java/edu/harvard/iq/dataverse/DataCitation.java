@@ -269,8 +269,16 @@ public class DataCitation {
             out.write(title);
             out.write("},\r\n");
         }
+        if(UNF != null){
+            out.write("UNF = {");
+            out.write(UNF);
+            out.write("},\r\n");
+        }
         out.write("year = {");
         out.write(year);
+        out.write("},\r\n");
+        out.write("version = {");
+        out.write(version);
         out.write("},\r\n");
         out.write("doi = {");
         out.write(persistentId.getAuthority());
@@ -313,9 +321,10 @@ public class DataCitation {
         if (seriesTitle != null) {
             out.write("T3  - " + seriesTitle + "\r\n");
         }
+        /* Removing abstract/description per Request from G. King in #3759
         if(description!=null) {
             out.write("AB  - " + flattenHtml(description) + "\r\n");
-        }
+        } */
         for (String author : authors) {
             out.write("AU  - " + author + "\r\n");
         }
@@ -498,12 +507,13 @@ public class DataCitation {
 
         xmlw.writeCharacters(sectionString);
         xmlw.writeEndElement(); // section
-
+/* Removing abstract/description per Request from G. King in #3759
         xmlw.writeStartElement("abstract");
         if(description!=null) {
             xmlw.writeCharacters(flattenHtml(description));
         }
         xmlw.writeEndElement(); // abstract
+         */
 
         xmlw.writeStartElement("dates");
         xmlw.writeStartElement("year");

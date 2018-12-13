@@ -10,7 +10,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import static java.util.stream.Collectors.joining;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -29,13 +32,39 @@ import javax.persistence.PersistenceContext;
 @Stateless
 public class ExplicitGroupServiceBean {
     
+    private static final Logger logger = Logger.getLogger(ExplicitGroupServiceBean.class.getName());
     @EJB
     private RoleAssigneeServiceBean roleAssigneeSvc;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
-	protected EntityManager em;
+    protected EntityManager em;
 	
     ExplicitGroupProvider provider;
+    
+    /**
+     * A PostgreSQL-specific query that returns a group and all the groups
+     * that contain it, and their parents too (-> recourse up teh containment
+     * hierarchy of the explicit groups). Takes the group id as a parameter.
+     */
+    private static final String FIND_ALL_PARENTS_QUERY_TEMPLATE = "WITH RECURSIVE\n" +
+        "explicit_group_graph AS (\n" +
+        "  SELECT\n" +
+        "     eg.id as id,\n" +
+        "     ee.explicitgroup_id as parent_group_id\n" +
+        "  FROM explicitgroup eg \n" +
+        "    LEFT JOIN explicitgroup_explicitgroup ee \n" +
+        "      ON eg.id=ee.containedexplicitgroups_id\n" +
+        "),\n" +
+        "parents AS (\n" +
+        "  SELECT * FROM explicit_group_graph\n" +
+        "  WHERE \n" +
+        "    id IN (@IDS)\n" +
+        "  UNION ALL\n" +
+        "  SELECT egg.*\n" +
+        "  FROM explicit_group_graph egg, parents\n" +
+        "  WHERE parents.parent_group_id = egg.id\n" +
+        ") SELECT * from explicitgroup \n" +
+        "WHERE id IN (SELECT distinct id FROM parents);";
     
     @PostConstruct
     void setup() {
@@ -115,15 +144,6 @@ public class ExplicitGroupServiceBean {
     }
     
     /**
-     * Finds all the explicit groups {@code ra} is a member of.
-     * @param ra the role assignee whose membership list we seek
-     * @return set of the explicit groups that contain {@code ra}.
-     */
-    public Set<ExplicitGroup> findGroups( RoleAssignee ra ) {
-        return findClosure(findDirectlyContainingGroups(ra));
-    }
-    
-    /**
      * Finds all the explicit groups {@code ra} is <b>directly</b> a member of.
      * To find all these groups and the groups the contain them (recursively upwards),
      * consider using {@link #findGroups(edu.harvard.iq.dataverse.authorization.RoleAssignee)}
@@ -156,6 +176,16 @@ public class ExplicitGroupServiceBean {
         }
     }
 
+    
+    /**
+     * Finds all the explicit groups {@code ra} is a member of.
+     * @param ra the role assignee whose membership list we seek
+     * @return set of the explicit groups that contain {@code ra}.
+     */
+    public Set<ExplicitGroup> findGroups( RoleAssignee ra ) {
+        return findClosure(findDirectlyContainingGroups(ra));
+    }
+    
     /**
      * Finds all the groups {@code ra} is a member of, in the context of {@code o}.
      * This includes both direct and indirect memberships.
@@ -164,9 +194,7 @@ public class ExplicitGroupServiceBean {
      * @return All the groups in {@code o}'s context that {@code ra} is a member of.
      */
     public Set<ExplicitGroup> findGroups( RoleAssignee ra, DvObject o ) {
-        Set<ExplicitGroup> directGroups = findDirectGroups(ra, o);
-        Set<ExplicitGroup> closure = findClosure(directGroups);
-        return closure.stream()
+        return findGroups(ra).stream()
                 .filter( g -> g.owner.isAncestorOf(o) )
                 .collect( Collectors.toSet() );
     }
@@ -225,22 +253,17 @@ public class ExplicitGroupServiceBean {
      * @return Transitive closure (based on group  containment) of the groups in {@code seed}.
      */
     protected Set<ExplicitGroup> findClosure( Set<ExplicitGroup> seed ) {
-        Set<ExplicitGroup> result = new HashSet<>();
         
-        // The set of groups whose parents were not visited yet.
-        Set<ExplicitGroup> fringe = new HashSet<>(seed);
-        while ( ! fringe.isEmpty() ) {
-           ExplicitGroup g = fringe.iterator().next();
-           fringe.remove(g);
-           result.add(g);
-           
-           // add all of g's parents to the fringe, unless already visited.
-           findDirectlyContainingGroups(g).stream()
-                   .filter( eg -> !(result.contains(eg)||fringe.contains(eg) ))
-                   .forEach( fringe::add );
-        }
-
-        return result;
+        if ( seed.isEmpty() ) return Collections.emptySet();
+        
+        String ids = seed.stream().map(eg->Long.toString(eg.getId())).collect( joining(",") );
+        
+        // PSQL driver has issues with arrays and collections as parameters, so we're using 
+        // string manipulation to create the query here. Not ideal, but seems to be
+        // the only solution at the Java Persistence level (i.e. without downcasting to org.postgresql.*)
+        String sqlCode = FIND_ALL_PARENTS_QUERY_TEMPLATE.replace("@IDS", ids);
+        return new HashSet<>(em.createNativeQuery(sqlCode, ExplicitGroup.class)
+            .getResultList());
     }
     
     /**
