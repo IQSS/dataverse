@@ -253,8 +253,8 @@
                                 <div jsf:id="hypothesisBlock" jsf:rendered="#{settingsWrapper.isHasHypothesisKey() and !lockedFromEdits }"  class="margin-top">
                                     <!-- Hypothesis upload widget -->
                                     <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.fromHypothesis.tip']}</p>
-                                    <h:inputText id="hypothesisUrlInput"  value="#{EditDatafilesPage.hypothesisUrl}"/>
-                                    <h:inputText id="hypothesisGroupInput" value="#{EditDatafilesPage.hypothesisGroup}"/>
+                                    <h:inputText id="hypothesisUrlInput"  value="#{EditDatafilesPage.hypothesisUrlSelection}"/>
+                                    <h:inputText id="hypothesisGroupInput" value="#{EditDatafilesPage.hypothesisGroupSelection}"/>
                                     <p:commandButton id="hypothesisButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromHypothesis']}" actionListener="#{EditDatafilesPage.handleHypothesisUpload}" oncomplete="javascript:hypothesisUploadFinished();" update="@none" icon="hypothesis-btn-status" />
                                     <p:message for="hypothesisButton" id="hypothesisUploadMessage" display="text" redisplay="false" />
                                 </div>
