@@ -48,17 +48,27 @@ public class ExplicitGroupProvider implements GroupProvider {
      */
     @Override
     public Set<ExplicitGroup> groupsFor(DataverseRequest req, DvObject o) {
-        return explicitGroupSvc.findGroups(req.getUser(), o);
+        return updateProvider(explicitGroupSvc.findGroups(req.getUser(), o));
     }
     
     @Override
     public Set<ExplicitGroup> groupsFor(RoleAssignee ra, DvObject o) {
-        return explicitGroupSvc.findGroups(ra, o);
+        return updateProvider(explicitGroupSvc.findGroups(ra, o));
+    }
+    
+    @Override
+    public Set<ExplicitGroup> groupsFor(RoleAssignee ra) {
+        return updateProvider(explicitGroupSvc.findGroups(ra));
     }
 
     @Override
+    public Set<ExplicitGroup> groupsFor(DataverseRequest req) {
+        return updateProvider(explicitGroupSvc.findGroups(req.getUser()));
+    }
+    
+    @Override
     public ExplicitGroup get(String groupAlias) {
-        return explicitGroupSvc.findByAlias( groupAlias );
+        return updateProvider(explicitGroupSvc.findByAlias(groupAlias));
     }
 
     /**
@@ -75,7 +85,7 @@ public class ExplicitGroupProvider implements GroupProvider {
     }
     
     /**
-     * Finds the role asgineed whose identifier is given. While this is basically
+     * Finds the role assignee whose identifier is given. While this is basically
      * a delegation to {@link RoleAssigneeServiceBean}, we need it as a way of
      * dependency injection for {@link ExplicitGroup}s, which need to access the 
      * server context but are POJOs rather than enterprise beans.
@@ -93,6 +103,9 @@ public class ExplicitGroupProvider implements GroupProvider {
      * @return the passed group, updated.
      */
     ExplicitGroup updateProvider( ExplicitGroup eg ) {
+        if (eg == null) {
+            return null; 
+        }
         eg.setProvider(this);
         return eg;
     }

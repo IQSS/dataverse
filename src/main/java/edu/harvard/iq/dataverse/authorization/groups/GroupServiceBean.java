@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvi
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Collection;
 import java.util.HashMap;
@@ -87,11 +86,9 @@ public class GroupServiceBean {
      * @return The groups {@code req} is part of under {@code dvo}.
      */
     public Set<Group> groupsFor( DataverseRequest req, DvObject dvo ) {
-        return groupTransitiveClosure(
-                groupProviders.values().stream()
+        return groupProviders.values().stream()
                               .flatMap(gp->(Stream<Group>)gp.groupsFor(req, dvo).stream())
-                              .collect(toSet()),
-                dvo);
+                              .collect(toSet());
     }
     
     /**
@@ -102,11 +99,9 @@ public class GroupServiceBean {
      * @return 
      */
     public Set<Group> groupsFor( RoleAssignee ra, DvObject dvo ) {
-        return groupTransitiveClosure(
-                groupProviders.values().stream()
+        return groupProviders.values().stream()
                               .flatMap(gp->(Stream<Group>)gp.groupsFor(ra, dvo).stream())
-                              .collect( toSet() ),
-                dvo);
+                              .collect( toSet() );
     }
 
     /**
@@ -120,32 +115,17 @@ public class GroupServiceBean {
      * @deprecated Does not look into IP Groups. Use {@link #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest)}
      */
     @Deprecated
-    public Set<Group> groupsFor(AuthenticatedUser au) {
-        Set<Group> groups = new HashSet<>();
-        groups.addAll(groupsFor(au, null));
-        String identifier = au.getIdentifier();
-        if (identifier != null) {
-            try {
-                groups.addAll( explicitGroupService.findGroups(au) );
-            } catch (IndexOutOfBoundsException ex) {
-                logger.log(Level.INFO, "Couldn''t trim first character (@ sign) from identifier: {0}", identifier);
-            }
-        }
-
-        return groups;
+    public Set<Group> groupsFor(RoleAssignee ra) {
+        return groupProviders.values().stream()
+                             .flatMap(gp->(Stream<Group>)gp.groupsFor(ra).stream())
+                             .collect(toSet());
     }
 
     
-    public Set<Group> groupsFor( DataverseRequest dr ) {
-        Set<Group> groups = new HashSet<>();
-        
-        // get the global groups
-        groups.addAll( groupsFor(dr,null) );
-        
-        // add the explicit groups
-        groups.addAll( explicitGroupService.findGroups(dr.getUser()) );
-        
-        return groups;
+    public Set<Group> groupsFor( DataverseRequest req ) {
+        return groupProviders.values().stream()
+                             .flatMap(gp->(Stream<Group>)gp.groupsFor(req).stream())
+                             .collect( toSet());
     }
     
     /**
