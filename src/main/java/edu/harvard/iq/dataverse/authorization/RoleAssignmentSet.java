@@ -11,6 +11,9 @@ import java.util.Set;
  * 
  * LATER: we could probably refactor this class out.
  * @author michael
+ * 
+ * We definitely should factor this out.
+ * Oscar
  */
 public class RoleAssignmentSet implements Iterable<RoleAssignment> {
 	

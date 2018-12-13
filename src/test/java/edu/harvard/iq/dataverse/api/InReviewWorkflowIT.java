@@ -232,7 +232,13 @@ public class InReviewWorkflowIT {
                 Response returnToAuthor = UtilIT.returnDatasetToAuthor(datasetPersistentId, jsonObjectBuilder.build(), curatorApiToken);
                 returnToAuthor.prettyPrint();
             } else {
-                Thread.sleep(2000);
+                // Increasing the sleep delay here, from 2 to 10 sec.; 
+                // With the 2 sec. delay, it appears to have been working consistently
+                // on the phoenix server (because it's fast, I'm guessing?) - but 
+                // I kept seeing an error on my own build at this point once in a while, 
+                // because the dataset is still locked when we try to edit it, 
+                // a few lines down. -- L.A. Oct. 2018
+                Thread.sleep(10000);
             }
         }
 

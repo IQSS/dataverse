@@ -18,9 +18,6 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,12 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.ResourceBundle;
-import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.concurrent.Future;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -108,7 +101,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public List<Dataverse> findAll() {
-        return em.createQuery("select object(o) from Dataverse as o order by o.name", Dataverse.class).getResultList();
+        return em.createNamedQuery("Dataverse.findAll").getResultList();
     }
 
     /**
@@ -149,8 +142,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public List<Dataverse> findByOwnerId(Long ownerId) {
-        String qr = "select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name";
-        return em.createQuery(qr, Dataverse.class).setParameter("ownerId", ownerId).getResultList();
+        return em.createNamedQuery("Dataverse.findByOwnerId").setParameter("ownerId", ownerId).getResultList();
     }
     
     public List<Long> findIdsByOwnerId(Long ownerId) {
