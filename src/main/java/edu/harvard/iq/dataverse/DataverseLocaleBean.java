@@ -25,18 +25,21 @@ public class DataverseLocaleBean implements Serializable {
     {
         //Noticed that the NullPointerException was thrown from FacesContext.getCurrentInstance() while running the testcases(mvn:package).
         //Reason: the FacesContext is not initialized until the app starts. So, added the below if-condition
-        if(FacesContext.getCurrentInstance() == null)
-        {
+        if(FacesContext.getCurrentInstance() == null) {
+            localeCode = "en";
+        }
+        else if (FacesContext.getCurrentInstance().getViewRoot() == null ) {
+            localeCode = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale().getLanguage();
+        }
+        else if (FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage() == "en_US") {
             localeCode = "en";
         }
         else {
-            if (FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage() == "en_US") {
-                localeCode = "en";
-            } else {
-                localeCode = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
-            }
+            localeCode = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
         }
     }
+
+
     
     // Map from locale to display name eg     en -> English
     private Map<String, String> dataverseLocales;
