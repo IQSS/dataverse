@@ -31,19 +31,6 @@
         </div>
         </ui:fragment>
     </div>
-    <div>
-        <h:inputHidden id="mydataresult" value="#{bundle['mydata.result']}" />
-        <h:inputHidden id="mydataresults" value="#{bundle['mydata.results']}" />
-        <h:inputHidden id="mydataviewnext" value="#{bundle['mydata.viewnext']}" />
-        <h:inputHidden id="mydatamore" value="#{bundle['mydata.more']}" />
-        <h:inputHidden id="draft" value="#{bundle['Draft']}" />
-        <h:inputHidden id="inreview" value="#{bundle['In Review']}" />
-        <h:inputHidden id="unpublished" value="#{bundle['Unpublished']}" />
-        <h:inputHidden id="published" value="#{bundle['Published']}" />
-        <h:inputHidden id="deaccessioned" value="#{bundle['Deaccessioned']}" />
-        <h:inputHidden id="mydatato" value="#{bundle['to']}" />
-        <h:inputHidden id="mydataof" value="#{bundle['of']}" />
-    </div>
 <!-- start: panel --><div class="panel panel-default">
 <!-- start: panel body --><div class="panel-body clearfix">
     
@@ -124,11 +111,27 @@
         <ui:remove>This variable is needed by mydata.js to make the ajax call</ui:remove>
         var RETRIEVE_DATA_API_PATH = '#{MyDataPage.retrieveDataFullAPIPath}';
     </script>
-    <script src="#{resource['js/mydata.js']}?version=#{systemConfig.getVersion()}b"></script>
-    <script>            
-          $(document).ready(function() {
-             init_mydata_page(); // source: mydata.js 
-           });
+    <script src="#{resource['js/mydata.js']}?version=#{systemConfig.getVersion()}"></script>
+    <script>
+        
+        // bundle text variables
+        var mydataresult = '#{bundle['mydata.result']}';
+        var mydataresults = '#{bundle['mydata.results']}';
+        var mydataviewnext = '#{bundle['mydata.viewnext']}';
+        var mydatamore = '#{bundle['mydata.more']}';
+        var draft = '#{bundle['Draft']}';
+        var inreview = '#{bundle['In Review']}';
+        var unpublished = '#{bundle['Unpublished']}';
+        var published = '#{bundle['Published']}';
+        var deaccessioned = '#{bundle['Deaccessioned']}';
+        var mydatato = '#{bundle['to']}';
+        var mydataof = '#{bundle['of']}';
+            
+        $(document).ready(function() {
+              
+            init_mydata_page(); // source: mydata.js
+            
+        });
     </script>
 </div><!-- end panel body -->
 </div><!-- end panel -->
