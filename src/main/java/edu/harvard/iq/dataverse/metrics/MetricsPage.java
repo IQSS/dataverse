@@ -34,12 +34,20 @@ public class MetricsPage implements Serializable {
     }
 
     public void changeDatasetMetricsModel() {
-        if (mode.equals("YEAR")) {
+        if (shouldGenerateYearlyModel()) {
             barModel = chartCreator.changeToYearlyModel();
 
-        } else if (selectedYear != 0) {
+        } else if (shouldGenerateMonthlyModel()) {
             barModel = chartCreator.changeToMonthlyModel(selectedYear);
         }
+    }
+
+    private boolean shouldGenerateMonthlyModel() {
+        return selectedYear != 0;
+    }
+
+    private boolean shouldGenerateYearlyModel() {
+        return mode.equals("YEAR");
     }
 
     public BarChartModel getBarModel() {

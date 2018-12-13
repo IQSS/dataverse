@@ -2,15 +2,16 @@ package edu.harvard.iq.dataverse.metrics;
 
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import java.util.ArrayList;
-import java.util.List;
+import org.junit.Test;
+
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
-import org.junit.Test;
-import org.junit.jupiter.api.DisplayName;
 
 public class MetricsUtilTest {
 
@@ -212,11 +213,28 @@ public class MetricsUtilTest {
         verifyMetricsSize(result, 12);
     }
 
+    @Test
+    public void verifyCountForYearMonth() {
+        // given
+        List<DatasetsMetrics> metrics = allMetrics();
+
+        // when
+        List<DatasetsMetrics> result = MetricsUtil.fillMissingDatasetMonths(metrics, 2020);
+
+        // then
+        verifyDatasetsCountForMonth(result, 11, 9);
+        verifyDatasetsCountForMonth(result, 12, 8);
+    }
+
     private void verifyCountForYear(List<DatasetsMetrics> metrics, double year, long count) {
         long sum = metrics.stream().filter(dm -> dm.getYear() == year)
                 .mapToLong(DatasetsMetrics::getCount)
                 .sum();
         assertEquals(count, sum);
+    }
+
+    private void verifyDatasetsCountForMonth(List<DatasetsMetrics> result, int month, int datasetCount) {
+        assertEquals((long) result.get(month - 1).getCount(), datasetCount);
     }
 
     private void verifyMetricsSize(List<DatasetsMetrics> result, int size) {

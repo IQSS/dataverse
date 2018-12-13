@@ -93,8 +93,6 @@ public class MetricsServiceBean implements Serializable {
      * Datasets
      */
 
-    // 1. metoda zwracajaca dane (1 SQL)
-    // 2. metody operujace na danych z bazy
     public List<DatasetsMetrics> countPublishedDatasets() {
         return em.createQuery("SELECT new edu.harvard.iq.dataverse.metrics.DatasetsMetrics(" +
                 "SQL('EXTRACT(YEAR FROM ?)', dv.publicationDate),\n" +

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.metrics;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.primefaces.model.chart.Axis;
 import org.primefaces.model.chart.AxisType;
 import org.primefaces.model.chart.BarChartModel;
@@ -8,10 +9,9 @@ import org.primefaces.model.chart.ChartSeries;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.util.List;
-import java.util.ResourceBundle;
 
 @Stateless
-public class ChartCreator { //TODO Is it proper class name??
+public class ChartCreator {
 
     @EJB
     private MetricsServiceBean metricsServiceBean;
@@ -20,21 +20,23 @@ public class ChartCreator { //TODO Is it proper class name??
         List<DatasetsMetrics> yearlyDatasetStats =
                 MetricsUtil.countDatasetsPerYear(metricsServiceBean.countPublishedDatasets());
 
-        return createBarModel(yearlyDatasetStats, "Year", initYearlyBarModel(yearlyDatasetStats));
+        return createBarModel(yearlyDatasetStats, BundleUtil.getStringFromBundle("metrics.year")
+                , initYearlyBarModel(yearlyDatasetStats));
     }
 
     public BarChartModel changeToMonthlyModel(int selectedYear) {
         List<DatasetsMetrics> monthlyDatasetStats =
                 MetricsUtil.fillMissingDatasetMonths(metricsServiceBean.countPublishedDatasets(), selectedYear);
 
-        return createBarModel(monthlyDatasetStats, "Month", initMonthlyBarModel(monthlyDatasetStats));
+        return createBarModel(monthlyDatasetStats, BundleUtil.getStringFromBundle("metrics.month")
+                , initMonthlyBarModel(monthlyDatasetStats));
     }
 
     private BarChartModel initYearlyBarModel(List<DatasetsMetrics> datasets) {
         BarChartModel model = new BarChartModel();
 
         ChartSeries datasetsChart = new ChartSeries();
-        datasetsChart.setLabel("Datasets");
+        datasetsChart.setLabel(BundleUtil.getStringFromBundle("metrics.datasets"));
 
         datasets.forEach(datasetStats ->
                 datasetsChart.set(datasetStats.getYear(), datasetStats.getCount()));
@@ -50,7 +52,7 @@ public class ChartCreator { //TODO Is it proper class name??
         datasetsChart.setLabel("Datasets");
 
         datasets.forEach(datasetStats ->
-                datasetsChart.set(ResourceBundle.getBundle("Bundle").getString("metrics.month-" + datasetStats.getMonth()),
+                datasetsChart.set(BundleUtil.getStringFromBundle("metrics.month-" + datasetStats.getMonth()),
                         datasetStats.getCount()));
 
         model.addSeries(datasetsChart);
@@ -60,18 +62,18 @@ public class ChartCreator { //TODO Is it proper class name??
 
     private BarChartModel createBarModel(List<DatasetsMetrics> datasets, String xAxisLabel, BarChartModel model) {
 
-        model.setTitle("New datasets");
+        model.setTitle(BundleUtil.getStringFromBundle("metrics.newDatasets"));
         model.setLegendPosition("ne");
 
         Axis xAxis = model.getAxis(AxisType.X);
         xAxis.setLabel(xAxisLabel);
 
         Axis yAxis = model.getAxis(AxisType.Y);
-        yAxis.setLabel("Datasets");
+        yAxis.setLabel(BundleUtil.getStringFromBundle("metrics.datasets"));
         yAxis.setMin(0);
         yAxis.setTickFormat("%d");
         yAxis.setTickCount(datasets.size() + 1);
         yAxis.setMax(datasets.size());
         return model;
-    } //TODO Bundles
+    }
 }
