@@ -144,6 +144,9 @@ public class FileUtil implements java.io.Serializable  {
     public static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
     
     public static final String MIME_TYPE_INGESTED_FILE = "text/tab-separated-values";
+    
+    public static final String MIME_TYPE_HYPOTHESIS_ANNOTATIONS = "application/x-json-hypothesis";
+    public static final String HYPOTHESIS_ANNOTATIONS_FILENAME = "HypothesisAnnotations.json";
 
 
     /**
