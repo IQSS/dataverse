@@ -18,9 +18,6 @@ Install a DCM
 
 Installation instructions can be found at https://github.com/sbgrid/data-capture-module . Note that a shared filesystem (posix or AWS S3) between Dataverse and your DCM is required. You cannot use a DCM with Swift at this point in time.
 
-Please note that S3 support for DCM is highly experimental. Files can be uploaded to S3 but they cannot be downloaded until https://github.com/IQSS/dataverse/issues/4949 is worked on. If you want to play around with S3 support for DCM, you must configure a JVM option called ``dataverse.files.dcm-s3-bucket-name`` which is a holding area for uploaded files that have not yet passed checksum validation. Search for that JVM option at https://github.com/IQSS/dataverse/issues/4703 for commands on setting that JVM option and related setup. Note that because that GitHub issue has so many comments you will need to click "Load more" where it says "hidden items". 
-
-.. FIXME: Document all of this properly.
 .. FIXME: Explain what ``dataverse.files.dcm-s3-bucket-name`` is for and what it has to do with ``dataverse.files.s3-bucket-name``.
 
 Once you have installed a DCM, you will need to configure two database settings on the Dataverse side. These settings are documented in the :doc:`/installation/config` section of the Installation Guide:
@@ -137,22 +134,18 @@ Docker Image Set-up
 Optional steps for setting up the S3 Docker DCM Variant
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Before: the default bucket for DCM to hold files in S3 is named test-dcm. It is coded into `post_upload.bash` (line 30). Change to a different bucket if needed.
-- Move the S3 variant of the rsync processing script into docker: ``docker cp data-capture-module/scn/post_upload_s3.bash dcmsrv:/opt/dcm/scn/post_upload.bash``
-- Install AWS on dcmsrv and symlink it
+- Before: the default bucket for DCM to hold files in S3 is named test-dcm. It is coded into `post_upload_s3.bash` (line 30). Change to a different bucket if needed.
 - Add AWS bucket info to dcmsrv
 
   - You need a credentials files in ~/.aws
 
     - ``mkdir ~/.aws``
     - ``yum install nano`` (or use a different editor below)
-    - ``nano ~/.aws/credentials``
+    - ``nano ~/.aws/credentials`` and add these contents with your keys:
 
-      - Structure like:
-
-        - ``[default]``
-        - ``aws_access_key_id =``
-        - ``aws_secret_access_key =``
+      - ``[default]``
+      - ``aws_access_key_id =``
+      - ``aws_secret_access_key =``
 
 - Dataverse configuration (on dvsrv):
 
@@ -164,24 +157,18 @@ Optional steps for setting up the S3 Docker DCM Variant
 
   - Add AWS bucket info to Dataverse
 
-    - You may need this: ``yum install awscli``
     - ``mkdir ~/.aws``
     - ``yum install nano`` (or use a different editor below)
-    - ``nano ~/.aws/credentials``
+    - ``nano ~/.aws/credentials`` and add these contents with your keys:
 
-      - Structure like:
+      - ``[default]``
+      - ``aws_access_key_id =``
+      - ``aws_secret_access_key =``
 
-        - ``[default]``
-        - ``aws_access_key_id =``
-        - ``aws_secret_access_key =``
+    - ALSO: ``nano ~/.aws/config`` to create a region file. Add these contents:
 
-    - ALSO: create a region file
-
-      - ``nano ~/.aws/config``
-      - Contents:
-
-        - ``[default]``
-        - ``region = us-east-1``
+      - ``[default]``
+      - ``region = us-east-1``
 
   - Add the S3 bucket names to Dataverse
 
@@ -210,9 +197,10 @@ For using these commands, you will need to connect to the shell prompt inside va
 
   - e.g. ``bash ./upload-FK2_NN49YM.bash``
 
-- Manually run post_upload.bash on dcmsrv
+- Manually run post upload script on dcmsrv
 
-  - ``bash ./opt/dcm/scn/post_upload.bash``
+  - for posix implementation: ``bash ./opt/dcm/scn/post_upload.bash``
+  - for S3 implementation: ``bash ./opt/dcm/scn/post_upload_s3.bash``
 
 Additional DCM docker development tips
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -347,7 +335,7 @@ Available Steps
 Dataverse has an internal step provider, whose id is ``:internal``. It offers the following steps:
 
 log
-+++
+^^^
 
 A step that writes data about the current workflow invocation to the instance log. It also writes the messages in its ``parameters`` map.
 
@@ -364,7 +352,7 @@ A step that writes data about the current workflow invocation to the instance lo
 
 
 pause
-+++++
+^^^^^
 
 A step that pauses the workflow. The workflow is paused until a POST request is sent to ``/api/workflows/{invocation-id}``.
 
@@ -377,7 +365,7 @@ A step that pauses the workflow. The workflow is paused until a POST request is 
 
 
 http/sr
-+++++++
+^^^^^^^
 
 A step that sends a HTTP request to an external system, and then waits for a response. The response has to match a regular expression specified in the step parameters. The url, content type, and message body can use data from the workflow context, using a simple markup language. This step has specific parameters for rollback.
 
