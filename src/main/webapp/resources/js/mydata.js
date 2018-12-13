@@ -2,6 +2,19 @@ var MYDATA_DEBUG_ON = false; // activate to show json, form info, etc
 var SHOW_PAGINATION = false; // pagination is available
 var APPEND_CARDS_TO_BOTTOM = false;  // always starts as false
 
+// bundle text variables
+var mydataresult = '';
+var mydataresults = '';
+var mydataviewnext = '';
+var mydatamore = '';
+var draft = '';
+var inreview = '';
+var unpublished = '';
+var published = '';
+var deaccessioned = '';
+var mydatato = '';
+var mydataof = '';
+
 function bind_checkbox_labels(){
     // This should be generalized to one function....once css is set
  
@@ -306,19 +319,11 @@ function updatePagination(json_data){
             
         }
 
-        if (document.getElementById("result")) {
-            document.getElementById('result').innerHTML = document.getElementById('dataverseUserForm:dataRelatedToMeView:mydataresult').value;
-        }
-        if (document.getElementById("results")) {
-            document.getElementById('results').innerHTML = document.getElementById('dataverseUserForm:dataRelatedToMeView:mydataresults').value;
-        }
+        $('#result').html(mydataresult);
+        $('#results').html(mydataresults);
 
-        if (document.getElementById("to")) {
-            document.getElementById('to').innerHTML = document.getElementById('dataverseUserForm:dataRelatedToMeView:mydatato').value;
-        }
-        if (document.getElementById("of")) {
-            document.getElementById('of').innerHTML = document.getElementById('dataverseUserForm:dataRelatedToMeView:mydataof').value;
-        }
+        $('#to').html(mydatato);
+        $('#of').html(mydataof);
 
 
         // --------------------------------
@@ -330,11 +335,11 @@ function updatePagination(json_data){
             //console.log("update link to: " + pagination_json.nextPageNumber);
             $('#div-more-cards-link').show();
 
-            var view_next = document.getElementById("dataverseUserForm:dataRelatedToMeView:mydataviewnext").value;
-            var more = document.getElementById("dataverseUserForm:dataRelatedToMeView:mydatamore").value;
-            var result_label = document.getElementById("dataverseUserForm:dataRelatedToMeView:mydataresults").value;
+            var view_next = mydataviewnext;
+            var more = mydatamore;
+            var result_label = mydataresults;
             if (pagination_json.numberNextResults == 1){
-                result_label = document.getElementById("dataverseUserForm:dataRelatedToMeView:mydataresult").value;
+                result_label = mydataresult;
             }
             $('#lnk_add_more_cards').html(view_next + ' ' + pagination_json.numberNextResults + ' ' + result_label + ' (' + pagination_json.remainingCards + ' ' + more +')');
         }
@@ -458,34 +463,34 @@ function submit_my_data_search(){
             $('#ajaxStatusPanel_start').hide();
 
 
-            if (document.getElementsByName("draft")) {
-                var y = document.getElementsByName("draft");
+            if ($("span.label.draft")) {
+                var y = $("span.label.draft");
                 for (var i = 0; i < y.length; i++) {
-                    y[i].innerHTML = document.getElementById( 'dataverseUserForm:dataRelatedToMeView:draft' ).value;
+                    y[i].innerHTML = draft;
                 }
             }
-            if (document.getElementsByName("inreview")) {
-                var y = document.getElementsByName("inreview");
+            if ($("span.label.inreview")) {
+                var y = $("span.label.inreview");
                 for (var i = 0; i < y.length; i++) {
-                    y[i].innerHTML = document.getElementById( 'dataverseUserForm:dataRelatedToMeView:inreview' ).value;
+                    y[i].innerHTML = inreview;
                 }
             }
-            if (document.getElementsByName("published")) {
-                var y = document.getElementsByName("published");
+            if ($("span.label.published")) {
+                var y = $("span.label.published");
                 for (var i = 0; i < y.length; i++) {
-                    y[i].innerHTML = document.getElementById( 'dataverseUserForm:dataRelatedToMeView:published' ).value;
+                    y[i].innerHTML = published;
                 }
             }
-            if (document.getElementsByName("unpublished")) {
-                var y = document.getElementsByName("unpublished");
+            if ($("span.label.unpublished")) {
+                var y = $("span.label.unpublished");
                 for (var i = 0; i < y.length; i++) {
-                    y[i].innerHTML = document.getElementById( 'dataverseUserForm:dataRelatedToMeView:unpublished' ).value;
+                    y[i].innerHTML = unpublished;
                 }
             }
-            if (document.getElementsByName("deaccessioned")) {
-                var y = document.getElementsByName("deaccessioned");
+            if ($("span.label.deaccessioned")) {
+                var y = $("span.label.deaccessioned");
                 for (var i = 0; i < y.length; i++) {
-                    y[i].innerHTML = document.getElementById( 'dataverseUserForm:dataRelatedToMeView:deaccessioned' ).value;
+                    y[i].innerHTML = deaccessioned;
                 }
             }
 
