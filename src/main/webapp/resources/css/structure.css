@@ -901,3 +901,15 @@ div.ui-widget-overlay {background:#ccc; opacity:.6;}
   overflow-x:auto;
 }
 
+.hypothesis-btn-status.ui-icon {
+	background: url("/resources/images/hypothesisIcon.svg") no-repeat;
+}
+
+#datasetForm\3AhypothesisButton {
+	margin-bottom: 5px;
+	margin-left: 15px;
+}
+
+#datasetForm\3AhypothesisBlock>div {
+	margin-bottom: 5px;
+}

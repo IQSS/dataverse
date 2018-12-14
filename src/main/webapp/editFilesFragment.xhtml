@@ -155,8 +155,22 @@
                                 <div jsf:id="hypothesisBlock" jsf:rendered="#{settingsWrapper.isHasHypothesisKey() and !lockedFromEdits }"  class="margin-top">
                                     <!-- Hypothesis upload widget -->
                                     <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.fromHypothesis.tip']}</p>
-                                    <h:inputText id="hypothesisUrlInput"  value="#{EditDatafilesPage.hypothesisUrlSelection}"/>
-                                    <h:inputText id="hypothesisGroupInput" value="#{EditDatafilesPage.hypothesisGroupSelection}"/>
+                                    <div>
+                                      <label for="hypothesisUrlSelection" class="col-sm-1 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.hypothesis.url.tip']}">
+                                          #{bundle['dataset.hypothesis.url']}
+                                        </span>
+                                      </label>
+                                      <h:inputText id="hypothesisUrlInput"  value="#{EditDatafilesPage.hypothesisUrlSelection}"/>
+                                    </div>
+                                    <div>
+                                      <label for="hypothesisGroupSelection" class="col-sm-1 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.hypothesis.group.tip']}">
+                                          #{bundle['dataset.hypothesis.group']}
+                                        </span>
+                                      </label>
+                                      <h:inputText id="hypothesisGroupInput" value="#{EditDatafilesPage.hypothesisGroupSelection}"/>
+                                    </div>
                                     <p:commandButton id="hypothesisButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromHypothesis']}" actionListener="#{EditDatafilesPage.handleHypothesisUpload}" oncomplete="javascript:hypothesisUploadFinished();" update="@none" icon="hypothesis-btn-status" />
                                     <p:message for="hypothesisButton" id="hypothesisUploadMessage" display="text" redisplay="false" />
                                 </div>
