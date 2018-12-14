@@ -222,8 +222,8 @@ public class MetricsUtilTest {
         List<DatasetsMetrics> result = MetricsUtil.fillMissingDatasetMonths(metrics, 2020);
 
         // then
-        verifyDatasetsCountForMonth(result, 11, 9);
-        verifyDatasetsCountForMonth(result, 12, 8);
+        verifyDatasetsCountForYearMonth(result, 11, 9);
+        verifyDatasetsCountForYearMonth(result, 12, 8);
     }
 
     @Test
@@ -245,7 +245,7 @@ public class MetricsUtilTest {
         assertEquals(count, sum);
     }
 
-    private void verifyDatasetsCountForMonth(List<DatasetsMetrics> result, int month, int datasetCount) {
+    private void verifyDatasetsCountForYearMonth(List<DatasetsMetrics> result, int month, int datasetCount) {
         assertEquals((long) result.get(month - 1).getCount(), datasetCount);
     }
 
