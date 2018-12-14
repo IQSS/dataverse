@@ -893,7 +893,7 @@ public class SystemConfig {
          * go through Glassfish.
          */
         RSYNC("rsal/rsync"),
-        NATIVE("NATIVE");
+        NATIVE("native/http");
         private final String text;
 
         private FileDownloadMethods(final String text) {
@@ -1005,10 +1005,15 @@ public class SystemConfig {
         }        
     }
     
-    public boolean isRsyncDownload()
-    {
+    public boolean isRsyncDownload() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
+    }
+    
+    public boolean isHTTPDownload() {
+        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
+        logger.warning("Download Methods:" + downloadMethods);
+        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.NATIVE.toString());
     }
     
     private Boolean getUploadMethodAvailable(String method){
