@@ -1736,7 +1736,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             uploadInProgress = true;
         }
         logger.fine("handleHypothesisUpload");
-        uploadHypothesisComponentId = event.getComponent().getClientId();
+        uploadComponentId = event.getComponent().getClientId();
         logger.info("Ready to query hypo for " + hypothesisUrlSelection + " and "+ hypothesisGroupSelection + ".");
         
         //Assume file is not over the limit
@@ -2061,7 +2061,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String uploadWarningMessage = null; 
     private String uploadSuccessMessage = null; 
     private String uploadComponentId = null;
-    private String uploadHypothesisComponentId = null; 
     
     
     
