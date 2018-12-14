@@ -226,6 +226,18 @@ public class MetricsUtilTest {
         verifyDatasetsCountForMonth(result, 12, 8);
     }
 
+    @Test
+    public void shouldFillRestOfTheMonthWithZeroCount() {
+        // given
+        List<DatasetsMetrics> metrics = allMetrics();
+
+        // when
+        List<DatasetsMetrics> result = MetricsUtil.fillMissingDatasetMonths(metrics, 2020);
+
+        // then
+        verifyMissingYearMonthRangeCountAsZero(result, 2020, 1, 10);
+    }
+
     private void verifyCountForYear(List<DatasetsMetrics> metrics, double year, long count) {
         long sum = metrics.stream().filter(dm -> dm.getYear() == year)
                 .mapToLong(DatasetsMetrics::getCount)
@@ -235,6 +247,19 @@ public class MetricsUtilTest {
 
     private void verifyDatasetsCountForMonth(List<DatasetsMetrics> result, int month, int datasetCount) {
         assertEquals((long) result.get(month - 1).getCount(), datasetCount);
+    }
+
+    private void verifyMissingYearMonthRangeCountAsZero(List<DatasetsMetrics> result, double year,
+                                                        int fromMonth, int toMonth) {
+        for (int month = fromMonth; month <= toMonth; month++) {
+            final int filterByMonth = month;
+            DatasetsMetrics metrics = result.stream()
+                    .filter(dm -> dm.getYear() == year)
+                    .filter(dm -> dm.getMonth() == filterByMonth)
+                    .findAny()
+                    .orElseThrow(() -> new RuntimeException("Missing month: " + filterByMonth + " for year: " + year));
+            assertEquals(Long.valueOf(0L), metrics.getCount());
+        }
     }
 
     private void verifyMetricsSize(List<DatasetsMetrics> result, int size) {
