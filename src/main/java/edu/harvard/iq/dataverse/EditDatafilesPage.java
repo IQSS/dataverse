@@ -1737,7 +1737,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         logger.fine("handleHypothesisUpload");
         uploadHypothesisComponentId = event.getComponent().getClientId();
-        logger.info("In the event of an actual implementation, this would have queried hypo for " + hypothesisUrlSelection + " and "+ hypothesisGroupSelection + ".");
+        logger.info("Ready to query hypo for " + hypothesisUrlSelection + " and "+ hypothesisGroupSelection + ".");
         
         //Assume file is not over the limit
 
@@ -1757,7 +1757,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             status = getClient().executeMethod(hypothesisMethod);
             if (status == 200) {
                 try (InputStream hypothesisStream = hypothesisMethod.getResponseBodyAsStream()) {
-                    
+                    logger.info("Have stream");
                     // -----------------------------------------------------------
                     // Is this a FileReplaceOperation?  If so, then diverge!
                     // -----------------------------------------------------------
@@ -1802,6 +1802,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                             deleteTempFile(newFile);
                         }
                     }
+                    logger.info("Completed hypo upload");
                 } finally {
                     // -----------------------------------------------------------
                     // release connection for hypothesisMethod
