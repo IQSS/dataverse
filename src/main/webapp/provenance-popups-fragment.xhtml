@@ -48,19 +48,9 @@
                                           fileUploadListener="#{provPopupFragmentBean.handleFileUpload}" 
                                           update="provPopupOutput,assignMessages" 
                                           label="#{bundle['file.editProvenanceDialog.selectToAddBtn']}"
-                                          oncomplete="bind_bsui_components();PF('provUpload').hide();"
+                                          oncomplete="bind_bsui_components();"
                                           fileLimit="1" 
                                           invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}"/>
-                            <script>
-                                function uploadStarted() {
-                                    $('button[id$="provUploadStarted"]').trigger('click');
-                                }
-                                function uploadFinished(fileupload) {                    
-                                    if (fileupload.files.length === 0) {
-                                        $('button[id$="AllUploadsFinished"]').trigger('click');
-                                    }
-                                }
-                            </script>
                         </ui:fragment>
                         <ui:fragment rendered="#{provPopupFragmentBean.jsonUploadedState or provPopupFragmentBean.provJsonAlreadyPublishedRendering()}">
                             <div id="provFileText" class="col-sm-5 text-success">

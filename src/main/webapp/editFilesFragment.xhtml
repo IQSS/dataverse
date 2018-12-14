@@ -79,16 +79,17 @@
                             errors[i].parentNode.removeChild(errors[i]);
                           }
                         }
+                        var observer=null;
                         function uploadStarted() {
                        	  	// If this is not the first upload, remove error messages since 
                           	// the upload of any files that failed will be tried again.
                           	removeErrors();
                           	var curId=0;
                           	//Find the upload table body
-                          	var files = document.getElementById("datasetForm:fileUpload").getElementsByTagName("tbody")[0];
+                          	var files =  $('#datasetForm\\:fileUpload .ui-fileupload-row');
                           	//Add an id attribute to each entry so we can later match errors with the right entry
-                          	for(i=0;i< files.children.length;i++) {
-                            	files.children[i].setAttribute('upid', curId);
+                          	for(i=0;i< files.length;i++) {
+                            	files[i].setAttribute('upid', curId);
                             	curId = curId+1;
                           	}
                           	//Setup an observer to watch for additional rows being added
@@ -108,16 +109,15 @@
                         	if(observer !=null) {
                           	  observer.disconnect();
                         	}
-                        	var observer = new MutationObserver(callback);
-                        	observer.observe(files,config);
+                        	observer = new MutationObserver(callback);
+                        	observer.observe(files[0].parentElement,config);
 
                             $('button[id$="uploadStarted"]').trigger('click');
                             //alert("upload started");
                         }
                         function uploadFinished(fileupload) {
                             if (fileupload.files.length === 0) {
-                              //  $('button[id$="AllUploadsFinished"]').trigger('click');
-                                $('button[id$="updateEditDataFilesButtonsForUpload"]').trigger('click');
+                                $('button[id$="AllUploadsFinished"]').trigger('click');
                                 //stop observer when we're done
                                 if(observer !=null) {
                                   observer.disconnect();
@@ -151,7 +151,7 @@
                         	//Log the error 
                         	console.log('Upload error:' + name + ' upid=' + id + ', Error ' + status + ': ' + statusText );
                             //Find the table
-                            var rows  = document.getElementById('datasetForm:fileUpload').getElementsByTagName('tbody')[0].children;
+                            var rows  =  $('#datasetForm\\:fileUpload .ui-fileupload-row');
                             //Create an error element
                             var node = document.createElement("TD");
                             //Add a class to make finding these errors easy
@@ -235,7 +235,7 @@
                                   process="filesTable" 
                                   update=":datasetForm:filesTable, @([id$=filesButtons])"
                                   label="#{bundle['file.selectToAddBtn']}"
-                                  oncomplete="javascript:dataset_fileupload_rebind();uploadFinished(PF('fileUploadWidget'));uploadFinished();"
+                                  oncomplete="javascript:dataset_fileupload_rebind();uploadFinished(PF('fileUploadWidget'));"
                                   onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
                                   onerror="javascript:uploadFailure();"
                                   sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"
@@ -395,8 +395,8 @@
                     <p:commandButton id="updateEditDataFilesButtonsForUpload" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>
                     <p:commandButton id="updateEditDataFilesButtonsForDelete" action="#{EditDatafilesPage.deleteFilesCompleted()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>
                     <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="@form,datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:hypothesisButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
-                    <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" style="display:none"/>
-                    <p:commandButton id="hypothesisUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:hypothesisButton,datasetForm:hypothesisUploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" style="display:none"/>
+                    <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:editDataFilesButtons,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" style="display:none"/>
+                    <p:commandButton id="hypothesisUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:fileUpload,datasetForm:editDataFilesButtons,datasetForm:hypothesisButton,datasetForm:hypothesisUploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" style="display:none"/>
                     <p:commandButton id="allDeletesFinished" action="#{EditDatafilesPage.deleteFilesCompleted()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:hypothesisButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
                     <!-- ????? TODO: How scalable are all these hidden update buttons ????? -->
                     <!-- ????? 
