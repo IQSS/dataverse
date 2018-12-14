@@ -1,9 +1,4 @@
-function uploadWidgetDropMsg() {
-    var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
-    if ($(fileUpload).children('#dragdropMsg').length === 0) {
-        $(fileUpload).prepend('<div id="dragdropMsg">#{bundle["file.selectToAdd.dragdropMsg"]}</div>');
-    }
-}
+
 function removeErrors() {
                        	  var errors = document.getElementsByClassName("ui-fileupload-error");
   for(i=errors.length-1; i >=0; i--) {
@@ -82,7 +77,7 @@ function uploadFailure(fileUpload) {
 	//Log the error 
 	console.log('Upload error:' + name + ' upid=' + id + ', Error ' + status + ': ' + statusText );
     //Find the table
-    var rows  =  $('.ui-fileUpload-files .ui-fileupload-row');
+    var rows  =  $('.ui-fileupload-files .ui-fileupload-row');
     //Create an error element
     var node = document.createElement("TD");
     //Add a class to make finding these errors easy
@@ -104,15 +99,3 @@ function uploadFailure(fileUpload) {
        	}
     }
 }
-function dropBoxUploadFinished(fileupload) {
-    $('button[id$="dropBoxUploadFinished"]').trigger('click');
-}
-function hypothesisUploadFinished(fileupload) {
-    $('button[id$="hypothesisUploadFinished"]').trigger('click');
-}
-function uploadWidgetDropRemoveMsg() {
-    $('div[id$="fileUpload"] div.ui-fileupload-content div#dragdropMsg').remove();
-}
-$(document).ready(function () {
-    uploadWidgetDropMsg();
-});
