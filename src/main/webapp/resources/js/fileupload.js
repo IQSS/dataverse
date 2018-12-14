@@ -1,7 +1,7 @@
 function uploadWidgetDropMsg() {
     var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
     if ($(fileUpload).children('#dragdropMsg').length === 0) {
-        $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.selectToAdd.dragdropMsg']}</div>');
+        $(fileUpload).prepend('<div id="dragdropMsg">#{bundle["file.selectToAdd.dragdropMsg"]}</div>');
     }
 }
 function removeErrors() {
@@ -17,7 +17,7 @@ function uploadStarted() {
   	removeErrors();
   	var curId=0;
   	//Find the upload table body
-  	var files =  $('#datasetForm\\:fileUpload .ui-fileupload-row');
+  	var files =  $('.ui-fileupload-files .ui-fileupload-row');
   	//Add an id attribute to each entry so we can later match errors with the right entry
   	for(i=0;i< files.length;i++) {
     	files[i].setAttribute('upid', curId);
@@ -82,7 +82,7 @@ function uploadFailure(fileUpload) {
 	//Log the error 
 	console.log('Upload error:' + name + ' upid=' + id + ', Error ' + status + ': ' + statusText );
     //Find the table
-    var rows  =  $('#datasetForm\\:fileUpload .ui-fileupload-row');
+    var rows  =  $('.ui-fileUpload-files .ui-fileupload-row');
     //Create an error element
     var node = document.createElement("TD");
     //Add a class to make finding these errors easy
