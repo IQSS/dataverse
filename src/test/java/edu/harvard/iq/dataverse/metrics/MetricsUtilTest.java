@@ -257,7 +257,7 @@ public class MetricsUtilTest {
                     .filter(dm -> dm.getYear() == year)
                     .filter(dm -> dm.getMonth() == filterByMonth)
                     .findAny()
-                    .orElseThrow(() -> new RuntimeException("Missing month: " + filterByMonth + " for year: " + year));
+                    .orElseThrow(() -> new RuntimeException("Not found metrics for month: " + filterByMonth + " for year: " + year));
             assertEquals(Long.valueOf(0L), metrics.getCount());
         }
     }
