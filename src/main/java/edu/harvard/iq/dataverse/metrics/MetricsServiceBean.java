@@ -17,6 +17,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Stateless
 public class MetricsServiceBean implements Serializable {
@@ -92,17 +93,25 @@ public class MetricsServiceBean implements Serializable {
     /**
      * Datasets
      */
-
     public List<DatasetsMetrics> countPublishedDatasets() {
-        return em.createQuery("SELECT new edu.harvard.iq.dataverse.metrics.DatasetsMetrics(" +
-                "SQL('EXTRACT(YEAR FROM ?)', dv.publicationDate),\n" +
-                "       SQL('EXTRACT(MONTH FROM ?)', dv.publicationDate),\n" +
-                "       count(dv.id)) as result \n" +
-                "FROM DvObject dv\n" +
-                "WHERE dv.dtype = 'Dataset'\n" +
-                "  AND dv.publicationDate IS NOT NULL\n" +
-                "GROUP BY dv.publicationDate ", DatasetsMetrics.class)
-                .getResultList();
+        return mapToDatasetsMetrics(em.createNativeQuery(
+                "SELECT\n" +
+                        "    EXTRACT(YEAR FROM dsv.lastupdatetime) as year,\n" +
+                        "    EXTRACT(MONTH FROM dsv.lastupdatetime) as month,\n" +
+                        "    count (dsv.id)\n" +
+                        "    FROM datasetversion dsv\n" +
+                        "    WHERE\n" +
+                        "        dsv.versionnumber = 1 and\n" +
+                        "        dsv.minorversionnumber = 0 and\n" +
+                        "        dsv.versionstate = 'RELEASED'\n" +
+                        "GROUP BY year, month")
+                .getResultList());
+    }
+
+    private List<DatasetsMetrics> mapToDatasetsMetrics(List<Object[]> result) {
+        return result.stream()
+                .map(dm -> new DatasetsMetrics((Double) dm[0], (Double) dm[1], (Long) dm[2]))
+                .collect(Collectors.toList());
     }
 
     public List<Object[]> datasetsBySubject() {
