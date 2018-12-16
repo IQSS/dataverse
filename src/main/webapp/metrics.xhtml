@@ -16,7 +16,7 @@
             <h:form id="metricsForm">
                 <p:tabView scrollable="true">
                     <p:tab title="#{bundle['metrics.newDatasets']}">
-                        <h:panelGrid columns="3" style="margin-bottom:10px;" cellpadding="25" >
+                        <h:panelGrid columns="3" style="margin-bottom:10px;" cellpadding="25">
                             <p:selectOneRadio id="model" value="#{MetricsPage.mode}" style="padding-left: 10px">
                                 <p:ajax event="change" update="metricsForm" listener="#{MetricsPage.changeDatasetMetricsModel}"/>
                                 <f:selectItem itemLabel="#{bundle['metrics.peryear']}" itemValue="YEAR"/>
