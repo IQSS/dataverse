@@ -7,6 +7,7 @@ import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DISPLAY_NAME;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_PARAMETERS;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_URL;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TYPE;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.CONTENT_TYPE;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,12 +41,16 @@ public class ExternalToolServiceBean {
 
 
     /**
+     * @param derivedFileExists 
+     * @param contentType 
      * @return A list of tools or an empty list.
      */
-    public List<ExternalTool> findByType(ExternalTool.Type type) {
+    public List<ExternalTool> findByType(ExternalTool.Type type, String contentType) {
         List<ExternalTool> externalTools = new ArrayList<>();
-        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
+        //If the derived file, e.g. a tab file hasn't been created, only retrieve tools that don't require a derived file 
+        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type AND o.contentType = :contentType", ExternalTool.class);
         typedQuery.setParameter("type", type);
+        typedQuery.setParameter("contentType", contentType);
         List<ExternalTool> toolsFromQuery = typedQuery.getResultList();
         if (toolsFromQuery != null) {
             externalTools = toolsFromQuery;
@@ -104,6 +109,8 @@ public class ExternalToolServiceBean {
         String displayName = getRequiredTopLevelField(jsonObject, DISPLAY_NAME);
         String description = getRequiredTopLevelField(jsonObject, DESCRIPTION);
         String typeUserInput = getRequiredTopLevelField(jsonObject, TYPE);
+        String contentType = getRequiredTopLevelField(jsonObject, CONTENT_TYPE);
+        
         // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString
         ExternalTool.Type type = ExternalTool.Type.fromString(typeUserInput);
         String toolUrl = getRequiredTopLevelField(jsonObject, TOOL_URL);
@@ -125,7 +132,7 @@ public class ExternalToolServiceBean {
             throw new IllegalArgumentException("Required reserved word not found: " + ReservedWord.FILE_ID.toString());
         }
         String toolParameters = toolParametersObj.toString();
-        return new ExternalTool(displayName, description, type, toolUrl, toolParameters);
+        return new ExternalTool(displayName, description, type, toolUrl, toolParameters, contentType);
     }
 
     private static String getRequiredTopLevelField(JsonObject jsonObject, String key) {
