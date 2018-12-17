@@ -52,6 +52,7 @@ public class ExternalToolServiceBeanTest {
                                 .build())
                         .build())
                 .build());
+        job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
         ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
