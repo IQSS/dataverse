@@ -16,11 +16,7 @@ import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import javax.ejb.*;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -185,9 +181,23 @@ public class OAISetServiceBean implements java.io.Serializable {
         //}
         managedSet.setUpdateInProgress(false);
 
-    } 
+    }
     
+    /**
+     * Scheduled export of all local & published datasets for OAI interface harvesting.
+     * Only runs on the node configured as timer master.
+     */
+    @Lock(LockType.READ)
+    @Schedule(hour = "2", persistent = false)
     public void exportAllSets() {
+        // In case this node is not the timer server, skip silently.
+        if (!systemConfig.isTimerServer()) {
+            return;
+        }
+        logger.info("OAISetService: Running a scheduled export job.");
+        
+        // TODO: this should be refactored to handle container usage, where these logs should not be
+        //       saved locally, but get streamed to a handler like STDOUT.
         String logTimestamp = logFormatter.format(new Date());
         Logger exportLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.OAISetServiceBean." + "UpdateAllSets." + logTimestamp);
         String logFileName = "../logs" + File.separator + "oaiSetsUpdate_" + logTimestamp + ".log";

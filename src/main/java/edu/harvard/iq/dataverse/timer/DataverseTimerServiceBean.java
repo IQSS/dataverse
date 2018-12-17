@@ -63,10 +63,6 @@ public class DataverseTimerServiceBean implements Serializable {
     @EJB 
     AuthenticationServiceBean authSvc;
     @EJB
-    DatasetServiceBean datasetService;
-    @EJB
-    OAISetServiceBean oaiSetService;
-    @EJB
     SystemConfig systemConfig;
     
     
@@ -84,8 +80,6 @@ public class DataverseTimerServiceBean implements Serializable {
             removeAllTimers();
             // create mother timer:
             createMotherTimer();
-            // And the export timer (there is only one)
-            createExportTimer();
             
         } else {
             logger.info("Skipping timer server init (I am not the dedicated timer server)");
@@ -161,18 +155,6 @@ public class DataverseTimerServiceBean implements Serializable {
                 // a mail notification. -- L.A. 4.4)
                 //dataverseService.setHarvestResult(info.getHarvestingDataverseId(), harvesterService.HARVEST_RESULT_FAILED);
                 //mailService.sendHarvestErrorNotification(dataverseService.find().getSystemEmail(), dataverseService.find().getName());
-                logException(e, logger);
-            } 
-        } else if (timer.getInfo() instanceof ExportTimerInfo) {
-            try {
-                ExportTimerInfo info = (ExportTimerInfo) timer.getInfo();
-                logger.info("Timer Service: Running a scheduled export job.");
-               
-                // try to export all unexported datasets:
-                datasetService.exportAll();
-                 // and update all oai sets:
-                oaiSetService.exportAllSets();
-            } catch (Throwable e) {
                 logException(e, logger);
             }
         }
@@ -283,25 +265,6 @@ public class DataverseTimerServiceBean implements Serializable {
                 }
             }
         }
-    }
-
-    public void createExportTimer() {
-        ExportTimerInfo info = new ExportTimerInfo();
-        Calendar initExpiration = Calendar.getInstance();
-        long intervalDuration = 24 * 60 * 60 * 1000; // every day
-        initExpiration.set(Calendar.MINUTE, 0);
-        initExpiration.set(Calendar.SECOND, 0);
-        initExpiration.set(Calendar.HOUR_OF_DAY, 2); // 2AM, fixed.
-        
-        
-        Date initExpirationDate = initExpiration.getTime();
-        Date currTime = new Date();
-        if (initExpirationDate.before(currTime)) {
-            initExpirationDate.setTime(initExpiration.getTimeInMillis() + intervalDuration);
-        }
-        
-        logger.info("Setting the Export Timer, initial expiration: " + initExpirationDate);
-        createTimer(initExpirationDate, intervalDuration, info);
     }
 
     /* Utility methods: */ 

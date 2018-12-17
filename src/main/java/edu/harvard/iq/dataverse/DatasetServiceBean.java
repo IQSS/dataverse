@@ -31,12 +31,7 @@ import java.util.Set;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import javax.ejb.*;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -576,8 +571,17 @@ public class DatasetServiceBean implements java.io.Serializable {
         exportAllDatasets(false);
     }
     
+    /**
+     * Scheduled function triggering the export of all local & published datasets,
+     * but only on the node which is configured as master timer.
+     */
+    @Lock(LockType.READ)
+    @Schedule(hour = "2", persistent = false)
     public void exportAll() {
-        exportAllDatasets(false);
+        if (systemConfig.isTimerServer()) {
+            logger.info("DatasetService: Running a scheduled export job.");
+            exportAllDatasets(false);
+        }
     }
     
     public void exportAllDatasets(boolean forceReExport) {
