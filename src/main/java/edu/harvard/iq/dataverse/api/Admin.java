@@ -997,6 +997,34 @@ public class Admin extends AbstractApiBean {
 
 		return ok(info);
 	}
+        
+    @Path("datafiles/integrity/fixmissingoriginalsizes")
+    @GET
+    public Response fixMissingOriginalSizes(@QueryParam("limit") Integer limit) {
+        JsonObjectBuilder info = Json.createObjectBuilder();
+
+        List<Long> affectedFileIds = fileService.selectFilesWithMissingOriginalSizes();
+
+        if (affectedFileIds.isEmpty()) {
+            info.add("message",
+                    "All the tabular files in the database already have the original sizes set correctly; exiting.");
+        } else {
+            
+            int howmany = affectedFileIds.size();
+            String message = "Found " + howmany + " tabular files with missing original sizes. "; 
+            
+            if (limit == null || howmany <= limit) {
+                message = message.concat(" Kicking off an async job that will repair the files in the background.");
+            } else {
+                affectedFileIds.subList(limit, howmany-1).clear();
+                message = message.concat(" Kicking off an async job that will repair the " + limit + " files in the background.");                        
+            }
+            info.add("message", message);
+        }
+
+        ingestService.fixMissingOriginalSizes(affectedFileIds);
+        return ok(info);
+    }
 
 	/**
 	 * This method is used in API tests, called from UtilIt.java.
