@@ -3,7 +3,7 @@ FROM centos:7
 RUN yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
 #RUN yum install -y java-1.8.0-openjdk-headless postgresql-server sudo epel-release unzip perl curl httpd
 RUN yum install -y java-1.8.0-openjdk-devel postgresql96-server sudo epel-release unzip perl curl httpd
-RUN yum install -y jq lsof
+RUN yum install -y jq lsof awscli
 
 # copy and unpack dependencies (solr, glassfish)
 COPY dv /tmp/dv

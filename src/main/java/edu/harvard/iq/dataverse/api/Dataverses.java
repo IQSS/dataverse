@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -554,16 +555,14 @@ public class Dataverses extends AbstractApiBean {
     }
 
     // FIXME: This listContent method is way too optimistic, always returning "ok" and never "error".
-    // FIXME: This listContent method should be reformatted. The indentation and whitespace is odd.
-    // FIXME: This method is too slow with lots of data: https://github.com/IQSS/dataverse/issues/2122
     // TODO: Investigate why there was a change in the timeframe of when pull request #4350 was merged
     // (2438-4295-dois-for-files branch) such that a contributor API token no longer allows this method
     // to be called without a PermissionException being thrown.
     @GET
     @Path("{identifier}/contents")
-    public Response listContent(@PathParam("identifier") String dvIdtf) {
-        DvObject.Visitor<JsonObjectBuilder> ser = new DvObject.Visitor<JsonObjectBuilder>() {
+    public Response listContent(@PathParam("identifier") String dvIdtf) throws WrappedResponse {
 
+        DvObject.Visitor<JsonObjectBuilder> ser = new DvObject.Visitor<JsonObjectBuilder>() {
             @Override
             public JsonObjectBuilder visit(Dataverse dv) {
                 return Json.createObjectBuilder().add("type", "dataverse")
@@ -883,7 +882,7 @@ public class Dataverses extends AbstractApiBean {
             @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> ok(
                 json(
-                        execCommand(
+                    execCommand(
                                 new AddRoleAssigneesToExplicitGroupCommand(req,
                                         findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
                                         new TreeSet<>(roleAssingeeIdentifiers))))));
