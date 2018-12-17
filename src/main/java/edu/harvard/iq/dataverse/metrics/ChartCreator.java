@@ -8,6 +8,7 @@ import org.primefaces.model.chart.ChartSeries;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +22,10 @@ public class ChartCreator {
     public BarChartModel changeToYearlyModel() {
         List<DatasetsMetrics> yearlyDatasetStats =
                 MetricsUtil.countDatasetsPerYear(metricsServiceBean.countPublishedDatasets());
+
+        if (yearlyDatasetStats.isEmpty()) {
+            yearlyDatasetStats.add(new DatasetsMetrics((double) LocalDateTime.now().getYear(), 0L));
+        }
 
         return createBarModel(yearlyDatasetStats, BundleUtil.getStringFromBundle("metrics.year")
                 , initYearlyBarModel(yearlyDatasetStats));
