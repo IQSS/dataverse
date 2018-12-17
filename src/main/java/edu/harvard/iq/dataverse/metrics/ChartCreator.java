@@ -10,6 +10,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Stateless
 public class ChartCreator {
@@ -74,7 +75,9 @@ public class ChartCreator {
         yAxis.setMin(0);
         yAxis.setTickFormat("%d");
         yAxis.setTickCount(datasets.size() + 1);
-        yAxis.setMax(datasets.stream().max(Comparator.comparing(DatasetsMetrics::getCount)).get().getCount());
+
+        Optional<DatasetsMetrics> datasetMax = datasets.stream().max(Comparator.comparing(DatasetsMetrics::getCount));
+        yAxis.setMax(datasetMax.isPresent() ? datasetMax.get().getCount() : 0);
         return model;
     }
 }
