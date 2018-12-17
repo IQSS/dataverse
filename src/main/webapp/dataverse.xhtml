@@ -341,6 +341,26 @@
                                 </div>
                             </div>
                         </p:panel>
+
+                        <!-- Messages and Banners Panel -->
+                        <p:panel id="editMessagesBanners" styleClass="panelLayoutBlock"
+                                 rendered="#{DataversePage.userCanChangeAllowMessageAndBanners}"
+                                 widgetVar="allowMessagesBanners">
+                                <div class="row">
+                                    <div class="col-sm-12 form-group">
+                                        <label class="col-sm-3 control-label"><h:outputText value="#{bundle['dataverse.config.allow.messages.banners']}"/></label>
+                                        <div class="col-sm-9">
+                                            <label class="metadata-blocks-default" for="dvAllowMessagesBanners">
+                                                <h:selectBooleanCheckbox id="dvAllowMessagesBanners" tabindex="7"
+                                                                         styleClass="metadata-blocks-default"
+                                                                         value="#{DataversePage.dataverse.allowMessagesBanners}">
+                                                </h:selectBooleanCheckbox>
+                                                <h:outputText value="#{bundle['dataverse.config.allow.messages.banners.check']}"/>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                        </p:panel>
                     </ui:fragment>
                     <!-- END Edit Mode -->
                     <!-- View Mode / Description Panel -->

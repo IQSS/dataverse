@@ -170,6 +170,7 @@ public class Dataverse extends DvObjectContainer {
     private boolean themeRoot = true;
     private boolean templateRoot;    
 
+    private boolean allowMessagesBanners;
     
     @OneToOne(mappedBy = "dataverse",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
       private DataverseTheme dataverseTheme;
@@ -747,5 +748,13 @@ public class Dataverse extends DvObjectContainer {
             other = other.getOwner();
         }
         return false;
+    }
+
+    public boolean isAllowMessagesBanners() {
+        return allowMessagesBanners;
+    }
+
+    public void setAllowMessagesBanners(boolean allowMessagesBanners) {
+        this.allowMessagesBanners = allowMessagesBanners;
     }
 }
