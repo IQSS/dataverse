@@ -8,6 +8,7 @@ import org.primefaces.model.chart.ChartSeries;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import java.util.Comparator;
 import java.util.List;
 
 @Stateless
@@ -32,7 +33,7 @@ public class ChartCreator {
                 , initMonthlyBarModel(monthlyDatasetStats));
     }
 
-    private BarChartModel initYearlyBarModel(List<DatasetsMetrics> datasets) {
+    BarChartModel initYearlyBarModel(List<DatasetsMetrics> datasets) {
         BarChartModel model = new BarChartModel();
 
         ChartSeries datasetsChart = new ChartSeries();
@@ -46,7 +47,7 @@ public class ChartCreator {
         return model;
     }
 
-    private BarChartModel initMonthlyBarModel(List<DatasetsMetrics> datasets) {
+    BarChartModel initMonthlyBarModel(List<DatasetsMetrics> datasets) {
         BarChartModel model = new BarChartModel();
         ChartSeries datasetsChart = new ChartSeries();
         datasetsChart.setLabel("Datasets");
@@ -60,7 +61,7 @@ public class ChartCreator {
         return model;
     }
 
-    private BarChartModel createBarModel(List<DatasetsMetrics> datasets, String xAxisLabel, BarChartModel model) {
+    BarChartModel createBarModel(List<DatasetsMetrics> datasets, String xAxisLabel, BarChartModel model) {
 
         model.setTitle(BundleUtil.getStringFromBundle("metrics.newDatasets"));
         model.setLegendPosition("ne");
@@ -73,7 +74,7 @@ public class ChartCreator {
         yAxis.setMin(0);
         yAxis.setTickFormat("%d");
         yAxis.setTickCount(datasets.size() + 1);
-        yAxis.setMax(datasets.size());
+        yAxis.setMax(datasets.stream().max(Comparator.comparing(DatasetsMetrics::getCount)).get().getCount());
         return model;
     }
 }
