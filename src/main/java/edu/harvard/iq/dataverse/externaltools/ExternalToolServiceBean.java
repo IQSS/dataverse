@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
 
@@ -105,8 +106,9 @@ public class ExternalToolServiceBean {
      */
     public static List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
         List<ExternalTool> externalTools = new ArrayList<>();
+        String contentType = file.isTabularData() ? contentType = DataFileServiceBean.MIME_TYPE_TSV_ALT : file.getContentType();
         allExternalTools.forEach((externalTool) -> {
-            if (file.getContentType().equals(externalTool.getContentType())) {
+            if (contentType.equals(externalTool.getContentType())) {
                 externalTools.add(externalTool);
             }
         });

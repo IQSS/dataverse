@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class ExternalToolServiceBeanTest {
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
         ExternalTool.Type type = ExternalTool.Type.EXPLORE;
-        ExternalTool externalTool = new ExternalTool("displayName", "description", type, "http://foo.com", "{}");
+        ExternalTool externalTool = new ExternalTool("displayName", "description", type, "http://foo.com", "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
         ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken);
         List<ExternalTool> externalTools = new ArrayList<>();
         externalTools.add(externalTool);
