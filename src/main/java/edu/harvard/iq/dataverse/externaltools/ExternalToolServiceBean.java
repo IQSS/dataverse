@@ -106,7 +106,7 @@ public class ExternalToolServiceBean {
      */
     public static List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
         List<ExternalTool> externalTools = new ArrayList<>();
-        String contentType = file.isTabularData() ? contentType = DataFileServiceBean.MIME_TYPE_TSV_ALT : file.getContentType();
+        final String contentType = file.isTabularData() ? DataFileServiceBean.MIME_TYPE_TSV_ALT : file.getContentType();
         allExternalTools.forEach((externalTool) -> {
             if (contentType.equals(externalTool.getContentType())) {
                 externalTools.add(externalTool);
