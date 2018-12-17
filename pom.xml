@@ -179,7 +179,6 @@
               </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>com.amazonaws</groupId>
             <!-- Once on Eclipse Glassfish 5.1 or Payara 5.x, this should be changed to aws-java-sdk-s3,
