@@ -4350,5 +4350,9 @@ public class DatasetPage implements java.io.Serializable {
         org.primefaces.component.datatable.DataTable dt = (org.primefaces.component.datatable.DataTable) facesContext.getViewRoot().findComponent("datasetForm:tabView:filesTable");
         setFilePaginatorPage(dt.getPage());      
         setRowsPerPage(dt.getRowsToRender());
-    }  
+    }
+
+    public String redirectToMetrics(){
+        return "/metrics.xhtml?faces-redirect=true";
+    }
 }

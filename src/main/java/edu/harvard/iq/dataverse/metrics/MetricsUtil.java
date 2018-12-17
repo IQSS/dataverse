@@ -1,19 +1,7 @@
 package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.Metric;
-import java.io.StringReader;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoField;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
+
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -21,6 +9,21 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
+import java.io.StringReader;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class MetricsUtil {
 
@@ -52,8 +55,8 @@ public class MetricsUtil {
         }
         return jab;
     }
-    
-    public static JsonArrayBuilder dataversesBySubjectToJson(List<Object[]> listOfObjectArrays){
+
+    public static JsonArrayBuilder dataversesBySubjectToJson(List<Object[]> listOfObjectArrays) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         for (Object[] objectArray : listOfObjectArrays) {
             JsonObjectBuilder job = Json.createObjectBuilder();
@@ -80,10 +83,9 @@ public class MetricsUtil {
     }
 
     /**
-     *
      * @param userInput A year and month in YYYY-MM format.
      * @return A year and month in YYYY-MM format.
-     *
+     * <p>
      * Note that along with sanitization, this checks that the inputted month is
      * not after the current one. This will need to be made more robust if we
      * start writing metrics for farther in the future (e.g. the current year)
@@ -153,4 +155,44 @@ public class MetricsUtil {
 
         return jab;
     }
+
+    static List<DatasetsMetrics> countDatasetsPerYear(List<DatasetsMetrics> datasetsMetrics) {
+        Map<Integer, Long> counts = new HashMap<>();
+
+        datasetsMetrics.forEach(
+                (metrics -> {
+                    Long yearCount = counts.getOrDefault(metrics.getYear(), 0L);
+                    counts.put(metrics.getYear(), metrics.getCount() + yearCount);
+                }));
+
+        return counts.entrySet().stream()
+                .map(integerLongEntry -> new DatasetsMetrics((double) integerLongEntry.getKey(), integerLongEntry.getValue()))
+                .sorted(Comparator.comparing(DatasetsMetrics::getYear))
+                .collect(Collectors.toList());
+    }
+
+    static List<DatasetsMetrics> fillMissingDatasetMonths(List<DatasetsMetrics> datasetsMetrics, int year) {
+        List<Integer> months = getListWithMonthsValues();
+
+        List<DatasetsMetrics> filteredMetrics = datasetsMetrics.stream()
+                .filter(metrics -> metrics.getYear() == year)
+                .peek(metrics -> months.removeIf(month -> month==metrics.getMonth()))
+                .collect(Collectors.toList());
+
+        months.forEach(month -> filteredMetrics.add(new DatasetsMetrics((double)year,(double)month,0L)));
+        filteredMetrics.sort(Comparator.comparing(DatasetsMetrics::getMonth));
+        return filteredMetrics;
+    }
+
+    private static List<Integer> getListWithMonthsValues() {
+        List<Integer> months = new ArrayList<>();
+
+        for (int i = 1; i <= 12; i++) {
+            months.add(i);
+        }
+
+        return months;
+    }
 }
+
+

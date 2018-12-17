@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui">
+<h:body>
+    <f:metadata>
+        <f:viewAction action="#{MetricsPage.init}"/>
+    </f:metadata>
+
+    <ui:composition template="/dataverse_template.xhtml">
+        <ui:define name="body">
+            <h3><h:outputText value="#{bundle['metrics.title']}"/></h3>
+            <h:form id="metricsForm">
+                <p:tabView scrollable="true">
+                    <p:tab title="#{bundle['metrics.newDatasets']}">
+                        <h:panelGrid columns="3" style="margin-bottom:10px;" cellpadding="25">
+                            <p:selectOneRadio id="model" value="#{MetricsPage.mode}" style="padding-left: 10px">
+                                <p:ajax event="change" update="metricsForm" listener="#{MetricsPage.changeDatasetMetricsModel}"/>
+                                <f:selectItem itemLabel="#{bundle['metrics.peryear']}" itemValue="YEAR"/>
+                                <f:selectItem itemLabel="#{bundle['metrics.permonth']}" itemValue="MONTH"/>
+                            </p:selectOneRadio>
+                            <p:selectOneMenu id="years" value="#{MetricsPage.selectedYear}" disabled="#{MetricsPage.mode != 'MONTH'}">
+                                <p:ajax event="change" update="metricsForm" listener="#{MetricsPage.changeDatasetMetricsModel}"/>
+                                <f:selectItems value="#{MetricsPage.yearlyDatasetStats}" var="metrics"
+                                               itemLabel="#{metrics.year}" itemValue="#{metrics.year}"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+                        <p:chart id="newDatasetsChart" type="bar" model="#{MetricsPage.barModel}" style="height:300px"/>
+                    </p:tab>
+                </p:tabView>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+
+</h:body>
+</html>
