@@ -223,4 +223,9 @@ public class TestCommandContext implements CommandContext {
     public FileDownloadServiceBean fileDownload() {
         return null;
     }
+
+    @Override
+    public DataverseTextMessageServiceBean dataverseTextMessages() {
+        return null;
+    }
 }

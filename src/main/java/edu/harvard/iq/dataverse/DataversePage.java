@@ -1029,6 +1029,12 @@ public class DataversePage implements java.io.Serializable {
             }
         }
     }
+
+    public boolean isUserCanChangeAllowMessageAndBanners() {
+        return (session.getUser() != null) &&
+                (session.getUser().isAuthenticated()) &&
+                (session.getUser().isSuperuser());
+    }
     
     private String returnRedirect(){
         return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";  

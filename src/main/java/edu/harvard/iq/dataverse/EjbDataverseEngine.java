@@ -169,7 +169,9 @@ public class EjbDataverseEngine {
     @EJB
     FileDownloadServiceBean fileDownloadService;
     
-    
+    @EJB
+    DataverseTextMessageServiceBean dataverseTextMessageServiceBean;
+
     @Resource
     EJBContext ejbCtxt;
 
@@ -470,6 +472,11 @@ public class EjbDataverseEngine {
                 @Override
                 public FileDownloadServiceBean fileDownload() {
                     return fileDownloadService;
+                }
+
+                @Override
+                public DataverseTextMessageServiceBean dataverseTextMessages() {
+                    return dataverseTextMessageServiceBean;
                 }
 
             };

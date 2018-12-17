@@ -11,9 +11,9 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+
 import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.TypedQuery;
 
 /**
  * Update an existing dataverse.
@@ -56,6 +56,9 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
             String oldDvAlias = ctxt.dataverses().find(editedDv.getId()).getAlias();
             String oldDvName = ctxt.dataverses().find(editedDv.getId()).getName();
             Dataverse result = ctxt.dataverses().save(editedDv);
+            ctxt.dataverseTextMessages().deactivateAllowMessagesAndBanners(
+                    editedDv.getId(), editedDv.isAllowMessagesBanners()
+            );
             
             if ( facetList != null ) {
                 ctxt.facets().deleteFacetsFor(result);
