@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
+
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DESCRIPTION;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DISPLAY_NAME;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_PARAMETERS;
@@ -41,21 +43,33 @@ public class ExternalToolServiceBean {
 
 
     /**
-     * @param derivedFileExists 
+     * @param type 
      * @param contentType 
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findByType(ExternalTool.Type type, String contentType) {
         List<ExternalTool> externalTools = new ArrayList<>();
-        //If the derived file, e.g. a tab file hasn't been created, only retrieve tools that don't require a derived file 
-        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type AND o.contentType = :contentType", ExternalTool.class);
+        
+        //If contentType==null, get all tools of the given ExternalTool.Type 
+        TypedQuery<ExternalTool> typedQuery = contentType != null ? em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type AND o.contentType = :contentType", ExternalTool.class):
+            em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
         typedQuery.setParameter("type", type);
-        typedQuery.setParameter("contentType", contentType);
+        if(contentType!=null) {
+            typedQuery.setParameter("contentType", contentType);
+        }
         List<ExternalTool> toolsFromQuery = typedQuery.getResultList();
         if (toolsFromQuery != null) {
             externalTools = toolsFromQuery;
         }
         return externalTools;
+    }
+
+    /**
+     * @param type 
+     * @return A list of tools or an empty list.
+     */
+    public List<ExternalTool> findByType(Type configure) {
+        return findByType(configure, null);
     }
 
     public ExternalTool findById(long id) {
@@ -92,7 +106,7 @@ public class ExternalToolServiceBean {
     public static List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
         List<ExternalTool> externalTools = new ArrayList<>();
         allExternalTools.forEach((externalTool) -> {
-            if (file.isTabularData()) {
+            if (file.getContentType().equals(externalTool.getContentType())) {
                 externalTools.add(externalTool);
             }
         });
@@ -142,5 +156,8 @@ public class ExternalToolServiceBean {
             throw new IllegalArgumentException(key + " is required.");
         }
     }
+
+
+
 
 }
