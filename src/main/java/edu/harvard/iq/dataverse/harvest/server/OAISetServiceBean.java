@@ -186,6 +186,11 @@ public class OAISetServiceBean implements java.io.Serializable {
     /**
      * Scheduled export of all local & published datasets for OAI interface harvesting.
      * Only runs on the node configured as timer master.
+     *
+     * TODO: this code needs refactoring to be unit testable:
+     *       Move the Logger/FileHandler stuff to a factory in a Service
+     *       (Export or Logging service) a) to make it mockable and
+     *       b) to have common, reusable code.
      */
     @Lock(LockType.READ)
     @Schedule(hour = "2", persistent = false)

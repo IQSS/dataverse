@@ -574,6 +574,8 @@ public class DatasetServiceBean implements java.io.Serializable {
     /**
      * Scheduled function triggering the export of all local & published datasets,
      * but only on the node which is configured as master timer.
+     *
+     * TODO: this is not unit testable as long as dependent functions aren't.
      */
     @Lock(LockType.READ)
     @Schedule(hour = "2", persistent = false)
@@ -584,6 +586,18 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
     
+    /**
+     * TODO: this code needs refactoring to be unit testable:
+     *       1) Move the Logger/FileHandler stuff to a factory in a Service
+     *          (Export or Logging service) a) to make it mockable and
+     *          b) to have common, reusable code.
+     *       2) Move this to OAIRecordServiceBean. The additional pieces for a
+     *          complete OAI export is in OAISetServiceBean, so it makes more
+     *          sense to live there and use this service as a service.
+     *       3) Moving this to OAIRecordServiceBean makes findAllLocalDatasetIds(), etc
+     *          mockable, so this class (DatasetServiceBean) does not need immediate action.
+     * @param forceReExport
+     */
     public void exportAllDatasets(boolean forceReExport) {
         Integer countAll = 0;
         Integer countSuccess = 0;
