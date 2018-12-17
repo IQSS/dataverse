@@ -24,14 +24,8 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    public void deactivateAllowMessagesAndBanners(Long dataverseId, boolean allow) {
-        if (!allow) {
-            logger.info("Deactivating text messages for dataverse: " + dataverseId);
-            deactivateAllTextMessages(dataverseId);
-        }
-    }
-
-    private void deactivateAllTextMessages(Long dataverseId) {
+    public void deactivateAllowMessagesAndBanners(Long dataverseId) {
+        logger.info("Deactivating text messages for dataverse: " + dataverseId);
         em.createNativeQuery("update dataversetextmessage set active = false where dataverse_id = ?")
                 .setParameter(1, dataverseId)
                 .executeUpdate();

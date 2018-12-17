@@ -56,9 +56,10 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
             String oldDvAlias = ctxt.dataverses().find(editedDv.getId()).getAlias();
             String oldDvName = ctxt.dataverses().find(editedDv.getId()).getName();
             Dataverse result = ctxt.dataverses().save(editedDv);
-            ctxt.dataverseTextMessages().deactivateAllowMessagesAndBanners(
-                    editedDv.getId(), editedDv.isAllowMessagesBanners()
-            );
+
+            if (!editedDv.isAllowMessagesBanners()) {
+                ctxt.dataverseTextMessages().deactivateAllowMessagesAndBanners(editedDv.getId());
+            }
             
             if ( facetList != null ) {
                 ctxt.facets().deleteFacetsFor(result);
