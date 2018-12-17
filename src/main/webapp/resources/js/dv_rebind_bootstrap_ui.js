@@ -104,8 +104,8 @@ function show_info_msg(mtitle, mtext){
  * Called after "Edit Dataverse" - "General Information"
  */
 function post_edit_dv_general_info(){
-    show_info_msg('Edit Dataverse', 'Edit your dataverse and click Save Changes. Asterisks indicate required fields.');
-    hide_search_panels();
+    // show_info_msg('Edit Dataverse', 'Edit your dataverse and click Save Changes. Asterisks indicate required fields.');
+    // hide_search_panels();
     bind_bsui_components();
 }
 
@@ -113,36 +113,37 @@ function post_edit_dv_general_info(){
  * Used after cancelling "Edit Dataverse"
  */
 function post_cancel_edit_dv(){
-   show_search_panels()
-   hide_info_msg();
+   // show_search_panels()
+   // hide_info_msg();
    bind_bsui_components();
    initCarousel();
 }
 
 /*
  * Hide search panels when editing a dv
+ * NO LONGER IN USE, INSTEAD ADDED p:fragment TO DV PG
  */
-function hide_search_panels(){
-    if($(".panelSearchForm").length>0){
-       $(".panelSearchForm").hide();
-        if($(".panelSearchForm").next().length>0){
-            $(".panelSearchForm").next().hide();
-        }
-   }
-}
+//function hide_search_panels(){
+//    if($(".panelSearchForm").length>0){
+//       $(".panelSearchForm").hide();
+//        if($(".panelSearchForm").next().length>0){
+//            $(".panelSearchForm").next().hide();
+//        }
+//   }
+//}
 
 /*
  * Show search panels when cancel a dv edit
+ * NO LONGER IN USE, INSTEAD ADDED p:fragment TO DV PG
  */
-
-function show_search_panels(){
-    if($(".panelSearchForm").length>0){
-        if($(".panelSearchForm").next().length>0){
-            $(".panelSearchForm").next().show();
-        }
-       $(".panelSearchForm").show();
-   }
-}
+//function show_search_panels(){
+//    if($(".panelSearchForm").length>0){
+//        if($(".panelSearchForm").next().length>0){
+//            $(".panelSearchForm").next().show();
+//        }
+//       $(".panelSearchForm").show();
+//   }
+//}
 
 
 /*
