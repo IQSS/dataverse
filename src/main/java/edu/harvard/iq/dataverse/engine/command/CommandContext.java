@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.engine.command;
 
 import edu.harvard.iq.dataverse.DOIDataCiteServiceBean;
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
-import edu.harvard.iq.dataverse.DataverseTextMessageServiceBean;
+import edu.harvard.iq.dataverse.dataverse.messages.DataverseTextMessageServiceBean;
 import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;

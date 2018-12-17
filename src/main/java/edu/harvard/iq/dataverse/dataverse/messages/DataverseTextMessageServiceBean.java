@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.dataverse.messages;
 
 import javax.ejb.Stateless;
 import javax.inject.Named;

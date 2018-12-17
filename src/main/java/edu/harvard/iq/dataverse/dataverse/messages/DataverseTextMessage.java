@@ -1,4 +1,6 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.dataverse.messages;
+
+import edu.harvard.iq.dataverse.Dataverse;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
