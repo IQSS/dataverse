@@ -523,6 +523,15 @@ Once you have the location of your custom CSS file, run this curl command to add
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
 
+.. _Analytics-Tracking-Code:
+
+Analytics Tracking Code
+-----------------------
+
+Your analytics tracking code can be added to your Dataverse installation in a similar fashion to how you brand it, by adding custom files and adding them to your settings.
+
+Popular analytics providers Google Analytics (https://www.google.com/analytics/) and Matomo (formerly to "Piwik"; https://matomo.org/) have been set up with Dataverse. Use the documentation they provide to add to your custom HTML files. This allows for more control of what you prefer to track.
+
 Going Live: Launching Your Production Deployment
 ------------------------------------------------
 
@@ -1117,13 +1126,6 @@ For example, if you want your installation of Dataverse to not attempt to ingest
 
 Limit the number of files in a zip that Dataverse will accept.
 
-:GoogleAnalyticsCode
-++++++++++++++++++++
-
-Set your Google Analytics Tracking ID thusly:
-
-``curl -X PUT -d 'trackingID' http://localhost:8080/api/admin/settings/:GoogleAnalyticsCode``
-
 :SolrHostColonPort
 ++++++++++++++++++
 
@@ -1230,34 +1232,6 @@ Here is an example of setting the default auth provider back to ``builtin``:
 ++++++++++++
 
 Set to false to disallow local accounts to be created. See also the sections on :doc:`shibboleth` and :doc:`oauth2`.
-
-:PiwikAnalyticsId
-++++++++++++++++++++
-
-Site identifier created in your Piwik instance. Example:
-
-``curl -X PUT -d 42 http://localhost:8080/api/admin/settings/:PiwikAnalyticsId``
-
-:PiwikAnalyticsHost
-++++++++++++++++++++
-
-Host FQDN or URL of your Piwik instance before the ``/piwik.php``. Examples:
-
-``curl -X PUT -d stats.domain.tld http://localhost:8080/api/admin/settings/:PiwikAnalyticsHost``
-
-or
-
-``curl -X PUT -d hostname.domain.tld/stats http://localhost:8080/api/admin/settings/:PiwikAnalyticsHost``
-
-:PiwikAnalyticsTrackerFileName
-++++++++++++++++++++++++++++++
-
-Filename for the 'php' and 'js' tracker files used in the Piwik code (piwik.php and piwik.js).
-Sometimes these files are renamed in order to prevent ad-blockers (in the browser) to block the Piwik tracking code.
-This sets the base name (without dot and extension), if not set it defaults to 'piwik'.
-
-``curl -X PUT -d domainstats http://localhost:8080/api/admin/settings/:PiwikAnalyticsTrackerFileName``
-
 
 :FileFixityChecksumAlgorithm
 ++++++++++++++++++++++++++++
