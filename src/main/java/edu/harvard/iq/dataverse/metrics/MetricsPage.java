@@ -7,6 +7,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,11 @@ public class MetricsPage implements Serializable {
     public void init(){
         selectedYear = LocalDate.now().getYear();
         yearlyDatasetStats = MetricsUtil.countDatasetsPerYear(repository.countPublishedDatasets());
+
+        if (yearlyDatasetStats.isEmpty()) {
+            yearlyDatasetStats.add(new DatasetsMetrics((double) LocalDateTime.now().getYear(), 0L));
+        }
+
         barModel = chartCreator.changeToYearlyModel();
     }
 

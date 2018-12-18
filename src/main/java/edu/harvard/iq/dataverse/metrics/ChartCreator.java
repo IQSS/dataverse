@@ -79,10 +79,14 @@ public class ChartCreator {
         yAxis.setLabel(BundleUtil.getStringFromBundle("metrics.datasets"));
         yAxis.setMin(0);
         yAxis.setTickFormat("%d");
-        yAxis.setTickCount(datasets.size() + 1);
+        yAxis.setTickCount(retrieveTickForDatasetSize(datasets));
 
         Optional<DatasetsMetrics> datasetMax = datasets.stream().max(Comparator.comparing(DatasetsMetrics::getCount));
         yAxis.setMax(datasetMax.isPresent() ? datasetMax.get().getCount() : 0);
         return model;
+    }
+
+    private int retrieveTickForDatasetSize(List<DatasetsMetrics> datasets) {
+        return datasets.size() < 4 ? datasets.size() + 1 : 5;
     }
 }
