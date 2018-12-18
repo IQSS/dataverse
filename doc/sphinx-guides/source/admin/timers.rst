@@ -58,6 +58,11 @@ recommendation or not. In new installations, this will not be necessary.
 Known Issues
 ------------
  
-Former to Dataverse 4.10, we've received several reports of an intermittent issue where the application fails to deploy
+Prior to Dataverse 4.10, we've received several reports of an intermittent issue where the application fails to deploy
 with the error message "EJB Timer Service is not available." Please see the :doc:`/admin/troubleshooting` section of
 this guide for a workaround.
+
+When running harvest clients, you should validate from the logs if all of your harvesters complete their job. "Trouble"
+and incomplete harvests might await you, when your harvests take longer than one hour or stack up when grouped at start
+times lying just an hour or two away from each other. If you suffer from this, please open an issue referencing the
+:doc:`../developers/timers` part of the docs.
