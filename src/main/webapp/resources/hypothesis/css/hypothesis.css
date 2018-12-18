@@ -1,12 +1,19 @@
+.annotation-page-title {
+    text-align:center;
+}
 .annotation-header {
     font-size:18px;
     font-family: sans-serif;
-    color: #a6a6a6;
+    color: darkslategray;
     overflow-wrap: break-word;
     font-style: italic;
+    margin-left: 40px;
+    margin-bottom: 10px;
+    background-color: lightgray;
+    padding: 15px;
 }
 .annotation-header div {
-    margin: 10px 5px 5px 40px;
+    margin: 10px 5px 5px 0px;
 }
 .annotation-card {
     font-size: 13px;
