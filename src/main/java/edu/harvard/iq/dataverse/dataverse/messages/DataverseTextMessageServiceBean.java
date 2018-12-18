@@ -5,7 +5,10 @@
  */
 package edu.harvard.iq.dataverse.dataverse.messages;
 
+import edu.harvard.iq.dataverse.DataverseSession;
+
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -21,14 +24,19 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DataverseTextMessageServiceBean.class.getCanonicalName());
 
+    @Inject
+    private DataverseSession session;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
     public void deactivateAllowMessagesAndBanners(Long dataverseId) {
-        logger.info("Deactivating text messages for dataverse: " + dataverseId);
-        em.createNativeQuery("update dataversetextmessage set active = false where dataverse_id = ?")
-                .setParameter(1, dataverseId)
-                .executeUpdate();
+        if (session.isSuperUser()) {
+            logger.info("As superuser, deactivating text messages for dataverse: " + dataverseId);
+            em.createNativeQuery("update dataversetextmessage set active = false where dataverse_id = ?")
+                    .setParameter(1, dataverseId)
+                    .executeUpdate();
+        }
     }
 
 }

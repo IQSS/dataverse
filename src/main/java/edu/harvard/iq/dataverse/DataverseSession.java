@@ -61,4 +61,9 @@ public class DataverseSession implements Serializable{
             return permissionsService.userOn(user, d);
     }
 
+    public boolean isSuperUser() {
+        User currentUser = getUser();
+        return currentUser != null && currentUser.isAuthenticated() && currentUser.isSuperuser();
+    }
+
 }
