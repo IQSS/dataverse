@@ -2,7 +2,7 @@
   "displayName":"Hypothesis Annotation Viewer",
   "description":"View the annotation entries in a file.",
   "type":"explore",
-  "toolUrl":"https://dv.dev-aws.qdr.org/resources/hypothesis/hypothesisPreview.html",
+  "toolUrl":"https://dv.dev-aws.qdr.org/resources/hypothesis/HypothesisPreview.html",
   "toolParameters": {
       "queryParameters":[
         {"fileid":"{fileId}"},

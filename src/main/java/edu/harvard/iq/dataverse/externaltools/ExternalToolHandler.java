@@ -91,7 +91,7 @@ public class ExternalToolHandler {
                 }
                 break;
             case DATASET_ID:
-                return key + "=" +getDataFile().getFileMetadata().getDatasetVersion().getDataset().getIdentifier();
+                return key + "=" +getDataFile().getFileMetadata().getDatasetVersion().getDataset().getId();
             case DATASET_VERSION:
                 String version = getDataFile().getFileMetadata().getDatasetVersion().getFriendlyVersionNumber();
                 if(version.equals("DRAFT")) {
