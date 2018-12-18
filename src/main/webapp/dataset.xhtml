@@ -10,6 +10,7 @@
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:o="http://omnifaces.org/ui"
       xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+<f:view locale="#{dataverseLocaleBean.localeCode}">
     <h:head>
     </h:head>
     <h:body>
@@ -331,7 +332,7 @@
                         <div id="datasetVersionBlock" class="container-fluid">
                             <div id="title-block" class="row" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                 <div class="col-xs-1 vcenter title-preview-icon-block">
-                                    <h:graphicImage value="#{DatasetPage.thumbnailString}" rendered="#{!empty DatasetPage.thumbnailString}"/>                               
+                                    <img src="#{DatasetPage.thumbnailString}" jsf:rendered="#{!empty DatasetPage.thumbnailString}"/>
                                     <span class="icon-dataset" jsf:rendered="#{empty DatasetPage.thumbnailString}"/>
                                 </div>
                                 <div class="col-xs-11 vcenter">
@@ -374,7 +375,7 @@
                                         
                                         <div id="keywords" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay and dsf.datasetFieldType.id==DatasetPage.datasetVersionUI.keyword.datasetFieldType.id}">
                                             <label class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.description}">#{bundle['dataset.keywordDisplay.title']}</span>
+                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.localeDescription}">#{bundle['dataset.keywordDisplay.title']}</span>
                                             </label>
                                             <div class="col-sm-9">#{DatasetPage.datasetVersionUI.keywordDisplay}</div>
                                         </div>
@@ -390,8 +391,8 @@
                                      
                                         <div class="form-group" jsf:rendered="#{dsf.datasetFieldType.name!='publication' and dsf.datasetFieldType.name!='keyword'  }">
                                             <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.description}">
-                                                        #{dsf.datasetFieldType.title}
+                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.localeDescription}">
+                                                        #{dsf.datasetFieldType.localeTitle}
                                                 </span>
                                             </label>
                                             <!-- Primitive datasetFields -->
@@ -853,22 +854,22 @@
                             </div>
                             <div class="pull-left">
                                 #{bundle['file.viewDiffDialog.version']}: #{DatasetPage.datasetVersionDifference.originalVersion.semanticVersion}<br/>
-                                #{bundle['file.viewDiffDialog.lastUpdated']}: #{DatasetPage.datasetVersionDifference.originalVersion.lastUpdateTime}
+                                #{bundle['file.viewDiffDialog.lastUpdated']}: #{DatasetPage.datasetVersionDifference.originalVersion.localeLastUpdateTime}
                             </div>
                             <div class="pull-left">
                                 #{bundle['file.viewDiffDialog.version']}: #{DatasetPage.datasetVersionDifference.newVersion.semanticVersion}<br/>
-                                #{bundle['file.viewDiffDialog.lastUpdated']}: #{DatasetPage.datasetVersionDifference.newVersion.lastUpdateTime}
+                                #{bundle['file.viewDiffDialog.lastUpdated']}: #{DatasetPage.datasetVersionDifference.newVersion.localeLastUpdateTime}
                             </div>
                         </div>
                         <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.detailDataByBlock)}">
                             <ui:repeat value="#{DatasetPage.datasetVersionDifference.detailDataByBlock}" var="block">
                                 <div class="panel panel-default">
                                     <div class="panel-heading text-info">
-                                        <h:outputText value="#{block.get(0)[0].datasetFieldType.metadataBlock.displayName}" />
+                                        <h:outputText value="#{block.get(0)[0].datasetFieldType.metadataBlock.localeDisplayName}" />
                                     </div>
                                     <p:dataTable id="byBlockInner" styleClass="dvnDifferanceTable" var="dsfArray" value="#{block}">
                                         <p:column styleClass="versionValue">
-                                            <h:outputText value="#{dsfArray[0].datasetFieldType.title}" />
+                                            <h:outputText value="#{dsfArray[0].datasetFieldType.localeTitle}" />
                                         </p:column>
                                         <p:column styleClass="versionDetails">
                                             <h:outputText rendered="#{dsfArray[0].datasetFieldType.primitive and !(dsfArray[0].isEmpty())}" value="#{dsfArray[0].displayValue}" />
@@ -1165,7 +1166,6 @@
                     
                     <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-
                         <ui:include src="file-download-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
                             <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
@@ -1173,9 +1173,17 @@
                             <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                         </ui:include>
-
                     </p:dialog>
-                    
+                    <p:dialog id="downloadPackagePopup" styleClass="smallPopUp" header="#{bundle['packageDownload.title']}" widgetVar="downloadPackagePopup" modal="true">
+                        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
+                        <ui:include src="package-download-popup-fragment.xhtml">
+                            <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
+                            <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
+                            <ui:param name="guestbookResponse" value="#{DatasetPage.fileDownloadHelper.guestbookResponse}" rendered="#{!settingsWrapper.rsyncDownload}"/>
+                            <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
+                            <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
+                        </ui:include>
+                    </p:dialog>
                     
                     <p:dialog id="requestAccessPopup" styleClass="largePopUp" header="#{bundle['file.requestAccess']}" widgetVar="requestAccessPopup" modal="true">
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
@@ -1600,4 +1608,5 @@
             </ui:define>
         </ui:composition>
     </h:body>
+</f:view>
 </html>

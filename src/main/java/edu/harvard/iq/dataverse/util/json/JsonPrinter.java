@@ -577,6 +577,7 @@ public class JsonPrinter {
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
+                .add ("originalFileSize", df.getOriginalFileSize())
                 .add("UNF", df.getUnf())
                 //---------------------------------------------
                 // For file replace: rootDataFileId, previousDataFileId
@@ -586,7 +587,7 @@ public class JsonPrinter {
                 //---------------------------------------------
                 // Checksum
                 // * @todo Should we deprecate "md5" now that it's under
-                // * "checksum" (which may also be a SHA-1 rather than an MD5)?
+                // * "checksum" (which may also be a SHA-1 rather than an MD5)? - YES!
                 //---------------------------------------------
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
