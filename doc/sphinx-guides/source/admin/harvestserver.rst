@@ -14,6 +14,14 @@ harvesting protocol. Note that the terms "Harvesting Server" and "OAI
 Server" are being used interchangeably throughout this guide and in
 the inline help text.
 
+If you want to learn more about OAI-PMH, you could take a look at
+`DataCite OAI-PMH guide <https://support.datacite.org/docs/datacite-oai-pmh>`_
+or the `OAI-PMH protocol definition <https://www.openarchives.org/OAI/openarchivesprotocol.html>`_.
+
+You might consider adding your OAI-enabled production instance of Dataverse to
+`this shared list <https://docs.google.com/spreadsheets/d/12cxymvXCqP_kCsLKXQD32go79HBWZ1vU_tdG4kvP5S8/>`_
+of such instances.
+
 How does it work? 
 -----------------
 
@@ -27,6 +35,10 @@ download the data files associated with the harvested datasets.
 Harvesting server can be enabled or disabled on the "Harvesting
 Server" page accessible via the :doc:`dashboard`. Harvesting server is by
 default disabled on a brand new, "out of the box" Dataverse.
+
+The OAI-PMH endpoint can be accessed at ``http(s)://<Your Dataverse FQDN>/oai``.
+If you want other services to harvest your repository, point them to this URL.
+*Example URL to 'Identify' verb*: `Harvard Dataverse OAI <https://dataverse.harvard.edu/oai?verb=Identify>`_
 
 OAI Sets
 --------
