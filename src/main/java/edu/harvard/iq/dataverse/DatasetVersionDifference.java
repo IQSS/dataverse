@@ -1187,9 +1187,9 @@ public final class DatasetVersionDifference {
                     
                     if (!dsfArray[0].isEmpty()) {
                         if (dsfArray[0].getDatasetFieldType().isPrimitive()) {
-                            oldValue += dsfArray[0].getDisplayValue();
+                            oldValue += dsfArray[0].getRawValue();
                         } else {
-                            oldValue += dsfArray[0].getCompoundDisplayValue();
+                            oldValue += dsfArray[0].getCompoundRawValue();
                         }
                     }
                     valueString += oldValue;
@@ -1197,9 +1197,9 @@ public final class DatasetVersionDifference {
                     String newValue = " " + BundleUtil.getStringFromBundle("dataset.versionDifferences.to") + ": ";
                     if (!dsfArray[1].isEmpty()) {
                         if (dsfArray[1].getDatasetFieldType().isPrimitive()) {
-                            newValue += dsfArray[1].getDisplayValue();
+                            newValue += dsfArray[1].getRawValue();
                         } else {
-                            newValue += dsfArray[1].getCompoundDisplayValue();
+                            newValue += dsfArray[1].getCompoundRawValue();
                         }
 
                     }
