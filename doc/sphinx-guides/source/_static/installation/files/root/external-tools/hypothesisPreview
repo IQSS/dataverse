@@ -1,0 +1,16 @@
+{
+  "displayName":"Hypothesis Annotation Viewer",
+  "description":"View the annotation entries in a file.",
+  "type":"explore",
+  "toolUrl":"https://dv.dev-aws.qdr.org/resources/hypothesis/hypothesisPreview.html",
+  "toolParameters": {
+      "queryParameters":[
+        {"fileid":"{fileId}"},
+        {"siteUrl":"{siteUrl}"},
+        {"key":"{apiToken}"},
+        {"datasetid":"{datasetId}"},
+        {"datasetversion":"{datasetVersion}"}
+      ]
+    },
+  "contentType":"application/x-json-hypothesis"
+}
