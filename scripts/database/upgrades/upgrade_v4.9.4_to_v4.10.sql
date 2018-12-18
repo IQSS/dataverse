@@ -10,3 +10,4 @@ INSERT INTO setting(
    VALUES (':UploadMethods', 'native/http');
 
 ALTER TABLE actionlogrecord ALTER COLUMN info TYPE text;
+ALTER TABLE externaltool ADD COLUMN contenttype text;
