@@ -8,32 +8,26 @@ package edu.harvard.iq.dataverse.harvest.client;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 //import java.net.URLEncoder;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Resource;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.Timer;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import javax.ejb.*;
 import javax.faces.bean.ManagedBean;
 import javax.inject.Named;
 //import javax.xml.bind.Unmarshaller;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
+
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.commons.lang.mutable.MutableLong;
 import org.xml.sax.SAXException;
@@ -50,6 +44,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import javax.persistence.EntityManager;
@@ -67,13 +62,7 @@ public class HarvesterServiceBean {
     private EntityManager em;
     
     @EJB
-    DataverseServiceBean dataverseService;
-    @EJB
     DatasetServiceBean datasetService;
-    @Resource
-    javax.ejb.TimerService timerService;
-    @EJB
-    DataverseTimerServiceBean dataverseTimerService;
     @EJB
     HarvestingClientServiceBean harvestingClientService;
     @EJB
@@ -82,6 +71,10 @@ public class HarvesterServiceBean {
     EjbDataverseEngine engineService;
     @EJB
     IndexServiceBean indexService;
+    @EJB
+    AuthenticationServiceBean authSvc;
+    @EJB
+    SystemConfig systemConfig;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean");
     private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -94,6 +87,69 @@ public class HarvesterServiceBean {
 
     public HarvesterServiceBean() {
 
+    }
+    
+    /**
+     * Run scheduled harvesting every hour.
+     * Check every client admin UI setting to determine if it should run.
+     *
+     * This code uses a WRITE lock. As it is run every hour, harvesting needs to done
+     * within that time or things will fail.
+     *
+     * TODO: This is not unit testable as long as dependent method doHarvest() is not.
+     * TODO: Maybe switch harvesting to use async or JBatch if necessary (timeouts, running longer than 1 hour, ...)
+     */
+    @Lock(LockType.WRITE)
+    @Schedule(hour = "*", persistent = false)
+    public void schedule() {
+        // Fail silently when this is not the main timer node.
+        if (!systemConfig.isTimerServer()) {
+            return;
+        }
+        
+        // Timer batch jobs are run by the main Admin user.
+        AuthenticatedUser adminUser = authSvc.getAdminUser();
+        if (adminUser == null) {
+            logger.severe("Scheduled harvest failed to locate the admin user! Exiting.");
+            return;
+        }
+        
+        // TODO: Refactor and add a lookup retrieving enabled clients only from the service.
+        for (HarvestingClient client : harvestingClientService.getAllHarvestingClients()) {
+            // Skip disabled clients
+            if (!client.isScheduled()) {
+                continue;
+            }
+            
+            // Determine if this client needs to be run (avoids code doubling)
+            boolean run = (
+                    // Check schedule: if "daily", check current hour and run on match.
+                    HarvestingClient.SCHEDULE_PERIOD_DAILY.equals(client.getSchedulePeriod()) &&
+                    Calendar.getInstance().get(Calendar.HOUR_OF_DAY) == client.getScheduleHourOfDay()
+                ) || (
+                    // Check schedule: if "weekly", check current day of week plus hour and run on match.
+                    HarvestingClient.SCHEDULE_PERIOD_WEEKLY.equals(client.getSchedulePeriod()) &&
+                    // ("Day of week" in DB zero-based but Calendar is one-based!)
+                    Calendar.getInstance().get(Calendar.DAY_OF_WEEK)-1 == client.getScheduleDayOfWeek() &&
+                    Calendar.getInstance().get(Calendar.HOUR_OF_DAY) == client.getScheduleHourOfDay()
+                );
+            
+            if (run) {
+                logger.info("Running harvesting client: id=" + client.getId() + " name=" + client.getName() +
+                    " using admin user id=" + adminUser.getId() + " name=" + adminUser.getName());
+                DataverseRequest dataverseRequest = new DataverseRequest(adminUser, (HttpServletRequest)null);
+                try {
+                    // TODO: if harvests are reported to be slow or fail, it might be necessary to switch to
+                    //       async calling, so harvesting happens simultaneous.
+                    doHarvest(dataverseRequest, client.getId());
+                    logger.info("Harvesting client id=" + client.getId() + " finished.");
+                } catch (Exception ex) {
+                    // just log and continue with next client.
+                    logger.log(Level.SEVERE, "Scheduled harvest failed with Exception:", ex);
+                    continue;
+                }
+            }
+        }
     }
     
     /**
@@ -111,6 +167,13 @@ public class HarvesterServiceBean {
 
     /**
      * Run a harvest for an individual harvesting Dataverse
+     *
+     * TODO: this code needs refactoring to be unit testable:
+     *       1) Move the Logger/FileHandler stuff to a factory in a Service
+     *          (Export or Logging service) a) to make it mockable and
+     *          b) to have common, reusable code.
+     *       2) Dependent functions below are not yet testable.
+     *
      * @param dataverseRequest
      * @param harvestingClientId
      * @throws IOException

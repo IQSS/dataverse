@@ -9,14 +9,12 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -65,8 +63,6 @@ public class HarvestingClientsPage implements java.io.Serializable {
     IndexServiceBean indexService;
     @EJB
     EjbDataverseEngine engineService;
-    @EJB
-    DataverseTimerServiceBean dataverseTimerService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -453,9 +449,6 @@ public class HarvestingClientsPage implements java.io.Serializable {
             
             configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
             
-            if (!harvestingClient.isScheduled()) {
-                dataverseTimerService.removeHarvestTimer(harvestingClient);
-            }
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("harvest.update.success") + harvestingClient.getName());
 
         } catch (CommandException ex) {

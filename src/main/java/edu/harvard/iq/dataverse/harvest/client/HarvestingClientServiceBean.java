@@ -5,10 +5,8 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteHarvestingClientCommand;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -44,8 +42,6 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     @EJB
     IndexServiceBean indexService;
-    @EJB
-    DataverseTimerServiceBean dataverseTimerService;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -139,9 +135,6 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
         try {
             //engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), victim));
             HarvestingClient merged = em.merge(victim);
-
-            // if this was a scheduled harvester, make sure the timer is deleted:
-            dataverseTimerService.removeHarvestTimer(victim);
                 
             // purge indexed objects:
             indexService.deleteHarvestedDocuments(victim);
