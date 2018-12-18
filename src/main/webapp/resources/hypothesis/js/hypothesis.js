@@ -3,27 +3,27 @@ $(document)
     function() {
         var queryParams = new URLSearchParams(window.location.search.substring(1));
         $.getJSON(queryParams.get("siteUrl") + "/api/access/datafile/" + queryParams.get("fileid") + "?key=" + queryParams.get("key") + "&gbrecs=false", function(data, status){
-            writeHypothesisFields(data);
+            $.getJSON(queryParams.get("siteUrl") + "/api/datasets/" + queryParams.get("datasetid") + "/versions/" + queryParams.get("datasetversion") + "/files"  + "?key=" + queryParams.get("key"),
+               function(json, status) {
+                 var datafiles=json.data;
+                 for(var entry in datafiles) {
+                   if(JSON.stringify(datafiles[entry].dataFile.id) === queryParams.get("fileid")) {
+                     writeHypothesisFields(data,datafiles[entry].dataFile.creationDate);
+                   }
+                 }
+            });
         });
-        
-        //Sample - to be updated to get file creation date metadata 
-//        $.ajax({
-//            type: "GET",
-//            url: queryParams.get("siteUrl") + "/api/meta/datafile/" + queryParams.get("fileid"),
-//            cache: false,
-// accepts: "text/xml,*/*",
-//            dataType: "xml",
-//            success: function(xml) {
-//alert(xml);
-           //     $(xml).find('members').each(function(){
-             //       var name = $(this).find("name").text()
-              //      alert(name);
-//}
-//                });
-        });
+    });
 
-function writeHypothesisFields(json) {
+function writeHypothesisFields(json, date) {
   var hypo = $(".hypothesis");
+  var url = json.rows[0].target[0].source;
+  var header = $("<div/>").addClass("annotation-header");
+  header.append($("<div/>").text("Source Document: ").append($("<a/>").attr("href",url).attr("target","_blank").text(url)));
+  header.append($("<div/>").text("Created in Group: ").append($("<a/>").attr("href","https://hypothes.is/groups/" + json.rows[0].group).attr("target","_blank").text(json.rows[0].group)));
+  header.append($("<div/>").text("Current as of Date: " + date));
+  hypo.before(header);
+
   if (hypo.length > 0) {
     var converter = new showdown.Converter({ extensions: ['xssFilter'] });
     hypo.html("");

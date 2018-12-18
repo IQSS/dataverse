@@ -1,3 +1,13 @@
+.annotation-header {
+    font-size:18px;
+    font-family: sans-serif;
+    color: #a6a6a6;
+    overflow-wrap: break-word;
+    font-style: italic;
+}
+.annotation-header div {
+    margin: 10px 5px 5px 40px;
+}
 .annotation-card {
     font-size: 13px;
     line-height: 15px;
