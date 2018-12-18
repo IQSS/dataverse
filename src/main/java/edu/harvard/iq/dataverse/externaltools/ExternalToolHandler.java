@@ -90,6 +90,14 @@ public class ExternalToolHandler {
                     return key + "=" + apiTokenString;
                 }
                 break;
+            case DATASET_ID:
+                return key + "=" +getDataFile().getFileMetadata().getDatasetVersion().getDataset().getIdentifier();
+            case DATASET_VERSION:
+                String version = getDataFile().getFileMetadata().getDatasetVersion().getFriendlyVersionNumber();
+                if(version.equals("DRAFT")) {
+                    version = ":draft"; //send the token needed in api calls that can be substituted for a numeric version.
+                }
+                return key + "=" + version;
             default:
                 break;
         }
