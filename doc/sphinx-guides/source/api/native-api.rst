@@ -772,6 +772,15 @@ Delete Provenance JSON for an uploaded file::
 
     DELETE http://$SERVER/api/files/{id}/prov-json?key=$apiKey
 
+Datafile Integrity
+~~~~~~~~~~~~~~~~~~
+
+Starting the release 4.10 the size of the saved original file (for an ingested tabular datafile) is stored in the database. The following API will retrieve and permanently store the sizes for any already existing saved originals::
+
+	    GET http://$SERVER/api/admin/datafiles/integrity/fixmissingoriginalsizes{?limit=N}
+
+Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles. 
+
 Builtin Users
 -------------
 
@@ -1326,3 +1335,12 @@ Clear a specific metric cache. Currently this must match the name of the row in 
       <span class="label label-success pull-right">
         CORS
       </span>
+
+Inherit Dataverse Role Assignments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Recursively applies the role assignments of the specified dataverse, for the roles specified by the ``:InheritParentRoleAssignments`` setting, to all dataverses contained within it:: 
+
+  GET http://$SERVER/api/admin/dataverse/{dataverse alias}/addRoleAssignmentsToChildren
+  
+Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inheritance of the parent dataverse's role assignments for a newly created dataverse. Hence this API call is intended as a way to update existing child dataverses or to update children after a change in role assignments has been made on a parent dataverse.

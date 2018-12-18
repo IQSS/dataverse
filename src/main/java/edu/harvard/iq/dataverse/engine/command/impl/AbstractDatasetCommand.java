@@ -130,6 +130,10 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
         while (dsfItSort.hasNext()) {
             dsfItSort.next().setValueDisplayOrder();
         }
+        Iterator<DatasetField> dsfItTrim = dsv.getDatasetFields().iterator();
+        while (dsfItTrim.hasNext()) {
+            dsfItTrim.next().trimTrailingSpaces();
+        }
     }
 
     /**
