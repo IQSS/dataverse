@@ -96,6 +96,14 @@ Ingested files can be downloaded in several different ways.
 - A subset of the columns of the data
 
 
+.. _url_download:
+
+Downloading via URL
+^^^^^^^^^^^^^^^^^^^^
+
+Dataverse displays a plaintext URL for the location of the file. To ensure a reliable, resumable download, we recommend using `GNU Wget <https://www.gnu.org/software/wget/>`_ in a command line terminal or using a download manager software of your choice. If you try to simply paste the URL into your web browser then the download may overwhelm your browser, resulting in an interrupted, timed out, or otherwise failed download.
+
+
 .. _rsync_download:
 
 Downloading a Dataverse Package via rsync

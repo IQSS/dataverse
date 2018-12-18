@@ -433,7 +433,14 @@
                                                    #{bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
                                                 </label>
                                                 <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.publicDownloadUrl}"/>
+                                                    <p class="help-block">
+                                                        <span class="glyphicon glyphicon-info-sign"></span>
+                                                        <h:outputFormat value=" #{bundle['file.metadataTab.fileMetadata.downloadUrl.info']}" escape="false">
+                                                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                                            <f:param value="#{systemConfig.guidesVersion}"/>
+                                                        </h:outputFormat>
+                                                    </p>
+                                                    <code><h:outputText value="#{FilePage.publicDownloadUrl}"/></code>
                                                 </div>
                                             </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.unf)}">
