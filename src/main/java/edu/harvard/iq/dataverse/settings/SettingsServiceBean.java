@@ -283,6 +283,10 @@ public class SettingsServiceBean {
         */
         StyleCustomizationFile,
         /*
+         Location and name of analytics code file
+        */
+        WebAnalyticsCode,
+        /*
          Location and name of installation logo customization file
         */
         LogoCustomizationFile,
