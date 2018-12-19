@@ -975,6 +975,8 @@ Otherwise, if ``:DataFilePIDFormat`` is set to *INDEPENDENT*, then each file wil
 
 Note that in either case, when using the ``sequentialNumber`` option, datasets and files share the same database sequence that was created as part of the setup described in ``:IdentifierGenerationStyle`` above.
 
+.. _:FilePIDsEnabled:
+
 :FilePIDsEnabled
 ++++++++++++++++
 
