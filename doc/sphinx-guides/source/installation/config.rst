@@ -523,14 +523,26 @@ Once you have the location of your custom CSS file, run this curl command to add
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
 
-.. _Analytics-Tracking-Code:
+.. _Web-Analytics-Code:
 
-Analytics Tracking Code
------------------------
+Web Analytics Code
+------------------
 
-Your analytics tracking code can be added to your Dataverse installation in a similar fashion to how you brand it, by adding custom files and adding them to your settings.
+Your analytics code can be added to your Dataverse installation in a similar fashion to how you brand it, by adding a custom HTML file containing the analytics code snippet and adding the file location to your settings.
 
-Popular analytics providers Google Analytics (https://www.google.com/analytics/) and Matomo (formerly to "Piwik"; https://matomo.org/) have been set up with Dataverse. Use the documentation they provide to add to your custom HTML files. This allows for more control of what you prefer to track.
+Popular analytics providers Google Analytics (https://www.google.com/analytics/) and Matomo (formerly to "Piwik"; https://matomo.org/) have been set up with Dataverse. Use the documentation they provide to add the analytics code to your custom HTML file. This allows for more control of your analytics, making it easier to customize what you prefer to track.
+
+Create your own ``analytics-code.html`` file using the analytics code snippet provided by Google or Matomo and place it at ``/var/www/dataverse/branding/analytics-code.html``. Here is an example of the what your HTML file should like like:
+
+.. code-block:: none
+
+    <script>
+        // Analytics code here...
+    </script>
+
+Once you have the location of your analytics file, run this curl command to add it to your settings:
+
+``curl -X PUT -d '/var/www/dataverse/branding/analytics-code.html' http://localhost:8080/api/admin/settings/:WebAnalyticsCode``
 
 Going Live: Launching Your Production Deployment
 ------------------------------------------------
@@ -877,6 +889,11 @@ See :ref:`Branding Your Installation` above.
 +++++++++++++++++++++++
 
 See :ref:`Branding Your Installation` above.
+
+:WebAnalyticsCode
++++++++++++++++++
+
+See :ref:`Web-Analytics-Code` above.
 
 :FooterCopyright
 ++++++++++++++++
