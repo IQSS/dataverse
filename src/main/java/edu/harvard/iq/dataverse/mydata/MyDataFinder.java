@@ -5,21 +5,22 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
-import edu.harvard.iq.dataverse.DataverseLocaleBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.search.SearchFields;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -264,7 +265,7 @@ public class MyDataFinder {
             datasetParentIdsForFQ.addAll(this.datasetParentIds);
         }
 
-         if (this.filterParams.areFilesIncluded()){
+        if (this.filterParams.areFilesIncluded()){
             entityIds.addAll(this.directFileIds); // file ids
             parentIds.addAll(this.fileParentIds); // dataset ids that are file parents
             fileParentIdsForFQ.addAll(this.fileParentIds);
@@ -389,7 +390,7 @@ public class MyDataFinder {
      *
      * @return
      */
-     public JsonObjectBuilder getSelectedFilterParamsAsJSON(){
+    public JsonObjectBuilder getSelectedFilterParamsAsJSON(){
 
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
         jsonData.add("publication_statuses", this.filterParams.getListofSelectedPublicationStatuses())
@@ -410,23 +411,10 @@ public class MyDataFinder {
         JsonArrayBuilder jsonArray = Json.createArrayBuilder();
 
         for (Long roleId : this.filterParams.getRoleIds()){
-            try {
-                DataverseLocaleBean d = new DataverseLocaleBean();
-                ResourceBundle bundle;
-                Locale bundle_locale = new Locale(d.getLocaleCode());
-                System.out.println("========role langugage====== " + bundle_locale.getLanguage());
-                System.out.println("=========role." + this.rolePermissionHelper.getRoleName(roleId).toLowerCase().replace(" ", "") + ".name");
-                String role = BundleUtil.getStringFromPropertyFile("role." + this.rolePermissionHelper.getRoleName(roleId).toLowerCase().replace(" ", "") + ".name", "BuiltInRoles");
-                jsonArray.add(role);
-            } catch (Exception e)
-            {
-                jsonArray.add(this.rolePermissionHelper.getRoleName(roleId));
-            }
-
+            jsonArray.add(this.rolePermissionHelper.getRoleName(roleId));
         }
         return jsonArray;
     }
-
 
 
     private boolean runStep1RoleAssignments(){
@@ -529,7 +517,7 @@ public class MyDataFinder {
             switch(dtype){
                 case(DvObject.DATAVERSE_DTYPE_STRING):
                     //if (this.idsWithDataversePermissions.containsKey(dvId)){
-                        this.directDataverseIds.add(dvId);  // Direct dataverse (no indirect dataverses)
+                    this.directDataverseIds.add(dvId);  // Direct dataverse (no indirect dataverses)
                     //}
                     if (this.idsWithDatasetPermissions.containsKey(dvId)){
                         this.datasetParentIds.add(dvId);    // Parent to dataset
@@ -544,7 +532,7 @@ public class MyDataFinder {
                     break;
                 case(DvObject.DATASET_DTYPE_STRING):
                     //if (this.idsWithDatasetPermissions.containsKey(dvId)){
-                        this.directDatasetIds.add(dvId); // Direct dataset
+                    this.directDatasetIds.add(dvId); // Direct dataset
                     //}
                     if (this.idsWithFilePermissions.containsKey(dvId)){
                         this.fileParentIds.add(dvId);   // Parent to file
