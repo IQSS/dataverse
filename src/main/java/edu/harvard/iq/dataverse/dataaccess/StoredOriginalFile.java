@@ -60,7 +60,9 @@ public class StoredOriginalFile {
         try {
             storageIO.open();
             Channel storedOriginalChannel = storageIO.openAuxChannel(SAVED_ORIGINAL_FILENAME_EXTENSION);
-            storedOriginalSize = storageIO.getAuxObjectSize(SAVED_ORIGINAL_FILENAME_EXTENSION);
+            storedOriginalSize = dataFile.getDataTable().getOriginalFileSize() != null ? 
+                    dataFile.getDataTable().getOriginalFileSize() : 
+                    storageIO.getAuxObjectSize(SAVED_ORIGINAL_FILENAME_EXTENSION);
             inputStreamIO = new InputStreamIO(Channels.newInputStream((ReadableByteChannel) storedOriginalChannel), storedOriginalSize);
             logger.fine("Opened stored original file as Aux "+SAVED_ORIGINAL_FILENAME_EXTENSION);
         } catch (IOException ioEx) {

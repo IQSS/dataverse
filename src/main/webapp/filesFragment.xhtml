@@ -152,6 +152,7 @@
         </f:facet>
         
         <p:column selectionMode="multiple" class="text-center" style="width:20px !important;"  />
+        
         <p:column class="col-file-thumb" style="width:64px !important;">
             <div class="thumbnail-block text-center">
                 <!-- Thumbnail Preview -->
@@ -234,6 +235,7 @@
                 </ui:fragment>
             </div>
         </p:column>
+
         <p:column class="col-file-action text-right #{settingsWrapper.rsyncOnly ? 'col-file-access' : ''}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
             <f:facet name="header" class="col-file-action text-right">
                 <!-- EDIT -->
@@ -256,8 +258,9 @@
                                     <h:outputText value="#{bundle['file.metadata']}"/>
                                 </p:commandLink>
                             </li>
-                            <ui:fragment rendered="#{!settingsWrapper.publicInstall and !DatasetPage.workingVersion.hasPackageFile }">
-                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                            <!--no restrict on non-s3 package file -->
+                            <ui:fragment rendered="#{!settingsWrapper.publicInstall and (!DatasetPage.workingVersion.hasPackageFile or DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')) }">
+                                <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}"> 
                                     <p:commandLink oncomplete="toggle_dropdown();" 
                                                    onclick="testFilesSelectedForRestriction()">
                                         <h:outputText value="#{bundle['file.restrict']}"/>
@@ -375,7 +378,8 @@
                 </ui:include>
             </ui:fragment>
 
-            <div class="btn-group" jsf:rendered="#{!fileMetadata.dataFile.filePackage}">
+            <div class="btn-group" jsf:rendered="#{!fileMetadata.dataFile.filePackage or
+                fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}">
                 <ui:include src="file-download-button-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
@@ -388,8 +392,9 @@
                     <ui:param name="exploreTools" value="#{DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)}"/>
                 </ui:include>
             </div>
-            
-            <div class="col-xs-12 text-left small" jsf:rendered="#{fileMetadata.dataFile.filePackage}">
+            <div class="col-xs-12 text-left small" jsf:rendered="#{fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload 
+                and !DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://') 
+                }">
                 <!-- Data Access for Rsync Download -->
                 <ui:include src="file-data-access-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
@@ -398,5 +403,5 @@
                 </ui:include>
             </div>
         </p:column>
-    </p:dataTable>    
+    </p:dataTable>
 </ui:composition>

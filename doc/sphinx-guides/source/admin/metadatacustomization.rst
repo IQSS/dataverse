@@ -16,7 +16,7 @@ Much more customization of metadata is possible, but this is an advanced topic s
 -  Editing and adding metadata fields
 
 -  Editing and adding instructional text (field label tooltips and text
-   box watermarks, but see the note below about internationalization)
+   box watermarks)
 
 -  Editing and adding controlled vocabularies
 
@@ -40,7 +40,7 @@ good organizational practice to define only one in each file.
 
 The metadata block TSVs shipped with Dataverse are in `this folder in
 the Dataverse github
-repo <https://github.com/IQSS/dataverse/tree/develop/scripts/api/data/metadatablocks>`__.
+repo <https://github.com/IQSS/dataverse/tree/develop/scripts/api/data/metadatablocks>`__ and the corresponding ResourceBundle property files are `here <https://github.com/IQSS/dataverse/tree/develop/src/main/java>`__.
 Human-readable copies are available in `this Google Sheets
 document <https://docs.google.com/spreadsheets/d/13HP-jI_cwLDHBetn9UKTREPJ_F4iHdAvhjmlvmYdSSw/edit#gid=0>`__ but they tend to get out of sync with the TSV files, which should be considered authoritative. The Dataverse installation process operates on the TSVs, not the Google spreadsheet.
 
@@ -522,18 +522,66 @@ Please note that metadata fields share a common namespace so they must be unique
 
 We'll use this command again below to update the Solr schema to accomodate metadata fields we've added.
 
-We are aware that English goes into the TSV files but we are working toward internationalization of metadata blocks in https://github.com/IQSS/dataverse/issues/4684
-
 Loading TSV files into Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A number of TSV files are loaded into Dataverse on every new installation, becoming the metadata blocks you see in the UI. For the list of metadata blocks that are included with Dataverse out of the box, see the :doc:`/user/appendix` section of the User Guide.
 
+Along with TSV file, there are corresponding ResourceBundle property files with key=value pair `here <https://github.com/IQSS/dataverse/tree/develop/src/main/java>`__.  To add other language files, see the :doc:`/installation/config` for dataverse.lang.directory JVM Options section, and add a file, for example: "citation_lang.properties" to the path you specified for the ``dataverse.lang.directory`` JVM option, and then restart Glassfish.
+
 If you are improving an existing metadata block, the Dataverse installation process will load the TSV for you, assuming you edited the TSV file in place. The TSV file for the Citation metadata block, for example, can be found at ``scripts/api/data/metadatablocks/citation.tsv``.
+If any of the below mentioned property values are changed, corresponsing ResourceBundle property file has to be edited and stored under ``dataverse.lang.directory`` location
+
+- name, displayName property under #metadataBlock
+- name, title, description, watermark properties under #datasetfield
+- DatasetField, Value property under #controlledVocabulary
 
 If you are creating a new custom metadata block (hopefully with the idea of contributing it back to the community if you feel like it would provide value to others), the Dataverse installation process won't know about your new TSV file so you must load it manually. The script that loads the TSV files into the system is ``scripts/api/setup-datasetfields.sh`` and contains a series of curl commands. Here's an example of the necessary curl command with the new custom metadata block in the "/tmp" directory.
 
 ``curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file /tmp/new-metadata-block.tsv``
+
+To create a new ResourceBundle, here are the steps to generate key=value pair for the three main sections:
+
+#metadataBlock properties
+~~~~~~~~~~~~~~~~~~~~~~~~~
+metadatablock.name=(the value of **name** property from #metadatablock)
+
+metadatablock.displayName=(the value of **displayName** property from #metadatablock)
+
+example:
+
+metadatablock.name=citation
+
+metadatablock.displayName=Citation Metadata
+
+#datasetField (field) properties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+datasetfieldtype.(the value of **name** property from #datasetField).title=(the value of **title** property from #datasetField)
+
+datasetfieldtype.(the value of **name** property from #datasetField).description=(the value of **description** property from #datasetField)
+
+datasetfieldtype.(the value of **name** property from #datasetField).watermark=(the value of **watermark** property from #datasetField)
+
+example:
+
+datasetfieldtype.title.title=Title
+
+datasetfieldtype.title.description=Full title by which the Dataset is known.
+
+datasetfieldtype.title.watermark=Enter title...
+
+#controlledVocabulary (enumerated) properties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+controlledvocabulary.(the value of **DatasetField** property from #controlledVocabulary).(the value of **Value** property from #controlledVocabulary)=(the value of **Value** property from #controlledVocabulary)
+
+Since the **Value** property from #controlledVocabulary is free text, while creating the key, it has to be converted to lowercase, replace space with underscore, and strip accents.
+
+example:
+
+controlledvocabulary.subject.agricultural_sciences=Agricultural Sciences
+
+controlledvocabulary.language.marathi_(marathi)=Marathi (Mar\u0101\u1E6Dh\u012B)
+
 
 Enabling a Metadata Block
 ~~~~~~~~~~~~~~~~~~~~~~~~~
