@@ -1,15 +1,16 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean.StaticPermissionQuery;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import java.io.Serializable;
+
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
+import java.io.Serializable;
 
 /**
  *
@@ -59,11 +60,6 @@ public class DataverseSession implements Serializable{
     
     public StaticPermissionQuery on( Dataverse d ) {
             return permissionsService.userOn(user, d);
-    }
-
-    public boolean isSuperUser() {
-        User currentUser = getUser();
-        return currentUser != null && currentUser.isAuthenticated() && currentUser.isSuperuser();
     }
 
 }

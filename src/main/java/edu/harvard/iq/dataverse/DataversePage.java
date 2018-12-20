@@ -1033,7 +1033,7 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public boolean isUserCanChangeAllowMessageAndBanners() {
-        return session.isSuperUser();
+        return permissionService.isSuperUser(session.getUser());
     }
 
     public boolean isUserAdminForCurrentDataverse() {

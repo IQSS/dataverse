@@ -774,4 +774,8 @@ public class PermissionServiceBean {
         return userAdminRole.isPresent();
     }
 
+    public boolean isSuperUser(User user) {
+        return user != null && user.isAuthenticated() && user.isSuperuser();
+    }
+
 }
