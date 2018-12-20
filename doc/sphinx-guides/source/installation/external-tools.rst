@@ -15,7 +15,7 @@ Support for external tools is just getting off the ground but the following tool
 
 - Data Explorer: a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis. See the README.md file at https://github.com/scholarsportal/Dataverse-Data-Explorer for the instructions on adding Data Explorer to your Dataverse; and the :doc:`prerequisites` section of the Installation Guide for the instructions on how to set up **basic R configuration required** (specifically, Dataverse uses R to generate .prep metadata files that are needed to run Data Explorer). 
 
-- `Whole Tale <https://wholetale.org>`_: a platform for the creation of reproducible research packages that allows users to launch containerized interactive analysis environments based on popular tools such as Jupyter and RStudio. Using this integration, Dataverse users can launch Jupyter and RStudio environments to analyze published datasets. For more information, see the `Whole Tale User Guide <https://wholetale.readthedocs.io/users_guide/integration.html>`_.
+- `Whole Tale <https://wholetale.org>`_: a platform for the creation of reproducible research packages that allows users to launch containerized interactive analysis environments based on popular tools such as Jupyter and RStudio. Using this integration, Dataverse users can launch Jupyter and RStudio environments to analyze published datasets. For more information, see the `Whole Tale User Guide <https://wholetale.readthedocs.io/en/stable/users_guide/integration.html>`_.
 
 - [Your tool here! Please get in touch! :) ]
 
