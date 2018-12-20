@@ -73,9 +73,9 @@ The "Compute" button is still highly experimental and has special requirements s
 Whole Tale
 ++++++++++
 
-`Whole Tale <https://www.wholetale.org>`_  enables researchers to analyze data using popular tools including Jupyter and RStudio with the ultimate goal of supporting publishing of reproducible research packages.
-
-For installation instructions, see the :doc:`/installation/external-tools` section of the Installation Guide or the `Integration <https://wholetale.readthedocs.io/users_guide/integration.html>`_ section of the Whole Tale User Guide.
+`Whole Tale <https://www.wholetale.org>`_  enables researchers to analyze data using popular tools including Jupyter and RStudio with the ultimate goal of supporting publishing of reproducible research packages. Users can
+`import data from Dataverse
+<https://wholetale.readthedocs.io/en/stable/users_guide/manage.html>`_ via identifier (e.g., DOI, URI, etc) or through the External Tools integration.  For installation instructions, see the :doc:`/installation/external-tools` section of this Installation Guide or the `Integration <https://wholetale.readthedocs.io/users_guide/stable/integration.html>`_ section of the Whole Tale User Guide.
 
 Discoverability
 ---------------
