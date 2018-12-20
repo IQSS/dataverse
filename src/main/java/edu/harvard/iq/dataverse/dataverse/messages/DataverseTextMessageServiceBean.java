@@ -6,9 +6,7 @@
 package edu.harvard.iq.dataverse.dataverse.messages;
 
 import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -29,14 +27,11 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
     @Inject
     private DataverseSession session;
 
-    @EJB
-    private PermissionServiceBean permissionService;
-
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
     public void deactivateAllowMessagesAndBanners(Long dataverseId) {
-        if (permissionService.isSuperUser(session.getUser())) {
+        if (session.getUser().isSuperuser()) {
             logger.info("As superuser, deactivating text messages for dataverse: " + dataverseId);
             em.createNativeQuery("update dataversetextmessage set active = false where dataverse_id = ?")
                     .setParameter(1, dataverseId)
