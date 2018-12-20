@@ -1,4 +1,3 @@
 #!/bin/sh
 
-
-wget https://github.com/sbgrid/data-capture-module/releases/download/0.2/dcm-0.2-0.noarch.rpm
+wget https://github.com/sbgrid/data-capture-module/releases/download/0.5/dcm-0.5-0.noarch.rpm

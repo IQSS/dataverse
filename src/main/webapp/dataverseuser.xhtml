@@ -6,7 +6,6 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:o="http://omnifaces.org/ui">
-
     <h:head>
     </h:head>
 
@@ -134,6 +133,12 @@
                                                             <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
+                                                            #{DataverseUserPage.getRequestorName(item)}
+                                                        </o:param>
+                                                        <o:param>
+                                                            #{DataverseUserPage.getRequestorEmail(item)}
+                                                        </o:param>
+                                                        <o:param>
                                                             #{DataverseUserPage.getReasonForReturn(item.theObject)}
                                                         </o:param>
                                                     </h:outputFormat>
@@ -171,6 +176,12 @@
                                                     <h:outputFormat value="#{bundle['notification.requestFileAccess']}" escape="false">
                                                         <o:param>
                                                             <a href="/permissions-manage-files.xhtml?id=#{item.theObject.id}" title="#{item.theObject.displayName}">#{item.theObject.displayName}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            #{DataverseUserPage.getRequestorName(item)}
+                                                        </o:param>
+                                                        <o:param>
+                                                            #{DataverseUserPage.getRequestorEmail(item)}
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
@@ -304,7 +315,7 @@
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                             </ui:fragment>
-                                            <h:outputText value="#{item.sendDate}" styleClass="text-muted small"/>
+                                            <h:outputText value="#{item.localeSendDate}" styleClass="text-muted small"/>
                                         </div>
                                         <div class="notification-item-cell">
                                             <p:commandLink title="#{bundle.removeNotification}" styleClass="bootstrap-button-tooltip"
@@ -493,7 +504,7 @@
                                         <p class="help-block">#{bundle['user.username.valid']}</p>
                                     </div>
                                     <div class="col-sm-4 col-sm-offset-3">
-                                        <p:inputText id="userName" styleClass="form-control" tabindex="1"
+                                        <p:inputText id="userName" styleClass="form-control"
                                                         validator="#{DataverseUserPage.validateUserName}"
                                                         value="#{DataverseUserPage.username}"
                                                         disabled="#{DataverseUserPage.editMode != 'CREATE'}"
@@ -509,7 +520,7 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-4">
-                                        <p:password id="currentPassword" tabindex="1" label="#{bundle['user.currentPasswd']}" styleClass="form-control" value="#{DataverseUserPage.currentPassword}" />
+                                        <p:password id="currentPassword" label="#{bundle['user.currentPasswd']}" styleClass="form-control" value="#{DataverseUserPage.currentPassword}" />
                                         <p:message for="currentPassword" display="text" />
                                     </div>
                                 </div>
@@ -517,7 +528,7 @@
                                 <!-- Password -->
                                     <label for="inputPassword" class="col-sm-3 control-label">
                                         <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.passwd.illegal.tip']}">
-                                            <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" />
+                                            <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.password'] : bundle['user.newPassword']}" />
                                             <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                         </span>
                                     </label>
@@ -529,7 +540,7 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-4 col-sm-offset-3">
-                                        <p:password id="inputPassword" tabindex="2" label="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.password'] : bundle['user.newPassword']}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
+                                        <p:password id="inputPassword" label="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.password'] : bundle['user.newPassword']}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
                                         <p:message for="inputPassword" display="text" />
                                     </div>
                                 </div>
@@ -541,7 +552,7 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-4">
-                                        <p:password id="retypePassword" tabindex="3" label="#{bundle['user.rePasswd']}" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" />
+                                        <p:password id="retypePassword" label="#{bundle['user.rePasswd']}" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" />
                                         <p:message for="retypePassword" display="text" />
                                     </div>
                                 </div>
@@ -553,7 +564,7 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-4">
-                                        <p:inputText id="firstName" tabindex="4" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.firstName}" />
+                                        <p:inputText id="firstName" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.firstName}" />
                                         <p:message for="firstName" display="text" />
                                     </div>
                                 </div>
@@ -565,7 +576,7 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-4">
-                                        <p:inputText id="lastName" tabindex="5" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.lastName}" />
+                                        <p:inputText id="lastName" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.lastName}" />
                                         <p:message for="lastName" display="text" />
                                     </div>
                                 </div>
@@ -577,7 +588,7 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-4">
-                                        <p:inputText id="email" tabindex="6" styleClass="form-control"
+                                        <p:inputText id="email" styleClass="form-control"
                                                      validator="#{DataverseUserPage.validateUserEmail}"
                                                      value="#{DataverseUserPage.userDisplayInfo.emailAddress}" />
                                         <p:message for="email" display="text" />
@@ -608,7 +619,7 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-4">
-                                        <p:inputText id="affiliation" tabindex="7" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.affiliation}" />
+                                        <p:inputText id="affiliation" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.affiliation}" />
                                         <p:message for="affiliation" display="text" />
                                     </div>
                                 </div>
@@ -620,7 +631,7 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-4">
-                                        <p:inputText id="position" tabindex="8" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.position}" />
+                                        <p:inputText id="position" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.position}" />
                                         <p:message for="position" display="text" />
                                     </div>
                                 </div>
@@ -630,10 +641,10 @@
                                 </ui:fragment>
                                 <div class="form-group">
                                     <div class="col-sm-12 button-block">
-                                        <p:commandButton id="save" styleClass="btn btn-default" tabindex="9"
+                                        <p:commandButton id="save" styleClass="btn btn-default"
                                                          value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn']:bundle.saveChanges}"
                                                          action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle" />
-                                        <p:commandButton id="cancel" styleClass="btn btn-default" tabindex="10" value="#{bundle.cancel}"
+                                        <p:commandButton id="cancel" styleClass="btn btn-default" value="#{bundle.cancel}"
                                                          action="#{DataverseUserPage.cancel}" process="@this" update="@form">
                                             <p:resetInput target="@form" />
                                         </p:commandButton>

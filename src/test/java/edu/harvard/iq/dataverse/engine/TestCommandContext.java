@@ -3,10 +3,12 @@ package edu.harvard.iq.dataverse.engine;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -124,6 +126,11 @@ public class TestCommandContext implements CommandContext {
     }
 
     @Override
+    public FakePidProviderServiceBean fakePidProvider() {
+        return null;
+    }
+
+    @Override
     public HandlenetServiceBean handleNet() {
         return null;
     }
@@ -172,6 +179,11 @@ public class TestCommandContext implements CommandContext {
     public ExplicitGroupServiceBean explicitGroups() {
         return null;
     }
+    
+    @Override
+    public GroupServiceBean groups() {
+        return null;
+    }
 
     @Override
     public RoleAssigneeServiceBean roleAssignees() {
@@ -210,6 +222,11 @@ public class TestCommandContext implements CommandContext {
 
     @Override
     public DataCaptureModuleServiceBean dataCaptureModule() {
+        return null;
+    }
+    
+    @Override
+    public FileDownloadServiceBean fileDownload() {
         return null;
     }
 }

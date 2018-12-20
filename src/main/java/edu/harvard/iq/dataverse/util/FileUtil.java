@@ -20,6 +20,7 @@
 
 package edu.harvard.iq.dataverse.util;
 
+
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
@@ -27,6 +28,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import static edu.harvard.iq.dataverse.dataaccess.S3AccessIO.S3_IDENTIFIER_PREFIX;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
@@ -43,8 +45,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ResourceBundle;
-import java.util.MissingResourceException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
@@ -57,11 +57,12 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,7 +92,7 @@ public class FileUtil implements java.io.Serializable  {
     private static final String[] TABULAR_DATA_FORMAT_SET = {"POR", "SAV", "DTA", "RDA"};
     
     private static Map<String, String> STATISTICAL_FILE_EXTENSION = new HashMap<String, String>();
-   
+    
     /*
      * The following are Stata, SAS and SPSS syntax/control cards: 
      * These are recognized as text files (because they are!) so 
@@ -209,7 +210,7 @@ public class FileUtil implements java.io.Serializable  {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
             try {
-                return ResourceBundle.getBundle("MimeTypeDisplay").getString(fileType);
+                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeDisplay" );
             } catch (MissingResourceException e) {
                 return fileType;
             }
@@ -227,7 +228,7 @@ public class FileUtil implements java.io.Serializable  {
             }
 
             try {
-                return ResourceBundle.getBundle("MimeTypeFacets").getString(fileType);
+                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeFacets"  );
             } catch (MissingResourceException e) {
                 // if there's no defined "facet-friendly" form of this mime type
                 // we'll truncate the available type by "/", e.g., all the 
@@ -245,12 +246,22 @@ public class FileUtil implements java.io.Serializable  {
                 String typeClass = fileType.split("/")[0];
                 return Character.toUpperCase(typeClass.charAt(0)) + typeClass.substring(1);
             }
+        } else {
+            try {
+                return BundleUtil.getStringFromPropertyFile("application/octet-stream","MimeTypeFacets"  );
+            } catch (MissingResourceException ex) {
+                logger.warning("Could not find \"" + fileType + "\" in bundle file: ");
+                logger.log(Level.CONFIG, ex.getMessage(), ex);
+                return null;
+            }
         }
-        
-        return ResourceBundle.getBundle("MimeTypeFacets").getString("application/octet-stream");
     }
     
     public static String getUserFriendlyOriginalType(DataFile dataFile) {
+        if (!dataFile.isTabularData()) {
+            return null; 
+        }
+        
         String fileType = dataFile.getOriginalFileFormat();
          
         if (fileType != null && !fileType.equals("")) {
@@ -258,7 +269,7 @@ public class FileUtil implements java.io.Serializable  {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
             try {
-                return ResourceBundle.getBundle("MimeTypeDisplay").getString(fileType);
+                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeDisplay" );
             } catch (MissingResourceException e) {
                 return fileType;
             }
@@ -1124,6 +1135,12 @@ public class FileUtil implements java.io.Serializable  {
         }
 
         return filesTempDirectory;
+    }
+    
+    public static void generateS3PackageStorageIdentifier(DataFile dataFile) {
+        String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
+        String storageId = S3_IDENTIFIER_PREFIX + "://" + bucketName + ":" + dataFile.getFileMetadata().getLabel();
+        dataFile.setStorageIdentifier(storageId);
     }
     
     public static void generateStorageIdentifier(DataFile dataFile) {

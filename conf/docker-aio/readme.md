@@ -57,4 +57,4 @@ There isn't any strict requirement on the local port (8083, 8084 in this doc), t
 
 * `empty reply from server` or `Failed to connect to ::1: Cannot assign requested address` tend to indicate either that you haven't given glassfish enough time to start, or your docker setup is in an inconsistent state and should probably be restarted.
 
-* For manually fiddling around with the created dataverse, use user `dataverseAdmin` with password `admin`.
+* For manually fiddling around with the created dataverse, use user `dataverseAdmin` with password `admin1`.

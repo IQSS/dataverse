@@ -166,6 +166,13 @@ After the script has finished, you should be able to log into Dataverse with the
 - username: dataverseAdmin
 - password: admin
 
+Configure Your Development Environment for Publishing
+-----------------------------------------------------
+
+Run the following command:
+
+``curl http://localhost:8080/api/admin/settings/:DoiProvider -X PUT -d FAKE``
+
 Next Steps
 ----------
 
