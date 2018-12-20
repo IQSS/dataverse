@@ -31,7 +31,7 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
     private EntityManager em;
 
     public void deactivateAllowMessagesAndBanners(Long dataverseId) {
-        if (session.isSuperUser()) {
+        if (session.getUser().isSuperuser()) {
             logger.info("As superuser, deactivating text messages for dataverse: " + dataverseId);
             em.createNativeQuery("update dataversetextmessage set active = false where dataverse_id = ?")
                     .setParameter(1, dataverseId)
