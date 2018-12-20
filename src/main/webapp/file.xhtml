@@ -173,7 +173,8 @@
                                 <!-- Explore/Download/Request Button Block -->
                                 <div class="button-container btn-group" jsf:rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
                                                                                             (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset())) 
-                                                                                             and !FilePage.fileMetadata.dataFile.filePackage}">
+                                                                                             and (!FilePage.fileMetadata.dataFile.filePackage or
+                                                                                                   FilePage.fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}">
                                     <ui:include src="file-download-button-fragment.xhtml">
                                         <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
                                         <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
@@ -362,7 +363,8 @@
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{FilePage.selectedTabIndex}">
                             <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
                             <p:tab id="accessTab" class="padding-none" title="#{bundle['file.dataFilesTab.dataAccess']}"
-                                   rendered="#{settingsWrapper.rsyncDownload and FilePage.fileMetadata.dataFile.filePackage }">
+                                   rendered="#{settingsWrapper.rsyncDownload and FilePage.fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload
+                                        and !FilePage.fileMetadata.getDataFile().getOwner().getStorageIdentifier().startsWith('s3://') }">
                                 <ui:include src="file-data-access-fragment.xhtml">
                                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                                     <ui:param name="datasetVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
@@ -430,7 +432,14 @@
                                                    #{bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
                                                 </label>
                                                 <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.publicDownloadUrl}"/>
+                                                    <p class="help-block">
+                                                        <span class="glyphicon glyphicon-info-sign"></span>
+                                                        <h:outputFormat value=" #{bundle['file.metadataTab.fileMetadata.downloadUrl.info']}" escape="false">
+                                                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                                            <f:param value="#{systemConfig.guidesVersion}"/>
+                                                        </h:outputFormat>
+                                                    </p>
+                                                    <code><h:outputText value="#{FilePage.publicDownloadUrl}"/></code>
                                                 </div>
                                             </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.file.unf)}">
@@ -550,6 +559,16 @@
                                 <ui:param name="dataFile" value="#{FilePage.fileMetadata.dataFile}"/>
                              </ui:include>
                         </div>
+                    </p:dialog>
+                    <p:dialog id="downloadPackagePopup" styleClass="smallPopUp" header="#{bundle['packageDownload.title']}" widgetVar="downloadPackagePopup" modal="true">
+                         <ui:include src="package-download-popup-fragment.xhtml">
+                            <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
+                            <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                            <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
+                            <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
+                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                            <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
+                        </ui:include>
                     </p:dialog>
                     
                     <p:dialog header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 

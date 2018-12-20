@@ -84,8 +84,8 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             displayDownloadAll = true;
             FacesContext.getCurrentInstance().addMessage(null, 
                     new FacesMessage(FacesMessage.SEVERITY_INFO, 
-                            JH.localize("dataset.manageGuestbooks.tip.title"), 
-                            JH.localize("dataset.manageGuestbooks.tip.downloadascsv")));
+                            BundleUtil.getStringFromBundle("dataset.manageGuestbooks.tip.title"), 
+                            BundleUtil.getStringFromBundle("dataset.manageGuestbooks.tip.downloadascsv")));
 
         }
 
@@ -263,9 +263,9 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         }
         try {
             engineService.submit(new UpdateDataverseCommand(getDataverse(), null, null, dvRequestService.getDataverseRequest(), null));
-            JsfHelper.addSuccessMessage(JH.localize(successMessage));
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle(successMessage));
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize(failureMessage));
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle(failureMessage));
         }
 
     }

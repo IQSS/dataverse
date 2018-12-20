@@ -7,7 +7,6 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:o="http://omnifaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-
     <h:head>
     </h:head>
 
@@ -240,7 +239,7 @@
                                                         <p:ajax update="@widgetVar(optionBlock)" />
                                                     </input>
 
-                                                    <h:outputText value="#{mdb.displayName} #{mdb.required ? bundle['dataverse.field.required']: ''}"
+                                                    <h:outputText value="#{mdb.localeDisplayName} #{mdb.required ? bundle['dataverse.field.required']: ''}"
                                                                   styleClass="#{DataversePage.inheritMetadataBlockFromParent ? 'text-muted' : ''}"/>
                                                     <p:commandLink id="showDSFT" style="margin-left:1em;"
                                                                    update="@widgetVar(optionBlock)"
@@ -330,7 +329,7 @@
                                                                  disabled="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null}"
                                                                  value="#{DataversePage.facetMetadataBlockId}">
                                                     <f:selectItem itemLabel="#{bundle['dataverse.facetPickList.metadataBlockList.all']}" itemValue=""/>
-                                                    <f:selectItems value="#{DataversePage.allMetadataBlocks}" var="mdb" itemLabel="#{mdb.displayName}" itemValue="#{mdb.id}" />
+                                                    <f:selectItems value="#{DataversePage.allMetadataBlocks}" var="mdb" itemLabel="#{mdb.localeDisplayName}" itemValue="#{mdb.id}" />
                                                     <p:ajax process="editFacets" update="editFacets" listener="#{DataversePage.changeFacetsMetadataBlock}"/>
                                                 </p:selectOneMenu>
                                             </f:facet>
@@ -404,12 +403,12 @@
                                             </li>
                                             <li class="divider" role="presentation"></li>
                                             <li>
-                                                <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form" oncomplete="javascript:post_edit_dv_general_info();initPopover();">
+                                                <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form,:dataverseForm,:searchResults,:messagePanel" oncomplete="javascript:post_edit_dv_general_info();initPopover();">
                                                     <h:outputText value="#{bundle['dataverse.option.generalInfo']}" />
                                                 </p:commandLink>
                                             </li>
                                             <li>
-                                                <h:link outcome="ThemeAndWidgets" id="themeWidgetsOpts" >
+                                                <h:link outcome="ThemeAndWidgets" id="themeWidgetsOpts">
                                                     <f:param name="id" value="#{DataversePage.dataverse.id}" />
                                                     <h:outputText value="#{bundle['dataverse.option.themeAndWidgets']}" />
                                                 </h:link>
@@ -567,7 +566,7 @@
                         <p:commandButton id="save" tabindex="9" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all">
                             <f:ajax onerror="window.scrollTo(0, 0)" />
                         </p:commandButton>
-                        <p:commandButton id="cancel" tabindex="10" value="#{bundle.cancel}" actionListener="#{DataversePage.cancel}" process="@this" update="@form" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:post_cancel_edit_dv()" />
+                        <p:commandButton id="cancel" tabindex="10" value="#{bundle.cancel}" actionListener="#{DataversePage.cancel}" process="@this" update="@form,:searchResults,:messagePanel" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:post_cancel_edit_dv()" />
                         <p:button tabindex="10" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DataversePage.dataverse.owner.alias}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
                     </div>
 
@@ -629,9 +628,11 @@
                 </h:form>
 
                 <!-- Search/Browse Facets Panel -->
-                <ui:fragment rendered="#{empty DataversePage.editMode}">
-                    <ui:include src="search-include-fragment.xhtml"/>
-                </ui:fragment>
+                <p:fragment id="searchResults">
+                    <ui:fragment rendered="#{empty DataversePage.editMode}">
+                        <ui:include src="search-include-fragment.xhtml"/>
+                    </ui:fragment>
+                </p:fragment>
 
                 <!-- Link Dataverse Popup -->
                 <p:dialog id="linkDataverseForm" header="#{DataversePage.linkMode == 'SAVEDSEARCH' ? bundle['dataverse.savedsearch.link'] : bundle['dataverse.link']}" widgetVar="linkDataverseForm" modal="true">

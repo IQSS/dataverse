@@ -168,7 +168,6 @@ public class JsonPrinterTest {
         assertEquals("Data", jsonObject.getJsonArray("categories").getString(0));
         assertEquals("", jsonObject.getJsonObject("dataFile").getString("filename"));
         assertEquals(-1, jsonObject.getJsonObject("dataFile").getInt("filesize"));
-        assertEquals("UNKNOWN", jsonObject.getJsonObject("dataFile").getString("originalFormatLabel"));
         assertEquals(-1, jsonObject.getJsonObject("dataFile").getInt("rootDataFileId"));
         assertEquals("Survey", jsonObject.getJsonObject("dataFile").getJsonArray("tabularTags").getString(0));
     }

@@ -1,0 +1,35 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+
+    <!--The p:dialog for this lives in dataset & file -->
+    <div jsf:id="packagePopupDownloadInfo">
+        <div class="col-sm-12">
+            <p class="help-block no-margin-top"> 
+                <span class="glyphicon glyphicon-info-sign"></span>                                            
+                <h:outputFormat value=" #{bundle['packageDownload.instructions']}" escape="false">
+                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                    <f:param value="#{systemConfig.guidesVersion}"/>
+                </h:outputFormat>
+            </p>
+        </div>
+        <div class="col-sm-12 margin-bottom">
+            <ui:include src="file-info-fragment.xhtml">
+                <ui:param name="fileMetadata" value="#{packagePopupFragmentBean.fileMetadata}" />
+            </ui:include>
+        </div>
+        <div class="col-sm-12">
+            <label>#{bundle['packageDownload.urlHeader']}</label> 
+            <p><code>#{systemConfig.getDataverseSiteUrl()}/api/access/datafile/#{packagePopupFragmentBean.fileMetadata.dataFile.id}</code></p>
+        </div>
+        <div class="col-sm-12 button-block margin-top">              
+            <p:commandButton styleClass="btn btn-default" id="downloadPackagePopupCancelButton" value="#{bundle.close}" update="downloadPackagePopup" onclick="PF('downloadPackagePopup').hide();" immediate="true"/>
+        </div>
+    </div>
+</ui:composition>
