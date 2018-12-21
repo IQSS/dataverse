@@ -80,8 +80,10 @@
                             </o:form>
                         </ui:fragment>
                         
-                        <li class="dropdown" jsf:rendered="#{dataverseLocaleBean.useLocale()}">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="#{bundle.language}">#{dataverseLocaleBean.localeTitle} <b class="caret"></b></a>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="#{bundle.language}">
+                                #{dataverseLocaleBean.localeTitle} <b class="caret"></b>
+                            </a>
                             <ul class="dropdown-menu">
                                 <h:form class="form-inline">
                                     <ui:repeat value="#{dataverseLocaleBean.dataverseLocales.entrySet().toArray()}" var="language">
@@ -94,7 +96,9 @@
                                                                     color: rgb(51, 51, 51);
                                                                     white-space: nowrap;
                                                                     text-decoration: none;
-                                                                    display: block;"/>
+                                                                    display: block;
+                                                                    #{'background: url(/resources/images/flags/'.concat(language.key).concat('.svg) no-repeat 90% center; background-size: 35px 35px')}">
+                                            </h:commandLink>
                                         </li>
                                     </ui:repeat>
                                 </h:form>
