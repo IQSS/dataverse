@@ -33,8 +33,12 @@ import javax.persistence.UniqueConstraint;
 @NamedQueries({
 	@NamedQuery( name  = "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId",
 				 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.definitionPoint.id=:definitionPointId" ),
+    	@NamedQuery( name  = "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId_RoleId",
+				 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.definitionPoint.id=:definitionPointId and r.role.id=:roleId" ),
 	@NamedQuery( name  = "RoleAssignment.listByAssigneeIdentifier",
 				 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier" ),
+	@NamedQuery( name  = "RoleAssignment.listByAssigneeIdentifiers",
+				 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier in :assigneeIdentifiers AND r.definitionPoint.id in :definitionPointIds" ),
 	@NamedQuery( name  = "RoleAssignment.listByDefinitionPointId",
 				 query = "SELECT r FROM RoleAssignment r WHERE r.definitionPoint.id=:definitionPointId" ),
 	@NamedQuery( name  = "RoleAssignment.listByRoleId",
@@ -44,7 +48,9 @@ import javax.persistence.UniqueConstraint;
 	@NamedQuery( name  = "RoleAssignment.deleteByAssigneeIdentifier_RoleIdDefinition_PointId",
 				 query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.role.id=:roleId AND r.definitionPoint.id=:definitionPointId"),
         @NamedQuery( name = "RoleAssignment.deleteAllByAssigneeIdentifier",
-				 query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier")
+				 query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier"),
+        @NamedQuery( name = "RoleAssignment.deleteAllByAssigneeIdentifier_Definition_PointId_RoleType",
+				 query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.role.id=:roleId and r.definitionPoint.id=:definitionPointId")
 })
 public class RoleAssignment implements java.io.Serializable {
 	@Id

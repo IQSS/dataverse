@@ -290,7 +290,7 @@ public class DataversePage implements java.io.Serializable {
 
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
         } else { // ownerId != null; create mode for a new child dataverse
-            editMode = EditMode.INFO;
+            editMode = EditMode.CREATE;
             dataverse.setOwner(dataverseService.find(ownerId));
             if (dataverse.getOwner() == null) {
                 return  permissionsWrapper.notFound();
@@ -408,7 +408,7 @@ public class DataversePage implements java.io.Serializable {
         this.editMode = editMode;
         if (editMode == EditMode.INFO) {
             setupForGeneralInfoEdit();
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataverse.edit.msg") , BundleUtil.getStringFromBundle("dataverse.edit.detailmsg")));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataverse.edit.msg"), BundleUtil.getStringFromBundle("dataverse.edit.detailmsg"));
         } else if (editMode == EditMode.FEATURED) {
             initFeaturedDataverses();
         }
@@ -689,6 +689,18 @@ public class DataversePage implements java.io.Serializable {
         setInheritMetadataBlockFromParent(checkVal);
         if (!dataverse.isMetadataBlockRoot()) {
             refreshAllMetadataBlocks();
+        }
+    }
+    
+    public String resetToInherit() {
+
+        setInheritMetadataBlockFromParent(true);
+        if (editMode.equals(DataversePage.EditMode.CREATE)) {;
+            refreshAllMetadataBlocks();
+            return null;
+        } else {
+            String retVal = save();
+            return retVal;
         }
     }
 

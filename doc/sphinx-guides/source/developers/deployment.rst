@@ -70,6 +70,24 @@ Then update the file and replace the values for "aws_access_key_id" and "aws_sec
 
 If you are having trouble configuring the files manually as described above, see https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html which documents the ``aws configure`` command.
 
+Configure ~/.dataverse/ec2.env
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to publish datasets you must configure a file at ``~/.dataverse/ec2.env`` and contact DataCite at support@datacite.org to ask for a test username and password.
+
+Create a ``.dataverse`` directory in your home directory like this:
+
+``mkdir ~/.dataverse``
+
+Download :download:`ec2.env <../../../../scripts/installer/ec2.env>` and put it in the directory at ``~/.dataverse`` that you just created. From the command line, you can try the command below to move the file into place:
+
+``mv ~/Downloads/ec2.env ~/.dataverse``
+
+Edit the file at ``~/.dataverse/ec2.env`` and fill in username and password from DataCite into the following fields:
+
+- dataverse_doi_username
+- dataverse_doi_password
+
 Download and Run the "Create Instance" Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

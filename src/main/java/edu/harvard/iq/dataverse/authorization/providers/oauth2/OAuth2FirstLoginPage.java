@@ -202,8 +202,8 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         BuiltinAuthenticationProvider biap = new BuiltinAuthenticationProvider(builtinUserSvc, passwordValidatorService, authenticationSvc);
         AuthenticationRequest auReq = new AuthenticationRequest();
         final List<CredentialsAuthenticationProvider.Credential> creds = biap.getRequiredCredentials();
-        auReq.putCredential(creds.get(0).getTitle(), getUsername());
-        auReq.putCredential(creds.get(1).getTitle(), getPassword());
+        auReq.putCredential(creds.get(0).getKey(), getUsername());
+        auReq.putCredential(creds.get(1).getKey(), getPassword());
         try {
             AuthenticatedUser existingUser = authenticationSvc.getUpdateAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, auReq);
             authenticationSvc.updateProvider(existingUser, newUser.getServiceId(), newUser.getIdInService());

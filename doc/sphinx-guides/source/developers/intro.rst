@@ -55,6 +55,7 @@ As a developer, you also may be interested in these projects related to Datavers
 
 - External Tools - add additional features to Dataverse: See the :doc:`/installation/external-tools` section of the Installation Guide.
 - Dataverse API client libraries - use Dataverse APIs from various languages: :doc:`/api/client-libraries`
+- DVUploader - a stand-alone command-line Java application that uses the Dataverse API to support upload of files from local disk to a Dataset: https://github.com/IQSS/dataverse-uploader 
 - Miniverse - expose metrics from a Dataverse database: https://github.com/IQSS/miniverse
 - Configuration management scripts - Ansible, Puppet, etc.: See "Advanced Installation" in the :doc:`/installation/prep` section of the Installation Guide.
 - :doc:`/developers/unf/index` (Java) -  a Universal Numerical Fingerprint: https://github.com/IQSS/UNF
@@ -62,6 +63,7 @@ As a developer, you also may be interested in these projects related to Datavers
 - `DataTags <https://github.com/IQSS/DataTags>`_ (Java and Scala) - tag datasets with privacy levels: https://github.com/IQSS/DataTags
 - `TwoRavens <http://2ra.vn>`_ (Javascript) - a `d3.js <http://d3js.org>`_ interface for exploring data and running Zelig models: https://github.com/IQSS/TwoRavens
 - `Zelig <http://zeligproject.org>`_ (R) - run statistical models on files uploaded to Dataverse: https://github.com/IQSS/Zelig
+- `Matrix <https://github.com/rindataverse/matrix>`_ - a visualization showing the connectedness and collaboration between authors and their affiliations.
 - Third party apps - make use of Dataverse APIs: :doc:`/api/apps`
 - chat.dataverse.org - chat interface for Dataverse users and developers: https://github.com/IQSS/chat.dataverse.org
 - [Your project here] :)

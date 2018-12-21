@@ -36,8 +36,6 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -77,6 +75,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -118,7 +117,7 @@ public class Admin extends AbstractApiBean {
 	DatasetServiceBean datasetService;
     @EJB
     GroupServiceBean groupService;
-    
+
 	// Make the session available
 	@Inject
 	DataverseSession session;
@@ -350,12 +349,12 @@ public class Admin extends AbstractApiBean {
 			authUser = this.findUserOrDie();
 		} catch (AbstractApiBean.WrappedResponse ex) {
 			return error(Response.Status.FORBIDDEN,
-					ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.invalid_apikey"));
+					BundleUtil.getStringFromBundle("dashboard.list_users.api.auth.invalid_apikey"));
 		}
 
 		if (!authUser.isSuperuser()) {
 			return error(Response.Status.FORBIDDEN,
-					ResourceBundle.getBundle("Bundle").getString("dashboard.list_users.api.auth.not_superuser"));
+					BundleUtil.getStringFromBundle("dashboard.list_users.api.auth.not_superuser"));
 		}
 
 		UserListMaker userListMaker = new UserListMaker(userService);
@@ -998,6 +997,34 @@ public class Admin extends AbstractApiBean {
 
 		return ok(info);
 	}
+        
+    @Path("datafiles/integrity/fixmissingoriginalsizes")
+    @GET
+    public Response fixMissingOriginalSizes(@QueryParam("limit") Integer limit) {
+        JsonObjectBuilder info = Json.createObjectBuilder();
+
+        List<Long> affectedFileIds = fileService.selectFilesWithMissingOriginalSizes();
+
+        if (affectedFileIds.isEmpty()) {
+            info.add("message",
+                    "All the tabular files in the database already have the original sizes set correctly; exiting.");
+        } else {
+            
+            int howmany = affectedFileIds.size();
+            String message = "Found " + howmany + " tabular files with missing original sizes. "; 
+            
+            if (limit == null || howmany <= limit) {
+                message = message.concat(" Kicking off an async job that will repair the files in the background.");
+            } else {
+                affectedFileIds.subList(limit, howmany-1).clear();
+                message = message.concat(" Kicking off an async job that will repair the " + limit + " files in the background.");                        
+            }
+            info.add("message", message);
+        }
+
+        ingestService.fixMissingOriginalSizes(affectedFileIds);
+        return ok(info);
+    }
 
 	/**
 	 * This method is used in API tests, called from UtilIt.java.
@@ -1058,7 +1085,7 @@ public class Admin extends AbstractApiBean {
         try {
             if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(GlobalId.HDL_PROTOCOL)) {
                 logger.info("Bad Request protocol set to handle  " );
-                return error(Status.BAD_REQUEST, ResourceBundle.getBundle("Bundle").getString("admin.api.migrateHDL.failure.must.be.set.for.doi"));
+                return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
             }
             
             User u = findUserOrDie();

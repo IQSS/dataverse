@@ -21,6 +21,7 @@
 package edu.harvard.iq.dataverse.ingest;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
@@ -92,6 +93,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.ListIterator;
 import java.util.logging.Logger;
+import java.util.Hashtable;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -625,6 +627,69 @@ public class IngestServiceBean {
             }
         }
     }
+
+    public static void produceFrequencyStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
+
+        List<DataVariable> vars = dataFile.getDataTable().getDataVariables();
+
+        produceFrequencies(generatedTabularFile, vars);
+    }
+
+    public static void produceFrequencies( File generatedTabularFile, List<DataVariable> vars) throws IOException {
+
+        for (int i = 0; i < vars.size(); i++) {
+
+            Collection<VariableCategory> cats = vars.get(i).getCategories();
+            int caseQuantity = vars.get(i).getDataTable().getCaseQuantity().intValue();
+            boolean isNumeric = vars.get(i).isTypeNumeric();
+            Object[] variableVector = null;
+            if (cats.size() > 0) {
+                if (isNumeric) {
+                    variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(generatedTabularFile), i, caseQuantity);
+                }
+                else {
+                    variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, caseQuantity);
+                }
+                if (variableVector != null) {
+                    Hashtable<Object, Double> freq = calculateFrequency(variableVector);
+                    for (VariableCategory cat : cats) {
+                        Object catValue;
+                        if (isNumeric) {
+                            catValue = new Float(cat.getValue());
+                        } else {
+                            catValue = cat.getValue();
+                        }
+                        Double numberFreq = freq.get(catValue);
+                        if (numberFreq != null) {
+                            cat.setFrequency(numberFreq);
+                        } else {
+                            cat.setFrequency(0D);
+                        }
+                    }
+                } else {
+                    logger.fine("variableVector is null for variable " + vars.get(i).getName());
+                }
+            }
+        }
+    }
+
+    public static Hashtable<Object, Double> calculateFrequency( Object[] variableVector) {
+        Hashtable<Object, Double> freq = new Hashtable<Object, Double>();
+
+        for (int j = 0; j < variableVector.length; j++) {
+            if (variableVector[j] != null) {
+                Double freqNum = freq.get(variableVector[j]);
+                if (freqNum != null) {
+                    freq.put(variableVector[j], freqNum + 1);
+                } else {
+                    freq.put(variableVector[j], 1D);
+                }
+            }
+        }
+
+        return freq;
+
+    }
     
     public void recalculateDataFileUNF(DataFile dataFile) {
         String[] unfValues = new String[dataFile.getDataTable().getVarQuantity().intValue()];
@@ -806,12 +871,14 @@ public class IngestServiceBean {
                 } else {
                     tabDataIngest.getDataTable().setOriginalFileFormat(originalContentType);
                 }
+                tabDataIngest.getDataTable().setOriginalFileSize(originalFileSize);
 
                 dataFile.setDataTable(tabDataIngest.getDataTable());
                 tabDataIngest.getDataTable().setDataFile(dataFile);
 
                 try {
                     produceSummaryStatistics(dataFile, tabFile);
+                    produceFrequencyStatistics(dataFile, tabFile);
                     postIngestTasksSuccessful = true;
                 } catch (IOException postIngestEx) {
 
@@ -1609,6 +1676,22 @@ public class IngestServiceBean {
         logger.info("Finished repairing tabular data files that were missing the original file format labels.");
     }
     
+    // This method takes a list of file ids and tries to fix the size of the saved 
+    // original, if present
+    // Note the @Asynchronous attribute - this allows us to just kick off and run this 
+    // (potentially large) job in the background. 
+    // The method is called by the "fixmissingoriginalsizes" /admin api call. 
+    @Asynchronous
+    public void fixMissingOriginalSizes(List<Long> datafileIds) {
+        for (Long fileId : datafileIds) {
+            fixMissingOriginalSize(fileId);
+            try {
+                Thread.sleep(1000);
+            } catch (Exception ex) {}
+        }
+        logger.info("Finished repairing tabular data files that were missing the original file sizes.");
+    }
+    
     // This method fixes a datatable object that's missing the format type of 
     // the ingested original. It will check the saved original file to 
     // determine the type. 
@@ -1679,6 +1762,8 @@ public class IngestServiceBean {
                     logger.warning("Caught exception trying to determine original file type (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ioex.getMessage());
                 }
                 
+                Long savedOriginalFileSize = savedOriginalFile.length(); 
+                
                 // If we had to create a temp file, delete it now: 
                 if (tempFileRequired) {
                     savedOriginalFile.delete();
@@ -1703,10 +1788,51 @@ public class IngestServiceBean {
 
                 // save permanently in the database:
                 dataFile.getDataTable().setOriginalFileFormat(fileTypeDetermined);
+                dataFile.getDataTable().setOriginalFileSize(savedOriginalFileSize);
                 fileService.saveDataTable(dataFile.getDataTable());
 
             } else {
                 logger.info("DataFile id=" + fileId + "; original type already present: " + originalFormat);
+            }
+        } else {
+            logger.warning("DataFile id=" + fileId + ": No such DataFile!");
+        }
+    }
+    
+    // This method fixes a datatable object that's missing the size of the 
+    // ingested original. 
+    private void fixMissingOriginalSize(long fileId) {
+        DataFile dataFile = fileService.find(fileId);
+
+        if (dataFile != null && dataFile.isTabularData()) {
+            Long savedOriginalFileSize = dataFile.getDataTable().getOriginalFileSize();
+            Long datatableId = dataFile.getDataTable().getId();
+            
+            if (savedOriginalFileSize == null) {
+                
+                StorageIO<DataFile> storageIO;
+                
+                try {
+                    storageIO = dataFile.getStorageIO();
+                    storageIO.open();
+                    savedOriginalFileSize = storageIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+
+                } catch (Exception ex) {
+                    logger.warning("Exception "+ex.getClass()+" caught trying to look up the size of the saved original; (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ex.getMessage());
+                    return;
+                }
+
+                if (savedOriginalFileSize == null) {
+                    logger.warning("Failed to look up the size of the saved original file! (datafile id=" + fileId + ", datatable id=" + datatableId + ")");
+                    return;
+                }
+
+                // save permanently in the database:
+                dataFile.getDataTable().setOriginalFileSize(savedOriginalFileSize);
+                fileService.saveDataTable(dataFile.getDataTable());
+
+            } else {
+                logger.info("DataFile id=" + fileId + "; original file size already present: " + savedOriginalFileSize);
             }
         } else {
             logger.warning("DataFile id=" + fileId + ": No such DataFile!");

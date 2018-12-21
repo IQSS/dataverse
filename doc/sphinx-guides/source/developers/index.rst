@@ -16,8 +16,10 @@ Developer Guide
    tips
    troubleshooting
    version-control
+   sql-upgrade-scripts
    testing
    documentation
+   dependencies
    debugging
    coding-style
    deployment

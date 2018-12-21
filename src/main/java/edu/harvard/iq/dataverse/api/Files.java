@@ -157,7 +157,10 @@ public class Files extends AbstractApiBean {
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
                     @FormDataParam("file") final FormDataBodyPart formDataBodyPart
                     ){
-        
+
+        if (!systemConfig.isHTTPUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
+        }
         // -------------------------------------
         // (1) Get the user from the API key
         // -------------------------------------
@@ -166,7 +169,7 @@ public class Files extends AbstractApiBean {
             authUser = findUserOrDie();
         } catch (AbstractApiBean.WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN, 
-                    ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth")
+                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
                     );
         }
 
@@ -228,6 +231,10 @@ public class Files extends AbstractApiBean {
         try {
             DataFile dataFile = findDataFileOrDie(fileIdOrPersistentId);
             fileToReplaceId = dataFile.getId();
+            
+            if (dataFile.isFilePackage()) {                           
+                return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile"));
+            }
         } catch (WrappedResponse ex) {
             String error = BundleUtil.getStringFromBundle("file.addreplace.error.existing_file_to_replace_not_found_by_id", Arrays.asList(fileIdOrPersistentId));
             // TODO: Some day, return ex.getResponse() instead. Also run FilesIT and updated expected status code and message.
@@ -254,7 +261,7 @@ public class Files extends AbstractApiBean {
         
         }else{
             msg("no error");
-            String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.replace");        
+            String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.replace");
 
             try {
                 msgt("as String: " + addFileHelper.getSuccessResult());

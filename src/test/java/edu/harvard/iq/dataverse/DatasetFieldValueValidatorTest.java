@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.util.regex.Pattern;
 import javax.validation.ConstraintValidatorContext;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -136,5 +137,51 @@ public class DatasetFieldValueValidatorTest {
         assertEquals(false, result);
         
     }
-    
+
+    @Test
+    public void testIsValidAuthorIdentifierOrcid() {
+        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
+        Pattern pattern = DatasetAuthor.getValidPattern(DatasetAuthor.REGEX_ORCID);
+        assertTrue(validator.isValidAuthorIdentifier("0000-0002-1825-0097", pattern));
+        // An "X" at the end of an ORCID is less common but still valid.
+        assertTrue(validator.isValidAuthorIdentifier("0000-0002-1694-233X", pattern));
+        assertFalse(validator.isValidAuthorIdentifier("0000 0002 1825 0097", pattern));
+        assertFalse(validator.isValidAuthorIdentifier(" 0000-0002-1825-0097", pattern));
+        assertFalse(validator.isValidAuthorIdentifier("0000-0002-1825-0097 ", pattern));
+        assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
+    }
+
+    @Test
+    public void testIsValidAuthorIdentifierIsni() {
+        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
+        Pattern pattern = DatasetAuthor.getValidPattern(DatasetAuthor.REGEX_ISNI);
+        assertTrue(validator.isValidAuthorIdentifier("0000000121032683", pattern));
+        assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
+    }
+
+    @Test
+    public void testIsValidAuthorIdentifierLcna() {
+        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
+        Pattern pattern = DatasetAuthor.getValidPattern(DatasetAuthor.REGEX_LCNA);
+        assertTrue(validator.isValidAuthorIdentifier("n82058243", pattern));
+        assertTrue(validator.isValidAuthorIdentifier("foobar123", pattern));
+        assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
+    }
+
+    @Test
+    public void testIsValidAuthorIdentifierViaf() {
+        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
+        Pattern pattern = DatasetAuthor.getValidPattern(DatasetAuthor.REGEX_VIAF);
+        assertTrue(validator.isValidAuthorIdentifier("172389567", pattern));
+        assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
+    }
+
+    @Test
+    public void testIsValidAuthorIdentifierGnd() {
+        DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
+        Pattern pattern = DatasetAuthor.getValidPattern(DatasetAuthor.REGEX_GND);
+        assertTrue(validator.isValidAuthorIdentifier("4079154-3", pattern));
+        assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
+    }
+
 }

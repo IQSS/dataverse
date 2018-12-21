@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -57,9 +58,6 @@ public class EjbDataverseEngine {
 
     @EJB
     DataverseServiceBean dataverseService;
-
-    @EJB
-    DataverseRoleServiceBean roleService;
 
     @EJB
     DataverseRoleServiceBean rolesService;
@@ -111,7 +109,10 @@ public class EjbDataverseEngine {
     
     @EJB
     DOIDataCiteServiceBean doiDataCite;
-    
+
+    @EJB
+    FakePidProviderServiceBean fakePidProvider;
+
     @EJB
     HandlenetServiceBean handleNet;
     
@@ -135,7 +136,7 @@ public class EjbDataverseEngine {
 
     @EJB
     GroupServiceBean groups;
-    
+
     @EJB
     RoleAssigneeServiceBean roleAssignees;
     
@@ -168,6 +169,10 @@ public class EjbDataverseEngine {
     
     @EJB
     WorkflowServiceBean workflowService;
+    
+    @EJB
+    FileDownloadServiceBean fileDownloadService;
+    
     
     @Resource
     EJBContext ejbCtxt;
@@ -371,7 +376,12 @@ public class EjbDataverseEngine {
                 public DOIDataCiteServiceBean doiDataCite() {
                     return doiDataCite;
                 }
-                
+
+                @Override
+                public FakePidProviderServiceBean fakePidProvider() {
+                    return fakePidProvider;
+                }
+
                 @Override
                 public HandlenetServiceBean handleNet() {
                     return handleNet;
@@ -464,6 +474,11 @@ public class EjbDataverseEngine {
                 @Override
                 public DataCaptureModuleServiceBean dataCaptureModule() {
                     return dataCaptureModule;
+                }
+                
+                @Override
+                public FileDownloadServiceBean fileDownload() {
+                    return fileDownloadService;
                 }
 
             };

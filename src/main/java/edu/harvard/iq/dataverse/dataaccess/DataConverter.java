@@ -160,7 +160,7 @@ public class DataConverter {
         return null;
     }
 
-    private static File downloadFromStorageIO(StorageIO<DataFile> storageIO) {
+    public static File downloadFromStorageIO(StorageIO<DataFile> storageIO) {
         if (storageIO.isLocalFile()){
             try {
                 Path tabFilePath = storageIO.getFileSystemPath();

@@ -145,4 +145,4 @@ GitHub documents how to make changes to a fork at https://help.github.com/articl
 
 ----
 
-Previous: :doc:`troubleshooting` | Next: :doc:`testing`
+Previous: :doc:`troubleshooting` | Next: :doc:`sql-upgrade-scripts`

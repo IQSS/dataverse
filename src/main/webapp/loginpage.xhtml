@@ -7,7 +7,6 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-
     <h:head>
     </h:head>
 
@@ -63,7 +62,7 @@
                                     <ui:repeat id="credentialsContainer" value="#{LoginPage.filledCredentials}" var="fc">
                                         <div class="form-group text-left">
                                             <label class="col-sm-4 control-label" for="credValue">
-                                                #{fc.credential.title}
+                                                #{bundle[fc.credential.key]}
                                             </label>
                                             <div class="col-sm-8">
                                                 <h:inputText rendered="#{not fc.credential.secret}" value="#{fc.value}" id="credValue" styleClass="form-control"/>

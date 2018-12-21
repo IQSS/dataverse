@@ -1,0 +1,60 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:pt="http://java.sun.com/jsf/passthrough"
+    xmlns:cc="http://java.sun.com/jsf/composite"
+    xmlns:o="http://omnifaces.org/ui"
+    xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+    <p:outputPanel>
+        <div id="fileInfoInclude-filesTable" class="col-sm-12 row">
+            <div class="pull-left col-file-thumb">
+                <div class="thumbnail-block text-center">  
+                    <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!EditDatafilesPage.isThumbnailAvailable(fileMetadata)}"/>
+                    <span class="file-thumbnail-preview-img" jsf:rendered="#{EditDatafilesPage.isThumbnailAvailable(fileMetadata)}"
+                          data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
+                        <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
+                    </span>
+                    <!-- Restricted File Icon -->
+                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata)}">                  
+                        <span class="glyphicon glyphicon-lock text-danger"/>
+                    </div>
+                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileMetadata) }">
+                        <span class="icon-unlock text-success"/>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-10 col-file-metadata">
+                <div class="fileNameOriginal">
+                    <span>#{fileMetadata.label}</span>
+                </div>
+                <div class="text-muted small">
+                    <span id="static:fileTypeOutputRegular">#{fileMetadata.dataFile.friendlyType}</span>
+                    <span id="static:fileSize"> - #{fileMetadata.dataFile.friendlySize}</span>
+                    <span id="static:fileCreatePublishDate"> - #{fileMetadata.fileDateToDisplay}</span>
+                    <div class="checksum-block"><span id="static:file-checksum">#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}</span></div>
+                </div>
+                <div class="fileDescription small" jsf:rendered="#{!(empty fileMetadata.description)}">
+                    <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}"/>
+                </div>
+
+                <div class="file-tags-block" jsf:rendered="#{!(empty fileMetadata.categories) or !(empty fileMetadata.dataFile.tags)}">
+                    <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
+                        <ui:repeat value="#{fileMetadata.categories}" var="cat">
+                            <h:outputText value="#{cat.name}" styleClass="label label-default"/>
+                        </ui:repeat> 
+                    </ui:fragment>
+                    <ui:fragment>
+                        <ui:repeat value="#{fileMetadata.dataFile.tags}" var="tag">
+                            <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
+                        </ui:repeat>
+                    </ui:fragment>
+                </div>
+            </div>
+        </div>
+    </p:outputPanel>
+</ui:composition>

@@ -67,7 +67,7 @@ public class ActionLogRecord implements java.io.Serializable {
     
     private String actionSubType;
     
-    @Column(length = 1024)
+    @Column(columnDefinition="TEXT")
     private String info;
     
     public ActionLogRecord(){}

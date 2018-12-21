@@ -6,7 +6,7 @@ Search API
 
 The Search API supports the same searching, sorting, and faceting operations as the Dataverse web interface.
 
-Unlike the web interface, this new API is limited to *published* data until `issue 1299 <https://github.com/IQSS/dataverse/issues/1299>`_ is resolved.
+Unlike the web interface, this new API is limited to *published* data.
 
 The parameters and JSON response are partly inspired by the `GitHub Search API <https://developer.github.com/v3/search/>`_.
 
@@ -26,7 +26,7 @@ Name             Type     Description
 ===============  =======  ===========
 q                string   The search term or terms. Using "title:data" will search only the "title" field. "*" can be used as a wildcard either alone or adjacent to a term (i.e. "bird*"). For example, https://demo.dataverse.org/api/search?q=title:data
 type             string   Can be either "dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.  For example, https://demo.dataverse.org/api/search?q=*&type=dataset
-subtree          string   The identifier of the dataverse to which the search should be narrowed. The subtree of this dataverse and all its children will be searched.  For example, https://demo.dataverse.org/api/search?q=data&subtree=birds
+subtree          string   The identifier of the dataverse to which the search should be narrowed. The subtree of this dataverse and all its children will be searched.  Multiple "subtree" parameters can be used to include multiple Dataverses. For example, https://demo.dataverse.org/api/search?q=data&subtree=birds&subtree=cats .
 sort             string   The sort field. Supported values include "name" and "date". See example under "order".
 order            string   The order in which to sort. Can either be "asc" or "desc".  For example, https://demo.dataverse.org/api/search?q=data&sort=name&order=asc
 per_page         int      The number of results to return per request. The default is 10. The max is 1000. See :ref:`iteration example <iteration-example>`.
@@ -35,6 +35,7 @@ show_relevance   boolean  Whether or not to show details of which fields were ma
 show_facets      boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default. See :ref:`advanced search example <advancedsearch-example>`.
 fq               string   A filter query on the search term. Multiple "fq" parameters can be used. See :ref:`advanced search example <advancedsearch-example>`.
 show_entity_ids  boolean  Whether or not to show the database IDs of the search results (for developer use).
+query_entities   boolean  Whether entities are queried via direct database calls (for developer use).
 ===============  =======  ===========
 
 Basic Search Example
@@ -107,7 +108,7 @@ Advanced Search Example
 
 https://demo.dataverse.org/api/search?q=finch&show_relevance=true&show_facets=true&fq=publicationDate:2016&subtree=birds
 
-In this example, ``show_relevance=true`` matches per field are shown. Available facets are shown with ``show_facets=true`` and of the facets is being used with ``fq=publication_date_s:2015``. The search is being narrowed to the dataverse with the identifier "birds" with the parameter ``subtree=birds``.
+In this example, ``show_relevance=true`` matches per field are shown. Available facets are shown with ``show_facets=true`` and of the facets is being used with ``fq=publicationDate:2016``. The search is being narrowed to the dataverse with the identifier "birds" with the parameter ``subtree=birds``.
 
 .. code-block:: json
 
