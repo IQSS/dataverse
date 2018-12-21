@@ -26,6 +26,13 @@ Make Data Count is built on top of existing standards such as COUNTER and SUSHI 
 .. _PDF: https://doi.org/10.7287/peerj.preprints.26505v1
 .. _HTML: https://www.projectcounter.org/code-of-practice-rd-sections/foreword/
 
+Architecture
+------------
+
+There are many components involved in Dataverse's architecture for Make Data Count as shown in the diagram below.
+
+|makedatacount_components|
+
 Sending Metrics from Dataverse to the DataCite Hub
 --------------------------------------------------
 
@@ -87,3 +94,6 @@ Retrieving Citations for a Dataset
 +++++++++++++++++++++++++++++++++++++++++++++++++
 
 ``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/citations?persistentId=$DOI"``
+
+.. |makedatacount_components| image:: ./img/make-data-count.png
+   :class: img-responsive

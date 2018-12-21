@@ -1,0 +1,64 @@
+@startuml
+
+skinparam BoxPadding 30
+
+title Make Data Count components in Dataverse
+autonumber "<font color=blue>"
+
+actor user
+box "Dataverse" #DDD
+  participant datasetPage as "dataset\npage"
+  participant downloadApi as "download\nAPI"
+  participant metricsApi as "metrics\nAPI"
+  participant datasetMetrics as "datasetmetrics\ntable"
+  participant sushiParser as "SUSHI\nparser"
+  participant citationParser as "citation\nparser"
+end box
+
+box "filesystem or S3" #DDD
+  participant log as "activity-yyyy-mm.log"
+  participant sushi as "sushi-yyyy-mm.json"
+endbox
+
+box "counter-processor" #DDD
+  participant main.py
+  database sqlite as "yyyy-mm.sqlite3"
+end box
+
+box "DataCite hub" #DDD
+  participant reports as "reports\nendpoint"
+  participant events as "events\nendpoint"
+end box
+
+box "Crossref" #DDD
+  participant crossrefApi as "Crossref\nAPI"
+end box
+
+== Activity Logging ==
+user --> datasetPage : GET /dataset.xhtml
+datasetPage --> log : investigation/view
+user --> downloadApi : GET /api/access/datafile
+downloadApi --> log : request/download
+
+== Log Processing ==
+
+main.py --> log : read log nightly
+main.py --> sqlite : write to SQLite
+main.py --> reports : send SUSHI report to DataCite hub "reports" endpoint
+main.py --> sushi : write SUSHI to filesystem or S3
+sushiParser --> sushi : parse SUSHI file
+sushiParser --> datasetMetrics : write metrics to datasetmetrics table
+
+== Citation Retrieval ==
+
+events --> crossrefApi : retrieve citations periodically 
+citationParser --> events : retrieve citations nightly
+citationParser --> datasetMetrics : write citations to datasetmetrics table
+
+== Retrieving Usage Metrics ==
+
+user --> metricsApi: request number of views, downloads, and citations
+metricsApi --> datasetMetrics: get data from table
+metricsApi --> user: return data
+
+@enduml
