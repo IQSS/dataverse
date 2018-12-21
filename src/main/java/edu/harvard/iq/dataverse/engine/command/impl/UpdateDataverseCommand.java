@@ -57,10 +57,6 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
             String oldDvName = ctxt.dataverses().find(editedDv.getId()).getName();
             Dataverse result = ctxt.dataverses().save(editedDv);
 
-            if (!editedDv.isAllowMessagesBanners()) {
-                ctxt.dataverseTextMessages().deactivateAllowMessagesAndBanners(editedDv.getId());
-            }
-            
             if ( facetList != null ) {
                 ctxt.facets().deleteFacetsFor(result);
                 int i=0;
