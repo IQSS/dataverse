@@ -65,7 +65,7 @@ The support email address is `support@dataverse.org <mailto:support@dataverse.or
 **Reporting Issues and Contributing**
 
 Report bugs and add feature requests in `GitHub Issues <https://github.com/IQSS/dataverse/issues>`__
-or use `github pull requests <http://guides.dataverse.org/en/latest/developers/version-control.html#how-to-make-a-pull-request>`__,
+or use `GitHub pull requests <http://guides.dataverse.org/en/latest/developers/version-control.html#how-to-make-a-pull-request>`__,
 if you have some code, scripts or documentation that you'd like to share.
 If you have a **security issue** to report, please email `security@dataverse.org <mailto:security@dataverse.org>`__.
 
