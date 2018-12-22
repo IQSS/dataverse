@@ -593,6 +593,11 @@ public class UtilIT {
                 .get("/api/access/datafile/" + fileId + "?format=original");
     }
     
+    static Response downloadTabularFileNoVarHeader(Integer fileId) {
+        return given()
+                .get("/api/access/datafile/" + fileId + "?noVarHeader=true");
+    }
+    
     static Response downloadFileOriginal(Integer fileId, String apiToken) {
         return given()
                 .get("/api/access/datafile/" + fileId + "?format=original&key=" + apiToken);
@@ -1432,6 +1437,14 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get(url);
+    }
+    
+    static Response updateDefaultContributorsRoleOnDataverse(String dataverseAliasOrId,String roleAlias, String apiToken) {
+        String url = "/api/dataverses/" + dataverseAliasOrId + "/defaultContributorRole/" + roleAlias;
+        System.out.println("URL: " + url);
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put(url);
     }
 
     static Response getRoleAssignmentsOnDataset(String datasetId, String persistentId, String apiToken) {

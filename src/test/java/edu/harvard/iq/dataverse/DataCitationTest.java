@@ -69,20 +69,22 @@ public class DataCitationTest {
         dataCitation.writeAsBibtexCitation(os);
         String out = new String(os.toByteArray(), "UTF-8");
         assertEquals(
-           "@data{LK0D1H_1955,\r\n" +
-           "author = {First Last},\r\n" +
-           "publisher = {LibraScholar},\r\n" +
-           "title = {Dataset Title},\r\n" +
-           "year = {1955},\r\n" +
-           "doi = {10.5072/FK2/LK0D1H},\r\n" +
-           "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n" +
-           "}\r\n",
-           out
+                "@data{LK0D1H_1955,\r\n"
+                + "author = {First Last},\r\n"
+                + "publisher = {LibraScholar},\r\n"
+                + "title = {Dataset Title},\r\n"
+                + "year = {1955},\r\n"
+                + "version = {V1},\r\n"
+                + "doi = {10.5072/FK2/LK0D1H},\r\n"
+                + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
+                + "}\r\n",
+                out
         );
     }
 
     /**
      * Test that bibtex data export contains a closing bracket
+     *
      * @throws ParseException
      */
     @Test
@@ -90,20 +92,23 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion(true, true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "@data{LK0D1H_1955,\r\n" +
-           "author = {First Last},\r\n" +
-           "publisher = {LibraScholar},\r\n" +
-           "title = {Dataset Title},\r\n" +
-           "year = {1955},\r\n" +
-           "doi = {10.5072/FK2/LK0D1H},\r\n" +
-           "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n" +
-           "}\r\n",
-           dataCitation.toBibtexString()
+                "@data{LK0D1H_1955,\r\n"
+                + "author = {First Last},\r\n"
+                + "publisher = {LibraScholar},\r\n"
+                + "title = {Dataset Title},\r\n"
+                + "year = {1955},\r\n"
+                + "version = {V1},\r\n"
+                + "doi = {10.5072/FK2/LK0D1H},\r\n"
+                + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
+                + "}\r\n",
+                dataCitation.toBibtexString()
         );
     }
 
     /**
-     * Test that bibtex data export contains an empty author if no author is specified
+     * Test that bibtex data export contains an empty author if no author is
+     * specified
+     *
      * @throws ParseException
      */
     @Test
@@ -111,20 +116,23 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion(true, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "@data{LK0D1H_1955,\r\n" +
-           "author = {},\r\n" +
-           "publisher = {LibraScholar},\r\n" +
-           "title = {Dataset Title},\r\n" +
-           "year = {1955},\r\n" +
-           "doi = {10.5072/FK2/LK0D1H},\r\n" +
-           "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n" +
-           "}\r\n",
-           dataCitation.toBibtexString()
+                "@data{LK0D1H_1955,\r\n"
+                + "author = {},\r\n"
+                + "publisher = {LibraScholar},\r\n"
+                + "title = {Dataset Title},\r\n"
+                + "year = {1955},\r\n"
+                + "version = {V1},\r\n"
+                + "doi = {10.5072/FK2/LK0D1H},\r\n"
+                + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
+                + "}\r\n",
+                dataCitation.toBibtexString()
         );
     }
 
     /**
-     * Test that bibtex data export contains an empty title if no title is specified
+     * Test that bibtex data export contains an empty title if no title is
+     * specified
+     *
      * @throws ParseException
      */
     @Test
@@ -132,20 +140,23 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion(false, true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "@data{LK0D1H_1955,\r\n" +
-           "author = {First Last},\r\n" +
-           "publisher = {LibraScholar},\r\n" +
-           "title = {},\r\n" +
-           "year = {1955},\r\n" +
-           "doi = {10.5072/FK2/LK0D1H},\r\n" +
-           "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n" +
-           "}\r\n",
-           dataCitation.toBibtexString()
+                "@data{LK0D1H_1955,\r\n"
+                + "author = {First Last},\r\n"
+                + "publisher = {LibraScholar},\r\n"
+                + "title = {},\r\n"
+                + "year = {1955},\r\n"
+                + "version = {V1},\r\n"
+                + "doi = {10.5072/FK2/LK0D1H},\r\n"
+                + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
+                + "}\r\n",
+                dataCitation.toBibtexString()
         );
     }
 
     /**
-     * Test that bibtex data export contains an empty author and title if no author, nor title is specified
+     * Test that bibtex data export contains an empty author and title if no
+     * author, nor title is specified
+     *
      * @throws ParseException
      */
     @Test
@@ -153,15 +164,16 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion(false, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "@data{LK0D1H_1955,\r\n" +
-           "author = {},\r\n" +
-           "publisher = {LibraScholar},\r\n" +
-           "title = {},\r\n" +
-           "year = {1955},\r\n" +
-           "doi = {10.5072/FK2/LK0D1H},\r\n" +
-           "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n" +
-           "}\r\n",
-           dataCitation.toBibtexString()
+                "@data{LK0D1H_1955,\r\n"
+                + "author = {},\r\n"
+                + "publisher = {LibraScholar},\r\n"
+                + "title = {},\r\n"
+                + "year = {1955},\r\n"
+                + "version = {V1},\r\n"
+                + "doi = {10.5072/FK2/LK0D1H},\r\n"
+                + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
+                + "}\r\n",
+                dataCitation.toBibtexString()
         );
     }
 
@@ -221,7 +233,6 @@ public class DataCitationTest {
            "</contributors>" +
            "<titles><title>Dataset Title</title></titles>" +
            "<section>1955-11-05</section>" +
-           "<abstract />" +
            "<dates><year>1955</year></dates>" +
            "<edition>V1</edition>" +
            "<publisher>LibraScholar</publisher>" +
@@ -247,7 +258,6 @@ public class DataCitationTest {
            "<contributors />" +
            "<titles><title></title></titles>" +
            "<section>1955-11-05</section>" +
-           "<abstract />" +
            "<dates><year>1955</year></dates>" +
            "<edition>V1</edition>" +
            "<publisher>LibraScholar</publisher>" +

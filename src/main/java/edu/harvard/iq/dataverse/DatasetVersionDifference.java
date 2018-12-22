@@ -1371,7 +1371,8 @@ public final class DatasetVersionDifference {
         }
         
         public String getFileRest1() {
-            return fileRest1;
+            String localeFileRest1 = BundleUtil.getStringFromBundle(fileRest1.toLowerCase().replace(" ", "_"));
+            return localeFileRest1;
         }
 
         public void setFileRest1(String fileRest1) {
@@ -1379,7 +1380,8 @@ public final class DatasetVersionDifference {
         }
 
         public String getFileRest2() {
-            return fileRest2;
+            String localeFileRest2 = BundleUtil.getStringFromBundle(fileRest2.toLowerCase().replace(" ", "_"));
+            return localeFileRest2;
         }
 
         public void setFileRest2(String fileRest2) {

@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.DateUtil;
+
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -146,5 +148,9 @@ public class UserNotification implements Serializable {
 
     public void setRoleString(String roleString) {
         this.roleString = roleString;
+    }
+
+    public String getLocaleSendDate() {
+        return DateUtil.formatDate(sendDate);
     }
 }

@@ -146,9 +146,11 @@
             </p:fragment>
         </div>
         <div class="button-block">
+            <!--Note: the guestbookResponse.fileFormat is being set in xhtml via the initial download buttons in file-download-button-fragment.xhtml -->
             <p:commandLink type="button" process="@this" styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat != 'externalTool'
-                                                                               and guestbookResponse.fileFormat != 'subset'
-                                                                                and guestbookResponse.fileFormat != 'worldMap'}"
+                                                                                                                            and guestbookResponse.fileFormat != 'subset'
+                                                                                                                            and guestbookResponse.fileFormat != 'worldMap'
+                                                                                                                            and guestbookResponse.fileFormat != 'package'}"
                            actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse)}"
                            update="guestbookUIFragment"
                            >
@@ -172,7 +174,15 @@
                            update="guestbookUIFragment">
                 #{bundle['acceptTerms']}
                 <f:param name="DO_GB_VALIDATION" value="true"/>
+            </p:commandLink>    
+            
+            <p:commandLink type="button" process="@this" styleClass="btn btn-default" rendered="#{guestbookResponse.fileFormat == 'package'}"
+                           update="guestbookUIFragment @form @widgetVar(downloadPackagePopup)" >
+                <f:actionListener binding="#{fileDownloadHelper.writeGuestbookAndLaunchPackagePopup(guestbookResponse)}" /> 
+                <f:param name="DO_GB_VALIDATION" value="true"/>  
+                #{bundle['acceptTerms']}
             </p:commandLink>
+            
             <button type="button" class="btn btn-default" onclick="PF('downloadPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
         </div>
 </ui:composition>
