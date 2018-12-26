@@ -46,6 +46,8 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.primefaces.PrimeFaces;
+import org.primefaces.context.RequestContext;
 import org.primefaces.event.TransferEvent;
 
 /**
@@ -506,6 +508,7 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
         }
+       PrimeFaces.current().scrollTo("dsft"+dsftId);
     }
 
     public List<SelectItem> resetSelectItems(DatasetFieldType typeIn) {

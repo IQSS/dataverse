@@ -264,7 +264,7 @@
                                                         <table id="metadataFieldOptions" class="table table-striped">
                                                             <tbody>
                                                                 <ui:repeat value="#{mdb.datasetFieldTypes}" var="dsft">
-                                                                    <tr>
+                                                                    <tr  id="dsft#{dsft.id}">
                                                                         <td>
                                                                             <p:selectBooleanCheckbox rendered="#{!dsft.hasParent}" value="#{dsft.include}" itemLabel="#{dsft.displayName}"
                                                                                                       onchange="#{DataversePage.updateInclude(mdb.id, dsft.id)}"
