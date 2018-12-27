@@ -508,7 +508,7 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
         }
-       PrimeFaces.current().scrollTo("dsft"+dsftId);
+        PrimeFaces.current().executeScript("scrollAfterUpdate();");
     }
 
     public List<SelectItem> resetSelectItems(DatasetFieldType typeIn) {

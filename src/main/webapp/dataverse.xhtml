@@ -264,10 +264,10 @@
                                                         <table id="metadataFieldOptions" class="table table-striped">
                                                             <tbody>
                                                                 <ui:repeat value="#{mdb.datasetFieldTypes}" var="dsft">
-                                                                    <tr  id="dsft#{dsft.id}">
+                                                                    <tr>
                                                                         <td>
                                                                             <p:selectBooleanCheckbox rendered="#{!dsft.hasParent}" value="#{dsft.include}" itemLabel="#{dsft.displayName}"
-                                                                                                      onchange="#{DataversePage.updateInclude(mdb.id, dsft.id)}"
+                                                                                                      onchange="scrollPos=document.getElementById('metadataFieldOptionsPanel-Body').scrollTop;#{DataversePage.updateInclude(mdb.id, dsft.id)}"
                                                                                                      disabled="#{(!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required)) or DataversePage.editInputLevel == false }">
                                                                                 <p:ajax update="@widgetVar(OptButton#{dsft.id}), @widgetVar(optionBlock)" />
                                                                             </p:selectBooleanCheckbox>
@@ -743,6 +743,9 @@
 
                 <script type="text/javascript">
                     //<![CDATA[
+                    
+                    var scrollPos=0;
+
                     $(document).ready(function () {
                         initPopover();
                         initCarousel();
@@ -797,6 +800,10 @@
 
                     function updateInclude() {
                         $('button[id$="hiddenRefresh"]').trigger('click');
+                    }
+                    
+                    function scrollAfterUpdate() {
+                        document.getElementById('metadataFieldOptionsPanel-Body').scrollTop = scrollPos;
                     }
 
                     function updateMetadata(checkbox) {
