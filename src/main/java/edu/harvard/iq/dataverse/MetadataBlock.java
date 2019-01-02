@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import org.apache.commons.lang.StringUtils;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -18,6 +21,10 @@ import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+
+import static edu.harvard.iq.dataverse.util.BundleUtil.getStringFromBundle;
+import static java.lang.String.format;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 /**
  *
@@ -88,7 +95,8 @@ public class MetadataBlock implements Serializable {
     }
 
     public String getDisplayName() {
-        return displayName;
+        String bundleDisplayName = getStringFromBundle(format("metadata.type.%s.title", this.name));
+        return isNotBlank(bundleDisplayName) ? bundleDisplayName : displayName;
     }
     public void setDisplayName(String displayName) {
         this.displayName = displayName;

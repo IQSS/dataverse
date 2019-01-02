@@ -2,6 +2,10 @@ package edu.harvard.iq.dataverse.search;
 
 import java.util.List;
 
+import static edu.harvard.iq.dataverse.util.BundleUtil.getStringFromBundle;
+import static java.lang.String.format;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 public class FacetCategory {
 
     private String name;
@@ -30,6 +34,11 @@ public class FacetCategory {
 
     public void setFriendlyName(String friendlyName) {
         this.friendlyName = friendlyName;
+    }
+
+    public String getDisplayName() {
+        String bundleDisplayName = getStringFromBundle(format("facets.search.fieldtype.%s.label", this.name));
+        return isNotBlank(bundleDisplayName) ? bundleDisplayName : friendlyName;
     }
 
 }

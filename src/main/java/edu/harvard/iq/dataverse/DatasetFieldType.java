@@ -1,16 +1,35 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.SolrField;
-import java.util.Collection;
 
+import javax.faces.model.SelectItem;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import javax.faces.model.SelectItem;
-import javax.persistence.*;
+
+import static edu.harvard.iq.dataverse.util.BundleUtil.getStringFromBundle;
+import static java.lang.String.format;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 /**
  * Defines the meaning and constraints of a metadata field and its values.
@@ -507,10 +526,20 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     
     public String getDisplayName() {
         if (isHasParent() && !parentDatasetFieldType.getTitle().equals(title)) {
-        return parentDatasetFieldType.getTitle() + " " + title;
+        return parentDatasetFieldType.getDisplayName() + " " + bundleFieldDisplayName(name, title);
         } else {
-            return title;
+            return bundleFieldDisplayName(name, title);
         }
+    }
+
+    public String getDescriptionDisplayName() {
+        String bundleDisplayName = getStringFromBundle(format("datasetfieldtype.%s.description", name));
+        return isNotBlank(bundleDisplayName) ? bundleDisplayName : description;
+    }
+
+    private String bundleFieldDisplayName(String fieldName, String toDisplay) {
+        String bundleDisplayName = getStringFromBundle(format("datasetfieldtype.%s.title", fieldName));
+        return isNotBlank(bundleDisplayName) ? bundleDisplayName : toDisplay;
     }
 
     public SolrField getSolrField() {
@@ -560,7 +589,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public String getTmpNullFieldTypeIdentifier() {
         return "NullFieldType_s";
     }
-    
+
     @Override
     public String toString() {
         return "[DatasetFieldType name:" + getName() + " id:" + getId() + "]";
