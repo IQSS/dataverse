@@ -5,6 +5,16 @@
  */
 package edu.harvard.iq.dataverse.makedatacount;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletRequest;
+
 /**
  *
  * @author matthew
@@ -33,6 +43,40 @@ public class MakeDataCountEntry {
     
     public MakeDataCountEntry() {
         
+    }
+    
+    public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, DatasetVersion workingVersion) {
+        HttpServletRequest req = (HttpServletRequest)fc.getExternalContext().getRequest();
+        setRequestUrl(String.valueOf(req.getRequestURL().append("?").append(req.getQueryString())));
+        setTargetUrl(String.valueOf(req.getRequestURL().append("?").append(req.getQueryString())));
+        setUserAgent(req.getHeader("user-agent")); 
+        
+        setIdentifier(workingVersion.getDataset().getGlobalId().asString());
+        setAuthors(workingVersion.getAuthorsStr(false).replace(";", "|"));
+        setPublisher(workingVersion.getRootDataverseNameforCitation());
+        setTitle(workingVersion.getTitle());
+        setVersion(String.valueOf(workingVersion.getVersionNumber()));
+        setPublicationYear(new SimpleDateFormat("yyyy").format(workingVersion.getReleaseTime()));
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");     
+            format.setTimeZone(TimeZone.getTimeZone("GMT"));
+            setPublicationDate(format.format(workingVersion.getReleaseTime()));
+            
+        setClientIp(String.valueOf(dvRequestService.getDataverseRequest().getSourceAddress()));
+        setUserId(dvRequestService.getDataverseRequest().getUser().getIdentifier());
+        
+        setEventTime(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new Timestamp(new Date().getTime())));
+        
+        /* Still needed: */
+        //setOtherId();
+        //setPublisherId();
+        //setSessionCookieId();
+        //setUesrCookieId();
+    }
+    
+    public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, DatasetVersion workingVersion, DataFile df) {
+        this(fc, dvRequestService, workingVersion);
+        setFilename(df.getFileMetadata().getLabel());
+        setSize(String.valueOf(df.getFilesize())); //Need to probably be massaged into a better format
     }
 
     @Override
@@ -71,7 +115,7 @@ public class MakeDataCountEntry {
     /**
      * @param eventTime the eventTime to set
      */
-    public void setEventTime(String eventTime) {
+    public final void setEventTime(String eventTime) {
         this.eventTime = eventTime;
     }
 
@@ -88,7 +132,7 @@ public class MakeDataCountEntry {
     /**
      * @param clientIp the clientIp to set
      */
-    public void setClientIp(String clientIp) {
+    public final void setClientIp(String clientIp) {
         this.clientIp = clientIp;
     }
 
@@ -139,7 +183,7 @@ public class MakeDataCountEntry {
     /**
      * @param userId the userId to set
      */
-    public void setUserId(String userId) {
+    public final void setUserId(String userId) {
         this.userId = userId;
     }
 
@@ -156,7 +200,7 @@ public class MakeDataCountEntry {
     /**
      * @param requestUrl the requestUrl to set
      */
-    public void setRequestUrl(String requestUrl) {
+    public final void setRequestUrl(String requestUrl) {
         this.requestUrl = requestUrl;
     }
 
@@ -173,7 +217,7 @@ public class MakeDataCountEntry {
     /**
      * @param identifier the identifier to set
      */
-    public void setIdentifier(String identifier) {
+    public final void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
 
@@ -190,7 +234,7 @@ public class MakeDataCountEntry {
     /**
      * @param filename the filename to set
      */
-    public void setFilename(String filename) {
+    public final void setFilename(String filename) {
         this.filename = filename;
     }
 
@@ -207,7 +251,7 @@ public class MakeDataCountEntry {
     /**
      * @param size the size to set
      */
-    public void setSize(String size) {
+    public final void setSize(String size) {
         this.size = size;
     }
 
@@ -224,7 +268,7 @@ public class MakeDataCountEntry {
     /**
      * @param userAgent the userAgent to set
      */
-    public void setUserAgent(String userAgent) {
+    public final void setUserAgent(String userAgent) {
         this.userAgent = userAgent;
     }
 
@@ -241,7 +285,7 @@ public class MakeDataCountEntry {
     /**
      * @param title the title to set
      */
-    public void setTitle(String title) {
+    public final void setTitle(String title) {
         this.title = title;
     }
 
@@ -258,7 +302,7 @@ public class MakeDataCountEntry {
     /**
      * @param publisher the publisher to set
      */
-    public void setPublisher(String publisher) {
+    public final void setPublisher(String publisher) {
         this.publisher = publisher;
     }
 
@@ -292,7 +336,7 @@ public class MakeDataCountEntry {
     /**
      * @param authors the authors to set
      */
-    public void setAuthors(String authors) {
+    public final void setAuthors(String authors) {
         this.authors = authors;
     }
 
@@ -309,7 +353,7 @@ public class MakeDataCountEntry {
     /**
      * @param publicationDate the publicationDate to set
      */
-    public void setPublicationDate(String publicationDate) {
+    public final void setPublicationDate(String publicationDate) {
         this.publicationDate = publicationDate;
     }
 
@@ -326,7 +370,7 @@ public class MakeDataCountEntry {
     /**
      * @param version the version to set
      */
-    public void setVersion(String version) {
+    public final void setVersion(String version) {
         this.version = version;
     }
 
@@ -360,7 +404,7 @@ public class MakeDataCountEntry {
     /**
      * @param targetUrl the targetUrl to set
      */
-    public void setTargetUrl(String targetUrl) {
+    public final void setTargetUrl(String targetUrl) {
         this.targetUrl = targetUrl;
     }
 
@@ -377,7 +421,7 @@ public class MakeDataCountEntry {
     /**
      * @param publicationYear the publicationYear to set
      */
-    public void setPublicationYear(String publicationYear) {
+    public final void setPublicationYear(String publicationYear) {
         this.publicationYear = publicationYear;
     }
 }

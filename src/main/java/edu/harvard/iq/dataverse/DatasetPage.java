@@ -1445,39 +1445,19 @@ public class DatasetPage implements java.io.Serializable {
             // init the citation
             displayCitation = dataset.getCitation(true, workingVersion);
             
-    //MAD: Should inject or something
-    //Also maybe put entry as a part of util, inner class
-    //MAD: A number of these workingVersion refs are wrapped on this page, maybe use those?
-    try {
-        MakeDataCountEntry entry = new MakeDataCountEntry();
-        entry.setAuthors(workingVersion.getAuthorsStr(false).replace(";", "|"));
-        entry.setClientIp(dvRequestService.getDataverseRequest().getSourceAddress().toString()); //MAD: May be bad
-        entry.setEventTime(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new Timestamp(new Date().getTime()))); //MAD: Different format
-        //entry.setFilename();
-        entry.setIdentifier(dataset.getGlobalId().asString());
-        //entry.setOtherId();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");     format.setTimeZone(TimeZone.getTimeZone("GMT"));     entry.setPublicationDate(format.format(workingVersion.getReleaseTime())); //null issues?
-        entry.setPublicationYear(new SimpleDateFormat("yyyy").format(workingVersion.getReleaseTime()));
-        entry.setPublisher(workingVersion.getRootDataverseNameforCitation());
-        //entry.setPublisherId();
-        HttpServletRequest req = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        entry.setRequestUrl( (req).getRequestURL().append("?").append(req.getQueryString()).toString() );
-        //entry.setSessionCookieId();
-        //entry.setSize();
-        entry.setTargetUrl((req).getRequestURL().append("?").append(req.getQueryString()).toString());
-        entry.setTitle(workingVersion.getTitle());
-        //entry.setUesrCookieId();
-        //final HttpServletRequest request =(HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext()
-        entry.setUserAgent(((HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest()).getHeader("user-agent")); 
-        entry.setUserId(dvRequestService.getDataverseRequest().getUser().getIdentifier());
-        entry.setVersion(String.valueOf(workingVersion.getVersionNumber())); //MAD: May want to take this approach with other casts to avoid null
-        MakeDataCountUtil u = new MakeDataCountUtil();
-        u.logEntry(entry);
-    } catch (NullPointerException ne) {
-        //MAD: Temp fix while moving the nulling issues out of here
-        logger.info(ne.toString());
-    }
-
+            //MAD: Should inject or something
+            //Also maybe put entry as a part of util, inner class
+            //MAD: A number of these workingVersion refs are wrapped on this page, maybe use those?
+            if(workingVersion.isPublished()) {
+                MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
+                //entry.setFilename();
+                //entry.setSize();
+                //entry.setOtherId();
+                //entry.setPublisherId();
+                //entry.setSessionCookieId();
+                //entry.setUesrCookieId();
+                MakeDataCountUtil.logEntry(entry);
+            }
 
             if (initFull) {
                 // init the list of FileMetadatas
