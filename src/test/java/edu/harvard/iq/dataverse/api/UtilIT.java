@@ -593,6 +593,11 @@ public class UtilIT {
                 .get("/api/access/datafile/" + fileId + "?format=original");
     }
     
+    static Response downloadTabularFileNoVarHeader(Integer fileId) {
+        return given()
+                .get("/api/access/datafile/" + fileId + "?noVarHeader=true");
+    }
+    
     static Response downloadFileOriginal(Integer fileId, String apiToken) {
         return given()
                 .get("/api/access/datafile/" + fileId + "?format=original&key=" + apiToken);
@@ -1054,6 +1059,86 @@ public class UtilIT {
                 .put("/api/files/" + idInPath + "/restrict" + optionalQueryParam);
         return response;
     }
+    
+    static Response allowAccessRequests(String datasetIdOrPersistentId, boolean allowRequests, String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(allowRequests)
+                .put("/api/access/" + idInPath + "/allowAccessRequest" + optionalQueryParam);
+        return response;
+    }
+
+    static Response requestFileAccess(String fileIdOrPersistentId, String apiToken) {
+
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
+
+        String keySeparator = "&";
+        if (optionalQueryParam.isEmpty()) {
+            keySeparator = "?";
+        }
+        Response response = given()
+                .put("/api/access/datafile/" + idInPath + "/requestAccess" + optionalQueryParam + keySeparator + "key=" + apiToken);
+        return response;
+    }
+
+    static Response grantFileAccess(String fileIdOrPersistentId, String identifier, String apiToken) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
+        String keySeparator = "&";
+        if (optionalQueryParam.isEmpty()) {
+            keySeparator = "?";
+        }
+        Response response = given()
+                .put("/api/access/datafile/" + idInPath + "/grantAccess/" + identifier + "/" + optionalQueryParam + keySeparator + "key=" + apiToken);
+        return response;
+    }
+
+    static Response getAccessRequestList(String fileIdOrPersistentId, String apiToken) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
+        String keySeparator = "&";
+        if (optionalQueryParam.isEmpty()) {
+            keySeparator = "?";
+        }
+        Response response = given()
+                .get("/api/access/datafile/" + idInPath + "/listRequests/" + optionalQueryParam + keySeparator + "key=" + apiToken);
+        return response;
+    }
+
+    static Response rejectFileAccessRequest(String fileIdOrPersistentId, String identifier, String apiToken) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
+        String keySeparator = "&";
+        if (optionalQueryParam.isEmpty()) {
+            keySeparator = "?";
+        }
+        Response response = given()
+                .put("/api/access/datafile/" + idInPath + "/rejectAccess/" + identifier + "/" + optionalQueryParam + keySeparator + "key=" + apiToken);
+        return response;
+    }
 
     static Response moveDataverse(String movedDataverseAlias, String targetDataverseAlias, Boolean force, String apiToken) {
         Response response = given()
@@ -1349,10 +1434,17 @@ public class UtilIT {
 
     static Response getRoleAssignmentsOnDataverse(String dataverseAliasOrId, String apiToken) {
         String url = "/api/dataverses/" + dataverseAliasOrId + "/assignments";
-        System.out.println("URL: " + url);
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get(url);
+    }
+    
+    static Response updateDefaultContributorsRoleOnDataverse(String dataverseAliasOrId,String roleAlias, String apiToken) {
+        String url = "/api/dataverses/" + dataverseAliasOrId + "/defaultContributorRole/" + roleAlias;
+        System.out.println("URL: " + url);
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put(url);
     }
 
     static Response getRoleAssignmentsOnDataset(String datasetId, String persistentId, String apiToken) {
@@ -1375,6 +1467,13 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("api/dataverses/" + definitionPoint + "/assignments/" + doomed);
     }
+    
+    static Response revokeFileAccess(String definitionPoint, String doomed, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("api/access/datafile/" + definitionPoint + "/revokeAccess/" + doomed);
+    }
+    
 
     static Response findPermissionsOn(String dvObject, String apiToken) {
         return given()

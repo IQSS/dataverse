@@ -10,7 +10,6 @@
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:o="http://omnifaces.org/ui"
       xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-
     <h:head>
     </h:head>
 
@@ -38,57 +37,16 @@
                 <h:form id="datasetForm">
                     <!-- BEGIN: file replace original -->
                     <ui:fragment rendered="#{EditDatafilesPage.fileReplaceOperation}">
-                        <c:if test="#{EditDatafilesPage.getFileToReplace() != null}">
-                            <ui:param name="fileToReplace" value="#{EditDatafilesPage.getFileToReplace()}" />
-                        </c:if>
                         <div id="file-replace-original-block" class="col-sm-12">
                             <label class="col-sm-2 control-label">
                                 <span>#{bundle['file.replace.original']}</span>
                             </label>
-                            <div id="filesTableDiv" class="col-sm-10">
-                                <div style="" class="pull-left col-file-thumb">
-                                    <div class="thumbnail-block text-center">  
-                                    <span class="icon-#{dataFileServiceBean.getFileClass(fileToReplace.fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!EditDatafilesPage.isThumbnailAvailable(fileToReplace.fileMetadata)}"/>
-                                        <span class="file-thumbnail-preview-img" jsf:rendered="#{EditDatafilesPage.isThumbnailAvailable(fileToReplace.fileMetadata)}"
-                                              data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileToReplace.fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
-                                            <p:graphicImage value="/api/access/datafile/#{fileToReplace.fileMetadata.dataFile.id}?imageThumb=true"/>
-                                        </span>
-                                        <!-- Restricted File Icon -->
-                                        <div class="file-icon-restricted-block" jsf:rendered="#{fileToReplace.fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileToReplace.fileMetadata)}">                  
-                                            <span class="glyphicon glyphicon-lock text-danger"/>
-                                        </div>
-                                        <div class="file-icon-restricted-block" jsf:rendered="#{fileToReplace.fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileToReplace.fileMetadata) }">
-                                            <span class="icon-unlock text-success"/>
-                                        </div>
-                                    </div>
-                                </div>  
-                                <div class="col-sm-10 col-file-metadata">
-                                    <div class="fileNameOriginal">
-                                        <span>#{fileToReplace.fileMetadata.label}</span>
-                                    </div>
-                                    <div class="text-muted small">
-                                        <span id="static:fileTypeOutputRegular">#{fileToReplace.friendlyType}</span>
-                                        <span id="static:fileSize"> - #{fileToReplace.filesize} KB</span>
-                                        <span id="static:fileCreatePublishDate"> - #{fileToReplace.fileMetadata.getFileDateToDisplay()}</span>
-                                        <div class="checksum-block"><span id="static:file-checksum">#{fileToReplace.checksumType}: #{fileToReplace.checksumValue}</span></div>
-                                    </div>
-                                    <div class="fileDescription small" jsf:rendered="#{!(empty fileToReplace.fileMetadata.description)}">
-                                        <h:outputText id="fileDescNonEmpty" value="#{fileToReplace.fileMetadata.description}"/>
-                                    </div>
-
-                                    <div class="file-tags-block" jsf:rendered="#{!(empty fileToReplace.fileMetadata.categories) or !(empty fileToReplace.fileMetadata.dataFile.tags)}">
-                                        <ui:fragment rendered="#{!(empty fileToReplace.fileMetadata.categories)}">
-                                            <ui:repeat value="#{fileToReplace.fileMetadata.categories}" var="cat">
-                                                <h:outputText value="#{cat.name}" styleClass="label label-default"/>
-                                            </ui:repeat> 
-                                        </ui:fragment>
-                                        <ui:fragment>
-                                            <ui:repeat value="#{fileToReplace.fileMetadata.dataFile.tags}" var="tag">
-                                                <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
-                                            </ui:repeat>
-                                        </ui:fragment>
-                                    </div>
-                                </div>
+                            <div class="col-sm-10">
+                                <ui:include src="file-info-fragment.xhtml">
+                                    <c:if test="#{EditDatafilesPage.getFileToReplace().fileMetadata != null}">
+                                        <ui:param name="fileMetadata" value="#{EditDatafilesPage.getFileToReplace().fileMetadata}" />
+                                    </c:if>
+                                </ui:include>
                             </div>
                         </div>
                     </ui:fragment>

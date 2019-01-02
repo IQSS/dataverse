@@ -124,7 +124,7 @@ public class PasswordResetPage implements java.io.Serializable {
                  */
                 logger.log(Level.INFO, "Couldn''t find single account using {0}", emailAddress);
             }
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Password Reset Initiated", ""));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetInitiated"), ""));
         } catch (PasswordResetException ex) {
             /**
              * @todo do we really need a special exception for this??

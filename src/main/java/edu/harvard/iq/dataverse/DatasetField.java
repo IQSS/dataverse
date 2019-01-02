@@ -550,6 +550,22 @@ public class DatasetField implements Serializable {
             }
         }
     }
+    
+    public void trimTrailingSpaces() {
+        if (this.getDatasetFieldType().isPrimitive() && !this.getDatasetFieldType().isControlledVocabulary()) {
+            for (int i = 0; i < datasetFieldValues.size(); i++) {
+                datasetFieldValues.get(i).setValue(datasetFieldValues.get(i).getValue().trim());
+            }
+        } else if (this.getDatasetFieldType().isCompound()) {
+            for (int i = 0; i < datasetFieldCompoundValues.size(); i++) {
+                DatasetFieldCompoundValue compoundValue = datasetFieldCompoundValues.get(i);
+                for (DatasetField dsf : compoundValue.getChildDatasetFields()) {
+                    dsf.trimTrailingSpaces();
+                }
+            }
+        }
+    }
+     
 
     public void addDatasetFieldValue(int index) {
         datasetFieldValues.add(index, new DatasetFieldValue(this));

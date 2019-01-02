@@ -383,6 +383,23 @@ public class ImportServiceBean {
         }
         return importedDataset;
     }
+
+    public JsonObject ddiToJson(String xmlToParse) throws ImportException{
+        DatasetDTO dsDTO = null;
+
+        try {
+            dsDTO = importDDIService.doImport(ImportType.IMPORT, xmlToParse);
+        } catch (XMLStreamException e) {
+            throw new ImportException("XMLStreamException" + e);
+        }
+        // convert DTO to Json,
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String json = gson.toJson(dsDTO);
+        JsonReader jsonReader = Json.createReader(new StringReader(json));
+        JsonObject obj = jsonReader.readObject();
+
+        return obj;
+    }
     
     public JsonObjectBuilder doImport(DataverseRequest dataverseRequest, Dataverse owner, String xmlToParse, String fileName, ImportType importType, PrintWriter cleanupLog) throws ImportException, IOException {
 
