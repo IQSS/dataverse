@@ -119,6 +119,25 @@ public class LoggingUtil {
 	    }
     }
 
+    //MAD: Merge in after merge of #5145
+    public static void saveLogFile(String fileContent, String logDir, String fileName, String logHeader) {
+        try {
+            checkCreateLogDirectory(logDir);
+            File dir = new File(logDir);
+            if (!dir.exists() && !dir.mkdirs()) {
+                logger.log(Level.SEVERE, "Couldn't create directory: " + dir.getAbsolutePath());
+            }
+            File logFile = new File(dir.getAbsolutePath() +"/"+ fileName); //MAD: Had to change this, not sure if its buggy upstream
+            if(!logFile.exists() && null != logHeader) {
+                FileUtils.writeStringToFile(logFile, logHeader);
+            }
+            FileUtils.writeStringToFile(logFile, fileContent, true);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error saving log report: " + fileName + " " + e.getMessage());
+        }
+
+    }
+    
     public static class JobLogFormatter extends Formatter {
         @Override
         public String format(LogRecord record) {
@@ -126,3 +145,4 @@ public class LoggingUtil {
         }
     }
 }
+ 
