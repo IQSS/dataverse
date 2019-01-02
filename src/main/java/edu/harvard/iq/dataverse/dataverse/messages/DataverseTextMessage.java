@@ -2,19 +2,22 @@ package edu.harvard.iq.dataverse.dataverse.messages;
 
 import edu.harvard.iq.dataverse.Dataverse;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.persistence.Version;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -31,89 +34,76 @@ public class DataverseTextMessage implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column( nullable=false )
-    private String message;
-
-    @Column( nullable=false )
-    private String locale;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "dataverseTextMessage")
+    private Set<DataverseLocalizedMessage> dataverseLocalizedMessages = new HashSet<>();
 
     private boolean active;
 
-    @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable=false )
-    private Date fromTime;
+    @Column(nullable = false, columnDefinition = "TIMESTAMP")
+    private LocalDateTime fromTime;
 
-    @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable=false )
-    private Date toTime;
+    @Column(nullable = false, columnDefinition = "TIMESTAMP")
+    private LocalDateTime toTime;
 
     @Version
     private Long version;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Dataverse dataverse;
 
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getLocale() {
-        return locale;
-    }
-
-    public void setLocale(String locale) {
-        this.locale = locale;
-    }
-
     public boolean isActive() {
         return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    public Date getFromTime() {
-        return fromTime;
-    }
-
-    public void setFromTime(Date fromTime) {
-        this.fromTime = fromTime;
-    }
-
-    public Date getToTime() {
-        return toTime;
-    }
-
-    public void setToTime(Date toTime) {
-        this.toTime = toTime;
     }
 
     public Long getVersion() {
         return version;
     }
 
-    public void setVersion(Long version) {
-        this.version = version;
+    public LocalDateTime getFromTime() {
+        return fromTime;
+    }
+
+    public LocalDateTime getToTime() {
+        return toTime;
     }
 
     public Dataverse getDataverse() {
         return dataverse;
     }
 
+    public Set<DataverseLocalizedMessage> getDataverseLocalizedMessages() {
+        return dataverseLocalizedMessages;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public void setFromTime(LocalDateTime fromTime) {
+        this.fromTime = fromTime;
+    }
+
+    public void setToTime(LocalDateTime toTime) {
+        this.toTime = toTime;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
+    }
+
     public void setDataverse(Dataverse dataverse) {
         this.dataverse = dataverse;
+    }
+
+    public void setDataverseLocalizedMessages(Set<DataverseLocalizedMessage> dataverseLocalizedMessages) {
+        this.dataverseLocalizedMessages = dataverseLocalizedMessages;
     }
 }
