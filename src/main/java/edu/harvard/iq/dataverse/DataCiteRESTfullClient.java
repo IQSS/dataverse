@@ -159,6 +159,9 @@ public class DataCiteRESTfullClient implements Closeable {
      */
     public boolean testDOIExists(String doi) {
         logger.info("In testDOIExists: " + doi);
+        if(doi==null || doi.trim().length()==0) {
+            throw new RuntimeException("No DOI in testDOIExists");
+        }
         HttpGet httpGet = new HttpGet(this.url + "/metadata/" + doi);      
         httpGet.setHeader("Accept", "application/xml");        
         try {
