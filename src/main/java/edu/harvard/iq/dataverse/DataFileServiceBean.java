@@ -1568,7 +1568,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             .getResultList().isEmpty();
             
         try{
-            if (idServiceBean.alreadyExists(datafile)) {
+            if (idServiceBean.alreadyExists(new GlobalId(testProtocol, testAuthority, userIdentifier))) {
                 u = false;
             }
         } catch (Exception e){

@@ -29,15 +29,26 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         return true;
     }
 
+
     @Override
+    @Deprecated
     public boolean alreadyExists(DvObject dvObject) {
-        logger.log(Level.FINE,"alreadyExists");
-        boolean alreadyExists;
-        String identifier = getIdentifier(dvObject);
-        if(identifier==null || identifier.length()==0) {
-            logger.info("No identifier for " + dvObject.getIdentifier());
+        if(dvObject==null) {
+            logger.severe("Null DvObject sent to alreadyExists().");
             return false;
         }
+        return alreadyExists(dvObject.getGlobalId());
+    }
+
+    @Override
+    public boolean alreadyExists(GlobalId pid) {
+        logger.log(Level.FINE,"alreadyExists");
+        if(pid==null) {
+            logger.severe("No identifier sent.");
+            return false;
+        }
+        boolean alreadyExists;
+        String identifier = pid.asString();
         try{
             alreadyExists = doiDataCiteRegisterService.testDOIExists(identifier); 
         } catch (Exception e){
