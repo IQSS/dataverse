@@ -31,27 +31,27 @@ public class TextMessagePage implements Serializable {
         /*List<DataverseTextMessage> dataverseTextMessages = dataverseTextMessageService.fetchAllTextMessagesForDataverse(dataverseId);
         dataverseTextMessage = dataverseMessagesMapper.DataverseTextMessageToDtos(dataverseTextMessages);*/
 
-        HashSet<DataverseLocalizedMessageDto> set1 =
-                Sets.newHashSet(new DataverseLocalizedMessageDto("pl", "hello"),
-                        new DataverseLocalizedMessageDto("en", "arigato"));
-
-        HashSet<DataverseLocalizedMessageDto> set2 = Sets.newHashSet(new DataverseLocalizedMessageDto("pl", "hello NEIN"),
-                new DataverseLocalizedMessageDto("en", "arigato gozaimasu"));
-
-        DataverseTextMessageDto dtm1 = new DataverseTextMessageDto();
-        dtm1.setActive(true);
-        dtm1.setFromTime(LocalDateTime.of(1990, 12, 12, 12, 12));
-        dtm1.setToTime(LocalDateTime.now());
-        dtm1.setDataverseLocalizedMessage(set1);
-
-        DataverseTextMessageDto dtm2 = new DataverseTextMessageDto();
-        dtm2.setActive(true);
-        dtm2.setFromTime(LocalDateTime.of(1990, 12, 12, 12, 12));
-        dtm2.setToTime(LocalDateTime.now());
-        dtm2.setDataverseLocalizedMessage(set2);
-
-        dataverseTextMessage.add(dtm1);
-        dataverseTextMessage.add(dtm2);
+//        HashSet<DataverseLocalizedMessageDto> set1 =
+//                Sets.newHashSet(new DataverseLocalizedMessageDto("pl", "hello"),
+//                        new DataverseLocalizedMessageDto("en", "arigato"));
+//
+//        HashSet<DataverseLocalizedMessageDto> set2 = Sets.newHashSet(new DataverseLocalizedMessageDto("pl", "hello NEIN"),
+//                new DataverseLocalizedMessageDto("en", "arigato gozaimasu"));
+//
+//        DataverseTextMessageDto dtm1 = new DataverseTextMessageDto();
+//        dtm1.setActive(true);
+//        dtm1.setFromTime(LocalDateTime.of(1990, 12, 12, 12, 12));
+//        dtm1.setToTime(LocalDateTime.now());
+//        dtm1.setDataverseLocalizedMessage(set1);
+//
+//        DataverseTextMessageDto dtm2 = new DataverseTextMessageDto();
+//        dtm2.setActive(true);
+//        dtm2.setFromTime(LocalDateTime.of(1990, 12, 12, 12, 12));
+//        dtm2.setToTime(LocalDateTime.now());
+//        dtm2.setDataverseLocalizedMessage(set2);
+//
+//        dataverseTextMessage.add(dtm1);
+//        dataverseTextMessage.add(dtm2);
 
     }
 
