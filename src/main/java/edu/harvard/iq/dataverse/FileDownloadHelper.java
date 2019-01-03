@@ -228,7 +228,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          boolean valid = validateGuestbookResponse(guestbookResponse);
 
          if (!valid) {
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));
+             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
          } else {
              requestContext.execute("PF('downloadPopup').hide()");
              guestbookResponse.setDownloadtype("Download");
@@ -297,7 +297,22 @@ public class FileDownloadHelper implements java.io.Serializable {
          }
          fileDownloadService.explore(guestbookResponse, fmd, externalTool);
          requestContext.execute("PF('downloadPopup').hide()");
-     }
+    }
+     
+    public void writeGuestbookAndLaunchPackagePopup(GuestbookResponse guestbookResponse) {
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        boolean valid = validateGuestbookResponse(guestbookResponse);
+
+        if (!valid) {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+        } else {
+            requestContext.execute("PF('downloadPopup').hide()");
+            requestContext.execute("PF('downloadPackagePopup').show()");
+            requestContext.execute("handleResizeDialog('downloadPackagePopup')");
+
+            fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
+        }
+    }
 
     public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
         
@@ -336,10 +351,8 @@ public class FileDownloadHelper implements java.io.Serializable {
     public void addMultipleFilesForRequestAccess(DataFile dataFile) {
         this.filesForRequestAccess.add(dataFile);
 
-     }
+    }
         
-    
-    
     private String selectedFileId = null;
 
     public String getSelectedFileId() {

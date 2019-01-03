@@ -1,0 +1,15 @@
+Starting the release 4.10 the size of the saved original file (for an
+ingested tabular datafile) is stored in the database.  We provided the
+following API that retrieve and permanently store the sizes for any
+already existing saved originals:
+/api/admin/datafiles/integrity/fixmissingoriginalsizes (see the
+documentation note in the Native API guide, under "Datafile
+Integrity").
+
+While it's not strictly necessary to have these sizes in the database,
+having them makes certain operations more efficient (primary example
+is a user downloading the saved originals for multiple files/an entire
+dataset etc.) Also, if present in the database, the size will be added
+to the file information displayed in the output of the /api/datasets;
+which can be useful for some users.
+

@@ -18,9 +18,7 @@ Install a DCM
 
 Installation instructions can be found at https://github.com/sbgrid/data-capture-module . Note that a shared filesystem (posix or AWS S3) between Dataverse and your DCM is required. You cannot use a DCM with Swift at this point in time.
 
-Please note that S3 support for DCM is highly experimental. Files can be uploaded to S3 but they cannot be downloaded until https://github.com/IQSS/dataverse/issues/4949 is worked on. If you want to play around with S3 support for DCM, you must configure a JVM option called ``dataverse.files.dcm-s3-bucket-name`` which is a holding area for uploaded files that have not yet passed checksum validation. Search for that JVM option at https://github.com/IQSS/dataverse/issues/4703 for commands on setting that JVM option and related setup. Note that because that GitHub issue has so many comments you will need to click "Load more" where it says "hidden items". FIXME: Document all of this properly.
-
-. FIXME: Explain what ``dataverse.files.dcm-s3-bucket-name`` is for and what it has to do with ``dataverse.files.s3-bucket-name``.
+.. FIXME: Explain what ``dataverse.files.dcm-s3-bucket-name`` is for and what it has to do with ``dataverse.files.s3-bucket-name``.
 
 Once you have installed a DCM, you will need to configure two database settings on the Dataverse side. These settings are documented in the :doc:`/installation/config` section of the Installation Guide:
 
@@ -60,7 +58,6 @@ Steps to set up a DCM mock for Development
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Install Flask.
-
 
 Download and run the mock. You will be cloning the https://github.com/sbgrid/data-capture-module repo.
 
@@ -107,6 +104,123 @@ Troubleshooting
 The following low level command should only be used when troubleshooting the "import" code a DCM uses but is documented here for completeness.
 
 ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$DV_BASE_URL/api/batch/jobs/import/datasets/files/$DATASET_DB_ID?uploadFolder=$UPLOAD_FOLDER&totalSize=$TOTAL_SIZE"``
+
+Steps to set up a DCM via Docker for Development
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you need a fully operating DCM client for development purposes, these steps will guide you to setting one up. This includes steps to set up the DCM on S3 variant.
+
+Docker Image Set-up
+^^^^^^^^^^^^^^^^^^^
+
+- Install docker if you do not have it
+- Follow these steps (extracted from ``docker-aio/readme.md`` & ``docker-dcm/readme.txt``) :
+
+  - ``cd conf/docker-aio`` and run ``./0prep_deps.sh`` to create Glassfish and Solr tarballs in conf/docker-aio/dv/deps.
+  - Run ``./1prep.sh``
+  - Build the docker image: ``docker build -t dv0 -f c7.dockerfile .``
+  - ``cd ../docker-dcm`` and run ``./0prep.sh``
+  - Build dcm/dv0dcm images with docker-compose: ``docker-compose -f docker-compose.yml build``
+  - Start containers: ``docker-compose -f docker-compose.yml up -d``
+  - Wait for container to show "healthy" (aka - ``docker ps``), then wait another 5 minutes (even though it shows healthy, glassfish is still standing itself up). Then run Dataverse app installation: ``docker exec -it dvsrv /opt/dv/install.bash``
+  - Configure Dataverse application to use DCM (run from outside the container): ``docker exec -it dvsrv /opt/dv/configure_dcm.sh``
+  - The Dataverse installation is accessible at ``http://localhost:8084``.
+  - You may need to change the DoiProvider inside dvsrv (ezid does not work):
+
+    - ``curl -X DELETE -d EZID "localhost:8080/api/admin/settings/:DoiProvider"``
+    - ``curl -X PUT -d DataCite "localhost:8080/api/admin/settings/:DoiProvider"``
+    - Also change the doi.baseUrlString, doi.username, doi.password
+      
+Optional steps for setting up the S3 Docker DCM Variant
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Before: the default bucket for DCM to hold files in S3 is named test-dcm. It is coded into `post_upload_s3.bash` (line 30). Change to a different bucket if needed.
+- Add AWS bucket info to dcmsrv
+
+  - You need a credentials files in ~/.aws
+
+    - ``mkdir ~/.aws``
+    - ``yum install nano`` (or use a different editor below)
+    - ``nano ~/.aws/credentials`` and add these contents with your keys:
+
+      - ``[default]``
+      - ``aws_access_key_id =``
+      - ``aws_secret_access_key =``
+
+- Dataverse configuration (on dvsrv):
+
+  - Set S3 as the storage driver
+
+    - ``cd /opt/glassfish4/bin/``
+    - ``./asadmin delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
+    - ``./asadmin create-jvm-options "\-Ddataverse.files.storage-driver-id=s3"``
+
+  - Add AWS bucket info to Dataverse
+
+    - ``mkdir ~/.aws``
+    - ``yum install nano`` (or use a different editor below)
+    - ``nano ~/.aws/credentials`` and add these contents with your keys:
+
+      - ``[default]``
+      - ``aws_access_key_id =``
+      - ``aws_secret_access_key =``
+
+    - Also: ``nano ~/.aws/config`` to create a region file. Add these contents:
+
+      - ``[default]``
+      - ``region = us-east-1``
+
+  - Add the S3 bucket names to Dataverse
+
+    - S3 bucket for Dataverse
+
+      - ``/usr/local/glassfish4/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.s3-bucket-name=iqsstestdcmbucket"``
+
+    - S3 bucket for DCM (as Dataverse needs to do the copy over)
+
+      - ``/usr/local/glassfish4/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.dcm-s3-bucket-name=test-dcm"``
+
+  - Set download method to be HTTP, as DCM downloads through S3 are over this protocol ``curl -X PUT "http://localhost:8080/api/admin/settings/:DownloadMethods" -d "native/http"``
+
+Using the DCM Docker Containers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For using these commands, you will need to connect to the shell prompt inside various containers (e.g. ``docker exec -it dvsrv /bin/bash``)
+
+- Create a dataset and download rsync upload script
+- Upload script to dcm_client (if needed, you can probably do all the actions for create/download inside dcm_client)
+
+  - ``docker cp ~/Downloads/upload-FK2_NN49YM.bash dcm_client:/tmp``
+
+- Create a folder of files to upload (files can be empty)
+- Run script
+
+  - e.g. ``bash ./upload-FK2_NN49YM.bash``
+
+- Manually run post upload script on dcmsrv
+
+  - for posix implementation: ``bash ./opt/dcm/scn/post_upload.bash``
+  - for S3 implementation: ``bash ./opt/dcm/scn/post_upload_s3.bash``
+
+Additional DCM docker development tips
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- You can completely blow away all the docker images with these commands (including non DCM ones!)
+
+  - ``docker stop dvsrv``
+  - ``docker stop dcm_client``
+  - ``docker stop dcmsrv``
+  - ``docker rm $(docker ps -a -q)``
+  - ``docker rmi $(docker images -q)``
+
+- There are a few logs to tail
+
+  - dvsrv : ``tail -n 2000 -f /opt/glassfish4/glassfish/domains/domain1/logs/server.log``
+  - dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/breakage.log``
+  - dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/access.log``
+
+- Note that by default the docker container will stop running if the process it is following is turned off. For example flask with dcmsrv. You can get around this by having the script being followed never close (e.g. sleep infinity) https://stackoverflow.com/questions/31870222/how-can-i-keep-container-running-on-kubernetes
+- You may have to restart the glassfish domain occasionally to deal with memory filling up. If deployment is getting reallllllly slow, its a good time.
 
 Repository Storage Abstraction Layer (RSAL)
 -------------------------------------------
@@ -221,7 +335,7 @@ Available Steps
 Dataverse has an internal step provider, whose id is ``:internal``. It offers the following steps:
 
 log
-+++
+^^^
 
 A step that writes data about the current workflow invocation to the instance log. It also writes the messages in its ``parameters`` map.
 
@@ -238,7 +352,7 @@ A step that writes data about the current workflow invocation to the instance lo
 
 
 pause
-+++++
+^^^^^
 
 A step that pauses the workflow. The workflow is paused until a POST request is sent to ``/api/workflows/{invocation-id}``.
 
@@ -251,7 +365,7 @@ A step that pauses the workflow. The workflow is paused until a POST request is 
 
 
 http/sr
-+++++++
+^^^^^^^
 
 A step that sends a HTTP request to an external system, and then waits for a response. The response has to match a regular expression specified in the step parameters. The url, content type, and message body can use data from the workflow context, using a simple markup language. This step has specific parameters for rollback.
 

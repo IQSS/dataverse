@@ -124,7 +124,9 @@ Once you have your DOI or Handle account credentials and a namespace, configure 
 Configuring Dataverse for DOIs
 ++++++++++++++++++++++++++++++
 
-Out of the box, Dataverse is configured for DOIs. Here are the configuration options for DOIs:
+By default Dataverse attempts to register DOIs for each dataset and file under a test authority, though you must apply for your own credentials as explained above.
+
+Here are the configuration options for DOIs:
 
 **JVM Options:**
 
@@ -140,6 +142,7 @@ Out of the box, Dataverse is configured for DOIs. Here are the configuration opt
 - :ref:`:Shoulder <:Shoulder>`
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
+- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
 
 Configuring Dataverse for Handles
 +++++++++++++++++++++++++++++++++
@@ -881,7 +884,7 @@ By default the footer says "Copyright © [YYYY]" but you can add text after the 
 :DoiProvider
 ++++++++++++
 
-As of this writing "DataCite" and "EZID" are the only valid options. ``:DoiProvider`` is only needed if you are using DOI.
+As of this writing "DataCite" and "EZID" are the only valid options for production installations. Developers are welcome to use "FAKE". ``:DoiProvider`` is only needed if you are using DOI.
 
 ``curl -X PUT -d DataCite http://localhost:8080/api/admin/settings/:DoiProvider``
 
@@ -972,12 +975,18 @@ Otherwise, if ``:DataFilePIDFormat`` is set to *INDEPENDENT*, then each file wil
 
 Note that in either case, when using the ``sequentialNumber`` option, datasets and files share the same database sequence that was created as part of the setup described in ``:IdentifierGenerationStyle`` above.
 
+.. _:FilePIDsEnabled:
+
 :FilePIDsEnabled
 ++++++++++++++++
 
-Enable/disable the publishing of file based PIDs for the whole installation. This is enabled by default
+Toggles publishing of file-based PIDs for the entire installation. By default this setting is absent and Dataverse assumes it to be true.
 
-``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
+If you don't want to register file-based PIDs for your installation, set:
+
+``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
+
+Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
 
 :ApplicationTermsOfUse
 ++++++++++++++++++++++

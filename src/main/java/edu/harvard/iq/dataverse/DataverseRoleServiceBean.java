@@ -10,16 +10,20 @@ import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+//import javax.validation.constraints.NotNull;
 
 /**
  *
@@ -29,7 +33,7 @@ import javax.persistence.TypedQuery;
 @Named
 public class DataverseRoleServiceBean implements java.io.Serializable {
 
-    private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DataverseRoleServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -225,7 +229,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 
         return ras;
     }
-
+    
     /**
      * Retrieves the roles assignments for {@code user}, directly on {@code dv}.
      * No traversal on the containment hierarchy is done.
@@ -236,16 +240,37 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
      * edu.harvard.iq.dataverse.Dataverse)
      */
+    //public List<RoleAssignment> directRoleAssignments(@NotNull RoleAssignee roas, @NotNull DvObject dvo) {
     public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
-        if (roas == null) {
-            throw new IllegalArgumentException("RoleAssignee cannot be null");
+        List<RoleAssignment> unfiltered = em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class).
+                            setParameter("assigneeIdentifier", roas.getIdentifier())
+                            .getResultList();
+        return unfiltered.stream().filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId())).collect(Collectors.toList());
+    }
+    
+    /**
+     * Retrieves the roles assignments for {@code user}, directly on {@code dv}.
+     * No traversal on the containment hierarchy is done.
+     *
+     * @param roleAssignees the user whose roles are given
+     * @param dvos the objects where the roles are defined.
+     * @return Set of roles defined for the user in the given dataverse.
+     * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
+     * edu.harvard.iq.dataverse.Dataverse)
+     */
+    //public List<RoleAssignment> directRoleAssignments(@NotNull Set<? extends RoleAssignee> roleAssignees, @NotNull Collection<DvObject> dvos) {
+    public List<RoleAssignment> directRoleAssignments(Set<? extends RoleAssignee> roleAssignees, Collection<DvObject> dvos) {
+        if (dvos.isEmpty()) {
+            return new ArrayList<>();
         }
-        TypedQuery<RoleAssignment> query = em.createNamedQuery(
-            "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId",
-            RoleAssignment.class);
-        query.setParameter("assigneeIdentifier", roas.getIdentifier());
-        query.setParameter("definitionPointId", dvo.getId());
-        return query.getResultList();
+        
+        List<String> raIds = roleAssignees.stream().map(roas -> roas.getIdentifier()).collect(Collectors.toList());
+        List<Long> dvoIds = dvos.stream().filter(dvo -> !(dvo.getId() == null)).map(dvo -> dvo.getId()).collect(Collectors.toList());
+        
+        return em.createNamedQuery("RoleAssignment.listByAssigneeIdentifiers", RoleAssignment.class)
+                        .setParameter("assigneeIdentifiers", raIds)
+                        .setParameter("definitionPointIds", dvoIds)
+                        .getResultList();
     }
 
     /**

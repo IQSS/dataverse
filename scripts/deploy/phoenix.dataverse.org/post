@@ -5,7 +5,7 @@ cd ../..
 psql -U dvnapp dvndb -f scripts/database/reference_data.sql
 psql -U dvnapp dvndb -f doc/sphinx-guides/source/_static/util/pg8-createsequence-prep.sql
 psql -U dvnapp dvndb -f doc/sphinx-guides/source/_static/util/createsequence.sql
-curl http://localhost:8080/api/admin/settings/:DoiProvider -X PUT -d DataCite
+curl http://localhost:8080/api/admin/settings/:DoiProvider -X PUT -d FAKE
 scripts/search/tests/publish-dataverse-root
 git checkout scripts/api/data/dv-root.json
 scripts/search/tests/grant-authusers-add-on-root
