@@ -174,7 +174,7 @@
             <!--NON-TYPE FACETS-->
             <h:form id="facetCategoryForm" rendered="#{SearchIncludeFragment.searchResultsCount > 0}">
                 <p:dataList id="facetCategoryList" value="#{SearchIncludeFragment.facetCategoryList}" var="facetCategory">
-                    <h:outputText value="#{facetCategory.friendlyName}" styleClass="facetCategoryName"/>
+                    <h:outputText value="#{facetCategory.displayName}" styleClass="facetCategoryName"/>
                     <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5)}">
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
                             <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
