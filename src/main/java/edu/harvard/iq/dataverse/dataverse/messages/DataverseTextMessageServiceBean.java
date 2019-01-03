@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -37,6 +38,14 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
                     .setParameter(1, dataverseId)
                     .executeUpdate();
         }
+    }
+
+    public List<DataverseTextMessage> fetchAllTextMessagesForDataverse(long dataverseId) {
+        return em.createQuery("select dtm FROM DataverseTextMessage as dtm " +
+                "join fetch DataverseLocalizedMessage " +
+                "where dtm.dataverse.id = :dataverseid")
+                .setParameter("dataverseid", dataverseId)
+                .getResultList();
     }
 
 }

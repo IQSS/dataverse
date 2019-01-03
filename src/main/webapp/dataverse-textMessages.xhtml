@@ -4,15 +4,76 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+<f:view locale="#{dataverseLocaleBean.localeCode}"/>
+
 <h:body>
     <f:metadata>
-        <!--<f:viewAction/>-->
+        <f:viewParam name="dataverseId" value="#{TextMessagePage.dataverseId}"/>
+        <f:viewAction action="#{TextMessagePage.init()}"/>
     </f:metadata>
 
     <ui:composition template="/dataverse_template.xhtml">
-        <ui:define name="body">
 
+        <ui:define name="body">
+            <h:form id="text-messages-form">
+                <p:tabView dynamic="true" cache="true">
+                    <p:tab title="Text messages">
+                        <p:commandButton value="New Text Message" id="text-screen"
+                                         style="margin-right:20px;"/>
+                        <h3>History</h3>
+                        <p:panel id="basic" header="Basic" style="margin-bottom:20px; width: 600px;">
+                            <div class="p-grid">
+
+                                <div class="p-col">
+                                    <h:outputLabel for="message-pl" value="Polish:" style="margin-right: 10px"/>
+                                    <h:outputText id="message-pl" value="Lorem ipsum ..."/>
+                                </div>
+
+                                <div class="p-col">
+                                    <h:outputLabel for="message-en" value="English:" style="margin-right: 10px"/>
+                                    <h:outputText id="message-en" value="Lorem ipsum ..."/>
+                                </div>
+
+                                <div class="p-col">
+                                    <h:outputLabel for="dates" value="Dates:" style="margin-right: 10px"/>
+                                    <h:outputText id="dates" value="1920-12-12 - 1970-12-02"/>
+                                </div>
+
+                                <div class="p-col">
+                                    <h:outputLabel for="message-Status" value="Status:" style="margin-right: 10px"/>
+                                    <h:outputText id="message-Status" value="Active"/>
+                                </div>
+                            </div>
+
+                            <p:commandButton value="Delete"/>
+                            <div style="float: right">
+                                <p:commandButton value="Deactivate"
+                                                 style="margin-right:10px;"/>
+
+                                <p:commandButton value="Reuse"/>
+                            </div>
+                        </p:panel>
+
+                        <!--<p:dataList var="car" type="unordered" itemType="none" paginator="true" rows="10"-->
+                                    <!--styleClass="paginated">-->
+
+                            <!--<f:setPropertyActionListener value="#{car}"-->
+                                                         <!--target="#{TextMessagePage.dataverseTextMessage}"/>-->
+                            <!--<h:outputText value="#{car.brand}, #{car.year}"/>-->
+
+                            <!--<h:outputText value="#{car.brand}, #{car.year}" style="display:inline-block"/>-->
+                        <!--</p:dataList>-->
+                    </p:tab>
+                    <p:tab title="Banners">
+                        <h:panelGrid columns="1" cellpadding="10">
+                            <h:outputText
+                                    value="Fras his customary cut of the tyro's business. With Fanucci gone, Vito's communal stature grows."/>
+                        </h:panelGrid>
+                    </p:tab>
+                </p:tabView>
+            </h:form>
         </ui:define>
     </ui:composition>
 
