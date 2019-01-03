@@ -31,7 +31,6 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
 
 
     @Override
-    @Deprecated
     public boolean alreadyExists(DvObject dvObject) {
         if(dvObject==null) {
             logger.severe("Null DvObject sent to alreadyExists().");
