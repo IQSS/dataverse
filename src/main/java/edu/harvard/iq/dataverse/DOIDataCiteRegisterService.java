@@ -473,6 +473,7 @@ class DataCiteMetadataTemplate {
                      * whereas there are examples where URLs are in the identifier or url fields.
                      * The code here addresses those practices and is not generic.
                      */
+                    if(pubIdType!=null) {
                     switch (pubIdType) {
                     case "doi":
                         if (identifier != null && identifier.length() != 0) {
@@ -507,6 +508,10 @@ class DataCiteMetadataTemplate {
                         }
                         break;
                     }
+                    
+                } else {
+                    logger.info(relatedPub.getIdNumber() + relatedPub.getUrl() + relatedPub.getTitle());
+                }
                 }
             }
             if (!dataset.getFiles().isEmpty() && !(dataset.getFiles().get(0).getIdentifier() == null)) {
