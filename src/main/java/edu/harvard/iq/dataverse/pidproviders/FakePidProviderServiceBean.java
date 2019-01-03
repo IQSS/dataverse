@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.pidproviders;
 
 import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GlobalId;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +15,11 @@ public class FakePidProviderServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public boolean alreadyExists(DvObject dvo) throws Exception {
+        return true;
+    }
+    
+    @Override
+    public boolean alreadyExists(GlobalId globalId) throws Exception {
         return true;
     }
 
