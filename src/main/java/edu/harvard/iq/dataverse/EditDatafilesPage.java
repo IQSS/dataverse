@@ -1839,7 +1839,8 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private  void setUpRsync() {
         logger.fine("setUpRsync called...");
-        if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
+        if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))
+                && dataset.getFiles().isEmpty()) { //only check for rsync if no files exist
             try {
                 ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
                 logger.fine("script: " + scriptRequestResponse.getScript());
@@ -2850,7 +2851,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public String getIngestLanguageEncoding() {
         if (ingestLanguageEncoding == null) {
-            return "UTF8 (default)";
+            return BundleUtil.getStringFromBundle("editdatafilepage.defaultLanguageEncoding");
         }
         return ingestLanguageEncoding;
     }

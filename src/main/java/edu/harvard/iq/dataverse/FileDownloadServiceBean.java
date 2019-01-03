@@ -145,14 +145,19 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         logger.fine("issued file download redirect for datafile "+guestbookResponse.getDataFile().getId());
     }
 
+    public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
+        if(!fileMetadata.getDatasetVersion().isDraft()){
+            guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
+            writeGuestbookResponseRecord(guestbookResponse);
+        }
+    }
+    
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
-
         try {
             CreateGuestbookResponseCommand cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset());
             commandEngine.submit(cmd);
         } catch (CommandException e) {
             //if an error occurs here then download won't happen no need for response recs...
-
         }
     }
     
@@ -403,18 +408,18 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } else {
             citation= new DataCitation(fileMetadata, direct);
         }
-        
+        //SEK 12/3/2018 changing this to open the json in a new tab. 
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-        response.setContentType("application/download");
+        response.setContentType("application/json");
 
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + ".bib";
+            fileNameString = "inline;filename=" + getFileNameDOI(citation.getPersistentId()) + ".bib";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.BIBTEX);
+            fileNameString = "inline;filename=" + getFileNameDOI(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.BIBTEX);
         }
         response.setHeader("Content-Disposition", fileNameString);
 

@@ -86,7 +86,6 @@ public class MyDataFinder {
 
     
     public MyDataFinder(DataverseRolePermissionHelper rolePermissionHelper, RoleAssigneeServiceBean roleAssigneeService, DvObjectServiceBean dvObjectServiceBean, GroupServiceBean groupService) {
-        this.msgt("MyDataFinder, constructor");
         this.rolePermissionHelper = rolePermissionHelper;
         this.roleAssigneeService = roleAssigneeService;
         this.dvObjectServiceBean = dvObjectServiceBean;
@@ -158,26 +157,6 @@ public class MyDataFinder {
     public DataverseRolePermissionHelper getRolePermissionHelper(){
         return this.rolePermissionHelper;
     }
-    /*
-    private ArrayList<Long> dataverseIds;
-    private ArrayList<Long> primaryDatasetIds;
-    private ArrayList<Long> primaryFileIds;
-    private ArrayList<Long> parentIds;
-    */
-    
-    /*public void runFindDataSteps(String userIdentifier){
-        this.userIdentifier = userIdentifier;
-        msgt("runFindDataSteps: " + userIdentifier);
-        if (!runStep1RoleAssignments()){
-            return;
-        }
-        if (!runStep2DirectAssignments()){
-            return;
-        }
-        if (!fileGrandparentFileIds.isEmpty()){
-            runStep3FilePermsAssignedAtDataverse();
-        }        
-    }*/
 
     public void runFindDataSteps(MyDataFilterParams filterParams){
         
@@ -298,14 +277,11 @@ public class MyDataFinder {
         Set<Long> distinctParentIds = new HashSet<>(parentIds);
 
 
-        if ((distinctEntityIds.size() == 0) && (distinctParentIds.size() == 0)) {
+        if ((distinctEntityIds.isEmpty()) && (distinctParentIds.isEmpty())) {
             this.addErrorMessage(DataRetrieverAPI.MSG_NO_RESULTS_FOUND);
             return null;
         }
-
-        msg("distinctEntityIds (1): " + distinctEntityIds.size());
-        msg("distinctParentIds: " + distinctParentIds.size());
-
+        
         // See if we can trim down the list of distinctEntityIds
         //  If we have the parent of a distinctEntityId in distinctParentIds,
         //  then we query it via the parent
@@ -331,9 +307,7 @@ public class MyDataFinder {
         }
         // Set the distinctEntityIds to the finalDirectEntityIds
         //distinctEntityIds = new HashSet<>(distinctEntityIds);
-        distinctEntityIds = new HashSet<>(finalDirectEntityIds);            
-        
-        msg("distinctEntityIds (2): " + distinctEntityIds.size());
+        distinctEntityIds = new HashSet<>(finalDirectEntityIds);
 
         // Start up a SolrQueryFormatter for building clauses
         //
@@ -508,7 +482,6 @@ public class MyDataFinder {
         //msgt("runStep2DirectAssignments");
         
         List<Object[]> results = this.dvObjectServiceBean.getDvObjectInfoForMyData(directDvObjectIds);
-        msgt("runStep2DirectAssignments number of results: " + results.size());
 //List<RoleAssignment> results = this.roleAssigneeService.getAssignmentsFor(this.userIdentifier);
         if (results.isEmpty()){
             this.addErrorMessage("Sorry, you have no assigned Dataverses, Datasets, or Files.");
@@ -582,13 +555,11 @@ public class MyDataFinder {
     
     
     private boolean runStep3FilePermsAssignedAtDataverse(){
-        msgt("runStep3FilePermsAssignedAtDataverse");
         if ((this.fileGrandparentFileIds == null)||(this.fileGrandparentFileIds.isEmpty())){
             return true;
         }
         
         List<Object[]> results = this.dvObjectServiceBean.getDvObjectInfoByParentIdForMyData(this.fileGrandparentFileIds);
-        msg("runStep3FilePermsAssignedAtDataverse results count: " + results.size());
         /*  SEK 07/09 Ticket 2329
         Removed failure for empty results - if there are none let it go
         */
@@ -619,15 +590,6 @@ public class MyDataFinder {
         
         return true;
     }
-    /*
-    private void postStep2Cleanup(){
-        // Clear step1 lookups
-        idsWithDataversePermissions = null;
-        idsWithDatasetPermissions = null;
-        idsWithFilePermissions = null;
-        directDvObjectIds = null;   // Direct ids no longer needed
-    }*/
-    
     
     public boolean hasError(){
         return this.errorFound;
@@ -639,15 +601,4 @@ public class MyDataFinder {
         this.errorFound = true;
         this.errorMessage = s;
     }
-   
-    private void msg(String s){
-        //logger.fine(s);
-    }
-    
-    private void msgt(String s){
-        msg("-------------------------------");
-        msg(s);
-        msg("-------------------------------");
-    }
-
 }   // end: MyDataFinder

@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.util.List;
@@ -74,7 +76,7 @@ public class DashboardPage implements java.io.Serializable {
 
         /* 
             use this to add some kind of a tooltip/info message to the top of the page:
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, JH.localize("dashboard.title"), JH.localize("dashboard.toptip")));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dashboard.title"), BundleUtil.getStringFromBundle("dashboard.toptip")));
             - the values for "dashboard.title" and "dashboard.toptip" would need to be added to the resource bundle.
          */
         return null;
@@ -140,7 +142,7 @@ public class DashboardPage implements java.io.Serializable {
     public String getHarvestClientsInfoLabel() {
         List<HarvestingClient> configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
         if (configuredHarvestingClients == null || configuredHarvestingClients.isEmpty()) {
-            return JH.localize("harvestclients.noClients.label");
+            return BundleUtil.getStringFromBundle("harvestclients.noClients.label");
         }
         
         String infoLabel;
@@ -169,7 +171,7 @@ public class DashboardPage implements java.io.Serializable {
         
         List<OAISet> configuredHarvestingSets = oaiSetService.findAll();
         if (configuredHarvestingSets == null || configuredHarvestingSets.isEmpty()) {
-            infoLabel = infoLabel.concat(JH.localize("harvestserver.service.empty"));
+            infoLabel = infoLabel.concat(BundleUtil.getStringFromBundle("harvestserver.service.empty"));
             return infoLabel;
         }
         

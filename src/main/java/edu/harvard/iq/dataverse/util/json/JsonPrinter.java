@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileTag;
@@ -41,20 +40,11 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
-import java.util.ArrayList;
-import java.util.Set;
+
+import java.util.*;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import java.util.Date;
-import java.util.List;
-import java.util.TreeSet;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.EnumSet;
-import java.util.LinkedList;
-import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -587,6 +577,7 @@ public class JsonPrinter {
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
+                .add ("originalFileSize", df.getOriginalFileSize())
                 .add("UNF", df.getUnf())
                 //---------------------------------------------
                 // For file replace: rootDataFileId, previousDataFileId
@@ -596,7 +587,7 @@ public class JsonPrinter {
                 //---------------------------------------------
                 // Checksum
                 // * @todo Should we deprecate "md5" now that it's under
-                // * "checksum" (which may also be a SHA-1 rather than an MD5)?
+                // * "checksum" (which may also be a SHA-1 rather than an MD5)? - YES!
                 //---------------------------------------------
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))

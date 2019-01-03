@@ -11,3 +11,8 @@ INSERT INTO setting(
 
 ALTER TABLE actionlogrecord ALTER COLUMN info TYPE text;
 ALTER TABLE externaltool ADD COLUMN contenttype text;
+
+
+ALTER TABLE dataverse ALTER COLUMN defaultcontributorrole_id DROP NOT NULL;
+
+ALTER TABLE datatable ADD COLUMN originalfilesize BIGINT; 

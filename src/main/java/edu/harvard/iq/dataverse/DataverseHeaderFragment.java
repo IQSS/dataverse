@@ -8,6 +8,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -86,8 +88,8 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             if (dvObject.getId() != null) {
                 initBreadcrumbs(dvObject, null);
             } else {
-                initBreadcrumbs(dvObject.getOwner(), dvObject instanceof Dataverse ? JH.localize("newDataverse") : 
-                        dvObject instanceof Dataset ? JH.localize("newDataset") : null );
+                initBreadcrumbs(dvObject.getOwner(), dvObject instanceof Dataverse ? BundleUtil.getStringFromBundle("newDataverse") : 
+                        dvObject instanceof Dataset ? BundleUtil.getStringFromBundle("newDataset") : null );
             }
     }
     
