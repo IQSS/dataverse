@@ -34,6 +34,10 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         logger.log(Level.FINE,"alreadyExists");
         boolean alreadyExists;
         String identifier = getIdentifier(dvObject);
+        if(identifier==null || identifier.length()==0) {
+            logger.info("No identifier for " + dvObject.getIdentifier());
+            return false;
+        }
         try{
             alreadyExists = doiDataCiteRegisterService.testDOIExists(identifier); 
         } catch (Exception e){
