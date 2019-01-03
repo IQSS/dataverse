@@ -318,7 +318,6 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     }
 
     @Override
-    @Deprecated
     public boolean alreadyExists(DvObject dvObject) throws Exception {
         String handle = getDvObjectHandle(dvObject);
         return isHandleRegistered(handle);

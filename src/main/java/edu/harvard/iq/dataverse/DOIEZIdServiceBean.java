@@ -50,7 +50,6 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
     }
 
     @Override
-    @Deprecated
     public boolean alreadyExists(DvObject dvObject) throws Exception {
         if(dvObject==null) {
             logger.severe("Null DvObject sent to alreadyExists().");
