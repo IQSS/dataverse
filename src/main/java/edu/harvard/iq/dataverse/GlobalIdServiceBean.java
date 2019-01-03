@@ -13,7 +13,10 @@ public interface GlobalIdServiceBean {
 
     static final Logger logger = Logger.getLogger(GlobalIdServiceBean.class.getCanonicalName());
 
+    @Deprecated
     boolean alreadyExists(DvObject dvo) throws Exception;
+    
+    boolean alreadyExists(GlobalId globalId) throws Exception;
 
     boolean registerWhenPublished();
     
