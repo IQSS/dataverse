@@ -185,6 +185,9 @@
                 </div>
             </div>
         </nav>
+        <ui:include src="text-messages.xhtml">
+            <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
+        </ui:include>
         <!-- Status Alert -->
         <o:form class="form-inline">
             <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader') and !dataverseSession.isStatusDismissed()}">
