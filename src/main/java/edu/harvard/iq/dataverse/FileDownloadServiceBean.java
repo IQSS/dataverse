@@ -230,6 +230,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         DataFile dataFile = null;
         if (fmd != null) {
             dataFile = fmd.getDataFile();
+            if(dataFile.getFileMetadata()==null) {
+                List<FileMetadata> fmdl = new ArrayList<FileMetadata>();
+                fmdl.add(fmd);
+                
+                dataFile.setFileMetadatas(fmdl);
+            }
         } else {
             if (guestbookResponse != null) {
                 dataFile = guestbookResponse.getDataFile();
