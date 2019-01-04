@@ -41,7 +41,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
     
     public DatasetMetrics getDatasetMetricsByDatasetMonthCountry(Dataset dataset, String monthYear, String country) {
         DatasetMetrics dsm = null;
-        String queryStr = "SELECT d FROM DatasetMetrics d, WHERE d.dataset.id = " + dataset.getId() + " and d.monthYear = '" + monthYear + "' " + " and d.country = '" + country + "' ";
+        String queryStr = "SELECT d FROM DatasetMetrics d WHERE d.dataset.id = " + dataset.getId() + " and d.monthYear = '" + monthYear + "' " + " and d.countryCode = '" + country + "' ";
         Query query = em.createQuery(queryStr);
         List resultList = query.getResultList();
         if (resultList.size() > 1) {
@@ -229,7 +229,15 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         return currentList;
     }
     
-    public DatasetMetrics save(DatasetMetrics datasetMetrics) {       
+    public DatasetMetrics save(DatasetMetrics datasetMetrics) {  
+        //Replace existing if necessary
+        Dataset testDs =  datasetMetrics.getDataset();
+        String testMonth = datasetMetrics.getMonthYear();
+        String testCountry = datasetMetrics.getCountryCode();
+        DatasetMetrics getExisting = getDatasetMetricsByDatasetMonthCountry(testDs, testMonth, testCountry);
+        if (getExisting != null){
+            em.remove(getExisting);
+        }
         DatasetMetrics savedDatasetMetrics = em.merge(datasetMetrics);
         return savedDatasetMetrics;
     }

@@ -72,12 +72,10 @@ public class MakeDataCountApi extends AbstractApiBean {
                 List<DatasetMetrics> datasetMetrics = datasetMetricsService.parseSushiReport(report, dataset);
                 if (!datasetMetrics.isEmpty()) {
                     for (DatasetMetrics dm : datasetMetrics) {
-                        System.out.print("adding Metrics");
                         datasetMetricsService.save(dm);
                     }
                 }
             } catch (WrappedResponse ex) {
-                System.out.print("Catch Wrapped response");
                 Logger.getLogger(MakeDataCountApi.class.getName()).log(Level.SEVERE, null, ex);
             }
 
