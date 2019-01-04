@@ -85,17 +85,37 @@
             {
               "access-method": "regular",
               "metric-type": "total-dataset-investigations",
-              "count": 2,
+              "count": 5,
               "country-counts": {
-                "us": 2
+                "us": 3,
+                "kr": 2
               }
             },
             {
               "access-method": "regular",
               "metric-type": "unique-dataset-investigations",
-              "count": 2,
+              "count": 3,
               "country-counts": {
-                "us": 2
+                "us": 2,
+                "kr": 1
+              }
+            },
+            {
+              "access-method": "regular",
+              "metric-type": "total-dataset-requests",
+              "count": 4,
+              "country-counts": {
+                "us": 2,
+                "ca": 2
+              }
+            },
+            {
+              "access-method": "regular",
+              "metric-type": "unique-dataset-requests",
+              "count": 3,
+              "country-counts": {
+                "us": 2,
+                "ca": 1
               }
             }
           ]

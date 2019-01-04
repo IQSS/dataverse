@@ -51,8 +51,8 @@ public class DatasetMetrics {
      * Practice for Research Data Usage Metrics."
      * https://www.projectcounter.org/code-of-practice-rd-sections/3-technical-specifications-reports/
      */
-    @Column(nullable = false)
-    private Timestamp month;
+    @Column(nullable = true)
+    private String monthYear;
 
     /**
      * Views, but note that DataONE's formula is "Views = Investigations -
@@ -64,13 +64,13 @@ public class DatasetMetrics {
      * extract record views and downloads from this Piwik instance."
      * https://help.zenodo.org/#statistics
      */
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Long viewsTotal;
 
     /**
      * See viewsTotal.
      */
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Long viewsUnique;
 
     /**
@@ -82,20 +82,20 @@ public class DatasetMetrics {
      * table into this table, converting IP addresses into country codes. Maybe
      * an API endpoint for this?
      */
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Long downloadsTotal;
 
     /**
      * See downloadTotal.
      */
-    @Column(nullable = false)
-    private Long downloadsTotalUnique;
+    @Column(nullable = true)
+    private Long downloadsUnique;
 
     /**
      * Internally, one dataset can cite another using "Related Dataset" but we
      * expect citations to come from Crossref as well.
      */
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Long citations;
     /**
      * 2 character country code.
@@ -111,7 +111,79 @@ public class DatasetMetrics {
      * counter-processor uses GeoLite2 for IP lookups according to their
      * https://github.com/CDLUC3/counter-processor#download-the-free-ip-to-geolocation-database
      */
-    @Column(nullable = false)
-    private Long countryCode;
+    @Column(nullable = true)
+    private String countryCode;
+    
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Dataset getDataset() {
+        return dataset;
+    }
+
+    public void setDataset(Dataset dataset) {
+        this.dataset = dataset;
+    }
+
+    public String getMonthYear() {
+        return monthYear;
+    }
+
+    public void setMonth(String monthYear) {
+        this.monthYear = monthYear;
+    }
+
+    public Long getViewsTotal() {
+        return viewsTotal;
+    }
+
+    public void setViewsTotal(Long viewsTotal) {
+        this.viewsTotal = viewsTotal;
+    }
+
+    public Long getViewsUnique() {
+        return viewsUnique;
+    }
+
+    public void setViewsUnique(Long viewsUnique) {
+        this.viewsUnique = viewsUnique;
+    }
+
+    public Long getDownloadsTotal() {
+        return downloadsTotal;
+    }
+
+    public void setDownloadsTotal(Long downloadsTotal) {
+        this.downloadsTotal = downloadsTotal;
+    }
+
+    public Long getDownloadsUnique() {
+        return downloadsUnique;
+    }
+
+    public void setDownloadsUnique(Long downloadsUnique) {
+        this.downloadsUnique = downloadsUnique;
+    }
+
+    public Long getCitations() {
+        return citations;
+    }
+
+    public void setCitations(Long citations) {
+        this.citations = citations;
+    }
+
+    public String getCountryCode() {
+        return countryCode;
+    }
+
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
+    }
 
 }
