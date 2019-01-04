@@ -560,7 +560,7 @@ public class Access extends AbstractApiBean {
                                         GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
                                         guestbookResponseService.save(gbr);
                                         MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, file);
-                                        MakeDataCountUtil.logEntryIfValid(entry);
+                                        MakeDataCountUtil.logEntry(entry);
                                     }
                                     
                                     if (zipper == null) {

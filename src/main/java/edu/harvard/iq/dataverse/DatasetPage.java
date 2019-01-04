@@ -1447,7 +1447,7 @@ public class DatasetPage implements java.io.Serializable {
             
             if(workingVersion.isPublished()) {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
-                MakeDataCountUtil.logEntryIfValid(entry);
+                MakeDataCountUtil.logEntry(entry);
             }
 
             if (initFull) {

@@ -135,7 +135,6 @@ public class LoggingUtil {
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error saving log report: " + fileName + " " + e.getMessage());
         }
-
     }
     
     public static class JobLogFormatter extends Formatter {

@@ -1,8 +1,11 @@
 package edu.harvard.iq.dataverse.makedatacount;
 
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -46,16 +49,12 @@ public class MakeDataCountUtil {
 
     //MAD: Should probably add another check on only logging if certain entries exist.
     //      Especially with my entry constructor allowing entries with no workingVersion
-    public static void logEntryIfValid(MakeDataCountEntry entry) {
-        //MAD: The logDir may need to be configurable?
-        //MAD: Also the file name?
-        //MAD: I don't like how instanceRoot can be null
-        if(entry.isValidForLogging()) {
-            LoggingUtil.saveLogFile(entry.toString(), System.getProperty("com.sun.aas.instanceRoot")+"/logs/", "test-mdc.log", LOG_HEADER);
-        }
+    //MAD: The logDir may need to be configurable?
+    //MAD: Also the file name?
+    public static void logEntry(MakeDataCountEntry entry) {
+        LoggingUtil.saveLogFile(entry.toString(), System.getProperty("com.sun.aas.instanceRoot")+"/logs/", "raw-mdc-"+new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime()))+".log", LOG_HEADER);
     }
 
-    
     public enum MetricType {
 
         VIEWS_TOTAL("viewsTotal"),

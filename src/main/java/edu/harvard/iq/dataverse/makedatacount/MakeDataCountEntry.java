@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.TimeZone;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -42,10 +43,8 @@ public class MakeDataCountEntry {
     private String targetUrl;
     private String publicationYear;
     
-    private boolean isPublished;
     public MakeDataCountEntry() {
-        //If you are creating one of these from scratch, assume the entry is published
-        isPublished = true; 
+        
     }
     
     public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, DatasetVersion publishedVersion) {
@@ -54,13 +53,15 @@ public class MakeDataCountEntry {
             setRequestUrl(String.valueOf(req.getRequestURL().append("?").append(req.getQueryString())));
             setTargetUrl(String.valueOf(req.getRequestURL().append("?").append(req.getQueryString())));
             setUserAgent(req.getHeader("user-agent")); 
+            HttpSession session = (HttpSession) fc.getExternalContext().getSession(false);
+            setSessionCookieId(session.getId());
         }
         
         if(publishedVersion != null) {
-            isPublished = true;
             setIdentifier(publishedVersion.getDataset().getGlobalId().asString());
             setAuthors(publishedVersion.getAuthorsStr(false).replace(";", "|"));
-            setPublisher(publishedVersion.getRootDataverseNameforCitation());
+            //setPublisher(publishedVersion.getRootDataverseNameforCitation());
+            setPublisherId("1"); //This is a hack to make sure counter-processer processes this
             setTitle(publishedVersion.getTitle());
             setVersion(String.valueOf(publishedVersion.getVersionNumber()));
             setPublicationYear(new SimpleDateFormat("yyyy").format(publishedVersion.getReleaseTime()));
@@ -79,8 +80,6 @@ public class MakeDataCountEntry {
         /* Still needed: */
         //setOtherId();
         //setPublisherId();
-        //setSessionCookieId();
-        //setUesrCookieId();
     }
     
     //This version of the constructor is for the downloads tracked in FileDownloadServiceBean
@@ -116,16 +115,6 @@ public class MakeDataCountEntry {
 //        //setFilename(fm.getLabel()); //This is disabled as getting the filename is painful and it seems Make Data Count doesn't use this at all -MAD 4.10
 //        setSize(String.valueOf(fm.getDataFile().getFilesize())); //Need to probably be massaged into a better format
 //    }
-    
-    
-    
-    //MAD: Maybe expand this
-    //Checks if some basic entries exist before logging the activity.
-    // Also confirms the entry isPublished;
-    boolean isValidForLogging() {
-        return true;
-        //return isPublished;
-    }
     
     @Override
     public String toString() {
@@ -197,7 +186,7 @@ public class MakeDataCountEntry {
     /**
      * @param sessionCookieId the sessionCookieId to set
      */
-    public void setSessionCookieId(String sessionCookieId) {
+    public final void setSessionCookieId(String sessionCookieId) {
         this.sessionCookieId = sessionCookieId;
     }
 
@@ -367,7 +356,7 @@ public class MakeDataCountEntry {
     /**
      * @param publisherId the publisherId to set
      */
-    public void setPublisherId(String publisherId) {
+    public final void setPublisherId(String publisherId) {
         this.publisherId = publisherId;
     }
 

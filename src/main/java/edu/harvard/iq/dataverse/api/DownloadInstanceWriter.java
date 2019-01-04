@@ -257,7 +257,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                                     di.getCommand().submit(cmd);
                                     MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), di.getDataverseRequestService(), di.getGbr().getDataFile());
-                                    MakeDataCountUtil.logEntryIfValid(entry);
+                                    MakeDataCountUtil.logEntry(entry);
                                 } catch (CommandException e) {
                                 }
                             }
@@ -348,7 +348,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                             di.getCommand().submit(cmd);
                             MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), di.getDataverseRequestService(), di.getGbr().getDataFile());
-                            MakeDataCountUtil.logEntryIfValid(entry);
+                            MakeDataCountUtil.logEntry(entry);
                         } catch (CommandException e) {}
                     } else {
                         logger.fine("not writing guestbook response");

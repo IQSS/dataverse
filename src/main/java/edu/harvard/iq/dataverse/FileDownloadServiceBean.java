@@ -160,7 +160,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             CreateGuestbookResponseCommand cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset());
             commandEngine.submit(cmd);
             MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, guestbookResponse.getDatasetVersion(), guestbookResponse.getDataFile());
-            MakeDataCountUtil.logEntryIfValid(entry);
+            MakeDataCountUtil.logEntry(entry);
         } catch (CommandException e) {
             //if an error occurs here then download won't happen no need for response recs...
         }

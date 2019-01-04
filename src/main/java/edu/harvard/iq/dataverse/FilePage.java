@@ -189,7 +189,7 @@ public class FilePage implements java.io.Serializable {
 
             if(fileMetadata.getDatasetVersion().isPublished()) {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, fileMetadata.getDatasetVersion());
-                MakeDataCountUtil.logEntryIfValid(entry);
+                MakeDataCountUtil.logEntry(entry);
             }
             
             //  this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
