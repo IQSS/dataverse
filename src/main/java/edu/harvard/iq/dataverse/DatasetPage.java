@@ -1445,9 +1445,7 @@ public class DatasetPage implements java.io.Serializable {
             // init the citation
             displayCitation = dataset.getCitation(true, workingVersion);
             
-            //MAD: Should inject or something
-            //Also maybe put entry as a part of util, inner class
-            //MAD: A number of these workingVersion refs are wrapped on this page, maybe use those?
+            //MAD: Should this isPublished() be part of the logging itself?
             if(workingVersion.isPublished()) {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
                 //entry.setFilename();
@@ -1456,7 +1454,7 @@ public class DatasetPage implements java.io.Serializable {
                 //entry.setPublisherId();
                 //entry.setSessionCookieId();
                 //entry.setUesrCookieId();
-                MakeDataCountUtil.logEntry(entry);
+                MakeDataCountUtil.logEntryIfValid(entry);
             }
 
             if (initFull) {

@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.makedatacount;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.FileMetadata;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -41,28 +42,37 @@ public class MakeDataCountEntry {
     private String targetUrl;
     private String publicationYear;
     
+    private boolean isPublished;
     public MakeDataCountEntry() {
-        
+        //If you are creating one of these from scratch, assume the entry is published
+        isPublished = true; 
     }
     
-    public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, DatasetVersion workingVersion) {
-        HttpServletRequest req = (HttpServletRequest)fc.getExternalContext().getRequest();
-        setRequestUrl(String.valueOf(req.getRequestURL().append("?").append(req.getQueryString())));
-        setTargetUrl(String.valueOf(req.getRequestURL().append("?").append(req.getQueryString())));
-        setUserAgent(req.getHeader("user-agent")); 
+    public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, DatasetVersion publishedVersion) {
+        if(fc != null) {
+            HttpServletRequest req = (HttpServletRequest)fc.getExternalContext().getRequest();
+            setRequestUrl(String.valueOf(req.getRequestURL().append("?").append(req.getQueryString())));
+            setTargetUrl(String.valueOf(req.getRequestURL().append("?").append(req.getQueryString())));
+            setUserAgent(req.getHeader("user-agent")); 
+        }
         
-        setIdentifier(workingVersion.getDataset().getGlobalId().asString());
-        setAuthors(workingVersion.getAuthorsStr(false).replace(";", "|"));
-        setPublisher(workingVersion.getRootDataverseNameforCitation());
-        setTitle(workingVersion.getTitle());
-        setVersion(String.valueOf(workingVersion.getVersionNumber()));
-        setPublicationYear(new SimpleDateFormat("yyyy").format(workingVersion.getReleaseTime()));
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");     
-            format.setTimeZone(TimeZone.getTimeZone("GMT"));
-            setPublicationDate(format.format(workingVersion.getReleaseTime()));
-            
-        setClientIp(String.valueOf(dvRequestService.getDataverseRequest().getSourceAddress()));
-        setUserId(dvRequestService.getDataverseRequest().getUser().getIdentifier());
+        if(publishedVersion != null) {
+            isPublished = true;
+            setIdentifier(publishedVersion.getDataset().getGlobalId().asString());
+            setAuthors(publishedVersion.getAuthorsStr(false).replace(";", "|"));
+            setPublisher(publishedVersion.getRootDataverseNameforCitation());
+            setTitle(publishedVersion.getTitle());
+            setVersion(String.valueOf(publishedVersion.getVersionNumber()));
+            setPublicationYear(new SimpleDateFormat("yyyy").format(publishedVersion.getReleaseTime()));
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");     
+                format.setTimeZone(TimeZone.getTimeZone("GMT"));
+                setPublicationDate(format.format(publishedVersion.getReleaseTime()));
+        }
+        
+        if(dvRequestService != null) {
+            setClientIp(String.valueOf(dvRequestService.getDataverseRequest().getSourceAddress()));
+            setUserId(dvRequestService.getDataverseRequest().getUser().getIdentifier());
+        }
         
         setEventTime(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new Timestamp(new Date().getTime())));
         
@@ -73,12 +83,50 @@ public class MakeDataCountEntry {
         //setUesrCookieId();
     }
     
-    public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, DatasetVersion workingVersion, DataFile df) {
-        this(fc, dvRequestService, workingVersion);
-        setFilename(df.getFileMetadata().getLabel());
+    public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, DatasetVersion publishedVersion, DataFile df) {
+        //Passing null to the base constructor creates an entry without most of the data
+        // which we then prune out before logging. 
+        this(fc, dvRequestService, publishedVersion);
+        
+        setFilename(df.getStorageIdentifier()); //fileMetadata is 0 in some cases...
         setSize(String.valueOf(df.getFilesize())); //Need to probably be massaged into a better format
+    }    
+    
+//MAD this may all be junk because dataFile doesn't always have its fileMetadata loaded...
+//    public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, DataFile df) {
+//        //Passing null to the base constructor creates an entry without most of the data
+//        // which we then prune out before logging. 
+//        this(fc, dvRequestService, getLatestPublishedVersionOrNull(df));
+//        
+//        setFilename(df.getStorageIdentifier()); //fileMetadata is 0 in some cases...
+//        setSize(String.valueOf(df.getFilesize())); //Need to probably be massaged into a better format
+//    }
+//    private static DatasetVersion getLatestPublishedVersionOrNull(DataFile df) {
+//        FileMetadata fm = df.getLatestPublishedFileMetadata();
+//        return (fm == null) ? null : fm.getDatasetVersion();
+//    }
+  
+    
+////MAD: FileMetadata from FileDownloadServiceBean is often null so I don't know if this is the best path
+////        It seemed maybe nessecary when trying to get the filename but it looks like Make Data Count never uses this anyways
+    
+//    public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, FileMetadata fm) {
+//        this(fc, dvRequestService, fm.getDatasetVersion());
+//        
+//        //setFilename(fm.getLabel()); //This is disabled as getting the filename is painful and it seems Make Data Count doesn't use this at all -MAD 4.10
+//        setSize(String.valueOf(fm.getDataFile().getFilesize())); //Need to probably be massaged into a better format
+//    }
+    
+    
+    
+    //MAD: Maybe expand this
+    //Checks if some basic entries exist before logging the activity.
+    // Also confirms the entry isPublished;
+    boolean isValidForLogging() {
+        return true;
+        //return isPublished;
     }
-
+    
     @Override
     public String toString() {
         return  getEventTime() + "\t" +
@@ -424,4 +472,5 @@ public class MakeDataCountEntry {
     public final void setPublicationYear(String publicationYear) {
         this.publicationYear = publicationYear;
     }
+
 }

@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseComma
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -121,7 +123,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             }
         }
 
-
         redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(), "original".equals(guestbookResponse.getFileFormat()));
     }
     
@@ -130,6 +131,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
             writeGuestbookResponseRecord(guestbookResponse);
         }
+        
         // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
         redirectToDownloadAPI(format, fileMetadata.getDataFile().getId(), true);
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
@@ -141,12 +143,13 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             return;
         }
         writeGuestbookResponseRecord(guestbookResponse);
+        
         redirectToDownloadAPI(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId());
         logger.fine("issued file download redirect for datafile "+guestbookResponse.getDataFile().getId());
     }
 
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
-        if(!fileMetadata.getDatasetVersion().isDraft()){
+        if(!fileMetadata.getDatasetVersion().isDraft()){           
             guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
             writeGuestbookResponseRecord(guestbookResponse);
         }
@@ -156,6 +159,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         try {
             CreateGuestbookResponseCommand cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset());
             commandEngine.submit(cmd);
+            MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, guestbookResponse.getDatasetVersion(), guestbookResponse.getDataFile());
+            MakeDataCountUtil.logEntryIfValid(entry);
         } catch (CommandException e) {
             //if an error occurs here then download won't happen no need for response recs...
         }
