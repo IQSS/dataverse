@@ -195,8 +195,6 @@ public class Access extends AbstractApiBean {
             User apiTokenUser = findAPITokenUser(apiToken);
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
             guestbookResponseService.save(gbr);
-            MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, df);
-            MakeDataCountUtil.logEntryIfValid(entry);
         }
         
         DownloadInfo dInfo = new DownloadInfo(df);
@@ -270,8 +268,6 @@ public class Access extends AbstractApiBean {
             // Write Guestbook record if not done previously and file is released
             User apiTokenUser = findAPITokenUser(apiToken);
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
-            MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, df);
-            MakeDataCountUtil.logEntryIfValid(entry);
         }
                
         // This will throw a ForbiddenException if access isn't authorized: 

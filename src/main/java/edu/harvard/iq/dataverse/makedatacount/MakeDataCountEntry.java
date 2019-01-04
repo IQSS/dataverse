@@ -85,6 +85,7 @@ public class MakeDataCountEntry {
     
     //This version of the constructor is for the downloads tracked in FileDownloadServiceBean
     //Technically you should be able to get to publishedVersion via the data file, but guestbook's datafile doesn't have that info
+    //This is passed a DataFile to log the file downloaded
     public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, DatasetVersion publishedVersion, DataFile df) {
         //Passing null to the base constructor creates an entry without most of the data
         // which we then prune out before logging. 
@@ -95,6 +96,7 @@ public class MakeDataCountEntry {
     }    
     
     //Exception thrown if no published metadata exists for DataFile
+    //This is passed a DataFile to log the file downloaded
     public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, DataFile df) throws UnsupportedOperationException {
         //Passing null to the base constructor creates an entry without most of the data
         // which we then prune out before logging. 

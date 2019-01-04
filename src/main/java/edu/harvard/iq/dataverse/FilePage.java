@@ -23,6 +23,8 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -119,53 +121,52 @@ public class FilePage implements java.io.Serializable {
     public String init() {
      
         
-         if ( fileId != null || persistentId != null ) { 
-           
+        if (fileId != null || persistentId != null) {
+
             // ---------------------------------------
             // Set the file and datasetVersion 
             // ---------------------------------------           
             if (fileId != null) {
-               file = datafileService.find(fileId);   
+                file = datafileService.find(fileId);
 
-            }  else if (persistentId != null){
-               file = datafileService.findByGlobalId(persistentId);
-               if (file != null){
-                                  fileId = file.getId();
-               }
+            } else if (persistentId != null) {
+                file = datafileService.findByGlobalId(persistentId);
+                if (file != null) {
+                    fileId = file.getId();
+                }
 
             }
-            
-            if (file == null || fileId == null){
-               return permissionsWrapper.notFound();
+
+            if (file == null || fileId == null) {
+                return permissionsWrapper.notFound();
             }
-            
+
             // Is the Dataset harvested?
             if (file.getOwner().isHarvested()) {
                 // if so, we'll simply forward to the remote URL for the original
                 // source of this harvested dataset:
                 String originalSourceURL = file.getOwner().getRemoteArchiveURL();
                 if (originalSourceURL != null && !originalSourceURL.equals("")) {
-                    logger.fine("redirecting to "+originalSourceURL);
+                    logger.fine("redirecting to " + originalSourceURL);
                     try {
                         FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceURL);
                     } catch (IOException ioex) {
                         // must be a bad URL...
                         // we don't need to do anything special here - we'll redirect
                         // to the local 404 page, below.
-                        logger.warning("failed to issue a redirect to "+originalSourceURL);
+                        logger.warning("failed to issue a redirect to " + originalSourceURL);
                     }
                 }
 
                 return permissionsWrapper.notFound();
             }
 
-                RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
-                retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
-                Long getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
-                fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, fileId);
+            RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
+            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
+            Long getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
+            fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, fileId);
 
-          
-            if (fileMetadata == null){
+            if (fileMetadata == null) {
                 logger.fine("fileMetadata is null! Checking finding most recent version file was in.");
                 fileMetadata = datafileService.findMostRecentVersionFileIsIn(file);
                 if (fileMetadata == null) {
@@ -173,23 +174,25 @@ public class FilePage implements java.io.Serializable {
                 }
             }
 
-           // If this DatasetVersion is unpublished and permission is doesn't have permissions:
-           //  > Go to the Login page
-           //
+            // If this DatasetVersion is unpublished and permission is doesn't have permissions:
+            //  > Go to the Login page
+            //
             // Check permisisons       
+            Boolean authorized = (fileMetadata.getDatasetVersion().isReleased())
+                    || (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
 
-            
-            Boolean authorized = (fileMetadata.getDatasetVersion().isReleased()) ||
-                    (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
-            
-            if (!authorized ) {
+            if (!authorized) {
                 return permissionsWrapper.notAuthorized();
-            }         
-           
-           this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
-           
-          //  this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
+            }
 
+            this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
+
+            if(fileMetadata.getDatasetVersion().isPublished()) {
+                MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, fileMetadata.getDatasetVersion());
+                MakeDataCountUtil.logEntryIfValid(entry);
+            }
+            
+            //  this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
             if (file.isTabularData()) {
                 configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
                 exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);

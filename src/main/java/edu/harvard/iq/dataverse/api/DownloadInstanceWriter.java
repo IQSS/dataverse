@@ -27,6 +27,8 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URI;
@@ -35,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.faces.context.FacesContext;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.RedirectionException;
 
@@ -253,6 +256,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     logger.fine("writing guestbook response, for an S3 download redirect.");
                                     Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                                     di.getCommand().submit(cmd);
+                                    MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), di.getDataverseRequestService(), di.getGbr().getDataFile());
+                                    MakeDataCountUtil.logEntryIfValid(entry);
                                 } catch (CommandException e) {
                                 }
                             }
@@ -342,6 +347,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             logger.fine("writing guestbook response.");
                             Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                             di.getCommand().submit(cmd);
+                            MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), di.getDataverseRequestService(), di.getGbr().getDataFile());
+                            MakeDataCountUtil.logEntryIfValid(entry);
                         } catch (CommandException e) {}
                     } else {
                         logger.fine("not writing guestbook response");

@@ -1445,15 +1445,8 @@ public class DatasetPage implements java.io.Serializable {
             // init the citation
             displayCitation = dataset.getCitation(true, workingVersion);
             
-            //MAD: Should this isPublished() be part of the logging itself?
             if(workingVersion.isPublished()) {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
-                //entry.setFilename();
-                //entry.setSize();
-                //entry.setOtherId();
-                //entry.setPublisherId();
-                //entry.setSessionCookieId();
-                //entry.setUesrCookieId();
                 MakeDataCountUtil.logEntryIfValid(entry);
             }
 
