@@ -52,6 +52,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -82,6 +84,7 @@ import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
+import javax.faces.context.FacesContext;
 import javax.json.JsonArrayBuilder;
 import javax.persistence.TypedQuery;
 
@@ -173,7 +176,7 @@ public class Access extends AbstractApiBean {
     @Path("datafile/bundle/{fileId}")
     @GET
     @Produces({"application/zip"})
-    public BundleDownloadInstance datafileBundle(@PathParam("fileId") String fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public BundleDownloadInstance datafileBundle(@PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
  
 
         GuestbookResponse gbr = null;
@@ -187,11 +190,13 @@ public class Access extends AbstractApiBean {
         // This will throw a ForbiddenException if access isn't authorized: 
         checkAuthorization(df, apiToken);
         
-        if (gbrecs == null && df.isReleased()){
+        if (gbrecs != true && df.isReleased()){
             // Write Guestbook record if not done previously and file is released
             User apiTokenUser = findAPITokenUser(apiToken);
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
             guestbookResponseService.save(gbr);
+            MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, df);
+            MakeDataCountUtil.logEntryIfValid(entry);
         }
         
         DownloadInfo dInfo = new DownloadInfo(df);
@@ -245,7 +250,7 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId}")
     @GET
     @Produces({"application/xml"})
-    public DownloadInstance datafile(@PathParam("fileId") String fileId, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public DownloadInstance datafile(@PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
 
         DataFile df = findDataFileOrDieWrapper(fileId);
         GuestbookResponse gbr = null;
@@ -260,11 +265,13 @@ public class Access extends AbstractApiBean {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
-        
-        if (gbrecs == null && df.isReleased()){
+        //MAD: I think this should be checking ! true instead -4.10   
+        if (gbrecs != true && df.isReleased()){
             // Write Guestbook record if not done previously and file is released
             User apiTokenUser = findAPITokenUser(apiToken);
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
+            MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, df);
+            MakeDataCountUtil.logEntryIfValid(entry);
         }
                
         // This will throw a ForbiddenException if access isn't authorized: 
@@ -347,7 +354,6 @@ public class Access extends AbstractApiBean {
                 // TODO: throw new ServiceUnavailableException(); 
             }
         }
-        
         /* 
          * Provide "Access-Control-Allow-Origin" header:
          */
@@ -496,7 +502,7 @@ public class Access extends AbstractApiBean {
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
-    public Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
 
         long setLimit = systemConfig.getZipDownloadLimit();
         if (!(setLimit > 0L)) {
@@ -554,9 +560,11 @@ public class Access extends AbstractApiBean {
                                     
                                     logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                                     //downloadInstance.addDataFile(file);
-                                    if (gbrecs == null && file.isReleased()){
+                                    if (gbrecs != true && file.isReleased()){
                                         GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
                                         guestbookResponseService.save(gbr);
+                                        MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, file);
+                                        MakeDataCountUtil.logEntryIfValid(entry);
                                     }
                                     
                                     if (zipper == null) {
@@ -1302,8 +1310,7 @@ public class Access extends AbstractApiBean {
                  break;
             }
         }
-        
-        
+
         // TODO: (IMPORTANT!)
         // Business logic like this should NOT be maintained in individual 
         // application fragments. 

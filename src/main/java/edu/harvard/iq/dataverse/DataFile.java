@@ -460,8 +460,8 @@ public class DataFile extends DvObject implements Comparable {
         return fmd;
     }
     
-    //Returns null if no published version
-    public FileMetadata getLatestPublishedFileMetadata() {
+//    //Returns null if no published version
+    public FileMetadata getLatestPublishedFileMetadata() throws UnsupportedOperationException {
         FileMetadata fmd = null;
         
         for (FileMetadata fileMetadata : fileMetadatas) {
@@ -479,7 +479,10 @@ public class DataFile extends DvObject implements Comparable {
                 fmd = fileMetadata;
             }
         }
-
+        if(fmd == null) {
+            throw new UnsupportedOperationException("No published metadata version for DataFile " + this.getId());
+        }
+        
         return fmd;
     }
 
