@@ -27,18 +27,21 @@ public class ExternalToolHandler {
 
     private final ExternalTool externalTool;
     private final DataFile dataFile;
+    private final Dataset dataset;
 
     private final ApiToken apiToken;
 
     /**
-     * @param externalTool The database entity.
-     * @param dataFile Required.
-     * @param apiToken The apiToken can be null because "explore" tools can be
-     * used anonymously.
+     * @param externalTool
+     *            The database entity.
+     * @param dataFile
+     *            Required.
+     * @param apiToken
+     *            The apiToken can be null because "explore" tools can be used
+     *            anonymously.
      */
     public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken) {
         this.externalTool = externalTool;
-        logger.info("Configuring to launch: " + externalTool.getDisplayName());
         if (dataFile == null) {
             String error = "A DataFile is required.";
             logger.warning("Error in ExternalToolHandler constructor: " + error);
@@ -46,6 +49,7 @@ public class ExternalToolHandler {
         }
         this.dataFile = dataFile;
         this.apiToken = apiToken;
+        dataset = getDataFile().getFileMetadata().getDatasetVersion().getDataset();
     }
 
     public DataFile getDataFile() {
@@ -56,7 +60,8 @@ public class ExternalToolHandler {
         return apiToken;
     }
 
-    // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
+    // TODO: rename to handleRequest() to someday handle sending headers as well as
+    // query parameters.
     public String getQueryParametersForUrl() {
         String toolParameters = externalTool.getToolParameters();
         JsonReader jsonReader = Json.createReader(new StringReader(toolParameters));
@@ -71,7 +76,7 @@ public class ExternalToolHandler {
                 String value = queryParam.getString(key);
                 String param = getQueryParam(key, value);
                 if (param != null && !param.isEmpty()) {
-                    params.add(getQueryParam(key, value));
+                    params.add(param);
                 }
             });
         });
@@ -81,37 +86,35 @@ public class ExternalToolHandler {
     private String getQueryParam(String key, String value) {
         ReservedWord reservedWord = ReservedWord.fromString(value);
         switch (reservedWord) {
-            case FILE_ID:
-                // getDataFile is never null because of the constructor
-                return key + "=" + getDataFile().getId();
-            case SITE_URL:
-                return key + "=" + SystemConfig.getDataverseSiteUrlStatic();
-            case API_TOKEN:
-                String apiTokenString = null;
-                ApiToken theApiToken = getApiToken();
-                if (theApiToken != null) {
-                    apiTokenString = theApiToken.getTokenString();
-                    return key + "=" + apiTokenString;
-                }
-                break;
-            case DATASET_ID:
-                DataFile df = getDataFile();
-                FileMetadata fmd = df.getFileMetadata();
-                if(fmd==null) {
-                    logger.info("Null fmd: " + df.getFileMetadatas().size());
-                    fmd=df.getFileMetadatas().get(0);
-                }
-                DatasetVersion dv = fmd.getDatasetVersion();
-                Dataset ds = dv.getDataset();
-                return key + "=" +ds.getId();
-            case DATASET_VERSION:
-                String version = getDataFile().getFileMetadata().getDatasetVersion().getFriendlyVersionNumber();
-                if(version.equals("DRAFT")) {
-                    version = ":draft"; //send the token needed in api calls that can be substituted for a numeric version.
-                }
+        case FILE_ID:
+            // getDataFile is never null because of the constructor
+            return key + "=" + getDataFile().getId();
+        case SITE_URL:
+            return key + "=" + SystemConfig.getDataverseSiteUrlStatic();
+        case API_TOKEN:
+            String apiTokenString = null;
+            ApiToken theApiToken = getApiToken();
+            if (theApiToken != null) {
+                apiTokenString = theApiToken.getTokenString();
+                return key + "=" + apiTokenString;
+            }
+            break;
+        case DATASET_ID:
+            return key + "=" + dataset.getId();
+        case DATASET_VERSION:
+            String version = null;
+            if (getApiToken() != null) {
+                version = dataset.getLatestVersion().getFriendlyVersionNumber();
+            } else {
+                version = dataset.getLatestVersionForCopy().getFriendlyVersionNumber();
+            }
+            if (("DRAFT").equals(version)) {
+                version = ":draft"; // send the token needed in api calls that can be substituted for a numeric
+                                    // version.
                 return key + "=" + version;
-            default:
-                break;
+            }
+        default:
+            break;
         }
         return null;
     }

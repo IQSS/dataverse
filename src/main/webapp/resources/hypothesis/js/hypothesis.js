@@ -2,8 +2,15 @@ $(document)
   .ready(
     function() {
         var queryParams = new URLSearchParams(window.location.search.substring(1));
-        $.getJSON(queryParams.get("siteUrl") + "/api/access/datafile/" + queryParams.get("fileid") + "?key=" + queryParams.get("key") + "&gbrecs=false", function(data, status){
-            $.getJSON(queryParams.get("siteUrl") + "/api/datasets/" + queryParams.get("datasetid") + "/versions/" + queryParams.get("datasetversion") + "/files"  + "?key=" + queryParams.get("key"),
+        var fileUrl = queryParams.get("siteUrl") + "/api/access/datafile/" + queryParams.get("fileid") + "?gbrecs=false";
+        var mdUrl= queryParams.get("siteUrl") + "/api/datasets/" + queryParams.get("datasetid") + "/versions/" + queryParams.get("datasetversion") + "/files";
+        var apiKey = queryParams.get("key"); 
+        if(apiKey!=null) {
+        	fileUrl = fileUrl + "&key=" + apiKey;
+        	mdUrl = mdUrl + "?key=" + apiKey;
+        }
+        $.getJSON(fileUrl, function(data, status){
+            $.getJSON(mdUrl,
                function(json, status) {
                  var datafiles=json.data;
                  for(var entry in datafiles) {
