@@ -173,6 +173,8 @@ Run the following command:
 
 ``curl http://localhost:8080/api/admin/settings/:DoiProvider -X PUT -d FAKE``
 
+This will disable DOI registration by using a fake (in-code) DOI provider. Please note that this feature is only available in version >= 4.10 and that at present, the UI will give no indication that the DOIs thus minted are fake.
+
 Next Steps
 ----------
 
