@@ -1,7 +1,20 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
+import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ejb.EJB;
+import javax.json.Json;
+import javax.json.JsonObject;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 /**
@@ -9,6 +22,11 @@ import javax.ws.rs.core.Response;
  */
 @Path("admin/makeDataCount")
 public class MakeDataCountApi extends AbstractApiBean {
+    
+    @EJB
+    DatasetMetricsServiceBean datasetMetricsService;
+    @EJB
+    DatasetServiceBean datasetService;
 
     /**
      * TODO: For each dataset, send the following:
@@ -37,6 +55,36 @@ public class MakeDataCountApi extends AbstractApiBean {
     @Path("sendToHub")
     public Response sendDataToHub() {
         String msg = "Data has been sent to Make Data Count";
+        return ok(msg);
+    }
+    
+    @POST
+    @Path("{id}/addDummyData")
+    public Response addDummyData(@PathParam("id") String id) {
+
+        JsonObject report;
+
+        try (FileReader reader = new FileReader("//Users/skraffmi/NetBeansProjects/dataverse/src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json")) {
+            report = Json.createReader(reader).readObject();
+            Dataset dataset;
+            try {
+                dataset = findDatasetOrDie(id);
+                List<DatasetMetrics> datasetMetrics = datasetMetricsService.parseSushiReport(report, dataset);
+                if (!datasetMetrics.isEmpty()) {
+                    for (DatasetMetrics dm : datasetMetrics) {
+                        System.out.print("adding Metrics");
+                        datasetMetricsService.save(dm);
+                    }
+                }
+            } catch (WrappedResponse ex) {
+                System.out.print("Catch Wrapped response");
+                Logger.getLogger(MakeDataCountApi.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        } catch (IOException ex) {
+            System.out.print(ex.getMessage());
+        }
+        String msg = "Dummy Data has been added to dataset " + id;
         return ok(msg);
     }
 

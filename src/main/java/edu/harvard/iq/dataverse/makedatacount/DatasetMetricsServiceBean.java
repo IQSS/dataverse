@@ -1,42 +1,65 @@
+
 package edu.harvard.iq.dataverse.makedatacount;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.engine.TestCommandContext;
-import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.externaltools.ExternalTool;
-import java.io.FileReader;
-import java.io.IOException;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.Dataverse;
 import java.io.StringReader;
+import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import java.util.concurrent.Future;
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
-public class MakeDataCountUtilTest {
-
-    @Test
-    public void testParseSushi() {
-        JsonObject report;
-        try (FileReader reader = new FileReader("src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json")) {
-            report = Json.createReader(reader).readObject();
-            List<DatasetMetrics> datasetMetrics = parseSushiReport(report);
-        } catch (IOException ex) {
-            System.out.print("IO exception: " + ex.getMessage());
-        } catch (Exception e) {
-            System.out.print("Unspecified Exception: " + e.getMessage());
+/**
+ *
+ * @author skraffmi
+ */
+@Named
+@Stateless
+public class DatasetMetricsServiceBean implements java.io.Serializable {
+    
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
+    protected EntityManager em;
+    
+    @EJB
+    DatasetServiceBean datasetService;
+    
+    public DatasetMetrics getDatasetMetricsByDatasetMonthCountry(Dataset dataset, String monthYear, String country) {
+        DatasetMetrics dsm = null;
+        String queryStr = "SELECT d FROM DatasetMetrics d, WHERE d.dataset.id = " + dataset.getId() + " and d.monthYear = '" + monthYear + "' " + " and d.country = '" + country + "' ";
+        Query query = em.createQuery(queryStr);
+        List resultList = query.getResultList();
+        if (resultList.size() > 1) {
+            throw new EJBException("More than one Dataset Metric found in the dataset (id= " + dataset.getId() + "), with monthYear= " + monthYear + " and Country code = " + country  + ".");
         }
+        if (resultList.size() == 1) {
+            dsm = (DatasetMetrics) resultList.get(0);
+            return dsm;
+        }
+        return null;
     }
-
-    private List<DatasetMetrics> parseSushiReport(JsonObject report) {
+    
+    public List<DatasetMetrics> parseSushiReport(JsonObject report){
+        return parseSushiReport(report, null);
+    }
+    
+    
+    public List<DatasetMetrics> parseSushiReport(JsonObject report, Dataset dataset) {
         List<DatasetMetrics> datasetMetricsAll = new ArrayList<>();
         JsonArray reportDatasets = report.getJsonArray("report_datasets");
         for (JsonValue reportDataset : reportDatasets) {
@@ -58,7 +81,11 @@ public class MakeDataCountUtilTest {
             } else {
                 System.out.print("Does Not Contain  dataset-id");
             }
-
+            if (dataset != null){
+                ds = dataset;
+            } else {
+                ds = datasetService.findByGlobalId(globalId);
+            }
             if (obj.containsKey("performance")) {
                 JsonArray performance = obj.getJsonArray("performance");
                 for (JsonObject perfObj : performance.getValuesAs(JsonObject.class)) {
@@ -201,4 +228,10 @@ public class MakeDataCountUtilTest {
         
         return currentList;
     }
+    
+    public DatasetMetrics save(DatasetMetrics datasetMetrics) {       
+        DatasetMetrics savedDatasetMetrics = em.merge(datasetMetrics);
+        return savedDatasetMetrics;
+    }
+    
 }

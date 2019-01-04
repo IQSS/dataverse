@@ -45,6 +45,13 @@ public class MakeDataCountApiIT {
         createDatasetResponse.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        
+
+        Response addDummyData = UtilIT.makeDataCountAddDummyData(datasetId.toString());
+        addDummyData.prettyPrint();
+        addDummyData.then().assertThat()
+                .statusCode(OK.getStatusCode()); 
+        
 
         String invalidMetric = "junk";
         Response invalidMetricAttempt = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), invalidMetric, apiToken);
