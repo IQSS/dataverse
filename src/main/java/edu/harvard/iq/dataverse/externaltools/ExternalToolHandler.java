@@ -97,6 +97,10 @@ public class ExternalToolHandler {
             case DATASET_ID:
                 DataFile df = getDataFile();
                 FileMetadata fmd = df.getFileMetadata();
+                if(fmd==null) {
+                    logger.info("Null fmd: " + df.getFileMetadatas().size());
+                    fmd=df.getFileMetadatas().get(0);
+                }
                 DatasetVersion dv = fmd.getDatasetVersion();
                 Dataset ds = dv.getDataset();
                 return key + "=" +ds.getId();
