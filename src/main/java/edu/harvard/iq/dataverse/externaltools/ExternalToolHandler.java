@@ -111,8 +111,8 @@ public class ExternalToolHandler {
             if (("DRAFT").equals(version)) {
                 version = ":draft"; // send the token needed in api calls that can be substituted for a numeric
                                     // version.
-                return key + "=" + version;
             }
+            return key + "=" + version;
         default:
             break;
         }
