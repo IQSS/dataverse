@@ -2,10 +2,17 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import javax.json.Json;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 
 public class ExternalToolHandlerTest {
@@ -69,6 +76,14 @@ public class ExternalToolHandlerTest {
                 .build().toString());
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
+        FileMetadata fmd = new FileMetadata();
+        DatasetVersion dv = new DatasetVersion();
+        Dataset ds = new Dataset();
+        dv.setDataset(ds);
+        fmd.setDatasetVersion(dv);
+        List<FileMetadata> fmdl = new ArrayList<FileMetadata>();
+        fmdl.add(fmd);
+        dataFile.setFileMetadatas(fmdl);
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
         ExternalToolHandler externalToolHandler3 = new ExternalToolHandler(externalTool, dataFile, apiToken);
