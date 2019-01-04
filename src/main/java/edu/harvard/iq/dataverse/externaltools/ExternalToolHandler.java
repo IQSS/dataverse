@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -35,6 +38,7 @@ public class ExternalToolHandler {
      */
     public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken) {
         this.externalTool = externalTool;
+        logger.info("Configuring to launch: " + externalTool.getDisplayName());
         if (dataFile == null) {
             String error = "A DataFile is required.";
             logger.warning("Error in ExternalToolHandler constructor: " + error);
@@ -91,7 +95,11 @@ public class ExternalToolHandler {
                 }
                 break;
             case DATASET_ID:
-                return key + "=" +getDataFile().getFileMetadata().getDatasetVersion().getDataset().getId();
+                DataFile df = getDataFile();
+                FileMetadata fmd = df.getFileMetadata();
+                DatasetVersion dv = fmd.getDatasetVersion();
+                Dataset ds = dv.getDataset();
+                return key + "=" +ds.getId();
             case DATASET_VERSION:
                 String version = getDataFile().getFileMetadata().getDatasetVersion().getFriendlyVersionNumber();
                 if(version.equals("DRAFT")) {
