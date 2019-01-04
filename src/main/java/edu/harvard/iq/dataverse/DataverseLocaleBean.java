@@ -5,6 +5,7 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -52,8 +53,12 @@ public class DataverseLocaleBean implements Serializable {
 
     private String localeCode;
 
-    public Map<String, String>  getDataverseLocales(){
-        return dataverseLocales;
+    public String getLanguage(String locale) {
+        return dataverseLocales.get(locale);
+    }
+
+    public Map<String, String> getDataverseLocales(){
+        return Collections.unmodifiableMap(dataverseLocales);
     }
 
     public String getLocaleCode() {
