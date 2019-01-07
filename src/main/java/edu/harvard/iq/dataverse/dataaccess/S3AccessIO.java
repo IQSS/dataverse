@@ -13,6 +13,7 @@ import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -35,6 +36,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -157,22 +159,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             if (isReadAccess) {
                 key = getMainFileKey();
-                S3Object s3object = null; 
+                ObjectMetadata objectMetadata = null; 
                 try {
-                    s3object = s3.getObject(new GetObjectRequest(bucketName, key));
+                    objectMetadata = s3.getObjectMetadata(bucketName, key);
                 } catch (SdkClientException sce) {
                     throw new IOException("Cannot get S3 object " + key + " ("+sce.getMessage()+")");
                 }
-                InputStream in = s3object.getObjectContent();
-
-                if (in == null) {
-                    throw new IOException("Cannot get InputStream for S3 Object" + key);
-                }
-
-                this.setInputStream(in);
-
-                setChannel(Channels.newChannel(in));
-                this.setSize(s3object.getObjectMetadata().getContentLength());
+                this.setSize(objectMetadata.getContentLength());
 
                 if (dataFile.getContentType() != null
                         && dataFile.getContentType().equals("text/tab-separated-values")
@@ -213,6 +206,40 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else {
             throw new IOException("Data Access: Invalid DvObject type");
         }
+    }
+
+    @Override
+    public InputStream getInputStream() throws IOException {
+        if(super.getInputStream()==null) {
+            try {
+                setInputStream(s3.getObject(new GetObjectRequest(bucketName, key)).getObjectContent());
+            } catch (SdkClientException sce) {
+                throw new IOException("Cannot get S3 object " + key + " ("+sce.getMessage()+")");
+            }
+        }
+
+        if (super.getInputStream() == null) {
+            throw new IOException("Cannot get InputStream for S3 Object" + key);
+        }
+
+        setChannel(Channels.newChannel(super.getInputStream()));
+
+        return super.getInputStream();
+    }
+    
+    @Override
+    public Channel getChannel() throws IOException {
+        if(super.getChannel()==null) {
+            getInputStream();
+        }
+        return channel;
+    }
+    
+    @Override
+    public ReadableByteChannel getReadChannel() throws IOException {
+        //Make sure StorageIO.channel variable exists
+        getChannel();
+        return super.getReadChannel();
     }
 
     // StorageIO method for copying a local Path (for ex., a temp file), into this DataAccess location:

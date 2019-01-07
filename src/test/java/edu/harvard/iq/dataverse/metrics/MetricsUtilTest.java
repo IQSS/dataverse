@@ -90,6 +90,45 @@ public class MetricsUtilTest {
         assertEquals("Physics", jsonObject.getString("subject"));
         assertEquals(98, jsonObject.getInt("count"));
     }
+    
+    @Test
+    public void testDataversesBySubjectToJson() {
+         List<Object[]> list = new ArrayList<>();
+        Object[] obj00 = {"Social Sciences", 24955l};
+        Object[] obj01 = {"Medicine, Health and Life Sciences", 2262l};
+        Object[] obj02 = {"Earth and Environmental Sciences", 1631l};
+        Object[] obj03 = {"Agricultural Sciences", 1187l};
+        Object[] obj04 = {"Other", 980l};
+        Object[] obj05 = {"Computer and Information Science", 888l};
+        Object[] obj06 = {"Arts and Humanities", 832l};
+        Object[] obj07 = {"Astronomy and Astrophysics", 353l};
+        Object[] obj08 = {"Business and Management", 346l};
+        Object[] obj09 = {"Law", 220l};
+        Object[] obj10 = {"Engineering", 203l};
+        Object[] obj11 = {"Mathematical Sciences", 123l};
+        Object[] obj12 = {"Chemistry", 116l};
+        Object[] obj13 = {"Physics", 98l};
+        list.add(obj00);
+        list.add(obj01);
+        list.add(obj02);
+        list.add(obj03);
+        list.add(obj04);
+        list.add(obj05);
+        list.add(obj06);
+        list.add(obj07);
+        list.add(obj08);
+        list.add(obj09);
+        list.add(obj10);
+        list.add(obj11);
+        list.add(obj12);
+        list.add(obj13);
+        JsonArrayBuilder jab = MetricsUtil.dataversesBySubjectToJson(list);
+        JsonArray jsonArray = jab.build();
+        System.out.println(JsonUtil.prettyPrint(jsonArray));
+        JsonObject jsonObject = jsonArray.getJsonObject(13);
+        assertEquals("Physics", jsonObject.getString("subject"));
+        assertEquals(98, jsonObject.getInt("count"));
+    }
 
     @Test
     public void testSanitizeHappyPath() throws Exception {

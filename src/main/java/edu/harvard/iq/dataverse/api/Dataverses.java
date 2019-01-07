@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -16,6 +17,8 @@ import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
+import edu.harvard.iq.dataverse.api.imports.ImportException;
+import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
@@ -50,6 +53,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveRoleAssigneesFromExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -93,8 +97,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
+import javax.persistence.NoResultException;
 
 /**
  * A REST API for dataverses.
@@ -109,8 +115,9 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
-//    @EJB
-//    SystemConfig systemConfig;
+
+    @EJB
+    ImportServiceBean importService;
 
     @POST
     public Response addRoot(String body) {
@@ -303,6 +310,74 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
+    // TODO decide if I merge importddi with import just below (xml and json on same api, instead of 2 api)
+    @POST
+    @Path("{identifier}/datasets/:importddi")
+    public Response importDatasetDdi(String xml, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) throws ImportException {
+        try {
+            User u = findUserOrDie();
+            if (!u.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+            Dataverse owner = findDataverseOrDie(parentIdtf);
+            Dataset ds = null;
+            try {
+                ds = jsonParser().parseDataset(importService.ddiToJson(xml));
+            }
+            catch (JsonParseException jpe) {
+                return badRequest("Error parsing datas as Json: "+jpe.getMessage());
+            }
+            ds.setOwner(owner);
+            if (nonEmpty(pidParam)) {
+                if (!GlobalId.verifyImportCharacters(pidParam)) {
+                    return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
+                }
+                Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
+                if (maybePid.isPresent()) {
+                    ds.setGlobalId(maybePid.get());
+                } else {
+                    // unparsable PID passed. Terminate.
+                    return badRequest("Cannot parse the PID parameter '" + pidParam + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
+                }
+            }
+
+            boolean shouldRelease = StringUtil.isTrue(releaseParam);
+            DataverseRequest request = createDataverseRequest(u);
+
+            Dataset managedDs = null;
+            if (nonEmpty(pidParam)) {
+                managedDs = execCommand(new ImportDatasetCommand(ds, request));
+            }
+            else {
+                managedDs = execCommand(new CreateNewDatasetCommand(ds, request));
+            }
+
+            JsonObjectBuilder responseBld = Json.createObjectBuilder()
+                    .add("id", managedDs.getId())
+                    .add("persistentId", managedDs.getGlobalIdString());
+
+            if (shouldRelease) {
+                DatasetVersion latestVersion = ds.getLatestVersion();
+                latestVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+                latestVersion.setVersionNumber(1l);
+                latestVersion.setMinorVersionNumber(0l);
+                if (latestVersion.getCreateTime() != null) {
+                    latestVersion.setCreateTime(new Date());
+                }
+                if (latestVersion.getLastUpdateTime() != null) {
+                    latestVersion.setLastUpdateTime(new Date());
+                }
+                PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
+                responseBld.add("releaseCompleted", res.isCompleted());
+            }
+
+            return created("/datasets/" + managedDs.getId(), responseBld);
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
     private Dataset parseDataset(String datasetJson) throws WrappedResponse {
         try (StringReader rdr = new StringReader(datasetJson)) {
             return jsonParser().parseDataset(Json.createReader(rdr).readObject());
@@ -480,16 +555,14 @@ public class Dataverses extends AbstractApiBean {
     }
 
     // FIXME: This listContent method is way too optimistic, always returning "ok" and never "error".
-    // FIXME: This listContent method should be reformatted. The indentation and whitespace is odd.
-    // FIXME: This method is too slow with lots of data: https://github.com/IQSS/dataverse/issues/2122
     // TODO: Investigate why there was a change in the timeframe of when pull request #4350 was merged
     // (2438-4295-dois-for-files branch) such that a contributor API token no longer allows this method
     // to be called without a PermissionException being thrown.
     @GET
     @Path("{identifier}/contents")
-    public Response listContent(@PathParam("identifier") String dvIdtf) {
-        DvObject.Visitor<JsonObjectBuilder> ser = new DvObject.Visitor<JsonObjectBuilder>() {
+    public Response listContent(@PathParam("identifier") String dvIdtf) throws WrappedResponse {
 
+        DvObject.Visitor<JsonObjectBuilder> ser = new DvObject.Visitor<JsonObjectBuilder>() {
             @Override
             public JsonObjectBuilder visit(Dataverse dv) {
                 return Json.createObjectBuilder().add("type", "dataverse")
@@ -743,6 +816,52 @@ public class Dataverses extends AbstractApiBean {
                 new UpdateExplicitGroupCommand(req,
                         groupDto.apply(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)))))));
     }
+    
+    @PUT
+    @Path("{identifier}/defaultContributorRole/{roleAlias}")
+    public Response updateDefaultContributorRole(
+            @PathParam("identifier") String dvIdtf,
+            @PathParam("roleAlias") String roleAlias) {
+
+        DataverseRole defaultRole;
+        
+        if (roleAlias.equals(DataverseRole.NONE)) {
+            defaultRole = null;
+        } else {
+            try {
+                Dataverse dv = findDataverseOrDie(dvIdtf);
+                defaultRole = rolesSvc.findCustomRoleByAliasAndOwner(roleAlias, dv.getId());
+            } catch (Exception nre) {
+                List<String> args = Arrays.asList(roleAlias);
+                String retStringError = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.failure.role.not.found", args);
+                return error(Status.NOT_FOUND, retStringError);
+            }
+
+            if (!defaultRole.doesDvObjectClassHavePermissionForObject(Dataset.class)) {
+                List<String> args = Arrays.asList(roleAlias);
+                String retStringError = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.failure.role.does.not.have.dataset.permissions", args);
+                return error(Status.BAD_REQUEST, retStringError);
+            }
+
+        }
+
+        try {
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            
+            String defaultRoleName = defaultRole == null ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.name") : defaultRole.getName();
+
+            return response(req -> {
+                execCommand(new UpdateDataverseDefaultContributorRoleCommand(defaultRole, req, dv));
+                List<String> args = Arrays.asList(dv.getDisplayName(), defaultRoleName);
+                String retString = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.success", args);
+                return ok(retString);
+            });
+
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+    }
 
     @DELETE
     @Path("{identifier}/groups/{aliasInOwner}")
@@ -763,7 +882,7 @@ public class Dataverses extends AbstractApiBean {
             @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> ok(
                 json(
-                        execCommand(
+                    execCommand(
                                 new AddRoleAssigneesToExplicitGroupCommand(req,
                                         findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
                                         new TreeSet<>(roleAssingeeIdentifiers))))));

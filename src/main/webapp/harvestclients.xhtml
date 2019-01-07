@@ -6,7 +6,6 @@
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
-
     <h:head>
     </h:head>
 
@@ -140,6 +139,11 @@
                                     </p:commandLink>
                                 </div>
                             </div>
+                            <script type="text/javascript" jsf:rendered="#{harvestClient.harvestingNow or harvestClient.deleteInProgress}">
+                                if (window.refreshTimer === undefined){
+                                    window.refreshTimer = setTimeout(function(){window.location.reload();},5000);
+                                }
+                            </script>
                         </p:column>
                     </p:dataTable>
 
