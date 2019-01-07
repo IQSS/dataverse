@@ -1086,6 +1086,18 @@ public class DatasetVersion implements Serializable {
                             String url = subField.getDisplayValue();
                             relatedPublication.setUrl(url);
                         }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDType)) {
+                            // Prevent href and target=_blank from getting into Schema.org JSON-LD output.
+                            subField.getDatasetFieldType().setDisplayFormat("#VALUE");
+                            String idType = subField.getDisplayValue();
+                            relatedPublication.setIdType(idType);
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDNumber)) {
+                            // Prevent href and target=_blank from getting into Schema.org JSON-LD output.
+                            subField.getDatasetFieldType().setDisplayFormat("#VALUE");
+                            String idNum = subField.getDisplayValue();
+                            relatedPublication.setIdNumber(idNum);
+                        }
                     }
                     relatedPublications.add(relatedPublication);
                 }
