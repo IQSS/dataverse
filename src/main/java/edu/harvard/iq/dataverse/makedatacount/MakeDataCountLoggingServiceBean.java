@@ -39,8 +39,12 @@ public class MakeDataCountLoggingServiceBean {
     //MAD: Also the file name?
     public void logEntry(MakeDataCountEntry entry) {
         if(systemConfig.getMDCLogPath() != null) {
-            LoggingUtil.saveLogFile(entry.toString(), systemConfig.getMDCLogPath(), "raw-mdc-"+new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime()))+".log", LOG_HEADER);
+            LoggingUtil.saveLogFile(entry.toString(), systemConfig.getMDCLogPath(), getLogFileName() , LOG_HEADER);
         }
+    }
+    
+    public String getLogFileName() {
+        return "counter_"+new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime()))+".log";
     }
     
     public static class MakeDataCountEntry {
@@ -72,8 +76,8 @@ public class MakeDataCountLoggingServiceBean {
         public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, DatasetVersion publishedVersion) {
             if(fc != null) {
                 HttpServletRequest req = (HttpServletRequest)fc.getExternalContext().getRequest();
-                setRequestUrl(String.valueOf(req.getRequestURL().append("?").append(req.getQueryString())));
-                setTargetUrl(String.valueOf(req.getRequestURL().append("?").append(req.getQueryString())));
+                setRequestUrl(req.getRequestURI() + "?" + req.getQueryString());
+                setTargetUrl(req.getRequestURI() + "?" + req.getQueryString());
                 setUserAgent(req.getHeader("user-agent")); 
                 HttpSession session = (HttpSession) fc.getExternalContext().getSession(false);
                 setSessionCookieId(session.getId());
@@ -118,6 +122,7 @@ public class MakeDataCountLoggingServiceBean {
 
         //Exception thrown if no published metadata exists for DataFile
         //This is passed a DataFile to log the file downloaded
+        //MAD: Maybe remove the fc as its unused in all calls
         public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, DataFile df) throws UnsupportedOperationException {
             //Passing null to the base constructor creates an entry without most of the data
             // which we then prune out before logging. 

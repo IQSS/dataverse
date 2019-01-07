@@ -88,6 +88,7 @@ import java.util.function.Consumer;
 import javax.faces.context.FacesContext;
 import javax.json.JsonArrayBuilder;
 import javax.persistence.TypedQuery;
+import javax.servlet.http.HttpServletRequest;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -100,6 +101,7 @@ import javax.ws.rs.core.UriInfo;
 
 
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
@@ -562,7 +564,15 @@ public class Access extends AbstractApiBean {
                                     if (gbrecs != true && file.isReleased()){
                                         GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
                                         guestbookResponseService.save(gbr);
-                                        MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, file);
+                                        MakeDataCountEntry entry = new MakeDataCountEntry(null, dvRequestService, file);
+
+                                        entry.setRequestUrl("/" + uriInfo.getPath());//uriInfo.getRequestUri().toString()); //close but has http://localhost:8080
+                                        entry.setTargetUrl("/" + uriInfo.getPath());
+                                        if(null != headers.getRequestHeader("user-agent")) {
+                                            entry.setUserAgent(headers.getRequestHeader("user-agent").get(0));
+                                        }
+                                        //entry.setSessionCookieId(); //MAD: Should we be getting this? How? Maybe normal cookie instead?
+                                        
                                         mdcLogService.logEntry(entry);
                                     }
                                     
