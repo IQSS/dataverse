@@ -11,6 +11,7 @@
 <h:body>
     <f:metadata>
         <f:viewParam name="dataverseId" value="#{TextMessagePage.dataverseId}"/>
+        <f:viewParam name="dataverseId" value="#{LazyDataverseTextMessage.dataverseId}"/>
         <f:viewAction action="#{TextMessagePage.init()}"/>
     </f:metadata>
 
@@ -25,7 +26,9 @@
                         <h3>History</h3>
 
 
-                        <p:dataList value="#{TextMessagePage.lazydataverseTextMessages}" lazy="true"
+                        <p:dataList value="#{TextMessagePage.lazydataverseTextMessages}"
+                                    paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
+                                    lazy="true"
                                     var="history" type="unordered" itemType="none" paginator="true" rows="1"
                                     styleClass="paginated">
 

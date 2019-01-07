@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseTextMessageDto;
 import org.primefaces.model.LazyDataModel;
 
 import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
 
@@ -12,11 +13,13 @@ import java.io.Serializable;
 public class TextMessagePage implements Serializable {
 
     private long dataverseId;
-    private LazyDataModel<DataverseTextMessageDto> lazydataverseTextMessages;
+
+    @Inject
+    private LazyDataverseTextMessage lazydataverseTextMessages;
 
     @SuppressWarnings("Duplicates")
     public void init() {
-        lazydataverseTextMessages = new LazyDataverseTextMessage(dataverseId);
+
     }
 
     private void mockData() {

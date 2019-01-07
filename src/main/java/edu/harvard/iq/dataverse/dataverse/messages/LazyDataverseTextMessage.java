@@ -15,15 +15,8 @@ import java.util.Map;
 import java.util.Optional;
 
 @ViewScoped
-@Named
+@Named("LazyDataverseTextMessage")
 public class LazyDataverseTextMessage extends LazyDataModel<DataverseTextMessageDto> {
-
-    public LazyDataverseTextMessage() {
-    }
-
-    public LazyDataverseTextMessage(Long dataverseId) {
-        this.dataverseId = dataverseId;
-    }
 
     @EJB
     private DataverseTextMessageServiceBean dataverseTextMessageService;
@@ -58,5 +51,21 @@ public class LazyDataverseTextMessage extends LazyDataModel<DataverseTextMessage
                 .filter(dtm -> dtm.getId().equals(id))
                 .findFirst()
                 .orElse(null);
+    }
+
+    public Long getDataverseId() {
+        return dataverseId;
+    }
+
+    public List<DataverseTextMessageDto> getDataverseTextMessageDtos() {
+        return dataverseTextMessageDtos;
+    }
+
+    public void setDataverseId(Long dataverseId) {
+        this.dataverseId = dataverseId;
+    }
+
+    public void setDataverseTextMessageDtos(List<DataverseTextMessageDto> dataverseTextMessageDtos) {
+        this.dataverseTextMessageDtos = dataverseTextMessageDtos;
     }
 }
