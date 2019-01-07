@@ -422,7 +422,6 @@ public class ImportGenericServiceBean {
                 logger.warning("HTTP Url in supplied as the identifier is neither a Handle nor DOI resolver: "+identifierString);
                 return null;
             }
-            // index2 was already found as the index of '/' - so it's still good. 
         } else {
             logger.warning("Unknown identifier format: "+identifierString);
             return null; 
