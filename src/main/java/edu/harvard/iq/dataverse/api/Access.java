@@ -52,7 +52,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -165,6 +166,8 @@ public class Access extends AbstractApiBean {
     UserNotificationServiceBean userNotificationService;
     @Inject
     PermissionsWrapper permissionsWrapper;
+    @Inject
+    MakeDataCountLoggingServiceBean mdcLogService;
     
     
     private static final String API_KEY_HEADER = "X-Dataverse-key";    
@@ -560,7 +563,7 @@ public class Access extends AbstractApiBean {
                                         GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
                                         guestbookResponseService.save(gbr);
                                         MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, file);
-                                        MakeDataCountUtil.logEntry(entry);
+                                        mdcLogService.logEntry(entry);
                                     }
                                     
                                     if (zipper == null) {

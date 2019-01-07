@@ -1506,6 +1506,13 @@ Sets how long a cached metrics result is used before re-running the query for a 
 
 ``curl -X PUT -d 10080 http://localhost:8080/api/admin/settings/:MetricsCacheTimeoutMinutes``
 
+:MDCLogPath
++++++++++++
+
+Sets the path where the raw Make Data Count logs are stored before being processed.
+
+``curl -X PUT -d '/Users/admin/glassfish4/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
+
 :Languages
 ++++++++++
 

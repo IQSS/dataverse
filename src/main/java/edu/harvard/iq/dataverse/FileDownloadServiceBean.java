@@ -11,8 +11,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseComma
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountEntry;
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -72,6 +72,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     @Inject WorldMapPermissionHelper worldMapPermissionHelper;
     @Inject FileDownloadHelper fileDownloadHelper;
+    @Inject
+    MakeDataCountLoggingServiceBean mdcLogService;
 
     private static final Logger logger = Logger.getLogger(FileDownloadServiceBean.class.getCanonicalName());   
     
@@ -160,7 +162,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             CreateGuestbookResponseCommand cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset());
             commandEngine.submit(cmd);
             MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, guestbookResponse.getDatasetVersion(), guestbookResponse.getDataFile());
-            MakeDataCountUtil.logEntry(entry);
+            mdcLogService.logEntry(entry);
         } catch (CommandException e) {
             //if an error occurs here then download won't happen no need for response recs...
         }

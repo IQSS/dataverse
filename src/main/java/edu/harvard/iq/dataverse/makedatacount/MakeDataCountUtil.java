@@ -1,11 +1,7 @@
 package edu.harvard.iq.dataverse.makedatacount;
 
-import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -46,14 +42,6 @@ import javax.json.JsonValue;
 public class MakeDataCountUtil {
 
     public static final String LOG_HEADER = "#Fields: event_time	client_ip	session_cookie_id	user_cookie_id	user_id	request_url	identifier	filename	size	user-agent	title	publisher	publisher_id	authors	publication_date	version	other_id	target_url	publication_year\n";
-
-    //MAD: Should probably add another check on only logging if certain entries exist.
-    //      Especially with my entry constructor allowing entries with no workingVersion
-    //MAD: The logDir may need to be configurable?
-    //MAD: Also the file name?
-    public static void logEntry(MakeDataCountEntry entry) {
-        LoggingUtil.saveLogFile(entry.toString(), System.getProperty("com.sun.aas.instanceRoot")+"/logs/", "raw-mdc-"+new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime()))+".log", LOG_HEADER);
-    }
 
     public enum MetricType {
 

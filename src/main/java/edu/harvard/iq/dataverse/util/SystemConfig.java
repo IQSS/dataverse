@@ -1058,4 +1058,8 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, safeDefaultIfKeyNotFound);
     }
     
+    public String getMDCLogPath() {
+        String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null); //MAD: Do we want a default?
+        return mDCLogPath;
+    }
 }

@@ -23,7 +23,8 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -106,6 +107,8 @@ public class FilePage implements java.io.Serializable {
     @Inject
     FileDownloadHelper fileDownloadHelper;
     @Inject WorldMapPermissionHelper worldMapPermissionHelper;
+    @Inject
+    MakeDataCountLoggingServiceBean mdcLogService;
 
     public WorldMapPermissionHelper getWorldMapPermissionHelper() {
         return worldMapPermissionHelper;
@@ -189,7 +192,7 @@ public class FilePage implements java.io.Serializable {
 
             if(fileMetadata.getDatasetVersion().isPublished()) {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, fileMetadata.getDatasetVersion());
-                MakeDataCountUtil.logEntry(entry);
+                mdcLogService.logEntry(entry);
             }
             
             //  this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);

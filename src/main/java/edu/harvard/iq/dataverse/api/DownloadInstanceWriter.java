@@ -27,7 +27,8 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.RedirectionException;
 
@@ -47,6 +49,9 @@ import javax.ws.rs.RedirectionException;
  */
 @Provider
 public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstance> {
+    
+    @Inject
+    MakeDataCountLoggingServiceBean mdcLogService;
     
     private static final Logger logger = Logger.getLogger(DownloadInstanceWriter.class.getCanonicalName());
 
@@ -257,7 +262,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                                     di.getCommand().submit(cmd);
                                     MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), di.getDataverseRequestService(), di.getGbr().getDataFile());
-                                    MakeDataCountUtil.logEntry(entry);
+                                    mdcLogService.logEntry(entry);
                                 } catch (CommandException e) {
                                 }
                             }
@@ -348,7 +353,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                             di.getCommand().submit(cmd);
                             MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), di.getDataverseRequestService(), di.getGbr().getDataFile());
-                            MakeDataCountUtil.logEntry(entry);
+                            mdcLogService.logEntry(entry);
                         } catch (CommandException e) {}
                     } else {
                         logger.fine("not writing guestbook response");

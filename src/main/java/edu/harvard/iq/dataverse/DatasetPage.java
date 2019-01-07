@@ -93,7 +93,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewComman
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import java.util.Collections;
 import javax.faces.component.UIInput;
 
@@ -202,6 +203,8 @@ public class DatasetPage implements java.io.Serializable {
     SettingsWrapper settingsWrapper; 
     @Inject 
     ProvPopupFragmentBean provPopupFragmentBean;
+    @Inject
+    MakeDataCountLoggingServiceBean mdcLogService;
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
@@ -1447,7 +1450,7 @@ public class DatasetPage implements java.io.Serializable {
             
             if(workingVersion.isPublished()) {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
-                MakeDataCountUtil.logEntry(entry);
+                mdcLogService.logEntry(entry);
             }
 
             if (initFull) {
