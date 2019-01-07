@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.DataverseLocaleBean;
+import edu.harvard.iq.dataverse.locale.DataverseLocaleBean;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;

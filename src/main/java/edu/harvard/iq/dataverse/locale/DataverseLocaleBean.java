@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.locale;
 
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
