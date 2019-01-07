@@ -15,6 +15,7 @@ import javax.json.JsonObject;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 /**
@@ -22,7 +23,7 @@ import javax.ws.rs.core.Response;
  */
 @Path("admin/makeDataCount")
 public class MakeDataCountApi extends AbstractApiBean {
-    
+
     @EJB
     DatasetMetricsServiceBean datasetMetricsService;
     @EJB
@@ -57,14 +58,14 @@ public class MakeDataCountApi extends AbstractApiBean {
         String msg = "Data has been sent to Make Data Count";
         return ok(msg);
     }
-    
+
     @POST
-    @Path("{id}/addDummyData")
-    public Response addDummyData(@PathParam("id") String id) {
+    @Path("{id}/addUsageMetricsFromSushiReport")
+    public Response addUsageMetricsFromSushiReport(@PathParam("id") String id, @QueryParam("reportOnDisk") String reportOnDisk) {
 
         JsonObject report;
 
-        try (FileReader reader = new FileReader("//Users/skraffmi/NetBeansProjects/dataverse/src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json")) {
+        try (FileReader reader = new FileReader(reportOnDisk)) {
             report = Json.createReader(reader).readObject();
             Dataset dataset;
             try {

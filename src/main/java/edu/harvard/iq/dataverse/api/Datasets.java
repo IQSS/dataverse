@@ -75,6 +75,8 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
+import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
+import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -83,6 +85,8 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -167,7 +171,11 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     S3PackageImporter s3PackageImporter;
-     
+
+    // TODO: Move to AbstractApiBean
+    @EJB
+    DatasetMetricsServiceBean datasetMetricsSvc = new DatasetMetricsServiceBean();
+
     /**
      * Used to consolidate the way we parse and handle dataset versions.
      * @param <T> 
@@ -1526,15 +1534,38 @@ public class Datasets extends AbstractApiBean {
     public Response getMakeDataCountMetric(@PathParam("id") String idSupplied, @PathParam("metric") String metricSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
-            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+            NullSafeJsonBuilder jsonObjectBuilder = jsonObjectBuilder();
             MakeDataCountUtil.MetricType metricType = null;
             try {
                 metricType = MakeDataCountUtil.MetricType.fromString(metricSupplied);
             } catch (IllegalArgumentException ex) {
                 return error(Response.Status.BAD_REQUEST, ex.getMessage());
             }
+            // FIXME: Remove hard coded date (and change from "monthYear" to "date"?
+            String monthYear = "2018-05-01";
+            // FIXME: Remove hard coded country code.
+            String country = "us";
+            DatasetMetrics datasetMetrics = datasetMetricsSvc.getDatasetMetricsByDatasetMonthCountry(dataset, monthYear, country);
+            Long viewsTotal = null;
+            // TODO: add viewsUnique
+            Long downloadsTotal = null;
+            // TODO: add downloadsUnique
+            switch (metricSupplied) {
+                case "viewsTotal":
+                    viewsTotal = datasetMetrics.getViewsTotal();
+                    break;
+                case "downloadsTotal":
+                    downloadsTotal = datasetMetrics.getDownloadsTotal();
+                    break;
+                default:
+                    break;
+            }
             String description = metricType.name() + " metric for dataset " + dataset.getId();
             jsonObjectBuilder.add("description", description);
+            logger.info("viewsTotal: " + viewsTotal);
+            logger.info("downloadsTotal: " + downloadsTotal);
+            jsonObjectBuilder.add("viewsTotal", viewsTotal);
+            jsonObjectBuilder.add("downloadsTotal", downloadsTotal);
             return allowCors(ok(jsonObjectBuilder));
         } catch (WrappedResponse wr) {
             return wr.getResponse();

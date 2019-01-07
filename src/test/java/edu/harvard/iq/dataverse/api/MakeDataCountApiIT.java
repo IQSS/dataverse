@@ -45,13 +45,14 @@ public class MakeDataCountApiIT {
         createDatasetResponse.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
-        
 
-        Response addDummyData = UtilIT.makeDataCountAddDummyData(datasetId.toString());
-        addDummyData.prettyPrint();
-        addDummyData.then().assertThat()
-                .statusCode(OK.getStatusCode()); 
-        
+        // FIXME: Remove manual "cp" step below.
+        // cp src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json /tmp
+        String reportOnDisk = "/tmp/sushi_sample_logs.json";
+        Response addUsageMetricsFromSushiReport = UtilIT.makeDataCountAddUsageMetricsFromSushiReport(datasetId.toString(), reportOnDisk);
+        addUsageMetricsFromSushiReport.prettyPrint();
+        addUsageMetricsFromSushiReport.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
         String invalidMetric = "junk";
         Response invalidMetricAttempt = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), invalidMetric, apiToken);
@@ -60,12 +61,19 @@ public class MakeDataCountApiIT {
                 .body("message", equalTo("MetricType must be one of these values: [viewsTotal, viewsUnique, downloadsTotal, downloadsUnique, citations]."))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
-        String metric = "viewsTotal";
-        Response getCitations = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metric, apiToken);
-        getCitations.prettyPrint();
-        getCitations.then().assertThat()
-                .body("data.description", equalTo("VIEWS_TOTAL metric for dataset " + datasetId))
-                .statusCode(OK.getStatusCode());
+        String metricViewsTotal = "viewsTotal";
+        Response getViewsTotal = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsTotal, apiToken);
+        getViewsTotal.prettyPrint();
+        getViewsTotal.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.viewsTotal", equalTo(3));
+
+        String metricDownloadsTotal = "downloadsTotal";
+        Response getDownloadsTotal = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricDownloadsTotal, apiToken);
+        getDownloadsTotal.prettyPrint();
+        getDownloadsTotal.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.downloadsTotal", equalTo(2));
     }
 
 }
