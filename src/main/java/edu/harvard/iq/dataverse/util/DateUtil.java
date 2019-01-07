@@ -6,9 +6,11 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
 
 /**
  *
@@ -61,5 +63,21 @@ public class DateUtil {
              e.printStackTrace();
              return null;
          }
+    }
+
+    public static LocalDateTime convertToLocalDateTime(Date date) {
+        if (date == null) {
+            return null;
+        }
+        return Instant.ofEpochMilli(date.getTime())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+    }
+
+    public static Date convertToDate(LocalDateTime date) {
+        if (date == null) {
+            return null;
+        }
+        return java.util.Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
     }
 }

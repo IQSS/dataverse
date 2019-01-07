@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.dataverse.messages.dto;
 
+import org.hibernate.validator.constraints.NotBlank;
+
 import java.util.Objects;
 
 public class DataverseLocalizedMessageDto {
@@ -12,6 +14,7 @@ public class DataverseLocalizedMessageDto {
 
     private String locale;
 
+    @NotBlank
     private String message;
 
     private String language;

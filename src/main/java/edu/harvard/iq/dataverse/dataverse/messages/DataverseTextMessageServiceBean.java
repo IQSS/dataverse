@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.dataverse.messages;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseLocaleBean;
 import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseMessagesMapper;
@@ -61,20 +62,32 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
     public void save(DataverseTextMessageDto messageDto) {
         // TODO: validate
 
-        DataverseTextMessage textMessage = new DataverseTextMessage();
+        DataverseTextMessage textMessage = (messageDto.getId() != null) ?
+                em.find(DataverseTextMessage.class, messageDto.getId()) :
+                new DataverseTextMessage();
+
+        textMessage.setId(messageDto.getId());
         textMessage.setActive(messageDto.isActive());
-        textMessage.setDataverse(em.find(Dataverse.class, messageDto.getDataverseId()));
+        Dataverse dataverse = em.find(Dataverse.class, messageDto.getDataverseId());
+        if (dataverse == null) {
+            throw new IllegalArgumentException("Dataverse doesn't exist:" + messageDto.getDataverseId());
+        }
+        textMessage.setDataverse(dataverse);
         textMessage.setFromTime(messageDto.getFromTime());
         textMessage.setToTime(messageDto.getToTime());
 
+        textMessage.getDataverseLocalizedMessages().clear();
         messageDto.getDataverseLocalizedMessage().forEach(lm -> {
             textMessage.addLocalizedMessage(lm.getLocale(), lm.getMessage());
         });
 
-        em.persist(textMessage);
+        em.merge(textMessage);
     }
 
     public List<String> getTextMessagesForDataverse(Long dataverseId) {
+        if (dataverseId == null) {
+            return Lists.newArrayList();
+        }
         logger.info("Getting text messages for dataverse: " + dataverseId);
         DataverseLocaleBean locale = new DataverseLocaleBean();
         List<String> messages = em.createNativeQuery("select r.message from (select distinct dvtml.message, dvtm.totime  from\n" +

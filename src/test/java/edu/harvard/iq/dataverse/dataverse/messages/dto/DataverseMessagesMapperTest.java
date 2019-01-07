@@ -7,20 +7,22 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static edu.harvard.iq.dataverse.util.DateUtil.convertToDate;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DataverseMessagesMapperTest {
 
-    private static final LocalDateTime FROM_TIME =
-            LocalDateTime.of(2018, 10, 1, 9, 15, 45);
-    private static final LocalDateTime TO_TIME =
-            LocalDateTime.of(2018, 11, 2, 10, 25, 55);
+    private static final Date FROM_TIME = convertToDate(
+            LocalDateTime.of(2018, 10, 1, 9, 15, 45));
+    private static final Date TO_TIME = convertToDate(
+            LocalDateTime.of(2018, 11, 2, 10, 25, 55));
 
     private DataverseMessagesMapper mapper;
 
@@ -81,7 +83,7 @@ public class DataverseMessagesMapperTest {
     @Test
     public void shouldMapDefaultLocales() {
         // when
-        Set<DataverseLocalizedMessageDto> localesDto = mapper.mapDefaultLocales();
+        List<DataverseLocalizedMessageDto> localesDto = mapper.mapDefaultLocales();
 
         // then
         assertEquals(2, localesDto.size());
@@ -100,7 +102,7 @@ public class DataverseMessagesMapperTest {
     }
 
     private void verifySuccessfullDtoMapping(DataverseTextMessageDto dto, Long id, boolean active,
-                                             LocalDateTime fromTime, LocalDateTime toTime, int locales) {
+                                             Date fromTime, Date toTime, int locales) {
         assertEquals(id, dto.getId());
         assertEquals(active, dto.isActive());
         assertEquals(fromTime, dto.getFromTime());

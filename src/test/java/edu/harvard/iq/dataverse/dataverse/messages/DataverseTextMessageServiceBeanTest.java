@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.dataverse.messages;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseLocalizedMessageDto;
 import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseMessagesMapper;
@@ -11,8 +11,10 @@ import org.mockito.ArgumentCaptor;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
+import static edu.harvard.iq.dataverse.util.DateUtil.convertToDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -71,17 +73,42 @@ public class DataverseTextMessageServiceBeanTest {
         // given
         LocalDateTime now = LocalDateTime.now();
         DataverseTextMessageDto messageDto = aTextMessageDto(now);
+        messageDto.setId(null);
 
         // and
         Dataverse dataverse = new Dataverse();
         dataverse.setId(messageDto.getDataverseId());
         when(em.find(Dataverse.class, messageDto.getDataverseId())).thenReturn(dataverse);
+        when(em.find(DataverseTextMessage.class, messageDto.getId())).thenReturn(null);
 
         // when
         service.save(messageDto);
 
         // then
         verifySaveNewTextMessage(messageDto);
+    }
+
+    @Test
+    public void shouldUpdateTextMessage() {
+        // given
+        LocalDateTime now = LocalDateTime.now();
+        DataverseTextMessageDto messageDto = aTextMessageDto(now);
+
+        // and
+        Dataverse dataverse = new Dataverse();
+        dataverse.setId(messageDto.getDataverseId());
+        when(em.find(Dataverse.class, messageDto.getDataverseId())).thenReturn(dataverse);
+
+        // and
+        DataverseTextMessage textMessage = new DataverseTextMessage();
+        textMessage.setId(messageDto.getId());
+        when(em.find(DataverseTextMessage.class, messageDto.getId())).thenReturn(textMessage);
+
+        // when
+        service.save(messageDto);
+
+        // then
+        verifyUpdateNewTextMessage(messageDto);
     }
 
     @Test
@@ -116,9 +143,27 @@ public class DataverseTextMessageServiceBeanTest {
 
     private void verifySaveNewTextMessage(DataverseTextMessageDto dto) {
         ArgumentCaptor<DataverseTextMessage> argument = ArgumentCaptor.forClass(DataverseTextMessage.class);
-        verify(em).persist(argument.capture());
+        verify(em).merge(argument.capture());
 
         assertNull(argument.getValue().getId());
+        assertEquals(dto.isActive(), argument.getValue().isActive());
+        assertEquals(dto.getDataverseId(), argument.getValue().getDataverse().getId());
+        assertEquals(dto.getFromTime(), argument.getValue().getFromTime());
+        assertEquals(dto.getToTime(), argument.getValue().getToTime());
+        assertNull(argument.getValue().getVersion());
+
+        dto.getDataverseLocalizedMessage().forEach(lm -> {
+            Set<DataverseLocalizedMessage> messages = argument.getValue().getDataverseLocalizedMessages();
+            verifyLocaleMessage(argument.getValue(), messages, lm);
+        });
+        assertEquals(dto.getDataverseLocalizedMessage().size(), argument.getValue().getDataverseLocalizedMessages().size());
+    }
+
+    private void verifyUpdateNewTextMessage(DataverseTextMessageDto dto) {
+        ArgumentCaptor<DataverseTextMessage> argument = ArgumentCaptor.forClass(DataverseTextMessage.class);
+        verify(em).merge(argument.capture());
+
+        assertEquals(dto.getId(), argument.getValue().getId());
         assertEquals(dto.isActive(), argument.getValue().isActive());
         assertEquals(dto.getDataverseId(), argument.getValue().getDataverse().getId());
         assertEquals(dto.getFromTime(), argument.getValue().getFromTime());
@@ -146,11 +191,11 @@ public class DataverseTextMessageServiceBeanTest {
         DataverseTextMessageDto messageDto = new DataverseTextMessageDto();
         messageDto.setId(1L);
         messageDto.setActive(true);
-        messageDto.setFromTime(now.plusDays(1));
-        messageDto.setToTime(now.plusDays(2));
+        messageDto.setFromTime(convertToDate(now.plusDays(1)));
+        messageDto.setToTime(convertToDate(now.plusDays(2)));
         messageDto.setDataverseId(100L);
 
-        Set<DataverseLocalizedMessageDto> locales = Sets.newHashSet();
+        List<DataverseLocalizedMessageDto> locales = Lists.newArrayList();
         locales.add(new DataverseLocalizedMessageDto("pl", "Komunikat", "Polski"));
         locales.add(new DataverseLocalizedMessageDto("en", "Info", "English"));
         messageDto.setDataverseLocalizedMessage(locales);
@@ -163,7 +208,7 @@ public class DataverseTextMessageServiceBeanTest {
         verifyDefaultLocale(dto.getDataverseLocalizedMessage(), "pl", "Polski");
     }
 
-    private void verifyDefaultLocale(Set<DataverseLocalizedMessageDto> locales, String locale, String language) {
+    private void verifyDefaultLocale(List<DataverseLocalizedMessageDto> locales, String locale, String language) {
         assertTrue(locales.stream().anyMatch(lm ->
                     lm.getLocale().equals(locale) &&
                     lm.getLanguage().equals(language) &&

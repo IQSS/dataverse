@@ -1,16 +1,14 @@
 package edu.harvard.iq.dataverse.dataverse.messages.dto;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import edu.harvard.iq.dataverse.DataverseLocaleBean;
 import edu.harvard.iq.dataverse.dataverse.messages.DataverseTextMessage;
-import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.Stateless;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
@@ -28,7 +26,7 @@ public class DataverseMessagesMapper {
         dto.setToTime(textMessage.getToTime());
         dto.setDataverseId(textMessage.getDataverse().getId());
 
-        Set<DataverseLocalizedMessageDto> dataverseLocalizedMessageDto = new HashSet<>();
+        List<DataverseLocalizedMessageDto> dataverseLocalizedMessageDto = Lists.newArrayList();
         ofNullable(textMessage.getDataverseLocalizedMessages()).orElseGet(Sets::newHashSet)
                 .forEach(dlm -> dataverseLocalizedMessageDto.add(new DataverseLocalizedMessageDto(
                         dlm.getLocale(),
@@ -48,12 +46,12 @@ public class DataverseMessagesMapper {
         return dtos;
     }
 
-    public Set<DataverseLocalizedMessageDto> mapDefaultLocales() {
+    public List<DataverseLocalizedMessageDto> mapDefaultLocales() {
         Map<String, String> locales = new DataverseLocaleBean().getDataverseLocales();
 
         return locales.entrySet().stream()
                 .map(e -> new DataverseLocalizedMessageDto(e.getKey(), EMPTY, e.getValue()))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
     }
 
     public DataverseTextMessageDto mapToNewTextMessage(Long dataverseId) {

@@ -13,11 +13,16 @@ import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
@@ -34,16 +39,21 @@ public class DataverseTextMessage implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Transient
+    private UUID uuid = UUID.randomUUID();
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "dataverseTextMessage")
     private Set<DataverseLocalizedMessage> dataverseLocalizedMessages = new HashSet<>();
 
     private boolean active;
 
-    @Column(nullable = false, columnDefinition = "TIMESTAMP")
-    private LocalDateTime fromTime;
+    @Column(nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fromTime;
 
-    @Column(nullable = false, columnDefinition = "TIMESTAMP")
-    private LocalDateTime toTime;
+    @Column(nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date toTime;
 
     @Version
     private Long version;
@@ -63,11 +73,11 @@ public class DataverseTextMessage implements Serializable {
         return version;
     }
 
-    public LocalDateTime getFromTime() {
+    public Date getFromTime() {
         return fromTime;
     }
 
-    public LocalDateTime getToTime() {
+    public Date getToTime() {
         return toTime;
     }
 
@@ -87,11 +97,11 @@ public class DataverseTextMessage implements Serializable {
         this.active = active;
     }
 
-    public void setFromTime(LocalDateTime fromTime) {
+    public void setFromTime(Date fromTime) {
         this.fromTime = fromTime;
     }
 
-    public void setToTime(LocalDateTime toTime) {
+    public void setToTime(Date toTime) {
         this.toTime = toTime;
     }
 
@@ -119,5 +129,18 @@ public class DataverseTextMessage implements Serializable {
 
     public void deactivate() {
         this.active = false;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DataverseTextMessage that = (DataverseTextMessage) o;
+        return Objects.equals(uuid, that.uuid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uuid);
     }
 }

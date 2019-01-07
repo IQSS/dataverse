@@ -9,7 +9,10 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
+import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(indexes = {@Index(columnList = "dataversetextmessage_id")})
@@ -18,6 +21,9 @@ public class DataverseLocalizedMessage implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Transient
+    private UUID uuid = UUID.randomUUID();
 
     @Column(nullable = false)
     private String locale;
@@ -54,5 +60,18 @@ public class DataverseLocalizedMessage implements Serializable {
 
     public void setDataverseTextMessage(DataverseTextMessage dataverseTextMessage) {
         this.dataverseTextMessage = dataverseTextMessage;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DataverseLocalizedMessage that = (DataverseLocalizedMessage) o;
+        return Objects.equals(uuid, that.uuid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uuid);
     }
 }
