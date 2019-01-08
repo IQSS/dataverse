@@ -1794,7 +1794,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                         uploadWarningMessage = processUploadedFileList(datafiles);
                         logger.fine("Warning message during upload: " + uploadWarningMessage);
                         logger.info("Warning message during upload: " + uploadWarningMessage);
-                        if(uploadWarningMessage.startsWith(FileUtil.HYPOTHESIS_LIMIT_WARNING)) {
+                        if((uploadWarningMessage != null) && uploadWarningMessage.startsWith(FileUtil.HYPOTHESIS_LIMIT_WARNING)) {
                             uploadInProgress=false;
                         }
                      

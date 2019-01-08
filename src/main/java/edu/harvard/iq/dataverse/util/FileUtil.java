@@ -952,7 +952,7 @@ public class FileUtil implements java.io.Serializable  {
                 JsonObject annotations = reader.readObject();
                 int size = annotations.getInt("total");
                 logger.info("Size = " + size);
-                if (size > 200) {
+                if (size > 20) {
                     warningMessage = HYPOTHESIS_LIMIT_WARNING;
                 }
             }
