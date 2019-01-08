@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.dataverse.messages;
 
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseTextMessageDto;
 import edu.harvard.iq.dataverse.dataverse.messages.validation.EndDateMustBeAFutureDate;
 import edu.harvard.iq.dataverse.dataverse.messages.validation.EndDateMustNotBeEarlierThanStartingDate;
@@ -21,6 +22,9 @@ public class EditTextMessagePage implements Serializable {
     @Inject
     private DataverseTextMessageServiceBean textMessageService;
 
+    @Inject
+    PermissionsWrapper permissionsWrapper;
+
     private Long dataverseId;
     private Long textMessageId;
 
@@ -29,9 +33,13 @@ public class EditTextMessagePage implements Serializable {
     private UIInput fromTimeInput;
     private UIInput toTimeInput;
 
-    public void init() {
+    public String init() {
+        if (!permissionsWrapper.canIssueEditDataverseTextMessages(dataverseId)) {
+            return permissionsWrapper.notAuthorized();
+        }
+
         if (dataverseId == null) {
-            throw new IllegalArgumentException("DataverseId cannot be null!");
+            return permissionsWrapper.notFound();
         }
         if (textMessageId != null) {
             dto = textMessageService.getTextMessage(textMessageId);
@@ -39,8 +47,9 @@ public class EditTextMessagePage implements Serializable {
             dto = textMessageService.newTextMessage(dataverseId);
         }
         if (!dto.getDataverseId().equals(dataverseId)) {
-            throw new IllegalArgumentException("Text message is not from given dataverse!");
+            return permissionsWrapper.notAuthorized();
         }
+        return null;
     }
 
     public String save() {
