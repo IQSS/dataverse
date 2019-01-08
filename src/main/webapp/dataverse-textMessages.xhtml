@@ -53,10 +53,14 @@
                                     </div>
                                 </div>
 
-                                <p:commandButton value="Delete"/>
+                                <p:commandButton value="Delete"
+                                                 action="#{TextMessagePage.textMessageService.delete(history.id)}"
+                                                 update=":text-messages-form"/>
                                 <div style="float: right">
                                     <p:commandButton value="Deactivate"
-                                                     style="margin-right:10px;"/>
+                                                     style="margin-right:10px;"
+                                                     action="#{TextMessagePage.textMessageService.deactivate(history.id)}"
+                                                     update=":text-messages-form"/>
 
                                     <p:commandButton value="Reuse"/>
                                 </div>
