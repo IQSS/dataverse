@@ -4,7 +4,7 @@ $(document)
         var queryParams = new URLSearchParams(window.location.search.substring(1));
         var fileUrl = queryParams.get("siteUrl") + "/api/access/datafile/" + queryParams.get("fileid") + "?gbrecs=false";
         var versionUrl= queryParams.get("siteUrl") + "/api/datasets/" + queryParams.get("datasetid") + "/versions/" + queryParams.get("datasetversion");
-        var apiKey = queryParams.get("key"); 
+        var apiKey = queryParams.get("key");
         if(apiKey!=null) {
             fileUrl = fileUrl + "&key=" + apiKey;
             versionUrl = versionUrl + "?key=" + apiKey;
@@ -13,21 +13,21 @@ $(document)
             $.getJSON(versionUrl,
                function(json, status) {
                 var mdFields = json.data.metadataBlocks.citation.fields;
+
                 var title="";
                 var authors="";
                 for(var field in mdFields) {
-                  if(JSON.stringify(mdFields[field].typename) === "title") {
-                    title = mdFields[field].value;
+                if(mdFields[field].typeName === "title") {
+                    title = JSON.stringify(mdFields[field].value);
                   }
-                  if(JSON.stringify(mdFields[field].typename) === "author") {
+                  if(mdFields[field].typeName === "author") {
                     var authorFields = mdFields[field].value;
                     for(var author in authorFields) {
                       if(authors.length>0) {
                         authors = authors + "; ";
                       }
-                      authors = authors + authorFields[author].authorName;
+                      authors = authors + JSON.stringify(authorFields[author].authorName.value);
                     }
-                    title = mdFields[field].value;
                   }
                 }
                 var datafiles=json.data.files;
@@ -40,18 +40,17 @@ $(document)
         });
     });
 
+
 function writeHypothesisFields(json, date, title, authors) {
   var hypo = $(".hypothesis");
   var url = json.rows[0].target[0].source;
   var header = $("<div/>").addClass("annotation-header");
-  header.append($("<div/>").text("This is the annotations-only view of the ATI data project " + title + " by " + authors + ".");
-  header.append($("<div/>").text("Source Document: ").append($("<a/>").attr("href",url).attr("target","_blank").text(url)));
-  header.append($("<div/>").text("Created in Group: ").append($("<a/>").attr("href","https://hypothes.is/groups/" + json.rows[0].group).attr("target","_blank").text(json.rows[0].group)));
-  header.append($("<div/>").text("Current as of Date: " + date));
+  header.append($("<div/>").text("This is the annotations-only view of the ATI data project " + title + " by " + authors + "."));
+  header.append($("<div/>").text(JSOn.stringify(json.total) + " annotations retrieved on " + date));
   
-  
-  "View annotations in context" hyperlinked with article URL + #annotations:query:user%3Aqdr%40hypothes.is (this is unfortunately not going to always work and might take slightly different forms depending on the article, so doing this in a way that allows for some flexibility would be good).
-  "Close this tab to return to the data project."
+  alert(JSON.stringify(json.rows[0].links.incontext);
+  header.append($("<div/").append($("<a/>").attr("href",JSON.stringify(json.rows[0].links.incontext)).text("View annotations in context")));
+  header.append($("<div/>").text("Close this tab to return to the data project.");
   
   hypo.before(header);
 
