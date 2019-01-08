@@ -520,7 +520,7 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-4">
-                                        <p:password id="currentPassword" label="#{bundle['user.currentPasswd']}" styleClass="form-control" value="#{DataverseUserPage.currentPassword}" autocomplete="off"/>
+                                        <p:password id="currentPassword" label="#{bundle['user.currentPasswd']}" styleClass="form-control" value="#{DataverseUserPage.currentPassword}" autocomplete="off"/><!-- browsers will in general not respect autocomplete="foo", but scanners will still flag it as a potential problem -->
                                         <p:message for="currentPassword" display="text" />
                                     </div>
                                 </div>
@@ -540,7 +540,7 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-4 col-sm-offset-3">
-                                        <p:password id="inputPassword" label="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.password'] : bundle['user.newPassword']}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}" autocomplete="off"/>
+                                        <p:password id="inputPassword" label="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.password'] : bundle['user.newPassword']}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}" autocomplete="off"/><!-- browsers will in general not respect autocomplete="foo", but scanners will still flag it as a potential problem -->
                                         <p:message for="inputPassword" display="text" />
                                     </div>
                                 </div>
@@ -552,7 +552,7 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-4">
-                                        <p:password id="retypePassword" label="#{bundle['user.rePasswd']}" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" autocomplete="off"/>
+                                        <p:password id="retypePassword" label="#{bundle['user.rePasswd']}" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" autocomplete="off"/><!-- browsers will in general not respect autocomplete="foo", but scanners will still flag it as a potential problem -->
                                         <p:message for="retypePassword" display="text" />
                                     </div>
                                 </div>
