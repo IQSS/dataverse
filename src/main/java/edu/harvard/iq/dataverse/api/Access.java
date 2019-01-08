@@ -200,6 +200,8 @@ public class Access extends AbstractApiBean {
             User apiTokenUser = findAPITokenUser(apiToken);
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
             guestbookResponseService.save(gbr);
+            MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, df);                                        
+            mdcLogService.logEntry(entry);
         }
         
         DownloadInfo dInfo = new DownloadInfo(df);
@@ -294,6 +296,8 @@ public class Access extends AbstractApiBean {
             dInfo.addServiceAvailable(new OptionalAccessService("subset", "text/tab-separated-values", "variables=&lt;LIST&gt;", "Column-wise Subsetting"));
         }
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
+        downloadInstance.setRequestUriInfo(uriInfo);
+        downloadInstance.setRequestHttpHeaders(headers);
         
         if (gbr != null){
             downloadInstance.setGbr(gbr);
@@ -564,15 +568,7 @@ public class Access extends AbstractApiBean {
                                     if (gbrecs != true && file.isReleased()){
                                         GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
                                         guestbookResponseService.save(gbr);
-                                        MakeDataCountEntry entry = new MakeDataCountEntry(null, dvRequestService, file);
-
-                                        entry.setRequestUrl("/" + uriInfo.getPath());//uriInfo.getRequestUri().toString()); //close but has http://localhost:8080
-                                        entry.setTargetUrl("/" + uriInfo.getPath());
-                                        if(null != headers.getRequestHeader("user-agent")) {
-                                            entry.setUserAgent(headers.getRequestHeader("user-agent").get(0));
-                                        }
-                                        //entry.setSessionCookieId(); //MAD: Should we be getting this? How? Maybe normal cookie instead?
-                                        
+                                        MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, file);                                        
                                         mdcLogService.logEntry(entry);
                                     }
                                     

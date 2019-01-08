@@ -21,6 +21,8 @@ import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.UriInfo;
 
 /**
  *
@@ -33,10 +35,7 @@ public class MakeDataCountLoggingServiceBean {
     
     @EJB
     SystemConfig systemConfig;
-    //MAD: Should probably add another check on only logging if certain entries exist.
-    //      Especially with my entry constructor allowing entries with no workingVersion
-    //MAD: The logDir may need to be configurable?
-    //MAD: Also the file name?
+
     public void logEntry(MakeDataCountEntry entry) {
         if(systemConfig.getMDCLogPath() != null) {
             LoggingUtil.saveLogFile(entry.toString(), systemConfig.getMDCLogPath(), getLogFileName() , LOG_HEADER);
@@ -112,36 +111,30 @@ public class MakeDataCountLoggingServiceBean {
         //Technically you should be able to get to publishedVersion via the data file, but guestbook's datafile doesn't have that info
         //This is passed a DataFile to log the file downloaded
         public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, DatasetVersion publishedVersion, DataFile df) {
-            //Passing null to the base constructor creates an entry without most of the data
-            // which we then prune out before logging. 
             this(fc, dvRequestService, publishedVersion);
 
-            setFilename(df.getStorageIdentifier()); //fileMetadata is 0 in some cases...
+            setFilename(df.getStorageIdentifier());
             setSize(String.valueOf(df.getFilesize())); //Need to probably be massaged into a better format
         }    
 
         //Exception thrown if no published metadata exists for DataFile
-        //This is passed a DataFile to log the file downloaded
-        //MAD: Maybe remove the fc as its unused in all calls
-        public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, DataFile df) throws UnsupportedOperationException {
-            //Passing null to the base constructor creates an entry without most of the data
-            // which we then prune out before logging. 
-            this(fc, dvRequestService, df.getLatestPublishedFileMetadata().getDatasetVersion());
-
-            setFilename(df.getStorageIdentifier()); //fileMetadata is 0 in some cases...
+        //This is passed a DataFile to log the file downloaded. uriInfo and headers are passed in lieu of FacesContext
+        public MakeDataCountEntry(UriInfo uriInfo, HttpHeaders headers, DataverseRequestServiceBean dvRequestService, DataFile df) throws UnsupportedOperationException{
+            this(null, dvRequestService, df.getLatestPublishedFileMetadata().getDatasetVersion());
+            
+            if(uriInfo != null) {
+                setRequestUrl("/api/" + uriInfo.getPath());
+                setTargetUrl("/api/" + uriInfo.getPath());
+            }
+            if(null != headers && null != headers.getRequestHeader("user-agent")) {
+                setUserAgent(headers.getRequestHeader("user-agent").get(0));
+            }
+            //entry.setSessionCookieId(); //Should we be getting this?
+            
+            //MAD: Maybe add null check for df, but its already used above
+            setFilename(df.getStorageIdentifier()); 
             setSize(String.valueOf(df.getFilesize())); //Need to probably be massaged into a better format
         }
-
-
-    ////MAD: FileMetadata from FileDownloadServiceBean is often null so I don't know if this is the best path
-    ////        It seemed maybe nessecary when trying to get the filename but it looks like Make Data Count never uses this anyways
-
-    //    public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, FileMetadata fm) {
-    //        this(fc, dvRequestService, fm.getDatasetVersion());
-    //        
-    //        //setFilename(fm.getLabel()); //This is disabled as getting the filename is painful and it seems Make Data Count doesn't use this at all -MAD 4.10
-    //        setSize(String.valueOf(fm.getDataFile().getFilesize())); //Need to probably be massaged into a better format
-    //    }
 
         @Override
         public String toString() {

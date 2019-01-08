@@ -260,8 +260,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     logger.fine("writing guestbook response, for an S3 download redirect.");
                                     Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                                     di.getCommand().submit(cmd);
-                                    MakeDataCountEntry entry = new MakeDataCountEntry(null, di.getDataverseRequestService(), di.getGbr().getDataFile());
-                                    //MAD; //MAD: SET FC RELATED STUFF MANUALLY
+                                    MakeDataCountEntry entry = new MakeDataCountEntry(di.getRequestUriInfo(), di.getRequestHttpHeaders(), di.getDataverseRequestService(), di.getGbr().getDataFile());
                                     mdcLogService.logEntry(entry);
                                 } catch (CommandException e) {
                                 }
@@ -352,13 +351,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             logger.fine("writing guestbook response.");
                             Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                             di.getCommand().submit(cmd);
-                            MakeDataCountEntry entry = new MakeDataCountEntry(null, di.getDataverseRequestService(), di.getGbr().getDataFile());
-                            //MAD: mabe di.dataverseRequestService / downloadInfo. or daReq
-                            //Nah none of those seem to work
-//                            entry.setRequestUrl(uriInfo.getRequestUri().toString());
-//                            entry.setTargetUrl(uriInfo.getRequestUri().toString());
-//                            entry.setUserAgent(headers.getRequestHeader("user-agent").get(0));
-                            //entry.setSessionCookieId(); //MAD: Should we be getting this? How? Maybe normal cookie instead?
+                            MakeDataCountEntry entry = new MakeDataCountEntry(di.getRequestUriInfo(), di.getRequestHttpHeaders(), di.getDataverseRequestService(), di.getGbr().getDataFile());
                             mdcLogService.logEntry(entry);
                         } catch (CommandException e) {}
                     } else {
