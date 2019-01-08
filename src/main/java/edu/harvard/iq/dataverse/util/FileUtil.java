@@ -951,7 +951,7 @@ public class FileUtil implements java.io.Serializable  {
                 JsonReader reader = Json.createReader(annotationStream);
                 JsonObject annotations = reader.readObject();
                 int size = annotations.getInt("total");
-                if (size > 20) {
+                if (size > 200) {
                     warningMessage = HYPOTHESIS_LIMIT_WARNING;
                 }
             }
