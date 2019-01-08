@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.dataverse.messages.dto;
 
 import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.util.DateUtil;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -35,6 +36,14 @@ public class DataverseTextMessageDto {
 
     public Date getFromTime() {
         return fromTime;
+    }
+
+    public String getPrettyFromDate() {
+        return DateUtil.formatDateToDMY(fromTime);
+    }
+
+    public String getPrettyToTime() {
+        return DateUtil.formatDateToDMY(toTime);
     }
 
     public Date getToTime() {

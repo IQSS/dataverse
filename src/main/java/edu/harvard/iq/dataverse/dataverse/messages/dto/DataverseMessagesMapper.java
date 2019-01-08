@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.dataverse.messages.dto;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import edu.harvard.iq.dataverse.DataverseLocaleBean;
 import edu.harvard.iq.dataverse.dataverse.messages.DataverseTextMessage;
+import edu.harvard.iq.dataverse.locale.DataverseLocaleBean;
 
 import javax.ejb.Stateless;
 import java.util.ArrayList;

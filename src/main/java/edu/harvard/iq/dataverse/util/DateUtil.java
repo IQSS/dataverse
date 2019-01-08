@@ -1,15 +1,14 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.DataverseLocaleBean;
+import edu.harvard.iq.dataverse.locale.DataverseLocaleBean;
+import org.apache.commons.lang.StringUtils;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.Locale;
 
@@ -80,5 +79,11 @@ public class DateUtil {
             return null;
         }
         return java.util.Date.from(date.atZone(DataverseClock.zoneId).toInstant());
+    }
+
+    public static String formatDateToDMY(Date date) {
+
+        SimpleDateFormat format = new SimpleDateFormat("dd-MM-YYYY");
+        return date == null ? StringUtils.EMPTY : format.format(date);
     }
 }

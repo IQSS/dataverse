@@ -2,10 +2,10 @@ package edu.harvard.iq.dataverse.dataverse.messages;
 
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseLocaleBean;
 import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseMessagesMapper;
 import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseTextMessageDto;
 import edu.harvard.iq.dataverse.dataverse.messages.validation.DataverseTextMessageValidator;
+import edu.harvard.iq.dataverse.locale.DataverseLocaleBean;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -131,5 +131,31 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
                 "where dtm.dataverse.id = :dataverseid")
                 .setParameter("dataverseid", dataverseId)
                 .getResultList();
+    }
+
+    /**
+     * Fetches history of messages for dataverse with paging
+     * (paging is offset based so it will not offer the best performance if there will be a lot of records)
+     *
+     * @param dataverseId
+     * @param firstResult
+     * @param maxResult
+     * @return List<DataverseTextMessage>
+     */
+    public List<DataverseTextMessage> fetchTextMessagesForDataverseWithPaging(long dataverseId, int firstResult, int maxResult) {
+        return em.createQuery("select dtm FROM DataverseTextMessage as dtm " +
+                "join fetch DataverseLocalizedMessage " +
+                "where dtm.dataverse.id = :dataverseid")
+                .setParameter("dataverseid", dataverseId)
+                .setFirstResult(firstResult)
+                .setMaxResults(maxResult)
+                .getResultList();
+    }
+
+    public Long countMessagesForDataverse(long dataverseId) {
+        return em.createQuery("select count(dtm.id) FROM DataverseTextMessage as dtm " +
+                "where dtm.dataverse.id = :dataverseid", Long.class)
+                .setParameter("dataverseid", dataverseId)
+                .getSingleResult();
     }
 }
