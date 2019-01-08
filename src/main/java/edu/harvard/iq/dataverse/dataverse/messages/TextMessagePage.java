@@ -1,8 +1,11 @@
 package edu.harvard.iq.dataverse.dataverse.messages;
 
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseTextMessageDto;
+import org.apache.commons.lang.StringUtils;
 import org.primefaces.model.LazyDataModel;
 
+import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -14,36 +17,20 @@ public class TextMessagePage implements Serializable {
 
     private long dataverseId;
 
-    @Inject
+    @EJB
     private LazyDataverseTextMessage lazydataverseTextMessages;
 
-    @SuppressWarnings("Duplicates")
-    public void init() {
+    @Inject
+    private PermissionsWrapper permissionsWrapper;
 
-    }
+    public String init() {
+        lazydataverseTextMessages.setDataverseId(dataverseId);
 
-    private void mockData() {
-        /*List<DataverseLocalizedMessageDto> set1 =
-                Lists.newArrayList(new DataverseLocalizedMessageDto("pl", "hello", "Polosh"),
-                        new DataverseLocalizedMessageDto("en", "arigato", "English"));
+        if (!permissionsWrapper.canIssueEditDataverseTextMessages(dataverseId)) {
+            return permissionsWrapper.notAuthorized();
+        }
 
-        List<DataverseLocalizedMessageDto> set2 = Lists.newArrayList(new DataverseLocalizedMessageDto("pl", "hello NEIN,","Polish"),
-                new DataverseLocalizedMessageDto("en", "arigato gozaimasu","English"));
-
-        DataverseTextMessageDto dtm1 = new DataverseTextMessageDto();
-        dtm1.setActive(true);
-        dtm1.setFromTime(Date.from(Instant.ofEpochSecond(123456123456L)));
-        dtm1.setToTime(Date.from(Instant.now()));
-        dtm1.setDataverseLocalizedMessage(set1);
-
-        DataverseTextMessageDto dtm2 = new DataverseTextMessageDto();
-        dtm2.setActive(true);
-        dtm2.setFromTime(Date.from(Instant.ofEpochSecond(1231326123456L)));
-        dtm2.setToTime(Date.from(Instant.now()));
-        dtm2.setDataverseLocalizedMessage(set2);
-
-        dataverseTextMessage.add(dtm1);
-        dataverseTextMessage.add(dtm2);*/
+        return StringUtils.EMPTY;
     }
 
     public long getDataverseId() {
@@ -58,8 +45,8 @@ public class TextMessagePage implements Serializable {
         this.dataverseId = dataverseId;
     }
 
-    public void setDataverseTextMessage(List<DataverseTextMessageDto> dataverseTextMessage) {
-        this.dataverseTextMessage = dataverseTextMessage;
+    public void setLazydataverseTextMessages(LazyDataverseTextMessage lazydataverseTextMessages) {
+        this.lazydataverseTextMessages = lazydataverseTextMessages;
     }
 
     public String newTextMessagePage() {

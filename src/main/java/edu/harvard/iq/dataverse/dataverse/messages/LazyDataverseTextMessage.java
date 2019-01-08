@@ -1,21 +1,21 @@
 package edu.harvard.iq.dataverse.dataverse.messages;
 
 import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseLocalizedMessageDto;
 import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseMessagesMapper;
 import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseTextMessageDto;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 
 import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
+import javax.ejb.Stateful;
 import javax.inject.Inject;
-import javax.inject.Named;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@ViewScoped
-@Named("LazyDataverseTextMessage")
+@Stateful
 public class LazyDataverseTextMessage extends LazyDataModel<DataverseTextMessageDto> {
 
     @EJB
@@ -33,9 +33,16 @@ public class LazyDataverseTextMessage extends LazyDataModel<DataverseTextMessage
         Optional<List<DataverseTextMessage>> dataverseTextMessages =
                 Optional.ofNullable(dataverseTextMessageService.fetchTextMessagesForDataverseWithPaging(dataverseId, first, pageSize));
 
-        return dataverseTextMessageDtos = dataverseTextMessages.isPresent() ?
+        dataverseTextMessageDtos = dataverseTextMessages.isPresent() ?
                 mapper.mapToDtos(dataverseTextMessages.get()) :
                 Lists.newArrayList();
+
+        sortMessageLanguages(dataverseTextMessageDtos);
+
+        setPageSize(pageSize);
+        setRowCount(dataverseTextMessageService.countMessagesForDataverse(dataverseId).intValue());
+
+        return dataverseTextMessageDtos;
     }
 
     @Override
@@ -53,19 +60,18 @@ public class LazyDataverseTextMessage extends LazyDataModel<DataverseTextMessage
                 .orElse(null);
     }
 
+    private List<DataverseTextMessageDto> sortMessageLanguages(List<DataverseTextMessageDto> dataList) {
+        dataList.forEach(dataverseTextMessageDto ->
+                dataverseTextMessageDto.getDataverseLocalizedMessage()
+                        .sort(Comparator.comparing(DataverseLocalizedMessageDto::getLanguage)));
+        return dataList;
+    }
+
     public Long getDataverseId() {
         return dataverseId;
     }
 
-    public List<DataverseTextMessageDto> getDataverseTextMessageDtos() {
-        return dataverseTextMessageDtos;
-    }
-
     public void setDataverseId(Long dataverseId) {
         this.dataverseId = dataverseId;
-    }
-
-    public void setDataverseTextMessageDtos(List<DataverseTextMessageDto> dataverseTextMessageDtos) {
-        this.dataverseTextMessageDtos = dataverseTextMessageDtos;
     }
 }

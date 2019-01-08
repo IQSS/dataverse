@@ -11,7 +11,6 @@
 <h:body>
     <f:metadata>
         <f:viewParam name="dataverseId" value="#{TextMessagePage.dataverseId}"/>
-        <f:viewParam name="dataverseId" value="#{LazyDataverseTextMessage.dataverseId}"/>
         <f:viewAction action="#{TextMessagePage.init()}"/>
     </f:metadata>
 
@@ -27,19 +26,15 @@
                         />
                         <h3>History</h3>
 
-
-                        <p:dataList value="#{TextMessagePage.lazydataverseTextMessages}"
-                                    paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
-                                    lazy="true"
-                                    var="history" type="unordered" itemType="none" paginator="true" rows="1"
+                        <p:dataList value="#{TextMessagePage.lazydataverseTextMessages}" var="history"
+                                    lazy="true" paginator="true" rows="10"
                                     styleClass="paginated">
 
-                            <p:panel id="basic" header="Basic" style="margin-bottom:20px; width: 600px;">
+                            <p:panel id="basic" style="margin-bottom:20px; width: 600px;">
                                 <div class="p-grid">
-
                                     <ui:repeat value="#{history.dataverseLocalizedMessage}" var="localmessage">
                                         <div class="p-col">
-                                            <h:outputLabel for="message" value="#{localmessage.language}"
+                                            <h:outputLabel for="message" value="#{localmessage.language}:"
                                                            style="margin-right: 10px"/>
                                             <h:outputText id="message" value="#{localmessage.message}"/>
                                         </div>
@@ -47,12 +42,14 @@
 
                                     <div class="p-col">
                                         <h:outputLabel for="dates" value="Dates:" style="margin-right: 10px"/>
-                                        <h:outputText id="dates" value="#{history.fromTime} - #{history.toTime}"/>
+                                        <h:outputText id="dates"
+                                                      value="#{history.getPrettyFromDate()} - #{history.getPrettyToTime()}"/>
                                     </div>
 
                                     <div class="p-col">
                                         <h:outputLabel for="message-Status" value="Status:" style="margin-right: 10px"/>
-                                        <h:outputText id="message-Status" value="#{history.active}"/>
+                                        <h:outputText id="message-Status"
+                                                      value="#{history.active ? 'Active' : 'Disabled'}"/>
                                     </div>
                                 </div>
 
