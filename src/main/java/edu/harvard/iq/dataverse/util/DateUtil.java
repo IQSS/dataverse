@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -70,7 +71,7 @@ public class DateUtil {
             return null;
         }
         return Instant.ofEpochMilli(date.getTime())
-                .atZone(ZoneId.systemDefault())
+                .atZone(DataverseClock.zoneId)
                 .toLocalDateTime();
     }
 
@@ -78,6 +79,6 @@ public class DateUtil {
         if (date == null) {
             return null;
         }
-        return java.util.Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
+        return java.util.Date.from(date.atZone(DataverseClock.zoneId).toInstant());
     }
 }

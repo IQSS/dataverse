@@ -774,4 +774,19 @@ public class PermissionServiceBean {
         return userAdminRole.isPresent();
     }
 
+    public boolean isUserCanEditDataverseTextMessagesAndBanners(Long dataverseId) {
+        User user = session.getUser();
+
+        if (dataverseId == null) {
+            return false;
+        }
+        Dataverse dataverse = dataverseService.find(dataverseId);
+
+        if (dataverse == null) {
+            return false;
+        }
+
+        return isUserAdminForDataverse(user, dataverse) && dataverse.isAllowMessagesBanners();
+    }
+
 }

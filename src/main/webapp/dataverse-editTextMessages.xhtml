@@ -21,14 +21,16 @@
             <h:form id="edit-text-messages-form">
                     <ui:repeat value="#{EditTextMessagePage.dto.dataverseLocalizedMessage}" var="lm">
                         <div class="row">
-                            <div class="col-xs-8 form-group form-col-container">
-                                <label class="col-sm-3 control-label" for="message-locale">
+                            <div class="col-xs-12 form-group form-col-container">
+                                <label class="col-sm-2 control-label" for="message-locale">
                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info">
                                         #{lm.language} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     </span>
                                 </label>
-                                <div class="col-sm-9 form-col-container">
+                                <div class="col-sm-5 form-col-container">
                                     <p:inputTextarea id="message-locale" tabindex="1" styleClass="form-control" value="#{lm.message}"/>
+                                </div>
+                                <div class="col-sm-5 form-col-container">
                                     <p:message for="message-locale" display="text"/>
                                 </div>
                             </div>
@@ -36,64 +38,71 @@
                     </ui:repeat>
 
                     <div class="row">
-                        <div class="col-xs-8 form-group form-col-container">
-                            <label class="col-sm-3 control-label" for="message-fromtime">
+                        <div class="col-xs-12 form-group form-col-container">
+                            <label class="col-sm-2 control-label" for="message-fromtime">
                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info">
                                         #{bundle['edittextmessages.startDate']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     </span>
                             </label>
-                            <div class="col-sm-9 form-col-container">
+                            <div class="col-sm-2 form-col-container">
                                 <p:calendar id="message-fromtime"
                                             tabindex="#{EditTextMessagePage.dto.dataverseLocalizedMessage.size() + 1}"
                                             value="#{EditTextMessagePage.dto.fromTime}"
                                             locale="#{dataverseLocaleBean.localeCode}"
-                                            pattern="dd-MM-yyyy HH:mm"
-                                            mask="true"/>
+                                            pattern="yyyy-MM-dd HH:mm"
+                                            mask="true"
+                                            binding="#{EditTextMessagePage.fromTimeInput}"
+                                />
+                            </div>
+                            <div class="col-sm-5 form-col-container">
                                 <p:message for="message-fromtime" display="text"/>
                             </div>
                         </div>
                     </div>
 
                 <div class="row">
-                    <div class="col-xs-8 form-group form-col-container">
-                        <label class="col-sm-3 control-label" for="message-totime">
+                    <div class="col-xs-12 form-group form-col-container">
+                        <label class="col-sm-2 control-label" for="message-totime">
                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info">
                                         #{bundle['edittextmessages.endDate']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     </span>
                         </label>
-                        <div class="col-sm-9 form-col-container">
+                        <div class="col-sm-2 form-col-container">
                             <p:calendar id="message-totime"
                                         tabindex="#{EditTextMessagePage.dto.dataverseLocalizedMessage.size() + 2}"
                                         value="#{EditTextMessagePage.dto.toTime}"
                                         locale="#{dataverseLocaleBean.localeCode}"
-                                        pattern="dd-MM-yyyy HH:mm"
-                                        mask="true"/>
+                                        pattern="yyyy-MM-dd HH:mm"
+                                        mask="true"
+                                        binding="#{EditTextMessagePage.toTimeInput}"
+                            />
+                        </div>
+                        <div class="col-sm-5 form-col-container">
                             <p:message for="message-totime" display="text"/>
                         </div>
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-xs-6 form-group form-col-container">
-                        <label class="col-sm-3 control-label" for="message-active">
+                    <div class="col-xs-12 form-group form-col-container">
+                        <label class="col-sm-2 control-label" for="message-active">
                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info">
-                                        #{bundle['edittextmessages.active']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                        #{bundle['edittextmessages.active']}
                                     </span>
                         </label>
-                        <div class="col-sm-9 form-col-container">
+                        <div class="col-sm-10 form-col-container">
                             <p:selectBooleanCheckbox id="message-active"
                                                      tabindex="#{EditTextMessagePage.dto.dataverseLocalizedMessage.size() + 3}"
                                                      value="#{EditTextMessagePage.dto.active}"/>
-                            <p:message for="message-active" display="text"/>
                         </div>
                     </div>
                 </div>
 
                 <div class="button-block">
                     <p:commandButton styleClass="btn btn-default" value="#{bundle['saveChanges']}"
-                                     action="#{EditTextMessagePage.save()}"/>
+                                     action="#{EditTextMessagePage.save()}" update="@form"/>
                     <p:commandButton styleClass="btn btn-default" value="#{bundle['cancel']}"
-                                     action="#{EditTextMessagePage.cancel()}"/>
+                                     action="#{EditTextMessagePage.cancel()}" immediate="true"/>
                 </div>
             </h:form>
         </ui:define>
