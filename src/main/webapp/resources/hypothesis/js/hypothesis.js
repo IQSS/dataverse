@@ -3,7 +3,7 @@ $(document)
     function() {
         var queryParams = new URLSearchParams(window.location.search.substring(1));
         var fileUrl = queryParams.get("siteUrl") + "/api/access/datafile/" + queryParams.get("fileid") + "?gbrecs=false";
-        var versionUrl= queryParams.get("siteUrl") + "/api/datasets/" + queryParams.get("datasetid") + "/versions/" + queryParams.get("datasetversion") + "/files";
+        var versionUrl= queryParams.get("siteUrl") + "/api/datasets/" + queryParams.get("datasetid") + "/versions/" + queryParams.get("datasetversion");
         var apiKey = queryParams.get("key"); 
         if(apiKey!=null) {
             fileUrl = fileUrl + "&key=" + apiKey;
@@ -12,7 +12,7 @@ $(document)
         $.getJSON(fileUrl, function(data, status){
             $.getJSON(versionUrl,
                function(json, status) {
-                var mdFields = json.data.metadatablocks.citation.fields;
+                var mdFields = json.data.metadataBlocks.citation.fields;
                 var title="";
                 var authors="";
                 for(var field in mdFields) {
