@@ -1737,7 +1737,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         logger.fine("handleHypothesisUpload");
         uploadComponentId = event.getComponent().getClientId();
-        logger.info("Ready to query hypo for " + hypothesisUrlSelection + " and "+ hypothesisGroupSelection + ".");
         
         //Assume file is not over the limit
 
@@ -1804,6 +1803,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                         for (DataFile newFile : datafiles) {
                             deleteTempFile(newFile);
                         }
+                        datafiles = new ArrayList<>(); 
                     }
                 } finally {
                     // -----------------------------------------------------------
