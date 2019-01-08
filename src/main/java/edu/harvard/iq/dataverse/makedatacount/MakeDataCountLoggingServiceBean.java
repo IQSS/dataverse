@@ -114,7 +114,11 @@ public class MakeDataCountLoggingServiceBean {
             this(fc, dvRequestService, publishedVersion);
 
             setFilename(df.getStorageIdentifier());
-            setSize(String.valueOf(df.getFilesize())); //Need to probably be massaged into a better format
+            setSize(String.valueOf(df.getFilesize()));
+            
+            //Note that at the time of writing, Guestbook is the only one calling this and it does a manual change on its end
+            //This command: entry.setTargetUrl("/api/access/datafile/" + guestbookResponse.getDataFile().getId());
+            //--MAD 4.10
         }    
 
         //Exception thrown if no published metadata exists for DataFile
@@ -133,7 +137,7 @@ public class MakeDataCountLoggingServiceBean {
             
             //MAD: Maybe add null check for df, but its already used above
             setFilename(df.getStorageIdentifier()); 
-            setSize(String.valueOf(df.getFilesize())); //Need to probably be massaged into a better format
+            setSize(String.valueOf(df.getFilesize()));
         }
 
         @Override

@@ -4,21 +4,13 @@ log_name_pattern: sample_logs/counter_(yyyy-mm-dd).log
 
 # path_types regular expressions allow matching to classify page urls as either an investigation or request
 # based on specific URL structure for your system.
+# Dataverse Note: the url matches on this does not include the query params, so dataset.xhtml\S+ will not match
 path_types:
   investigations:
-    - ^/api/datasets/[^\/]+$
-    - ^/api/versions/\d+$
-    - ^/stash/dataset/\S+$
-    - ^/stash/data_paper/\S+$
+    - ^/dataset.xhtml\S*$
+    - ^/file.xhtml\S*$
   requests:
-    - ^/api/datasets/[^\/]+/download$
-    - ^/api/versions/\d+/download$
-    - ^/api/downloads/\d+$
-    - ^/stash/downloads/download_resource/\d+$
-    - ^/stash/downloads/file_download/\d+$
-    - ^/stash/downloads/file_stream/\d+$
-    - ^/stash/downloads/async_request/\d+$
-    - ^/stash/share/\S+$
+    - ^/api/access/datafile\S+$
 
 # Robots and machines urls are urls where the script can download a list of regular expressions to determine
 # if something is a robot or machine user-agent.  The text file has one regular expression per line
@@ -26,7 +18,8 @@ robots_url: https://raw.githubusercontent.com/CDLUC3/Make-Data-Count/master/user
 machines_url: https://raw.githubusercontent.com/CDLUC3/Make-Data-Count/master/user-agents/lists/machine.txt
 
 # the year and month for the report you are creating.
-year_month: 2018-05
+#year_month: 2018-05
+year_month: 2019-01
 
 # Don't put the filename extension, the code will tack on the tsv or json extension for you.
 # Output formats are either tsv or json currently.  TSV is currently broken until anyone accepts reports in that format.
@@ -42,7 +35,7 @@ platform: Dash
 hub_api_token: set_me_in_secrets
 # the test metrics is only for testing
 # hub_base_url: https://metrics.test.datacite.org
-hub_base_url: https://api.datacite.org
+hub_base_url: https://api.test.datacite.org
 upload_to_hub: False
 
 # only use this to simulate running on a date besides today

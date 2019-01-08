@@ -162,6 +162,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             CreateGuestbookResponseCommand cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset());
             commandEngine.submit(cmd);
             MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, guestbookResponse.getDatasetVersion(), guestbookResponse.getDataFile());
+            //As the api download url is not available at this point we construct it manually
+            entry.setTargetUrl("/api/access/datafile/" + guestbookResponse.getDataFile().getId());
+            entry.setRequestUrl("/api/access/datafile/" + guestbookResponse.getDataFile().getId());
             mdcLogService.logEntry(entry);
         } catch (CommandException e) {
             //if an error occurs here then download won't happen no need for response recs...
