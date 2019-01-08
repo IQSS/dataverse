@@ -68,6 +68,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.activation.MimetypesFileTypeMap;
 import javax.ejb.EJBException;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -147,7 +150,9 @@ public class FileUtil implements java.io.Serializable  {
     public static final String MIME_TYPE_INGESTED_FILE = "text/tab-separated-values";
     
     public static final String MIME_TYPE_HYPOTHESIS_ANNOTATIONS = "application/x-json-hypothesis";
-    public static final String HYPOTHESIS_ANNOTATIONS_FILENAME = "HypothesisAnnotations.json";
+    public static final String HYPOTHESIS_ANNOTATIONS_FILENAME = "Annotations.json";
+
+    public static final String HYPOTHESIS_LIMIT_WARNING = "Over 200 annotations, retrieval can't be completed";
 
 
     /**
@@ -939,7 +944,18 @@ public class FileUtil implements java.io.Serializable  {
             }
             return null;
            
-        } 
+        } else if (finalType.equals(FileUtil.MIME_TYPE_HYPOTHESIS_ANNOTATIONS)) {
+            // ToDo - parse and if rows total > 200 report error (we've only retrieved the
+            // first 200 and the file would be incomplete so we won't store it)
+            try (InputStream annotationStream = Files.newInputStream(tempFile)) {
+                JsonReader reader = Json.createReader(annotationStream);
+                JsonObject annotations = reader.readObject();
+                int size = annotations.getInt("total");
+                if (size > 200) {
+                    warningMessage = HYPOTHESIS_LIMIT_WARNING;
+                }
+            }
+        }
         // Finally, if none of the special cases above were applicable (or 
         // if we were unable to unpack an uploaded file, etc.), we'll just 
         // create and return a single DataFile:

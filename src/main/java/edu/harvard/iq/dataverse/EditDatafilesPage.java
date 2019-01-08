@@ -1742,7 +1742,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         //Assume file is not over the limit
 
         GetMethod hypothesisMethod = new GetMethod("https://hypothes.is/api/search?group="
-            + hypothesisGroupSelection + "&uri=" + hypothesisUrlSelection + "&limit=200");
+            + hypothesisGroupSelection + "&uri=" + hypothesisUrlSelection + "&limit=20");
         String apiKey = getHypothesisKey();
         hypothesisMethod.addRequestHeader("Authorization","Bearer " + apiKey);
         
@@ -1757,7 +1757,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             status = getClient().executeMethod(hypothesisMethod);
             if (status == 200) {
                 try (InputStream hypothesisStream = hypothesisMethod.getResponseBodyAsStream()) {
-                    logger.info("Have stream");
                     // -----------------------------------------------------------
                     // Is this a FileReplaceOperation?  If so, then diverge!
                     // -----------------------------------------------------------
@@ -1794,6 +1793,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                         // -----------------------------------------------------------
                         uploadWarningMessage = processUploadedFileList(datafiles);
                         logger.fine("Warning message during upload: " + uploadWarningMessage);
+                        if(uploadWarningMessage.startsWith(FileUtil.HYPOTHESIS_LIMIT_WARNING)) {
+                            uploadInProgress=false;
+                        }
                      
                     }
                     if(!uploadInProgress) {
