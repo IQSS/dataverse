@@ -21,7 +21,9 @@
                 <p:tabView dynamic="true" cache="true">
                     <p:tab title="Text messages">
                         <p:commandButton value="New Text Message" id="text-screen"
-                                         style="margin-right:20px;"/>
+                                         style="margin-right:20px;"
+                                         action="#{TextMessagePage.newTextMessagePage()}"
+                        />
                         <h3>History</h3>
                         <p:panel id="basic" header="Basic" style="margin-bottom:20px; width: 600px;">
                             <div class="p-grid">

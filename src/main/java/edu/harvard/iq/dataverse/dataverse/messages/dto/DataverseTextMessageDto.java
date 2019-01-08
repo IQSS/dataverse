@@ -1,10 +1,9 @@
 package edu.harvard.iq.dataverse.dataverse.messages.dto;
 
 import com.google.common.collect.Lists;
-import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -15,15 +14,15 @@ public class DataverseTextMessageDto {
 
     private boolean active;
 
-    @NotNull
+    @NotNull(message = "{field.required}")
     private Date fromTime;
 
-    @NotNull
+    @NotNull(message = "{field.required}")
     private Date toTime;
 
     private Long dataverseId;
 
-    @NotEmpty
+    @Valid
     private List<DataverseLocalizedMessageDto> dataverseLocalizedMessage = Lists.newArrayList();
 
     public boolean isActive() {

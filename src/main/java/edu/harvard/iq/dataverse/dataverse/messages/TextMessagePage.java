@@ -70,4 +70,8 @@ public class TextMessagePage implements Serializable {
     public void setDataverseTextMessage(List<DataverseTextMessageDto> dataverseTextMessage) {
         this.dataverseTextMessage = dataverseTextMessage;
     }
+
+    public String newTextMessagePage() {
+        return "/dataverse-editTextMessages.xhtml?dataverseId=" + dataverseId + "&faces-redirect=true";
+    }
 }

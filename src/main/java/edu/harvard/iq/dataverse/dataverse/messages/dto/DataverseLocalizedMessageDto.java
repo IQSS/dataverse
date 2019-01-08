@@ -14,7 +14,7 @@ public class DataverseLocalizedMessageDto {
 
     private String locale;
 
-    @NotBlank
+    @NotBlank(message = "{field.required}")
     private String message;
 
     private String language;
