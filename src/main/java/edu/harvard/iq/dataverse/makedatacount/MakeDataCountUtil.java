@@ -7,7 +7,6 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-
 /**
  * See doc/sphinx-guides/source/admin/make-data-count.rst for user facing docs
  * about Make Data Count. Go read that first.
@@ -83,4 +82,19 @@ public class MakeDataCountUtil {
         }
         return datasetMetrics;
     }
+
+    static List<DatasetMetrics> parseCitations(JsonObject report) {
+        List<DatasetMetrics> datasetMetrics = new ArrayList<>();
+        JsonArray citations = report.getJsonArray("data");
+        for (JsonValue citationValue : citations) {
+            JsonObject citation = (JsonObject) citationValue;
+            String citedByDoi = citation.getJsonObject("attributes").getString("subj-id");
+            String occurredAtDate = citation.getJsonObject("attributes").getString("occurred-at");
+            System.out.println("cited by " + citedByDoi + " at " + occurredAtDate);
+            // TODO: Should citations go in a new table so we can store the DOI of the paper that cited the dataset?
+            datasetMetrics.add(new DatasetMetrics());
+        }
+        return datasetMetrics;
+    }
+
 }
