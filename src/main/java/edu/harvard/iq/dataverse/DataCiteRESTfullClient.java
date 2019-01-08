@@ -81,7 +81,6 @@ public class DataCiteRESTfullClient implements Closeable {
      * @return
      */
     public String getUrl(String doi) {
-        logger.info("In Get: " + doi);
         HttpGet httpGet = new HttpGet(this.url + "/doi/" + doi);
         try {
             HttpResponse response = httpClient.execute(httpGet,context);
@@ -89,7 +88,6 @@ public class DataCiteRESTfullClient implements Closeable {
             if (response.getStatusLine().getStatusCode() != 200) {
                 throw new RuntimeException("Response code: " + response.getStatusLine().getStatusCode() + ", " + data);
             }
-            logger.info("Get: " + data);
             return data;
         } catch (IOException ioe) {
             logger.log(Level.SEVERE,"IOException when get url",ioe);
@@ -105,7 +103,6 @@ public class DataCiteRESTfullClient implements Closeable {
      * @return
      */
     public String postUrl(String doi, String url) throws UnsupportedEncodingException {
-        logger.info("In postUrl: " + doi + "  " + url);
         HttpPost httpPost = new HttpPost(this.url + "/doi");
         httpPost.setHeader("Content-Type", "text/plain;charset=UTF-8");
         httpPost.setEntity(new StringEntity("doi=" + doi + "\nurl=" + url, "utf-8"));
@@ -118,7 +115,6 @@ public class DataCiteRESTfullClient implements Closeable {
                 logger.log(Level.SEVERE,errMsg);
                 throw new RuntimeException(errMsg);
             }
-            logger.info("PostUrl: " + data);
             return data;
         } catch (IOException ioe) {
             logger.log(Level.SEVERE,"IOException when post url");
@@ -143,7 +139,6 @@ public class DataCiteRESTfullClient implements Closeable {
                 logger.log(Level.SEVERE, errMsg);
                 throw new RuntimeException(errMsg);
             }
-            logger.info("GetMetadata: " + data);
             return data;
         } catch (IOException ioe) {
             logger.log(Level.SEVERE, "IOException when get metadata");
@@ -158,7 +153,6 @@ public class DataCiteRESTfullClient implements Closeable {
      * @return boolean true if identifier already exists on DataCite site
      */
     public boolean testDOIExists(String doi) {
-        logger.info("In testDOIExists ");
         HttpGet httpGet = new HttpGet(this.url + "/metadata/" + doi);      
         httpGet.setHeader("Accept", "application/xml");        
         try {
@@ -182,7 +176,6 @@ public class DataCiteRESTfullClient implements Closeable {
      * @return
      */
     public String postMetadata(String metadata) {
-        logger.info("In PostMetadata: " + metadata);
         HttpPost httpPost = new HttpPost(this.url + "/metadata");
         httpPost.setHeader("Content-Type", "application/xml;charset=UTF-8");
         try {
@@ -195,7 +188,6 @@ public class DataCiteRESTfullClient implements Closeable {
                 logger.log(Level.SEVERE, errMsg);
                 throw new RuntimeException(errMsg);
             }
-            logger.info("PostMetadata: " + data);
             return data;
             
         } catch (IOException ioe) {
