@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.locale.DataverseLocaleBean;
+import org.apache.commons.lang.StringUtils;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -81,7 +82,8 @@ public class DateUtil {
     }
 
     public static String formatDateToDMY(Date date) {
+
         SimpleDateFormat format = new SimpleDateFormat("dd-MM-YYYY");
-        return format.format(date);
+        return date == null ? StringUtils.EMPTY : format.format(date);
     }
 }
