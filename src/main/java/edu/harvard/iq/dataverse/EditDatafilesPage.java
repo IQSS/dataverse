@@ -1793,6 +1793,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                         // -----------------------------------------------------------
                         uploadWarningMessage = processUploadedFileList(datafiles);
                         logger.fine("Warning message during upload: " + uploadWarningMessage);
+                        logger.info("Warning message during upload: " + uploadWarningMessage);
                         if(uploadWarningMessage.startsWith(FileUtil.HYPOTHESIS_LIMIT_WARNING)) {
                             uploadInProgress=false;
                         }
@@ -1804,7 +1805,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                             deleteTempFile(newFile);
                         }
                     }
-                    logger.info("Completed hypo upload");
                 } finally {
                     // -----------------------------------------------------------
                     // release connection for hypothesisMethod
