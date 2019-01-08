@@ -83,7 +83,7 @@ public class MakeDataCountUtil {
         return datasetMetrics;
     }
 
-    static List<DatasetMetrics> parseCitations(JsonObject report) {
+    public static List<DatasetMetrics> parseCitations(JsonObject report) {
         List<DatasetMetrics> datasetMetrics = new ArrayList<>();
         JsonArray citations = report.getJsonArray("data");
         for (JsonValue citationValue : citations) {

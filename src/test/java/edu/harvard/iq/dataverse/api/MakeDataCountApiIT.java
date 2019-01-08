@@ -76,4 +76,14 @@ public class MakeDataCountApiIT {
                 .body("data.downloadsTotal", equalTo(2));
     }
 
+    @Test
+    public void testMakeDataCountDownloadCitation() {
+        String idOrPersistentIdOfDataset = "doi:10.7910/DVN/HQZOOB";
+        Response updateCitations = UtilIT.makeDataCountUpdateCitationsForDataset(idOrPersistentIdOfDataset);
+        updateCitations.prettyPrint();
+        updateCitations.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        // As of this writing, number of citations is 2.
+    }
+
 }
