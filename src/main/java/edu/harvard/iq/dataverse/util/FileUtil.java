@@ -674,7 +674,7 @@ public class FileUtil implements java.io.Serializable  {
         
         // if this is a gzipped FITS file, we'll uncompress it, and ingest it as
         // a regular FITS file:
-        logger.info("FInaltype: " + finalType);
+
         if (finalType.equals("application/fits-gzipped")) {
 
             InputStream uncompressedIn = null;
@@ -951,7 +951,6 @@ public class FileUtil implements java.io.Serializable  {
                 JsonReader reader = Json.createReader(annotationStream);
                 JsonObject annotations = reader.readObject();
                 int size = annotations.getInt("total");
-                logger.info("Size = " + size);
                 if (size > 20) {
                     warningMessage = HYPOTHESIS_LIMIT_WARNING;
                 }
@@ -964,7 +963,6 @@ public class FileUtil implements java.io.Serializable  {
         DataFile datafile = createSingleDataFile(version, tempFile.toFile(), fileName, finalType, systemConfig.getFileFixityChecksumAlgorithm());
         
         if (datafile != null && tempFile.toFile() != null) {
-       logger.info("warned: " + warningMessage);
             if (warningMessage != null) {
                 createIngestFailureReport(datafile, warningMessage);
                 datafile.SetIngestProblem();

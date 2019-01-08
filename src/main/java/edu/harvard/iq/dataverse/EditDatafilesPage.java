@@ -1783,20 +1783,22 @@ public class EditDatafilesPage implements java.io.Serializable {
                         logger.log(Level.SEVERE, "Error during ingest of Hypothesis for group {0} and uri {1}", new Object[]{hypothesisGroupSelection, hypothesisUrlSelection});
                         logger.log(Level.SEVERE, ex.getMessage());
                     }
-                     
-                    if (datafiles == null){
-                        logger.log(Level.SEVERE, "Failed to create DataFile for Hypothesis annotations for group {0} and uri {1}",new Object[]{hypothesisGroupSelection, hypothesisUrlSelection});
-                    }else{    
+
+                    if (datafiles == null) {
+                        logger.log(Level.SEVERE, "Failed to create DataFile for Hypothesis annotations for group {0} and uri {1}", new Object[] { hypothesisGroupSelection, hypothesisUrlSelection });
+                    } else {
                         // -----------------------------------------------------------
                         // Check if there are duplicate files or ingest warnings
                         // -----------------------------------------------------------
-                        uploadWarningMessage = processUploadedFileList(datafiles);
-                        logger.fine("Warning message during upload: " + uploadWarningMessage);
-                        logger.info("Warning message during upload: " + uploadWarningMessage);
-                        if((uploadWarningMessage != null) && uploadWarningMessage.startsWith(FileUtil.HYPOTHESIS_LIMIT_WARNING)) {
-                            uploadInProgress=false;
+                        if (datafiles.get(0).isIngestProblem()) {
+                            // For annotations, the warning means we should not upload anything so skip the
+                            // normal processing
+                            uploadWarningMessage = datafiles.get(0).getIngestReportMessage();
+                            uploadInProgress = false;
+                        } else {
+                            uploadWarningMessage = processUploadedFileList(datafiles);
+                            logger.fine("Warning message during upload: " + uploadWarningMessage);
                         }
-                     
                     }
                     if(!uploadInProgress) {
                         logger.warning("Upload in progress cancelled");
