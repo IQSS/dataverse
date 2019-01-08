@@ -36,6 +36,8 @@ There are many components involved in Dataverse's architecture for Make Data Cou
 Sending Metrics from Dataverse to the DataCite Hub
 --------------------------------------------------
 
+To make Dataverse log dataset usage (views and downloads) for Make Data Count, you must set the ``:MDCLogPath`` database setting. See the :doc:`/installation/config` section of the Installation Guide for details.
+
 To configure Dataverse to send the metrics to the DataCite hub, you must set up a cron job to call the following API endpoint:
 
 ``curl -X POST http://localhost:8080/api/admin/makeDataCount/sendToHub``

@@ -1509,9 +1509,9 @@ Sets how long a cached metrics result is used before re-running the query for a 
 :MDCLogPath
 +++++++++++
 
-Sets the path where the raw Make Data Count logs are stored before being processed. If not set, no logs will be created for Make Data Count.
+Sets the path where the raw Make Data Count logs are stored before being processed. If not set, no logs will be created for Make Data Count. See also the :doc:`/admin/make-data-count` section of the Admin Guide.
 
-``curl -X PUT -d '/Users/admin/glassfish4/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
+``curl -X PUT -d '/usr/local/glassfish4/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
 
 :Languages
 ++++++++++
