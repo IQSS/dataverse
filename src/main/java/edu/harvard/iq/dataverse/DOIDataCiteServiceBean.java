@@ -57,7 +57,6 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         return  alreadyExists;
     }
     
-    
 
     @Override
     public String createIdentifier(DvObject dvObject) throws Exception {
