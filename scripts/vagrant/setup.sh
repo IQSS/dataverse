@@ -40,7 +40,7 @@ echo "Ensuring Unix user '$SOLR_USER' exists"
 useradd $SOLR_USER || :
 DOWNLOAD_DIR='/dataverse/downloads'
 GLASSFISH_ZIP="$DOWNLOAD_DIR/glassfish-4.1.zip"
-SOLR_TGZ="$DOWNLOAD_DIR/solr-7.3.0.tgz"
+SOLR_TGZ="$DOWNLOAD_DIR/solr-7.3.1.tgz"
 WELD_PATCH="$DOWNLOAD_DIR/weld-osgi-bundle-2.2.10.Final-glassfish4.jar"
 # The CA certificate bundle files from CentOS are ok. Glassfish's are expired.
 GOOD_CACERTS='/etc/pki/ca-trust/extracted/java/cacerts'
