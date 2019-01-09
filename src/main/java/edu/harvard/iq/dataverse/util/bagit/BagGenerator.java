@@ -32,6 +32,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -61,7 +63,6 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -76,7 +77,7 @@ import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 
 public class BagGenerator {
 
-    private static final Logger logger = Logger.getLogger(BagGenerator.class);
+    private static final Logger logger = Logger.getLogger(BagGenerator.class.getCanonicalName());
 
     private ParallelScatterZipCreator scatterZipCreator = null;
     private ScatterZipOutputStream dirs = null;
@@ -170,7 +171,7 @@ public class BagGenerator {
 
             scatterZipCreator = new ParallelScatterZipCreator(Executors.newFixedThreadPool(numConnections));
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            logger.warn("Aint gonna work");
+            logger.warning("Aint gonna work");
             e.printStackTrace();
         }
     }
@@ -210,7 +211,7 @@ public class BagGenerator {
             // two levels of hash-based subdirs to help distribute files
             bagName = getValidName(bagID);
         } catch (Exception e) {
-            logger.error("Couldn't create valid filename: " + e.getLocalizedMessage());
+            logger.severe("Couldn't create valid filename: " + e.getLocalizedMessage());
             return false;
         }
         // Create data dir in bag, also creates parent bagName dir
@@ -271,11 +272,11 @@ public class BagGenerator {
             } else if (hashtype.equals(DataFile.ChecksumType.MD5)) {
                 manifestName = manifestName + "md5.txt";
             } else {
-                logger.warn("Unsupported Hash type: " + hashtype);
+                logger.warning("Unsupported Hash type: " + hashtype);
             }
             createFileFromString(manifestName, sha1StringBuffer.toString());
         } else {
-            logger.warn("No Hash values sent - Bag File does not meet BagIT specification requirement");
+            logger.warning("No Hash values sent - Bag File does not meet BagIT specification requirement");
         }
         // bagit.txt - Required by spec
         createFileFromString("bagit.txt", "BagIt-Version: 1.0\r\nTag-File-Character-Encoding: UTF-8");
@@ -298,7 +299,7 @@ public class BagGenerator {
         // Add a bag-info file
         createFileFromString("bag-info.txt", generateInfoFile());
 
-        logger.debug("Creating bag: " + bagName);
+        logger.fine("Creating bag: " + bagName);
 
         ZipArchiveOutputStream zipArchiveOutputStream = new ZipArchiveOutputStream(outputStream);
 
@@ -307,20 +308,20 @@ public class BagGenerator {
          * retrieved via URLs in parallel (defaults to one thread per processor)
          * directly to the zip file
          */
-        logger.debug("Starting write");
+        logger.fine("Starting write");
         writeTo(zipArchiveOutputStream);
-        logger.debug("Zipfile Written");
+        logger.fine("Zipfile Written");
         // Finish
         zipArchiveOutputStream.close();
-        logger.debug("Closed");
+        logger.fine("Closed");
 
         // Validate oremap - all entries are part of the collection
         for (int i = 0; i < resourceUsed.length; i++) {
             Boolean b = resourceUsed[i];
             if (b == null) {
-                logger.warn("Problem: " + pidMap.get(resourceIndex.get(i)) + " was not used");
+                logger.warning("Problem: " + pidMap.get(resourceIndex.get(i)) + " was not used");
             } else if (!b) {
-                logger.warn("Problem: " + pidMap.get(resourceIndex.get(i)) + " was not included successfully");
+                logger.warning("Problem: " + pidMap.get(resourceIndex.get(i)) + " was not included successfully");
             } else {
                 // Successfully included - now check for hash value and
                 // generate if needed
@@ -328,7 +329,7 @@ public class BagGenerator {
                     if (!checksumMap.containsKey(pidMap.get(resourceIndex.get(i)))) {
 
                         if (!childIsContainer(aggregates.get(i - 1).getAsJsonObject()))
-                            logger.warn("Missing checksum hash for: " + resourceIndex.get(i));
+                            logger.warning("Missing checksum hash for: " + resourceIndex.get(i));
                         // FixMe - actually generate it before adding the
                         // oremap
                         // to the zip
@@ -352,14 +353,14 @@ public class BagGenerator {
             File bagFile = origBagFile;
             if (usetemp) {
                 bagFile = new File(bagFile.getAbsolutePath() + ".tmp");
-                logger.debug("Writing to: " + bagFile.getAbsolutePath());
+                logger.fine("Writing to: " + bagFile.getAbsolutePath());
             }
             // Create an output stream backed by the file
             bagFileOS = new FileOutputStream(bagFile);
             if (generateBag(bagFileOS)) {
                 validateBagFile(bagFile);
                 if (usetemp) {
-                    logger.debug("Moving tmp zip");
+                    logger.fine("Moving tmp zip");
                     origBagFile.delete();
                     bagFile.renameTo(origBagFile);
                 }
@@ -368,9 +369,9 @@ public class BagGenerator {
                 return false;
             }
         } catch (Exception e) {
-            logger.error("Bag Exception: ", e);
+            logger.log(Level.SEVERE,"Bag Exception: ", e);
             e.printStackTrace();
-            logger.warn("Failure: Processing failure during Bagit file creation");
+            logger.warning("Failure: Processing failure during Bagit file creation");
             return false;
         } finally {
             IOUtils.closeQuietly(bagFileOS);
@@ -412,11 +413,11 @@ public class BagGenerator {
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String line = br.readLine();
             while (line != null) {
-                logger.debug("Hash entry: " + line);
+                logger.fine("Hash entry: " + line);
                 int breakIndex = line.indexOf(' ');
                 String hash = line.substring(0, breakIndex);
                 String path = line.substring(breakIndex + 1);
-                logger.debug("Adding: " + path + " with hash: " + hash);
+                logger.fine("Adding: " + path + " with hash: " + hash);
                 checksumMap.put(path, hash);
                 line = br.readLine();
             }
@@ -424,9 +425,9 @@ public class BagGenerator {
             logger.info("HashMap Map contains: " + checksumMap.size() + " entries");
             checkFiles(checksumMap, zf);
         } catch (IOException io) {
-            logger.error("Could not validate Hashes", io);
+            logger.log(Level.SEVERE,"Could not validate Hashes", io);
         } catch (Exception e) {
-            logger.error("Could not validate Hashes", e);
+            logger.log(Level.SEVERE,"Could not validate Hashes", e);
         } finally {
             IOUtils.closeQuietly(zf);
         }
@@ -444,7 +445,7 @@ public class BagGenerator {
         // Create known-good filename
         bagName = getValidName(bagID);
         File bagFile = new File(bagPath, bagName + ".zip");
-        logger.debug("BagPath: " + bagFile.getAbsolutePath());
+        logger.fine("BagPath: " + bagFile.getAbsolutePath());
         // Create an output stream backed by the file
         return bagFile;
     }
@@ -488,7 +489,7 @@ public class BagGenerator {
 
         } catch (InterruptedException | IOException | ExecutionException e) {
             e.printStackTrace();
-            logger.error(e.getMessage());
+            logger.severe(e.getMessage());
             if (containerIndex != -1) {
                 resourceUsed[containerIndex] = false;
             }
@@ -500,7 +501,7 @@ public class BagGenerator {
             // Find the ith child in the overall array of aggregated
             // resources
             String childId = children.get(i).getAsString();
-            logger.debug("Processing: " + childId);
+            logger.fine("Processing: " + childId);
             int index = getUnusedIndexOf(childId);
             if (resourceUsed[index] != null) {
                 System.out.println("Warning: reusing resource " + index);
@@ -518,11 +519,11 @@ public class BagGenerator {
                 // add item
                 // ToDo
                 String dataUrl = child.get(JsonLDTerm.schemaOrg("sameAs").getLabel()).getAsString();
-                logger.debug("File url: " + dataUrl);
+                logger.fine("File url: " + dataUrl);
                 String childTitle = child.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString();
                 if (titles.contains(childTitle)) {
-                    logger.warn("**** Multiple items with the same title in: " + currentPath);
-                    logger.warn("**** Will cause failure in hash and size validation.");
+                    logger.warning("**** Multiple items with the same title in: " + currentPath);
+                    logger.warning("**** Will cause failure in hash and size validation.");
                 } else {
                     titles.add(childTitle);
                 }
@@ -533,14 +534,14 @@ public class BagGenerator {
                     ChecksumType childHashType = ChecksumType.fromString(
                             child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@type").getAsString());
                     if (hashtype != null && !hashtype.equals(childHashType)) {
-                        logger.warn("Multiple hash values in use - not supported");
+                        logger.warning("Multiple hash values in use - not supported");
                     }
                     if (hashtype == null)
                         hashtype = childHashType;
                     childHash = child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@value").getAsString();
                     if (checksumMap.containsValue(childHash)) {
                         // Something else has this hash
-                        logger.warn("Duplicate/Collision: " + child.get("@id").getAsString() + " has SHA1 Hash: "
+                        logger.warning("Duplicate/Collision: " + child.get("@id").getAsString() + " has SHA1 Hash: "
                                 + childHash);
                     }
                     checksumMap.put(childPath, childHash);
@@ -582,10 +583,10 @@ public class BagGenerator {
 
                             checksumMap.put(childPath, childHash);
                         } else {
-                            logger.warn("Unable to calculate a " + hashtype + " for " + dataUrl);
+                            logger.warning("Unable to calculate a " + hashtype + " for " + dataUrl);
                         }
                     }
-                    logger.debug("Requesting: " + childPath + " from " + dataUrl);
+                    logger.fine("Requesting: " + childPath + " from " + dataUrl);
                     createFileFromURL(childPath, dataUrl);
                     dataCount++;
                     if (dataCount % 1000 == 0) {
@@ -627,7 +628,7 @@ public class BagGenerator {
         }
         System.out.println("Using index: " + index);
         if (index == -1) {
-            logger.error("Reused ID: " + childId + " not found enough times in resource list");
+            logger.severe("Reused ID: " + childId + " not found enough times in resource list");
         }
         return index;
     }
@@ -637,10 +638,10 @@ public class BagGenerator {
         ArrayList<String> l = new ArrayList<String>(aggregates.size() + 1);
         l.add(aggId);
         for (int i = 0; i < aggregates.size(); i++) {
-            logger.debug("Indexing : " + i + " " + aggregates.get(i).getAsJsonObject().get("@id").getAsString());
+            logger.fine("Indexing : " + i + " " + aggregates.get(i).getAsJsonObject().get("@id").getAsString());
             l.add(aggregates.get(i).getAsJsonObject().get("@id").getAsString());
         }
-        logger.debug("Index created for " + aggregates.size() + " entries");
+        logger.fine("Index created for " + aggregates.size() + " entries");
         return l;
     }
 
@@ -689,7 +690,7 @@ public class BagGenerator {
         ExecutorService executor = Executors.newFixedThreadPool(numConnections);
         BagValidationJob.setZipFile(zf);
         BagValidationJob.setBagGenerator(this);
-        logger.debug("Validating hashes for zipped data files");
+        logger.fine("Validating hashes for zipped data files");
         int i = 0;
         for (Entry<String, String> entry : shaMap.entrySet()) {
             BagValidationJob vj = new BagValidationJob(entry.getValue(), entry.getKey());
@@ -699,17 +700,17 @@ public class BagGenerator {
                 logger.info("Queuing Hash Validations: " + i);
             }
         }
-        logger.debug("All Hash Validations Queued: " + i);
+        logger.fine("All Hash Validations Queued: " + i);
 
         executor.shutdown();
         try {
             while (!executor.awaitTermination(10, TimeUnit.MINUTES)) {
-                logger.debug("Awaiting completion of hash calculations.");
+                logger.fine("Awaiting completion of hash calculations.");
             }
         } catch (InterruptedException e) {
-            logger.error("Hash Calculations interrupted", e);
+            logger.log(Level.SEVERE,"Hash Calculations interrupted", e);
         }
-        logger.debug("Hash Validations Completed");
+        logger.fine("Hash Validations Completed");
 
     }
 
@@ -722,18 +723,18 @@ public class BagGenerator {
 
     public void writeTo(ZipArchiveOutputStream zipArchiveOutputStream)
             throws IOException, ExecutionException, InterruptedException {
-        logger.debug("Writing dirs");
+        logger.fine("Writing dirs");
         dirs.writeTo(zipArchiveOutputStream);
         dirs.close();
-        logger.debug("Dirs written");
+        logger.fine("Dirs written");
         scatterZipCreator.writeTo(zipArchiveOutputStream);
-        logger.debug("Files written");
+        logger.fine("Files written");
     }
 
     static final String CRLF = "\r\n";
 
     private String generateInfoFile() {
-        logger.debug("Generating info file");
+        logger.fine("Generating info file");
         StringBuffer info = new StringBuffer();
 
         JsonArray contactsArray = new JsonArray();
@@ -786,7 +787,7 @@ public class BagGenerator {
 
             }
         } else {
-            logger.warn("No contact info available for BagIt Info file");
+            logger.warning("No contact info available for BagIt Info file");
         }
 
         info.append("Source-Organization: " + ResourceBundle.getBundle("Bundle").getString("bagit.sourceOrganization"));
@@ -810,7 +811,7 @@ public class BagGenerator {
         JsonLDTerm descriptionTerm = oremap.getDescriptionTerm();
         JsonLDTerm descriptionTextTerm = oremap.getDescriptionTextTerm();
         if (descriptionTerm == null) {
-            logger.warn("No description available for BagIt Info file");
+            logger.warning("No description available for BagIt Info file");
         } else {
             info.append(
                     // FixMe - handle description having subfields better
@@ -875,7 +876,7 @@ public class BagGenerator {
             } else {
                 val = stringArray.get(0);
             }
-            logger.warn("Multiple values found for: " + key + ": " + val);
+            logger.warning("Multiple values found for: " + key + ": " + val);
         }
         return val;
     }
@@ -905,7 +906,7 @@ public class BagGenerator {
                 children.add(o);
                 return (children);
             }
-            logger.error("Error finding children: " + o.toString());
+            logger.severe("Error finding children: " + o.toString());
             return new JsonArray();
         }
     }
@@ -979,16 +980,16 @@ public class BagGenerator {
                 int tries = 0;
                 while (tries < 5) {
                     try {
-                        logger.debug("Get # " + tries + " for " + uri);
+                        logger.fine("Get # " + tries + " for " + uri);
                         HttpGet getMap = createNewGetRequest(new URI(uri), null);
-                        logger.trace("Retrieving " + tries + ": " + uri);
+                        logger.finest("Retrieving " + tries + ": " + uri);
                         CloseableHttpResponse response;
                         response = client.execute(getMap, localContext);
                         if (response.getStatusLine().getStatusCode() == 200) {
-                            logger.trace("Retrieved: " + uri);
+                            logger.finest("Retrieved: " + uri);
                             return response.getEntity().getContent();
                         }
-                        logger.debug("Status: " + response.getStatusLine().getStatusCode());
+                        logger.fine("Status: " + response.getStatusLine().getStatusCode());
                         tries++;
 
                     } catch (ClientProtocolException e) {
@@ -999,9 +1000,9 @@ public class BagGenerator {
                         // Retry if this is a potentially temporary error such
                         // as a timeout
                         tries++;
-                        logger.warn("Attempt# " + tries + " : Unable to retrieve file: " + uri, e);
+                        logger.log(Level.WARNING,"Attempt# " + tries + " : Unable to retrieve file: " + uri, e);
                         if (tries == 5) {
-                            logger.error("Final attempt failed for " + uri);
+                            logger.severe("Final attempt failed for " + uri);
                         }
                         e.printStackTrace();
                     } catch (URISyntaxException e) {
@@ -1010,7 +1011,7 @@ public class BagGenerator {
                         e.printStackTrace();
                     }
                 }
-                logger.error("Could not read: " + uri);
+                logger.severe("Could not read: " + uri);
                 return null;
             }
         };
