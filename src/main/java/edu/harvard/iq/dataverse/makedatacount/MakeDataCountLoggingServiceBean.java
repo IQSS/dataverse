@@ -85,7 +85,7 @@ public class MakeDataCountLoggingServiceBean {
             if(publishedVersion != null) {
                 setIdentifier(publishedVersion.getDataset().getGlobalId().asString());
                 setAuthors(publishedVersion.getAuthorsStr(false).replace(";", "|"));
-                //setPublisher(publishedVersion.getRootDataverseNameforCitation());
+                setPublisher("client-id"); //MAD: We suspect this is a "fake" catch-all id, not a real publisher. Needs clarification.
                 setPublisherId("1"); //This is a hack to make sure counter-processer processes this
                 setTitle(publishedVersion.getTitle());
                 setVersion(String.valueOf(publishedVersion.getVersionNumber()));
@@ -104,7 +104,7 @@ public class MakeDataCountLoggingServiceBean {
 
             /* Still needed: */
             //setOtherId();
-            //setPublisherId();
+            //setPublisherId(); 
         }
 
         //This version of the constructor is for the downloads tracked in FileDownloadServiceBean
