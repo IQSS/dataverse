@@ -220,7 +220,8 @@ public class MetricsServiceBean implements Serializable {
         Query query = em.createNativeQuery(""
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
-                + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM');"
+                + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')"
+                + "or responsetime is NULL;" //includes historic guestbook records without date
         );
         logger.fine("query: " + query);
         return (long) query.getSingleResult();
