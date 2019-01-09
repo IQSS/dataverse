@@ -326,7 +326,11 @@ public class JsonParser {
                 filesJson = obj.getJsonArray("fileMetadatas");
             }
             if (filesJson != null) {
-                dsv.setFileMetadatas(parseFiles(filesJson, dsv));
+                List<FileMetadata> parsedMetadataFiles = parseFiles(filesJson, dsv);
+                dsv.setFileMetadatas(new LinkedList<>());
+                for (FileMetadata parsedMetadataFile : parsedMetadataFiles) {
+                    dsv.addFileMetadata(parsedMetadataFile);
+                }
             }
             return dsv;
 

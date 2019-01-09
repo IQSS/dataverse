@@ -325,6 +325,7 @@ public class Dataset extends DvObjectContainer {
                 newFm.setDataFile(fm.getDataFile());
                 newFm.setDatasetVersion(dsv);
                 newFm.setProvFreeForm(fm.getProvFreeForm());
+                newFm.setDisplayOrder(fm.getDisplayOrder());
                 
                 dsv.getFileMetadatas().add(newFm);
             }

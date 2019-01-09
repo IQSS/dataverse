@@ -10,19 +10,19 @@ public class FileSortFieldAndOrderTest {
     public void testSortFiles() {
 
         FileSortFieldAndOrder bothUnspecified = new FileSortFieldAndOrder(null, null);
-        assertEquals("label", bothUnspecified.getSortField());
+        assertEquals("displayOrder", bothUnspecified.getSortField());
         assertEquals(SortBy.ASCENDING, bothUnspecified.getSortOrder());
 
         FileSortFieldAndOrder unspecifiedFieldAsc = new FileSortFieldAndOrder(null, SortBy.ASCENDING);
-        assertEquals("label", unspecifiedFieldAsc.getSortField());
+        assertEquals("displayOrder", unspecifiedFieldAsc.getSortField());
         assertEquals(SortBy.ASCENDING, unspecifiedFieldAsc.getSortOrder());
 
         FileSortFieldAndOrder unspecifiedFieldDesc = new FileSortFieldAndOrder(null, SortBy.DESCENDING);
-        assertEquals("label", unspecifiedFieldDesc.getSortField());
+        assertEquals("displayOrder", unspecifiedFieldDesc.getSortField());
         assertEquals(SortBy.DESCENDING, unspecifiedFieldDesc.getSortOrder());
 
         FileSortFieldAndOrder unspecifiedFieldJunkOrder = new FileSortFieldAndOrder(null, "junk");
-        assertEquals("label", unspecifiedFieldJunkOrder.getSortField());
+        assertEquals("displayOrder", unspecifiedFieldJunkOrder.getSortField());
         assertEquals(SortBy.ASCENDING, unspecifiedFieldJunkOrder.getSortOrder());
 
         FileSortFieldAndOrder labelAsc = new FileSortFieldAndOrder("label", null);
@@ -57,6 +57,36 @@ public class FileSortFieldAndOrderTest {
         assertEquals("dataFile.contentType", contentTypeDesc.getSortField());
         assertEquals(SortBy.DESCENDING, contentTypeDesc.getSortOrder());
 
+    }
+
+    @Test
+    public void shouldSortFilesByDisplayOrder() {
+        // given
+        FileSortFieldAndOrder displayOrder = new FileSortFieldAndOrder("displayOrder", null);
+
+        // expect
+        assertEquals("displayOrder", displayOrder.getSortField());
+        assertEquals(SortBy.ASCENDING, displayOrder.getSortOrder());
+    }
+
+    @Test
+    public void shouldSortFilesByDisplayOrderWithGivenSortType() {
+        // given
+        FileSortFieldAndOrder displayOrderAsc = new FileSortFieldAndOrder("displayOrder", SortBy.ASCENDING);
+
+        // expect
+        assertEquals("displayOrder", displayOrderAsc.getSortField());
+        assertEquals(SortBy.ASCENDING, displayOrderAsc.getSortOrder());
+    }
+
+    @Test
+    public void shouldSortFilesByDisplayOrderDescending() {
+        // given
+        FileSortFieldAndOrder displayOrderDesc = new FileSortFieldAndOrder("displayOrder", SortBy.DESCENDING);
+
+        // expect
+        assertEquals("displayOrder", displayOrderDesc.getSortField());
+        assertEquals(SortBy.DESCENDING, displayOrderDesc.getSortOrder());
     }
 
 }

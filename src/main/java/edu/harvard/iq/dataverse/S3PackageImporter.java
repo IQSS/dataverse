@@ -202,7 +202,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         packageFile.getFileMetadatas().add(fmd);
         if (dataset.getLatestVersion().getFileMetadatas() == null) dataset.getLatestVersion().setFileMetadatas(new ArrayList<>());
 
-        dataset.getLatestVersion().getFileMetadatas().add(fmd);
+        dataset.getLatestVersion().addFileMetadata(fmd);
         fmd.setDatasetVersion(dataset.getLatestVersion());
 
         FileUtil.generateS3PackageStorageIdentifier(packageFile);

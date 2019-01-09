@@ -482,7 +482,7 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
-        private Long numberOfFilesToShow = (long) 25;
+    private Long numberOfFilesToShow = (long) 25;
 
     public Long getNumberOfFilesToShow() {
         return numberOfFilesToShow;

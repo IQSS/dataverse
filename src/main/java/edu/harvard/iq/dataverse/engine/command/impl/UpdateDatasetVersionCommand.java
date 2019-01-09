@@ -129,7 +129,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 ctxt.em().remove(mergedFmd);
                 fmd.getDataFile().getFileMetadatas().remove(fmd);
                 tempDataset.getEditVersion().getFileMetadatas().remove(fmd);
-            }      
+            }
         }        
         
         if (recalculateUNF) {

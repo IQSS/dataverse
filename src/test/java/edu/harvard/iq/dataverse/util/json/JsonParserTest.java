@@ -14,15 +14,27 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
-import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,20 +54,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
-import org.junit.AfterClass;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  *
@@ -551,9 +553,7 @@ public class JsonParserTest {
         metadatasJsonBuilder.add(fileMetadataGood);
         metadatasJsonBuilder.add(fileMetadataBad);
         JsonArray metadatasJson = metadatasJsonBuilder.build();
-        DatasetVersion dsv = new DatasetVersion();
-        Dataset dataset = new Dataset();
-        dsv.setDataset(dataset);
+        DatasetVersion dsv = createEmptyDatasetVersion();
         List<FileMetadata> fileMetadatas = new JsonParser().parseFiles(metadatasJson, dsv);
         System.out.println("fileMetadatas: " + fileMetadatas);
         assertEquals("myLabel", fileMetadatas.get(0).getLabel());
@@ -561,6 +561,20 @@ public class JsonParserTest {
         assertEquals(null, fileMetadatas.get(1).getCategories());
         List<FileMetadata> codeCoverage = new JsonParser().parseFiles(Json.createArrayBuilder().add(Json.createObjectBuilder().add("label", "myLabel").add("dataFile", Json.createObjectBuilder().add("categories", JsonValue.NULL))).build(), dsv);
         assertEquals(null, codeCoverage.get(0).getCategories());
+    }
+
+    @Test
+    public void shouldParseDatasetVersionFilesWithProperDisplayOrder() throws JsonParseException {
+        // given
+        JsonObject versionJson = emptyDatasetVersionWithFilesJson();
+        DatasetVersion datasetVersion = createEmptyDatasetVersion();
+
+        // when
+        datasetVersion = new JsonParser().parseDatasetVersion(versionJson, datasetVersion);
+
+        // then
+        verifyDisplayOrderAtIndex(datasetVersion, 0, 0);
+        verifyDisplayOrderAtIndex(datasetVersion, 1, 1);
     }
 
     JsonObject json( String s ) {
@@ -666,4 +680,35 @@ public class JsonParserTest {
         }
  
     }
+
+    private DatasetVersion createEmptyDatasetVersion() {
+        DatasetVersion datasetVersion = new DatasetVersion();
+        Dataset dataset = new Dataset();
+        datasetVersion.setDataset(dataset);
+        return datasetVersion;
+    }
+
+    private JsonObject emptyDatasetVersionWithFilesJson() {
+        JsonArrayBuilder jsonFilesBuilder = Json.createArrayBuilder();
+        jsonFilesBuilder.add(fileMetadatasAsJson("file1.png", "Documentation"));
+        jsonFilesBuilder.add(fileMetadatasAsJson("file2.png", "Documentation"));
+        JsonObjectBuilder versionJson = Json.createObjectBuilder();
+        versionJson.add("files", jsonFilesBuilder);
+        versionJson.add("metadataBlocks", Json.createObjectBuilder());
+        return versionJson.build();
+    }
+
+    private JsonObjectBuilder fileMetadatasAsJson(String label, String category) {
+        JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        jsonBuilder.add("label", label);
+        JsonObjectBuilder file = Json.createObjectBuilder();
+        jsonBuilder.add("dataFile", file);
+        jsonBuilder.add("categories", Json.createArrayBuilder().add(category));
+        return jsonBuilder;
+    }
+
+    private void verifyDisplayOrderAtIndex(DatasetVersion datasetVersion, int displayOrder, int index) {
+        assertEquals(displayOrder, datasetVersion.getFileMetadatas().get(index).getDisplayOrder());
+    }
+
 }

@@ -44,15 +44,14 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         }
         
         prepareDatasetAndVersion();
-        
-        List<FileMetadata> newVersionMetadatum = new ArrayList<>(latest.getFileMetadatas().size());
+
+        newVersion.setFileMetadatas(new ArrayList<>(latest.getFileMetadatas().size()));
         for ( FileMetadata fmd : latest.getFileMetadatas() ) {
             FileMetadata fmdCopy = fmd.createCopy();
             fmdCopy.setDatasetVersion(newVersion);
-            newVersionMetadatum.add( fmdCopy );
+            newVersion.getFileMetadatas().add( fmdCopy );
         }
-        newVersion.setFileMetadatas(newVersionMetadatum);
-        
+
         // TODO make async
         // ctxt.index().indexDataset(dataset);
         return ctxt.datasets().storeVersion(newVersion);
