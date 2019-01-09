@@ -64,11 +64,8 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
 
         DataverseTextMessageValidator.validateEndDate(messageDto);
 
-        DataverseTextMessage textMessage = (messageDto.getId() != null) ?
-                em.find(DataverseTextMessage.class, messageDto.getId()) :
-                new DataverseTextMessage();
+        DataverseTextMessage textMessage = new DataverseTextMessage();
 
-        textMessage.setId(messageDto.getId());
         textMessage.setActive(messageDto.isActive());
         Dataverse dataverse = em.find(Dataverse.class, messageDto.getDataverseId());
         if (dataverse == null) {

@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.Month;
@@ -232,6 +233,17 @@ public class MocksFactory {
         eg.setGroupAliasInOwner("eg" + id);
         
         return eg;
+    }
+
+    public static FileMetadata makeFileMetadata( Long id, String label, int displayOrder) {
+        FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setId(id);
+
+        fileMetadata.setLabel(label);
+        fileMetadata.setDisplayOrder(displayOrder);
+        fileMetadata.setCategories(new ArrayList<>());
+
+        return fileMetadata;
     }
     
     public static ExplicitGroup makeExplicitGroup( ExplicitGroupProvider prv ) {

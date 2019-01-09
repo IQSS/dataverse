@@ -8,6 +8,7 @@ public class FileSortFieldAndOrder {
     private String sortField;
     private String sortOrder;
 
+    private static String displayOrder = "displayOrder";
     public static String label = "label";
     public static String createDate = "dataFile.createDate";
     public static String size = "dataFile.filesize";
@@ -15,8 +16,8 @@ public class FileSortFieldAndOrder {
 
     public FileSortFieldAndOrder(String userSuppliedSortField, String userSuppliedSortOrder) {
         if (StringUtils.isBlank(userSuppliedSortField)) {
-            sortField = label;
-        } else if (userSuppliedSortField.equals(label) || userSuppliedSortField.equals(createDate) || userSuppliedSortField.equals(size) || userSuppliedSortField.equals(type)) {
+            sortField = displayOrder;
+        } else if (isUserSuppliedSortField(userSuppliedSortField)) {
             sortField = userSuppliedSortField;
         } else {
             sortField = label;
@@ -40,4 +41,11 @@ public class FileSortFieldAndOrder {
         return sortOrder;
     }
 
+    private boolean isUserSuppliedSortField(String userSuppliedSortField) {
+        return userSuppliedSortField.equals(displayOrder) ||
+                userSuppliedSortField.equals(label) ||
+                userSuppliedSortField.equals(createDate) ||
+                userSuppliedSortField.equals(size) ||
+                userSuppliedSortField.equals(type);
+    }
 }

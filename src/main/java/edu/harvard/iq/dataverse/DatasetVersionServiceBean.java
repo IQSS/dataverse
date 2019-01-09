@@ -1077,6 +1077,10 @@ w
         
         return info;
     }
+
+    public void saveFileMetadata(List<FileMetadata> fileMetadatas) {
+        fileMetadatas.forEach(em::merge);
+    }
     
     private boolean isFileUnfsIdentical(List<String> fileUnfs1, List<String> fileUnfs2) {
         if (fileUnfs1.size() != fileUnfs2.size()) {

@@ -1,0 +1,1 @@
+ALTER TABLE public.filemetadata ADD displayorder integer DEFAULT 0 NULL;

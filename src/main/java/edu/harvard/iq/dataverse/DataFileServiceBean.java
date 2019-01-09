@@ -811,7 +811,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         logger.fine("Retrieved and mapped "+i+" file categories attached to files in the version "+version.getId());
         
-        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED, DIRECTORYLABEL, prov_freeform from FileMetadata where datasetversion_id = "+version.getId() + " ORDER BY LABEL").getResultList();
+        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED, DIRECTORYLABEL, prov_freeform, displayorder from FileMetadata where datasetversion_id = "+version.getId() + " ORDER BY LABEL").getResultList();
         
         for (Object[] result : metadataResults) {
             Integer filemeta_id = (Integer) result[0];
@@ -872,7 +872,12 @@ public class DataFileServiceBean implements java.io.Serializable {
             if (provFreeForm != null){
                 fileMetadata.setProvFreeForm(provFreeForm);
             }
-                        
+
+            Integer displayOrder = (Integer) result[7];
+            if (displayOrder != null){
+                fileMetadata.setDisplayOrder(displayOrder);
+            }
+
             retList.add(fileMetadata);
         }
         

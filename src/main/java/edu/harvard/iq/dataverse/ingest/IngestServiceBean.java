@@ -333,7 +333,7 @@ public class IngestServiceBean {
                     if (dataFile.getOwner() == null) {
                         dataFile.setOwner(dataset);
 
-                        version.getFileMetadatas().add(dataFile.getFileMetadata());
+                        version.addFileMetadata(dataFile.getFileMetadata());
                         dataFile.getFileMetadata().setDatasetVersion(version);
                         dataset.getFiles().add(dataFile);
                         

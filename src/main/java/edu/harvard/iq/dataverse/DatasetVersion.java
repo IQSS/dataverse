@@ -49,6 +49,8 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 /**
  *
  * @author skraffmiller
@@ -193,8 +195,9 @@ public class DatasetVersion implements Serializable {
     }
     
     public List<FileMetadata> getFileMetadatasSorted() {
-        Collections.sort(fileMetadatas, FileMetadata.compareByLabel);
-        return fileMetadatas;
+        List<FileMetadata> result = newArrayList(fileMetadatas);
+        Collections.sort(result, FileMetadata.compareByDisplayOrder);
+        return result;
     }
 
     public void setFileMetadatas(List<FileMetadata> fileMetadatas) {
@@ -1793,6 +1796,20 @@ public class DatasetVersion implements Serializable {
 
     public String getLocaleLastUpdateTime() {
         return DateUtil.formatDate(new Timestamp(lastUpdateTime.getTime()));
+    }
+    public void addFileMetadata(FileMetadata fileMetadata) {
+        fileMetadata.setDisplayOrder(fileMetadataNextOrder());
+        getFileMetadatas().add(fileMetadata);
+    }
+
+    private int fileMetadataNextOrder() {
+        int maxDisplayOrder = -1;
+        for (FileMetadata metadata : getFileMetadatas()) {
+            if (metadata.getDisplayOrder() > maxDisplayOrder) {
+                maxDisplayOrder = metadata.getDisplayOrder();
+            }
+        }
+        return ++maxDisplayOrder;
     }
 
 }

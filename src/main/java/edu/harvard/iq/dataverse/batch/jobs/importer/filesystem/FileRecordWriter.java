@@ -355,7 +355,7 @@ public class FileRecordWriter extends AbstractItemWriter {
         packageFile.getFileMetadatas().add(fmd);
         if (dataset.getLatestVersion().getFileMetadatas() == null) dataset.getLatestVersion().setFileMetadatas(new ArrayList<>());
         
-        dataset.getLatestVersion().getFileMetadatas().add(fmd);
+        dataset.getLatestVersion().addFileMetadata(fmd);
         fmd.setDatasetVersion(dataset.getLatestVersion());
         
 	String isFilePIDsEnabled = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.FilePIDsEnabled, "true"); //default value for file PIDs is 'true'
@@ -460,7 +460,7 @@ public class FileRecordWriter extends AbstractItemWriter {
         fmd.setDataFile(datafile);
         datafile.getFileMetadatas().add(fmd);
         if (version.getFileMetadatas() == null) version.setFileMetadatas(new ArrayList<>());
-        version.getFileMetadatas().add(fmd);
+        version.addFileMetadata(fmd);
         fmd.setDatasetVersion(version);
 
         datafile = dataFileServiceBean.save(datafile);
