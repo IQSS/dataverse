@@ -1796,6 +1796,14 @@ public class EditDatafilesPage implements java.io.Serializable {
                             uploadWarningMessage = datafiles.get(0).getIngestReportMessage();
                             uploadInProgress = false;
                         } else {
+                            //Add annotations category to the list
+                            List<String> categories = getCategoriesByName();
+                            if(!categories.contains(FileUtil.ANNOTATIONS_CATEGORY)) {
+                                setNewCategoryName(FileUtil.ANNOTATIONS_CATEGORY);
+                                saveNewCategory();
+                            }
+                            //Set the category for this file
+                            datafiles.get(0).getFileMetadata().addCategoryByName(FileUtil.ANNOTATIONS_CATEGORY);
                             uploadWarningMessage = processUploadedFileList(datafiles);
                             logger.fine("Warning message during upload: " + uploadWarningMessage);
                         }

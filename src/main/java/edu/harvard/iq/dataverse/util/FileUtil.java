@@ -153,6 +153,7 @@ public class FileUtil implements java.io.Serializable  {
     public static final String HYPOTHESIS_ANNOTATIONS_FILENAME = "Annotations.json";
 
     public static final String HYPOTHESIS_LIMIT_WARNING = "Over 200 annotations, retrieval can't be completed";
+    public static final String ANNOTATIONS_CATEGORY = "ATI Annotations";
 
 
     /**
