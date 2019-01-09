@@ -17,12 +17,12 @@ package edu.harvard.iq.dataverse.util.bagit;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Logger;
 import java.util.zip.ZipException;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.log4j.Logger;
 
 import edu.harvard.iq.dataverse.DataFile;
 
@@ -34,7 +34,7 @@ import org.apache.commons.compress.utils.IOUtils;
  */
 public class BagValidationJob implements Runnable {
 
-    private static final Logger log = Logger.getLogger(BagValidationJob.class);
+    private static final Logger log = Logger.getLogger(BagValidationJob.class.getCanonicalName());
 
     private static ZipFile zf = null;
     private static BagGenerator bagGenerator = null;
@@ -62,11 +62,11 @@ public class BagValidationJob implements Runnable {
 
         String realHash = generateFileHash(name, zf);
         if (hash.equals(realHash)) {
-            log.debug("Valid hash for " + name);
+            log.fine("Valid hash for " + name);
         } else {
-            log.error("Invalid " + bagGenerator.getHashtype() + " for " + name);
-            log.debug("As sent: " + hash);
-            log.debug("As calculated: " + realHash);
+            log.severe("Invalid " + bagGenerator.getHashtype() + " for " + name);
+            log.fine("As sent: " + hash);
+            log.fine("As calculated: " + realHash);
         }
     }
 
@@ -89,7 +89,7 @@ public class BagValidationJob implements Runnable {
             } else if (hashtype.equals(DataFile.ChecksumType.MD5)) {
                 realHash = DigestUtils.md5Hex(inputStream);
             } else {
-                log.warn("Unknown hash type: " + hashtype);
+                log.warning("Unknown hash type: " + hashtype);
             }
 
         } catch (ZipException e) {
@@ -101,7 +101,7 @@ public class BagValidationJob implements Runnable {
         } finally {
             IOUtils.closeQuietly(inputStream);
         }
-        log.debug("Retrieve/compute time = " + (System.currentTimeMillis() - start) + " ms");
+        log.fine("Retrieve/compute time = " + (System.currentTimeMillis() - start) + " ms");
         // Error check - add file sizes to compare against supplied stats
         bagGenerator.incrementTotalDataSize(archiveEntry1.getSize());
         return realHash;
@@ -115,7 +115,7 @@ public class BagValidationJob implements Runnable {
         bagGenerator = bg;
         hashtype = bagGenerator.getHashtype();
         if (hashtype == null) {
-            log.warn("Null hashtype. Validation will not occur");
+            log.warning("Null hashtype. Validation will not occur");
         }
 
     }
