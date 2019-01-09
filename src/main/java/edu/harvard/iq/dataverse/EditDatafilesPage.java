@@ -2686,6 +2686,14 @@ public class EditDatafilesPage implements java.io.Serializable {
         for (String category: dataset.getCategoriesByName() ){
             categoriesByName.add(category);
         }
+        //Add any categories added to this file during upload
+        if (fileMetadataSelectedForTagsPopup.getCategories() != null) {
+            for (int i = 0; i < fileMetadataSelectedForTagsPopup.getCategories().size(); i++) {
+                if (!categoriesByName.contains(fileMetadataSelectedForTagsPopup.getCategories().get(i).getName())) {
+                    categoriesByName.add(fileMetadataSelectedForTagsPopup.getCategories().get(i).getName());
+                }
+            }
+        }
         refreshSelectedTags();
     }
     
