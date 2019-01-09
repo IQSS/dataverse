@@ -89,29 +89,6 @@ public class DataverseTextMessageServiceBeanTest {
     }
 
     @Test
-    public void shouldUpdateTextMessage() {
-        // given
-        LocalDateTime now = LocalDateTime.now();
-        DataverseTextMessageDto messageDto = aTextMessageDto(now);
-
-        // and
-        Dataverse dataverse = new Dataverse();
-        dataverse.setId(messageDto.getDataverseId());
-        when(em.find(Dataverse.class, messageDto.getDataverseId())).thenReturn(dataverse);
-
-        // and
-        DataverseTextMessage textMessage = new DataverseTextMessage();
-        textMessage.setId(messageDto.getId());
-        when(em.find(DataverseTextMessage.class, messageDto.getId())).thenReturn(textMessage);
-
-        // when
-        service.save(messageDto);
-
-        // then
-        verifyUpdateNewTextMessage(messageDto);
-    }
-
-    @Test
     public void shouldDeleteTextMessage() {
         // given
         DataverseTextMessage textMessage = new DataverseTextMessage();
@@ -146,24 +123,6 @@ public class DataverseTextMessageServiceBeanTest {
         verify(em).merge(argument.capture());
 
         assertNull(argument.getValue().getId());
-        assertEquals(dto.isActive(), argument.getValue().isActive());
-        assertEquals(dto.getDataverseId(), argument.getValue().getDataverse().getId());
-        assertEquals(dto.getFromTime(), argument.getValue().getFromTime());
-        assertEquals(dto.getToTime(), argument.getValue().getToTime());
-        assertNull(argument.getValue().getVersion());
-
-        dto.getDataverseLocalizedMessage().forEach(lm -> {
-            Set<DataverseLocalizedMessage> messages = argument.getValue().getDataverseLocalizedMessages();
-            verifyLocaleMessage(argument.getValue(), messages, lm);
-        });
-        assertEquals(dto.getDataverseLocalizedMessage().size(), argument.getValue().getDataverseLocalizedMessages().size());
-    }
-
-    private void verifyUpdateNewTextMessage(DataverseTextMessageDto dto) {
-        ArgumentCaptor<DataverseTextMessage> argument = ArgumentCaptor.forClass(DataverseTextMessage.class);
-        verify(em).merge(argument.capture());
-
-        assertEquals(dto.getId(), argument.getValue().getId());
         assertEquals(dto.isActive(), argument.getValue().isActive());
         assertEquals(dto.getDataverseId(), argument.getValue().getDataverse().getId());
         assertEquals(dto.getFromTime(), argument.getValue().getFromTime());
