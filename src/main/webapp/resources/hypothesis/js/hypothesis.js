@@ -48,7 +48,6 @@ function writeHypothesisFields(json, date, title, authors) {
   header.append($("<div/>").text("This is the annotations-only view of the ATI data project " + title + " by " + authors + "."));
   header.append($("<div/>").text(JSON.stringify(json.total) + " annotations retrieved on " + date));
   
-  alert(JSON.stringify(json.rows[0].links.incontext);
   header.append($("<div/>").append($("<a/>").attr("href",JSON.stringify(json.rows[0].links.incontext)).text("View annotations in context")));
   header.append($("<div/>").text("Close this tab to return to the data project."));
   
