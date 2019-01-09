@@ -21,6 +21,9 @@ public class TextMessagePage implements Serializable {
     private LazyDataverseTextMessage lazydataverseTextMessages;
 
     @Inject
+    private DataverseTextMessageServiceBean textMessageService;
+
+    @Inject
     private PermissionsWrapper permissionsWrapper;
 
     public String init() {
@@ -33,6 +36,15 @@ public class TextMessagePage implements Serializable {
         return StringUtils.EMPTY;
     }
 
+    public String newTextMessagePage() {
+        return "/dataverse-editTextMessages.xhtml?dataverseId=" + dataverseId + "&faces-redirect=true";
+    }
+
+    public String reuseTextMessage(String textMessageId) {
+        return "/dataverse-editTextMessages.xhtml?dataverseId=" + dataverseId +
+                "&id=" + textMessageId + "&faces-redirect=true";
+    }
+
     public long getDataverseId() {
         return dataverseId;
     }
@@ -41,15 +53,15 @@ public class TextMessagePage implements Serializable {
         return lazydataverseTextMessages;
     }
 
+    public DataverseTextMessageServiceBean getTextMessageService() {
+        return textMessageService;
+    }
+
     public void setDataverseId(long dataverseId) {
         this.dataverseId = dataverseId;
     }
 
     public void setLazydataverseTextMessages(LazyDataverseTextMessage lazydataverseTextMessages) {
         this.lazydataverseTextMessages = lazydataverseTextMessages;
-    }
-
-    public String newTextMessagePage() {
-        return "/dataverse-editTextMessages.xhtml?dataverseId=" + dataverseId + "&faces-redirect=true";
     }
 }

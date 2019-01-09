@@ -39,11 +39,11 @@ public class DataverseTextMessageDto {
     }
 
     public String getPrettyFromDate() {
-        return DateUtil.formatDateToDMY(fromTime);
+        return DateUtil.formatDateToYMD_HM(fromTime);
     }
 
     public String getPrettyToTime() {
-        return DateUtil.formatDateToDMY(toTime);
+        return DateUtil.formatDateToYMD_HM(toTime);
     }
 
     public Date getToTime() {

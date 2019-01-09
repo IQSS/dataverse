@@ -81,9 +81,9 @@ public class DateUtil {
         return java.util.Date.from(date.atZone(DataverseClock.zoneId).toInstant());
     }
 
-    public static String formatDateToDMY(Date date) {
+    public static String formatDateToYMD_HM(Date date) {
 
-        SimpleDateFormat format = new SimpleDateFormat("dd-MM-YYYY");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         return date == null ? StringUtils.EMPTY : format.format(date);
     }
 }

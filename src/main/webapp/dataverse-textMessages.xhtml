@@ -49,16 +49,22 @@
                                     <div class="p-col">
                                         <h:outputLabel for="message-Status" value="Status:" style="margin-right: 10px"/>
                                         <h:outputText id="message-Status"
-                                                      value="#{history.active ? 'Active' : 'Disabled'}"/>
+                                                      value="#{history.active ? 'Enabled' : 'Disabled'}"/>
                                     </div>
                                 </div>
 
-                                <p:commandButton value="Delete"/>
+                                <p:commandButton value="Delete"
+                                                 action="#{TextMessagePage.textMessageService.delete(history.id)}"
+                                                 update=":text-messages-form"/>
                                 <div style="float: right">
                                     <p:commandButton value="Deactivate"
-                                                     style="margin-right:10px;"/>
+                                                     style="margin-right:10px;"
+                                                     action="#{TextMessagePage.textMessageService.deactivate(history.id)}"
+                                                     update=":text-messages-form"/>
 
-                                    <p:commandButton value="Reuse"/>
+                                    <p:commandButton value="Reuse"
+                                                     action="#{TextMessagePage.reuseTextMessage(history.id)}"
+                                                     update=":text-messages-form"/>
                                 </div>
                             </p:panel>
                         </p:dataList>
