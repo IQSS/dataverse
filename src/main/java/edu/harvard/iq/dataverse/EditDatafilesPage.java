@@ -1797,6 +1797,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                             uploadInProgress = false;
                         } else {
                             //Add annotations category to the list
+                            refreshCategoriesByName();
                             List<String> categories = getCategoriesByName();
                             if(!categories.contains(FileUtil.ANNOTATIONS_CATEGORY)) {
                                 setNewCategoryName(FileUtil.ANNOTATIONS_CATEGORY);
