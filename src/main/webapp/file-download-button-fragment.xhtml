@@ -51,11 +51,17 @@
     <!--exploreTools is set as a ui:param by the file and dataset pages-->
     <!--Note that "WorldMap Explore" is not an explore tool (external tool)-->
     <div class="btn-group" jsf:rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and not empty exploreTools or (worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
-        <ui:fragment rendered="#{(exploreTools.size()==1 and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))  or (exploreTools.size()==0 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
+        <ui:fragment rendered="#{(exploreTools.size()==1 and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))">
+            <button type="button" class="btn btn-default"  onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
+                <span class="glyphicon #{bundle.exploreIcon}"/> #{exploreTools[0].displayName}
+            </button>
+        </ui:fragment>
+        <ui:fragment rendered="#{(exploreTools.size()==0 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
             <button type="button" class="btn btn-default"  onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
                 <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
             </button>
         </ui:fragment>
+        
         <ui:fragment rendered="#{exploreTools.size()>1 or (exploreTools.size()>=1 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                 <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span  class="caret"/>
