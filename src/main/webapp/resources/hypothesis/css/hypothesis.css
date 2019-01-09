@@ -6,14 +6,21 @@
     font-family: sans-serif;
     color: darkslategray;
     overflow-wrap: break-word;
-    font-style: italic;
     margin-left: 40px;
     margin-bottom: 10px;
-    background-color: lightgray;
-    padding: 15px;
+    background: #ECF6FB;
+    border-color: #9acfea;
+    border-style: solid;
+    border-width:1px;
+    padding: 15px 15px 5px 15px;
 }
 .annotation-header div {
     margin: 10px 5px 5px 0px;
+}
+.annotation-note {
+    float:right;
+    font-size: 12px;
+    padding-top:20px;
 }
 .annotation-card {
     font-size: 13px;
@@ -45,18 +52,6 @@ max-width:100%;
     border-left: 3px solid #dbdbdb;
     margin-bottom: 10px;
 }
-.annotation-card__header {
-    margin-bottom: 15px;
-    -ms-flex-align: baseline;
-    align-items: baseline;
-}
-.annotation-card__timestamp {
-    font-size: 11px;
-    line-height: 12px;
-    font-weight: 400;
-    letter-spacing: .2px;
-    color: #a6a6a6;
-}
 .annotation-card__tags {
     display: -ms-flexbox;
     display: flex;
@@ -84,10 +79,4 @@ max-width:100%;
         word-break:break-all;
         overflow-y:auto;
 }
-.annotation__source a, .annotation__group a {
-        font-weight: normal;
-}
-.annotation__source, .annotation__group {
-        font-weight: bold;
-        color: #31708f;
-}
+                                                        
