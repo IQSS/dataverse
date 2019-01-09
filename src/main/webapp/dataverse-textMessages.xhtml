@@ -62,7 +62,9 @@
                                                      action="#{TextMessagePage.textMessageService.deactivate(history.id)}"
                                                      update=":text-messages-form"/>
 
-                                    <p:commandButton value="Reuse"/>
+                                    <p:commandButton value="Reuse"
+                                                     action="#{TextMessagePage.reuseTextMessage(history.id)}"
+                                                     update=":text-messages-form"/>
                                 </div>
                             </p:panel>
                         </p:dataList>

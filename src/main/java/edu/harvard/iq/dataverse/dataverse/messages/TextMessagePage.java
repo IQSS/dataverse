@@ -40,6 +40,11 @@ public class TextMessagePage implements Serializable {
         return "/dataverse-editTextMessages.xhtml?dataverseId=" + dataverseId + "&faces-redirect=true";
     }
 
+    public String reuseTextMessage(String textMessageId) {
+        return "/dataverse-editTextMessages.xhtml?dataverseId=" + dataverseId +
+                "&id=" + textMessageId + "&faces-redirect=true";
+    }
+
     public long getDataverseId() {
         return dataverseId;
     }
