@@ -139,13 +139,14 @@ public class DOIDataCiteRegisterService {
         if (myDiff.hasDifferences()) {
             for(Difference d : myDiff.getDifferences()) {
             
-              logger.info(d.toString());
+              logger.fine(d.toString());
             }
-            retString = client.postMetadata(xmlMetadata);
+            retString = "metadata:\\r" + client.postMetadata(xmlMetadata) + "\\r";
         }
         if (!target.equals(client.getUrl(numericIdentifier))) {
-            logger.info("updating target URl to " +  target);
+            logger.fine("updating target URl to " +  target);
             client.postUrl(numericIdentifier, target);
+            retString = retString + "url:\\r" + target;
 
         }
 

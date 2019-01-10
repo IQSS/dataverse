@@ -387,8 +387,9 @@ public class Datasets extends AbstractApiBean {
         }
 
         return response(req -> {
-            execCommand(new UpdateDvObjectPIDMetadataCommand(findDatasetOrDie(id), req));
-            List<String> args = Arrays.asList(id);
+            Dataset dataset = findDatasetOrDie(id);
+            execCommand(new UpdateDvObjectPIDMetadataCommand(dataset, req));
+            List<String> args = Arrays.asList(dataset.getIdentifier());
             return ok(BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.success.for.single.dataset", args));
         });
     }
