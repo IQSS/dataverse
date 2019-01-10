@@ -36,6 +36,7 @@ import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.builder.Input.Builder;
 import org.xmlunit.diff.Diff;
+import org.xmlunit.diff.Difference;
 
 /**
  *
@@ -136,9 +137,14 @@ public class DOIDataCiteRegisterService {
                 .build();
 
         if (myDiff.hasDifferences()) {
+            for(Difference d : myDiff.getDifferences()) {
+            
+              logger.info(d.toString());
+            }
             retString = client.postMetadata(xmlMetadata);
         }
         if (!target.equals(client.getUrl(numericIdentifier))) {
+            logger.info("updating target URl to " +  target);
             client.postUrl(numericIdentifier, target);
 
         }
