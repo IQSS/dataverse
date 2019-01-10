@@ -231,7 +231,7 @@ public class MetricsIT {
 
         //Run each query twice and compare results to tests caching
         // See the "TODO" at the beginning of the class; 
-        // ideally, we'll want to have more comoprehensive tests. 
+        // ideally, we'll want to have more comprehensive tests. 
         response = UtilIT.metricsDatasetsBySubjectToMonth(thismonth);
         String postcache = response.prettyPrint();
         response.then().assertThat()
