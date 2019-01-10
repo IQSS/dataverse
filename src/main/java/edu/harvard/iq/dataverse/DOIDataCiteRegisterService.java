@@ -558,9 +558,9 @@ class DataCiteMetadataTemplate {
         } else if (dvObject.isInstanceofDataFile()) {
             DataFile df = (DataFile) dvObject;
             appendIdentifier(sb, "DOI", "IsPartOf", df.getOwner().getGlobalId().toString());
-        }
-        if(sb.length()!=0) {
-          sb.append("</relatedIdentifiers>");
+            if (sb.length() != 0) {
+                sb.append("</relatedIdentifiers>");
+            }
         }
         return sb.toString();
     }
