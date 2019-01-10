@@ -47,7 +47,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
         }
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(target.getProtocol(), ctxt);
         try {
-            Boolean doiRetString = idServiceBean.publicizeIdentifier(target);
+            Boolean doiRetString = idServiceBean.updateIdentifier(target);
             if (doiRetString) {
                 target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 ctxt.em().merge(target);

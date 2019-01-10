@@ -30,6 +30,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
+import org.xmlunit.diff.Diff;
 
 /**
  *
@@ -115,6 +118,29 @@ public class DOIDataCiteRegisterService {
                 Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        return retString;
+    }
+    
+    public String reRegisterIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
+        String retString = "";
+        String numericIdentifier = identifier.substring(identifier.indexOf(":") + 1);
+        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+        String target = metadata.get("_target");
+        DataCiteRESTfullClient client = getClient();
+        String currentMetadata = client.getMetadata(numericIdentifier);
+
+        Diff myDiff = DiffBuilder.compare(Input.fromString(currentMetadata))
+                .withTest(Input.fromString(xmlMetadata))
+                .build();
+
+        if (myDiff.hasDifferences()) {
+            retString = client.postMetadata(xmlMetadata);
+        }
+        if (!target.equals(client.getUrl(numericIdentifier))) {
+            client.postUrl(numericIdentifier, target);
+
+        }
+
         return retString;
     }
 

@@ -428,5 +428,9 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }
+
+    public boolean updateIdentifier(DvObject dvObject) {
+        return publicizeIdentifier(dvObject);
+    }
     
 }

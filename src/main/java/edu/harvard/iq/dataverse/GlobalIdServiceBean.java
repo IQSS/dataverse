@@ -50,6 +50,8 @@ public interface GlobalIdServiceBean {
     
     boolean publicizeIdentifier(DvObject studyIn);
     
+    boolean updateIdentifier(DvObject dvObject);
+    
     static GlobalIdServiceBean getBean(String protocol, CommandContext ctxt) {
         final Function<CommandContext, GlobalIdServiceBean> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
         if ( protocolHandler != null ) {
@@ -63,6 +65,8 @@ public interface GlobalIdServiceBean {
     static GlobalIdServiceBean getBean(CommandContext ctxt) {
         return getBean(ctxt.settings().getValueForKey(Key.Protocol, ""), ctxt);
     }
+
+
     
 }
 
