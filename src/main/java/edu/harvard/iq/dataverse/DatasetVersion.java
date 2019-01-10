@@ -48,6 +48,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import javax.validation.constraints.Size;
 
 /**
  *
@@ -103,6 +104,7 @@ public class DatasetVersion implements Serializable {
     private Long versionNumber;
     private Long minorVersionNumber;
     
+    @Size(min=0, max=VERSION_NOTE_MAX_LENGTH)
     @Column(length = VERSION_NOTE_MAX_LENGTH)
     private String versionNote;
     
@@ -142,6 +144,7 @@ public class DatasetVersion implements Serializable {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date archiveTime;
     
+    @Size(min=0, max=ARCHIVE_NOTE_MAX_LENGTH)
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
     private String archiveNote;
     
@@ -1494,9 +1497,10 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
+        
         return returnSet;
     }
-
+    
     public List<WorkflowComment> getWorkflowComments() {
         return workflowComments;
     }
