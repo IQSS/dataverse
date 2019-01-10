@@ -207,7 +207,29 @@ public class Metrics extends AbstractApiBean {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
     }
+  
+    @GET
+    @Path("datasets/bySubject/toMonth/{yyyymm}")
+    public Response getDatasetsBySubjectToMonth(@PathParam("yyyymm") String yyyymm) {
+        String metricName = "datasetsBySubjectToMonth";
 
+        try {
+            String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
+            
+            String jsonArrayString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm);
+            
+            if (null == jsonArrayString) { //run query and save
+                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubjectToMonth(sanitizedyyyymm));
+                jsonArrayString = jsonArrayBuilder.build().toString();
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, jsonArrayString), false);
+            }
+
+            return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
+        } catch (Exception ex) {
+            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
+        }
+    }
+    
     /** Files */
     @GET
     @Path("files")
