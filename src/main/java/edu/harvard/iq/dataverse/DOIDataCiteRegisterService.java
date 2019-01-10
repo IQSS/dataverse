@@ -26,12 +26,15 @@ import javax.json.JsonArrayBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import javax.xml.transform.Source;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
+import org.xmlunit.builder.Input.Builder;
 import org.xmlunit.diff.Diff;
 
 /**
@@ -128,11 +131,8 @@ public class DOIDataCiteRegisterService {
         String target = metadata.get("_target");
         DataCiteRESTfullClient client = getClient();
         String currentMetadata = client.getMetadata(numericIdentifier);
-        logger.info(xmlMetadata);
-        logger.info(currentMetadata);
-
-        Diff myDiff = DiffBuilder.compare(Input.fromString(currentMetadata))
-                .withTest(Input.fromString(xmlMetadata))
+        Diff myDiff = DiffBuilder.compare(xmlMetadata)
+                .withTest(currentMetadata).ignoreWhitespace().checkForSimilar()
                 .build();
 
         if (myDiff.hasDifferences()) {
