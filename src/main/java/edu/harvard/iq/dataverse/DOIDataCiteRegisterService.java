@@ -128,6 +128,8 @@ public class DOIDataCiteRegisterService {
         String target = metadata.get("_target");
         DataCiteRESTfullClient client = getClient();
         String currentMetadata = client.getMetadata(numericIdentifier);
+        logger.info(xmlMetadata);
+        logger.info(currentMetadata);
 
         Diff myDiff = DiffBuilder.compare(Input.fromString(currentMetadata))
                 .withTest(Input.fromString(xmlMetadata))
