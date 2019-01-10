@@ -99,6 +99,11 @@ actionlogrecord
 
 There is a database table called ``actionlogrecord`` that captures events that may be of interest. See https://github.com/IQSS/dataverse/issues/2729 for more discussion around this table.
 
+Edit Draft Versions Logging
+---------------------------
+
+Changes made to draft versions of datasets are logged in a folder called logs/edit-drafts. See https://github.com/IQSS/dataverse/issues/5145 for more information on this logging.
+
 EJB Timers
 ----------
 
