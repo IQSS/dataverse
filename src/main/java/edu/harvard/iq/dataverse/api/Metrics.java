@@ -191,21 +191,7 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("datasets/bySubject")
     public Response getDatasetsBySubject() {
-        String metricName = "datasetsBySubject";
-
-        try {
-            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName);
-
-            if (null == jsonArrayString) { //run query and save
-                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubject());
-                jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, jsonArrayString), false);
-            }
-
-            return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
-        } catch (Exception ex) {
-            return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
-        }
+        return getDatasetsBySubjectToMonth(MetricsUtil.getCurrentMonth());
     }
   
     @GET
