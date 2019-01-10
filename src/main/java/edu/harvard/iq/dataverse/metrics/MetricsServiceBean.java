@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.metrics;
 import edu.harvard.iq.dataverse.Metric;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -217,14 +218,32 @@ public class MetricsServiceBean implements Serializable {
      * @param yyyymm Month in YYYY-MM format.
      */
     public long downloadsToMonth(String yyyymm) throws Exception {
-        Query query = em.createNativeQuery(""
+        Query earlyDateQuery = em.createNativeQuery(""
+               + "select responsetime from guestbookresponse\n"
+               + "ORDER BY responsetime LIMIT 1;"
+        );
+
+        Timestamp earlyDateTimestamp = (Timestamp) earlyDateQuery.getSingleResult();
+        Date earliestDate = new Date(earlyDateTimestamp.getTime());
+        SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM");  
+        Date dateQueried = formatter2.parse(yyyymm);
+        
+        if(!dateQueried.before(earliestDate)) {
+            Query query = em.createNativeQuery(""
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
                 + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')"
                 + "or responsetime is NULL;" //includes historic guestbook records without date
-        );
-        logger.fine("query: " + query);
-        return (long) query.getSingleResult();
+            );
+            logger.fine("query: " + query);
+            return (long) query.getSingleResult();
+        }
+        else {
+            //When we query before the earliest dated record, return 0;
+            return 0L;
+        }
+
+
     }
 
     public long downloadsPastDays(int days) throws Exception {
