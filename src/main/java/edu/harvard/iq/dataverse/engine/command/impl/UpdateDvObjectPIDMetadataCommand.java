@@ -53,7 +53,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                 ctxt.em().merge(target);
                 ctxt.em().flush();
                 for (DataFile df : target.getFiles()) {
-                    doiRetString = idServiceBean.publicizeIdentifier(df);
+                    doiRetString = idServiceBean.updateIdentifier(df);
                     if (doiRetString) {
                         df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                         ctxt.em().merge(df);
