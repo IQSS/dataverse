@@ -92,12 +92,6 @@ public class DatasetMetrics {
     private Long downloadsUnique;
 
     /**
-     * Internally, one dataset can cite another using "Related Dataset" but we
-     * expect citations to come from Crossref as well.
-     */
-    @Column(nullable = true)
-    private Long citations;
-    /**
      * 2 character country code.
      *
      * TODO: Indicate which standard we are using? Would 3 character codes be
@@ -168,14 +162,6 @@ public class DatasetMetrics {
 
     public void setDownloadsUnique(Long downloadsUnique) {
         this.downloadsUnique = downloadsUnique;
-    }
-
-    public Long getCitations() {
-        return citations;
-    }
-
-    public void setCitations(Long citations) {
-        this.citations = citations;
     }
 
     public String getCountryCode() {
