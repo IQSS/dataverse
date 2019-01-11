@@ -101,7 +101,7 @@
 
                     <!-- VIEW ALL -->
                     <div class="row col-xs-12">
-                        <p class="small text-muted"><a href="/dataverse/root?q=%28categoryOfDataverse%3A%22Journal%22%29&types=dataverses%3Adatasets&sort=dateSort&order=desc">ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                        <p class="small text-muted"><a href="/dataverse/root?q=%28categoryOfDataverse%3A%22Journal%22+OR+dvCategory%3A%22Journal%22%29&types=datasets%3Adataverses">ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
                 </div>
 
@@ -163,11 +163,12 @@
         $.get(simpleCatSearch + fqString + "&per_page=" + resultCount, function(jData) {
             var resultHtml = "";
             jData.data.items.forEach(function(item){
-                var date = new Date(item.published_at);
-                resultHtml += "<div class=\"row col-xs-12\">";
+                var options = { year: 'numeric', month: 'short', day: 'numeric' };
+                var date = new Date(item.published_at).toLocaleString('en-US', options);
+                resultHtml += "<div class=\"col-xs-12\">";
                 resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">";
                 resultHtml += "<object data=\"" + thumbBaseURL + item.global_id + "\" type=\"image/png\"/><span class=\"icon-dataset\"></span></object></div>";
-                resultHtml += "<div class=\"col-xs-9 col-md-10 hmpg-recent-metadata\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">" + item.name + "</a></p><p class=\"small text-muted\"><a href=\"/dataverse/" + item.identifier_of_dataverse + "\" class=\"highlightBold\">" + item.name_of_dataverse + "</a> " + date.toDateString() + "</p></div>";
+                resultHtml += "<div class=\"col-xs-9 col-md-10 hmpg-recent-metadata\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">" + item.name + "</a></p><p class=\"small text-muted\"><a href=\"/dataverse/" + item.identifier_of_dataverse + "\" class=\"highlightBold\">" + item.name_of_dataverse + "</a> " + date + "</p></div>";
                 resultHtml += "<hr class=\"col-xs-12\"/></div>";
             });
             document.getElementById(elm).innerHTML = resultHtml;
@@ -178,15 +179,19 @@
     function queryMetricSimple(metricRelPath, month, elm) {
         $.get(metricBaseUrl + metricRelPath + month, function(jData) {
             var resultCount = jData.data.count;
-            document.getElementById(elm).innerHTML = resultCount;
+            document.getElementById(elm).innerHTML = resultCount.toLocaleString('en');
         });
     }
     
     function queryMetricSearch(metricRelPath, month) {
         $.get(metricBaseUrl + metricRelPath + month, function(jData) {
             var resultCount = jData.data.count;
+
+            //  $(this).text(Math.ceil(now).toLocaleString('en'));
             var roundedDatasetCount = Math.floor(resultCount / 100) * 100;
-            var dynamicSearchPlaceholder = "Search over " + roundedDatasetCount + " datasets...";
+
+
+            var dynamicSearchPlaceholder = "Search over " + roundedDatasetCount.toLocaleString('en') + " datasets...";
             $("#inputDataverseSearch").attr({"placeholder" : dynamicSearchPlaceholder});
         });
     }
@@ -197,7 +202,7 @@
             var resultHtml = "";
             jData.data.forEach(function(item) {
                 if(item.subject !== "N/A")
-                subArray.push([item.subject, item.count]);
+                subArray.push([item.subject, item.count.toLocaleString('en')]);
             });
             subArray.sort();
             subArray.forEach(function(subject){
