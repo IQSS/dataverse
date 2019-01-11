@@ -42,12 +42,12 @@ public class DataverseTextMessageDto {
     public String getPrettyFromDate() {
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        return DateUtil.formatDateToYMD_HM(fromTime, format);
+        return DateUtil.formatDate(fromTime, format);
     }
 
     public String getPrettyToTime() {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        return DateUtil.formatDateToYMD_HM(toTime, format);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm")
+        return DateUtil.formatDate(toTime, format);
     }
 
     public Date getToTime() {

@@ -18,7 +18,7 @@ public class DateUtilTest {
         format.setTimeZone(TimeZone.getTimeZone("UTC"));
         Date testDate = Date.from(Instant.ofEpochSecond(1547111385L));
         //when
-        String formatedDate = DateUtil.formatDateToYMD_HM(testDate, format);
+        String formatedDate = DateUtil.formatDate(testDate, format);
         //then
         Assert.assertEquals("2019-01-10 09:09", formatedDate);
     }
@@ -29,7 +29,7 @@ public class DateUtilTest {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         format.setTimeZone(TimeZone.getTimeZone("UTC"));
         //when
-        String formatedDate = DateUtil.formatDateToYMD_HM(null, format);
+        String formatedDate = DateUtil.formatDate(null, format);
         //then
         Assert.assertEquals(StringUtils.EMPTY, formatedDate);
     }
