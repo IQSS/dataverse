@@ -58,7 +58,11 @@ HTTP traffic can be monitored from the client side, the server side, or both.
 Monitoring HTTP Traffic from the Client Side
 ++++++++++++++++++++++++++++++++++++++++++++
 
-HTTP traffic for web clients that have cookies enabled (most browsers) can be tracked by Google Analytics and Piwik (renamed to "Matomo") as explained in the :doc:`/installation/config` section of the Installation Guide under ``:GoogleAnalyticsCode`` and ``:PiwikAnalyticsId``, respectively. You could also embed additional client side monitoring solutions by using a custom footer (``:FooterCustomizationFile``), which is described on the same page.
+HTTP traffic for web clients that have cookies enabled (most browsers) can be tracked by Google Analytics (https://www.google.com/analytics/) and Matomo (formerly "Piwik"; https://matomo.org/) as explained in the :ref:`Web-Analytics-Code` section of the Installation Guide.
+
+To track analytics beyond pageviews, style classes have been added for end user action buttons, which include:
+
+``btn-compute``, ``btn-contact``, ``btn-download``, ``btn-explore``, ``btn-export``, ``btn-preview``, ``btn-request``, ``btn-share``
 
 Monitoring HTTP Traffic from the Server Side
 +++++++++++++++++++++++++++++++++++++++++++++
