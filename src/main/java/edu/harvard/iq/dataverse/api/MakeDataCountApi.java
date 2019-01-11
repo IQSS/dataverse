@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
@@ -114,9 +115,9 @@ public class MakeDataCountApi extends AbstractApiBean {
             // TODO: Do something with non 200 status.
             System.out.println("status: " + status);
             JsonObject report = Json.createReader(connection.getInputStream()).readObject();
-            List<DatasetMetrics> datasetMetrics = MakeDataCountUtil.parseCitations(report);
+            List<DatasetExternalCitations> datasetExternalCitations = MakeDataCountUtil.parseCitations(report);
             JsonObjectBuilder output = Json.createObjectBuilder();
-            output.add("citationCount", datasetMetrics.size());
+            output.add("citationCount", datasetExternalCitations.size());
             return ok(output);
         } catch (WrappedResponse wr) {
             return wr.getResponse();

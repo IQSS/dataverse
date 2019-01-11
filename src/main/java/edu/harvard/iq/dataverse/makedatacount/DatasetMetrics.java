@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.makedatacount;
 
 import edu.harvard.iq.dataverse.Dataset;
-import java.sql.Timestamp;
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -25,7 +25,7 @@ import javax.validation.constraints.NotNull;
  * downloads for a given month.
  */
 @Entity
-public class DatasetMetrics {
+public class DatasetMetrics implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -83,8 +83,8 @@ public class MakeDataCountUtil {
         return datasetMetrics;
     }
 
-    public static List<DatasetMetrics> parseCitations(JsonObject report) {
-        List<DatasetMetrics> datasetMetrics = new ArrayList<>();
+    public static List<DatasetExternalCitations> parseCitations(JsonObject report) {
+        List<DatasetExternalCitations> datasetExternalCitations = new ArrayList<>();
         JsonArray citations = report.getJsonArray("data");
         for (JsonValue citationValue : citations) {
             JsonObject citation = (JsonObject) citationValue;
@@ -92,9 +92,9 @@ public class MakeDataCountUtil {
             String occurredAtDate = citation.getJsonObject("attributes").getString("occurred-at");
             System.out.println("cited by " + citedByDoi + " at " + occurredAtDate);
             // TODO: Should citations go in a new table so we can store the DOI of the paper that cited the dataset?
-            datasetMetrics.add(new DatasetMetrics());
+            datasetExternalCitations.add(new DatasetExternalCitations());
         }
-        return datasetMetrics;
+        return datasetExternalCitations;
     }
 
 }
