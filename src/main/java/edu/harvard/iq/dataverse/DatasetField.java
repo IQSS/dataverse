@@ -257,12 +257,37 @@ public class DatasetField implements Serializable {
         }
         return returnString;
     }
+    
+    public String getRawValue() {
+        String returnString = "";
+        for (String value : getRawValuesList()) {
+            if(value == null) {
+                value="";
+            }
+            returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
+        }
+        return returnString;
+    }
 
     public String getCompoundDisplayValue() {
         String returnString = "";
         for (DatasetFieldCompoundValue dscv : datasetFieldCompoundValues) {
             for (DatasetField dsf : dscv.getChildDatasetFields()) {
                 for (String value : dsf.getValues()) {
+                    if (!(value == null)) {
+                        returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
+                    }
+                }
+            }
+        }
+        return returnString;
+    }
+    
+    public String getCompoundRawValue() {
+        String returnString = "";
+        for (DatasetFieldCompoundValue dscv : datasetFieldCompoundValues) {
+            for (DatasetField dsf : dscv.getChildDatasetFields()) {
+                for (String value : dsf.getRawValuesList()) {
                     if (!(value == null)) {
                         returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
                     }
@@ -290,6 +315,23 @@ public class DatasetField implements Serializable {
         }
         return returnList;
     }
+
+    public List<String> getRawValuesList() {
+        List<String> returnList = new ArrayList<>();
+        if (!datasetFieldValues.isEmpty()) {
+            for (DatasetFieldValue dsfv : datasetFieldValues) {
+                returnList.add(dsfv.getUnsanitizedDisplayValue());
+            }
+        } else {
+            for (ControlledVocabularyValue cvv : controlledVocabularyValues) {
+                if (cvv != null && cvv.getStrValue() != null) {
+                    returnList.add(cvv.getStrValue());
+                }
+            }
+        }
+        return returnList;
+    }
+       
     /**
      * list of values (as opposed to display values).
      * used for passing to solr for indexing
