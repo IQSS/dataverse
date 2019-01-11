@@ -45,7 +45,7 @@
                                     #{bundle['login.builtin.credential.password']}
                                 </label>
                                 <div class="col-sm-9">
-                                    <h:inputSecret value="#{OAuth2FirstLoginPage.password}" />
+					<h:inputSecret value="#{OAuth2FirstLoginPage.password}" autocomplete="off"/><!-- browsers will in general not respect autocomplete="foo", but scanners will still flag it as a potential problem -->
                                 </div>
                             </div>
                             

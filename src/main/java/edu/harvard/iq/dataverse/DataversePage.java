@@ -46,6 +46,7 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.TransferEvent;
 
 /**
@@ -506,6 +507,7 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
         }
+        PrimeFaces.current().executeScript("scrollAfterUpdate();");
     }
 
     public List<SelectItem> resetSelectItems(DatasetFieldType typeIn) {
