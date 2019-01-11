@@ -112,6 +112,15 @@ public class MetricsUtil {
         return sanitized;
     }
 
+    //MAD: HARDCODED STRINGS. Where should the constants live?
+    public static String validateDataLocationStringType(String userInput) throws Exception {
+        if(! (userInput.equals("local") || userInput.equals("remote") || userInput.equals("all"))) {
+            throw new Exception("The inputted data location is not valid");
+        }
+        
+        return userInput;
+    }
+    
     public static String getCurrentMonth() {
         return LocalDate.now().format(DateTimeFormatter.ofPattern(MetricsUtil.YEAR_AND_MONTH_PATTERN));
     }

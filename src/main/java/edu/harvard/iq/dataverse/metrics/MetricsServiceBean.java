@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -29,12 +30,15 @@ public class MetricsServiceBean implements Serializable {
     @EJB
     SystemConfig systemConfig;
 
+    
+//MAD: I know some of these shouldn't have had dataLocation added
+    
     /** Dataverses */
     
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long dataversesToMonth(String yyyymm) throws Exception {
+    public long dataversesToMonth(String dataLocation, String yyyymm) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(dvobject.id)\n"
                 + "from dataverse\n"
@@ -47,7 +51,7 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public long dataversesPastDays(int days) throws Exception {
+    public long dataversesPastDays(String dataLocation, int days) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(dvobject.id)\n"
                 + "from dataverse\n"
@@ -61,7 +65,7 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public List<Object[]> dataversesByCategory() throws Exception {
+    public List<Object[]> dataversesByCategory(String dataLocation) throws Exception {
 
         Query query = em.createNativeQuery(""
                 + "select dataversetype, count(dataversetype) from dataverse\n"
@@ -75,7 +79,7 @@ public class MetricsServiceBean implements Serializable {
         return query.getResultList();
     }
     
-    public List<Object[]> dataversesBySubject() {
+    public List<Object[]> dataversesBySubject(String dataLocation) {
         Query query = em.createNativeQuery(""
                 + "select cvv.strvalue, count(dataverse_id) from dataversesubjects\n"
                 + "join controlledvocabularyvalue cvv ON cvv.id = controlledvocabularyvalue_id\n"
@@ -90,7 +94,7 @@ public class MetricsServiceBean implements Serializable {
     
     /** Datasets */
     
-    public List<Object[]> datasetsBySubjectToMonth(String yyyymm) {
+    public List<Object[]> datasetsBySubjectToMonth(String dataLocation, String yyyymm) {
         Query query = em.createNativeQuery(""
                 + "SELECT strvalue, count(dataset.id)\n"
                 + "FROM datasetfield_controlledvocabularyvalue \n"
@@ -124,7 +128,7 @@ public class MetricsServiceBean implements Serializable {
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long datasetsToMonth(String yyyymm) throws Exception {
+    public long datasetsToMonth(String dataLocation, String yyyymm) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from datasetversion\n"
@@ -144,7 +148,7 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public long datasetsPastDays(int days) throws Exception {
+    public long datasetsPastDays(String dataLocation, int days) throws Exception {
 
         Query query = em.createNativeQuery(
             "select count(*)\n" +
@@ -171,7 +175,7 @@ public class MetricsServiceBean implements Serializable {
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long filesToMonth(String yyyymm) throws Exception {
+    public long filesToMonth(String dataLocation, String yyyymm) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from filemetadata\n"
@@ -191,7 +195,7 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public long filesPastDays(int days) throws Exception {
+    public long filesPastDays(String dataLocation, int days) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from filemetadata\n"
@@ -218,7 +222,7 @@ public class MetricsServiceBean implements Serializable {
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long downloadsToMonth(String yyyymm) throws Exception {
+    public long downloadsToMonth(String dataLocation, String yyyymm) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
@@ -228,7 +232,7 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
 
-    public long downloadsPastDays(int days) throws Exception {
+    public long downloadsPastDays(String dataLocation, int days) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
@@ -242,8 +246,9 @@ public class MetricsServiceBean implements Serializable {
     
     /** Helper functions for metric caching */
     
-    public String returnUnexpiredCacheDayBased(String metricName, String days) throws Exception {
-        Metric queriedMetric = getMetric(metricName, days);
+    //MAD: hopefully these can all go away if we are moving everything correctly into database columns
+    public String returnUnexpiredCacheDayBased(String metricName, String dataLocation, String days) throws Exception {
+        Metric queriedMetric = getMetric(metricName, dataLocation, days);
 
         if (!doWeQueryAgainDayBased(queriedMetric)) {
             return queriedMetric.getMetricValue();
@@ -251,8 +256,8 @@ public class MetricsServiceBean implements Serializable {
         return null;
     }
     
-    public String returnUnexpiredCacheMonthly(String metricName, String yyyymm) throws Exception {
-        Metric queriedMetric = getMetric(metricName, yyyymm);
+    public String returnUnexpiredCacheMonthly(String metricName, String dataLocation, String yyyymm) throws Exception {
+        Metric queriedMetric = getMetric(metricName, dataLocation, yyyymm);
 
         if (!doWeQueryAgainMonthly(queriedMetric)) {
             return queriedMetric.getMetricValue();
@@ -260,8 +265,8 @@ public class MetricsServiceBean implements Serializable {
         return null;
     }
 
-    public String returnUnexpiredCacheAllTime(String metricName) throws Exception {
-        Metric queriedMetric = getMetric(metricName);
+    public String returnUnexpiredCacheAllTime(String metricName, String dataLocation) throws Exception {
+        Metric queriedMetric = getMetric(metricName, dataLocation, null); //MAD: not passing a date
 
         if (!doWeQueryAgainAllTime(queriedMetric)) {
             return queriedMetric.getMetricValue();
@@ -333,13 +338,9 @@ public class MetricsServiceBean implements Serializable {
         return (todayMinus.after(lastCalled));
     }
 
-    public Metric save(Metric newMetric, boolean monthly) throws Exception {
-        Metric oldMetric;
-        if (monthly) {
-            oldMetric = getMetric(newMetric.getMetricTitle(), newMetric.getMetricDateString());
-        } else {
-            oldMetric = getMetric(newMetric.getMetricTitle());
-        }
+    public Metric save(Metric newMetric) throws Exception {
+        Metric oldMetric = getMetric(newMetric.getMetricTitle(), newMetric.getMetricDataLocation(), newMetric.getMetricDateString());
+
         if (oldMetric != null) {
             em.remove(oldMetric);
             em.flush();
@@ -349,15 +350,19 @@ public class MetricsServiceBean implements Serializable {
     }
 
     //This works for date and day based metrics
-    public Metric getMetric(String metricTitle, String dayString) throws Exception {
-        String searchMetricName = Metric.generateMetricName(metricTitle, dayString);
-
-        return getMetric(searchMetricName);
-    }
-
-    public Metric getMetric(String searchMetricName) throws Exception {
-        Query query = em.createQuery("select object(o) from Metric as o where o.metricName = :metricName", Metric.class);
-        query.setParameter("metricName", searchMetricName);
+    public Metric getMetric(String metricTitle, String dataLocation, String dayString) throws Exception {
+        //MAD: Add the other parameters
+        Query query = em.createQuery("select object(o) from Metric as o"
+                + " where o.metricName = :metricName"
+                + " and o.metricDataLocation" + (dataLocation == null ? " is null" : " = :metricDataLocation")
+                + " and o.metricDayString" + (dayString == null ? " is null" :  " = :metricDayString")
+                , Metric.class);
+        query.setParameter("metricName", metricTitle);
+        if(dataLocation != null){ query.setParameter("metricDataLocation", dataLocation);}
+        if(dayString != null) {query.setParameter("metricDayString", dayString);}
+        
+        logger.log(Level.INFO, "getMetric query: {0}", query);
+        
         Metric metric = null;
         try {
             metric = (Metric) query.getSingleResult();

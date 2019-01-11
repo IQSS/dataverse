@@ -34,34 +34,45 @@ public class Metric implements Serializable {
     @Column(nullable = false)
     private int id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String metricName;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String metricValue;
+        
+    @Column(columnDefinition = "TEXT", nullable = true)
+    private String metricDataLocation;
+    
+    //MAD: Keeping as text for support of pastDays and toMonth?
+    @Column(columnDefinition = "TEXT", nullable = true)
+    private String metricDayString;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date lastCalledDate;
 
     @Transient
-    private static final String separator = "_";
+    public static final String SEPARATOR = "_"; //MAD: do we need to specify more seperators?
 
     @Deprecated
     public Metric() {
     }
 
     //For monthly and day metrics
-    public Metric(String metricTitle, String dayString, String metricValue) {
-        this.metricName = generateMetricName(metricTitle, dayString);
+    public Metric(String metricTitle, String dataLocation, String dayString, String metricValue) {
+        this.metricName = metricTitle;
         this.metricValue = metricValue;
+        this.metricDataLocation = dataLocation;
+        this.metricDayString = dayString;
         this.lastCalledDate = new Timestamp(new Date().getTime());
     }
 
     //For all-time metrics
-    public Metric(String metricName, String metricValue) {
+    public Metric(String metricName, String dataLocation, String metricValue) {
         this.metricName = metricName;
         this.metricValue = metricValue;
+        this.metricDataLocation = dataLocation;
+        //this.metricDayString = dayString;
         this.lastCalledDate = new Timestamp(new Date().getTime());
     }
 
@@ -79,12 +90,18 @@ public class Metric implements Serializable {
         this.id = id;
     }
 
+    //MAD: Refactor all of these to not have "metric" in the method name
     public String getMetricDateString() {
-        return metricName.substring(metricName.indexOf(separator) + 1);
+        return metricDayString;
+        //return metricName.substring(metricName.indexOf(SEPARATOR) + 1); //MAD: Is this going to blow up with adding query params
     }
 
+    public String getMetricDataLocation() {
+        return metricDataLocation;
+    }
+    
     public String getMetricTitle() {
-        int monthSeperatorIndex = metricName.indexOf(separator);
+        int monthSeperatorIndex = metricName.indexOf(SEPARATOR);
         if (monthSeperatorIndex >= 0) {
             return metricName.substring(0, monthSeperatorIndex);
         }
@@ -119,14 +136,14 @@ public class Metric implements Serializable {
         this.lastCalledDate = calledDate;
     }
 
-    public static String generateMetricName(String title, String dateString) {
-        if (title.contains(separator) || dateString.contains(separator)) {
-            throw new IllegalArgumentException("Metric title or date contains character reserved for seperator");
-        }
-        if (separator.contains("-")) {
-            throw new IllegalArgumentException("Metric seperator cannot be '-', value reserved for dates");
-        }
-        return title + separator + dateString;
-    }
+//    public static String generateMetricName(String title, String dateString) {
+//        if (title.contains(SEPARATOR) || dateString.contains(SEPARATOR)) {
+//            throw new IllegalArgumentException("Metric title or date contains character reserved for seperator");
+//        }
+//        if (SEPARATOR.contains("-")) {
+//            throw new IllegalArgumentException("Metric seperator cannot be '-', value reserved for dates");
+//        }
+//        return title + SEPARATOR + dateString;
+//    }
 
 }
