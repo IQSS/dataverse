@@ -30,36 +30,28 @@ public class Metrics extends AbstractApiBean {
     //dataLocation : remote, local, all
     //Should we include the depricated methods? Yes I guess
     
-    public String fakeDate = null;
+    public String fakeDataLocale = null;
     
     @GET
     @Path("dataverses")
-    public Response getDataversesAllTime(@QueryParam("dataLocation") String dataLocation) {
-        return getDataversesToMonth(dataLocation, MetricsUtil.getCurrentMonth());
+    public Response getDataversesAllTime() {
+        return getDataversesToMonth(MetricsUtil.getCurrentMonth());
     }
     
     @Deprecated //for better path
     @GET
     @Path("dataverses/toMonth")
-    public Response getDataversesToMonthCurrent(@QueryParam("dataLocation") String dataLocation) {
-        return getDataversesToMonth(dataLocation, MetricsUtil.getCurrentMonth());
+    public Response getDataversesToMonthCurrent() {
+        return getDataversesToMonth(MetricsUtil.getCurrentMonth());
     }
     
     @GET
     @Path("dataverses/toMonth/{yyyymm}")
-    public Response getDataversesToMonth(@QueryParam("dataLocation") String dataLocation, @PathParam("yyyymm") String yyyymm) {
-        //MAD: use dataLocation
-        //So... should we be deciding here which query to use?
-        //Well, we really should keep it in the same query
-        //I think the answer is no. We pass the dataLocation into returnExpiredCacheMonthly and metricSvc call.
-        //... well wait, we define the name here tho...
-        //... I think for the cache we need to append it to the name
+    public Response getDataversesToMonth(@PathParam("yyyymm") String yyyymm) {
+        //We need constants for dataLocation, where should they be stored?
         
         //MAD: Do i need to sanitize the queryParam? I don't think so because I'm just going to match on it...
         // Well I can create a helper method to prune out strings that don't match the ones we want...
-        
-        //If I'm adding a string to the name, it means that old caches are going to not match.
-        //we should probably have a command to clear the caches.
         
         String metricName = "dataversesToMonth";
 
@@ -67,19 +59,19 @@ public class Metrics extends AbstractApiBean {
             //metricName = metricName + Metric.separator + MetricsUtil.validateDataLocationStringType(dataLocation);
             
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
-            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, validDataLocation, sanitizedyyyymm);
+            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, fakeDataLocale, sanitizedyyyymm);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.dataversesToMonth(validDataLocation, sanitizedyyyymm);
+                Long count = metricsSvc.dataversesToMonth(sanitizedyyyymm);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, validDataLocation, sanitizedyyyymm, jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, fakeDataLocale, sanitizedyyyymm, jsonString));//, true); //if not using cache save new
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
 
         } catch (Exception ex) {
+            //MAD: SHOULD WE BE LOGGING ERRORS?
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
     }
@@ -95,13 +87,13 @@ public class Metrics extends AbstractApiBean {
             return allowCors(error(BAD_REQUEST, "Invalid parameter for number of days."));
         }
         try {
-            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, fakeDate, String.valueOf(days));
+            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, fakeDataLocale, String.valueOf(days));
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.dataversesPastDays(fakeDate, days);
+                Long count = metricsSvc.dataversesPastDays(fakeDataLocale, days);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, fakeDate, String.valueOf(days), jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, fakeDataLocale, String.valueOf(days), jsonString));//, true); //if not using cache save new
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
@@ -117,12 +109,12 @@ public class Metrics extends AbstractApiBean {
         String metricName = "dataversesByCategory";
 
         try {
-            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName, fakeDate);
+            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName, fakeDataLocale);
 
             if (null == jsonArrayString) { //run query and save
-                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesByCategoryToJson(metricsSvc.dataversesByCategory(fakeDate));
+                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesByCategoryToJson(metricsSvc.dataversesByCategory(fakeDataLocale));
                 jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, fakeDate, jsonArrayString));//, false);
+                metricsSvc.save(new Metric(metricName, fakeDataLocale, jsonArrayString));//, false);
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
@@ -137,12 +129,12 @@ public class Metrics extends AbstractApiBean {
         String metricName = "dataversesBySubject";
         
         try {
-            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName, fakeDate);
+            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName, fakeDataLocale);
 
             if (null == jsonArrayString) { //run query and save
-                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesBySubjectToJson(metricsSvc.dataversesBySubject(fakeDate));
+                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesBySubjectToJson(metricsSvc.dataversesBySubject(fakeDataLocale));
                 jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, fakeDate, jsonArrayString));//, false);
+                metricsSvc.save(new Metric(metricName, fakeDataLocale, jsonArrayString));//, false);
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
@@ -155,31 +147,32 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("datasets")
-    public Response getDatasetsAllTime() {
-        return getDatasetsToMonth(MetricsUtil.getCurrentMonth());
+    public Response getDatasetsAllTime(@QueryParam("dataLocation") String dataLocation) {
+        return getDatasetsToMonth(dataLocation, MetricsUtil.getCurrentMonth());
     }
     
     @Deprecated //for better path
     @GET
     @Path("datasets/toMonth")
-    public Response getDatasetsToMonthCurrent() {
-        return getDatasetsToMonth(MetricsUtil.getCurrentMonth());
+    public Response getDatasetsToMonthCurrent(@QueryParam("dataLocation") String dataLocation) {
+        return getDatasetsToMonth(dataLocation, MetricsUtil.getCurrentMonth());
     }
 
     @GET
     @Path("datasets/toMonth/{yyyymm}")
-    public Response getDatasetsToMonth(@PathParam("yyyymm") String yyyymm) {
+    public Response getDatasetsToMonth(@QueryParam("dataLocation") String dataLocation, @PathParam("yyyymm") String yyyymm) {
         String metricName = "datasetsToMonth";
 
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, fakeDate, sanitizedyyyymm);
+            String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
+            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, validDataLocation, sanitizedyyyymm);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.datasetsToMonth(fakeDate, sanitizedyyyymm);
+                Long count = metricsSvc.datasetsToMonth(validDataLocation, sanitizedyyyymm);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, fakeDate, sanitizedyyyymm, jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, validDataLocation, sanitizedyyyymm, jsonString));//, true); //if not using cache save new
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
@@ -198,13 +191,13 @@ public class Metrics extends AbstractApiBean {
             return allowCors(error(BAD_REQUEST, "Invalid parameter for number of days."));
         }
         try {
-            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, fakeDate, String.valueOf(days));
+            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, fakeDataLocale, String.valueOf(days));
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.datasetsPastDays(fakeDate, days);
+                Long count = metricsSvc.datasetsPastDays(fakeDataLocale, days);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, fakeDate, String.valueOf(days), jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, fakeDataLocale, String.valueOf(days), jsonString));//, true); //if not using cache save new
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
@@ -228,12 +221,12 @@ public class Metrics extends AbstractApiBean {
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             
-            String jsonArrayString = metricsSvc.returnUnexpiredCacheMonthly(metricName, fakeDate, sanitizedyyyymm);
+            String jsonArrayString = metricsSvc.returnUnexpiredCacheMonthly(metricName, fakeDataLocale, sanitizedyyyymm);
             
             if (null == jsonArrayString) { //run query and save
-                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubjectToMonth(fakeDate, sanitizedyyyymm));
+                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubjectToMonth(fakeDataLocale, sanitizedyyyymm));
                 jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, fakeDate, sanitizedyyyymm, jsonArrayString));//, false);
+                metricsSvc.save(new Metric(metricName, fakeDataLocale, sanitizedyyyymm, jsonArrayString));//, false);
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
@@ -263,13 +256,13 @@ public class Metrics extends AbstractApiBean {
 
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, fakeDate, sanitizedyyyymm);
+            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, fakeDataLocale, sanitizedyyyymm);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.filesToMonth(fakeDate, sanitizedyyyymm);
+                Long count = metricsSvc.filesToMonth(fakeDataLocale, sanitizedyyyymm);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, fakeDate, sanitizedyyyymm, jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, fakeDataLocale, sanitizedyyyymm, jsonString));//, true); //if not using cache save new
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
@@ -287,13 +280,13 @@ public class Metrics extends AbstractApiBean {
             return allowCors(error(BAD_REQUEST, "Invalid parameter for number of days."));
         }
         try {
-            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, fakeDate, String.valueOf(days));
+            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, fakeDataLocale, String.valueOf(days));
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.filesPastDays(fakeDate, days);
+                Long count = metricsSvc.filesPastDays(fakeDataLocale, days);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, fakeDate, String.valueOf(days), jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, fakeDataLocale, String.valueOf(days), jsonString));//, true); //if not using cache save new
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
@@ -325,13 +318,13 @@ public class Metrics extends AbstractApiBean {
 
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, fakeDate, sanitizedyyyymm);
+            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, fakeDataLocale, sanitizedyyyymm);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.downloadsToMonth(fakeDate, sanitizedyyyymm);
+                Long count = metricsSvc.downloadsToMonth(fakeDataLocale, sanitizedyyyymm);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, fakeDate, sanitizedyyyymm, jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, fakeDataLocale, sanitizedyyyymm, jsonString));//, true); //if not using cache save new
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
@@ -349,13 +342,13 @@ public class Metrics extends AbstractApiBean {
             return allowCors(error(BAD_REQUEST, "Invalid parameter for number of days."));
         }
         try {
-            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, fakeDate, String.valueOf(days));
+            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, fakeDataLocale, String.valueOf(days));
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.downloadsPastDays(fakeDate, days);
+                Long count = metricsSvc.downloadsPastDays(fakeDataLocale, days);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, fakeDate, String.valueOf(days), jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, fakeDataLocale, String.valueOf(days), jsonString));//, true); //if not using cache save new
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));

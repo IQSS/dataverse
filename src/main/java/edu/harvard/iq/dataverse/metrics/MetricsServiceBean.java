@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.Metric;
+import static edu.harvard.iq.dataverse.metrics.MetricsUtil.*;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -35,10 +36,11 @@ public class MetricsServiceBean implements Serializable {
     
     /** Dataverses */
     
+    //MAD: I totally misunderstood how to get harvested entries.
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long dataversesToMonth(String dataLocation, String yyyymm) throws Exception {
+    public long dataversesToMonth(String yyyymm) throws Exception {        
         Query query = em.createNativeQuery(""
                 + "select count(dvobject.id)\n"
                 + "from dataverse\n"
@@ -94,7 +96,7 @@ public class MetricsServiceBean implements Serializable {
     
     /** Datasets */
     
-    public List<Object[]> datasetsBySubjectToMonth(String dataLocation, String yyyymm) {
+    public List<Object[]> datasetsBySubjectToMonth(String dataLocation, String yyyymm) {        
         Query query = em.createNativeQuery(""
                 + "SELECT strvalue, count(dataset.id)\n"
                 + "FROM datasetfield_controlledvocabularyvalue \n"
@@ -129,6 +131,13 @@ public class MetricsServiceBean implements Serializable {
      * @param yyyymm Month in YYYY-MM format.
      */
     public long datasetsToMonth(String dataLocation, String yyyymm) throws Exception {
+        String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
+        if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
+            dataLocationLine = "and dataset.harvestingclient_id is not null\n";
+        } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
+            dataLocationLine = ""; //no specification will return all
+        }
+        
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from datasetversion\n"
@@ -139,7 +148,7 @@ public class MetricsServiceBean implements Serializable {
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "where versionstate='RELEASED' \n"
                 + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + "and dataset.harvestingclient_id is null\n"
+                + dataLocationLine
                 + "group by dataset_id \n"
                 + ");"
         );
