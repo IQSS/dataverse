@@ -64,7 +64,7 @@
             <div class="row">
                 <div class="col-md-5 col-sm-6 col-xs-11">
                     <div class="search-widget input-group">
-                        <input id="inputDataverseSearch" class="form-control" type="text" placeholder="Search over 75,000 datasets..." onkeydown="if (event.keyCode == 13) document.getElementById('btnDataverseSearch').click();">
+                        <input id="inputDataverseSearch" class="form-control" type="text" placeholder=" " onkeydown="if (event.keyCode == 13) document.getElementById('btnDataverseSearch').click();">
                         <span class="input-group-btn">
                             <button id="btnDataverseSearch" class="btn btn-default" type="button" onclick="window.location = '/dataverse/root?q=' + document.getElementById('inputDataverseSearch').value;return false;"><span class="glyphicon glyphicon-search"></span> Find</button>
                         </span>
@@ -201,7 +201,7 @@
             var subArray = [];
             var resultHtml = "";
             jData.data.forEach(function(item) {
-                if(item.subject !== "N/A")
+                if(item.subject !== "N/A" && item.subject !== "Other")
                 subArray.push([item.subject, item.count.toLocaleString('en')]);
             });
             subArray.sort();
