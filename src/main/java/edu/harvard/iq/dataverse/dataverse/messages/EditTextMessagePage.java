@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.dataverse.messages;
 
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseTextMessageDto;
 import edu.harvard.iq.dataverse.dataverse.messages.validation.EndDateMustBeAFutureDate;
@@ -7,6 +9,7 @@ import edu.harvard.iq.dataverse.dataverse.messages.validation.EndDateMustNotBeEa
 import edu.harvard.iq.dataverse.util.JsfValidationHelper;
 import edu.harvard.iq.dataverse.util.JsfValidationHelper.ValidationCondition;
 
+import javax.ejb.EJB;
 import javax.faces.component.UIInput;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -25,7 +28,11 @@ public class EditTextMessagePage implements Serializable {
     @Inject
     PermissionsWrapper permissionsWrapper;
 
+    @EJB
+    private DataverseServiceBean dataverseServiceBean;
+
     private Long dataverseId;
+    private Dataverse dataverse;
     private Long textMessageId;
 
     private DataverseTextMessageDto dto;
@@ -41,6 +48,9 @@ public class EditTextMessagePage implements Serializable {
         if (dataverseId == null) {
             return permissionsWrapper.notFound();
         }
+
+        dataverse = dataverseServiceBean.find(dataverseId);
+
         if (textMessageId != null) {
             dto = textMessageService.getTextMessage(textMessageId);
         } else {
@@ -63,6 +73,18 @@ public class EditTextMessagePage implements Serializable {
         return redirectToTextMessages();
     }
 
+    private String redirectToTextMessages() {
+        return "/dataverse-textMessages.xhtml?dataverseId=" + dataverseId + "&faces-redirect=true";
+    }
+
+    private ValidationCondition endDateMustNotBeEarlierThanStartingDate() {
+        return on(EndDateMustNotBeEarlierThanStartingDate.class, toTimeInput.getClientId(), "textmessages.enddate.valid");
+    }
+
+    private ValidationCondition endDateMustBeAFutureDate() {
+        return on(EndDateMustBeAFutureDate.class, toTimeInput.getClientId(), "textmessages.enddate.future");
+    }
+
     public Long getDataverseId() {
         return dataverseId;
     }
@@ -73,6 +95,10 @@ public class EditTextMessagePage implements Serializable {
 
     public Long getTextMessageId() {
         return textMessageId;
+    }
+
+    public Dataverse getDataverse() {
+        return dataverse;
     }
 
     public void setTextMessageId(Long textMessageId) {
@@ -101,17 +127,5 @@ public class EditTextMessagePage implements Serializable {
 
     public void setToTimeInput(UIInput toTimeInput) {
         this.toTimeInput = toTimeInput;
-    }
-
-    private String redirectToTextMessages(){
-        return "/dataverse-textMessages.xhtml?dataverseId=" + dataverseId + "&faces-redirect=true";
-    }
-
-    private ValidationCondition endDateMustNotBeEarlierThanStartingDate() {
-        return on(EndDateMustNotBeEarlierThanStartingDate.class, toTimeInput.getClientId(), "textmessages.enddate.valid");
-    }
-
-    private ValidationCondition endDateMustBeAFutureDate() {
-        return on(EndDateMustBeAFutureDate.class, toTimeInput.getClientId(), "textmessages.enddate.future");
     }
 }

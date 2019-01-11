@@ -13,6 +13,10 @@
         <f:viewParam name="dataverseId" value="#{EditTextMessagePage.dataverseId}"/>
         <f:viewParam name="id" value="#{EditTextMessagePage.textMessageId}"/>
         <f:viewAction action="#{EditTextMessagePage.init()}"/>
+        <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(EditTextMessagePage.dataverse)}"/>
+        <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb
+        ('/dataverse-textMessages.xhtml?dataverseId='.concat(EditTextMessagePage.dataverseId),bundle['textmessages'])}"/>
+        <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['textmessages.new'])}"/>
     </f:metadata>
 
     <ui:composition template="/dataverse_template.xhtml">

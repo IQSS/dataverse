@@ -17,7 +17,8 @@
                 <f:viewParam name="datasetVersionId" value="#{ReorderDataFilesPage.datasetVersion.id}"/>
                 <f:viewAction action="#{ReorderDataFilesPage.init}" rendered="true"/>
                 <f:viewAction
-                        action="#{dataverseHeaderFragment.initBreadcrumbs(ReorderDataFilesPage.datasetVersion.dataset,'Reorder files')}"/>
+                        action="#{dataverseHeaderFragment.initBreadcrumbs(ReorderDataFilesPage.datasetVersion.dataset)}"/>
+                <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['file.reorderFiles'])}"/>
             </f:metadata>
             <h:form id="form">
                 <!-- Files Table -->

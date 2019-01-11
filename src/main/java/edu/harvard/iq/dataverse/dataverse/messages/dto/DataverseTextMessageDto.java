@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.util.DateUtil;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -39,11 +40,14 @@ public class DataverseTextMessageDto {
     }
 
     public String getPrettyFromDate() {
-        return DateUtil.formatDateToYMD_HM(fromTime);
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        return DateUtil.formatDateToYMD_HM(fromTime, format);
     }
 
     public String getPrettyToTime() {
-        return DateUtil.formatDateToYMD_HM(toTime);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        return DateUtil.formatDateToYMD_HM(toTime, format);
     }
 
     public Date getToTime() {

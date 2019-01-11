@@ -7,28 +7,34 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui">
 <f:view locale="#{dataverseLocaleBean.localeCode}"/>
+<h:head>
+</h:head>
 
 <h:body>
-    <f:metadata>
-        <f:viewParam name="dataverseId" value="#{TextMessagePage.dataverseId}"/>
-        <f:viewAction action="#{TextMessagePage.init()}"/>
-    </f:metadata>
 
     <ui:composition template="/dataverse_template.xhtml">
 
         <ui:define name="body">
+            <f:metadata>
+                <f:viewParam name="dataverseId" value="#{TextMessagePage.dataverseId}"/>
+                <f:viewAction action="#{TextMessagePage.init()}"/>
+                <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(TextMessagePage.dataverse)}"/>
+                <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['textmessages'])}"/>
+            </f:metadata>
             <h:form id="text-messages-form">
                 <p:tabView dynamic="true" cache="true">
-                    <p:tab title="Text messages">
-                        <p:commandButton value="New Text Message" id="text-screen"
+                    <p:tab title="#{bundle.textmessages}">
+                        <p:commandButton value="#{bundle['textmessages.new']}" id="text-screen"
                                          style="margin-right:20px;"
                                          action="#{TextMessagePage.newTextMessagePage()}"
                         />
-                        <h3>History</h3>
+                        <h3 title="#{bundle['textmessages.history']}"/>
 
                         <p:dataList value="#{TextMessagePage.lazydataverseTextMessages}" var="history"
-                                    lazy="true" paginator="true" rows="10"
-                                    styleClass="paginated">
+                                    paginator="#{TextMessagePage.lazydataverseTextMessages.rowCount > 0 ?'true' : 'false'}"
+                                    lazy="true" rows="10"
+                                    itemType="none"
+                                    styleClass="paginated ui-datalist-nobullets">
 
                             <p:panel id="basic" style="margin-bottom:20px; width: 600px;">
                                 <div class="p-grid">
@@ -41,28 +47,30 @@
                                     </ui:repeat>
 
                                     <div class="p-col">
-                                        <h:outputLabel for="dates" value="Dates:" style="margin-right: 10px"/>
+                                        <h:outputLabel for="dates" value="#{bundle['textmessages.dates']}:"
+                                                       style="margin-right: 10px"/>
                                         <h:outputText id="dates"
                                                       value="#{history.getPrettyFromDate()} - #{history.getPrettyToTime()}"/>
                                     </div>
 
                                     <div class="p-col">
-                                        <h:outputLabel for="message-Status" value="Status:" style="margin-right: 10px"/>
+                                        <h:outputLabel for="message-Status" value="#{bundle['textmessages.status']}:"
+                                                       style="margin-right: 10px"/>
                                         <h:outputText id="message-Status"
                                                       value="#{history.active ? 'Enabled' : 'Disabled'}"/>
                                     </div>
                                 </div>
 
-                                <p:commandButton value="Delete"
+                                <p:commandButton value="#{bundle['textmessages.delete']}"
                                                  action="#{TextMessagePage.textMessageService.delete(history.id)}"
                                                  update=":text-messages-form"/>
                                 <div style="float: right">
-                                    <p:commandButton value="Deactivate"
+                                    <p:commandButton value="#{bundle['textmessages.deactivate']}"
                                                      style="margin-right:10px;"
                                                      action="#{TextMessagePage.textMessageService.deactivate(history.id)}"
                                                      update=":text-messages-form"/>
 
-                                    <p:commandButton value="Reuse"
+                                    <p:commandButton value="#{bundle['textmessages.reuse']}"
                                                      action="#{TextMessagePage.reuseTextMessage(history.id)}"
                                                      update=":text-messages-form"/>
                                 </div>

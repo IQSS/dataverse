@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.dataverse.messages;
 
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseTextMessageDto;
 import org.apache.commons.lang.StringUtils;
@@ -16,11 +18,15 @@ import java.io.Serializable;
 public class TextMessagePage implements Serializable {
 
     private long dataverseId;
+    private Dataverse dataverse;
+
+    @EJB
+    private DataverseServiceBean dataverseServiceBean;
 
     @EJB
     private LazyDataverseTextMessage lazydataverseTextMessages;
 
-    @Inject
+    @EJB
     private DataverseTextMessageServiceBean textMessageService;
 
     @Inject
@@ -28,6 +34,7 @@ public class TextMessagePage implements Serializable {
 
     public String init() {
         lazydataverseTextMessages.setDataverseId(dataverseId);
+        dataverse = dataverseServiceBean.find(dataverseId);
 
         if (!permissionsWrapper.canIssueEditDataverseTextMessages(dataverseId)) {
             return permissionsWrapper.notAuthorized();
@@ -47,6 +54,10 @@ public class TextMessagePage implements Serializable {
 
     public long getDataverseId() {
         return dataverseId;
+    }
+
+    public Dataverse getDataverse() {
+        return dataverse;
     }
 
     public LazyDataModel<DataverseTextMessageDto> getLazydataverseTextMessages() {
