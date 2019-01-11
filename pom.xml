@@ -547,11 +547,24 @@
             <groupId>org.duracloud</groupId>
             <artifactId>common</artifactId>
             <version>4.4.6</version>
+            <exclusions>
+              <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>log4j-over-slf4j</artifactId>
+              </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>storeclient</artifactId>
             <version>4.4.6</version>
+            <exclusions>
+              <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>log4j-over-slf4j</artifactId>
+              </exclusion>
+            </exclusions>
+            
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
