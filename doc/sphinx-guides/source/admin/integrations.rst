@@ -119,36 +119,37 @@ The minimal configuration to support an archiver integration involves adding a m
 
 \:ArchiverClassName - the fully qualified class to be used for archiving. For example: 
 
-    `curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.DuraCloudSubmitToArchiveCommand"`
+``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.DuraCloudSubmitToArchiveCommand"``
 
 \:ArchiverSettings - the archiver class can access required settings including existing Dataverse settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. Note that this list must include the :ArchiverClassName setting. For example: 
 
-    `curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DuraCloudHost, :DuraCloudPort, :DuraCloudContext"`
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DuraCloudHost, :DuraCloudPort, :DuraCloudContext"``
 
 The DPN archiver defines three custom settings, which must also be created:
 
 \:DuraCloudHost - the URL for your organization's Duracloud site. For example: 
 
-    `curl http://localhost:8080/api/admin/settings/:DuraCloudHost -X PUT -d "qdr.duracloud.org"`
+``curl http://localhost:8080/api/admin/settings/:DuraCloudHost -X PUT -d "qdr.duracloud.org"``
 
 :DuraCloudPort and :DuraCloudContext are also defined if you are not using the defaults ("443" and "duracloud" respectively).
 
 Archivers may require glassfish settings as well. For the Chronopolis archiver, the username and password associated with your organization's Chronopolis/DuraCloud account should be configured in Glassfish:
 
-    `./asadmin create-jvm-options '-Dduracloud.username=YOUR_USERNAME_HERE'`
+``./asadmin create-jvm-options '-Dduracloud.username=YOUR_USERNAME_HERE'``
     
-    `./asadmin create-jvm-options '-Dduracloud.password=YOUR_PASSWORD_HERE'`
+``./asadmin create-jvm-options '-Dduracloud.password=YOUR_PASSWORD_HERE'``
 
 **API Call**
 
 Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the API call to manually submit a DatasetVersion for processing:
 
-    `curl -H "X-Dataverse-key:|<key>" http://localhost:8080/api/admin/submitDataVersionToArchive/{id}/{version}`
+``curl -H "X-Dataverse-key:|<key>" http://localhost:8080/api/admin/submitDataVersionToArchive/{id}/{version}``
     
-    where:
-     {id} is the DatasetId (or :persistentId with the ?persistentId="\<DOI\>" parameter), and
+where:
 
-     {version} is the friendly version number, e.g. "1.2".
+{id} is the DatasetId (or :persistentId with the ?persistentId="\<DOI\>" parameter), and
+
+{version} is the friendly version number, e.g. "1.2".
      
 The submitDataVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete' containing all user-entered metadata and is intended as an archival record.)
 
@@ -163,11 +164,11 @@ To active this workflow, one must first install a workflow using the archiver st
 
 Using the Workflow Native API (see the :doc:`/api/native-api` guide) this workflow can be installed using:
 
-    `curl -X POST --upload-file internal-archiver-workflow.json http://localhost:8080/api/admin/workflows`
+``curl -X POST --upload-file internal-archiver-workflow.json http://localhost:8080/api/admin/workflows``
     
 The workflow id returned in this call (or available by doing a GET of /api/admin/workflows ) can then be submitted as the default PostPublication workflow:
 
-    `curl -X PUT -d {id} http://localhost:8080/api/admin/workflows/default/PostPublishDataset`
+``curl -X PUT -d {id} http://localhost:8080/api/admin/workflows/default/PostPublishDataset``
 
 Once these steps are taken, new publication requests will automatically trigger submission of an archival copy to the specified archiver, Chronopolis' DuraCloud component in this example. For Chronopolis, as when using the API, it is currently the admin's responsibility to snap-shot the DuraCloud space and monitor the result. Failure of the workflow, (e.g. if DuraCloud is unavailable, the configuration is wrong, or the space for this dataset already exists due to a prior publication action or use of the API), will create a failure message but will not affect publication itself.  
  
