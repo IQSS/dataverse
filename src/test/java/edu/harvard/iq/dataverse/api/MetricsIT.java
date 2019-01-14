@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import static javax.ws.rs.core.Response.Status.OK;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -220,4 +221,22 @@ public class MetricsIT {
         assertEquals(precache, postcache);
     }
 
+    @Test
+    public void testGetDatasetsBySubjectToMonth() {
+        String thismonth = MetricsUtil.getCurrentMonth();
+        Response response = UtilIT.metricsDatasetsBySubjectToMonth(thismonth);
+        String precache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //Run each query twice and compare results to tests caching
+        // See the "TODO" at the beginning of the class; 
+        // ideally, we'll want to have more comprehensive tests. 
+        response = UtilIT.metricsDatasetsBySubjectToMonth(thismonth);
+        String postcache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        assertEquals(precache, postcache);
+    }
 }

@@ -1,14 +1,17 @@
 package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.Metric;
+import static edu.harvard.iq.dataverse.metrics.MetricsUtil.*;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -29,12 +32,13 @@ public class MetricsServiceBean implements Serializable {
     @EJB
     SystemConfig systemConfig;
 
+    
     /** Dataverses */
     
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long dataversesToMonth(String yyyymm) throws Exception {
+    public long dataversesToMonth(String yyyymm) throws Exception {        
         Query query = em.createNativeQuery(""
                 + "select count(dvobject.id)\n"
                 + "from dataverse\n"
@@ -90,7 +94,44 @@ public class MetricsServiceBean implements Serializable {
     
     /** Datasets */
 
-    public List<Object[]> datasetsBySubject() {
+    
+    /**
+     * @param yyyymm Month in YYYY-MM format.
+     */
+    public long datasetsToMonth(String yyyymm, String dataLocation) throws Exception {
+        String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
+        if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
+            dataLocationLine = "and dataset.harvestingclient_id is not null\n";
+        } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
+            dataLocationLine = ""; //no specification will return all
+        }
+        
+        Query query = em.createNativeQuery(""
+                + "select count(*)\n"
+                + "from datasetversion\n"
+                + "where datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n"
+                + "(\n"
+                + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
+                + "from datasetversion\n"
+                + "join dataset on dataset.id = datasetversion.dataset_id\n"
+                + "where versionstate='RELEASED' \n"
+                + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
+                + dataLocationLine
+                + "group by dataset_id \n"
+                + ");"
+        );
+        logger.fine("query: " + query);
+
+        return (long) query.getSingleResult();
+    }
+    
+    public List<Object[]> datasetsBySubjectToMonth(String yyyymm, String dataLocation) {        
+        String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
+        if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
+            dataLocationLine = "and dataset.harvestingclient_id is not null\n";
+        } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
+            dataLocationLine = ""; //no specification will return all
+        }
         Query query = em.createNativeQuery(""
                 + "SELECT strvalue, count(dataset.id)\n"
                 + "FROM datasetfield_controlledvocabularyvalue \n"
@@ -107,7 +148,8 @@ public class MetricsServiceBean implements Serializable {
                 + "from datasetversion\n"
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "where versionstate='RELEASED'\n"
-                + "and dataset.harvestingclient_id is null\n"
+                + dataLocationLine
+                + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
                 + "group by dataset_id \n"
                 + ")\n"
                 + "AND datasetfieldtype.name = 'subject'\n"
@@ -119,33 +161,14 @@ public class MetricsServiceBean implements Serializable {
         return query.getResultList();
     }
     
-    /**
-     * @param yyyymm Month in YYYY-MM format.
-     */
-    public long datasetsToMonth(String yyyymm) throws Exception {
-        Query query = em.createNativeQuery(""
-                + "select count(*)\n"
-                + "from datasetversion\n"
-                + "where datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n"
-                + "(\n"
-                + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
-                + "from datasetversion\n"
-                + "join dataset on dataset.id = datasetversion.dataset_id\n"
-                + "where versionstate='RELEASED' \n"
-                + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + "and dataset.harvestingclient_id is null\n"
-                + "group by dataset_id \n"
-                + ");"
-        );
-        logger.fine("query: " + query);
-
-        return (long) query.getSingleResult();
-    }
-    
-    public long datasetsPastDays(int days) throws Exception {
-
-        Query query = em.createNativeQuery(
-            "select count(*)\n" +
+    public long datasetsPastDays(int days, String dataLocation) throws Exception {
+        String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
+        if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
+            dataLocationLine = "and dataset.harvestingclient_id is not null\n";
+        } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
+            dataLocationLine = ""; //no specification will return all
+        }
+        Query query = em.createNativeQuery("select count(*)\n" +
             "from datasetversion\n" +
             "where datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n" +
             "(\n" +
@@ -154,7 +177,7 @@ public class MetricsServiceBean implements Serializable {
             "	join dataset on dataset.id = datasetversion.dataset_id\n" +
             "	where versionstate='RELEASED' \n" +
             "	and releasetime > current_date - interval '"+days+"' day\n" +
-            "	and dataset.harvestingclient_id is null\n" +
+            dataLocationLine +
             "	group by dataset_id \n" +
             ");"
         );
@@ -169,7 +192,13 @@ public class MetricsServiceBean implements Serializable {
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long filesToMonth(String yyyymm) throws Exception {
+    public long filesToMonth(String yyyymm, String dataLocation) throws Exception {
+        String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
+        if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
+            dataLocationLine = "and dataset.harvestingclient_id is not null\n";
+        } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
+            dataLocationLine = ""; //no specification will return all
+        }
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from filemetadata\n"
@@ -181,7 +210,7 @@ public class MetricsServiceBean implements Serializable {
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "where versionstate='RELEASED'\n"
                 + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + "and dataset.harvestingclient_id is null\n"
+                + dataLocationLine
                 + "group by dataset_id \n"
                 + ");"
         );
@@ -189,7 +218,13 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public long filesPastDays(int days) throws Exception {
+    public long filesPastDays(int days, String dataLocation) throws Exception {
+        String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
+        if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
+            dataLocationLine = "and dataset.harvestingclient_id is not null\n";
+        } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
+            dataLocationLine = ""; //no specification will return all
+        }
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from filemetadata\n"
@@ -201,7 +236,7 @@ public class MetricsServiceBean implements Serializable {
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "where versionstate='RELEASED'\n"
                 + "and releasetime > current_date - interval '"+days+"' day\n"
-                + "and dataset.harvestingclient_id is null\n"
+                + dataLocationLine
                 + "group by dataset_id \n"
                 + ");"
         );
@@ -213,17 +248,39 @@ public class MetricsServiceBean implements Serializable {
 
     /** Downloads */
     
-    /**
+    /*
+     * This includes getting historic download without a timestamp if query
+     * is earlier than earliest timestamped record
+     * 
      * @param yyyymm Month in YYYY-MM format.
      */
     public long downloadsToMonth(String yyyymm) throws Exception {
-        Query query = em.createNativeQuery(""
+        Query earlyDateQuery = em.createNativeQuery(""
+               + "select responsetime from guestbookresponse\n"
+               + "ORDER BY responsetime LIMIT 1;"
+        );
+
+        Timestamp earlyDateTimestamp = (Timestamp) earlyDateQuery.getSingleResult();
+        Date earliestDate = new Date(earlyDateTimestamp.getTime());
+        SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM");  
+        Date dateQueried = formatter2.parse(yyyymm);
+        
+        if(!dateQueried.before(earliestDate)) {
+            Query query = em.createNativeQuery(""
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
-                + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM');"
-        );
-        logger.fine("query: " + query);
-        return (long) query.getSingleResult();
+                + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')"
+                + "or responsetime is NULL;" //includes historic guestbook records without date
+            );
+            logger.fine("query: " + query);
+            return (long) query.getSingleResult();
+        }
+        else {
+            //When we query before the earliest dated record, return 0;
+            return 0L;
+        }
+
+
     }
 
     public long downloadsPastDays(int days) throws Exception {
@@ -240,29 +297,29 @@ public class MetricsServiceBean implements Serializable {
     
     /** Helper functions for metric caching */
     
-    public String returnUnexpiredCacheDayBased(String metricName, String days) throws Exception {
-        Metric queriedMetric = getMetric(metricName, days);
+    public String returnUnexpiredCacheDayBased(String metricName, String days, String dataLocation) throws Exception {
+        Metric queriedMetric = getMetric(metricName, dataLocation, days);
 
         if (!doWeQueryAgainDayBased(queriedMetric)) {
-            return queriedMetric.getMetricValue();
+            return queriedMetric.getValueJson();
         }
         return null;
     }
     
-    public String returnUnexpiredCacheMonthly(String metricName, String yyyymm) throws Exception {
-        Metric queriedMetric = getMetric(metricName, yyyymm);
+    public String returnUnexpiredCacheMonthly(String metricName, String yyyymm, String dataLocation) throws Exception {
+        Metric queriedMetric = getMetric(metricName, dataLocation, yyyymm);
 
         if (!doWeQueryAgainMonthly(queriedMetric)) {
-            return queriedMetric.getMetricValue();
+            return queriedMetric.getValueJson();
         }
         return null;
     }
 
-    public String returnUnexpiredCacheAllTime(String metricName) throws Exception {
-        Metric queriedMetric = getMetric(metricName);
+    public String returnUnexpiredCacheAllTime(String metricName, String dataLocation) throws Exception {
+        Metric queriedMetric = getMetric(metricName, dataLocation, null); //MAD: not passing a date
 
         if (!doWeQueryAgainAllTime(queriedMetric)) {
-            return queriedMetric.getMetricValue();
+            return queriedMetric.getValueJson();
         }
         return null;
     }
@@ -291,7 +348,7 @@ public class MetricsServiceBean implements Serializable {
             return true;
         }
 
-        String yyyymm = queriedMetric.getMetricDateString();
+        String yyyymm = queriedMetric.getDateString();
         String thisMonthYYYYMM = MetricsUtil.getCurrentMonth();
 
         Date lastCalled = queriedMetric.getLastCalledDate();
@@ -331,13 +388,9 @@ public class MetricsServiceBean implements Serializable {
         return (todayMinus.after(lastCalled));
     }
 
-    public Metric save(Metric newMetric, boolean monthly) throws Exception {
-        Metric oldMetric;
-        if (monthly) {
-            oldMetric = getMetric(newMetric.getMetricTitle(), newMetric.getMetricDateString());
-        } else {
-            oldMetric = getMetric(newMetric.getMetricTitle());
-        }
+    public Metric save(Metric newMetric) throws Exception {
+        Metric oldMetric = getMetric(newMetric.getName(), newMetric.getDataLocation(), newMetric.getDateString());
+
         if (oldMetric != null) {
             em.remove(oldMetric);
             em.flush();
@@ -347,15 +400,19 @@ public class MetricsServiceBean implements Serializable {
     }
 
     //This works for date and day based metrics
-    public Metric getMetric(String metricTitle, String dayString) throws Exception {
-        String searchMetricName = Metric.generateMetricName(metricTitle, dayString);
-
-        return getMetric(searchMetricName);
-    }
-
-    public Metric getMetric(String searchMetricName) throws Exception {
-        Query query = em.createQuery("select object(o) from Metric as o where o.metricName = :metricName", Metric.class);
-        query.setParameter("metricName", searchMetricName);
+    //It is ok to pass null for dataLocation and dayString
+    public Metric getMetric(String name, String dataLocation, String dayString) throws Exception {
+        Query query = em.createQuery("select object(o) from Metric as o"
+                + " where o.name = :name"
+                + " and o.dataLocation" + (dataLocation == null ? " is null" : " = :dataLocation")
+                + " and o.dayString" + (dayString == null ? " is null" :  " = :dayString")
+                , Metric.class);
+        query.setParameter("name", name);
+        if(dataLocation != null){ query.setParameter("dataLocation", dataLocation);}
+        if(dayString != null) {query.setParameter("dayString", dayString);}
+        
+        logger.log(Level.INFO, "getMetric query: {0}", query);
+        
         Metric metric = null;
         try {
             metric = (Metric) query.getSingleResult();

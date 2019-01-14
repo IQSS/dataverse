@@ -1770,6 +1770,11 @@ public class UtilIT {
         return requestSpecification.get("/api/info/metrics/datasets/bySubject");
     }
     
+    static Response metricsDatasetsBySubjectToMonth(String month) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/datasets/bySubject/toMonth/" + month);
+    }
+    
     static Response clearMetricCache() {
         RequestSpecification requestSpecification = given();
         return requestSpecification.delete("/api/admin/clearMetricsCache");
