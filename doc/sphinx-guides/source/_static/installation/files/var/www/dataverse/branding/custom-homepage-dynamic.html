@@ -23,6 +23,9 @@
     
     @media (min-width: 768px) {
         #dataversesBySubject {-webkit-column-count: 3; -moz-column-count: 3; column-count: 3;}
+
+        #journals {-webkit-column-count: 1; -moz-column-count: 1; column-count: 1;}
+        #researchers {-webkit-column-count: 2; -moz-column-count: 2; column-count: 2;}
     }
     #browseBySubject p.browse-subjects {display:inline-block; width:100%; padding:0 2px;}
     #browseBySubject p.browse-subjects a {color: #C55B28;}
@@ -32,7 +35,7 @@
     div.hmpg-recent-col div.hmpg-recent-thumb img {max-height:48px;max-width:48px;}
     div.hmpg-recent-col div.hmpg-recent-thumb span {font-size:38px;}
 
-    div.hmpg-activity-block .row .lite-header {margin-left:1em;}
+    div.hmpg-activity-block .row .lite-header {/* margin-left:1em; */}
 </style>
 
     <!-- ACTIONS -->
@@ -58,6 +61,8 @@
     <!-- SEARCH + BROWSE + RECENT -->
     <div class="row hmpg-browse-block">
         
+        <noscript><div class="col-xs-12"><p><blink>Put sample code here for execution when JavaScript is disabled.</blink></p></div></noscript>
+
         <!-- SEARCH -->
         <div class="col-xs-12">
             <div class="h4 lite-header margin-bottom">Find data across research fields, preview metadata, and download files.</div>
@@ -91,7 +96,7 @@
         <!-- RECENT CATEGORY -->
         <div class="col-xs-12">
             <div class="row">
-                <div class="col-sm-6 col-xs-12 hmpg-recent-col">
+                <div class="col-lg-4 col-md-12 hmpg-recent-col">
                     <div class="h4 lite-header margin-bottom">Datasets from Journal dataverses</div>
 
                     <hr class="col-xs-11 no-margin-top"/>
@@ -101,11 +106,11 @@
 
                     <!-- VIEW ALL -->
                     <div class="row col-xs-12">
-                        <p class="small text-muted"><a href="/dataverse/root?q=%28categoryOfDataverse%3A%22Journal%22+OR+dvCategory%3A%22Journal%22%29&types=datasets%3Adataverses">ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                        <p class="small text-muted"><a href="/dataverse/root?q=%28categoryOfDataverse%3A%22Journal%22+OR+dvCategory%3A%22Journal%22%29&types=datasets%3Adataverses&sort=dateSort">ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
                 </div>
 
-                <div class="col-sm-6 col-xs-12 hmpg-recent-col">
+                <div class="col-lg-8 col-md-12 hmpg-recent-col">
                     <div class="h4 lite-header margin-bottom">Datasets from other dataverses</div>
 
                     <hr class="col-xs-11 no-margin-top"/>
@@ -131,10 +136,16 @@
         </div>
         <div class="col-xs-12 row">
             <div class="col-sm-6 col-xs-12">
-                <p><span class="highlightBold">All Files</span> <span class="h4 lite-header" id="activityAllTimeDatasetsValue"></span> datasets added <span class="h4 lite-header" id="activityAllTimeFilesValue"></span> file downloads</p>
+                <p><span class="highlightBold">All Files</span></p>
+                <p><span class="h4 lite-header" id="activityAllTimeDatasetsValue"></span> datasets added <span class="h4 lite-header" id="activityAllTimeFilesValue"></span> file downloads</p>
+
+                <p><span class="h4 lite-header" id="activityAllTimeDatasetsValue2">5,640,188</span> datasets added and harvested <span class="h4 lite-header" id="activityAllTimeFilesValue">5,640,188</span> file downloads</p>
+                <p><span class="h4 lite-header" id="activityAllTimeDatasetsValue3">5,640,188</span> datasets deposited <span class="h4 lite-header" id="activityAllTimeFilesValue">5,640,188</span> file deposited</p>
+                <p><span class="h4 lite-header" id="activityAllTimeDatasetsValue4">5,640,188</span> datasets harvested <span class="h4 lite-header" id="activityAllTimeFilesValue">5,640,188</span> file harvested</p>
             </div>
             <div class="col-sm-6 col-xs-12">
-                <p><span class="highlightBold">Past 30 Days</span> <span class="h4 lite-header" id="activity30DaysDatasetsValue"></span> datasets added <span class="h4 lite-header" id="activity30DaysFilesValue"></span> file downloads</p>
+                <p><span class="highlightBold">Past 30 Days</span></p>
+                <p><span class="h4 lite-header" id="activity30DaysDatasetsValue"></span> datasets added <span class="h4 lite-header" id="activity30DaysFilesValue"></span> file downloads</p>
             </div>
         </div>
     </div>
@@ -145,7 +156,14 @@
     <div class="row hmpg-other-block">
         <div class="col-xs-12">
             <div class="h4 lite-header margin-bottom">Looking for other online repositories at Harvard?</div>
-            <p class="text-muted"><a href="https://library.harvard.edu/services-tools/dash" target="_blank">Harvard DASH central, open-access repository</a> <span class="glyphicon glyphicon-chevron-right"></span> &#160;&#160; <a href="https://library.harvard.edu/services-tools/harvard-library-apis-datasets" target="_blank">Other data at Harvard</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+            <div class="row">
+                <div class="col-lg-4 col-xs-12">
+                    <p class="text-muted"><a href="https://library.harvard.edu/services-tools/dash" target="_blank">Harvard DASH central, open-access repository</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                </div>
+                <div class="col-lg-4 col-xs-12">
+                    <p class="text-muted"><a href="https://library.harvard.edu/services-tools/harvard-library-apis-datasets" target="_blank">Other data at Harvard</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -165,7 +183,7 @@
             jData.data.items.forEach(function(item){
                 var options = { year: 'numeric', month: 'short', day: 'numeric' };
                 var date = new Date(item.published_at).toLocaleString('en-US', options);
-                resultHtml += "<div class=\"col-xs-12\">";
+                resultHtml += "<div class=\"no-class\">";
                 resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">";
                 resultHtml += "<object data=\"" + thumbBaseURL + item.global_id + "\" type=\"image/png\"/><span class=\"icon-dataset\"></span></object></div>";
                 resultHtml += "<div class=\"col-xs-9 col-md-10 hmpg-recent-metadata\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">" + item.name + "</a></p><p class=\"small text-muted\"><a href=\"/dataverse/" + item.identifier_of_dataverse + "\" class=\"highlightBold\">" + item.name_of_dataverse + "</a> " + date + "</p></div>";
@@ -213,7 +231,7 @@
     }
 
     writeRecentDatasetsInDataverses("(Journal)" , 3, "journals");
-    writeRecentDatasetsInDataverses("(\"Research+Project\"%20OR%20Researcher%20OR%20\"Research+Group\")" , 3, "researchers");
+    writeRecentDatasetsInDataverses("(\"Research+Project\"%20OR%20Researcher%20OR%20\"Research+Group\")" , 6, "researchers");
     
     queryMetricSimple("datasets", "", "activityAllTimeDatasetsValue");
     queryMetricSimple("downloads", "", "activityAllTimeFilesValue");
