@@ -214,16 +214,51 @@
         });
     }
 
-    function querySubject(elm) {
+//Should remove if unused
+
+//    function querySubject(elm) {
+//        $.get(metricBaseUrl + "datasets/bySubject", function(jData) {
+//            var subArray = [];
+//            var resultHtml = "";
+//            jData.data.forEach(function(item) {
+//                if(item.subject !== "N/A" && item.subject !== "Other")
+//                subArray.push([item.subject, item.count.toLocaleString('en')]);
+//            });
+//            subArray.sort();
+//            subArray.forEach(function(subject){
+//                resultHtml += "<p class=\"browse-subjects\"><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + subject[0] + "%22&types=dataverses%3Adatasets&sort=dateSort&order=desc\">" + subject[0] + "</a> <span class=\"text-muted\">" + subject[1] + "</span></p>";
+//            });
+//            document.getElementById(elm).innerHTML = resultHtml;
+//        });
+//    }
+    
+    function querySubjectDataverseDataset(elm) {
+        var dvArray = [];
+        var fullArray = [];
         $.get(metricBaseUrl + "dataverses/bySubject", function(jData) {
-            var subArray = [];
+            jData.data.forEach(function(item) {
+                if(item.subject !== "N/A" && item.subject !== "Other") {
+                    dvArray.push([item.subject, item.count/*.toLocaleString('en')*/]);
+                }
+            });
+        });
+        $.get(metricBaseUrl + "datasets/bySubject?dataLocation=all", function(jData) {
+            //var subArray = [];
             var resultHtml = "";
             jData.data.forEach(function(item) {
-                if(item.subject !== "N/A" && item.subject !== "Other")
-                subArray.push([item.subject, item.count.toLocaleString('en')]);
+                if(item.subject !== "N/A" && item.subject !== "Other") {
+                    var dvCount = 0;
+                    for (var dvi = 0; dvi < dvArray.length; dvi++) {
+                        if(item.subject === dvArray[dvi][0]) {
+                            dvCount = dvArray[dvi][1];
+                            break;
+                        }
+                    }
+                    fullArray.push([item.subject, (item.count + dvCount).toLocaleString('en')]);
+                }
             });
-            subArray.sort();
-            subArray.forEach(function(subject){
+            fullArray.sort();
+            fullArray.forEach(function(subject){
                 resultHtml += "<p class=\"browse-subjects\"><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + subject[0] + "%22&types=dataverses%3Adatasets&sort=dateSort&order=desc\">" + subject[0] + "</a> <span class=\"text-muted\">" + subject[1] + "</span></p>";
             });
             document.getElementById(elm).innerHTML = resultHtml;
@@ -239,7 +274,8 @@
     queryMetricSimple("datasets/pastDays", "/30", "activity30DaysDatasetsValue");
     queryMetricSimple("downloads/pastDays", "/30", "activity30DaysFilesValue");
     
-    querySubject("dataversesBySubject");
+    //querySubject("dataversesBySubject");
+    querySubjectDataverseDataset("dataversesBySubject")
     queryMetricSearch("datasets", "");
 
 //]]>
