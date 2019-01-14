@@ -46,7 +46,7 @@ public class DataverseTextMessageDto {
     }
 
     public String getPrettyToTime() {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm")
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         return DateUtil.formatDate(toTime, format);
     }
 

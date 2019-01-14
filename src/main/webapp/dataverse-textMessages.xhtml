@@ -31,7 +31,7 @@
                         <h3 title="#{bundle['textmessages.history']}"/>
 
                         <p:dataList value="#{TextMessagePage.lazydataverseTextMessages}" var="history"
-                                    paginator="#{TextMessagePage.lazydataverseTextMessages.rowCount > 0 ?'true' : 'false'}"
+                                    paginator="#{TextMessagePage.lazydataverseTextMessages.rowCount > 10 ?'true' : 'false'}"
                                     lazy="true" rows="10"
                                     itemType="none"
                                     styleClass="paginated ui-datalist-nobullets">
@@ -63,9 +63,13 @@
 
                                 <p:commandButton value="#{bundle['textmessages.delete']}"
                                                  action="#{TextMessagePage.textMessageService.delete(history.id)}"
-                                                 update=":text-messages-form"/>
+                                                 update=":text-messages-form"
+                                                 oncomplete="reloadIfMessageCountTooLow
+                                                 (#{TextMessagePage.lazydataverseTextMessages.rowCount},
+                                                 #{TextMessagePage.lazydataverseTextMessages.pageSize})"/>
                                 <div style="float: right">
                                     <p:commandButton value="#{bundle['textmessages.deactivate']}"
+                                                     rendered="#{history.active}"
                                                      style="margin-right:10px;"
                                                      action="#{TextMessagePage.textMessageService.deactivate(history.id)}"
                                                      update=":text-messages-form"/>
@@ -85,6 +89,13 @@
                     </p:tab>
                 </p:tabView>
             </h:form>
+            <script type="text/javascript">
+                function reloadIfMessageCountTooLow(count, pageSize) {
+                    if (count === pageSize + 1) {
+                        location.reload(true);
+                    }
+                }
+            </script>
         </ui:define>
     </ui:composition>
 
