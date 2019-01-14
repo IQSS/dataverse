@@ -1,12 +1,16 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
+
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DESCRIPTION;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DISPLAY_NAME;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_PARAMETERS;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_URL;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TYPE;
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.CONTENT_TYPE;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,17 +44,33 @@ public class ExternalToolServiceBean {
 
 
     /**
+     * @param type 
+     * @param contentType 
      * @return A list of tools or an empty list.
      */
-    public List<ExternalTool> findByType(ExternalTool.Type type) {
+    public List<ExternalTool> findByType(ExternalTool.Type type, String contentType) {
         List<ExternalTool> externalTools = new ArrayList<>();
-        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
+        
+        //If contentType==null, get all tools of the given ExternalTool.Type 
+        TypedQuery<ExternalTool> typedQuery = contentType != null ? em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type AND o.contentType = :contentType", ExternalTool.class):
+            em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
         typedQuery.setParameter("type", type);
+        if(contentType!=null) {
+            typedQuery.setParameter("contentType", contentType);
+        }
         List<ExternalTool> toolsFromQuery = typedQuery.getResultList();
         if (toolsFromQuery != null) {
             externalTools = toolsFromQuery;
         }
         return externalTools;
+    }
+
+    /**
+     * @param type 
+     * @return A list of tools or an empty list.
+     */
+    public List<ExternalTool> findByType(Type configure) {
+        return findByType(configure, null);
     }
 
     public ExternalTool findById(long id) {
@@ -86,8 +106,9 @@ public class ExternalToolServiceBean {
      */
     public static List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
         List<ExternalTool> externalTools = new ArrayList<>();
+        final String contentType = file.isTabularData() ? DataFileServiceBean.MIME_TYPE_TSV_ALT : file.getContentType();
         allExternalTools.forEach((externalTool) -> {
-            if (file.isTabularData()) {
+            if (contentType.equals(externalTool.getContentType())) {
                 externalTools.add(externalTool);
             }
         });
@@ -104,6 +125,8 @@ public class ExternalToolServiceBean {
         String displayName = getRequiredTopLevelField(jsonObject, DISPLAY_NAME);
         String description = getRequiredTopLevelField(jsonObject, DESCRIPTION);
         String typeUserInput = getRequiredTopLevelField(jsonObject, TYPE);
+        String contentType = getRequiredTopLevelField(jsonObject, CONTENT_TYPE);
+        
         // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString
         ExternalTool.Type type = ExternalTool.Type.fromString(typeUserInput);
         String toolUrl = getRequiredTopLevelField(jsonObject, TOOL_URL);
@@ -125,7 +148,7 @@ public class ExternalToolServiceBean {
             throw new IllegalArgumentException("Required reserved word not found: " + ReservedWord.FILE_ID.toString());
         }
         String toolParameters = toolParametersObj.toString();
-        return new ExternalTool(displayName, description, type, toolUrl, toolParameters);
+        return new ExternalTool(displayName, description, type, toolUrl, toolParameters, contentType);
     }
 
     private static String getRequiredTopLevelField(JsonObject jsonObject, String key) {

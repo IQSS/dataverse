@@ -25,6 +25,7 @@ public class ExternalTool implements Serializable {
     public static final String TYPE = "type";
     public static final String TOOL_URL = "toolUrl";
     public static final String TOOL_PARAMETERS = "toolParameters";
+    public static final String CONTENT_TYPE = "contentType";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,6 +63,13 @@ public class ExternalTool implements Serializable {
     private String toolParameters;
 
     /**
+     * The file content type the tool works on. For tabular files, the type text/tab-separated-values should be sent 
+     */
+    @Column(nullable = false)
+    private String contentType;
+
+    
+    /**
      * This default constructor is only here to prevent this error at
      * deployment:
      *
@@ -75,12 +83,13 @@ public class ExternalTool implements Serializable {
     public ExternalTool() {
     }
 
-    public ExternalTool(String displayName, String description, Type type, String toolUrl, String toolParameters) {
+    public ExternalTool(String displayName, String description, Type type, String toolUrl, String toolParameters, String contentType) {
         this.displayName = displayName;
         this.description = description;
         this.type = type;
         this.toolUrl = toolUrl;
         this.toolParameters = toolParameters;
+        this.contentType = contentType;
     }
 
     public enum Type {
@@ -155,6 +164,14 @@ public class ExternalTool implements Serializable {
         this.toolParameters = toolParameters;
     }
 
+    public String getContentType() {
+        return this.contentType;
+    }
+    
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
     public JsonObjectBuilder toJson() {
         JsonObjectBuilder jab = Json.createObjectBuilder();
         jab.add("id", getId());
@@ -163,6 +180,7 @@ public class ExternalTool implements Serializable {
         jab.add(TYPE, getType().text);
         jab.add(TOOL_URL, getToolUrl());
         jab.add(TOOL_PARAMETERS, getToolParameters());
+        jab.add(CONTENT_TYPE, getContentType());
         return jab;
     }
 

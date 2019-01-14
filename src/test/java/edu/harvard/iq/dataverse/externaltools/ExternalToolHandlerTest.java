@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import javax.json.Json;
 import static org.junit.Assert.assertEquals;
@@ -14,7 +15,7 @@ public class ExternalToolHandlerTest {
     public void testGetToolUrlWithOptionalQueryParameters() {
         ExternalTool.Type type = ExternalTool.Type.EXPLORE;
         String toolUrl = "http://example.com";
-        ExternalTool externalTool = new ExternalTool("displayName", "description", type, toolUrl, "{}");
+        ExternalTool externalTool = new ExternalTool("displayName", "description", type, toolUrl, "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
 
         // One query parameter, not a reserved word, no {fileId} (required) used.
         externalTool.setToolParameters(Json.createObjectBuilder()
