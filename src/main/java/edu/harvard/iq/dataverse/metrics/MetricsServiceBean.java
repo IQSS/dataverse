@@ -32,11 +32,8 @@ public class MetricsServiceBean implements Serializable {
     SystemConfig systemConfig;
 
     
-//MAD: I know some of these shouldn't have had dataLocation added
-    
     /** Dataverses */
     
-    //MAD: I totally misunderstood how to get harvested entries.
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
@@ -282,7 +279,7 @@ public class MetricsServiceBean implements Serializable {
         Metric queriedMetric = getMetric(metricName, dataLocation, days);
 
         if (!doWeQueryAgainDayBased(queriedMetric)) {
-            return queriedMetric.getMetricValue();
+            return queriedMetric.getValueJson();
         }
         return null;
     }
@@ -291,7 +288,7 @@ public class MetricsServiceBean implements Serializable {
         Metric queriedMetric = getMetric(metricName, dataLocation, yyyymm);
 
         if (!doWeQueryAgainMonthly(queriedMetric)) {
-            return queriedMetric.getMetricValue();
+            return queriedMetric.getValueJson();
         }
         return null;
     }
@@ -300,7 +297,7 @@ public class MetricsServiceBean implements Serializable {
         Metric queriedMetric = getMetric(metricName, dataLocation, null); //MAD: not passing a date
 
         if (!doWeQueryAgainAllTime(queriedMetric)) {
-            return queriedMetric.getMetricValue();
+            return queriedMetric.getValueJson();
         }
         return null;
     }
@@ -329,7 +326,7 @@ public class MetricsServiceBean implements Serializable {
             return true;
         }
 
-        String yyyymm = queriedMetric.getMetricDateString();
+        String yyyymm = queriedMetric.getDateString();
         String thisMonthYYYYMM = MetricsUtil.getCurrentMonth();
 
         Date lastCalled = queriedMetric.getLastCalledDate();
@@ -370,7 +367,7 @@ public class MetricsServiceBean implements Serializable {
     }
 
     public Metric save(Metric newMetric) throws Exception {
-        Metric oldMetric = getMetric(newMetric.getMetricTitle(), newMetric.getMetricDataLocation(), newMetric.getMetricDateString());
+        Metric oldMetric = getMetric(newMetric.getName(), newMetric.getDataLocation(), newMetric.getDateString());
 
         if (oldMetric != null) {
             em.remove(oldMetric);
@@ -381,16 +378,16 @@ public class MetricsServiceBean implements Serializable {
     }
 
     //This works for date and day based metrics
-    public Metric getMetric(String metricTitle, String dataLocation, String dayString) throws Exception {
+    public Metric getMetric(String name, String dataLocation, String dayString) throws Exception {
         //MAD: Add the other parameters
         Query query = em.createQuery("select object(o) from Metric as o"
-                + " where o.metricName = :metricName"
-                + " and o.metricDataLocation" + (dataLocation == null ? " is null" : " = :metricDataLocation")
-                + " and o.metricDayString" + (dayString == null ? " is null" :  " = :metricDayString")
+                + " where o.name = :name"
+                + " and o.dataLocation" + (dataLocation == null ? " is null" : " = :dataLocation")
+                + " and o.dayString" + (dayString == null ? " is null" :  " = :dayString")
                 , Metric.class);
-        query.setParameter("metricName", metricTitle);
-        if(dataLocation != null){ query.setParameter("metricDataLocation", dataLocation);}
-        if(dayString != null) {query.setParameter("metricDayString", dayString);}
+        query.setParameter("name", name);
+        if(dataLocation != null){ query.setParameter("dataLocation", dataLocation);}
+        if(dayString != null) {query.setParameter("dayString", dayString);}
         
         logger.log(Level.INFO, "getMetric query: {0}", query);
         

@@ -23,14 +23,8 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
  */
 @Path("info/metrics")
 public class Metrics extends AbstractApiBean {
-    /** Dataverses */
 
-    //MAD:
-    //so the problem is I want to allow (harvested, not harvested, both). how to I describe that?
-    //dataLocation : remote, local, all
-    //Should we include the depricated methods? Yes I guess
-    
-    //public String fakeDataLocale = null;
+    /** Dataverses */
     
     @GET
     @Path("dataverses")
@@ -48,16 +42,9 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("dataverses/toMonth/{yyyymm}")
     public Response getDataversesToMonth(@PathParam("yyyymm") String yyyymm) {
-        //We need constants for dataLocation, where should they be stored?
-        
-        //MAD: Do i need to sanitize the queryParam? I don't think so because I'm just going to match on it...
-        // Well I can create a helper method to prune out strings that don't match the ones we want...
-        
         String metricName = "dataversesToMonth";
 
         try {
-            //metricName = metricName + Metric.separator + MetricsUtil.validateDataLocationStringType(dataLocation);
-            
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null);
 
@@ -65,18 +52,17 @@ public class Metrics extends AbstractApiBean {
                 Long count = metricsSvc.dataversesToMonth(sanitizedyyyymm);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, jsonString));
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
 
+        //TODO: Eventually the catch in each endpoint should be more specific
+        //          and more general errors should be logged.
         } catch (Exception ex) {
-            //MAD: SHOULD WE BE LOGGING ERRORS?
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
     }
-
-    //MAD: all of thse need dataLocation and the correct metric constructor
     
     @GET
     @Path("dataverses/pastDays/{days}")
@@ -93,7 +79,7 @@ public class Metrics extends AbstractApiBean {
                 Long count = metricsSvc.dataversesPastDays(days);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, jsonString));
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
@@ -114,7 +100,7 @@ public class Metrics extends AbstractApiBean {
             if (null == jsonArrayString) { //run query and save
                 JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesByCategoryToJson(metricsSvc.dataversesByCategory());
                 jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, null, null, jsonArrayString));//, false);
+                metricsSvc.save(new Metric(metricName, null, null, jsonArrayString));
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
@@ -134,7 +120,7 @@ public class Metrics extends AbstractApiBean {
             if (null == jsonArrayString) { //run query and save
                 JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesBySubjectToJson(metricsSvc.dataversesBySubject());
                 jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, null, null, jsonArrayString));//, false);
+                metricsSvc.save(new Metric(metricName, null, null, jsonArrayString));
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
@@ -172,7 +158,7 @@ public class Metrics extends AbstractApiBean {
                 Long count = metricsSvc.datasetsToMonth(sanitizedyyyymm, validDataLocation);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, jsonString));
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
@@ -198,7 +184,7 @@ public class Metrics extends AbstractApiBean {
                 Long count = metricsSvc.datasetsPastDays(days, validDataLocation);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, String.valueOf(days), validDataLocation, jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), validDataLocation, jsonString));
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
@@ -227,7 +213,7 @@ public class Metrics extends AbstractApiBean {
             if (null == jsonArrayString) { //run query and save
                 JsonArrayBuilder jsonArrayBuilder = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubjectToMonth(sanitizedyyyymm, validDataLocation));
                 jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, jsonArrayString));//, false);
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, jsonArrayString));
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
@@ -264,7 +250,7 @@ public class Metrics extends AbstractApiBean {
                 Long count = metricsSvc.filesToMonth(sanitizedyyyymm, validDataLocation);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, jsonString));
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
@@ -289,7 +275,7 @@ public class Metrics extends AbstractApiBean {
                 Long count = metricsSvc.filesPastDays(days, validDataLocation);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, String.valueOf(days), validDataLocation, jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), validDataLocation, jsonString));
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
@@ -327,7 +313,7 @@ public class Metrics extends AbstractApiBean {
                 Long count = metricsSvc.downloadsToMonth(sanitizedyyyymm);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, jsonString));
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
@@ -351,7 +337,7 @@ public class Metrics extends AbstractApiBean {
                 Long count = metricsSvc.downloadsPastDays(days);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, jsonString));//, true); //if not using cache save new
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, jsonString));
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));

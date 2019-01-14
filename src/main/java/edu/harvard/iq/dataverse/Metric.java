@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -17,7 +18,6 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 /**
  *
@@ -35,35 +35,35 @@ public class Metric implements Serializable {
     private int id;
 
     @Column(nullable = false)
-    private String metricName;
+    private String name;
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    private String metricValue;
+    private String valueJson;
         
     @Column(columnDefinition = "TEXT", nullable = true)
-    private String metricDataLocation;
+    private String dataLocation;
     
-    //MAD: Keeping as text for support of pastDays and toMonth?
     @Column(columnDefinition = "TEXT", nullable = true)
-    private String metricDayString;
+    private String dayString;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date lastCalledDate;
-
-    @Transient
-    public static final String SEPARATOR = "_"; //MAD: do we need to specify more seperators?
 
     @Deprecated
     public Metric() {
     }
 
     //For monthly and day metrics
-    public Metric(String metricTitle, String dayString, String dataLocation, String metricValue) {
-        this.metricName = metricTitle;
-        this.metricValue = metricValue;
-        this.metricDataLocation = dataLocation;
-        this.metricDayString = dayString;
+    
+    public Metric(String name, String dayString, String dataLocation, String value) throws IOException {
+        if(null == name || null == value) {
+            throw new IOException("A created metric must have a metricName and metricValue");
+        }
+        this.name = name;
+        this.valueJson = value;
+        this.dataLocation = dataLocation;
+        this.dayString = dayString;
         this.lastCalledDate = new Timestamp(new Date().getTime());
     }
 
@@ -81,36 +81,30 @@ public class Metric implements Serializable {
         this.id = id;
     }
 
-    //MAD: Refactor all of these to not have "metric" in the method name
-    public String getMetricDateString() {
-        return metricDayString;
-        //return metricName.substring(metricName.indexOf(SEPARATOR) + 1); //MAD: Is this going to blow up with adding query params
+    public String getDateString() {
+        return dayString;
     }
 
-    public String getMetricDataLocation() {
-        return metricDataLocation;
+    public String getDataLocation() {
+        return dataLocation;
     }
     
-    public String getMetricTitle() {
-        int monthSeperatorIndex = metricName.indexOf(SEPARATOR);
-        if (monthSeperatorIndex >= 0) {
-            return metricName.substring(0, monthSeperatorIndex);
-        }
-        return metricName;
+    public String getName() {
+        return name;
     }
 
     /**
-     * @return the metricValue
+     * @return the valueJson
      */
-    public String getMetricValue() {
-        return metricValue;
+    public String getValueJson() {
+        return valueJson;
     }
 
     /**
-     * @param metricValue the metricValue to set
+     * @param metricValue the valueJson to set
      */
-    public void setMetricValue(String metricValue) {
-        this.metricValue = metricValue;
+    public void setValueJson(String metricValue) {
+        this.valueJson = metricValue;
     }
 
     /**
@@ -126,15 +120,5 @@ public class Metric implements Serializable {
     public void setLastCalledDate(Date calledDate) {
         this.lastCalledDate = calledDate;
     }
-
-//    public static String generateMetricName(String title, String dateString) {
-//        if (title.contains(SEPARATOR) || dateString.contains(SEPARATOR)) {
-//            throw new IllegalArgumentException("Metric title or date contains character reserved for seperator");
-//        }
-//        if (SEPARATOR.contains("-")) {
-//            throw new IllegalArgumentException("Metric seperator cannot be '-', value reserved for dates");
-//        }
-//        return title + SEPARATOR + dateString;
-//    }
 
 }

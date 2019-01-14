@@ -1,10 +1,8 @@
 package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.Metric;
 import java.io.StringReader;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -31,7 +29,6 @@ public class MetricsUtil {
     private final static String SUBJECT = "subject";
     public static String YEAR_AND_MONTH_PATTERN = "yyyy-MM";
     
-    //MAD: May not be the best place or name for these
     public static final String DATA_LOCATION_LOCAL = "local";
     public static final String DATA_LOCATION_REMOTE = "remote";
     public static final String DATA_LOCATION_ALL = "all";
@@ -117,7 +114,6 @@ public class MetricsUtil {
         return sanitized;
     }
 
-    //MAD: Is this blank match good?
     public static String validateDataLocationStringType(String dataLocation) throws Exception {
         if( null == dataLocation || "".equals(dataLocation)) {
             dataLocation = DATA_LOCATION_LOCAL;
