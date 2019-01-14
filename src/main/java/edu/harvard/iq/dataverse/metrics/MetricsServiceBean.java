@@ -53,7 +53,7 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public long dataversesPastDays(String dataLocation, int days) throws Exception {
+    public long dataversesPastDays(int days) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(dvobject.id)\n"
                 + "from dataverse\n"
@@ -67,7 +67,7 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public List<Object[]> dataversesByCategory(String dataLocation) throws Exception {
+    public List<Object[]> dataversesByCategory() throws Exception {
 
         Query query = em.createNativeQuery(""
                 + "select dataversetype, count(dataversetype) from dataverse\n"
@@ -81,7 +81,7 @@ public class MetricsServiceBean implements Serializable {
         return query.getResultList();
     }
     
-    public List<Object[]> dataversesBySubject(String dataLocation) {
+    public List<Object[]> dataversesBySubject() {
         Query query = em.createNativeQuery(""
                 + "select cvv.strvalue, count(dataverse_id) from dataversesubjects\n"
                 + "join controlledvocabularyvalue cvv ON cvv.id = controlledvocabularyvalue_id\n"
@@ -95,42 +95,12 @@ public class MetricsServiceBean implements Serializable {
     }
     
     /** Datasets */
-    
-    public List<Object[]> datasetsBySubjectToMonth(String dataLocation, String yyyymm) {        
-        Query query = em.createNativeQuery(""
-                + "SELECT strvalue, count(dataset.id)\n"
-                + "FROM datasetfield_controlledvocabularyvalue \n"
-                + "JOIN controlledvocabularyvalue ON controlledvocabularyvalue.id = datasetfield_controlledvocabularyvalue.controlledvocabularyvalues_id\n"
-                + "JOIN datasetfield ON datasetfield.id = datasetfield_controlledvocabularyvalue.datasetfield_id\n"
-                + "JOIN datasetfieldtype ON datasetfieldtype.id = controlledvocabularyvalue.datasetfieldtype_id\n"
-                + "JOIN datasetversion ON datasetversion.id = datasetfield.datasetversion_id\n"
-                + "JOIN dvobject ON dvobject.id = datasetversion.dataset_id\n"
-                + "JOIN dataset ON dataset.id = datasetversion.dataset_id\n"
-                + "WHERE\n"
-                + "datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n"
-                + "(\n"
-                + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
-                + "from datasetversion\n"
-                + "join dataset on dataset.id = datasetversion.dataset_id\n"
-                + "where versionstate='RELEASED'\n"
-                + "and dataset.harvestingclient_id is null\n"
-                + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + "group by dataset_id \n"
-                + ")\n"
-                + "AND datasetfieldtype.name = 'subject'\n"
-                + "GROUP BY strvalue\n"
-                + "ORDER BY count(dataset.id) desc;"
-        );
-        logger.info("query: " + query);
 
-        return query.getResultList();
-    }
-    
     
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long datasetsToMonth(String dataLocation, String yyyymm) throws Exception {
+    public long datasetsToMonth(String yyyymm, String dataLocation) throws Exception {
         String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
         if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
             dataLocationLine = "and dataset.harvestingclient_id is not null\n";
@@ -157,10 +127,50 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public long datasetsPastDays(String dataLocation, int days) throws Exception {
+    public List<Object[]> datasetsBySubjectToMonth(String yyyymm, String dataLocation) {        
+        String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
+        if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
+            dataLocationLine = "and dataset.harvestingclient_id is not null\n";
+        } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
+            dataLocationLine = ""; //no specification will return all
+        }
+        Query query = em.createNativeQuery(""
+                + "SELECT strvalue, count(dataset.id)\n"
+                + "FROM datasetfield_controlledvocabularyvalue \n"
+                + "JOIN controlledvocabularyvalue ON controlledvocabularyvalue.id = datasetfield_controlledvocabularyvalue.controlledvocabularyvalues_id\n"
+                + "JOIN datasetfield ON datasetfield.id = datasetfield_controlledvocabularyvalue.datasetfield_id\n"
+                + "JOIN datasetfieldtype ON datasetfieldtype.id = controlledvocabularyvalue.datasetfieldtype_id\n"
+                + "JOIN datasetversion ON datasetversion.id = datasetfield.datasetversion_id\n"
+                + "JOIN dvobject ON dvobject.id = datasetversion.dataset_id\n"
+                + "JOIN dataset ON dataset.id = datasetversion.dataset_id\n"
+                + "WHERE\n"
+                + "datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n"
+                + "(\n"
+                + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
+                + "from datasetversion\n"
+                + "join dataset on dataset.id = datasetversion.dataset_id\n"
+                + "where versionstate='RELEASED'\n"
+                + dataLocationLine
+                + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
+                + "group by dataset_id \n"
+                + ")\n"
+                + "AND datasetfieldtype.name = 'subject'\n"
+                + "GROUP BY strvalue\n"
+                + "ORDER BY count(dataset.id) desc;"
+        );
+        logger.info("query: " + query);
 
-        Query query = em.createNativeQuery(
-            "select count(*)\n" +
+        return query.getResultList();
+    }
+    
+    public long datasetsPastDays(int days, String dataLocation) throws Exception {
+        String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
+        if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
+            dataLocationLine = "and dataset.harvestingclient_id is not null\n";
+        } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
+            dataLocationLine = ""; //no specification will return all
+        }
+        Query query = em.createNativeQuery("select count(*)\n" +
             "from datasetversion\n" +
             "where datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n" +
             "(\n" +
@@ -169,7 +179,7 @@ public class MetricsServiceBean implements Serializable {
             "	join dataset on dataset.id = datasetversion.dataset_id\n" +
             "	where versionstate='RELEASED' \n" +
             "	and releasetime > current_date - interval '"+days+"' day\n" +
-            "	and dataset.harvestingclient_id is null\n" +
+            dataLocationLine +
             "	group by dataset_id \n" +
             ");"
         );
@@ -184,7 +194,13 @@ public class MetricsServiceBean implements Serializable {
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long filesToMonth(String dataLocation, String yyyymm) throws Exception {
+    public long filesToMonth(String yyyymm, String dataLocation) throws Exception {
+        String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
+        if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
+            dataLocationLine = "and dataset.harvestingclient_id is not null\n";
+        } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
+            dataLocationLine = ""; //no specification will return all
+        }
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from filemetadata\n"
@@ -196,7 +212,7 @@ public class MetricsServiceBean implements Serializable {
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "where versionstate='RELEASED'\n"
                 + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + "and dataset.harvestingclient_id is null\n"
+                + dataLocationLine
                 + "group by dataset_id \n"
                 + ");"
         );
@@ -204,7 +220,13 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public long filesPastDays(String dataLocation, int days) throws Exception {
+    public long filesPastDays(int days, String dataLocation) throws Exception {
+        String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
+        if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
+            dataLocationLine = "and dataset.harvestingclient_id is not null\n";
+        } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
+            dataLocationLine = ""; //no specification will return all
+        }
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from filemetadata\n"
@@ -216,7 +238,7 @@ public class MetricsServiceBean implements Serializable {
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "where versionstate='RELEASED'\n"
                 + "and releasetime > current_date - interval '"+days+"' day\n"
-                + "and dataset.harvestingclient_id is null\n"
+                + dataLocationLine
                 + "group by dataset_id \n"
                 + ");"
         );
@@ -231,7 +253,7 @@ public class MetricsServiceBean implements Serializable {
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long downloadsToMonth(String dataLocation, String yyyymm) throws Exception {
+    public long downloadsToMonth(String yyyymm) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
@@ -241,7 +263,7 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
 
-    public long downloadsPastDays(String dataLocation, int days) throws Exception {
+    public long downloadsPastDays(int days) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
@@ -256,7 +278,7 @@ public class MetricsServiceBean implements Serializable {
     /** Helper functions for metric caching */
     
     //MAD: hopefully these can all go away if we are moving everything correctly into database columns
-    public String returnUnexpiredCacheDayBased(String metricName, String dataLocation, String days) throws Exception {
+    public String returnUnexpiredCacheDayBased(String metricName, String days, String dataLocation) throws Exception {
         Metric queriedMetric = getMetric(metricName, dataLocation, days);
 
         if (!doWeQueryAgainDayBased(queriedMetric)) {
@@ -265,7 +287,7 @@ public class MetricsServiceBean implements Serializable {
         return null;
     }
     
-    public String returnUnexpiredCacheMonthly(String metricName, String dataLocation, String yyyymm) throws Exception {
+    public String returnUnexpiredCacheMonthly(String metricName, String yyyymm, String dataLocation) throws Exception {
         Metric queriedMetric = getMetric(metricName, dataLocation, yyyymm);
 
         if (!doWeQueryAgainMonthly(queriedMetric)) {

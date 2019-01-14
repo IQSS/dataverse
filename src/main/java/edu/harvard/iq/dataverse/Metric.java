@@ -59,20 +59,11 @@ public class Metric implements Serializable {
     }
 
     //For monthly and day metrics
-    public Metric(String metricTitle, String dataLocation, String dayString, String metricValue) {
+    public Metric(String metricTitle, String dayString, String dataLocation, String metricValue) {
         this.metricName = metricTitle;
         this.metricValue = metricValue;
         this.metricDataLocation = dataLocation;
         this.metricDayString = dayString;
-        this.lastCalledDate = new Timestamp(new Date().getTime());
-    }
-
-    //For all-time metrics
-    public Metric(String metricName, String dataLocation, String metricValue) {
-        this.metricName = metricName;
-        this.metricValue = metricValue;
-        this.metricDataLocation = dataLocation;
-        //this.metricDayString = dayString;
         this.lastCalledDate = new Timestamp(new Date().getTime());
     }
 
