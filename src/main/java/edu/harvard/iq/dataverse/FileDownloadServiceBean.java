@@ -226,6 +226,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         if (user instanceof AuthenticatedUser) {
             AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
             apiToken = authService.findApiTokenByUser(authenticatedUser);
+            if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
+                apiToken = authService.generateApiTokenForUser(authenticatedUser);
+            }
         }
         DataFile dataFile = null;
         if (fmd != null) {
