@@ -84,6 +84,7 @@ import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.util.DateUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -1531,7 +1532,14 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @Path("{id}/makeDataCount/{metric}")
-    public Response getMakeDataCountMetric(@PathParam("id") String idSupplied, @PathParam("metric") String metricSupplied) {
+    public Response getMakeDataCountMetricCurrentMonth(@PathParam("id") String idSupplied, @PathParam("metric") String metricSupplied, @QueryParam("country") String country) {
+        String currentMonth = DateUtil.getCurrentYearDashMonth();
+        return getMakeDataCountMetric(idSupplied, metricSupplied, currentMonth, country);
+    }
+
+    @GET
+    @Path("{id}/makeDataCount/{metric}/{yyyymm}")
+    public Response getMakeDataCountMetric(@PathParam("id") String idSupplied, @PathParam("metric") String metricSupplied, @PathParam("yyyymm") String yyyymm, @QueryParam("country") String country) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             NullSafeJsonBuilder jsonObjectBuilder = jsonObjectBuilder();
@@ -1541,31 +1549,42 @@ public class Datasets extends AbstractApiBean {
             } catch (IllegalArgumentException ex) {
                 return error(Response.Status.BAD_REQUEST, ex.getMessage());
             }
-            // FIXME: Remove hard coded date (and change from "monthYear" to "date"?
-            String monthYear = "2018-05-01";
-            // FIXME: Remove hard coded country code.
-            String country = "us";
+            // FIXME: Why do we have to add "-01" here?
+            String monthYear = yyyymm + "-01";
             DatasetMetrics datasetMetrics = datasetMetricsSvc.getDatasetMetricsByDatasetMonthCountry(dataset, monthYear, country);
+            if (datasetMetrics == null) {
+                return ok("No metrics available for dataset " + dataset.getId() + " for " + yyyymm + " for country code " + country + ".");
+            }
             Long viewsTotal = null;
-            // TODO: add viewsUnique
+            Long viewsUnique = null;
             Long downloadsTotal = null;
-            // TODO: add downloadsUnique
+            Long downloadsUnique = null;
             switch (metricSupplied) {
                 case "viewsTotal":
                     viewsTotal = datasetMetrics.getViewsTotal();
                     break;
+                case "viewsUnique":
+                    viewsUnique = datasetMetrics.getViewsUnique();
+                    break;
                 case "downloadsTotal":
                     downloadsTotal = datasetMetrics.getDownloadsTotal();
+                    break;
+                case "downloadsUnique":
+                    downloadsUnique = datasetMetrics.getDownloadsUnique();
                     break;
                 default:
                     break;
             }
-            String description = metricType.name() + " metric for dataset " + dataset.getId();
-            jsonObjectBuilder.add("description", description);
-            logger.info("viewsTotal: " + viewsTotal);
-            logger.info("downloadsTotal: " + downloadsTotal);
+            /**
+             * TODO: Think more about the JSON output and the API design.
+             * getDatasetMetricsByDatasetMonthCountry returns a single row right
+             * now, by country. We could return multiple metrics (viewsTotal,
+             * viewsUnique, downloadsTotal, and downloadsUnique) by country.
+             */
             jsonObjectBuilder.add("viewsTotal", viewsTotal);
+            jsonObjectBuilder.add("viewsUnique", viewsUnique);
             jsonObjectBuilder.add("downloadsTotal", downloadsTotal);
+            jsonObjectBuilder.add("downloadsUnique", downloadsUnique);
             return allowCors(ok(jsonObjectBuilder));
         } catch (WrappedResponse wr) {
             return wr.getResponse();

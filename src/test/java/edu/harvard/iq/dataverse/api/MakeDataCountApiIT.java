@@ -2,9 +2,13 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.util.DateUtil;
+import java.io.File;
+import java.io.IOException;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import org.apache.commons.io.FileUtils;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -25,7 +29,7 @@ public class MakeDataCountApiIT {
     }
 
     @Test
-    public void testMakeDataCountGetMetric() {
+    public void testMakeDataCountGetMetric() throws IOException {
 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -46,34 +50,71 @@ public class MakeDataCountApiIT {
                 .statusCode(CREATED.getStatusCode());
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
-        // FIXME: Remove manual "cp" step below.
-        // cp src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json /tmp
-        String reportOnDisk = "/tmp/sushi_sample_logs.json";
+        String testFile1Src = "src/test/java/edu/harvard/iq/dataverse/makedatacount/sushi_sample_logs.json";
+        String testFile1Tmp = "/tmp/sushi_sample_logs.json";
+        FileUtils.copyFile(new File(testFile1Src), new File(testFile1Tmp));
+        String reportOnDisk = testFile1Tmp;
         Response addUsageMetricsFromSushiReport = UtilIT.makeDataCountAddUsageMetricsFromSushiReport(datasetId.toString(), reportOnDisk);
         addUsageMetricsFromSushiReport.prettyPrint();
         addUsageMetricsFromSushiReport.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        String countryCodeUs = "us";
+
         String invalidMetric = "junk";
-        Response invalidMetricAttempt = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), invalidMetric, apiToken);
+        Response invalidMetricAttempt = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), invalidMetric, countryCodeUs, apiToken);
         invalidMetricAttempt.prettyPrint();
         invalidMetricAttempt.then().assertThat()
                 .body("message", equalTo("MetricType must be one of these values: [viewsTotal, viewsUnique, downloadsTotal, downloadsUnique, citations]."))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         String metricViewsTotal = "viewsTotal";
-        Response getViewsTotal = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsTotal, apiToken);
-        getViewsTotal.prettyPrint();
-        getViewsTotal.then().assertThat()
+        String metricViewsUnique = "viewsUnique";
+        String metricDownloadsTotal = "downloadsTotal";
+        String metricDownloadsUnique = "downloadsUnique";
+
+        String currentMonth = DateUtil.getCurrentYearDashMonth();
+        Response getViewsCurrentMonth = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsTotal, countryCodeUs, apiToken);
+        getViewsCurrentMonth.prettyPrint();
+        getViewsCurrentMonth.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("No metrics available for dataset " + datasetId + " for " + currentMonth + " for country code " + countryCodeUs + "."));
+
+        String monthYear = "2018-05";
+        Response getViewsTotalUs = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsTotal, monthYear, countryCodeUs, apiToken);
+        getViewsTotalUs.prettyPrint();
+        getViewsTotalUs.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.viewsTotal", equalTo(3));
 
-        String metricDownloadsTotal = "downloadsTotal";
-        Response getDownloadsTotal = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricDownloadsTotal, apiToken);
-        getDownloadsTotal.prettyPrint();
-        getDownloadsTotal.then().assertThat()
+        Response getViewsUniqueUs = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsUnique, monthYear, countryCodeUs, apiToken);
+        getViewsUniqueUs.prettyPrint();
+        getViewsUniqueUs.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.viewsUnique", equalTo(2));
+
+        Response getDownloadsTotalUs = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricDownloadsTotal, monthYear, countryCodeUs, apiToken);
+        getDownloadsTotalUs.prettyPrint();
+        getDownloadsTotalUs.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.downloadsTotal", equalTo(2));
+
+        String countryCodeKr = "kr";
+
+        Response getViewsTotalKr = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsTotal, monthYear, countryCodeKr, apiToken);
+        getViewsTotalKr.prettyPrint();
+        getViewsTotalKr.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.viewsTotal", equalTo(2));
+
+        String countryCodeCa = "ca";
+
+        Response getDownloadsUniqueCa = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricDownloadsUnique, monthYear, countryCodeCa, apiToken);
+        getDownloadsUniqueCa.prettyPrint();
+        getDownloadsUniqueCa.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.downloadsUnique", equalTo(1));
+
     }
 
     @Test
