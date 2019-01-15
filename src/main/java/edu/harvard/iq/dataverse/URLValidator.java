@@ -26,7 +26,9 @@ public class URLValidator implements ConstraintValidator<ValidateURL, String>  {
     }
     
     public static boolean isURLValid(String value, ConstraintValidatorContext context) {
-
+        if (value == null || value.isEmpty()){
+            return true;
+        }
         try {
             URL url = new URL(value);
         } catch (MalformedURLException e) {

@@ -13,7 +13,7 @@ import javax.validation.ConstraintValidatorContext;
  *
  * @author skraffmi
  */
-public class DatasetVersionNoteValidator implements ConstraintValidator<ValidateVersionNote, String> {
+public class DatasetVersionNoteValidator implements ConstraintValidator<ValidateVersionNote, DatasetVersion> {
     
     private String versionState;
     private String versionNote;
@@ -26,7 +26,7 @@ public class DatasetVersionNoteValidator implements ConstraintValidator<Validate
 
 
     @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
+    public boolean isValid(DatasetVersion value, ConstraintValidatorContext context) {
         
         if (versionState.equals(DatasetVersion.VersionState.DEACCESSIONED) && versionNote.isEmpty()){
             if (context != null) {
@@ -34,7 +34,7 @@ public class DatasetVersionNoteValidator implements ConstraintValidator<Validate
             }
             return false;
         }
-        if (versionState.equals(DatasetVersion.VersionState.DEACCESSIONED) && value.length() > DatasetVersion.VERSION_NOTE_MAX_LENGTH){
+        if (versionState.equals(DatasetVersion.VersionState.DEACCESSIONED) && versionNote.length() > DatasetVersion.VERSION_NOTE_MAX_LENGTH){
             if (context != null) {
                 context.buildConstraintViolationWithTemplate(value + "  " + BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.limitChar.error")).addConstraintViolation();
             }
