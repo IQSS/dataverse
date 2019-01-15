@@ -1,6 +1,12 @@
 .annotation-page-title {
-    text-align:center;
+    display: inline-block;
+    width: 58%;
 }
+
+.annotation-page-title a {
+    color: #56B7CB;
+}
+
 .annotation-header {
     font-size:18px;
     font-family: sans-serif;
@@ -78,5 +84,11 @@ max-width:100%;
         max-height:500px;
         word-break:break-all;
         overflow-y:auto;
+}
+
+body img {
+    display: inline-block;
+    margin-left: 40px;
+    width: 236px;
 }
                                                         

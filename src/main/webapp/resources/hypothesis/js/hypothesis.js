@@ -1,3 +1,4 @@
+var parentUrl = "";
 $(document)
     .ready(
         function() {
@@ -30,6 +31,20 @@ $(document)
                               datasetUrl = datasetUrl
                                   .substring(datasetUrl
                                       .indexOf("//") + 2);
+                              var version = queryParams
+                                  .get("datasetversion");
+                              if (version === ":draft") {
+                                version = "DRAFT";
+                              }
+                              //Use parentUrl if we got it from the opener, otherwise return to the dataset page
+                              if(!(parentUrl === "")) {
+                                parentUrl = queryParams
+                                    .get("siteUrl")
+                                    + "/dataset.xhtml?persistentId=doi:"
+                                    + datasetUrl
+                                    + "&version="
+                                    + version;
+                              }
                               for ( var field in mdFields) {
                                 if (mdFields[field].typeName === "title") {
                                   title = mdFields[field].value;
@@ -56,14 +71,14 @@ $(document)
                                       datafiles[entry].dataFile.creationDate,
                                       title,
                                       authors,
-                                      datasetUrl);
+                                      parentUrl);
                                 }
                               }
                             });
                   });
         });
 
-function writeHypothesisFields(json, date, title, authors, datasetUrl) {
+function writeHypothesisFields(json, date, title, authors, parentUrl) {
   //Order by TextPositionSelector.start
   json.rows.sort(annotationCompare);
 
@@ -71,18 +86,19 @@ function writeHypothesisFields(json, date, title, authors, datasetUrl) {
   var hypo = $(".hypothesis");
   var url = json.rows[0].target[0].source;
   var header = $("<div/>").addClass("annotation-header");
-  header.append($("<div/>").html(
-      "This is the annotations-only view of the ATI data project <a href=\""
-          + datasetUrl + "\">" + title + "</a> by " + authors + "."));
+  header
+      .append($("<div/>")
+          .html(
+              "This is the annotations-only view of the ATI data project <a href=\"javascript:returnToDataset(parentUrl);\">"
+                  + title + "</a> by " + authors + "."));
   header.append($("<div/>").addClass("btn btn-default").append(
       $("<a/>").attr("href", json.rows[0].links.incontext).text(
           "View Annotations In Context")));
-
   header
       .append($("<div/>")
           .addClass("btn btn-default")
           .html(
-              "<a href=\"javascript:window.close();\">Return To The Data Project.</a>"));
+              "<a href=\"javascript:returnToDataset(parentUrl);\">Return To The Data Project.</a>"));
   header.append($("<div/>").addClass("annotation-note").text(
       json.total + " annotations, retrieved on " + date));
 
@@ -93,7 +109,6 @@ function writeHypothesisFields(json, date, title, authors, datasetUrl) {
       extensions : [ 'xssFilter' ]
     });
     hypo.html("");
-
 
     //Display annotations
     var list = $("<ol>").appendTo(hypo);
@@ -130,21 +145,45 @@ function writeHypothesisFields(json, date, title, authors, datasetUrl) {
 }
 
 function annotationCompare(a, b) {
-    var aPosition = 0;
-    var bPosition = 0;
-    for ( var j in a.target[0].selector) {
-      if (a.target[0].selector[j].type === "TextPositionSelector") {
-        aPosition = a.target[0].selector[j].start;
-      }
+  var aPosition = 0;
+  var bPosition = 0;
+  for ( var j in a.target[0].selector) {
+    if (a.target[0].selector[j].type === "TextPositionSelector") {
+      aPosition = a.target[0].selector[j].start;
     }
-    for ( var j in b.target[0].selector) {
-      if (b.target[0].selector[j].type === "TextPositionSelector") {
-        bPosition = b.target[0].selector[j].start;
-      }
-    }
-    if (aPosition < bPosition)
-      return -1;
-    if (aPosition > bPosition)
-      return 1;
-    return 0;
   }
+  for ( var j in b.target[0].selector) {
+    if (b.target[0].selector[j].type === "TextPositionSelector") {
+      bPosition = b.target[0].selector[j].start;
+    }
+  }
+  if (aPosition < bPosition)
+    return -1;
+  if (aPosition > bPosition)
+    return 1;
+  return 0;
+}
+
+function returnToDataset(parentUrl) {
+  if (!window.opener) {
+    //Opener is gone, just navigate to the dataset in this window
+    window.location.assign(parentUrl);
+  } else {
+    //See if the opener is still showing the dataset
+    try {
+      if (window.opener.location.href === parentUrl) {
+        //Yes - close the opener and reopen the dataset here (since just closing this window may not bring the opener to the front)
+        window.opener.close();
+        window.open(parentUrl, "_parent");
+      } else {
+      //No - so leave the opener alone and open the dataset here
+        window.location.assign(parentUrl);
+      }
+    } catch (err) {
+      //No, and the opener has navigated to some other site, so just open the dataset here	
+      window.location.assign(parentUrl);
+    }
+  }
+}
+
+
