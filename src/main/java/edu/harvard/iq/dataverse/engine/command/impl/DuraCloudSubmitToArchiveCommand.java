@@ -94,6 +94,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                                     logger.severe("Error creating datacite.xml: " + e.getMessage());
                                     // TODO Auto-generated catch block
                                     e.printStackTrace();
+                                    throw new RuntimeException("Error creating datacite.xml: " + e.getMessage());
                                 }
                             }
                         }).start();
@@ -127,6 +128,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                                         logger.severe("Error creating bag: " + e.getMessage());
                                         // TODO Auto-generated catch block
                                         e.printStackTrace();
+                                        throw new RuntimeException("Error creating bag: " + e.getMessage());
                                     }
                                 }
                             }).start();
