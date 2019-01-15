@@ -1,6 +1,7 @@
 .annotation-page-title {
     display: inline-block;
     width: 58%;
+    text-align:center;
 }
 
 .annotation-page-title a {
