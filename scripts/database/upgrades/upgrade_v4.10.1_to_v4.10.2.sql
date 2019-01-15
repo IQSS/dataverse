@@ -1,3 +1,4 @@
+TRUNCATE metric;
 ALTER TABLE metric ADD COLUMN dayString text;
 ALTER TABLE metric ADD COLUMN dataLocation text;
 ALTER TABLE metric DROP CONSTRAINT "metric_metricname_key";
