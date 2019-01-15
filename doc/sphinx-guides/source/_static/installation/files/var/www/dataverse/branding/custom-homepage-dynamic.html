@@ -31,11 +31,11 @@
     #browseBySubject p.browse-subjects a {color: #C55B28;}
     #browseBySubject p.browse-subjects a:focus, #browseBySubject p.browse-subjects a:hover {color: #9F3502;}
 
+    div.hmpg-recent-col p.placeholder {display:inline-block;}
+    div.hmpg-recent-col div.hmpg-recent-block {border-bottom:1px solid #DDD;margin-bottom:12px;}
     div.hmpg-recent-col div.col-xs-2.hmpg-recent-thumb {width: 48px !important;height:48px;padding: 0 !important;}
     div.hmpg-recent-col div.hmpg-recent-thumb img {max-height:48px;max-width:48px;}
     div.hmpg-recent-col div.hmpg-recent-thumb span {font-size:38px;}
-
-    div.hmpg-recent-col div.no-class {border-bottom:1px solid #DDD;margin-bottom:12px;}
 
     div.hmpg-activity-block .row .lite-header {/* margin-left:1em; */}
 </style>
@@ -104,7 +104,7 @@
                     <hr class="col-xs-11 no-margin-top"/>
 
                     <!-- JOURNAL RESULTS -->
-                    <div id="journals" class="row col-xs-12"><p>Loading...</p></div>
+                    <div id="journals" class="row col-xs-12"><p class="text-muted">Loading...</p></div>
 
                     <!-- VIEW ALL -->
                     <div class="row col-xs-12">
@@ -112,13 +112,15 @@
                     </div>
                 </div>
 
+                <hr class="col-xs-12 hidden-lg" style="border:0;margin-top:0;" />
+
                 <div class="col-lg-8 col-md-12 hmpg-recent-col">
                     <div class="h4 lite-header margin-bottom">Datasets from other dataverses</div>
 
                     <hr class="col-xs-11 no-margin-top"/>
 
                     <!-- RESEARCHERS RESULTS -->
-                    <div id="researchers" class="row col-xs-12"><p>Loading...</p></div>
+                    <div id="researchers" class="row col-xs-12"><p class="placeholder text-muted">Loading...</p></div>
 
                     <!-- VIEW ALL -->
                     <div class="row col-xs-12">
@@ -147,7 +149,7 @@
             </div>
         </div>-->
 
-        <div class="col-xs-12 row">
+        <div class="row">
 
 
             <div class="col-md-6 col-xs-12">
@@ -239,12 +241,12 @@
             jData.data.items.forEach(function(item){
                 var options = { year: 'numeric', month: 'short', day: 'numeric' };
                 var date = new Date(item.published_at).toLocaleString('en-US', options);
-                resultHtml += "<div class=\"no-class clearfix\">";
+                resultHtml += "<div class=\"hmpg-recent-block clearfix\">";
                 resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">";
-                resultHtml += "<object data=\"" + thumbBaseURL + item.global_id + "\" type=\"image/png\"/><span class=\"icon-dataset\"></span></object></div>";
+                resultHtml += "<object data=\"" + thumbBaseURL + item.global_id + "\" type=\"image/png\"/><span class=\"icon-dataset\"></span></object>";
+                resultHtml += "</a></div>";
                 resultHtml += "<div class=\"col-xs-9 col-md-10 hmpg-recent-metadata\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">" + item.name + "</a></p><p class=\"small text-muted\"><a href=\"/dataverse/" + item.identifier_of_dataverse + "\" class=\"highlightBold\">" + item.name_of_dataverse + "</a> " + date + "</p></div>";
                 resultHtml += "</div>";
-                // <hr class=\"col-xs-12\"/>
             });
             document.getElementById(elm).innerHTML = resultHtml;
         });
