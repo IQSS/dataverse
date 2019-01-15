@@ -125,7 +125,7 @@ On Linux, you should just install PostgreSQL from your package manager without w
 Install Solr
 ~~~~~~~~~~~~
 
-`Solr <http://lucene.apache.org/solr/>`_ 7.3.0 is required.
+`Solr <http://lucene.apache.org/solr/>`_ 7.3.1 is required.
 
 To install Solr, execute the following commands:
 
@@ -135,23 +135,23 @@ To install Solr, execute the following commands:
 
 ``cd /usr/local/solr``
 
-``curl -O http://archive.apache.org/dist/lucene/solr/7.3.0/solr-7.3.0.tgz``
+``curl -O http://archive.apache.org/dist/lucene/solr/7.3.1/solr-7.3.1.tgz``
 
-``tar xvfz solr-7.3.0.tgz``
+``tar xvfz solr-7.3.1.tgz``
 
-``cd solr-7.3.0/server/solr``
+``cd solr-7.3.1/server/solr``
 
 ``cp -r configsets/_default collection1``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.0/schema.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.1/schema.xml``
 
 ``mv schema.xml collection1/conf``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.0/solrconfig.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.1/solrconfig.xml``
 
 ``mv solrconfig.xml collection1/conf/solrconfig.xml``
 
-``cd /usr/local/solr/solr-7.3.0``
+``cd /usr/local/solr/solr-7.3.1``
 
 ``bin/solr start``
 

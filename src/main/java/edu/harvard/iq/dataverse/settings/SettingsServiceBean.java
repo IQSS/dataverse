@@ -83,13 +83,6 @@ public class SettingsServiceBean {
          * https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize
          */
         SearchHighlightFragmentSize,
-       /**
-        * Domain name specific code for Google Analytics
-        *//**
-        * Domain name specific code for Google Analytics
-        */
-        GoogleAnalyticsCode,
-
         /**
          * Revert to MyData *not* using the Solr "permission documents" which
          * was the behavior in Dataverse 4.2. Starting to use Solr permission
@@ -289,6 +282,10 @@ public class SettingsServiceBean {
          Location and name of CSS customization file
         */
         StyleCustomizationFile,
+        /*
+         Location and name of analytics code file
+        */
+        WebAnalyticsCode,
         /*
          Location and name of installation logo customization file
         */

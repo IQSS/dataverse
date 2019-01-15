@@ -5,13 +5,18 @@ import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import static edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordJobListener.SEP;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +44,8 @@ import org.apache.commons.lang.StringUtils;
 public class DatasetVersionServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetVersionServiceBean.class.getCanonicalName());
+
+    private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
     @EJB
     DatasetServiceBean datasetService;
@@ -99,7 +106,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 if (DatasetVersionServiceBean.this.isVersionAskingForDraft(this.requestedVersion)){
                     userMsg = BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.draftNotFound");
                 }else{
-                    userMsg = BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.versionNotFound", Arrays.asList(this.requestedVersion));
+                    userMsg = BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.versionNotFound", Arrays.asList(MarkupChecker.escapeHtml(this.requestedVersion)));
                 }
                 
                 if (DatasetVersionServiceBean.this.isVersionAskingForDraft(this.actualVersion)){
@@ -794,6 +801,19 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         } catch (Exception ex) {
             // it's ok to just ignore... 
         }
+    }
+    
+    public void writeEditVersionLog(DatasetVersionDifference dvd, AuthenticatedUser au) {
+
+        String logDir = System.getProperty("com.sun.aas.instanceRoot") + SEP + "logs" + SEP + "edit-drafts" + SEP;
+        String identifier = dvd.getOriginalVersion().getDataset().getIdentifier();
+        identifier = identifier.substring(identifier.indexOf("/") + 1);
+        String datasetId = dvd.getOriginalVersion().getDataset().getId().toString();
+        String summary = au.getFirstName() + " " + au.getLastName() + " (" + au.getIdentifier() + ") updated " + dvd.getEditSummaryForLog();
+        String logTimestamp = logFormatter.format(new Date());
+        String fileName = "/edit-draft-" + datasetId + "-" + identifier + "-" + logTimestamp + ".txt";
+        LoggingUtil.saveLogFile(summary, logDir, fileName);
+        
     }
     
     public void populateDatasetSearchCard(SolrSearchResult solrSearchResult) {

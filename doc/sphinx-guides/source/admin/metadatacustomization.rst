@@ -599,7 +599,7 @@ Once you have enabled a new metadata block you should be able to see the new fie
 
 See the :doc:`/installation/prerequisites/` section of the Installation Guide for a suggested location on disk for the Solr schema file.
 
-Please note that if you are going to make a pull request updating ``conf/solr/7.3.0/schema.xml`` with fields you have added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you don't care about) to create a complete list of fields.
+Please note that if you are going to make a pull request updating ``conf/solr/7.3.1/schema.xml`` with fields you have added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you don't care about) to create a complete list of fields.
 
 Reloading a Metadata Block
 --------------------------

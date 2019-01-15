@@ -63,7 +63,7 @@
                                                                               and !DatasetPage.dataset.deaccessioned
                                                                               and DatasetPage.showComputeButton()}">
                                 <!-- Compute Button Group -->
-                                <button type="button" id="computeBatch" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                <button type="button" id="computeBatch" class="btn btn-default btn-compute dropdown-toggle" data-toggle="dropdown">
                                     <span class="glyphicon glyphicon-flash"/> #{bundle['dataset.compute.computeBtn']} <span class="caret"></span>
                                 </button>
                                 <ul class="dropdown-menu pull-left text-left" role="menu">
@@ -287,7 +287,7 @@
                             
                             <!-- Contact/Share Button Group -->
                             <div class="btn-group pull-right" id="datasetButtonBar" role="group">
-                                <p:commandLink class="text-button bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
+                                <p:commandLink class="text-button btn-contact bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
                                                update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
@@ -295,7 +295,7 @@
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DatasetPage.dataset}"/>
                                     <span class="glyphicon glyphicon-envelope"/> #{bundle['contact.contact']}
                                 </p:commandLink>
-                                <p:commandLink styleClass="text-button bootstrap-button-tooltip" rendered="#{!DatasetPage.workingVersion.deaccessioned}"
+                                <p:commandLink styleClass="text-button btn-share bootstrap-button-tooltip" rendered="#{!DatasetPage.workingVersion.deaccessioned}"
                                                title="#{bundle['dataset.share.datasetShare']}"
                                                oncomplete="PF('shareDialog').show();sharrre();">
                                     <span class="glyphicon glyphicon-share"/> #{bundle['share']}
@@ -598,7 +598,7 @@
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                     </p:commandLink>                                   
                                     <div class="btn-group" jsf:rendered="#{DatasetPage.dataset.released and !DatasetPage.dataset.deaccessioned}" >
-                                        <button class="btn btn-default dropdown-toggle" type="button" styleClass="btn btn-default" data-toggle="dropdown">
+                                        <button class="btn btn-default btn-export dropdown-toggle" type="button" styleClass="btn btn-default" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"/></button>
                                         <ul class="dropdown-menu" role="menu">
                                             <ui:repeat var="exporter" value="#{DatasetPage.exporters}">
