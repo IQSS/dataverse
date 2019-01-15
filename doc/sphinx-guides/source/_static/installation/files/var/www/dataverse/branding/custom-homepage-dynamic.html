@@ -264,32 +264,12 @@
         $.get(metricBaseUrl + metricRelPath + month, function(jData) {
             var resultCount = jData.data.count;
 
-            //  $(this).text(Math.ceil(now).toLocaleString('en'));
             var roundedDatasetCount = Math.floor(resultCount / 100) * 100;
-
 
             var dynamicSearchPlaceholder = "Search over " + roundedDatasetCount.toLocaleString('en') + " datasets...";
             $("#inputDataverseSearch").attr({"placeholder" : dynamicSearchPlaceholder});
         });
     }
-
-//Should remove if unused
-
-//    function querySubject(elm) {
-//        $.get(metricBaseUrl + "datasets/bySubject", function(jData) {
-//            var subArray = [];
-//            var resultHtml = "";
-//            jData.data.forEach(function(item) {
-//                if(item.subject !== "N/A" && item.subject !== "Other")
-//                subArray.push([item.subject, item.count.toLocaleString('en')]);
-//            });
-//            subArray.sort();
-//            subArray.forEach(function(subject){
-//                resultHtml += "<p class=\"browse-subjects\"><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + subject[0] + "%22&types=dataverses%3Adatasets&sort=dateSort&order=desc\">" + subject[0] + "</a> <span class=\"text-muted\">" + subject[1] + "</span></p>";
-//            });
-//            document.getElementById(elm).innerHTML = resultHtml;
-//        });
-//    }
     
     function querySubjectDataverseDataset(elm) {
         var dvArray = [];
@@ -297,7 +277,7 @@
         $.get(metricBaseUrl + "dataverses/bySubject", function(jData) {
             jData.data.forEach(function(item) {
                 if(item.subject !== "N/A" && item.subject !== "Other") {
-                    dvArray.push([item.subject, item.count/*.toLocaleString('en')*/]);
+                    dvArray.push([item.subject, item.count]);
                 }
             });
             $.get(metricBaseUrl + "datasets/bySubject?dataLocation=all", function(jData) {
