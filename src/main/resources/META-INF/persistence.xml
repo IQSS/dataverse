@@ -8,10 +8,8 @@
             <!--property name="toplink.logging.level" value="FINE"/-->
 	    <!-- disabling weaving, as an experiment: - L.A. -->
 	    <property name="eclipselink.weaving" value="false"/>
-	    <!-- comment out the line below to make the app NOT build 
-		 persistence tables on startup; will make deployment
-		 faster. - L.A. -->
-            <property name="eclipselink.ddl-generation" value="create-tables"/>
+
+            <property name="eclipselink.ddl-generation" value="none"/>
             <property name="eclipselink.cache.shared.default" value="false"/>
             <!-- The following property allows primary keys of 0 -->
             <property name="eclipselink.id-validation" value="NULL"/>
