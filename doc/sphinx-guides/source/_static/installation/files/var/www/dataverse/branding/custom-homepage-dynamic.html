@@ -22,18 +22,20 @@
     div.search-widget {padding-bottom: 2em;}
     
     @media (min-width: 768px) {
-        #dataversesBySubject {-webkit-column-count: 3; -moz-column-count: 3; column-count: 3;}
+        #dataversesBySubject {-webkit-column-count: 3; -moz-column-count: 3; column-count: 3; overflow: hidden; -webkit-column-break-inside: avoid; page-break-inside: avoid; break-inside: avoid; break-inside: avoid-column;}
 
-        #journals {-webkit-column-count: 1; -moz-column-count: 1; column-count: 1;}
-        #researchers {-webkit-column-count: 2; -moz-column-count: 2; column-count: 2;}
+        #journals {-webkit-column-count: 1; -moz-column-count: 1; column-count: 1; overflow: hidden; -webkit-column-break-inside: avoid; page-break-inside: avoid; break-inside: avoid; break-inside: avoid-column;}
+        #researchers {-webkit-column-count: 2; -moz-column-count: 2; column-count: 2; overflow: hidden; -webkit-column-break-inside: avoid; page-break-inside: avoid; break-inside: avoid; break-inside: avoid-column;}
     }
     #browseBySubject p.browse-subjects {display:inline-block; width:100%; padding:0 2px;}
     #browseBySubject p.browse-subjects a {color: #C55B28;}
     #browseBySubject p.browse-subjects a:focus, #browseBySubject p.browse-subjects a:hover {color: #9F3502;}
 
-    div.hmpg-recent-col div.col-xs-2.hmpg-recent-thumb {width: 48px !important;padding: 0 !important;}
+    div.hmpg-recent-col div.col-xs-2.hmpg-recent-thumb {width: 48px !important;height:48px;padding: 0 !important;}
     div.hmpg-recent-col div.hmpg-recent-thumb img {max-height:48px;max-width:48px;}
     div.hmpg-recent-col div.hmpg-recent-thumb span {font-size:38px;}
+
+    div.hmpg-recent-col div.no-class {border-bottom:1px solid #DDD;margin-bottom:12px;}
 
     div.hmpg-activity-block .row .lite-header {/* margin-left:1em; */}
 </style>
@@ -49,7 +51,7 @@
         </div>
         <div class="col-sm-6 col-xs-12">
             <div class="h4 lite-header">Organize datasets and gather metrics in your own virtual archive.</div>
-            <p class="text-muted margin-bottom">A dataverse is a virtual archive. A dataverse can contain dataverses, datasets, files and metadata.</p>
+            <p class="text-muted margin-bottom">A dataverse is a virtual archive, consisting of dataverses, datasets, files and metadata.</p>
             <a class="btn btn-default btn-harvard margin-top margin-bottom" href="/dataverse.xhtml?ownerId=1">
                 Create my own dataverse <span class="glyphicon glyphicon-chevron-right text-muted"></span>
             </a>
@@ -97,7 +99,7 @@
         <div class="col-xs-12">
             <div class="row">
                 <div class="col-lg-4 col-md-12 hmpg-recent-col">
-                    <div class="h4 lite-header margin-bottom">Datasets from Journal dataverses</div>
+                    <div class="h4 lite-header margin-bottom">Datasets from journal dataverses</div>
 
                     <hr class="col-xs-11 no-margin-top"/>
 
@@ -134,19 +136,73 @@
         <div class="col-xs-12">
             <div class="h4 lite-header margin-bottom">Activity</div>
         </div>
-        <div class="col-xs-12 row">
+        <!--<div class="col-xs-12 row">
             <div class="col-sm-6 col-xs-12">
                 <p><span class="highlightBold">All Files</span></p>
                 <p><span class="h4 lite-header" id="activityAllTimeDatasetsValue"></span> datasets added <span class="h4 lite-header" id="activityAllTimeFilesValue"></span> file downloads</p>
-
-                <p><span class="h4 lite-header" id="activityAllTimeDatasetsValue2">5,640,188</span> datasets added and harvested <span class="h4 lite-header" id="activityAllTimeFilesValue">5,640,188</span> file downloads</p>
-                <p><span class="h4 lite-header" id="activityAllTimeDatasetsValue3">5,640,188</span> datasets deposited <span class="h4 lite-header" id="activityAllTimeFilesValue">5,640,188</span> file deposited</p>
-                <p><span class="h4 lite-header" id="activityAllTimeDatasetsValue4">5,640,188</span> datasets harvested <span class="h4 lite-header" id="activityAllTimeFilesValue">5,640,188</span> file harvested</p>
             </div>
             <div class="col-sm-6 col-xs-12">
                 <p><span class="highlightBold">Past 30 Days</span></p>
                 <p><span class="h4 lite-header" id="activity30DaysDatasetsValue"></span> datasets added <span class="h4 lite-header" id="activity30DaysFilesValue"></span> file downloads</p>
             </div>
+        </div>-->
+
+        <div class="col-xs-12 row">
+
+
+            <div class="col-md-6 col-xs-12">
+                
+                <div class="col-xs-12 row">
+                    <div class="col-xs-4 highlightBold">Datasets</div>
+                    <div class="col-xs-4 highlightBold">All Activity</div>
+                    <div class="col-xs-4 highlightBold">Past 30 Days</div>
+                </div>
+                <div class="col-xs-12 row">
+                    <div class="col-xs-4"><div style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">All</div></div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeDatasetsValue">5,640,188</div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysDatasetsValue">66,177</div>
+                </div>
+                <div class="col-xs-12 row">
+                    <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Deposited</div>
+                    <div class="col-xs-4 h4 lite-header">5,000,000</div>
+                    <div class="col-xs-4 h4 lite-header">60,177</div>
+                </div>
+                <div class="col-xs-12 row">
+                    <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Harvested</div>
+                    <div class="col-xs-4 h4 lite-header">640,188</div>
+                    <div class="col-xs-4 h4 lite-header">6,177</div>
+                </div>
+
+            </div>
+
+            <hr class="col-sm-12 hidden-md hidden-lg" style="width:85%;margin-left:30px;" />
+
+            <div class="col-md-6 col-xs-12">
+                
+                <div class="col-xs-12 row">
+                    <div class="col-xs-4 highlightBold">Files</div>
+                    <div class="col-xs-4 highlightBold">All Activity</div>
+                    <div class="col-xs-4 highlightBold">Past 30 Days</div>
+                </div>
+                <div class="col-xs-12 row">
+                    <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">All</div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeFilesValue">5,640,188</div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysFilesValue">66,177</div>
+                </div>
+                <div class="col-xs-12 row">
+                    <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Deposited</div>
+                    <div class="col-xs-4 h4 lite-header">5,000,000</div>
+                    <div class="col-xs-4 h4 lite-header">60,177</div>
+                </div>
+                <div class="col-xs-12 row">
+                    <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Harvested</div>
+                    <div class="col-xs-4 h4 lite-header">640,188</div>
+                    <div class="col-xs-4 h4 lite-header">6,177</div>
+                </div>
+                
+            </div>
+
+
         </div>
     </div>
 
@@ -183,11 +239,12 @@
             jData.data.items.forEach(function(item){
                 var options = { year: 'numeric', month: 'short', day: 'numeric' };
                 var date = new Date(item.published_at).toLocaleString('en-US', options);
-                resultHtml += "<div class=\"no-class\">";
+                resultHtml += "<div class=\"no-class clearfix\">";
                 resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">";
                 resultHtml += "<object data=\"" + thumbBaseURL + item.global_id + "\" type=\"image/png\"/><span class=\"icon-dataset\"></span></object></div>";
                 resultHtml += "<div class=\"col-xs-9 col-md-10 hmpg-recent-metadata\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">" + item.name + "</a></p><p class=\"small text-muted\"><a href=\"/dataverse/" + item.identifier_of_dataverse + "\" class=\"highlightBold\">" + item.name_of_dataverse + "</a> " + date + "</p></div>";
-                resultHtml += "<hr class=\"col-xs-12\"/></div>";
+                resultHtml += "</div>";
+                // <hr class=\"col-xs-12\"/>
             });
             document.getElementById(elm).innerHTML = resultHtml;
         });
