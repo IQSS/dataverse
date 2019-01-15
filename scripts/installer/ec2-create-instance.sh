@@ -38,6 +38,16 @@ if [ ! -z "$GRPVRS" ]; then
    echo "using $GRPVRS for extra vars"
 fi
 
+if [ ! -z "$REPO_URL" ]; then
+   GVARG+=" -e dataverse_repo=$REPO_URL"
+   echo "using $REPO_URL"
+fi
+
+if [ ! -z "$BRANCH" ]; then
+   GVARG+=" -e dataverse_branch=$BRANCH"
+   echo "building $BRANCH"
+fi
+
 AWS_CLI_VERSION=$(aws --version)
 if [[ "$?" -ne 0 ]]; then
   echo 'The "aws" program could not be executed. Is it in your $PATH?'
