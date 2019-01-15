@@ -756,13 +756,13 @@ public class DatasetPage implements java.io.Serializable {
         setRenderDeaccessionPopup(true);
     }
     
-    private Boolean renderDeaccessionPopup = false;
+    private boolean renderDeaccessionPopup = false;
 
-    public Boolean getRenderDeaccessionPopup() {
+    public boolean isRenderDeaccessionPopup() {
         return renderDeaccessionPopup;
     }
 
-    public void setRenderDeaccessionPopup(Boolean renderDeaccessionPopup) {
+    public void setRenderDeaccessionPopup(boolean renderDeaccessionPopup) {
         this.renderDeaccessionPopup = renderDeaccessionPopup;
     }
 

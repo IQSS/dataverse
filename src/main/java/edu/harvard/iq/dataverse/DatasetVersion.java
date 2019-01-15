@@ -57,6 +57,7 @@ import javax.validation.constraints.Size;
 @Entity
 @Table(indexes = {@Index(columnList="dataset_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id,versionnumber,minorversionnumber"}))
+@ValidateVersionNote(versionNote = "versionNote", versionState = "versionState")
 public class DatasetVersion implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetVersion.class.getCanonicalName());
@@ -146,6 +147,7 @@ public class DatasetVersion implements Serializable {
     
     @Size(min=0, max=ARCHIVE_NOTE_MAX_LENGTH)
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
+    @ValidateURL()
     private String archiveNote;
     
     private String deaccessionLink;
