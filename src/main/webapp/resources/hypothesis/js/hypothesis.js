@@ -2,6 +2,7 @@ var parentUrl = "";
 $(document)
     .ready(
         function() {
+          parentUrl=window.opener.location.href;
           var queryParams = new URLSearchParams(
               window.location.search.substring(1));
           var fileUrl = queryParams.get("siteUrl")
@@ -37,7 +38,7 @@ $(document)
                                 version = "DRAFT";
                               }
                               //Use parentUrl if we got it from the opener, otherwise return to the dataset page
-                              if(!(parentUrl === "")) {
+                              if((parentUrl==null)||(parentUrl === "")) {
                                 parentUrl = queryParams
                                     .get("siteUrl")
                                     + "/dataset.xhtml?persistentId=doi:"
