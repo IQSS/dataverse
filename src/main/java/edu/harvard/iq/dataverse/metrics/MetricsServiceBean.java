@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -260,25 +261,31 @@ public class MetricsServiceBean implements Serializable {
                + "ORDER BY responsetime LIMIT 1;"
         );
 
-        Timestamp earlyDateTimestamp = (Timestamp) earlyDateQuery.getSingleResult();
-        Date earliestDate = new Date(earlyDateTimestamp.getTime());
-        SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM");  
-        Date dateQueried = formatter2.parse(yyyymm);
-        
-        if(!dateQueried.before(earliestDate)) {
-            Query query = em.createNativeQuery(""
-                + "select count(id)\n"
-                + "from guestbookresponse\n"
-                + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')"
-                + "or responsetime is NULL;" //includes historic guestbook records without date
-            );
-            logger.fine("query: " + query);
-            return (long) query.getSingleResult();
-        }
-        else {
-            //When we query before the earliest dated record, return 0;
+        try {
+            Timestamp earlyDateTimestamp = (Timestamp) earlyDateQuery.getSingleResult();
+             Date earliestDate = new Date(earlyDateTimestamp.getTime());
+            SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM");  
+            Date dateQueried = formatter2.parse(yyyymm);
+
+            if(!dateQueried.before(earliestDate)) {
+                Query query = em.createNativeQuery(""
+                    + "select count(id)\n"
+                    + "from guestbookresponse\n"
+                    + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')"
+                    + "or responsetime is NULL;" //includes historic guestbook records without date
+                );
+                logger.fine("query: " + query);
+                return (long) query.getSingleResult();
+            }
+            else {
+                //When we query before the earliest dated record, return 0;
+                return 0L;
+            }
+        } catch(NoResultException e) {
+            //If earlyDateQuery.getSingleResult is null, then there are no guestbooks and we can return 0
             return 0L;
         }
+        
 
 
     }

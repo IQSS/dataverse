@@ -161,18 +161,18 @@
                 </div>
                 <div class="col-xs-12 row">
                     <div class="col-xs-4"><div style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">All</div></div>
-                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeDatasetsValue">5,640,188</div>
-                    <div class="col-xs-4 h4 lite-header" id="activity30DaysDatasetsValue">66,177</div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeAllDatasetsValue"></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysAllDatasetsValue"></div>
                 </div>
                 <div class="col-xs-12 row">
                     <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Deposited</div>
-                    <div class="col-xs-4 h4 lite-header">5,000,000</div>
-                    <div class="col-xs-4 h4 lite-header">60,177</div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeDepositedDatasetsValue"></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysDepositedDatasetsValue"></div>
                 </div>
                 <div class="col-xs-12 row">
                     <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Harvested</div>
-                    <div class="col-xs-4 h4 lite-header">640,188</div>
-                    <div class="col-xs-4 h4 lite-header">6,177</div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeHarvestedDatasetsValue"></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysHarvestedDatasetsValue"></div>
                 </div>
 
             </div>
@@ -188,18 +188,18 @@
                 </div>
                 <div class="col-xs-12 row">
                     <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">All</div>
-                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeFilesValue">5,640,188</div>
-                    <div class="col-xs-4 h4 lite-header" id="activity30DaysFilesValue">66,177</div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeAllFilesValue"></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysAllFilesValue"></div>
                 </div>
                 <div class="col-xs-12 row">
                     <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Deposited</div>
-                    <div class="col-xs-4 h4 lite-header">5,000,000</div>
-                    <div class="col-xs-4 h4 lite-header">60,177</div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeDepositedFilesValue"></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysDepositedFilesValue"></div>
                 </div>
                 <div class="col-xs-12 row">
                     <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Harvested</div>
-                    <div class="col-xs-4 h4 lite-header">640,188</div>
-                    <div class="col-xs-4 h4 lite-header">6,177</div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeHarvestedFilesValue"></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysHarvestedFilesValue"></div>
                 </div>
                 
             </div>
@@ -300,8 +300,7 @@
                     dvArray.push([item.subject, item.count/*.toLocaleString('en')*/]);
                 }
             });
-        });
-        $.get(metricBaseUrl + "datasets/bySubject?dataLocation=all", function(jData) {
+            $.get(metricBaseUrl + "datasets/bySubject?dataLocation=all", function(jData) {
             //var subArray = [];
             var resultHtml = "";
             jData.data.forEach(function(item) {
@@ -322,16 +321,29 @@
             });
             document.getElementById(elm).innerHTML = resultHtml;
         });
+        });
+        
     }
 
     writeRecentDatasetsInDataverses("(Journal)" , 3, "journals");
     writeRecentDatasetsInDataverses("(\"Research+Project\"%20OR%20Researcher%20OR%20\"Research+Group\")" , 6, "researchers");
     
-    queryMetricSimple("datasets", "", "activityAllTimeDatasetsValue");
-    queryMetricSimple("downloads", "", "activityAllTimeFilesValue");
-    
-    queryMetricSimple("datasets/pastDays", "/30", "activity30DaysDatasetsValue");
-    queryMetricSimple("downloads/pastDays", "/30", "activity30DaysFilesValue");
+    queryMetricSimple("datasets", "", "activityAllTimeAllDatasetsValue");
+    queryMetricSimple("datasets/pastDays", "/30", "activity30DaysAllDatasetsValue");
+    queryMetricSimple("datasets", "?dataLocation=local", "activityAllTimeDepositedDatasetsValue");
+    queryMetricSimple("datasets/pastDays", "/30?dataLocation=local", "activity30DaysDepositedDatasetsValue");
+    queryMetricSimple("datasets", "?dataLocation=remote", "activityAllTimeHarvestedDatasetsValue");
+    queryMetricSimple("datasets/pastDays", "/30?dataLocation=remote", "activity30DaysHarvestedDatasetsValue");
+
+    queryMetricSimple("downloads", "", "activityAllTimeAllFilesValue");
+    queryMetricSimple("downloads/pastDays", "/30", "activity30DaysAllFilesValue");
+    queryMetricSimple("downloads", "?dataLocation=local", "activityAllTimeDepositedFilesValue");
+    queryMetricSimple("downloads/pastDays", "/30?dataLocation=local", "activity30DaysDepositedFilesValue");
+    queryMetricSimple("downloads", "?dataLocation=remote", "activityAllTimeHarvestedFilesValue");
+    queryMetricSimple("downloads/pastDays", "/30?dataLocation=remote", "activity30DaysHarvestedFilesValue");
+
+//    queryMetricSimple("downloads/pastDays", "/30", "activity30DaysFilesValue");
+//    queryMetricSimple("downloads", "", "activityAllTimeFilesValue");
     
     //querySubject("dataversesBySubject");
     querySubjectDataverseDataset("dataversesBySubject")
