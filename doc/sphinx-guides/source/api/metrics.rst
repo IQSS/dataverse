@@ -45,8 +45,8 @@ Returns a count of various objects in dataverse for the past ``$days`` (e.g. ``3
 Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/pastDays/30``
 
 
-Dataverse Specific Commands
----------------------------
+Dataverse Specific Metrics
+--------------------------
 
 By Subject
 ~~~~~~~~~~~~~~~
@@ -64,11 +64,11 @@ Returns the number of dataverses by each category::
     GET https://$SERVER/api/info/metrics/dataverses/byCategory
 
 
-Dataset Specific Commands
--------------------------
+Dataset Specific Metrics
+------------------------
 
 By Subject
-~~~~~~~~~~~~~~~
+~~~~~~~~~~
 
 Returns the number of datasets by each subject::
 
@@ -89,3 +89,16 @@ Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/bySubject/t
       <span class="label label-success pull-right">
         CORS
       </span>
+
+
+Metric Query Parameters
+-----------------------
+
+To further tailor your metric, query parameters can be provided.
+
+dataLocation
+~~~~~~~~~~~~
+
+Specifies whether the metric should query ``local`` data, ``remote`` data (e.g. harvested), or ``all`` data when getting results. Only works for dataset and file metrics.
+
+Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/?dataLocation=remote``
