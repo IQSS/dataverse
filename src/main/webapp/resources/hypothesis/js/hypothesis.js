@@ -2,7 +2,7 @@ var parentUrl = "";
 $(document)
     .ready(
         function() {
-          parentUrl=window.opener.location.href;
+          parentUrl = window.opener.location.href;
           var queryParams = new URLSearchParams(
               window.location.search.substring(1));
           var fileUrl = queryParams.get("siteUrl")
@@ -37,8 +37,14 @@ $(document)
                               if (version === ":draft") {
                                 version = "DRAFT";
                               }
-                              //Use parentUrl if we got it from the opener, otherwise return to the dataset page
-                              if((parentUrl==null)||(parentUrl === "")) {
+                              // Use parentUrl if
+                              // we got it from
+                              // the opener,
+                              // otherwise return
+                              // to the dataset
+                              // page
+                              if ((parentUrl == null)
+                                  || (parentUrl === "")) {
                                 parentUrl = queryParams
                                     .get("siteUrl")
                                     + "/dataset.xhtml?persistentId=doi:"
@@ -75,15 +81,34 @@ $(document)
                                       parentUrl);
                                 }
                               }
+                            })
+                        .fail(
+                            function(jqXHR) {
+                              reportFailure(
+                                  "Unable to retrieve annotations file.",
+                                  jqXHR.status);
                             });
+                  })
+              .fail(
+                  function(jqXHR) {
+                    reportFailure(
+                        "Unable to retrieve dataset metadata.",
+                        jqXHR.status);
                   });
         });
 
+function reportFailure(msg, statusCode) {
+  var hypo = $(".hypothesis");
+  hypo.addClass("alert alert-danger");
+  hypo.text(msg + " If problem persists (has your login timed out?), report error code: " + statusCode
+      + " to the repository administrator.");
+}
+
 function writeHypothesisFields(json, date, title, authors, parentUrl) {
-  //Order by TextPositionSelector.start
+  // Order by TextPositionSelector.start
   json.rows.sort(annotationCompare);
 
-  //Create header block
+  // Create header block
   var hypo = $(".hypothesis");
   var url = json.rows[0].target[0].source;
   var header = $("<div/>").addClass("annotation-header");
@@ -181,7 +206,7 @@ function returnToDataset(parentUrl) {
         window.location.assign(parentUrl);
       }
     } catch (err) {
-      //No, and the opener has navigated to some other site, so just open the dataset here	
+      //No, and the opener has navigated to some other site, so just open the dataset here  
       window.location.assign(parentUrl);
     }
   }
