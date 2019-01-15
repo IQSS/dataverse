@@ -100,6 +100,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                                 JsonObject countryCountObj = instObj.getJsonObject("country-counts");
                                 totalInvestigations = getCountryCountArray(countryCountObj);                               
                             }
+                            List<DatasetMetrics> datasetMetricsTotal = new ArrayList<>();
                             if(!totalInvestigations.isEmpty()){
                                for(String[] investigation: totalInvestigations){
                                    DatasetMetrics dm = new DatasetMetrics();
@@ -107,9 +108,10 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                                    dm.setCountryCode(investigation[0]);
                                    dm.setViewsTotal(new Long(investigation[1]));
                                    dm.setMonth(monthYear);
-                                   datasetMetricsDataset.add(dm);
+                                   datasetMetricsTotal.add(dm);
                                }
                             }
+                            datasetMetricsDataset= addUpdateMetrics(datasetMetricsDataset, datasetMetricsTotal , "TotalViews");
                         }
                         if (instObj.getString("metric-type").equals("unique-dataset-investigations")) { //unique-dataset-investigations
                             List<String[]> uniqueInvestigations = new ArrayList<>();
@@ -200,7 +202,10 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                 DatasetMetrics next = iterator.next();
                 if (next.getCountryCode().equals(testMetric.getCountryCode())) {
                     //Replace element
-                    
+       
+                    if (countField.equals("TotalViews")){
+                       next.setViewsTotal(testMetric.getViewsTotal());
+                    }
                     if (countField.equals("UniqueViews")){
                        next.setViewsUnique(testMetric.getViewsUnique());
                     }
