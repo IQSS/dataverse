@@ -27,6 +27,7 @@ Developer Guide
    making-releases
    tools
    unf/index
+   make-data-count
    remote-users
    geospatial
    selinux
