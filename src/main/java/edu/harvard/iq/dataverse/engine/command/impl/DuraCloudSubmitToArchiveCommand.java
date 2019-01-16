@@ -105,15 +105,15 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
                         if (!checksum.equals(localchecksum)) {
                             logger.severe(checksum + " not equal to " + localchecksum);
-                            return new Failure("Error in transferring DataCite.xml file to DPN",
-                                    "DPN Submission Failure: incomplete metadata transfer");
+                            return new Failure("Error in transferring DataCite.xml file to DuraCloud",
+                                    "DuraCloud Submission Failure: incomplete metadata transfer");
                         }
 
                         // Store BagIt file
                         String fileName = spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip";
 
                         // Add BagIt ZIP file
-                        // Although DPN uses SHA-256 internally, it's API uses MD5 to verify the
+                        // Although DuraCloud uses SHA-256 internally, it's API uses MD5 to verify the
                         // transfer
                         messageDigest = MessageDigest.getInstance("MD5");
                         try (PipedInputStream in = new PipedInputStream(); PipedOutputStream out = new PipedOutputStream(in); DigestInputStream digestInputStream2 = new DigestInputStream(in, messageDigest)) {
@@ -139,12 +139,16 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                             localchecksum = Hex.encodeHexString(digestInputStream2.getMessageDigest().digest());
                             if (!checksum.equals(localchecksum)) {
                                 logger.severe(checksum + " not equal to " + localchecksum);
-                                return new Failure("Error in transferring Zip file to DPN",
-                                        "DPN Submission Failure: incomplete archive transfer");
+                                return new Failure("Error in transferring Zip file to DuraCloud",
+                                        "DuraCloud Submission Failure: incomplete archive transfer");
                             }
+                        } catch (RuntimeException rte) {
+                            logger.severe(rte.getMessage());
+                            return new Failure("Error in generating Bag",
+                                    "DuraCloud Submission Failure: archive file not created");
                         }
 
-                        logger.fine("DPN Submission step: Content Transferred");
+                        logger.fine("DuraCloud Submission step: Content Transferred");
 
                         // Document the location of dataset archival copy location (actually the URL
                         // where you can
@@ -158,32 +162,36 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         sb.append(store.getStoreId());
                         sb.append("/" + spaceName + "/" + fileName);
                         dv.setArchivalCopyLocation(sb.toString());
-                        logger.fine("DPN Submission step complete: " + sb.toString());
+                        logger.fine("DuraCloud Submission step complete: " + sb.toString());
                     } catch (ContentStoreException | IOException e) {
                         // TODO Auto-generated catch block
                         logger.warning(e.getMessage());
                         e.printStackTrace();
-                        return new Failure("Error in transferring file to DPN",
-                                "DPN Submission Failure: archive file not transferred");
+                        return new Failure("Error in transferring file to DuraCloud",
+                                "DuraCloud Submission Failure: archive file not transferred");
+                    }  catch (RuntimeException rte) {
+                        logger.severe(rte.getMessage());
+                        return new Failure("Error in generating datacite.xml file",
+                                "DuraCloud Submission Failure: metadata file not created");
                     }
                 } catch (ContentStoreException e) {
                     logger.warning(e.getMessage());
                     e.printStackTrace();
-                    String mesg = "DPN Submission Failure";
+                    String mesg = "DuraCloud Submission Failure";
                     if (!(1 == dv.getVersion()) || !(0 == dv.getMinorVersionNumber())) {
                         mesg = mesg + ": Prior Version archiving not yet complete?";
                     }
-                    return new Failure("Unable to create DPN space with name: " + spaceName, mesg);
+                    return new Failure("Unable to create DuraCloud space with name: " + spaceName, mesg);
                 } catch (NoSuchAlgorithmException e) {
                     logger.severe("MD5 MessageDigest not available!");
                 }
             } else {
-                logger.warning("DPN Submision Workflow aborted: Dataset locked for pidRegister");
+                logger.warning("DuraCloud Submision Workflow aborted: Dataset locked for pidRegister");
                 return new Failure("Dataset locked");
             }
             return WorkflowStepResult.OK;
         } else {
-            return new Failure("DPN Submission not configured - no \":DuraCloudHost\".");
+            return new Failure("DuraCloud Submission not configured - no \":DuraCloudHost\".");
         }
     }
     
