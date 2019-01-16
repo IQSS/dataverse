@@ -64,7 +64,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         JsonArray reportDatasets = report.getJsonArray("report_datasets");
         for (JsonValue reportDataset : reportDatasets) {
             List<DatasetMetrics> datasetMetricsDataset = new ArrayList<>();
-            String globalId = "doi:10.5072/FK2/2OV2YY"; // reportDataset.getValueType("dataset-id");
+            String globalId = null; 
             Dataset ds = null;
             StringReader rdr = new StringReader(reportDataset.toString());
             JsonReader jrdr = Json.createReader(rdr);
@@ -74,17 +74,18 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
             if (obj.containsKey("dataset-id")) {
                 JsonArray dsIdArray = obj.getJsonArray("dataset-id");
                 JsonObject idObj = dsIdArray.getJsonObject(0);
-                System.out.print("idObj: " + idObj);
                 jsonGlobalId = idObj.getString("value");
                 globalIdType = idObj.getString("type");
-
+                globalId = globalIdType + ":" + jsonGlobalId;
             } else {
                 System.out.print("Does Not Contain  dataset-id");
             }
             if (dataset != null){
                 ds = dataset;
             } else {
-                ds = datasetService.findByGlobalId(globalId);
+                if (globalId != null){
+                    ds = datasetService.findByGlobalId(globalId);
+                }
             }
             if (obj.containsKey("performance")) {
                 JsonArray performance = obj.getJsonArray("performance");
