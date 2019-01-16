@@ -87,7 +87,7 @@ max-width:100%;
         overflow-y:auto;
 }
 
-body img {
+body<img {
     display: inline-block;
     margin-left: 40px;
     width: 236px;
