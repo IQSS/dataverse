@@ -18,6 +18,7 @@
       background: #FFFFFF;
       font-weight: bold;
     }
+    .btn-harvard span.glyphicon {margin-right:0;}
 
     div.search-widget {padding-bottom: 2em;}
     
@@ -36,24 +37,24 @@
     div.hmpg-recent-col div.col-xs-2.hmpg-recent-thumb {width: 48px !important;height:48px;padding: 0 !important;}
     div.hmpg-recent-col div.hmpg-recent-thumb img {max-height:48px;max-width:48px;}
     div.hmpg-recent-col div.hmpg-recent-thumb span {font-size:38px;}
-
-    div.hmpg-activity-block .row .lite-header {/* margin-left:1em; */}
 </style>
 
     <!-- ACTIONS -->
     <div class="row hmpg-action-block">
         <div class="col-sm-6 col-xs-12">
             <div class="h4 lite-header">Deposit and share your data. Get academic credit.</div>
-            <p class="text-muted margin-bottom">Harvard Dataverse is a digital repository. Deposit data and code here.</p>
+            <p class="text-muted margin-bottom">Harvard Dataverse is a repository for research data. Deposit data and code here.</p>
+            <p class="text-muted margin-bottom">Datasets: 85,432; Downloads: 5,436,001</p>
             <a class="btn btn-default btn-harvard margin-top margin-bottom" href="/dataset.xhtml?ownerId=1">
-                Add data to Harvard Dataverse <span class="glyphicon glyphicon-plus text-muted"></span>
+                Add a dataset <span class="glyphicon glyphicon-plus text-muted"></span>
             </a>
         </div>
         <div class="col-sm-6 col-xs-12">
-            <div class="h4 lite-header">Organize datasets and gather metrics in your own virtual archive.</div>
-            <p class="text-muted margin-bottom">A dataverse is a virtual archive, consisting of dataverses, datasets, files and metadata.</p>
+            <div class="h4 lite-header">Organize datasets and gather metrics in your own repository.</div>
+            <p class="text-muted margin-bottom">A dataverse is container for all your datasets, files, and metadata.</p>
+            <p class="text-muted margin-bottom">Dataverses: 123,456</p>
             <a class="btn btn-default btn-harvard margin-top margin-bottom" href="/dataverse.xhtml?ownerId=1">
-                Create my own dataverse <span class="glyphicon glyphicon-chevron-right text-muted"></span>
+                Add a dataverse <span class="glyphicon glyphicon-chevron-right text-muted"></span>
             </a>
         </div>
     </div>
@@ -63,11 +64,9 @@
     <!-- SEARCH + BROWSE + RECENT -->
     <div class="row hmpg-browse-block">
         
-        <noscript><div class="col-xs-12"><p><blink>Put sample code here for execution when JavaScript is disabled.</blink></p></div></noscript>
-
         <!-- SEARCH -->
         <div class="col-xs-12">
-            <div class="h4 lite-header margin-bottom">Find data across research fields, preview metadata, and download files.</div>
+            <div class="h4 lite-header margin-bottom">Find data across research fields, preview metadata, and download files</div>
             <div class="row">
                 <div class="col-md-5 col-sm-6 col-xs-11">
                     <div class="search-widget input-group">
@@ -82,7 +81,7 @@
         
         <!-- BROWSE SUBJECT -->
         <div id="browseBySubject" class="col-xs-12">
-            <p class="text-muted margin-bottom">Browse by subject.</p>
+            <p class="text-muted margin-bottom">Browse by subject</p>
             <div class="row margin-bottom">
                 <!-- SUBJECTS -->
                 <div id="dataversesBySubject" class="col-xs-12">
@@ -90,7 +89,7 @@
                 
                 <!-- VIEW ALL -->
                 <div class="col-xs-12 margin-top">
-                    <p class="browse-subjects small text-muted"><a href= "/dataverse/root">ALL SUBJECTS</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                    <p class="browse-subjects small text-muted"><a href= "/dataverse/root">ALL DATA</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                 </div>
             </div>
         </div>
@@ -120,10 +119,11 @@
                     <hr class="col-xs-11 no-margin-top"/>
 
                     <!-- RESEARCHERS RESULTS -->
-                    <div id="researchers" class="row col-xs-12"><p class="placeholder text-muted">Loading...</p></div>
-
-                    <!-- VIEW ALL -->
                     <div class="row col-xs-12">
+                        <div id="researchers">
+                            <p class="placeholder text-muted">Loading...</p>
+                        </div>
+                        <!-- VIEW ALL -->
                         <p class="small text-muted"><a href= "/dataverse/root">ALL RECENT ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
                 </div>
@@ -138,22 +138,10 @@
         <div class="col-xs-12">
             <div class="h4 lite-header margin-bottom">Activity</div>
         </div>
-        <!--<div class="col-xs-12 row">
-            <div class="col-sm-6 col-xs-12">
-                <p><span class="highlightBold">All Files</span></p>
-                <p><span class="h4 lite-header" id="activityAllTimeDatasetsValue"></span> datasets added <span class="h4 lite-header" id="activityAllTimeFilesValue"></span> file downloads</p>
-            </div>
-            <div class="col-sm-6 col-xs-12">
-                <p><span class="highlightBold">Past 30 Days</span></p>
-                <p><span class="h4 lite-header" id="activity30DaysDatasetsValue"></span> datasets added <span class="h4 lite-header" id="activity30DaysFilesValue"></span> file downloads</p>
-            </div>
-        </div>-->
 
         <div class="row">
 
-
             <div class="col-md-6 col-xs-12">
-                
                 <div class="col-xs-12 row">
                     <div class="col-xs-4 highlightBold">Datasets</div>
                     <div class="col-xs-4 highlightBold">All Activity</div>
@@ -161,49 +149,45 @@
                 </div>
                 <div class="col-xs-12 row">
                     <div class="col-xs-4"><div style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">All</div></div>
-                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeAllDatasetsValue"></div>
-                    <div class="col-xs-4 h4 lite-header" id="activity30DaysAllDatasetsValue"></div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeAllDatasetsValue"><span class="text-muted">...</span></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysAllDatasetsValue"><span class="text-muted">...</span></div>
                 </div>
                 <div class="col-xs-12 row">
                     <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Deposited</div>
-                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeDepositedDatasetsValue"></div>
-                    <div class="col-xs-4 h4 lite-header" id="activity30DaysDepositedDatasetsValue"></div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeDepositedDatasetsValue"><span class="text-muted">...</span></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysDepositedDatasetsValue"><span class="text-muted">...</span></div>
                 </div>
                 <div class="col-xs-12 row">
                     <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Harvested</div>
-                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeHarvestedDatasetsValue"></div>
-                    <div class="col-xs-4 h4 lite-header" id="activity30DaysHarvestedDatasetsValue"></div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeHarvestedDatasetsValue"><span class="text-muted">...</span></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysHarvestedDatasetsValue"><span class="text-muted">...</span></div>
                 </div>
-
             </div>
 
             <hr class="col-sm-12 hidden-md hidden-lg" style="width:85%;margin-left:30px;" />
 
             <div class="col-md-6 col-xs-12">
-                
                 <div class="col-xs-12 row">
                     <div class="col-xs-4 highlightBold">Files</div>
                     <div class="col-xs-4 highlightBold">All Activity</div>
                     <div class="col-xs-4 highlightBold">Past 30 Days</div>
                 </div>
                 <div class="col-xs-12 row">
-                    <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">All</div>
-                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeAllFilesValue"></div>
-                    <div class="col-xs-4 h4 lite-header" id="activity30DaysAllFilesValue"></div>
+                    <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Downloaded</div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeAllFilesValue"><span class="text-muted">...</span></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysAllFilesValue"><span class="text-muted">...</span></div>
                 </div>
                 <div class="col-xs-12 row">
                     <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Deposited</div>
-                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeDepositedFilesValue"></div>
-                    <div class="col-xs-4 h4 lite-header" id="activity30DaysDepositedFilesValue"></div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeDepositedFilesValue"><span class="text-muted">...</span></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysDepositedFilesValue"><span class="text-muted">...</span></div>
                 </div>
                 <div class="col-xs-12 row">
-                    <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Harvested</div>
+                    <!--<div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Harvested</div>
                     <div class="col-xs-4 h4 lite-header" id="activityAllTimeHarvestedFilesValue"></div>
-                    <div class="col-xs-4 h4 lite-header" id="activity30DaysHarvestedFilesValue"></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysHarvestedFilesValue"></div>-->
                 </div>
-                
             </div>
-
 
         </div>
     </div>
@@ -248,6 +232,8 @@
                 resultHtml += "<div class=\"col-xs-9 col-md-10 hmpg-recent-metadata\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">" + item.name + "</a></p><p class=\"small text-muted\"><a href=\"/dataverse/" + item.identifier_of_dataverse + "\" class=\"highlightBold\">" + item.name_of_dataverse + "</a> " + date + "</p></div>";
                 resultHtml += "</div>";
             });
+            // DOES NOT HAVE DYNAMIC LINK TEXT JOURNAL/OTHER
+            // resultHtml += "<div class=\"small text-muted\"><a>ALL RECENT ACTIVITY</a> <span class=\"glyphicon glyphicon-chevron-right\"></span><div>";
             document.getElementById(elm).innerHTML = resultHtml;
         });
     }
@@ -263,9 +249,7 @@
     function queryMetricSearch(metricRelPath, month) {
         $.get(metricBaseUrl + metricRelPath + month, function(jData) {
             var resultCount = jData.data.count;
-
             var roundedDatasetCount = Math.floor(resultCount / 100) * 100;
-
             var dynamicSearchPlaceholder = "Search over " + roundedDatasetCount.toLocaleString('en') + " datasets...";
             $("#inputDataverseSearch").attr({"placeholder" : dynamicSearchPlaceholder});
         });
@@ -281,28 +265,26 @@
                 }
             });
             $.get(metricBaseUrl + "datasets/bySubject?dataLocation=all", function(jData) {
-            //var subArray = [];
-            var resultHtml = "";
-            jData.data.forEach(function(item) {
-                if(item.subject !== "N/A" && item.subject !== "Other") {
-                    var dvCount = 0;
-                    for (var dvi = 0; dvi < dvArray.length; dvi++) {
-                        if(item.subject === dvArray[dvi][0]) {
-                            dvCount = dvArray[dvi][1];
-                            break;
+                var resultHtml = "";
+                jData.data.forEach(function(item) {
+                    if(item.subject !== "N/A" && item.subject !== "Other") {
+                        var dvCount = 0;
+                        for (var dvi = 0; dvi < dvArray.length; dvi++) {
+                            if(item.subject === dvArray[dvi][0]) {
+                                dvCount = dvArray[dvi][1];
+                                break;
+                            }
                         }
+                        fullArray.push([item.subject, (item.count + dvCount).toLocaleString('en')]);
                     }
-                    fullArray.push([item.subject, (item.count + dvCount).toLocaleString('en')]);
-                }
+                });
+                fullArray.sort();
+                fullArray.forEach(function(subject){
+                    resultHtml += "<p class=\"browse-subjects\"><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + subject[0] + "%22&types=dataverses%3Adatasets&sort=dateSort&order=desc\">" + subject[0] + "</a> <span class=\"text-muted\">" + subject[1] + "</span></p>";
+                });
+                document.getElementById(elm).innerHTML = resultHtml;
             });
-            fullArray.sort();
-            fullArray.forEach(function(subject){
-                resultHtml += "<p class=\"browse-subjects\"><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + subject[0] + "%22&types=dataverses%3Adatasets&sort=dateSort&order=desc\">" + subject[0] + "</a> <span class=\"text-muted\">" + subject[1] + "</span></p>";
-            });
-            document.getElementById(elm).innerHTML = resultHtml;
         });
-        });
-        
     }
 
     writeRecentDatasetsInDataverses("(Journal)" , 3, "journals");
@@ -319,14 +301,10 @@
     queryMetricSimple("downloads/pastDays", "/30", "activity30DaysAllFilesValue");
     queryMetricSimple("downloads", "?dataLocation=local", "activityAllTimeDepositedFilesValue");
     queryMetricSimple("downloads/pastDays", "/30?dataLocation=local", "activity30DaysDepositedFilesValue");
-    queryMetricSimple("downloads", "?dataLocation=remote", "activityAllTimeHarvestedFilesValue");
-    queryMetricSimple("downloads/pastDays", "/30?dataLocation=remote", "activity30DaysHarvestedFilesValue");
+    // queryMetricSimple("downloads", "?dataLocation=remote", "activityAllTimeHarvestedFilesValue");
+    // queryMetricSimple("downloads/pastDays", "/30?dataLocation=remote", "activity30DaysHarvestedFilesValue");
 
-//    queryMetricSimple("downloads/pastDays", "/30", "activity30DaysFilesValue");
-//    queryMetricSimple("downloads", "", "activityAllTimeFilesValue");
-    
-    //querySubject("dataversesBySubject");
-    querySubjectDataverseDataset("dataversesBySubject")
+    querySubjectDataverseDataset("dataversesBySubject");
     queryMetricSearch("datasets", "");
 
 //]]>
