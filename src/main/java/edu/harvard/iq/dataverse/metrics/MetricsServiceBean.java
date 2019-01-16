@@ -426,7 +426,14 @@ public class MetricsServiceBean implements Serializable {
         } catch (javax.persistence.NoResultException nr) {
             //do nothing
         } catch (NonUniqueResultException nur) {
-            throw new Exception("Multiple cached results found for this query. Contact your system administrator.");
+            //duplicates can happen when a new/requeried metric is called twice and saved twice before one can use the cache
+            //this remove all but the 0th index one in that case
+            for(int i = 1; i < query.getResultList().size(); i++) {
+                Metric extraMetric = (Metric) query.getResultList().get(i);
+                em.remove(extraMetric);
+                em.flush();
+            }
+            metric = (Metric) query.getResultList().get(0);
         }
         return metric;
     }
