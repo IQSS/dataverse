@@ -44,7 +44,7 @@
         <div class="col-sm-6 col-xs-12">
             <div class="h4 lite-header">Deposit and share your data. Get academic credit.</div>
             <p class="text-muted margin-bottom">Harvard Dataverse is a repository for research data. Deposit data and code here.</p>
-            <p class="text-muted margin-bottom">Datasets: 85,432; Downloads: 5,436,001</p>
+            <p class="text-muted margin-bottom">Datasets: <span id="headAllTimeAllDatasetsValue"></span>; Downloads: <span id="headAllTimeAllDownloadsValue"></span></p>
             <a class="btn btn-default btn-harvard margin-top margin-bottom" href="/dataset.xhtml?ownerId=1">
                 Add a dataset <span class="glyphicon glyphicon-plus text-muted"></span>
             </a>
@@ -52,7 +52,7 @@
         <div class="col-sm-6 col-xs-12">
             <div class="h4 lite-header">Organize datasets and gather metrics in your own repository.</div>
             <p class="text-muted margin-bottom">A dataverse is container for all your datasets, files, and metadata.</p>
-            <p class="text-muted margin-bottom">Dataverses: 123,456</p>
+            <p class="text-muted margin-bottom">Dataverses: <span id="headAllTimeAllDataversesValue"></span></p>
             <a class="btn btn-default btn-harvard margin-top margin-bottom" href="/dataverse.xhtml?ownerId=1">
                 Add a dataverse <span class="glyphicon glyphicon-chevron-right text-muted"></span>
             </a>
@@ -174,8 +174,8 @@
                 </div>
                 <div class="col-xs-12 row">
                     <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Downloaded</div>
-                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeAllFilesValue"><span class="text-muted">...</span></div>
-                    <div class="col-xs-4 h4 lite-header" id="activity30DaysAllFilesValue"><span class="text-muted">...</span></div>
+                    <div class="col-xs-4 h4 lite-header" id="activityAllTimeAllDownloadsValue"><span class="text-muted">...</span></div>
+                    <div class="col-xs-4 h4 lite-header" id="activity30DaysAllDownloadsValue"><span class="text-muted">...</span></div>
                 </div>
                 <div class="col-xs-12 row">
                     <div class="col-xs-4" style="line-height: 19px;margin-top: 10px;margin-bottom: 10px;">Deposited</div>
@@ -239,10 +239,17 @@
     }
     
     //For metrics that return simple json with a count
+    //Can take a single element or an array of elements
     function queryMetricSimple(metricRelPath, month, elm) {
         $.get(metricBaseUrl + metricRelPath + month, function(jData) {
             var resultCount = jData.data.count;
-            document.getElementById(elm).innerHTML = resultCount.toLocaleString('en');
+            if(Array.isArray(elm)) {
+                elm.forEach(function(e) {
+                    document.getElementById(e).innerHTML = resultCount.toLocaleString('en');
+                });
+            } else {
+                document.getElementById(elm).innerHTML = resultCount.toLocaleString('en');
+            }
         });
     }
     
@@ -287,22 +294,24 @@
         });
     }
 
+    queryMetricSimple("datasets", "", ["headAllTimeAllDatasetsValue", "activityAllTimeAllDatasetsValue"]);
+    queryMetricSimple("downloads", "", ["headAllTimeAllDownloadsValue", "activityAllTimeAllDownloadsValue"]);
+    queryMetricSimple("dataverses", "", "headAllTimeAllDataversesValue");
+
     writeRecentDatasetsInDataverses("(Journal)" , 3, "journals");
     writeRecentDatasetsInDataverses("(\"Research+Project\"%20OR%20Researcher%20OR%20\"Research+Group\")" , 6, "researchers");
     
-    queryMetricSimple("datasets", "", "activityAllTimeAllDatasetsValue");
+    //queryMetricSimple("datasets", "", "activityAllTimeAllDatasetsValue");
     queryMetricSimple("datasets/pastDays", "/30", "activity30DaysAllDatasetsValue");
     queryMetricSimple("datasets", "?dataLocation=local", "activityAllTimeDepositedDatasetsValue");
     queryMetricSimple("datasets/pastDays", "/30?dataLocation=local", "activity30DaysDepositedDatasetsValue");
     queryMetricSimple("datasets", "?dataLocation=remote", "activityAllTimeHarvestedDatasetsValue");
     queryMetricSimple("datasets/pastDays", "/30?dataLocation=remote", "activity30DaysHarvestedDatasetsValue");
 
-    queryMetricSimple("downloads", "", "activityAllTimeAllFilesValue");
-    queryMetricSimple("downloads/pastDays", "/30", "activity30DaysAllFilesValue");
-    queryMetricSimple("downloads", "?dataLocation=local", "activityAllTimeDepositedFilesValue");
-    queryMetricSimple("downloads/pastDays", "/30?dataLocation=local", "activity30DaysDepositedFilesValue");
-    // queryMetricSimple("downloads", "?dataLocation=remote", "activityAllTimeHarvestedFilesValue");
-    // queryMetricSimple("downloads/pastDays", "/30?dataLocation=remote", "activity30DaysHarvestedFilesValue");
+    //queryMetricSimple("downloads", "", "activityAllTimeAllFilesValue");
+    queryMetricSimple("downloads/pastDays", "/30", "activity30DaysAllDownloadsValue");
+    queryMetricSimple("files", "?dataLocation=local", "activityAllTimeDepositedFilesValue");
+    queryMetricSimple("files/pastDays", "/30?dataLocation=local", "activity30DaysDepositedFilesValue");
 
     querySubjectDataverseDataset("dataversesBySubject");
     queryMetricSearch("datasets", "");
