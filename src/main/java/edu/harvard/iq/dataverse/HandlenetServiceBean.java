@@ -324,6 +324,12 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     }
     
     @Override
+    public boolean alreadyExists(GlobalId pid) throws Exception {
+        String handle = pid.getAuthority() + "/" + pid.getIdentifier();
+        return isHandleRegistered(handle);
+    }
+    
+    @Override
     public Map<String,String> getIdentifierMetadata(DvObject dvObject) {
         throw new NotImplementedException();
     }
