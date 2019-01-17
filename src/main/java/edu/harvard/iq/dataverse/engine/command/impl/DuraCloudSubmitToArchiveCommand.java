@@ -116,11 +116,12 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         // Although DuraCloud uses SHA-256 internally, it's API uses MD5 to verify the
                         // transfer
                         messageDigest = MessageDigest.getInstance("MD5");
-                        try (PipedInputStream in = new PipedInputStream(); PipedOutputStream out = new PipedOutputStream(in); DigestInputStream digestInputStream2 = new DigestInputStream(in, messageDigest)) {
+                        try (PipedInputStream in = new PipedInputStream();  DigestInputStream digestInputStream2 = new DigestInputStream(in, messageDigest)) {
                             new Thread(new Runnable() {
                                 public void run() {
-                                    try {
+                                    try (PipedOutputStream out = new PipedOutputStream(in)){
                                         // Generate bag
+                                        
                                         BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
                                         bagger.setAuthenticationKey(token.getTokenString());
                                         bagger.generateBag(out);
