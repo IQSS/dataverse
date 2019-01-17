@@ -266,7 +266,9 @@ public class DataCitation {
             out.write("},\r\n");
         } else {
             out.write("title = {");
-            out.write(title);
+            String doubleQ = "\"";
+            String doubleTick = "``";
+            out.write(title.replaceFirst(doubleQ, doubleTick));
             out.write("},\r\n");
         }
         if(UNF != null){
