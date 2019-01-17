@@ -231,7 +231,7 @@ public class MailServiceBean implements java.io.Serializable {
         if (emailAddress != null){
            Object objectOfNotification =  getObjectOfNotification(notification);
            if (objectOfNotification != null){
-               String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification);
+               String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification, comment, requestor);
 				// QDR - uses the institution name rather than a dataverse/collection name in
 				// email subject
 				String institutionName = ResourceBundle.getBundle("Bundle").getString("institution.acronym");
