@@ -70,23 +70,12 @@ Then update the file and replace the values for "aws_access_key_id" and "aws_sec
 
 If you are having trouble configuring the files manually as described above, see https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html which documents the ``aws configure`` command.
 
-Configure ~/.dataverse/ec2.env
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Configure Ansible File (Optional)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to publish datasets you must configure a file at ``~/.dataverse/ec2.env`` and contact DataCite at support@datacite.org to ask for a test username and password.
+In order to configure Dataverse settings such as the password of the dataverseAdmin user, download https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/defaults/main.yml and edit the file to your liking.
 
-Create a ``.dataverse`` directory in your home directory like this:
-
-``mkdir ~/.dataverse``
-
-Download :download:`ec2.env <../../../../scripts/installer/ec2.env>` and put it in the directory at ``~/.dataverse`` that you just created. From the command line, you can try the command below to move the file into place:
-
-``mv ~/Downloads/ec2.env ~/.dataverse``
-
-Edit the file at ``~/.dataverse/ec2.env`` and fill in username and password from DataCite into the following fields:
-
-- dataverse_doi_username
-- dataverse_doi_password
+You can skip this step if you're fine with the values in the "main.yml" file in the link above.
 
 Download and Run the "Create Instance" Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -102,6 +91,10 @@ You need to decide which branch you'd like to deploy to AWS. Select a branch fro
 You must specify the branch with ``-b`` but you can also specify a non-IQSS git repo URL with ``-r`` as in the following example.
 
 ``bash ~/Downloads/ec2-create-instance.sh -b develop -r https://github.com/scholarsportal/dataverse.git``
+
+If you configured an Ansible file above and want to make use of it, add ``-g main.yml`` (or whatever you named your file) as in the following example.
+
+``bash ~/Downloads/ec2-create-instance.sh -b develop -r https://github.com/scholarsportal/dataverse.git -b main.yml``
 
 Now you will need to wait around 15 minutes until the deployment is finished. Eventually, the output should tell you how to access the installation of Dataverse in a web browser or via ssh. It will also provide instructions on how to delete the instance when you are finished with it. Please be aware that AWS charges per minute for a running instance. You can also delete your instance from https://console.aws.amazon.com/console/home?region=us-east-1 .
 
