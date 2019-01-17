@@ -214,16 +214,6 @@ public class MailServiceBean implements java.io.Serializable {
         }
     }
     
-    public Boolean sendNotificationEmail(UserNotification notification){  
-        return sendNotificationEmail(notification, "");
-    }
-    
-    
-    public Boolean sendNotificationEmail(UserNotification notification, String comment) {
-        return sendNotificationEmail(notification, comment, null);
-    }
-    
-    
     public Boolean sendNotificationEmail(UserNotification notification, String comment, AuthenticatedUser requestor){  
 
         boolean retval = false;
@@ -232,12 +222,12 @@ public class MailServiceBean implements java.io.Serializable {
            Object objectOfNotification =  getObjectOfNotification(notification);
            if (objectOfNotification != null){
                String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification, comment, requestor);
-				// QDR - uses the institution name rather than a dataverse/collection name in
-				// email subject
-				String institutionName = ResourceBundle.getBundle("Bundle").getString("institution.acronym");
-				;
-				String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, institutionName,
-						objectOfNotification);
+                // QDR - uses the institution name rather than a dataverse/collection name in
+                // email subject
+                String institutionName = ResourceBundle.getBundle("Bundle").getString("institution.acronym");
+                ;
+                String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, institutionName,
+                        objectOfNotification);
                if (!(messageText.isEmpty() || subjectText.isEmpty())){
                     retval = sendSystemEmail(emailAddress, subjectText, messageText); 
                } else {
@@ -485,16 +475,16 @@ public class MailServiceBean implements java.io.Serializable {
             case CREATEACC:
                 String rootDataverseName = dataverseService.findRootDataverse().getName();
                 InternetAddress systemAddress = getSystemAddress();
-			// QDR
-			String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome",
-					Arrays.asList(ResourceBundle.getBundle("Bundle").getString("institution.acronym"),
-							ResourceBundle.getBundle("Bundle").getString("header.guides.user"),
-							settingsService.getValueForKey(SettingsServiceBean.Key.QDRDrupalSiteURL, "") + "/deposit",
-							BrandingUtil.getSupportTeamName(systemAddress,
-									ResourceBundle.getBundle("Bundle").getString("institution.acronym")),
-							BrandingUtil.getSupportTeamEmailAddress(systemAddress)));
-			String optionalConfirmEmailAddon = confirmEmailService
-					.optionalConfirmEmailAddonMsg(userNotification.getUser());
+            // QDR
+            String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome",
+                    Arrays.asList(ResourceBundle.getBundle("Bundle").getString("institution.acronym"),
+                            ResourceBundle.getBundle("Bundle").getString("header.guides.user"),
+                            settingsService.getValueForKey(SettingsServiceBean.Key.QDRDrupalSiteURL, "") + "/deposit",
+                            BrandingUtil.getSupportTeamName(systemAddress,
+                                    ResourceBundle.getBundle("Bundle").getString("institution.acronym")),
+                            BrandingUtil.getSupportTeamEmailAddress(systemAddress)));
+            String optionalConfirmEmailAddon = confirmEmailService
+                    .optionalConfirmEmailAddonMsg(userNotification.getUser());
                 accountCreatedMessage += optionalConfirmEmailAddon;
                 logger.fine("accountCreatedMessage: " + accountCreatedMessage);
                 return messageText += accountCreatedMessage;
