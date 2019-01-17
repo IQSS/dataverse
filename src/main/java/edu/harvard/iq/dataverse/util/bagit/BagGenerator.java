@@ -88,7 +88,7 @@ public class BagGenerator {
     private HashMap<String, String> pidMap = new LinkedHashMap<String, String>();
     private HashMap<String, String> checksumMap = new LinkedHashMap<String, String>();
 
-    private int timeout = 300;
+    private int timeout = 60;
     private RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout * 1000)
             .setConnectionRequestTimeout(timeout * 1000).setSocketTimeout(timeout * 1000).build();
     private static HttpClientContext localContext = HttpClientContext.create();
@@ -116,7 +116,7 @@ public class BagGenerator {
 
     private boolean usetemp = false;
 
-    private int numConnections = 4;
+    private int numConnections = 8;
 
     private OREMap oremap;
 
@@ -145,11 +145,8 @@ public class BagGenerator {
         this.dataciteXml = dataciteXml;
 
         try {
-            // SSLContext sslContext;
-
-            // sslContext = SSLContext.getInstance("TLSv1.2");
-
-            // sslContext.init(null, null, null);
+            // Using Dataverse, all the URLs to be retrieved should be on the current server, so allowing self-signed certs and not verifying hostnames are useful in testing and 
+            // shouldn't be a significant security issue. This should not be allowed for arbitrary OREMap sources.
             SSLContextBuilder builder = new SSLContextBuilder();
             try {
                 builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
@@ -157,8 +154,7 @@ public class BagGenerator {
                 e.printStackTrace();
             }
 
-            SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(builder.build(),
-                    NoopHostnameVerifier.INSTANCE);
+            SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(builder.build(), NoopHostnameVerifier.INSTANCE);
 
             Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
                     .register("https", sslConnectionFactory).build();

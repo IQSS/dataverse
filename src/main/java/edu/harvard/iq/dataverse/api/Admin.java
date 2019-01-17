@@ -1317,21 +1317,25 @@ public class Admin extends AbstractApiBean {
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
                 AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
                 if (cmd != null) {
-                    try {
-                        dv = commandEngine.submit(cmd);
-                        if (dv.getArchivalCopyLocation() != null) {
-                            return ok("DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber + " submitted to Archive at: "
-                                    + dv.getArchivalCopyLocation());
-                        } else {
-                            return error(Status.CONFLICT, "Error submitting version due to conflict/error at Archive");
+                    new Thread(new Runnable() {
+                        public void run() {
+                            try {
+                                DatasetVersion dv = commandEngine.submit(cmd);
+                                if (dv.getArchivalCopyLocation() != null) {
+                                    logger.info("DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber + " submitted to Archive at: "
+                                            + dv.getArchivalCopyLocation());
+                                } else {
+                                    logger.severe("Error submitting version due to conflict/error at Archive");
+                                }
+                            } catch (CommandException ex) {
+                                logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
+                            }
                         }
-                    } catch (CommandException ex) {
-                        logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
-                        return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
-                    }
+                    }).start();
+                    return ok("Archive submission using " + cmd.getClass().getCanonicalName() + " started. Processing can take significant time for large datasets. View log and/or check archive for results.");
                 } else {
                     logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
-                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Missing Archiver class: " + className);
+                    return error(Status.INTERNAL_SERVER_ERROR, "Could not find Archiver class: " + className);
                 }
             } else {
                 return error(Status.BAD_REQUEST, "Version already archived at: " + dv.getArchivalCopyLocation());
