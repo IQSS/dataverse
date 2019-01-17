@@ -1323,23 +1323,29 @@ public class Admin extends AbstractApiBean {
             if (dv.getArchivalCopyLocation() == null) {
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
                 AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
+                new Thread(new Runnable() {
+                    public void run() {
+                
                 if (cmd != null) {
                     try {
-                        dv = commandEngine.submit(cmd);
+                        DatasetVersion dv = commandEngine.submit(cmd);
                         if (dv.getArchivalCopyLocation() != null) {
-                            return ok("DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber + " submitted to Archive at: "
-                                    + dv.getArchivalCopyLocation());
+//                            return ok("DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber + " submitted to Archive at: "
+//                                    + dv.getArchivalCopyLocation());
                         } else {
-                            return error(Status.CONFLICT, "Error submitting version due to conflict/error at Archive");
+//                            return error(Status.CONFLICT, "Error submitting version due to conflict/error at Archive");
                         }
                     } catch (CommandException ex) {
                         logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
-                        return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
+ //                       return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
                     }
                 } else {
                     logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
-                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Missing Archiver class: " + className);
+ //                   return error(Response.Status.INTERNAL_SERVER_ERROR, "Missing Archiver class: " + className);
                 }
+                    }
+                }).start();
+                return ok("OK - async");
             } else {
                 return error(Status.BAD_REQUEST, "Version already archived at: " + dv.getArchivalCopyLocation());
             }
