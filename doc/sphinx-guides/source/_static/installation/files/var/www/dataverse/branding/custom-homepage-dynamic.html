@@ -79,6 +79,9 @@
     <div class="row hmpg-browse-block">
         
         <!-- SEARCH -->
+        <!-- 
+        NOTE: The alias of the root dataverse will need to be configured in this URL 
+        -->
         <div class="col-xs-12">
             <div class="h4 lite-header margin-bottom">Find data across research fields, preview metadata, and download files</div>
             <div class="row">
@@ -102,6 +105,9 @@
                 </div>
                 
                 <!-- VIEW ALL -->
+                <!-- 
+                NOTE: The alias of the root dataverse will need to be configured in this URL 
+                -->
                 <div class="col-xs-12 margin-top">
                     <p class="browse-subjects small text-muted"><a href= "/dataverse/root">ALL DATA</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                 </div>
@@ -120,7 +126,10 @@
                     <div id="journals" class="row col-xs-12"><p class="text-muted">Loading...</p></div>
 
                     <!-- VIEW ALL -->
-                    <div class="row col-xs-12">
+                    <!-- 
+                    NOTE: The alias of the root dataverse will need to be configured in this URL 
+                    -->
+                    <div class="row col-xs-12 hidden-lg">
                         <p class="small text-muted"><a href="/dataverse/root?q=%28categoryOfDataverse%3A%22Journal%22+OR+dvCategory%3A%22Journal%22%29&types=datasets%3Adataverses&sort=dateSort">ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
                 </div>
@@ -136,6 +145,30 @@
                     <div id="researchers" class="row col-xs-12"><p class="placeholder text-muted">Loading...</p></div>
 
                     <!-- VIEW ALL -->
+                    <!-- 
+                    NOTE: The alias of the root dataverse will need to be configured in this URL 
+                    -->
+                    <!--<div class="row col-xs-12">
+                        <p class="small text-muted"><a href= "/dataverse/root">ALL RECENT ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                    </div>-->
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-4 col-md-12 hmpg-recent-col">
+                    <!-- VIEW ALL -->
+                    <!-- 
+                    NOTE: The alias of the root dataverse will need to be configured in this URL 
+                    -->
+                    <div class="row col-xs-12 hidden-md hidden-sm hidden-xs">
+                        <p class="small text-muted"><a href="/dataverse/root?q=%28categoryOfDataverse%3A%22Journal%22+OR+dvCategory%3A%22Journal%22%29&types=datasets%3Adataverses&sort=dateSort">ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
+                    </div>
+                </div>
+                <div class="col-lg-8 col-md-12 hmpg-recent-col">
+                    <!-- VIEW ALL -->
+                    <!-- 
+                    NOTE: The alias of the root dataverse will need to be configured in this URL 
+                    -->
                     <div class="row col-xs-12">
                         <p class="small text-muted"><a href= "/dataverse/root">ALL RECENT ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
@@ -293,6 +326,7 @@
                 });
                 fullArray.sort();
                 fullArray.forEach(function(subject){
+                    // NOTE: The alias of the root dataverse will need to be configured in this URL 
                     resultHtml += "<p class=\"browse-subjects\"><a href=\"/dataverse/root?q=&fq0=subject_ss%3A%22" + subject[0] + "%22&types=dataverses%3Adatasets&sort=dateSort&order=desc\">" + subject[0] + "</a> <span class=\"text-muted\">" + subject[1] + "</span></p>";
                 });
                 document.getElementById(elm).innerHTML = resultHtml;
