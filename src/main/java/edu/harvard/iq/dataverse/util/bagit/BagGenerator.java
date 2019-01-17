@@ -117,7 +117,7 @@ public class BagGenerator {
 
     private boolean usetemp = false;
 
-    private int numConnections = 4;
+    private int numConnections = 8;
 
     private OREMap oremap;
 
@@ -158,7 +158,7 @@ public class BagGenerator {
                 e.printStackTrace();
             }
 
-            SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(builder.build());
+            SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(builder.build(), NoopHostnameVerifier.INSTANCE);
 
             Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
                     .register("https", sslConnectionFactory).build();
