@@ -326,16 +326,6 @@ public class MailServiceBean implements java.io.Serializable {
         return "";
     }
     
-    public String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject){
-        
-        return getMessageTextBasedOnNotification(userNotification, targetObject, "");
-            
-    }
-    
-    public String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject, String comment) {
-        return getMessageTextBasedOnNotification(userNotification, targetObject, comment, null);
-
-    }
 
     public String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject, String comment, AuthenticatedUser requestor) {      
         
