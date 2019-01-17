@@ -15,11 +15,13 @@ Dev Environment Setup for Make Data Count
 
 The recommended way to work on the Make Data Count feature is to spin up an EC2 instance that has both Dataverse and Counter Processor installed. Go to the :doc:`deployment` page for details on how to spin up an EC2 instance and make sure that your Ansible file is configured to install Counter Processor before running the "create" script.
 
+(Alternatively, you can try installing Counter Processor in Vagrant. :download:`setup-counter-processor.sh <../../../../scripts/vagrant/setup-counter-processor.sh>` might help you get it installed.)
+
 After you have spun to your EC2 instance, set ``:MDCLogPath`` so that Dataverse creates a log for Counter Processor to operate on. For more on this database setting, see the :doc:`/installation/config` section of the Installation Guide.
 
 Next you need to have Dataverse add some entries to the log that Counter Processor will operate on. To do this, click on some published datasets and download some files.
 
-Next you should run Counter Processor to convert the log into a SUSHI report, which is in JSON format. Before running Counter Processor, you need to put a configuration file into place. As of the writing the file can be found in the source tree at ``scripts/vagrant/counter-processor-config.yaml`` (FIXME: move this out of the vagrant directory). Edit the file, paying particular attention to the following settings:
+Next you should run Counter Processor to convert the log into a SUSHI report, which is in JSON format. Before running Counter Processor, you need to put a configuration file into place. As a starting point use :download:`counter-processor-config.yaml <../../../../scripts/vagrant/counter-processor-config.yaml>` and edit the file, paying particular attention to the following settings:
 
 - ``log_name_pattern`` You might want something like ``/usr/local/glassfish4/glassfish/domains/domain1/logs/counter_(yyyy-mm-dd).log``
 - ``year_month`` You should probably set this to the current month.
@@ -29,6 +31,12 @@ Next you should run Counter Processor to convert the log into a SUSHI report, wh
 - ``simulate_date`` You should probably set this to tomorrow.
 
 Once you are done with your configuration, you can run Counter Processor like this:
+
+``sudo -i``
+
+``su - counter``
+
+``cd /usr/local/counter-processor-0.0.1``
 
 ``CONFIG_FILE=counter-processor-config.yaml python36 main.py``
 
