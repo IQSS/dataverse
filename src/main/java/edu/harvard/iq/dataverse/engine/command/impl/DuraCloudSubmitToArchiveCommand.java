@@ -15,9 +15,6 @@ import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -119,26 +116,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         // Although DuraCloud uses SHA-256 internally, it's API uses MD5 to verify the
                         // transfer
                         messageDigest = MessageDigest.getInstance("MD5");
-                        File tempFile = File.createTempFile(fileName, ".tmp");
-                        
-                        // Generate bag
-                        try (FileOutputStream outputStream = new FileOutputStream(tempFile)) {
-                        BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
-                        bagger.setAuthenticationKey(token.getTokenString());
-                        bagger.generateBag(outputStream);
-                        }
-                        catch (Exception e) {
-                            logger.severe("Error creating bag: " + e.getMessage());
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                            throw new RuntimeException("Error creating bag: " + e.getMessage());
-                        }
-                        try (FileInputStream fis = new FileInputStream(tempFile);DigestInputStream digestInputStream2 = new DigestInputStream(fis, messageDigest)) {
-                            
-/*                       
                         try (PipedInputStream in = new PipedInputStream();  DigestInputStream digestInputStream2 = new DigestInputStream(in, messageDigest)) {
-                            
-                            
                             new Thread(new Runnable() {
                                 public void run() {
                                     try (PipedOutputStream out = new PipedOutputStream(in)){
@@ -155,7 +133,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                                     }
                                 }
                             }).start();
-*/
+
                             checksum = store.addContent(spaceName, fileName, digestInputStream2, -1l, null, null,
                                     null);
                             logger.fine("Content: " + fileName + " added with checksum: " + checksum);
