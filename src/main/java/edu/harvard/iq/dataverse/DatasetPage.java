@@ -93,8 +93,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewComman
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collections;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
