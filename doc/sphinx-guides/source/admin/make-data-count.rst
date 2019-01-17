@@ -41,9 +41,37 @@ Configuring Dataverse for Make Data Count Views and Downloads
 
 To make Dataverse log dataset usage (views and downloads) for Make Data Count, you must set the ``:MDCLogPath`` database setting. See the :doc:`/installation/config` section of the Installation Guide for details.
 
-FIXME: Explain more about how to install and configure Counter Processor (for now, see the :doc:`/developers/make-data-count` section in the Dev Guide), setting up cron jobs, etc.
+If you haven't already, follow the steps for installing Counter Processor in the :doc:`/installation/prerequisites.rst` section of the Installation Guide.
 
-The following metrics will be sent for each published dataset:
+After you have your first day of logs, you can process them the next day.
+
+First, become the "counter" Unix user.
+
+``sudo su - counter``
+
+Download :download:`counter-processor-config.yaml <../_static/admin/counter-processor-config.yaml>`
+
+Edit the config file and pay particular attention to the FIXME lines.
+
+``vim counter-processor-config.yaml``
+
+Change to the directory where you installed Counter Processor.
+
+``cd /usr/local/counter-processor-0.0.1``
+
+Run Counter Processor.
+
+``CONFIG_FILE=/home/counter/counter-processor-config.yaml python36 main.py``
+
+You will need to set up a cron job to run this script periodically, perhaps nightly.
+
+A JSON file in SUSHI format will be created in the directory you specified under "output_file" in the config file.
+
+FIXME: Explain how to load the SUSHI file into Dataverse. For now, see the :doc:`/developers/make-data-count` section of the Dev Guide.
+
+You will want to add a cron job to load the SUSHI file periodically as well, perhaps nightly.
+
+Once you have contacted support@datacite.org for your JSON Web Token and changed "upload_to_hub" to "True" in the config file, the following metrics will be sent to the DataCite hub for each published dataset:
 
 - Views ("investigations" in COUNTER)
 - Downloads ("requests" in COUNTER)
