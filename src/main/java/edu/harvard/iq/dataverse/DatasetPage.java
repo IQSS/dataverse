@@ -2610,20 +2610,13 @@ public class DatasetPage implements java.io.Serializable {
 
         String testVal = value.toString();
 
-        try {
-            URL url = new URL(testVal);
-        } catch (MalformedURLException e) {
-            try {
-                ((UIInput) toValidate).setValid(false);
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.url.error"), BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.url.error"));
-                context.addMessage(toValidate.getClientId(context), message);
-                return;
-            } catch (NullPointerException npe) {
-
-            }
-
+        if (!URLValidator.isURLValid(testVal, null)) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.url.error"), BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.url.error"));
+            context.addMessage(toValidate.getClientId(context), message);
+            return;
         }
-
+        
         if (value.toString().length() <= DatasetVersion.ARCHIVE_NOTE_MAX_LENGTH) {
             ((UIInput) toValidate).setValid(true);
         } else {
