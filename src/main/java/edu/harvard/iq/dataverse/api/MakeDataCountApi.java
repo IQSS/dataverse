@@ -3,9 +3,9 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
+import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -32,6 +32,8 @@ public class MakeDataCountApi extends AbstractApiBean {
 
     @EJB
     DatasetMetricsServiceBean datasetMetricsService;
+    @EJB
+    DatasetExternalCitationsServiceBean datasetExternalCitationsService;
     @EJB
     DatasetServiceBean datasetService;
 
@@ -115,7 +117,14 @@ public class MakeDataCountApi extends AbstractApiBean {
             // TODO: Do something with non 200 status.
             System.out.println("status: " + status);
             JsonObject report = Json.createReader(connection.getInputStream()).readObject();
-            List<DatasetExternalCitations> datasetExternalCitations = MakeDataCountUtil.parseCitations(report);
+            List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(report);
+
+            if (!datasetExternalCitations.isEmpty()) {
+                for (DatasetExternalCitations dm : datasetExternalCitations) {
+                    datasetExternalCitationsService.save(dm);
+                }
+            }
+
             JsonObjectBuilder output = Json.createObjectBuilder();
             output.add("citationCount", datasetExternalCitations.size());
             return ok(output);

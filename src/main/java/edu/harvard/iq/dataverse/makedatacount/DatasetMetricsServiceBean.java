@@ -77,9 +77,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                 jsonGlobalId = idObj.getString("value");
                 globalIdType = idObj.getString("type");
                 globalId = globalIdType + ":" + jsonGlobalId;
-            } else {
-                System.out.print("Does Not Contain  dataset-id");
-            }
+            } 
             if (dataset != null){
                 ds = dataset;
             } else {

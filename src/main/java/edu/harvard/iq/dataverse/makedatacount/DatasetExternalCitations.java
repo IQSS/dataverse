@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.makedatacount;
 
 import edu.harvard.iq.dataverse.Dataset;
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -33,7 +34,7 @@ public class DatasetExternalCitations implements Serializable {
     @ManyToOne
     private Dataset dataset;
     
-    @NotNull
+    @Column(nullable = false)
     private String citedByUrl;
     
 
