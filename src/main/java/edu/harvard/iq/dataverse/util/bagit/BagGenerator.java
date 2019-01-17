@@ -146,14 +146,11 @@ public class BagGenerator {
         this.dataciteXml = dataciteXml;
 
         try {
-            // SSLContext sslContext;
-
-            // sslContext = SSLContext.getInstance("TLSv1.2");
-
-            // sslContext.init(null, null, null);
+            // Using Dataverse, all the URLs to be retrieved should be on the current server, so allowing self-signed certs and not verifying hostnames are useful in testing and 
+            // shouldn't be a significant security issue. This should not be allowed for arbitrary OREMap sources.
             SSLContextBuilder builder = new SSLContextBuilder();
             try {
-                builder.loadTrustMaterial(null, new TrustAllStrategy());
+                builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
             } catch (KeyStoreException e) {
                 e.printStackTrace();
             }
