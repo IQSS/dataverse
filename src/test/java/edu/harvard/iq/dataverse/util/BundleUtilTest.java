@@ -34,11 +34,9 @@ public class BundleUtilTest {
                         Arrays.asList("dvName", "dvUrl", "parentDvName", "parentDvUrl", "http://guides.dataverse.org/en", "4.0")));
         assertEquals("Your new data project named dsName (view at dsUrl ) "
                 + "was created in parentDvName (view at parentDvUrl ). "
-                + "To learn more about what you can do with a data project, "
-                + "check out the Dataset Management - User Guide at "
-                + "http://guides.dataverse.org/en/4.0/user/dataset-management.html .",
+                + " For details about the deposit process, please see https://qdr.syr.edu/deposit/process.",
                 BundleUtil.getStringFromBundle("notification.email.createDataset",
-                        Arrays.asList("dsName", "dsUrl", "parentDvName", "parentDvUrl", "http://guides.dataverse.org/en", "4.0")));
+                        Arrays.asList("dsName", "dsUrl", "parentDvName", "parentDvUrl")));
         assertEquals("There are no collections, data projects, or files that match your search. "
                 + "Please try a new search by using other or broader terms. You can also check out "
                 + "the <a href=\"http://guides.dataverse.org/en/4.2/user/find-use-data.html\" title=\"Finding &amp; Using "
