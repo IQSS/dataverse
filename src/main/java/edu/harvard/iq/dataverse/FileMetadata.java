@@ -511,6 +511,29 @@ public class FileMetadata implements Serializable {
         }
     };
     
+    public static final Comparator<FileMetadata> compareByCategoryAndLabel = new Comparator<FileMetadata>() {
+        @Override
+        public int compare(FileMetadata o1, FileMetadata o2) {
+            long rank1 = Long.MAX_VALUE;
+            for(DataFileCategory c:o1.getCategories()) {
+                if(c.getId()<rank1) {
+                    rank1=c.getId();
+                }
+            };
+            long rank2 = Long.MAX_VALUE;
+            for(DataFileCategory c:o2.getCategories()) {
+                if(c.getId()<rank2) {
+                    rank2=c.getId();
+                }
+            };
+            if(rank1!=rank2) {
+                return rank1<rank2 ? 1:-1;
+            } else {
+              return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
+            }
+        }
+    };
+    
     
     
     public String toPrettyJSON(){
