@@ -54,6 +54,52 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         return null;
     }
     
+    public List<DatasetMetrics> getDatasetMetricsByDatasetForDisplay(Dataset dataset, String monthYear, String country ){
+        
+        List <DatasetMetrics> retVal = new ArrayList();
+        Long dataset_id = dataset.getId();
+        
+        String whereClause = " where dataset_id = " + dataset_id.toString() + " ";
+        String groupBy = " group by dataset_id "; 
+        
+        if (monthYear != null) {
+            whereClause += "and monthYear = '" + monthYear + "' ";
+        } else {
+            groupBy += " , monthYear ";
+        }
+        
+        if (country != null) {
+            whereClause += "and country = '" + country + "' ";
+        } else {
+            groupBy += " , country ";
+        }
+        
+        
+        Query query = em.createNativeQuery(""
+                + "select dataset_id, sum(viewstotal), sum(viewsunique), sum(downloadstotal), sum(downloadsunique)  from datasetmetrics \n"
+                + whereClause
+                + groupBy
+                + ";"              
+        );
+
+        List<Object[]> result = query.getResultList();
+
+        for (Object[] row : result) {
+            DatasetMetrics dm = new DatasetMetrics();
+            dm.setDataset(dataset);
+            dm.setCountryCode(country);
+            dm.setMonth(monthYear);
+            dm.setViewsTotal((Long) row[1]);
+            dm.setViewsUnique((Long) row[2]);
+            dm.setDownloadsTotal((Long) row[3]);
+            dm.setDownloadsTotal((Long) row[4]);
+            retVal.add(dm);
+        }
+
+        return retVal;
+        
+    }
+        
     public List<DatasetMetrics> parseSushiReport(JsonObject report){
         return parseSushiReport(report, null);
     }

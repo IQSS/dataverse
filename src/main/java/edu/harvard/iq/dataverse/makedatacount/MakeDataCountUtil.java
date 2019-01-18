@@ -78,6 +78,7 @@ public class MakeDataCountUtil {
         JsonArray reportDatasets = report.getJsonArray("report_datasets");
         for (JsonValue reportDataset : reportDatasets) {
             // TODO: Populate each DatasetMetrics object properly once that entity has settled down.
+            //Done in MakeDataCountServiceBean because access to the Dataset Service Bean is required
             datasetMetrics.add(new DatasetMetrics());
         }
         return datasetMetrics;
@@ -91,7 +92,6 @@ public class MakeDataCountUtil {
             String citedByDoi = citation.getJsonObject("attributes").getString("subj-id");
             String occurredAtDate = citation.getJsonObject("attributes").getString("occurred-at");
             System.out.println("cited by " + citedByDoi + " at " + occurredAtDate);
-            // TODO: Should citations go in a new table so we can store the DOI of the paper that cited the dataset?
             datasetExternalCitations.add(new DatasetExternalCitations());
         }
         return datasetExternalCitations;
