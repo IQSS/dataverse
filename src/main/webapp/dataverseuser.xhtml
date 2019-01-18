@@ -118,9 +118,6 @@
                                                         <o:param>
                                                             <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
-                                                        <o:param>
-                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/user/dataset-management.html" title="#{bundle['notification.dataset.management.title']}" target="_blank">#{bundle['header.guides.user']}</a>
-                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'SUBMITTEDDS'}">

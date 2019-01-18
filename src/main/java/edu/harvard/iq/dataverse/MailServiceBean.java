@@ -408,9 +408,7 @@ public class MailServiceBean implements java.io.Serializable {
                         version.getDataset().getDisplayName(),
                         getDatasetLink(version.getDataset()),
                         version.getDataset().getOwner().getDisplayName(),
-                        getDataverseLink(version.getDataset().getOwner()),
-                        systemConfig.getGuidesBaseUrl(),
-                        systemConfig.getGuidesVersion()
+                        getDataverseLink(version.getDataset().getOwner())
                 ));
                 logger.fine(datasetCreatedMessage);
                 return messageText += datasetCreatedMessage;
