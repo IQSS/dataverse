@@ -2608,7 +2608,7 @@ public class DatasetPage implements java.io.Serializable {
 
         String testVal = value.toString();
 
-        if (!URLValidator.isURLValid(testVal, null)) {
+        if (!URLValidator.isURLValid(testVal)) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.url.error"), BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.url.error"));
             context.addMessage(toValidate.getClientId(context), message);

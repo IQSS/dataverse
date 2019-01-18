@@ -11,11 +11,11 @@ import org.junit.Test;
 public class URLValidatorTest {
 
     @Test
-    public void testIsEmailValid() {
+    public void testIsURLValid() {
 
-        assertEquals(true, URLValidator.isURLValid("https://twitter.com/", null));
+        assertEquals(true, URLValidator.isURLValid("https://twitter.com/"));
 
-        assertEquals(false, URLValidator.isURLValid("cnn.com", null));
+        assertEquals(false, URLValidator.isURLValid("cnn.com"));
 
     }
 
