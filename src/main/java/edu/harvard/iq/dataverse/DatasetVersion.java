@@ -194,11 +194,18 @@ public class DatasetVersion implements Serializable {
     
     public List<FileMetadata> getFileMetadatas() {
         logger.info("Retrieving");
+        for(FileMetadata fmd: fileMetadatas) {
+            logger.info(fmd.getId() + String.join(",",fmd.getCategoriesByName()));
+        }
         return fileMetadatas;
     }
     
     public List<FileMetadata> getFileMetadatasSorted() {
         logger.info("Sorting");
+        logger.info("Number of fmds: " + fileMetadatas.size());
+        for(FileMetadata fmd: fileMetadatas) {
+            logger.info(fmd.getId() + String.join(",",fmd.getCategoriesByName()));
+        }
         Collections.sort(fileMetadatas, FileMetadata.compareByCategoryAndLabel);
         return fileMetadatas;
     }
