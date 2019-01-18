@@ -516,18 +516,20 @@ public class FileMetadata implements Serializable {
         public int compare(FileMetadata o1, FileMetadata o2) {
             long rank1 = Long.MAX_VALUE;
             for(DataFileCategory c:o1.getCategories()) {
+                logger.info(c.getName());
                 if(c.getId()<rank1) {
                     rank1=c.getId();
                 }
             };
             long rank2 = Long.MAX_VALUE;
             for(DataFileCategory c:o2.getCategories()) {
+                logger.info("2 " + c.getName());
                 if(c.getId()<rank2) {
                     rank2=c.getId();
                 }
             };
+            logger.info(rank1 + " versus " + rank2);
             if(rank1!=rank2) {
-                logger.info(rank1 + " versus " + rank2);
                 return rank1<rank2 ? 1:-1;
             } else {
               return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
