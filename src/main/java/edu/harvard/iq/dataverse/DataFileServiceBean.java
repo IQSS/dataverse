@@ -844,6 +844,10 @@ public class DataFileServiceBean implements java.io.Serializable {
                     }
                 }
             }
+            logger.info("Categories found:");
+            for(DataFileCategory c: fileMetadata.getCategories()) {
+                logger.info(c.getName() + fileMetadata.getId());
+            }
 
             fileMetadata.setDatasetVersion(version);
             
