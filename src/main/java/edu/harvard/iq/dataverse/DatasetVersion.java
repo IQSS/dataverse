@@ -193,10 +193,12 @@ public class DatasetVersion implements Serializable {
     }
     
     public List<FileMetadata> getFileMetadatas() {
+        logger.info("Retrieving");
         return fileMetadatas;
     }
     
     public List<FileMetadata> getFileMetadatasSorted() {
+        logger.info("Sorting");
         Collections.sort(fileMetadatas, FileMetadata.compareByCategoryAndLabel);
         return fileMetadatas;
     }
