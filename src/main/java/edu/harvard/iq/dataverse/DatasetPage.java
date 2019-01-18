@@ -505,7 +505,6 @@ public class DatasetPage implements java.io.Serializable {
                     1000000);
 
             for (SolrDocument solrDocument : solrDocs) {
-                logger.info("Found: " + (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID));
                 searchResultsIdSet.add((Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID));
             }
         } catch (SearchException ex) {
