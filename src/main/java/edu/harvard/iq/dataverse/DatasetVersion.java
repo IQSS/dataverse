@@ -213,7 +213,7 @@ public class DatasetVersion implements Serializable {
         for(FileMetadata fmd: fileMetadatas) {
             logger.info(fmd.getId() + String.join(",",fmd.getCategoriesByName()));
         }
-        Collections.sort(((ArrayList)fileMetadatas), FileMetadata.compareByCategoryAndLabel);
+        Collections.sort(fileMetadatas, FileMetadata.compareByCategoryAndLabel);
         for(FileMetadata fmd: fileMetadatas) {
             logger.info(fmd.getId() + String.join(",",fmd.getCategoriesByName()));
         }

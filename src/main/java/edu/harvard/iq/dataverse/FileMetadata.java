@@ -530,7 +530,7 @@ public class FileMetadata implements Serializable {
             };
             logger.info(rank1 + " versus " + rank2);
             if(rank1!=rank2) {
-                return rank1<rank2 ? 1:-1;
+                return rank1<rank2 ? -1:1;
             } else {
               return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
             }
