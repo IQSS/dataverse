@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -511,29 +513,46 @@ public class FileMetadata implements Serializable {
         }
     };
     
+    static Map<String,Long> categoryMap;
+    
+    public static void setCategorySortOrder(String categories) {
+       categoryMap=new HashMap<String, Long>();
+       long i=1;
+       for(String cat: categories.split(",\\s*")) {
+           categoryMap.put(cat, i);
+           i++;
+       }
+    }
+    
     public static final Comparator<FileMetadata> compareByCategoryAndLabel = new Comparator<FileMetadata>() {
         @Override
         public int compare(FileMetadata o1, FileMetadata o2) {
-            long rank1 = Long.MAX_VALUE;
-            for(DataFileCategory c:o1.getCategories()) {
-                logger.info(c.getName());
-                if(c.getId()<rank1) {
-                    rank1=c.getId();
+            if (categoryMap != null) {
+                long rank1 = Long.MAX_VALUE;
+                for (DataFileCategory c : o1.getCategories()) {
+                    Long rank = categoryMap.get(c.getName());
+                    if (rank != null) {
+                        if (rank < rank1) {
+                            rank1 = rank;
+                        }
+                    }
                 }
-            };
-            long rank2 = Long.MAX_VALUE;
-            for(DataFileCategory c:o2.getCategories()) {
-                logger.info("2 " + c.getName());
-                if(c.getId()<rank2) {
-                    rank2=c.getId();
+                long rank2 = Long.MAX_VALUE;
+                for (DataFileCategory c : o2.getCategories()) {
+                    Long rank = categoryMap.get(c.getName());
+                    if (rank != null) {
+                        if (rank < rank2) {
+                            rank2 = rank;
+                        }
+                    }
                 }
-            };
-            logger.info(rank1 + " versus " + rank2);
-            if(rank1!=rank2) {
-                return rank1<rank2 ? -1:1;
-            } else {
-              return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
+                if (rank1 != rank2) {
+                    return rank1 < rank2 ? -1 : 1;
+                }
             }
+            //No categories or category score is equal, so compare labels
+            return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
+
         }
     };
     

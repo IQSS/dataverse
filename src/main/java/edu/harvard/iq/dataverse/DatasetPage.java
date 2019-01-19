@@ -1377,6 +1377,10 @@ public class DatasetPage implements java.io.Serializable {
         String nonNullDefaultIfKeyNotFound = "";
         protocol = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+        String sortOrder = settingsWrapper.getValueForKey(SettingsServiceBean.Key.CategorySortOrder, null);
+        if(sortOrder != null) {
+            FileMetadata.setCategorySortOrder(sortOrder);
+        }
         if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset     
 
             DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;

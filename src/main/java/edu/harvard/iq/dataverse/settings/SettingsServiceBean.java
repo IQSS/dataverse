@@ -398,6 +398,14 @@ public class SettingsServiceBean {
         InheritParentRoleAssignments,
         
         /**
+         * A comma-separated list of CategoryName in the desired order for files to be
+         * sorted in the file table display. If not set, files will be sorted
+         * alphabetically by default. If set, files will be sorted by these categories
+         * and alphabetically within each category.
+         */
+        CategorySortOrder,
+        
+        /**
          * QDR Custom settings
          * 
          */
