@@ -203,6 +203,13 @@ public class DatasetVersion implements Serializable {
     public List<FileMetadata> getFileMetadatasSorted() {
         logger.info("Sorting");
         logger.info("Number of fmds: " + fileMetadatas.size());
+        if(!(fileMetadatas instanceof ArrayList)) {
+            List<FileMetadata> newFMDs = new ArrayList<FileMetadata>();
+            for(FileMetadata fmd: fileMetadatas) {
+                newFMDs.add(fmd);
+            }
+            setFileMetadatas(newFMDs);
+        }
         for(FileMetadata fmd: fileMetadatas) {
             logger.info(fmd.getId() + String.join(",",fmd.getCategoriesByName()));
         }
