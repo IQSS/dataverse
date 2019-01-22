@@ -609,7 +609,7 @@ To active this workflow, one must first install a workflow using the archiver st
 
 Using the Workflow Native API (see the :doc:`/api/native-api` guide) this workflow can be installed using:
 
-``curl -X POST --upload-file internal-archiver-workflow.json http://localhost:8080/api/admin/workflows``
+``curl -X POST -H 'Content-type: application/json' --upload-file internal-archiver-workflow.json http://localhost:8080/api/admin/workflows``
     
 The workflow id returned in this call (or available by doing a GET of /api/admin/workflows ) can then be submitted as the default PostPublication workflow:
 
