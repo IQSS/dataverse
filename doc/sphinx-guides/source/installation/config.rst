@@ -588,7 +588,7 @@ Archivers may require glassfish settings as well. For the Chronopolis archiver, 
 
 Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the API call to manually submit a DatasetVersion for processing:
 
-``curl -H "X-Dataverse-key:|<key>" http://localhost:8080/api/admin/submitDataVersionToArchive/{id}/{version}``
+``curl -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/submitDataVersionToArchive/{id}/{version}``
     
 where:
 
