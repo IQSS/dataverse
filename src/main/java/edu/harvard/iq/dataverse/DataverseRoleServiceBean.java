@@ -17,6 +17,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -248,7 +250,10 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
                             .getResultList();
         for (RoleAssignment ra: unfiltered) {
             logger.info("Found RA id#: " + ra.getId());
+            logger.info("Def pt: " + ra.getDefinitionPoint().getId());
         }
+        Stream<RoleAssignment> sra = unfiltered.stream().filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId()));
+        logger.info("Filtered size:" + sra.count());
         return unfiltered.stream().filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId())).collect(Collectors.toList());
     }
     
