@@ -202,7 +202,24 @@ public class DatasetVersion implements Serializable {
     }
     
     public List<FileMetadata> getFileMetadatasSorted() {
-        Collections.sort(fileMetadatas, FileMetadata.compareByLabel);
+ 
+        /*
+         * fileMetadatas can sometimes be an
+         * org.eclipse.persistence.indirection.IndirectList When that happens, the
+         * comparator in the Collections.sort below is not called, possibly due to
+         * https://bugs.eclipse.org/bugs/show_bug.cgi?id=446236 which is Java 1.8+
+         * specific Converting to an ArrayList solves the problem, but the longer term
+         * solution may be in avoiding the IndirectList or moving to a new version of
+         * the jar it is in.
+         */
+        if(!(fileMetadatas instanceof ArrayList)) {
+            List<FileMetadata> newFMDs = new ArrayList<FileMetadata>();
+            for(FileMetadata fmd: fileMetadatas) {
+                newFMDs.add(fmd);
+            }
+            setFileMetadatas(newFMDs);
+        }
+        Collections.sort(fileMetadatas, FileMetadata.compareByCategoryAndLabel);
         return fileMetadatas;
     }
 
