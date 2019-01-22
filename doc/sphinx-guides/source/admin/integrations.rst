@@ -113,7 +113,7 @@ The minimal configuration to support an archiver integration involves adding a m
 
     `curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.DuraCloudSubmitToArchiveCommand"`
 
-\:ArchiverSettings - the archiver class can access required settings including existing Dataverse settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. Note that this list must include the :ArchiverClassName setting. For example: 
+\:ArchiverSettings - the archiver class can access required settings including existing Dataverse settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. Note that this list must include the \:ArchiverClassName setting. For example: 
 
     `curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DuraCloudHost, :DuraCloudPort, :DuraCloudContext"`
 
@@ -149,7 +149,7 @@ In the Chronopolis case, since the transfer from the DuraCloud front-end to arch
 **PostPublication Workflow**
 
 To automate the submission of archival copies to an archive as part of publication, one can setup a Dataverse Workflow using the `"archiver" workflow step <http://guides.dataverse.org/en/latest/developers/workflows.html>`_
-. The archiver step uses the configuration information discussed above and must define the :ArchiverClassName setting, along with any/all archive-specific required settings as discussed above, in the workflow definition.
+. The archiver step uses the configuration information discussed above and must define the \:ArchiverClassName setting, along with any/all archive-specific required settings as discussed above, in the workflow definition.
 
 To active this workflow, one must first install a workflow using the archiver step. A simple workflow that invokes the archiver step configured to submit to DuraCloud as its only action is included in dataverse at /scripts/api/data/workflows/internal-archiver-workflow.json.
 
