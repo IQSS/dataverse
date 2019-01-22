@@ -49,7 +49,7 @@
                                           fileUploadListener="#{provPopupFragmentBean.handleFileUpload}" 
                                           update="provPopupOutput,assignMessages" 
                                           label="#{bundle['file.editProvenanceDialog.selectToAddBtn']}"
-                                          onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
+                                          onstart="javascript:uploadStarted();"
                                           onerror="javascript:uploadFailure();"
                                           oncomplete="bind_bsui_components();"
                                           fileLimit="1" 
