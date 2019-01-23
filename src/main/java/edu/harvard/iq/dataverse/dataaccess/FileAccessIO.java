@@ -565,6 +565,8 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             }
         }   
 
+        dirStream.close();
+        
         return auxItems;
     }
 
