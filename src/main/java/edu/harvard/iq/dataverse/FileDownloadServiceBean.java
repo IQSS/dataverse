@@ -235,6 +235,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 dataFile = guestbookResponse.getDataFile();
             }
         }
+        //For tools to get the dataset and datasetversion ids, we need a full DataFile object (not a findCheapAndEasy() copy)
+        if(dataFile.getFileMetadata()==null) {
+            dataFile=datafileService.find(dataFile.getId());
+        }
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
         // Back when we only had TwoRavens, the downloadType was always "Explore". Now we persist the name of the tool (i.e. "TwoRavens", "Data Explorer", etc.)
         guestbookResponse.setDownloadtype(externalTool.getDisplayName());
