@@ -254,13 +254,16 @@ for (RoleAssignment ra: test) {
 logger.info("Found RA id#: " + ra.getId());
 logger.info("Def pt: " + ra.getDefinitionPoint().getId());
 }
-        
+        try {
         List<RoleAssignment> unfiltered = em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class).
                             setParameter("assigneeIdentifier", roas.getIdentifier())
                             .getResultList();
         for (RoleAssignment ra: unfiltered) {
+            logger.info(ra.getClass().getCanonicalName());
             if(ra.getDefinitionPoint()==null) {
+                logger.info("Loading");
                 ra=em.find(RoleAssignment.class,ra.getId());
+                logger.info("After: " + ra.getClass().getCanonicalName());
             }
             logger.info("Found RA id#: " + ra.getId());
             logger.info("Def pt: " + ra.getDefinitionPoint().getId());
@@ -268,6 +271,10 @@ logger.info("Def pt: " + ra.getDefinitionPoint().getId());
         Stream<RoleAssignment> sra = unfiltered.stream().filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId()));
         logger.info("Filtered size:" + sra.count());
         return unfiltered.stream().filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId())).collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.severe(e.getMessage());
+            return test;
+        }
     }
     
     /**
