@@ -20,6 +20,7 @@
                     <f:viewParam name="id" value="#{TemplatePage.templateId}"/>
                     <f:viewParam name="ownerId" value="#{TemplatePage.ownerId}"/>
                     <f:viewParam name="editMode" value="#{TemplatePage.editMode}"/>
+                    <f:viewAction action="#{dataverseLocaleBean.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{TemplatePage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(TemplatePage.template.dataverse, (TemplatePage.editMode == 'CREATE' ? bundle['dataset.manageTemplates.createBtn'] : TemplatePage.template.name))}"/>
                 </f:metadata>

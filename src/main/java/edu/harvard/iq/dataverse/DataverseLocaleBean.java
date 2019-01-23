@@ -22,20 +22,26 @@ public class DataverseLocaleBean implements Serializable {
     @Inject
     SettingsWrapper settingsWrapper;
 
+    private String localeCode;
+    
     {
         //Noticed that the NullPointerException was thrown from FacesContext.getCurrentInstance() while running the testcases(mvn:package).
         //Reason: the FacesContext is not initialized until the app starts. So, added the below if-condition
         if(FacesContext.getCurrentInstance() == null) {
+            logger.info("STATIC: setting LOCALE to en");
             localeCode = "en";
         }
         else if (FacesContext.getCurrentInstance().getViewRoot() == null ) {
             localeCode = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale().getLanguage();
+            logger.info("STATIC: setting LOCALE from EXTERNAL CONTEXT: "+localeCode);
         }
-        else if (FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage() == "en_US") {
+        else if (FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage().equals("en_US")) {
+            logger.info("STATIC: LOCALE set to en_US, using \"en\"");
             localeCode = "en";
         }
         else {
             localeCode = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
+            logger.info("STATIC: setting LOCALE from VIEWROOT: "+localeCode);
         }
     }
 
@@ -44,9 +50,8 @@ public class DataverseLocaleBean implements Serializable {
     // Map from locale to display name eg     en -> English
     private Map<String, String> dataverseLocales;
 
-    private String localeCode;
-
     public void init() {
+        
         dataverseLocales = new LinkedHashMap<>();
         try {
             JSONArray entries = new JSONArray(settingsWrapper.getValueForKey(SettingsServiceBean.Key.Languages, "[]"));
@@ -67,9 +72,13 @@ public class DataverseLocaleBean implements Serializable {
         } else {
             localeCode = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
         }*/
+        logger.info("INIT: LOCALE set to "+localeCode);
     }
 
     public Map<String, String>  getDataverseLocales(){
+        if (dataverseLocales == null) {
+            init();
+        }
         return dataverseLocales;
     }
     
@@ -103,8 +112,7 @@ public class DataverseLocaleBean implements Serializable {
             init();
         }
         localeCode = code;
-        FacesContext.getCurrentInstance()
-                .getViewRoot().setLocale(new Locale(dataverseLocales.get(code)));
+        FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale(code));
         try {
             String url = ((HttpServletRequest) FacesContext.getCurrentInstance()
                     .getExternalContext().getRequest()).getHeader("referer");
@@ -114,6 +122,18 @@ public class DataverseLocaleBean implements Serializable {
             ioe.printStackTrace();
         }
 
+    }
+    
+    public void updateLocaleInViewRoot() {
+        if (localeCode != null 
+                && FacesContext.getCurrentInstance() != null 
+                && FacesContext.getCurrentInstance().getViewRoot() != null
+                && !localeCode.equals(FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage())) {
+            logger.info("Forcing locale in ViewRoot: "+localeCode);
+            FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale(localeCode));
+        } else {
+            logger.info("Cannot force locale! (it's null)");
+        }
     }
 
 }

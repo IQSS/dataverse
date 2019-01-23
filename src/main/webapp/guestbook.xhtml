@@ -21,6 +21,7 @@
                     <f:viewParam name="ownerId" value="#{GuestbookPage.ownerId}"/>
                     <f:viewParam name="sourceId" value="#{GuestbookPage.sourceId}"/>
                     <f:viewParam name="editMode" value="#{GuestbookPage.editMode}"/>
+                    <f:viewAction action="#{dataverseLocaleBean.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{GuestbookPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(GuestbookPage.dataverse, (GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : GuestbookPage.guestbook.name))}"/>
                 </f:metadata>

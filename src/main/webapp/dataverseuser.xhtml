@@ -29,6 +29,7 @@
                     <f:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
                     <f:viewParam name="redirectPage" value="#{DataverseUserPage.redirectPage}"/>
                     <f:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}"/>
+                    <f:viewAction action="#{dataverseLocaleBean.updateLocaleInViewRoot}" />
                     <f:viewAction action="#{DataverseUserPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
                 </f:metadata>

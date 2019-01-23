@@ -23,6 +23,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -71,6 +72,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     @Inject
     NavigationWrapper navigationWrapper;
+    @Inject
+    DataverseLocaleBean dataverseLocaleTracker; 
  
     private List<HarvestingClient> configuredHarvestingClients;
     private Dataverse dataverse;
@@ -124,6 +127,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
         configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
         
         pageMode = PageMode.VIEW;
+        /*String localeCode = dataverseLocaleTracker.getLocaleCode(); 
+        FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale(localeCode));*/
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("harvestclients.title"), BundleUtil.getStringFromBundle("harvestclients.toptip")));
         return null; 
     }

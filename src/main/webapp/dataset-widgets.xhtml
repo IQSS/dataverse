@@ -18,6 +18,7 @@
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="datasetId" value="#{DatasetWidgetsPage.datasetId}"/>
+                    <f:viewAction action="#{dataverseLocaleBean.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DatasetWidgetsPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetWidgetsPage.dataset, bundle['dataset.thumbnailsAndWidget.breadcrumbs.title'])}"/>
                 </f:metadata>

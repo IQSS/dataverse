@@ -23,6 +23,7 @@
                     <f:viewParam name="fileId" value="#{FilePage.fileId}"/>
                     <f:viewParam name="version" value="#{FilePage.version}"/>
                     <f:viewParam name="persistentId" value="#{FilePage.persistentId}"/>
+                    <f:viewAction action="#{dataverseLocaleBean.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{FilePage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(FilePage.fileMetadata)}"/>
                 </f:metadata>
