@@ -272,7 +272,8 @@ logger.info("Def pt: " + ra.getDefinitionPoint().getId());
         logger.info("Filtered size:" + sra.count());
         return unfiltered.stream().filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId())).collect(Collectors.toList());
         } catch (Exception e) {
-            logger.severe(e.getMessage());
+            logger.severe("Exception " + e.getClass().getCanonicalName() + " " + e.getMessage() + " " + e.getCause().getMessage());
+            e.printStackTrace();
             return test;
         }
     }
