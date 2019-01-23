@@ -23,7 +23,11 @@ public class DataverseLocaleBean implements Serializable {
     SettingsWrapper settingsWrapper;
 
     private String localeCode;
-    
+   
+    // should probably be safe to remove the static block below; it was only 
+    // needed because some utilities were (improperly) calling the bean in a 
+    // static context. (but first let's make sure that the localeCode is actually 
+    // set in the init() method!) -- L.A.
     {
         //Noticed that the NullPointerException was thrown from FacesContext.getCurrentInstance() while running the testcases(mvn:package).
         //Reason: the FacesContext is not initialized until the app starts. So, added the below if-condition

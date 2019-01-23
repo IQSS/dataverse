@@ -1,5 +1,5 @@
 package edu.harvard.iq.dataverse.util;
-import edu.harvard.iq.dataverse.DataverseLocaleBean;
+//import edu.harvard.iq.dataverse.DataverseLocaleBean;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,33 +18,20 @@ import javax.faces.context.FacesContext;
 public class LocalBundle extends ResourceBundle {
 
     private static final String defaultBundleFile = "Bundle";
-    private static ResourceBundle bundle;
-    private static Locale bundle_locale;
+    //private static ResourceBundle bundle;
+    //private static Locale bundle_locale;
 
 
 
     public LocalBundle(){
-        DataverseLocaleBean d = new DataverseLocaleBean();
-        bundle_locale = new Locale(d.getLocaleCode());
+        //DataverseLocaleBean d = new DataverseLocaleBean();
+        //bundle_locale = new Locale(d.getLocaleCode());
+        Locale currentLocale = BundleUtil.getCurrentLocale();
+        ResourceBundle localBundle = BundleUtil.getResourceBundle(defaultBundleFile);
 
-        String filesRootDirectory = System.getProperty("dataverse.lang.directory");
-
-        if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
-            bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale);
-        } else {
-            File bundleFileDir  = new File(filesRootDirectory);
-            URL[] urls = null;
-            try {
-                urls = new URL[]{bundleFileDir.toURI().toURL()};
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            ClassLoader loader = new URLClassLoader(urls);
-            bundle = ResourceBundle.getBundle(defaultBundleFile, bundle_locale, loader);
+        if (localBundle != null) {
+            setParent(localBundle);
         }
-
-        setParent(bundle);
     }
 
     @Override

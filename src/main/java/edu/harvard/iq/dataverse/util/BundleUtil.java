@@ -25,6 +25,9 @@ public class BundleUtil {
 
     public static String getStringFromBundle(String key, List<String> arguments) {
         ResourceBundle bundle = getResourceBundle(defaultBundleFile );
+        if (bundle == null) {
+            return null; 
+        }
         return getStringFromBundle(key, arguments, bundle);
     }
     
@@ -62,6 +65,9 @@ public class BundleUtil {
 
     public static String getStringFromPropertyFile(String key, String propertyFileName  ) throws MissingResourceException {
         ResourceBundle bundle = getResourceBundle(propertyFileName);
+        if (bundle == null) {
+            return null; 
+        }
         return getStringFromBundleNoMissingCheck(key, null, bundle);
     }
 
@@ -96,14 +102,11 @@ public class BundleUtil {
             logger.info("BundleUtil: no FacesContext, defaulting to locale en");
             return new Locale("en");
         } else if (FacesContext.getCurrentInstance().getViewRoot() == null) {
-            logger.info("BundleUtil: using locale from EXTERNAL CONTEXT: " + FacesContext.getCurrentInstance().getExternalContext().getRequestLocale().getLanguage());
             return FacesContext.getCurrentInstance().getExternalContext().getRequestLocale();
         } else if (FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage().equals("en_US")) {
-            logger.info("BundleUtil: ViewRoot locale set to en_US using \"en\"");
             return new Locale("en");
         }
 
-        logger.info("BundleUtil: using locale from ViewRoot: "+FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage());
         return FacesContext.getCurrentInstance().getViewRoot().getLocale();
 
     }
