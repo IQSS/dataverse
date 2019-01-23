@@ -249,6 +249,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
                 setParameter("assigneeIdentifier", roas.getIdentifier()).
                 setParameter("definitionPointId", dvo.getId())
                 .getResultList();
+        logger.info("Found " + test.size() + " RAs.");
 for (RoleAssignment ra: test) {
 logger.info("Found RA id#: " + ra.getId());
 logger.info("Def pt: " + ra.getDefinitionPoint().getId());
@@ -258,6 +259,9 @@ logger.info("Def pt: " + ra.getDefinitionPoint().getId());
                             setParameter("assigneeIdentifier", roas.getIdentifier())
                             .getResultList();
         for (RoleAssignment ra: unfiltered) {
+            if(ra.getDefinitionPoint()==null) {
+                ra=em.find(RoleAssignment.class,ra.getId());
+            }
             logger.info("Found RA id#: " + ra.getId());
             logger.info("Def pt: " + ra.getDefinitionPoint().getId());
         }
