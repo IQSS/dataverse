@@ -262,8 +262,12 @@ logger.info("Def pt: " + ra.getDefinitionPoint().getId());
             logger.info(ra.getClass().getCanonicalName());
             if(ra.getDefinitionPoint()==null) {
                 logger.info("Loading");
-                ra=em.find(RoleAssignment.class,ra.getId());
-                logger.info("After: " + ra.getClass().getCanonicalName());
+                RoleAssignment ra2=em.find(RoleAssignment.class,ra.getId());
+                if(ra2.getDefinitionPoint()==null) {
+                    logger.info("Still null");
+                } else {
+                    logger.info("dpId: " + ra2.getDefinitionPoint().getId());
+                }
             }
             logger.info("Found RA id#: " + ra.getId());
             logger.info("Def pt: " + ra.getDefinitionPoint().getId());
