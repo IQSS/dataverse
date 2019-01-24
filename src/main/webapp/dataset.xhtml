@@ -1381,6 +1381,9 @@
                             <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">
                                 <f:selectItem itemLabel="#{bundle['dataset.minorRelease']} (#{DatasetPage.datasetNextMinorVersion})" itemValue="1" />
                                 <f:selectItem itemLabel="#{bundle['dataset.majorRelease']} (#{DatasetPage.datasetNextMajorVersion})" itemValue="2" />
+                                <c:if test="#{dataverseSession.user.isSuperuser()}">
+                                    <f:selectItem rendered="#" itemLabel="#{bundle['dataset.updateRelease']}" itemValue="3" />
+                                </c:if>
                             </p:selectOneRadio>
                         </ui:fragment>
                         <p>

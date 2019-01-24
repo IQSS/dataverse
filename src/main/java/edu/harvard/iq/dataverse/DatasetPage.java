@@ -1864,8 +1864,12 @@ public class DatasetPage implements java.io.Serializable {
     public String releaseDraft() {
         if (releaseRadio == 1) {
             return releaseDataset(true);
-        } else {
+        } else if(releaseRadio ==2) {
             return releaseDataset(false);
+        } else if(releaseRadio ==3) {
+            return registerDataset(true);
+        } else {
+            return "Invalid Choice";
         }
     }
 
@@ -2049,9 +2053,9 @@ public class DatasetPage implements java.io.Serializable {
         return returnToDatasetOnly();
     }
 
-    public String registerDataset() {
+    public String registerDataset(boolean updateCurrentVersion) {
         try {
-            UpdateDatasetVersionCommand cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
+            UpdateDatasetVersionCommand cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), updateCurrentVersion);
             cmd.setValidateLenient(true); 
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
