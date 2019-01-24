@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(UpdateDatasetVersionCommand.class.getCanonicalName());
-    private final List<FileMetadata> filesToDelete;
+    private List<FileMetadata> filesToDelete;
     private boolean validateLenient = false;
     private final DatasetVersion clone;
     private boolean updateCurrentVersion=false;
@@ -97,6 +97,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         } else {
             ctxt.em().merge(updateVersion);
         }
+
         
         for (DataFile dataFile : getDataset().getFiles()) {
             if (dataFile.getCreateDate() == null) {
@@ -134,6 +135,10 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         // we don't want to create two draft versions!
         Dataset tempDataset = ctxt.em().merge(getDataset());
         
+        if(updateCurrentVersion) {
+            filesToDelete = tempDataset.getEditVersion().getFileMetadatas();
+        }
+        
         for (FileMetadata fmd : filesToDelete) {
             if (!fmd.getDataFile().isReleased()) {
                 // if file is draft (ie. new to this version, delete; otherwise just remove filemetadata object)
@@ -160,6 +165,10 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         
         tempDataset.getEditVersion().setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());
+        
+        if(updateCurrentVersion) {
+            ctxt.em().remove(tempDataset.getEditVersion());
+        } 
          
         Dataset savedDataset = ctxt.em().merge(tempDataset);
         ctxt.em().flush();
