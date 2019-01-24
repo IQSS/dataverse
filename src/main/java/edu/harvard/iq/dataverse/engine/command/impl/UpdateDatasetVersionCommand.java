@@ -175,7 +175,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 }
             }
             tempDataset.setVersions(remainingVersions);
-            ctxt.em().remove(draft);
+            DatasetVersion draftAndMerged = ctxt.em().merge(draft);
+            ctxt.em().remove(draftAndMerged);
         } 
          
         Dataset savedDataset = ctxt.em().merge(tempDataset);
