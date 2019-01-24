@@ -165,21 +165,22 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         
         tempDataset.getEditVersion().setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());
+        Dataset savedDataset = ctxt.em().merge(tempDataset);
         
         if(updateCurrentVersion) {
-            DatasetVersion draft =tempDataset.getEditVersion(); 
+            DatasetVersion draft =savedDataset.getEditVersion(); 
             List<DatasetVersion> remainingVersions = tempDataset.getVersions();
             for (int i = remainingVersions.size() - 1; i >= 0; i--) {
                 if (remainingVersions.get(i).isDraft()) {
                     remainingVersions.remove(i);
                 }
             }
-            tempDataset.setVersions(remainingVersions);
+            savedDataset.setVersions(remainingVersions);
             DatasetVersion draftAndMerged = ctxt.em().merge(draft);
             ctxt.em().remove(draftAndMerged);
         } 
          
-        Dataset savedDataset = ctxt.em().merge(tempDataset);
+        
         ctxt.em().flush();
 
         updateDatasetUser(ctxt);
