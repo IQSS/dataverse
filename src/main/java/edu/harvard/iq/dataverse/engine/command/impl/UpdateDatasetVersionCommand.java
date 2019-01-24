@@ -168,16 +168,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         Dataset savedDataset = ctxt.em().merge(tempDataset);
         
         if(updateCurrentVersion) {
-            DatasetVersion draft =savedDataset.getEditVersion(); 
-            List<DatasetVersion> remainingVersions = tempDataset.getVersions();
-            for (int i = remainingVersions.size() - 1; i >= 0; i--) {
-                if (remainingVersions.get(i).isDraft()) {
-                    remainingVersions.remove(i);
-                }
-            }
-            savedDataset.setVersions(remainingVersions);
-            DatasetVersion draftAndMerged = ctxt.em().merge(draft);
-            ctxt.em().remove(draftAndMerged);
+            ctxt.engine().submit(new DeleteDatasetVersionCommand(getRequest(), savedDataset));
         } 
          
         
