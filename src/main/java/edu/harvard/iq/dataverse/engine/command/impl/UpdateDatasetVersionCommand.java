@@ -169,7 +169,11 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         if(updateCurrentVersion) {
             DatasetVersion draft =tempDataset.getEditVersion(); 
             List<DatasetVersion> remainingVersions = tempDataset.getVersions();
-            remainingVersions.remove(draft);
+            for (int i = remainingVersions.size() - 1; i >= 0; i--) {
+                if (remainingVersions.get(i).isDraft()) {
+                    remainingVersions.remove(i);
+                }
+            }
             tempDataset.setVersions(remainingVersions);
             ctxt.em().remove(draft);
         } 
