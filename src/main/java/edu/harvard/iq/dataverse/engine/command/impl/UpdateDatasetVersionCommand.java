@@ -184,6 +184,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             savedDataset.setVersions(ldv);
         } 
         savedDataset=ctxt.em().merge(savedDataset);
+        ctxt.em().flush();
         
         updateDatasetUser(ctxt);
         ctxt.index().indexDataset(savedDataset, true);
