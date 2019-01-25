@@ -62,6 +62,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                     } else {
                         FileMetadata mergedFmd = ctxt.em().merge(fmd);
                         ctxt.em().remove(mergedFmd);
+                        logger.info(fmd.getDataFile().getId() + " : " + fmd.getDataFile().getFileMetadatas().size());
                         fmd.getDataFile().getFileMetadatas().remove(fmd);
                         fmIt.remove();
                     }  
