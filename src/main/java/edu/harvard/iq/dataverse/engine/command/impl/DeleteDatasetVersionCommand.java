@@ -93,6 +93,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                     }
                 }
                 boolean doNormalSolrDocCleanUp = true;
+                logger.info("Versions: " + doomed.getVersions().size());
                 ctxt.index().indexDataset(doomed, doNormalSolrDocCleanUp);
                 return;
             }

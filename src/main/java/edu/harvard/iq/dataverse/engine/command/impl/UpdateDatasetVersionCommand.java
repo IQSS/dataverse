@@ -136,7 +136,11 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         Dataset tempDataset = ctxt.em().merge(getDataset());
         
         if(updateCurrentVersion) {
-            filesToDelete = tempDataset.getEditVersion().getFileMetadatas();
+            List<FileMetadata> fml = tempDataset.getEditVersion().getFileMetadatas();
+            filesToDelete= new ArrayList<FileMetadata>();
+            for(FileMetadata fmd: fml) {
+                filesToDelete.add(fmd);
+            }
         }
         
         for (FileMetadata fmd : filesToDelete) {
