@@ -165,13 +165,25 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         
         tempDataset.getEditVersion().setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());
-        if(updateCurrentVersion) {
-            DatasetVersion latestVersion = tempDataset.getLatestVersion();
-            ctxt.engine().submit(new DeleteDatasetVersionCommand(getRequest(), tempDataset));
-            tempDataset.getVersions().remove(latestVersion);
-        }
         Dataset savedDataset = ctxt.em().merge(tempDataset);
         
+
+         
+        
+        ctxt.em().flush();
+        
+        if(updateCurrentVersion) {
+            ctxt.engine().submit(new DeleteDatasetVersionCommand(getRequest(), savedDataset));
+            List<DatasetVersion> ldv = savedDataset.getVersions();
+            for(int i=0;i<ldv.size();i++) {
+                if(ldv.get(i).isDraft()) {
+                    ldv.remove(i);
+                    break;
+                }
+            }
+            savedDataset.setVersions(ldv);
+        } 
+        savedDataset=ctxt.em().merge(savedDataset);
         ctxt.em().flush();
         
         updateDatasetUser(ctxt);
