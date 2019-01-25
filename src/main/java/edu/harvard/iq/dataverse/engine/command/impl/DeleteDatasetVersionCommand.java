@@ -58,7 +58,12 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                         // and remove fileMetadata from list (so that it won't try to merge)
                         ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
                         fmIt.remove(); 
-                    }
+                    } else {
+                        FileMetadata mergedFmd = ctxt.em().merge(fmd);
+                        ctxt.em().remove(mergedFmd);
+                        fmd.getDataFile().getFileMetadatas().remove(fmd);
+                        fmIt.remove();
+                    }  
                 }
 
                 DatasetVersion doomedAndMerged = ctxt.em().merge(doomedVersion);
