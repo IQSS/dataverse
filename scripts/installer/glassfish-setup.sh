@@ -59,9 +59,9 @@ function preliminary_setup()
   for alias in "rserve_password_alias ${RSERVE_PASS}" "doi_password_alias ${DOI_PASSWORD}" "db_password_alias ${DB_PASS}"
   do
       set -- $alias
-      echo "AS_ADMIN_ALIASPASSWORD=$2" > ${FILES_DIR}/$1.txt
-      ./asadmin $ASADMIN_OPTS create-password-alias --passwordfile ${FILES_DIR}/$1.txt $1
-      rm ${FILES_DIR}/$1.txt
+      echo "AS_ADMIN_ALIASPASSWORD=$2" > /tmp/$1.txt
+      ./asadmin $ASADMIN_OPTS create-password-alias --passwordfile /tmp/$1.txt $1
+      rm /tmp/$1.txt
   done
 
     ###
