@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -99,6 +100,9 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                 }
                 boolean doNormalSolrDocCleanUp = true;
                 logger.info("Versions: " + doomed.getVersions().size());
+                for(DataFile d : doomed.getFiles()) {
+                    logger.info(d.getId() + " : " + d.getFileMetadatas().size());
+                }
                 ctxt.index().indexDataset(doomed, doNormalSolrDocCleanUp);
                 return;
             }
