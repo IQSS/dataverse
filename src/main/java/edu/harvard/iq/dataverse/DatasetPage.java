@@ -2056,10 +2056,20 @@ public class DatasetPage implements java.io.Serializable {
     public String registerDataset(boolean updateCurrentVersion) {
         try {
             UpdateDatasetVersionCommand cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), updateCurrentVersion);
-            cmd.setValidateLenient(true); 
+            cmd.setValidateLenient(true);
+            for(DataFile d : dataset.getFiles()) {
+                logger.info("start: " + d.getId() + " : " + d.getFileMetadatas().size());
+            }
             dataset = commandEngine.submit(cmd);
+            for(DataFile d : dataset.getFiles()) {
+                logger.info("mid: " + d.getId() + " : " + d.getFileMetadatas().size());
+            }
             dataset=datasetService.find(dataset.getId());
             if(updateCurrentVersion) {
+                for(DataFile d : dataset.getFiles()) {
+                    logger.info("end: " + d.getId() + " : " + d.getFileMetadatas().size());
+                }
+
              // deleteDatasetVersion();
             }
         } catch (CommandException ex) {
@@ -2165,6 +2175,10 @@ public class DatasetPage implements java.io.Serializable {
 
     public String deleteDatasetVersion() {
         DeleteDatasetVersionCommand cmd;
+        for(DataFile d : dataset.getFiles()) {
+            logger.info("ddv: " + d.getId() + " : " + d.getFileMetadatas().size());
+        }
+
         try {
             cmd = new DeleteDatasetVersionCommand(dvRequestService.getDataverseRequest(), dataset);
             commandEngine.submit(cmd);
