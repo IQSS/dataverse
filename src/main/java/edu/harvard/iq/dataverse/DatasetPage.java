@@ -2058,6 +2058,9 @@ public class DatasetPage implements java.io.Serializable {
             UpdateDatasetVersionCommand cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), updateCurrentVersion);
             cmd.setValidateLenient(true); 
             dataset = commandEngine.submit(cmd);
+            if(updateCurrentVersion) {
+              deleteDatasetVersion();
+            }
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,BundleUtil.getStringFromBundle( "dataset.registration.failed"), " - " + ex.toString()));
             logger.severe(ex.getMessage());

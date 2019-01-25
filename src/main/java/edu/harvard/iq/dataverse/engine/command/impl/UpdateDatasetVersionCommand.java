@@ -171,7 +171,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
          
         
         ctxt.em().flush();
-        
+/*        
         if(updateCurrentVersion) {
             ctxt.engine().submit(new DeleteDatasetVersionCommand(getRequest(), savedDataset));
             List<DatasetVersion> ldv = savedDataset.getVersions();
@@ -182,7 +182,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 }
             }
             savedDataset.setVersions(ldv);
-        } 
+        }
+        */ 
         savedDataset=ctxt.em().merge(savedDataset);
         ctxt.em().flush();
         
