@@ -167,12 +167,14 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         tempDataset.setModificationTime(getTimestamp());
         Dataset savedDataset = ctxt.em().merge(tempDataset);
         
-        if(updateCurrentVersion) {
-            ctxt.engine().submit(new DeleteDatasetVersionCommand(getRequest(), savedDataset));
-        } 
+
          
         
         ctxt.em().flush();
+        
+        if(updateCurrentVersion) {
+            ctxt.engine().submit(new DeleteDatasetVersionCommand(getRequest(), savedDataset));
+        } 
 
         updateDatasetUser(ctxt);
         ctxt.index().indexDataset(savedDataset, true);
