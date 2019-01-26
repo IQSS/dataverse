@@ -38,7 +38,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         ctxt.permissions().checkEditDatasetLock(doomed, getRequest(), this);
-
+        doomed = ctxt.em().merge(doomed);
         // if you are deleting a dataset that only has 1 draft, we are actually destroying the dataset
         if (doomed.getVersions().size() == 1) {
             ctxt.engine().submit(new DestroyDatasetCommand(doomed, getRequest()));
@@ -99,7 +99,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                     }
                 }
                 boolean doNormalSolrDocCleanUp = true;
-                doomed = ctxt.em().merge(doomed);
+
                 logger.info("Versions: " + doomed.getVersions().size());
                 for(DataFile d : doomed.getFiles()) {
                     logger.info(d.getId() + " : " + d.getFileMetadatas().size());
