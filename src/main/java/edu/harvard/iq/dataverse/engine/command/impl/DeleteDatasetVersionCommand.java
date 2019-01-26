@@ -102,6 +102,12 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                 logger.info("Versions: " + doomed.getVersions().size());
                 for(DataFile d : doomed.getFiles()) {
                     logger.info(d.getId() + " : " + d.getFileMetadatas().size());
+                    FileMetadata fm = d.getLatestFileMetadata();
+                    if(fm==null) {
+                    logger.info("FM is null");
+                    } else {
+                        logger.info("Label: " + d.getLatestFileMetadata().getLabel());
+                    }
                 }
                 ctxt.index().indexDataset(doomed, doNormalSolrDocCleanUp);
                 return;
