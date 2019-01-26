@@ -2175,8 +2175,15 @@ public class DatasetPage implements java.io.Serializable {
 
     public String deleteDatasetVersion() {
         DeleteDatasetVersionCommand cmd;
+        List<DataFile> fl = new ArrayList<DataFile>();
         for(DataFile d : dataset.getFiles()) {
+            d = datafileService.find(d.getId());
+            fl.add(d);
             logger.info("ddv: " + d.getId() + " : " + d.getFileMetadatas().size());
+        }
+        dataset.setFiles(fl);
+        for(DataFile d : dataset.getFiles()) {
+            logger.info("ddv2: " + d.getId() + " : " + d.getFileMetadatas().size());
         }
 
         try {
