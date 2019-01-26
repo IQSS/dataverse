@@ -109,6 +109,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                         logger.info("Label: " + d.getLatestFileMetadata().getLabel());
                     }
                 }
+                ctxt.em().flush();
                 ctxt.index().indexDataset(doomed, doNormalSolrDocCleanUp);
                 return;
             }
