@@ -38,7 +38,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         ctxt.permissions().checkEditDatasetLock(doomed, getRequest(), this);
-        doomed = ctxt.em().merge(doomed);
+        doomed = ctxt.em().find(Dataset.class, doomed.getId());
         // if you are deleting a dataset that only has 1 draft, we are actually destroying the dataset
         if (doomed.getVersions().size() == 1) {
             ctxt.engine().submit(new DestroyDatasetCommand(doomed, getRequest()));
