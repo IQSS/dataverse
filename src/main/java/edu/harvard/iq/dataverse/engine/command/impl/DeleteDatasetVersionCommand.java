@@ -28,7 +28,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
 
     private static final Logger logger = Logger.getLogger(DeleteDatasetVersionCommand.class.getCanonicalName());
 
-    private final Dataset doomed;
+    private Dataset doomed;
 
     public DeleteDatasetVersionCommand(DataverseRequest aRequest, Dataset dataset) {
         super(aRequest, dataset);
@@ -99,6 +99,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                     }
                 }
                 boolean doNormalSolrDocCleanUp = true;
+                doomed = ctxt.em().merge(doomed);
                 logger.info("Versions: " + doomed.getVersions().size());
                 for(DataFile d : doomed.getFiles()) {
                     logger.info(d.getId() + " : " + d.getFileMetadatas().size());
@@ -109,6 +110,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                         logger.info("Label: " + d.getLatestFileMetadata().getLabel());
                     }
                 }
+
                 ctxt.em().flush();
                 ctxt.index().indexDataset(doomed, doNormalSolrDocCleanUp);
                 return;
