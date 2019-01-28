@@ -1,59 +1,46 @@
+<?xml version="1.0"?>
 <!--
 example shibboleth2.xml for ADFS 3.0
 
 - attribute-map_adfs.xml
 -->
-
-<SPConfig xmlns="urn:mace:shibboleth:3.0:native:sp:config" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
-    xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
-    clockSkew="1800">
-
-<!-- adfs libraries for shibboleth and apache -->
-<OutOfProcess>
-<Extensions>
-<Library path="adfs.so" fatal="true"/>
-</Extensions>
-</OutOfProcess>
-<InProcess>
-<Extensions>
-<Library path="adfs-lite.so" fatal="true"/>
-</Extensions>
-</InProcess>
-
-    <!-- FIXME: change the entityID to your hostname. -->
-    <ApplicationDefaults entityID="https://dataverse.example.edu/Shibboleth.sso/SAML2/POST"
-        REMOTE_USER="eppn" attributePrefix="AJP_">
-
-        <Sessions lifetime="28800" timeout="3600" checkAddress="false" relayState="ss:mem" handlerSSL="true" cookieProps="; path=/; secure; HttpOnly">
-	    <SSO>
+<SPConfig xmlns="urn:mace:shibboleth:3.0:native:sp:config" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" clockSkew="1800">
+  <!-- adfs libraries for shibboleth and apache -->
+  <OutOfProcess>
+    <Extensions>
+      <Library path="adfs.so" fatal="true"/>
+    </Extensions>
+  </OutOfProcess>
+  <InProcess>
+    <Extensions>
+      <Library path="adfs-lite.so" fatal="true"/>
+    </Extensions>
+  </InProcess>
+  <!-- FIXME: change the entityID to your hostname. -->
+  <ApplicationDefaults entityID="https://dataverse.example.edu/Shibboleth.sso/SAML2/POST" REMOTE_USER="eppn" attributePrefix="AJP_">
+    <Sessions lifetime="28800" timeout="3600" checkAddress="false" relayState="ss:mem" handlerSSL="true" cookieProps="; path=/; secure; HttpOnly">
+      <SSO>
 	      SAML2 SAML1
 	    </SSO>
-            <Logout>SAML2 Local</Logout>
-            <Handler type="MetadataGenerator" Location="/Metadata" signing="false"/>
-            <Handler type="Status" Location="/Status" acl="127.0.0.1"/>
-            <Handler type="Session" Location="/Session" showAttributeValues="true"/>
-            <Handler type="DiscoveryFeed" Location="/DiscoFeed"/>
-        </Sessions>
-
-        <!-- Error pages to display to yourself if something goes horribly wrong. -->
-        <Errors supportContact="root@localhost" logoLocation="/shibboleth-sp/logo.jpg"
-                styleSheet="/shibboleth-sp/main.css"/>
-
-        <!-- TODO - set IdPs here -->
-        <MetadataProvider type="XML" path="dataverse-idp-metadata.xml" backingFilePath="local-idp-metadata.xml" legacyOrgNames="true" reloadInterval="7200"/>
-
-        <!-- Attribute and trust options you shouldn't need to change. -->
-        <AttributeExtractor type="XML" validate="true" path="attribute-map.xml"/>
-        <AttributeResolver type="Query" subjectMatch="true"/>
-        <AttributeFilter type="XML" validate="true" path="attribute-policy.xml"/>
-
-        <!-- Your SP generated these credentials.  They're used to talk to IdP's. -->
-        <CredentialResolver type="File" key="sp-key.pem" certificate="sp-cert.pem"/>
-    </ApplicationDefaults>
-
-    <!-- Security policies you shouldn't change unless you know what you're doing. -->
-    <SecurityPolicyProvider type="XML" validate="true" path="security-policy.xml"/>
-
-    <!-- Low-level configuration about protocols and bindings available for use. -->
-    <ProtocolProvider type="XML" validate="true" reloadChanges="false" path="protocols.xml"/>
+      <Logout>SAML2 Local</Logout>
+      <Handler type="MetadataGenerator" Location="/Metadata" signing="false"/>
+      <Handler type="Status" Location="/Status" acl="127.0.0.1"/>
+      <Handler type="Session" Location="/Session" showAttributeValues="true"/>
+      <Handler type="DiscoveryFeed" Location="/DiscoFeed"/>
+    </Sessions>
+    <!-- Error pages to display to yourself if something goes horribly wrong. -->
+    <Errors supportContact="root@localhost" logoLocation="/shibboleth-sp/logo.jpg" styleSheet="/shibboleth-sp/main.css"/>
+    <!-- TODO - set IdPs here -->
+    <MetadataProvider type="XML" path="dataverse-idp-metadata.xml" backingFilePath="local-idp-metadata.xml" legacyOrgNames="true" reloadInterval="7200"/>
+    <!-- Attribute and trust options you shouldn't need to change. -->
+    <AttributeExtractor type="XML" validate="true" path="attribute-map.xml"/>
+    <AttributeResolver type="Query" subjectMatch="true"/>
+    <AttributeFilter type="XML" validate="true" path="attribute-policy.xml"/>
+    <!-- Your SP generated these credentials.  They're used to talk to IdP's. -->
+    <CredentialResolver type="File" key="sp-key.pem" certificate="sp-cert.pem"/>
+  </ApplicationDefaults>
+  <!-- Security policies you shouldn't change unless you know what you're doing. -->
+  <SecurityPolicyProvider type="XML" validate="true" path="security-policy.xml"/>
+  <!-- Low-level configuration about protocols and bindings available for use. -->
+  <ProtocolProvider type="XML" validate="true" reloadChanges="false" path="protocols.xml"/>
 </SPConfig>
