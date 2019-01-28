@@ -89,7 +89,7 @@ public class MarkupCheckerTest {
         assertTrue(safeStr.equals(sanitized));
 
         unsafeStr = "the <a href=\"http://dataverse.org\" target=\"_blank\">Dataverse project</a> in a new window";
-        safeStr = "the \n<a href=\"http://dataverse.org\" rel=\"nofollow\" target=\"_blank\">Dataverse project</a> in a new window";
+        safeStr = "the \n<a href=\"http://dataverse.org\" target=\"_blank\" rel=\"nofollow\">Dataverse project</a> in a new window";
         sanitized = MarkupChecker.sanitizeBasicHTML(unsafeStr);
         this.msgu("safeStr: " + safeStr + "\nsanitized: " + sanitized);
         assertTrue(safeStr.equals(sanitized));
