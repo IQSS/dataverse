@@ -1567,6 +1567,8 @@ Sets how long a cached metrics result is used before re-running the query for a 
 
 ``curl -X PUT -d 10080 http://localhost:8080/api/admin/settings/:MetricsCacheTimeoutMinutes``
 
+.. _MDCLogPath:
+
 :MDCLogPath
 +++++++++++
 

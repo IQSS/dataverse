@@ -633,7 +633,7 @@ To confirm that the environment variable was set properly, you can use ``echo`` 
 
 ``echo $DV_BASE_URL``
 
-FIXME: Explain that you have to pass in a country code (or rewrite the code so you don't have to?)
+.. FIXME: Explain that you have to pass in a country code (or rewrite the code so you don't have to?)
 
 Retrieving Total Views for a Dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

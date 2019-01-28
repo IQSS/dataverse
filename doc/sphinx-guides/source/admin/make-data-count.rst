@@ -1,15 +1,15 @@
 Make Data Count
 ===============
 
-`Make Data Count`_ is a project to collect and standardize metrics on data use, especially views, downloads, and citations.
+`Make Data Count`_ is a project to collect and standardize metrics on data use, especially views, downloads, and citations. Dataverse can integrate Make Data Count to collect and display usage metrics including counts of dataset views, file downloads, and dataset citations.
 
 .. contents:: Contents:
 	:local:
 
-Introduction
-------------
+Origin
+------
 
-`Make Data Count`_ is part of a broader Research Data Alliance (RDA) `Data Usage Metrics Working Group`_ that they helped launch and produced a specification called the `COUNTER Code of Practice for Research Data`_ (`PDF`_, `HTML`_) that Dataverse makes every effort to comply with. The Code of Practice (CoP) is built on top of existing standards such as COUNTER and SUSHI that come out of the article publishing world.  The Make Data Count project has emphasized that they would like feedback on the code of practice. You can keep up to date on the Make Data Count project by subscribing to their `newsletter`_.
+`Make Data Count`_ is part of a broader Research Data Alliance (RDA) `Data Usage Metrics Working Group`_ which helped to produce a specification called the `COUNTER Code of Practice for Research Data`_ (`PDF`_, `HTML`_) that Dataverse makes every effort to comply with. The Code of Practice (CoP) is built on top of existing standards such as COUNTER and SUSHI that come out of the article publishing world.  The Make Data Count project has emphasized that they would like feedback on the code of practice. You can keep up to date on the Make Data Count project by subscribing to their `newsletter`_.
 
 Architecture
 ------------
@@ -19,17 +19,18 @@ Dataverse installations who would like support for Make Data Count must install 
 .. _Counter Processor: https://github.com/CDLUC3/counter-processor
 .. _DASH: https://cdluc3.github.io/dash/
 
-The diagram belows shows how Counter Processor interacts with Dataverse and the DataCite hub, once configured, but installations of Dataverse using Handles rather than DOIs should note the limitations below.
+The diagram belows shows how Counter Processor interacts with Dataverse and the DataCite hub, once configured. Installations of Dataverse using Handles rather than DOIs should note the limitations in the next section of this page.
+
+|makedatacount_components|
 
 The most important takeaways from the diagram are:
 
-- Once enabled, Dataverse will log activity (views and downloads) to a specialized file date-stamped file.
+- Once enabled, Dataverse will log activity (views and downloads) to a specialized date-stamped file.
 - You should run Counter Processor once a day to create reports in SUSHI (JSON) format that are saved to disk for Dataverse to process and that are sent to the DataCite hub.
 - You should set up a cron job to have Dataverse process the daily SUSHI reports, updating the Dataverse database with the latest metrics.
 - You should set up a cron job to have Dataverse pull the latest list of citations for each dataset on a periodic basis, perhaps weekly or daily. These citations come from Crossref via the DataCite hub.
 - APIs are available in Dataverse to retrieve Make Data Count metrics: views, downloads, and citations.
 
-|makedatacount_components|
 
 Limitations for Dataverse Installations Using Handles Rather Than DOIs
 ----------------------------------------------------------------------
@@ -39,37 +40,37 @@ Data repositories using Handles and other identifiers are not supported by Make 
 Configuring Dataverse for Make Data Count Views and Downloads
 -------------------------------------------------------------
 
-To make Dataverse log dataset usage (views and downloads) for Make Data Count, you must set the ``:MDCLogPath`` database setting. See the :doc:`/installation/config` section of the Installation Guide for details.
+To make Dataverse log dataset usage (views and downloads) for Make Data Count, you must set the ``:MDCLogPath`` database setting. See :ref:`MDCLogPath` for details.
 
 If you haven't already, follow the steps for installing Counter Processor in the :doc:`/installation/prerequisites` section of the Installation Guide.
 
 After you have your first day of logs, you can process them the next day.
 
-First, become the "counter" Unix user.
+* First, become the "counter" Unix user.
 
-``sudo su - counter``
+  * ``sudo su - counter``
 
-Download :download:`counter-processor-config.yaml <../_static/admin/counter-processor-config.yaml>`
+* Download :download:`counter-processor-config.yaml <../_static/admin/counter-processor-config.yaml>`
 
-Edit the config file and pay particular attention to the FIXME lines.
+* Edit the config file and pay particular attention to the FIXME lines.
 
-``vim counter-processor-config.yaml``
+  * ``vim counter-processor-config.yaml``
 
-Change to the directory where you installed Counter Processor.
+* Change to the directory where you installed Counter Processor.
 
-``cd /usr/local/counter-processor-0.0.1``
+  * ``cd /usr/local/counter-processor-0.0.1``
 
-Run Counter Processor.
+* Run Counter Processor.
 
-``CONFIG_FILE=/home/counter/counter-processor-config.yaml python36 main.py``
+  * ``CONFIG_FILE=/home/counter/counter-processor-config.yaml python36 main.py``
 
-You will need to set up a cron job to run this script periodically, perhaps nightly.
+  * You will need to set up a cron job to run this script periodically, perhaps nightly.
 
-A JSON file in SUSHI format will be created in the directory you specified under "output_file" in the config file.
+* A JSON file in SUSHI format will be created in the directory you specified under "output_file" in the config file.
 
-FIXME: Explain how to load the SUSHI file into Dataverse. For now, see the :doc:`/developers/make-data-count` section of the Dev Guide.
+..  * FIXME: Explain how to load the SUSHI file into Dataverse. For now, see the :doc:`/developers/make-data-count` section of the Dev Guide.
 
-You will want to add a cron job to load the SUSHI file periodically as well, perhaps nightly.
+* You will want to add a cron job to load the SUSHI file periodically as well, perhaps nightly.
 
 Once you have contacted support@datacite.org for your JSON Web Token and changed "upload_to_hub" to "True" in the config file, the following metrics will be sent to the DataCite hub for each published dataset:
 
@@ -81,7 +82,7 @@ Configuring Dataverse for Make Data Count Citations
 
 Please note: as explained in the note above about limitations, this feature is not available to installations of Dataverse that use Handles.
 
-FIXME: Document curl command and indicate that it should be called from cron periodically.
+.. FIXME: Document curl command and indicate that it should be called from cron periodically.
 
 Citations will be retrieved for each published dataset and recorded in the Dataverse database.
   
