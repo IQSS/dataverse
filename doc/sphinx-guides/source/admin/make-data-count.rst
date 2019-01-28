@@ -41,7 +41,7 @@ Configuring Dataverse for Make Data Count Views and Downloads
 
 To make Dataverse log dataset usage (views and downloads) for Make Data Count, you must set the ``:MDCLogPath`` database setting. See the :doc:`/installation/config` section of the Installation Guide for details.
 
-If you haven't already, follow the steps for installing Counter Processor in the :doc:`/installation/prerequisites.rst` section of the Installation Guide.
+If you haven't already, follow the steps for installing Counter Processor in the :doc:`/installation/prerequisites` section of the Installation Guide.
 
 After you have your first day of logs, you can process them the next day.
 
