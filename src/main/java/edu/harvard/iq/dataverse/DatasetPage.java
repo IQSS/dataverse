@@ -2071,7 +2071,7 @@ public class DatasetPage implements java.io.Serializable {
                     logger.info("end: " + d.getId() + " : " + d.getFileMetadatas().size());
                 }
                 
-             // deleteDatasetVersion();
+              deleteDatasetVersion();
             }
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,BundleUtil.getStringFromBundle( "dataset.registration.failed"), " - " + ex.toString()));
