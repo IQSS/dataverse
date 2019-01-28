@@ -10,7 +10,7 @@
     <h:body>
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{manageTemplatesPage.dataverseId}"/>
-            <f:viewAction action="#{dataverseLocaleBean.updateLocaleInViewRoot}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{manageTemplatesPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(manageTemplatesPage.dataverse, bundle['dataset.manageTemplates.pageTitle'])}"/>
         </f:metadata>

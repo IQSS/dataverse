@@ -21,7 +21,7 @@
                     <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
                     <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
                 </ui:remove>
-                <f:viewAction action="#{dataverseLocaleBean.updateLocaleInViewRoot}"/>
+                <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                 <f:viewAction action="#{RolePermissionHelperPage.init}" />
           </f:metadata>
           <div>

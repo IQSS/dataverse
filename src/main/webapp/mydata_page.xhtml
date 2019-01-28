@@ -17,7 +17,7 @@
       <ui:param name="showDataverseHeader" value="false"/>
       <ui:define name="body">
           <f:metadata>   
-                <f:viewAction action="#{dataverseLocaleBean.updateLocaleInViewRoot}"/>
+                <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                 <f:viewAction action="#{MyDataPage.init}" />
           </f:metadata>
           <ui:include src="mydata_fragment.xhtml"></ui:include>

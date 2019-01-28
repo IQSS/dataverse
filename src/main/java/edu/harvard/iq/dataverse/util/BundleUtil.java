@@ -101,17 +101,15 @@ public class BundleUtil {
         if (FacesContext.getCurrentInstance() == null) {
             String localeEnvVar = System.getenv().get("LANG");
             if (localeEnvVar != null) {
-                logger.info("BundleUtil: LOCALE environmental variable specified: "+localeEnvVar);
                 if (localeEnvVar.indexOf('.') > 0) {
                     localeEnvVar = localeEnvVar.substring(0, localeEnvVar.indexOf('.'));
                 } 
                 if (!"en_US".equals(localeEnvVar)) {
-                    logger.info("BundleUtil: LOCALE code from the environmental variable is "+localeEnvVar);
+                    logger.fine("BundleUtil: LOCALE code from the environmental variable is "+localeEnvVar);
                     return new Locale(localeEnvVar);
                 }
             }
        
-            logger.info("BundleUtil: no FacesContext, defaulting to locale en");
             return new Locale("en");
         } else if (FacesContext.getCurrentInstance().getViewRoot() == null) {
             return FacesContext.getCurrentInstance().getExternalContext().getRequestLocale();
