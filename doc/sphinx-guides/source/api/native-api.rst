@@ -618,6 +618,47 @@ If the dataset is not locked (or if there is no lock of the specified type), the
 
 (Note that the API calls above all support both the database id and persistent identifier notation for referencing the dataset)
 
+.. _dataset-metrics-api:
+
+Dataset Metrics
+~~~~~~~~~~~~~~~
+
+Please note that these dataset level metrics are only available if support for Make Data Count has been enabled in your installation of Dataverse. See the :ref:`Dataset Metrics <dataset-metrics-user>` in the :doc:`/user/dataset-management` section of the User Guide and the :doc:`/admin/make-data-count` section of the Admin Guide for details.
+
+Please note that in the curl examples, Bash environment variables are used with the idea that you can set a few environment variables and copy and paste the examples as is. For example, "$DV_BASE_URL" could become "https://demo.dataverse.org" by issuing the following ``export`` command from Bash:
+
+``export DV_BASE_URL=https://demo.dataverse.org``
+
+To confirm that the environment variable was set properly, you can use ``echo`` like this:
+
+``echo $DV_BASE_URL``
+
+FIXME: Explain that you have to pass in a country code (or rewrite the code so you don't have to?)
+
+Retrieving Total Views for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/viewsTotal?persistentId=$DOI"``
+
+Retrieving Unique Views for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/viewsUnique?persistentId=$DOI"``
+
+Retrieving Total Downloads for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/downloadsTotal?persistentId=$DOI"``
+
+Retrieving Unique Downloads for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/downloadsTotal?persistentId=$DOI"``
+
+Retrieving Citations for a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/citations?persistentId=$DOI"``
 
 Files
 -----

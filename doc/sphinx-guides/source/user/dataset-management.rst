@@ -439,6 +439,15 @@ To view exactly what has changed, starting from the originally published version
 
 Once you have more than one version (this can simply be version 1 and a draft), you can click the "View Details" link next to each summary to learn more about the metadata fields and files that were either added or edited. You can also click the checkboxes to select any two dataset versions, then click the "View Differences" button to open the Version Differences Details popup and compare the differences between them.
 
+.. _dataset-metrics-user:
+
+Dataset Metrics
+===============
+
+All installations of Dataverse track downloads using the Guestbook feature described above and in the :ref:`Dataset Guestbooks <dataset-guestbooks>` section of the Dataverse Management page.
+
+Some installations of Dataverse have support for metrics at the dataset level for views, downloads and citations using Make Data Count standards. For more details on this feature, see the :doc:`/admin/make-data-count` section of the Admin Guide and for the specific API calls, see :ref:`Dataset Metrics <dataset-metrics-api>` in the :doc:`/api/native-api` section of the API Guide.
+
 .. _cloud-storage:
 
 Cloud Storage + Computing

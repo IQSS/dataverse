@@ -101,42 +101,9 @@ The following metrics can be downloaded directly from the DataCite hub (see http
 Retrieving Make Data Count Metrics from Dataverse
 -------------------------------------------------
 
-Dataverse users might find it more convenient to retrieve Make Data Count metrics from their installation of Dataverse rather the DataCite hub.
+The Dataverse API endpoints for retrieving Make Data Count metrics are described below under :ref:`Dataset Metrics <dataset-metrics-api>` in the :doc:`/api/native-api` section of the API Guide.
 
-The Dataverse API endpoints for retrieving Make Data Count metrics are described below. Please note that in the curl examples, Bash environment variables are used with the idea that you can set a few environment variables and copy and paste the examples as is. For example, "$DV_BASE_URL" could become "https://demo.dataverse.org" by issuing the following ``export`` command from Bash:
-
-``export DV_BASE_URL=https://demo.dataverse.org``
-
-To confirm that the environment variable was set properly, you can use ``echo`` like this:
-
-``echo $DV_BASE_URL``
-
-FIXME: Explain that you have to pass in a country code (or rewrite the code so you don't have to?)
-
-Retrieving Total Views for a Dataset
-+++++++++++++++++++++++++++++++++++++++++++++++++
-
-``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/viewsTotal?persistentId=$DOI"``
-
-Retrieving Unique Views for a Dataset
-+++++++++++++++++++++++++++++++++++++++++++++++++
-
-``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/viewsUnique?persistentId=$DOI"``
-
-Retrieving Total Downloads for a Dataset
-+++++++++++++++++++++++++++++++++++++++++++++++++
-
-``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/downloadsTotal?persistentId=$DOI"``
-
-Retrieving Unique Downloads for a Dataset
-+++++++++++++++++++++++++++++++++++++++++++++++++
-
-``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/downloadsTotal?persistentId=$DOI"``
-
-Retrieving Citations for a Dataset
-+++++++++++++++++++++++++++++++++++++++++++++++++
-
-``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/citations?persistentId=$DOI"``
+Please note that it is also possible to retrieve metrics from the DataCite hub itself via https://api.datacite.org
 
 .. _notes: https://docs.google.com/document/d/1b1itytDVDsI_Ni2LoxrG887YGt0zDc96tpyJEgBN9Q8/
 .. _newsletter: https://makedatacount.org/contact/
