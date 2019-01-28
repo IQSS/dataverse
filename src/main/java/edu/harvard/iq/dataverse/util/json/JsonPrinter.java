@@ -221,7 +221,7 @@ public class JsonPrinter {
                 arr.add( jsonObjectBuilder().add("stepType", stp.getStepType())
                                    .add("provider", stp.getProviderId())
                                    .add("parameters", mapToObject(stp.getStepParameters()))
-                                   .add("requiredSettings", mapToObject(stp.getStepParameters())) );
+                                   .add("requiredSettings", mapToObject(stp.getStepSettings())) );
             }
             bld.add("steps", arr );
         }
