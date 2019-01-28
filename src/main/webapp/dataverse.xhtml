@@ -7,7 +7,6 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:o="http://omnifaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-<f:view locale="#{dataverseLocaleBean.localeCode}">
     <h:head>
     </h:head>
 
@@ -240,7 +239,7 @@
                                                         <p:ajax update="@widgetVar(optionBlock)" />
                                                     </input>
 
-                                                    <h:outputText value="#{mdb.displayName} #{mdb.required ? bundle['dataverse.field.required']: ''}"
+                                                    <h:outputText value="#{mdb.localeDisplayName} #{mdb.required ? bundle['dataverse.field.required']: ''}"
                                                                   styleClass="#{DataversePage.inheritMetadataBlockFromParent ? 'text-muted' : ''}"/>
                                                     <p:commandLink id="showDSFT" style="margin-left:1em;"
                                                                    update="@widgetVar(optionBlock)"
@@ -268,7 +267,7 @@
                                                                     <tr>
                                                                         <td>
                                                                             <p:selectBooleanCheckbox rendered="#{!dsft.hasParent}" value="#{dsft.include}" itemLabel="#{dsft.displayName}"
-                                                                                                      onchange="#{DataversePage.updateInclude(mdb.id, dsft.id)}"
+                                                                                                      onchange="scrollPos=document.getElementById('metadataFieldOptionsPanel-Body').scrollTop;#{DataversePage.updateInclude(mdb.id, dsft.id)}"
                                                                                                      disabled="#{(!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required)) or DataversePage.editInputLevel == false }">
                                                                                 <p:ajax update="@widgetVar(OptButton#{dsft.id}), @widgetVar(optionBlock)" />
                                                                             </p:selectBooleanCheckbox>
@@ -330,7 +329,7 @@
                                                                  disabled="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null}"
                                                                  value="#{DataversePage.facetMetadataBlockId}">
                                                     <f:selectItem itemLabel="#{bundle['dataverse.facetPickList.metadataBlockList.all']}" itemValue=""/>
-                                                    <f:selectItems value="#{DataversePage.allMetadataBlocks}" var="mdb" itemLabel="#{mdb.displayName}" itemValue="#{mdb.id}" />
+                                                    <f:selectItems value="#{DataversePage.allMetadataBlocks}" var="mdb" itemLabel="#{mdb.localeDisplayName}" itemValue="#{mdb.id}" />
                                                     <p:ajax process="editFacets" update="editFacets" listener="#{DataversePage.changeFacetsMetadataBlock}"/>
                                                 </p:selectOneMenu>
                                             </f:facet>
@@ -499,7 +498,7 @@
                             <!-- END: Edit/Publish Button Group -->
                             <!-- Email/Link/Share Button Group -->
                             <div class="btn-group pull-right" role="group">
-                                <p:commandLink type="button" styleClass="text-button bootstrap-button-tooltip" title="#{bundle['dataverse.contact']}"
+                                <p:commandLink type="button" styleClass="text-button btn-contact bootstrap-button-tooltip" title="#{bundle['dataverse.contact']}"
                                                update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
@@ -508,7 +507,7 @@
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DataversePage.dataverse}"/>
                                         <span class="glyphicon glyphicon-envelope"/> #{bundle['contact.contact']}
                                 </p:commandLink>
-                                <p:commandLink type="button" styleClass="text-button bootstrap-button-tooltip"
+                                <p:commandLink type="button" styleClass="text-button btn-share bootstrap-button-tooltip"
                                    title="#{bundle['dataverse.share.dataverseShare']}"
                                    oncomplete="PF('shareDialog').show();sharrre();">
                                     <span class="glyphicon glyphicon-share"/> #{bundle['share']}
@@ -785,6 +784,9 @@
 
                 <script type="text/javascript">
                     //<![CDATA[
+                    
+                    var scrollPos=0;
+
                     $(document).ready(function () {
                         initPopover();
                         initCarousel();
@@ -840,6 +842,10 @@
                     function updateInclude() {
                         $('button[id$="hiddenRefresh"]').trigger('click');
                     }
+                    
+                    function scrollAfterUpdate() {
+                        document.getElementById('metadataFieldOptionsPanel-Body').scrollTop = scrollPos;
+                    }
 
                     function updateMetadata(checkbox) {
                         var checked = checkbox.checked;
@@ -865,5 +871,4 @@
             </ui:define>
         </ui:composition>
     </h:body>
-</f:view>
 </html>

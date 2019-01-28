@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.SolrField;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import javax.faces.model.SelectItem;
 import javax.persistence.CascadeType;
@@ -26,10 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.MissingResourceException;
 
-import static edu.harvard.iq.dataverse.util.BundleUtil.getStringFromBundle;
-import static java.lang.String.format;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 /**
  * Defines the meaning and constraints of a metadata field and its values.
@@ -526,20 +525,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     
     public String getDisplayName() {
         if (isHasParent() && !parentDatasetFieldType.getTitle().equals(title)) {
-        return parentDatasetFieldType.getDisplayName() + " " + bundleFieldDisplayName(name, title);
+        return parentDatasetFieldType.getLocaleTitle()  + " " + getLocaleTitle();
         } else {
-            return bundleFieldDisplayName(name, title);
+        	return getLocaleTitle();
         }
-    }
-
-    public String getDescriptionDisplayName() {
-        String bundleDisplayName = getStringFromBundle(format("datasetfieldtype.%s.description", name));
-        return isNotBlank(bundleDisplayName) ? bundleDisplayName : description;
-    }
-
-    private String bundleFieldDisplayName(String fieldName, String toDisplay) {
-        String bundleDisplayName = getStringFromBundle(format("datasetfieldtype.%s.title", fieldName));
-        return isNotBlank(bundleDisplayName) ? bundleDisplayName : toDisplay;
     }
 
     public SolrField getSolrField() {
@@ -582,6 +571,43 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             boolean makeSolrFieldMultivalued = false;
             SolrField solrField = new SolrField(oddValue, solrType, makeSolrFieldMultivalued, facetable);
             return solrField;
+        }
+    }
+
+    public String getLocaleTitle() {
+        if(getMetadataBlock()  == null) {
+            return title;
+        }
+        else {
+            try {
+                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".title", getMetadataBlock().getName());
+            } catch (MissingResourceException e) {
+                return title;
+            }
+        }
+    }
+
+    public String getLocaleDescription() {
+        if(getMetadataBlock()  == null) {
+            return description;
+        } else {
+            try {
+                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".description", getMetadataBlock().getName());
+            } catch (MissingResourceException e) {
+                return description;
+            }
+        }
+    }
+
+    public String getLocaleWatermark()    {
+        if(getMetadataBlock()  == null) {
+            return watermark;
+        } else {
+            try {
+                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".watermark", getMetadataBlock().getName());
+            } catch (MissingResourceException e) {
+                return watermark;
+            }
         }
     }
 

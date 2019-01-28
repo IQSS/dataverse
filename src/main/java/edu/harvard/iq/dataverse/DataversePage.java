@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.event.TransferEvent;
 import org.primefaces.model.DualListModel;
+import org.primefaces.PrimeFaces;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -49,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+
 
 /**
  *
@@ -508,6 +510,7 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
         }
+        PrimeFaces.current().executeScript("scrollAfterUpdate();");
     }
 
     public List<SelectItem> resetSelectItems(DatasetFieldType typeIn) {

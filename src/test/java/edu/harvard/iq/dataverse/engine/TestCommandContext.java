@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.dataverse.messages.DataverseTextMessageServiceBean;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -122,6 +123,11 @@ public class TestCommandContext implements CommandContext {
 
     @Override
     public DOIDataCiteServiceBean doiDataCite() {
+        return null;
+    }
+
+    @Override
+    public FakePidProviderServiceBean fakePidProvider() {
         return null;
     }
 

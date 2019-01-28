@@ -5,10 +5,11 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:o="http://omnifaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       lang="en">
-<f:view locale="#{dataverseLocaleBean.localeCode}">
     <h:head>
+        <o:resourceInclude path="/CustomizationFilesServlet?customFileType=analytics" />
         <title><h:outputText value="#{pageTitle}"/></title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <meta http-equiv="Content-Language" content="en"/>
@@ -80,8 +81,5 @@
         </p:ajaxStatus>
         <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
         <script type="text/javascript" defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
-        <ui:include src="google-analytics-snippet.xhtml"></ui:include>
-        <ui:include src="piwik-analytics-snippet.xhtml"></ui:include>
     </h:body>
-</f:view>
 </html>

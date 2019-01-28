@@ -14,3 +14,5 @@ ALTER TABLE actionlogrecord ALTER COLUMN info TYPE text;
 ALTER TABLE dataverse ALTER COLUMN defaultcontributorrole_id DROP NOT NULL;
 
 ALTER TABLE dataverse ADD COLUMN allowmessagesbanners BOOLEAN DEFAULT FALSE;
+
+ALTER TABLE datatable ADD COLUMN originalfilesize BIGINT; 

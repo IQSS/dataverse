@@ -124,7 +124,9 @@ Once you have your DOI or Handle account credentials and a namespace, configure 
 Configuring Dataverse for DOIs
 ++++++++++++++++++++++++++++++
 
-Out of the box, Dataverse is configured for DOIs. Here are the configuration options for DOIs:
+By default Dataverse attempts to register DOIs for each dataset and file under a test authority, though you must apply for your own credentials as explained above.
+
+Here are the configuration options for DOIs:
 
 **JVM Options:**
 
@@ -140,6 +142,7 @@ Out of the box, Dataverse is configured for DOIs. Here are the configuration opt
 - :ref:`:Shoulder <:Shoulder>`
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
+- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
 
 Configuring Dataverse for Handles
 +++++++++++++++++++++++++++++++++
@@ -523,6 +526,97 @@ Once you have the location of your custom CSS file, run this curl command to add
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
 
+.. _Web-Analytics-Code:
+
+Web Analytics Code
+------------------
+
+Your analytics code can be added to your Dataverse installation in a similar fashion to how you brand it, by adding a custom HTML file containing the analytics code snippet and adding the file location to your settings.
+
+Popular analytics providers Google Analytics (https://www.google.com/analytics/) and Matomo (formerly "Piwik"; https://matomo.org/) have been set up with Dataverse. Use the documentation they provide to add the analytics code to your custom HTML file. This allows for more control of your analytics, making it easier to customize what you prefer to track.
+
+Create your own ``analytics-code.html`` file using the analytics code snippet provided by Google or Matomo and place it at ``/var/www/dataverse/branding/analytics-code.html``. Here is an example of what your HTML file should like like:
+
+.. code-block:: none
+
+    <script>
+        // Analytics code here...
+    </script>
+
+Once you have the location of your analytics file, run this curl command to add it to your settings:
+
+``curl -X PUT -d '/var/www/dataverse/branding/analytics-code.html' http://localhost:8080/api/admin/settings/:WebAnalyticsCode``
+
+DuraCloud/Chronopolis Integration
+---------------------------------
+
+It's completely optional to integrate your installation of Dataverse with DuraCloud/Chronopolis but the details are listed here to keep the :doc:`/admin/integrations` section of the Admin Guide shorter.
+
+Dataverse can be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to the `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_
+
+This integration is occurs through customization of an internal Dataverse archiver workflow that can be configured as a PostPublication workflow to submit the bag to Chronopolis' Duracloud interface using your organization's credentials. An admin API call exists that can manually submit previously published Datasets, and prior versions, to a configured archive such as Chronopolis. The workflow leverages new functionality in Dataverse to create a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse web interface.
+
+At present, the DPNSubmitToArchiveCommand is the only implementation extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
+
+Also note that while the current Chronopolis implementation generates the bag and submits it to the archive's DuraCloud interface, the step to make a 'snapshot' of the space containing the Bag (and verify it's successful submission) are actions a curator must take in the DuraCloud interface.
+
+The minimal configuration to support an archiver integration involves adding a minimum of two Dataverse Keys and any required Glassfish jvm options. The example instructions here are specific to the DuraCloud Archiver\:
+
+\:ArchiverClassName - the fully qualified class to be used for archiving. For example: 
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.DuraCloudSubmitToArchiveCommand"``
+
+\:ArchiverSettings - the archiver class can access required settings including existing Dataverse settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\: 
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DuraCloudHost, :DuraCloudPort, :DuraCloudContext"``
+
+The DPN archiver defines three custom settings, one of which is required (the others have defaults):
+
+\:DuraCloudHost - the URL for your organization's Duracloud site. For example: 
+
+``curl http://localhost:8080/api/admin/settings/:DuraCloudHost -X PUT -d "qdr.duracloud.org"``
+
+:DuraCloudPort and :DuraCloudContext are also defined if you are not using the defaults ("443" and "duracloud" respectively). (Note\: these settings are only in effect if they are listed in the \:ArchiverSettings. Otherwise, they will not be passed to the DuraCloud Archiver class.)
+
+Archivers may require glassfish settings as well. For the Chronopolis archiver, the username and password associated with your organization's Chronopolis/DuraCloud account should be configured in Glassfish:
+
+``./asadmin create-jvm-options '-Dduracloud.username=YOUR_USERNAME_HERE'``
+    
+``./asadmin create-jvm-options '-Dduracloud.password=YOUR_PASSWORD_HERE'``
+
+**API Call**
+
+Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the API call to manually submit a DatasetVersion for processing:
+
+``curl -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/submitDataVersionToArchive/{id}/{version}``
+    
+where:
+
+{id} is the DatasetId (or :persistentId with the ?persistentId="\<DOI\>" parameter), and
+
+{version} is the friendly version number, e.g. "1.2".
+     
+The submitDataVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
+
+In the Chronopolis case, since the transfer from the DuraCloud front-end to archival storage in Chronopolis can take significant time, it is currently up to the admin/curator to submit a 'snap-shot' of the space within DuraCloud and to monitor its successful transfer. Once transfer is complete the space should be deleted, at which point the Dataverse API call can be used to submit a Bag for other versions of the same Dataset. (The space is reused, so that archival copies of different Dataset versions correspond to different snapshots of the same DuraCloud space.).
+
+**PostPublication Workflow**
+
+To automate the submission of archival copies to an archive as part of publication, one can setup a Dataverse Workflow using the "archiver" workflow step - see the :doc:`developers/workflows` guide.
+. The archiver step uses the configuration information discussed above including the :ArchiverClassName setting. The workflow step definition should include the set of properties defined in \:ArchiverSettings in the workflow definition.
+
+To active this workflow, one must first install a workflow using the archiver step. A simple workflow that invokes the archiver step configured to submit to DuraCloud as its only action is included in dataverse at /scripts/api/data/workflows/internal-archiver-workflow.json.
+
+Using the Workflow Native API (see the :doc:`/api/native-api` guide) this workflow can be installed using:
+
+``curl -X POST -H 'Content-type: application/json' --upload-file internal-archiver-workflow.json http://localhost:8080/api/admin/workflows``
+    
+The workflow id returned in this call (or available by doing a GET of /api/admin/workflows ) can then be submitted as the default PostPublication workflow:
+
+``curl -X PUT -d {id} http://localhost:8080/api/admin/workflows/default/PostPublishDataset``
+
+Once these steps are taken, new publication requests will automatically trigger submission of an archival copy to the specified archiver, Chronopolis' DuraCloud component in this example. For Chronopolis, as when using the API, it is currently the admin's responsibility to snap-shot the DuraCloud space and monitor the result. Failure of the workflow, (e.g. if DuraCloud is unavailable, the configuration is wrong, or the space for this dataset already exists due to a prior publication action or use of the API), will create a failure message but will not affect publication itself.  
+
 Going Live: Launching Your Production Deployment
 ------------------------------------------------
 
@@ -869,6 +963,11 @@ See :ref:`Branding Your Installation` above.
 
 See :ref:`Branding Your Installation` above.
 
+:WebAnalyticsCode
++++++++++++++++++
+
+See :ref:`Web-Analytics-Code` above.
+
 :FooterCopyright
 ++++++++++++++++
 
@@ -881,7 +980,7 @@ By default the footer says "Copyright © [YYYY]" but you can add text after the 
 :DoiProvider
 ++++++++++++
 
-As of this writing "DataCite" and "EZID" are the only valid options. ``:DoiProvider`` is only needed if you are using DOI.
+As of this writing "DataCite" and "EZID" are the only valid options for production installations. Developers are welcome to use "FAKE". ``:DoiProvider`` is only needed if you are using DOI.
 
 ``curl -X PUT -d DataCite http://localhost:8080/api/admin/settings/:DoiProvider``
 
@@ -972,12 +1071,18 @@ Otherwise, if ``:DataFilePIDFormat`` is set to *INDEPENDENT*, then each file wil
 
 Note that in either case, when using the ``sequentialNumber`` option, datasets and files share the same database sequence that was created as part of the setup described in ``:IdentifierGenerationStyle`` above.
 
+.. _:FilePIDsEnabled:
+
 :FilePIDsEnabled
 ++++++++++++++++
 
-Enable/disable the publishing of file based PIDs for the whole installation. This is enabled by default
+Toggles publishing of file-based PIDs for the entire installation. By default this setting is absent and Dataverse assumes it to be true.
 
-``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
+If you don't want to register file-based PIDs for your installation, set:
+
+``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
+
+Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
 
 :ApplicationTermsOfUse
 ++++++++++++++++++++++
@@ -1117,13 +1222,6 @@ For example, if you want your installation of Dataverse to not attempt to ingest
 
 Limit the number of files in a zip that Dataverse will accept.
 
-:GoogleAnalyticsCode
-++++++++++++++++++++
-
-Set your Google Analytics Tracking ID thusly:
-
-``curl -X PUT -d 'trackingID' http://localhost:8080/api/admin/settings/:GoogleAnalyticsCode``
-
 :SolrHostColonPort
 ++++++++++++++++++
 
@@ -1230,34 +1328,6 @@ Here is an example of setting the default auth provider back to ``builtin``:
 ++++++++++++
 
 Set to false to disallow local accounts to be created. See also the sections on :doc:`shibboleth` and :doc:`oauth2`.
-
-:PiwikAnalyticsId
-++++++++++++++++++++
-
-Site identifier created in your Piwik instance. Example:
-
-``curl -X PUT -d 42 http://localhost:8080/api/admin/settings/:PiwikAnalyticsId``
-
-:PiwikAnalyticsHost
-++++++++++++++++++++
-
-Host FQDN or URL of your Piwik instance before the ``/piwik.php``. Examples:
-
-``curl -X PUT -d stats.domain.tld http://localhost:8080/api/admin/settings/:PiwikAnalyticsHost``
-
-or
-
-``curl -X PUT -d hostname.domain.tld/stats http://localhost:8080/api/admin/settings/:PiwikAnalyticsHost``
-
-:PiwikAnalyticsTrackerFileName
-++++++++++++++++++++++++++++++
-
-Filename for the 'php' and 'js' tracker files used in the Piwik code (piwik.php and piwik.js).
-Sometimes these files are renamed in order to prevent ad-blockers (in the browser) to block the Piwik tracking code.
-This sets the base name (without dot and extension), if not set it defaults to 'piwik'.
-
-``curl -X PUT -d domainstats http://localhost:8080/api/admin/settings/:PiwikAnalyticsTrackerFileName``
-
 
 :FileFixityChecksumAlgorithm
 ++++++++++++++++++++++++++++
