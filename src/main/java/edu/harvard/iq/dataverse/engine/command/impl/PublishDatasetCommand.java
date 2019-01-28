@@ -165,7 +165,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             }
                 
         } else {
-            if (getDataset().getLatestVersion().isReleased()) {
+            if (getDataset().getLatestVersion().isReleased()&&!republishCurrentVersion) {
                 throw new IllegalCommandException("Latest version of dataset " + getDataset().getIdentifier() + " is already released. Only draft versions can be released.", this);
             }
 
