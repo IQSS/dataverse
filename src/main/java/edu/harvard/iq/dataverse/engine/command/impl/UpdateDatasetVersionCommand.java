@@ -205,10 +205,16 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         */ 
         savedDataset=ctxt.em().merge(savedDataset);
         ctxt.em().flush();
-        DeleteDatasetVersionCommand cmd;
         if(updateCurrentVersion) {
+            DeleteDatasetVersionCommand cmd;
+
             cmd = new DeleteDatasetVersionCommand(getRequest(), savedDataset);
             ctxt.engine().submit(cmd);
+            
+            final PublishDatasetResult result = ctxt.engine().submit(
+                    new PublishDatasetCommand(savedDataset, getRequest(), false, false, true)
+                );
+                savedDataset = result.getDataset();
         } else {
 
         updateDatasetUser(ctxt);

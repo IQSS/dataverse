@@ -33,6 +33,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
     private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getName());
     boolean minorRelease;
     DataverseRequest request;
+    boolean republishCurrentVersion;
     
     /** 
      * The dataset was already released by an external system, and now Dataverse
@@ -46,10 +47,14 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
     }
     
     public PublishDatasetCommand(Dataset datasetIn, DataverseRequest aRequest, boolean minor, boolean isPidPrePublished) {
+        this(datasetIn, aRequest, minor, isPidPrePublished, false);
+    }
+    public PublishDatasetCommand(Dataset datasetIn, DataverseRequest aRequest, boolean minor, boolean isPidPrePublished, boolean republish) {
         super(datasetIn, aRequest);
         minorRelease = minor;
         datasetExternallyReleased = isPidPrePublished;
         request = aRequest;
+        republishCurrentVersion = republish;
     }
 
     @Override
@@ -69,15 +74,16 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // First Release
             theDataset.getLatestVersion().setVersionNumber(new Long(1)); // minor release is blocked by #verifyCommandArguments
             theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
-            
-        } else if ( minorRelease ) {
-            theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber()));
-            theDataset.getLatestVersion().setMinorVersionNumber(new Long(theDataset.getMinorVersionNumber() + 1));
-            
-        } else {
-            // major, non-first release
-            theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber() + 1));
-            theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
+
+        } else if (!republishCurrentVersion) {
+            if (minorRelease) {
+                theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber()));
+                theDataset.getLatestVersion().setMinorVersionNumber(new Long(theDataset.getMinorVersionNumber() + 1));
+            } else {
+                // major, non-first release
+                theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber() + 1));
+                theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
+            }
         }
         
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
