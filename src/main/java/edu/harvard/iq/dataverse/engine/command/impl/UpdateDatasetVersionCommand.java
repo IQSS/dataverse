@@ -209,7 +209,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         if(updateCurrentVersion) {
             cmd = new DeleteDatasetVersionCommand(getRequest(), savedDataset);
             ctxt.engine().submit(cmd);
-        }
+        } else {
 
         updateDatasetUser(ctxt);
         ctxt.index().indexDataset(savedDataset, true);
@@ -218,6 +218,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             AuthenticatedUser au = (AuthenticatedUser) getUser();
             ctxt.datasetVersion().writeEditVersionLog(dvd, au);
         } 
+        }
         return savedDataset; 
     }
 
