@@ -44,8 +44,13 @@ conf/docker-aio/dv/install/dvinstall.zip
 conf/docker-aio/testdata/
 scripts/installer/default.config
 *.pem
+/bin/
 
 # do not track IntelliJ IDEA files
 .idea
 **/*.iml
-/bin/
+# do not track Eclipse IDE files
+.classpath
+.metadata
+.project
+.settings
