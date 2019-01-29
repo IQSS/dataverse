@@ -266,7 +266,7 @@ public class ExternalToolServiceBeanTest {
         } catch (Exception ex) {
             expectedException = ex;
         }
-        assertNull(expectedException);
+        assertEquals(expectedException, null);
     }
 
 }
