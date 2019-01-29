@@ -45,19 +45,15 @@ public class ExternalToolServiceBean {
 
     /**
      * @param type 
-     * @param contentType 
      * @return A list of tools or an empty list.
      */
-    public List<ExternalTool> findByType(ExternalTool.Type type, String contentType) {
+    public List<ExternalTool> findByType(Type type) {
+
         List<ExternalTool> externalTools = new ArrayList<>();
         
         //If contentType==null, get all tools of the given ExternalTool.Type 
-        TypedQuery<ExternalTool> typedQuery = contentType != null ? em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type AND o.contentType = :contentType", ExternalTool.class):
-            em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
+        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
         typedQuery.setParameter("type", type);
-        if(contentType!=null) {
-            typedQuery.setParameter("contentType", contentType);
-        }
         List<ExternalTool> toolsFromQuery = typedQuery.getResultList();
         if (toolsFromQuery != null) {
             externalTools = toolsFromQuery;
@@ -65,13 +61,7 @@ public class ExternalToolServiceBean {
         return externalTools;
     }
 
-    /**
-     * @param type 
-     * @return A list of tools or an empty list.
-     */
-    public List<ExternalTool> findByType(Type configure) {
-        return findByType(configure, null);
-    }
+
 
     public ExternalTool findById(long id) {
         TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.id = :id", ExternalTool.class);
@@ -106,9 +96,11 @@ public class ExternalToolServiceBean {
      */
     public static List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
         List<ExternalTool> externalTools = new ArrayList<>();
+        //Map tabular data to it's mimetype (the isTabularData() check assures that this code works the same as before, but it may need to change if tabular data is split into subtypes with differing mimetypes)
         final String contentType = file.isTabularData() ? DataFileServiceBean.MIME_TYPE_TSV_ALT : file.getContentType();
         allExternalTools.forEach((externalTool) -> {
-            if (contentType.equals(externalTool.getContentType())) {
+            //Match tool and file type or, as legacy support, find externalTools with contentType == null as a match for tabular data
+            if (contentType.equals(externalTool.getContentType()) || ((contentType.equals(DataFileServiceBean.MIME_TYPE_TSV_ALT))&&(externalTool.getContentType()==null))) {
                 externalTools.add(externalTool);
             }
         });
@@ -125,7 +117,7 @@ public class ExternalToolServiceBean {
         String displayName = getRequiredTopLevelField(jsonObject, DISPLAY_NAME);
         String description = getRequiredTopLevelField(jsonObject, DESCRIPTION);
         String typeUserInput = getRequiredTopLevelField(jsonObject, TYPE);
-        String contentType = getRequiredTopLevelField(jsonObject, CONTENT_TYPE);
+        String contentType = getOptionalTopLevelField(jsonObject, CONTENT_TYPE);
         
         // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString
         ExternalTool.Type type = ExternalTool.Type.fromString(typeUserInput);
@@ -158,5 +150,14 @@ public class ExternalToolServiceBean {
             throw new IllegalArgumentException(key + " is required.");
         }
     }
+    
+    private static String getOptionalTopLevelField(JsonObject jsonObject, String key) {
+        try {
+            return jsonObject.getString(key);
+        } catch (NullPointerException ex) {
+            return null;
+        }
+    }
+
 
 }
