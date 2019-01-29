@@ -196,6 +196,12 @@ attribute-map.xml
 
 By default, some attributes ``/etc/shibboleth/attribute-map.xml`` are commented out. Edit the file to enable them so that all the require attributes come through. You can download a :download:`sample attribute-map.xml file <../_static/installation/files/etc/shibboleth/attribute-map.xml>`.
 
+Shibboleth and ADFS
+~~~~~~~~~~~~~~~~~~~
+With appropriate configuration, Dataverse and Shibboleth can make use of "single sign on" using Active Directory.
+This requires configuring ``shibd`` and ``httpd`` to load appropriate libraries, and insuring that the attribute mapping matches those provided.
+Example configuration files for :download:`shibboleth2.xml <../_static/installation/files/etc/shibboleth/shibboleth2_adfs.xml>` and :download:`attribute-map.xml <../_static/installation/files/etc/shibboleth/attribute-map_adfs.xml>` may be helpful.
+
 Disable or Reconfigure SELinux
 ------------------------------
 
