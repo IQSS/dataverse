@@ -74,7 +74,7 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.host=${RSERVE_HOST}"
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.port=${RSERVE_PORT}"
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.user=${RSERVE_USER}"
-  ./asadmin $ASADMIN_OPTS create-jvm-options '\-Ddataverse.rserve.password=${ALIAS=reserve_password_alias}'
+  ./asadmin $ASADMIN_OPTS create-jvm-options '\-Ddataverse.rserve.password=${ALIAS=rserve_password_alias}'
   # Data Deposit API options
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.fqdn=${HOST_ADDRESS}"
   # password reset token timeout in minutes
