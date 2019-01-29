@@ -6,8 +6,6 @@ import java.util.ResourceBundle;
 public class LocalBundle extends ResourceBundle {
 
     private static final String defaultBundleFile = "Bundle";
-    //private static ResourceBundle bundle;
-    //private static Locale bundle_locale;
 
 
 

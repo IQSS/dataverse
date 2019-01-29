@@ -108,8 +108,6 @@ import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.StreamingOutput;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]

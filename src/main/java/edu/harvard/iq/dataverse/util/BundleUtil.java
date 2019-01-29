@@ -17,7 +17,6 @@ public class BundleUtil {
     private static final Logger logger = Logger.getLogger(BundleUtil.class.getCanonicalName());
 
     private static final String defaultBundleFile = "Bundle";
-    //private static Locale bundle_locale; // static ??
 
     public static String getStringFromBundle(String key) {
         return getStringFromBundle(key, null);
