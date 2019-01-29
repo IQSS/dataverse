@@ -256,6 +256,7 @@ public class ExternalToolServiceBeanTest {
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
+        job.add("toolUrl", "http://awesometool.com");
         job.add("toolParameters", Json.createObjectBuilder().build());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
@@ -265,8 +266,7 @@ public class ExternalToolServiceBeanTest {
         } catch (Exception ex) {
             expectedException = ex;
         }
-        assertNotNull(expectedException);
-        assertEquals(ExternalTool.CONTENT_TYPE + " is required.", expectedException.getMessage());
+        assertNull(expectedException);
     }
 
 }
