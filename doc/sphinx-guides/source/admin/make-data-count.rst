@@ -37,6 +37,8 @@ Limitations for Dataverse Installations Using Handles Rather Than DOIs
 
 Data repositories using Handles and other identifiers are not supported by Make Data Count but in the notes_ following a July 2018 webinar, you can see the Make Data Count project's response on this topic. In short, the DataCite hub does not want to receive reports for non-DOI datasets. Additionally, citations are only available from the DataCite hub for datasets that have DOIs. The remainder of processing is the same.
 
+When editing the ``counter-processor-config.yaml`` file mentioned below, make sure that the ``upload_to_hub`` boolean is set to ``False``.
+
 Configuring Dataverse for Make Data Count Views and Downloads
 -------------------------------------------------------------
 
