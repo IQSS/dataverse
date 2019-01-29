@@ -85,8 +85,15 @@ public class MakeDataCountLoggingServiceBean {
             if(publishedVersion != null) {
                 setIdentifier(publishedVersion.getDataset().getGlobalId().asString());
                 setAuthors(publishedVersion.getAuthorsStr(false).replace(";", "|"));
-                setPublisher("client-id"); //MAD: We suspect this is a "fake" catch-all id, not a real publisher. Needs clarification.
-                setPublisherId("1"); //This is a hack to make sure counter-processer processes this
+                
+                //Note: These publisher/publisher-id values are fake. This is ok as currently Make Data Count
+                //derives this info from your DataCite credentials, and DataCite has said we can take this route.
+                //It may be possible to provide the correct information, which is client-id (DataCite client-id)
+                //and the client-id value off of our account page, but Counter Processor seems to only take a
+                //number for publisher-id. Seeing as this data isn't used it does not seem worth fixing until
+                //mdc actually needs this info --MAD 4.11
+                setPublisher("client-id");
+                setPublisherId("1");
                 setTitle(publishedVersion.getTitle());
                 setVersion(String.valueOf(publishedVersion.getVersionNumber()));
                 setPublicationYear(new SimpleDateFormat("yyyy").format(publishedVersion.getReleaseTime()));
