@@ -260,13 +260,13 @@ public class ExternalToolServiceBeanTest {
         job.add("toolParameters", Json.createObjectBuilder().build());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
-        Exception expectedException = null;
+        ExternalTool externalTool = null;
         try {
-            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+            externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
         } catch (Exception ex) {
-            expectedException = ex;
+            System.out.println(ex.getMessage());
         }
-        assertEquals(expectedException, null);
+        assertNotNull(externalTool);
     }
 
 }
