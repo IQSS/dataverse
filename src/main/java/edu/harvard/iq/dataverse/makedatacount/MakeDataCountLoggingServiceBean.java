@@ -89,11 +89,10 @@ public class MakeDataCountLoggingServiceBean {
                 //Note: These publisher/publisher-id values are fake. This is ok as currently Make Data Count
                 //derives this info from your DataCite credentials, and DataCite has said we can take this route.
                 //It may be possible to provide the correct information, which is client-id (DataCite client-id)
-                //and the client-id value off of our account page, but Counter Processor seems to only take a
-                //number for publisher-id. Seeing as this data isn't used it does not seem worth fixing until
-                //mdc actually needs this info --MAD 4.11
-                setPublisher("client-id");
-                setPublisherId("1");
+                //and the client-id value off of our account page, but Counter Processor seems limited in what is parses
+                //for these values. As no one uses them, we are chosing to not pass real data at this point. --MAD 4.11
+                setPublisher("grid");
+                setPublisherId("tbd"); //"tbd" is a special case in counter processor that gives values that pass MDC.
                 setTitle(publishedVersion.getTitle());
                 setVersion(String.valueOf(publishedVersion.getVersionNumber()));
                 setPublicationYear(new SimpleDateFormat("yyyy").format(publishedVersion.getReleaseTime()));
@@ -108,10 +107,6 @@ public class MakeDataCountLoggingServiceBean {
             }
 
             setEventTime(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new Timestamp(new Date().getTime())));
-
-            /* Still needed: */
-            //setOtherId();
-            //setPublisherId(); 
         }
 
         //This version of the constructor is for the downloads tracked in FileDownloadServiceBean
