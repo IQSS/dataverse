@@ -7,18 +7,19 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:o="http://omnifaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
-      xmlns:c="http://java.sun.com/jsp/jstl/core"      
-      lang="en">
-<f:view locale="#{dataverseLocaleBean.localeCode}">
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      lang="#{dataverseLocaleBean.localeCode}"
+      xml:lang="#{dataverseLocaleBean.localeCode}">
+    <f:view locale="#{dataverseLocaleBean.localeCode}">
     <h:head>
 	<o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <f:facet name="first">
+            <o:resourceInclude path="/CustomizationFilesServlet?customFileType=analytics" />
             <title><h:outputText value="#{pageTitle}"/></title>
 	    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
             <ui:remove><!-- We might want dc_meta_header or jsonld_header at the file level some day.--></ui:remove>
 	    <ui:insert name="dc_meta_header"></ui:insert>
 	    <ui:insert name="jsonld_header"></ui:insert>
-            <meta http-equiv="Content-Language" content="en"/>
             <meta name="viewport" content="width=device-width, initial-scale=1"/>
             <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
             <meta name="description" content="#{MarkupChecker:stripAllTags(DataversePage.dataverse.description)}"/>
@@ -113,8 +114,6 @@
             
             //]]>
         </script>
-        <ui:include src="google-analytics-snippet.xhtml"></ui:include>
-        <ui:include src="piwik-analytics-snippet.xhtml"></ui:include>
     </h:body>
-</f:view>
+    </f:view>
 </html>

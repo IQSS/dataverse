@@ -174,7 +174,9 @@ public class ExternalTool implements Serializable {
         // from https://swagger.io/specification/#fixed-fields-29 but that's for URLs.
         FILE_ID("fileId"),
         SITE_URL("siteUrl"),
-        API_TOKEN("apiToken");
+        API_TOKEN("apiToken"),
+        DATASET_ID("datasetId"),
+        DATASET_VERSION("datasetVersion");
 
         private final String text;
         private final String START = "{";

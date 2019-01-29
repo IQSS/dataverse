@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ public class PersistentIdentifierServiceBeanTest {
     
     DOIEZIdServiceBean ezidServiceBean = new DOIEZIdServiceBean();
     DOIDataCiteServiceBean dataCiteServiceBean = new DOIDataCiteServiceBean();
+    FakePidProviderServiceBean fakePidProviderServiceBean = new FakePidProviderServiceBean();
     HandlenetServiceBean hdlServiceBean = new HandlenetServiceBean();
     
     CommandContext ctxt;
@@ -47,6 +49,11 @@ public class PersistentIdentifierServiceBeanTest {
             public DOIEZIdServiceBean doiEZId() {
                 return ezidServiceBean;
             }
+
+            @Override
+            public FakePidProviderServiceBean fakePidProvider() {
+                return fakePidProviderServiceBean;
+            }
             
         };
     }
@@ -63,7 +70,11 @@ public class PersistentIdentifierServiceBeanTest {
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.DoiProvider, "DataCite");
         assertEquals(dataCiteServiceBean, 
                      GlobalIdServiceBean.getBean("doi", ctxt));
-        
+
+        ctxt.settings().setValueForKey(SettingsServiceBean.Key.DoiProvider, "FAKE");
+        assertEquals(fakePidProviderServiceBean,
+                GlobalIdServiceBean.getBean("doi", ctxt));
+
         assertEquals(hdlServiceBean, 
                      GlobalIdServiceBean.getBean("hdl", ctxt));
     }

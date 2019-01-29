@@ -761,6 +761,14 @@ public class DatasetsIT {
          * asadmin create-jvm-options
          * "-Ddataverse.siteUrl=http\://localhost\:8080"
          */
+        
+        /* 
+         * Attempt to follow the private link url; as a user not otherwise 
+         * authorized to view the draft - and make sure they get the dataset page:
+         * 
+         * MAKE SURE TO READ the note below, about jsessions and cookies!
+        */
+        
         Response getDatasetAsUserWhoClicksPrivateUrl = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get(urlWithToken);
@@ -768,6 +776,70 @@ public class DatasetsIT {
         assertEquals("Darwin's Finches - " + dataverseAlias, title);
         assertEquals(OK.getStatusCode(), getDatasetAsUserWhoClicksPrivateUrl.getStatusCode());
 
+        /*
+         * NOTE, this is what happens when we attempt to access the dataset via the 
+         * private url, as implemented above: 
+         * 
+         * The private url page authorizes the user to view the dataset 
+         * by issuing a new jsession, and issuing a 302 redirect to the dataset 
+         * page WITH THE JSESSIONID ADDED TO THE URL - as in 
+         * dataset.xhtml?persistentId=xxx&jsessionid=yyy
+         * RestAssured's .get() method follows redirects by default - so in the 
+         * end the above works and we get the correct dataset. 
+         * But note that this relies on the jsessionid in the url. We've 
+         * experimented with disabling url-supplied jsessions (in PR #5316); 
+         * then the above stopped working - because now jsession is supplied 
+         * AS A COOKIE, which the RestAssured code above does not use, so 
+         * the dataset page refuses to show the dataset to the user. (So the 
+         * assertEquals code above fails, because the page title is not "Darwin's Finches", 
+         * but "Login Page")
+         * Below is an implementation of the test above that uses the jsession 
+         * cookie, instead of relying on the jsessionid in the URL: 
+         
+        // This should redirect us to the actual dataset page, and 
+        // give us a valid session cookie: 
+        
+        Response getDatasetAsUserWhoClicksPrivateUrl = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .redirects().follow(false)
+                .get(urlWithToken);
+        // (note that we have purposefully asked not to follow redirects 
+        // automatically; this way we can test that we are being redirected
+        // to the right place, that we've been given the session cookie, etc.
+                
+        assertEquals(FOUND.getStatusCode(), getDatasetAsUserWhoClicksPrivateUrl.getStatusCode());
+        // Yes, javax.ws.rs.core.Response.Status.FOUND is 302!
+        String title = getDatasetAsUserWhoClicksPrivateUrl.getBody().htmlPath().getString("html.head.title");
+        assertEquals("Document moved", title);
+        
+        String redirectLink = getDatasetAsUserWhoClicksPrivateUrl.getBody().htmlPath().getString("html.body.a.@href");
+        assertNotNull(redirectLink);
+        assertTrue(redirectLink.contains("dataset.xhtml"));
+        
+        String jsessionid = getDatasetAsUserWhoClicksPrivateUrl.cookie("jsessionid");
+        assertNotNull(jsessionid);
+        
+        // ... and now we can try and access the dataset, with another HTTP GET, 
+        // sending the jsession cookie along:
+        
+        try { 
+            redirectLink = URLDecoder.decode(redirectLink, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            // do nothing - try to redirect to the url as is? 
+        }
+        
+        logger.info("redirecting to "+redirectLink+", using jsession "+jsessionid);
+        
+        getDatasetAsUserWhoClicksPrivateUrl = given()
+                .cookies("JSESSIONID", jsessionid)
+                .get(redirectLink);
+        
+        assertEquals(OK.getStatusCode(), getDatasetAsUserWhoClicksPrivateUrl.getStatusCode());
+        title = getDatasetAsUserWhoClicksPrivateUrl.getBody().htmlPath().getString("html.head.title");
+        assertEquals("Darwin's Finches - " + dataverseAlias, title);
+         
+        */
+        
         Response junkPrivateUrlToken = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/privateurl.xhtml?token=" + "junk");

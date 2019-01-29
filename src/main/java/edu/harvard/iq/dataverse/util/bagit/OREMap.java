@@ -59,10 +59,10 @@ public class OREMap {
         Dataset dataset = version.getDataset();
         String id = dataset.getGlobalId().asString();
         JsonArrayBuilder fileArray = Json.createArrayBuilder();
-        //The map describes an aggregation
+        // The map describes an aggregation
         JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
         List<DatasetField> fields = version.getDatasetFields();
-        //That has it's own metadata
+        // That has it's own metadata
         for (DatasetField field : fields) {
             if (!field.isEmpty()) {
                 DatasetFieldType dfType = field.getDatasetFieldType();
@@ -124,7 +124,7 @@ public class OREMap {
                 aggBuilder.add(fieldName.getLabel(), (valArray.size() != 1) ? valArray : valArray.get(0));
             }
         }
-        //Add metadata related to the Dataset/DatasetVersion
+        // Add metadata related to the Dataset/DatasetVersion
         aggBuilder.add("@id", id)
                 .add("@type",
                         Json.createArrayBuilder().add(JsonLDTerm.ore("Aggregation").getLabel())
@@ -149,7 +149,7 @@ public class OREMap {
         addIfNotNull(aggBuilder, JsonLDTerm.conditions, terms.getConditions());
         addIfNotNull(aggBuilder, JsonLDTerm.disclaimer, terms.getDisclaimer());
 
-        //Add fileTermsofAccess as an object since it is compound
+        // Add fileTermsofAccess as an object since it is compound
         JsonObjectBuilder fAccess = Json.createObjectBuilder();
         addIfNotNull(fAccess, JsonLDTerm.termsOfAccess, terms.getTermsOfAccess());
         addIfNotNull(fAccess, JsonLDTerm.fileRequestAccess, terms.isFileAccessRequest());
@@ -222,7 +222,7 @@ public class OREMap {
             addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
             addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
             JsonObject checksum = null;
-            //Add checksum. RDA recommends SHA-512
+            // Add checksum. RDA recommends SHA-512
             if (df.getChecksumType() != null && df.getChecksumValue() != null) {
                 checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
                         .add("@value", df.getChecksumValue()).build();
@@ -234,15 +234,15 @@ public class OREMap {
                 tabTags = jab.build();
             }
             addIfNotNull(aggRes, JsonLDTerm.tabularTags, tabTags);
-            //Add lates resource to the array
+            //Add latest resource to the array
             aggResArrayBuilder.add(aggRes.build());
         }
-        //Build the '@context' object for json-ld based on the localContext entries 
+        // Build the '@context' object for json-ld based on the localContext entries
         JsonObjectBuilder contextBuilder = Json.createObjectBuilder();
         for (Entry<String, String> e : localContext.entrySet()) {
             contextBuilder.add(e.getKey(), e.getValue());
         }
-        //Now create the overall map object with it's metadata
+        // Now create the overall map object with it's metadata
         JsonObject oremap = Json.createObjectBuilder()
                 .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now().toString())
                 .add(JsonLDTerm.dcTerms("creator").getLabel(),
@@ -266,7 +266,7 @@ public class OREMap {
      * Simple methods to only add an entry to JSON if the value of the term is
      * non-null. Methods created for string, JsonValue, boolean, and long
      */
-    
+
     private void addIfNotNull(JsonObjectBuilder builder, JsonLDTerm key, String value) {
         if (value != null) {
             builder.add(key.getLabel(), value);

@@ -11,6 +11,7 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
+    <script type="text/javascript" language="javascript" src="#{resource['js/fileupload.js']}"></script>
     <!-- Static Tab Layout -->
     <div data-widget="content" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" id="datasetForm:tabView">
         <ul role="tablist" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
@@ -77,111 +78,10 @@
                                 </p>
                     
                     <script>
-//<![CDATA[
                         function uploadWidgetDropMsg() {
                             var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
                             if ($(fileUpload).children('#dragdropMsg').length === 0) {
                                 $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.selectToAdd.dragdropMsg']}</div>');
-                            }
-                        }
-                        function removeErrors() {
-                       	  var errors = document.getElementsByClassName("ui-fileupload-error");
-                          for(i=errors.length-1; i >=0; i--) {
-                            errors[i].parentNode.removeChild(errors[i]);
-                          }
-                        }
-                        function uploadStarted() {
-                       	  	// If this is not the first upload, remove error messages since 
-                          	// the upload of any files that failed will be tried again.
-                          	removeErrors();
-                          	var curId=0;
-                          	//Find the upload table body
-                          	var files = document.getElementById("datasetForm:fileUpload").getElementsByTagName("tbody")[0];
-                          	//Add an id attribute to each entry so we can later match errors with the right entry
-                          	for(i=0;i< files.children.length;i++) {
-                            	files.children[i].setAttribute('upid', curId);
-                            	curId = curId+1;
-                          	}
-                          	//Setup an observer to watch for additional rows being added
-                          	var config={childList: true};
-                          	var callback = function(mutations) {
-                        		//Add an id attribute to all new entries  
-                            	mutations.forEach(function(mutation) {
-                            	for(i=0; i<mutation.addedNodes.length;i++) {
-                              		mutation.addedNodes[i].setAttribute('upid',curId);
-                              		curId=curId+1;
-                            	}
-                            	//Remove existing error messages since adding a new entry appears to cause a retry on previous entries
-                            	removeErrors();
-                          		});
-                        	};
-                        	//uploadStarted appears to be called only once, but, if not, we should stop any current observer
-                        	if(observer !=null) {
-                          	  observer.disconnect();
-                        	}
-                        	var observer = new MutationObserver(callback);
-                        	observer.observe(files,config);
-
-                            $('button[id$="uploadStarted"]').trigger('click');
-                            //alert("upload started");
-                        }
-                        function uploadFinished(fileupload) {
-                            if (fileupload.files.length === 0) {
-                              //  $('button[id$="AllUploadsFinished"]').trigger('click');
-                                $('button[id$="updateEditDataFilesButtonsForUpload"]').trigger('click');
-                                //stop observer when we're done
-                                if(observer !=null) {
-                                  observer.disconnect();
-                                  observer=null;
-                                }
-                            }
-                        }
-                        function uploadFailure(fileUpload) {
-                        	// This handles HTTP errors (non-20x reponses) such as 0 (no connection at all), 413 (Request too large),
-                        	// and 504 (Gateway timeout) where the upload call to the server fails (the server doesn't receive the request)
-                        	// It notifies the user and provides info about the error (status, statusText)
-                        	// On some browsers, the status is available in an event: window.event.srcElement.status
-                        	// but others, (Firefox) don't support this. The calls below retrieve the status and other info 
-                        	// from the call stack instead (arguments to the fail() method that calls onerror() that calls this function
-                        	
-                        	//Retrieve the error number (status) and related explanation (statusText)
-                        	var status = arguments.callee.caller.caller.arguments[1].jqXHR.status;
-                            var statusText = arguments.callee.caller.caller.arguments[1].jqXHR.statusText;
-                            //statusText for error 0 is the unhelpful 'error'
-                            if(status == 0) statusText='Network Error';
-                            
-                            // There are various metadata available about which file the error pertains to
-                            // including the name and size. 
-                            // However, since the table rows created by PrimeFaces only show name and approximate size, 
-                            // these may not uniquely identify the affected file. Therefore, we set a unique upid attribute
-                            // in uploadStarted (and the MutationObserver there) and look for that here. The files array has
-                            // only one element and that element includes a description of the row involved, including it's upid.
-                            
-                            var name = arguments.callee.caller.caller.arguments[1].files[0].name;
-                        	var id = arguments.callee.caller.caller.arguments[1].files[0].row[0].attributes.upid.value;
-                        	//Log the error 
-                        	console.log('Upload error:' + name + ' upid=' + id + ', Error ' + status + ': ' + statusText );
-                            //Find the table
-                            var rows  = document.getElementById('datasetForm:fileUpload').getElementsByTagName('tbody')[0].children;
-                            //Create an error element
-                            var node = document.createElement("TD");
-                            //Add a class to make finding these errors easy
-                            node.classList.add('ui-fileupload-error');
-                            //Add the standard error message class for formatting purposes
-                            node.classList.add('ui-message-error');
-                            var textnode = document.createTextNode("Upload unsuccessful (" + status + ": " + statusText + ").");
-                            node.appendChild(textnode);
-                            //Add the error message to the correct row
-                            for(i=0;i<rows.length;i++) {
-                               	if(rows[i].getAttribute('upid') == id) {
-                               		//Remove any existing error message/only show last error (have seen two error 0 from one network disconnect)
-                               		var err = rows[i].getElementsByClassName('ui-fileupload-error');
-                               		if(err.length != 0) {
-                               			err[0].remove();
-                               		}
-                                 	rows[i].appendChild(node);
-                                 	break;
-                               	}
                             }
                         }
                         function dropBoxUploadFinished(fileupload) {
@@ -193,7 +93,6 @@
                         $(document).ready(function () {
                             uploadWidgetDropMsg();
                         });
-//]]>
                     </script>
                     <!-- ATTENTION: the update= attribute in the fileUpload component --> 
                     <!-- below appears to be super important -->
@@ -230,7 +129,7 @@
                                   process="filesTable" 
                                   update=":datasetForm:filesTable, @([id$=filesButtons])"
                                   label="#{bundle['file.selectToAddBtn']}"
-                                  oncomplete="javascript:dataset_fileupload_rebind();uploadFinished(PF('fileUploadWidget'));uploadFinished();"
+                                  oncomplete="javascript:dataset_fileupload_rebind();uploadFinished(PF('fileUploadWidget'));"
                                   onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
                                   onerror="javascript:uploadFailure();"
                                   sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"
@@ -377,7 +276,6 @@
                     
                     <p:message for="fileUpload" id="uploadMessage" display="text" />
                     
-                    <p:commandButton id="uploadStarted" action="#{EditDatafilesPage.uploadStarted()}" update="" style="display:none"/>
                     <p:commandButton id="updateEditDataFilesButtonsForUpload" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>
                     <p:commandButton id="updateEditDataFilesButtonsForDelete" action="#{EditDatafilesPage.deleteFilesCompleted()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>
                     <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="@form,datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
@@ -432,7 +330,7 @@
                             <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !fileMetadata.dataFile.previewImageAvailable)}"/>
                             <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and fileMetadata.dataFile.previewImageAvailable}">
                                 <h:graphicImage value="#{EditDatafilesPage.getTemporaryPreviewAsBase64(fileMetadata.dataFile.storageIdentifier)}"/>
-                                <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info text-center show"/>
+                                <h:outputText id="imgPreview" value="#{bundle['preview']}" styleClass="bg-info text-info text-center show"/>
                             </ui:fragment>
                             <!-- Restricted File Icon -->
                             <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted}">
@@ -699,152 +597,152 @@
                     <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.spss-savEncoding.title']}</p>
                     <p class="form-control-static"><h:outputText id="selectedEncoding" value="#{bundle['file.spss-savEncoding.current']} #{EditDatafilesPage.ingestLanguageEncoding}"/></p>
                     <p:tieredMenu id="spssSavEncodingLanguage" styleClass="form-control">
-                        <p:submenu label="Select Language Encoding...">
-                            <p:submenu label="West European">
-                                <p:menuitem value="Western (ISO-8859-1)" update="selectedEncoding"
+                        <p:submenu label="#{bundle['editfilesfragment.mainlabel']}">
+                            <p:submenu label="#{bundle['editfilesfragment.label1']}">
+                                <p:menuitem value="#{bundle['editfilesfragment.label1.item1']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-1')}">
                                 </p:menuitem>
-                                <p:menuitem value="Western (ISO-8859-15)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label1.item2']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-15')}">
                                 </p:menuitem>
-                                <p:menuitem value="Western (Windows-1252)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label1.item3']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('windows-1252')}">
                                 </p:menuitem>
-                                <p:menuitem value="Western (MacRoman)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label1.item4']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('macintosh')}">
                                 </p:menuitem>
-                                <p:menuitem value="Western (IBM-850)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label1.item5']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('ibm850')}">
                                 </p:menuitem>
-                                <p:menuitem value="Celtic (ISO-8859-14)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label1.item6']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-14')}">
                                 </p:menuitem>
-                                <p:menuitem value="Greek (ISO-8859-7)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label1.item7']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-7')}">
                                 </p:menuitem>
-                                <p:menuitem value="Greek (Windows-1253)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label1.item8']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('windows-1253')}">
                                 </p:menuitem>
-                                <p:menuitem value="Greek (MacGreek)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label1.item9']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('x-mac-greek')}">
                                 </p:menuitem>
-                                <p:menuitem value="Icelandic (MacIcelandic)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label1.item10']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('x-mac-icelandic')}">
                                 </p:menuitem>
-                                <p:menuitem value="Nordic (ISO-8859-10)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label1.item11']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-10')}">
                                 </p:menuitem>
-                                <p:menuitem value="South European (ISO-8859-3)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label1.item12']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-3')}">
                                 </p:menuitem>
                             </p:submenu>
-                            <p:submenu label="East European">
-                                <p:menuitem value="Baltic (ISO-8859-4)" update="selectedEncoding"
+                            <p:submenu label="#{bundle['editfilesfragment.label2']}">
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item1']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-4')}">
                                 </p:menuitem>
-                                <p:menuitem value="Baltic (ISO-8859-13)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item2']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-13')}">
                                 </p:menuitem>
-                                <p:menuitem value="Baltic (Windows-1257)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item3']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('windows-1257')}">
                                 </p:menuitem>
-                                <p:menuitem value="Cyrillic (ISO-8859-5)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item4']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-5')}">
                                 </p:menuitem>
-                                <p:menuitem value="Cyrillic (ISO-IR-111)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item5']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('iso-ir-111')}">
                                 </p:menuitem>
-                                <p:menuitem value="Cyrillic (Windows-1251)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item6']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('windows-1251')}">
                                 </p:menuitem>
-                                <p:menuitem value="Cyrillic (MacCyrillic)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item7']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('x-mac-cyrillic')}">
                                 </p:menuitem>
-                                <p:menuitem value="Cyrillic/Ukrainian (MacUkrainian)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item8']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('x-mac-ukrainian')}">
                                 </p:menuitem>
-                                <p:menuitem value="Cyrillic (KOI8-R)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item9']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('koi8-r')}">
                                 </p:menuitem>
-                                <p:menuitem value="Cyrillic/Ukrainian (KOI8-U)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item10']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('koi8-u')}">
                                 </p:menuitem>
-                                <p:menuitem value="Croatian (MacCroatian)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item11']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('x-mac-croatian')}">
                                 </p:menuitem>
-                                <p:menuitem value="Romanian (MacRomanian)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item12']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('x-mac-romanian')}">
                                 </p:menuitem>
-                                <p:menuitem value="Romanian (ISO-8859-16)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item13']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-16')}">
                                 </p:menuitem>
-                                <p:menuitem value="Central European (ISO-8859-2)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item14']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('iso-8859-2')}">
                                 </p:menuitem>
-                                <p:menuitem value="Central European (Windows-1250)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item15']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('windows-1250')}">
                                 </p:menuitem>
-                                <p:menuitem value="Central European (MacCE)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item16']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('x-mac-ce')}">
                                 </p:menuitem>
-                                <p:menuitem value="Cyrillic (IBM-855)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label2.item17']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('ibm855')}">
                                 </p:menuitem>
                             </p:submenu>
-                            <p:submenu label="East Asian">
-                                <p:menuitem value="Japanese (ISO-2022-JP)" update="selectedEncoding"
+                            <p:submenu label="#{bundle['editfilesfragment.label3']}">
+                                <p:menuitem value="#{bundle['editfilesfragment.label3.item1']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('iso-2022-jp')}">
                                 </p:menuitem>
-                                <p:menuitem value="Japanese (Shift_JIS)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label3.item2']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('shift_jis')}">
                                 </p:menuitem>
-                                <p:menuitem value="Japanese (EUC-JP)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label3.item3']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('euc-jp')}">
                                 </p:menuitem>
-                                <p:menuitem value="Chinese Traditional (Big5)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label3.item4']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('big5')}">
                                 </p:menuitem>
-                                <p:menuitem value="Chinese Traditional (Big5-HKSCS)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label3.item5']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('big5-hkscs')}">
                                 </p:menuitem>
-                                <p:menuitem value="Chinese Traditional (EUC-TW)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label3.item6']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('x-euc-tw')}">
                                 </p:menuitem>
-                                <p:menuitem value="Chinese Simplified (GB2312)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label3.item7']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('gb2312')}">
                                 </p:menuitem>
-                                <p:menuitem value="Chinese Simplified (HZ)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label3.item8']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('hz-gb-2312')}">
                                 </p:menuitem>
-                                <p:menuitem value="Chinese Simplified (GBK)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label3.item9']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('gbk')}">
                                 </p:menuitem>
-                                <p:menuitem value="Chinese Simplified (ISO-2022-CN)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label3.item10']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('iso-2022-cn')}">
                                 </p:menuitem>
-                                <p:menuitem value="Korean (EUC-KR)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label3.item11']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('euc-kr')}">
                                 </p:menuitem>
-                                <p:menuitem value="Korean (JOHAB)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label3.item12']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('x-johab')}">
                                 </p:menuitem>
-                                <p:menuitem value="Korean (ISO-2022-KR)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label3.item13']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('iso-2022-kr')}">
                                 </p:menuitem>
                             </p:submenu>
-                            <p:submenu label="Unicode">
-                                <p:menuitem value="Unicode (UTF-8)" update="selectedEncoding"
+                            <p:submenu label="#{bundle['editfilesfragment.label4']}">
+                                <p:menuitem value="#{bundle['editfilesfragment.label4.item1']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('utf-8')}">
                                 </p:menuitem>
-                                <p:menuitem value="Unicode (UTF-16LE)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label4.item2']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('utf-16le')}">
                                 </p:menuitem>
-                                <p:menuitem value="Unicode (UTF-16BE)" update="selectedEncoding"
+                                <p:menuitem value="#{bundle['editfilesfragment.label4.item3']}" update="selectedEncoding"
                                             actionListener="#{EditDatafilesPage.setIngestEncoding('utf-16be')}">
                                 </p:menuitem>
                             </p:submenu>
                             <p:separator />
-                            <p:menuitem value="US-ASCII" update="selectedEncoding"
+                            <p:menuitem value="#{bundle['editfilesfragment.label5']}" update="selectedEncoding"
                                         actionListener="#{EditDatafilesPage.setIngestEncoding('US-ASCII')}">
                             </p:menuitem>
                         </p:submenu>

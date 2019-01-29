@@ -2,12 +2,14 @@ package edu.harvard.iq.dataverse.passwordreset;
 
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -93,20 +95,15 @@ public class PasswordResetServiceBean {
 
     private void sendPasswordResetEmail(BuiltinUser aUser, String passwordResetUrl) throws PasswordResetException {
         AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
-        
-        String messageBody = "Hi " + authUser.getName() + ",\n\n"
-                + "Someone, hopefully you, requested a password reset for " + aUser.getUserName() + ".\n\n"
-                + "Please click the link below to reset your Dataverse account password:\n\n"
-                + passwordResetUrl + "\n\n"
-                + "The link above will only work for the next " + SystemConfig.getMinutesUntilPasswordResetTokenExpires() + " minutes.\n\n"
-                /**
-                 * @todo It would be a nice touch to show the IP from
-                 * which the password reset originated.
-                 */
-                + "Please contact us if you did not request this password reset or need further help.\n\n";
+
+        String pattern = BundleUtil.getStringFromBundle("notification.email.passwordReset");
+
+        String[] paramArray = {authUser.getName(), aUser.getUserName() ,passwordResetUrl,  SystemConfig.getMinutesUntilPasswordResetTokenExpires()+""  };
+        String messageBody = MessageFormat.format(pattern, paramArray);
+
         try {
             String toAddress = authUser.getEmail();
-            String subject = "Dataverse Password Reset Requested";
+            String subject = BundleUtil.getStringFromBundle("notification.email.passwordReset.subject");
             mailService.sendSystemEmail(toAddress, subject, messageBody);
         } catch (Exception ex) {
             /**

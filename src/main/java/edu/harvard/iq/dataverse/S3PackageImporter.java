@@ -21,10 +21,10 @@ import edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordWriter;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import edu.harvard.iq.dataverse.util.FileUtil;;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -34,8 +34,6 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 
 /**
  * This class is for importing files added to s3 outside of dataverse.
@@ -59,6 +57,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
     @EJB
     EjbDataverseEngine commandEngine;
     
+    //Copies from another s3 bucket to our own
     public void copyFromS3(Dataset dataset, String s3ImportPath) throws IOException {
         try {
             s3 = AmazonS3ClientBuilder.standard().defaultClient();
@@ -67,11 +66,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
                     "Cannot instantiate a S3 client using; check your AWS credentials and region",
                     e);
         }
-
-        JsonObjectBuilder bld = jsonObjectBuilder();
-
-        String fileMode = FileRecordWriter.FILE_MODE_PACKAGE_FILE;
-
+        
         String dcmBucketName = System.getProperty("dataverse.files.dcm-s3-bucket-name");
         String dcmDatasetKey = s3ImportPath;
         String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
@@ -133,79 +128,117 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
                 throw new IOException("Failed to delete object" + new Object[]{item});
             }
         }
-
     }
     
-    public DataFile createPackageDataFile(Dataset dataset, String folderName, long totalSize) {
-            DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
-            packageFile.setChecksumType(DataFile.ChecksumType.SHA1);
-            
-            FileUtil.generateStorageIdentifier(packageFile);
-            
-            
-            String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
-            String dvDatasetKey = getS3DatasetKey(dataset);
-            S3Object s3object = null; 
+    public DataFile createPackageDataFile(Dataset dataset, String folderName, long totalSize) throws IOException {
+        DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
+        packageFile.setChecksumType(DataFile.ChecksumType.SHA1);
 
-            s3object = s3.getObject(new GetObjectRequest(dvBucketName, dvDatasetKey+"/files.sha"));
-           
-            InputStream in = s3object.getObjectContent();
-            String checksumVal = FileUtil.CalculateChecksum(in, packageFile.getChecksumType());
+        //This is a brittle calculation, changes of the dcm post_upload script will blow this up
+        String rootPackageName = "package_" + folderName.replace("/", "");
 
-            packageFile.setChecksumValue(checksumVal); 
+        String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
+        String dvDatasetKey = getS3DatasetKey(dataset);
 
-            packageFile.setFilesize(totalSize);
-            packageFile.setModificationTime(new Timestamp(new Date().getTime()));
-            packageFile.setCreateDate(new Timestamp(new Date().getTime()));
-            packageFile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
-            packageFile.setOwner(dataset);
-            dataset.getFiles().add(packageFile);
+        //getting the name of the .sha file via substring, ${packageName}.sha
+        logger.log(Level.INFO, "shaname {0}", new Object[]{rootPackageName  + ".sha"});
 
-            packageFile.setIngestDone();
+        if(!s3.doesObjectExist(dvBucketName, dvDatasetKey + "/" + rootPackageName + ".zip")) {
+            throw new IOException ("S3 Package data file could not be found after copy from dcm. Name: " + dvDatasetKey + "/" + rootPackageName + ".zip");
+        }
 
-            // set metadata and add to latest version
-            FileMetadata fmd = new FileMetadata();
-            fmd.setLabel(folderName.substring(folderName.lastIndexOf('/') + 1));
-            
-            fmd.setDataFile(packageFile);
-            packageFile.getFileMetadatas().add(fmd);
-            if (dataset.getLatestVersion().getFileMetadatas() == null) dataset.getLatestVersion().setFileMetadatas(new ArrayList<>());
+        S3Object s3FilesSha = s3.getObject(new GetObjectRequest(dvBucketName, dvDatasetKey + "/" + rootPackageName  + ".sha"));
 
-            dataset.getLatestVersion().getFileMetadatas().add(fmd);
-            fmd.setDatasetVersion(dataset.getLatestVersion());
-            
-            GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
-            if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
-                String packageIdentifier = dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean);
-                packageFile.setIdentifier(packageIdentifier);
-            }
-            
-            String nonNullDefaultIfKeyNotFound = "";
-            String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-            String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+        InputStreamReader str = new InputStreamReader(s3FilesSha.getObjectContent());
+        BufferedReader reader = new BufferedReader(str);
+        String checksumVal = "";
+        try {
+            String line;
+            while((line = reader.readLine()) != null && checksumVal.isEmpty()) {
+                logger.log(Level.FINE, "line {0}", new Object[]{line});
+                String[] splitLine = line.split("  ");
 
-            if (packageFile.getProtocol() == null) {
-                packageFile.setProtocol(protocol);
-            }
-            if (packageFile.getAuthority() == null) {
-                packageFile.setAuthority(authority);
-            }
-
-            if (!packageFile.isIdentifierRegistered()) {
-                String doiRetString = "";
-                idServiceBean = GlobalIdServiceBean.getBean(commandEngine.getContext());
-                try {
-                    doiRetString = idServiceBean.createIdentifier(packageFile);
-                } catch (Throwable e) {
-                    
-                }
-
-                // Check return value to make sure registration succeeded
-                if (!idServiceBean.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
-                    packageFile.setIdentifierRegistered(true);
-                    packageFile.setGlobalIdCreateTime(new Date());
+                //the sha file should only contain one entry, but incase it doesn't we will check for the one for our zip
+                if(splitLine[1].contains(rootPackageName + ".zip")) { 
+                    checksumVal = splitLine[0];
+                    logger.log(Level.FINE, "checksumVal found {0}", new Object[]{checksumVal});
                 }
             }
+            if(checksumVal.isEmpty()) {
+                logger.log(Level.SEVERE, "No checksum found for uploaded DCM S3 zip on dataset {0}", new Object[]{dataset.getIdentifier()});
+            }                
+        } catch (IOException ex){
+            logger.log(Level.SEVERE, "Error parsing DCM s3 checksum file on dataset {0} . Error: {1} ", new Object[]{dataset.getIdentifier(), ex});
+        } finally {
+            try {
+                str.close();
+                reader.close();
+            } catch (IOException ex) {
+                logger.log(Level.WARNING, "errors closing s3 DCM object reader stream: {0}", new Object[]{ex});
+            }
+
+        }
+
+        logger.log(Level.FINE, "Checksum value for the package in Dataset {0} is: {1}", 
+           new Object[]{dataset.getIdentifier(), checksumVal});
+
+        packageFile.setChecksumValue(checksumVal); 
+
+        packageFile.setFilesize(totalSize);
+        packageFile.setModificationTime(new Timestamp(new Date().getTime()));
+        packageFile.setCreateDate(new Timestamp(new Date().getTime()));
+        packageFile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
+        packageFile.setOwner(dataset);
+        dataset.getFiles().add(packageFile);
+
+        packageFile.setIngestDone();
+
+        // set metadata and add to latest version
+        // Set early so we can generate the storage id with the info
+        FileMetadata fmd = new FileMetadata();
+        fmd.setLabel(rootPackageName + ".zip");
+
+        fmd.setDataFile(packageFile);
+        packageFile.getFileMetadatas().add(fmd);
+        if (dataset.getLatestVersion().getFileMetadatas() == null) dataset.getLatestVersion().setFileMetadatas(new ArrayList<>());
+
+        dataset.getLatestVersion().getFileMetadatas().add(fmd);
+        fmd.setDatasetVersion(dataset.getLatestVersion());
+
+        FileUtil.generateS3PackageStorageIdentifier(packageFile);
+
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
+        if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
+            String packageIdentifier = dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean);
+            packageFile.setIdentifier(packageIdentifier);
+        }
+
+        String nonNullDefaultIfKeyNotFound = "";
+        String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+        String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+
+        if (packageFile.getProtocol() == null) {
+            packageFile.setProtocol(protocol);
+        }
+        if (packageFile.getAuthority() == null) {
+            packageFile.setAuthority(authority);
+        }
+
+        if (!packageFile.isIdentifierRegistered()) {
+            String doiRetString = "";
+            idServiceBean = GlobalIdServiceBean.getBean(commandEngine.getContext());
+            try {
+                doiRetString = idServiceBean.createIdentifier(packageFile);
+            } catch (Throwable e) {
+
+            }
+
+            // Check return value to make sure registration succeeded
+            if (!idServiceBean.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
+                packageFile.setIdentifierRegistered(true);
+                packageFile.setGlobalIdCreateTime(new Date());
+            }
+        }
 
         return packageFile;
     }

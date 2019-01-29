@@ -25,19 +25,14 @@ import java.io.FileReader;
 import java.util.logging.*;
 import java.util.*;
 
-import javax.inject.Inject;
-
-
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
@@ -51,8 +46,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 
 /**
@@ -99,15 +92,15 @@ public class XLSXFileReader extends TabularDataFileReader {
         try {
             processSheet(stream, dataTable, firstPassWriter);
         } catch (Exception ex) {
-            throw new IOException("Could not parse Excel/XLSX spreadsheet. "+ex.getMessage());
+            throw new IOException(BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.parse" , Arrays.asList(ex.getMessage())));
         }
 
         if (dataTable.getCaseQuantity() == null || dataTable.getCaseQuantity().intValue() < 1) {
             String errorMessage; 
             if (dataTable.getVarQuantity() == null || dataTable.getVarQuantity().intValue() < 1) {
-                errorMessage = "No rows of data found in the Excel (XLSX) file.";
+                errorMessage = BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.norows");
             } else {
-                errorMessage = "Only one row of data (column name header?) detected in the Excel (XLSX) file.";
+                errorMessage = BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.onlyonerow");
             }
             throw new IOException(errorMessage);
         }
@@ -132,12 +125,11 @@ public class XLSXFileReader extends TabularDataFileReader {
             valueTokens = line.split("" + delimiterChar, -2);
 
             if (valueTokens == null) {
-                throw new IOException("Failed to read line " + (lineCounter + 1) + " during the second pass.");
+                throw new IOException(BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.failed" , Arrays.asList(Integer.toString(lineCounter + 1))));
             }
 
             if (valueTokens.length != varQnty) {
-                throw new IOException("Reading mismatch, line " + (lineCounter + 1) + " during the second pass: "
-                        + varQnty + " delimited values expected, " + valueTokens.length + " found.");
+                throw new IOException(BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.mismatch" , Arrays.asList(Integer.toString(lineCounter + 1),Integer.toString(varQnty),Integer.toString(valueTokens.length))));
             }
         
             for (int i = 0; i < varQnty; i++) {
@@ -203,7 +195,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         finalWriter.close();
         
         if (dataTable.getCaseQuantity().intValue() != lineCounter) {
-            throw new IOException("Mismatch between line counts in first and final passes!");
+            throw new IOException(BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.linecount"));
         }
         
         dataTable.setUnf("UNF:6:NOTCALCULATED");
