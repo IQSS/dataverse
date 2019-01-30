@@ -257,7 +257,18 @@ public class ExternalToolServiceBeanTest {
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
         job.add("toolUrl", "http://awesometool.com");
-        job.add("toolParameters", Json.createObjectBuilder().build());
+        
+        job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
+                .add(Json.createObjectBuilder()
+                        .add("fileid", "{fileId}")
+                        .build())
+                .add(Json.createObjectBuilder()
+                        .add("key", "{apiToken}")
+                        .build())
+                .add(Json.createObjectBuilder()
+                        .add("mode", "mode1")
+                        .build())
+                .build()));
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
         ExternalTool externalTool = null;

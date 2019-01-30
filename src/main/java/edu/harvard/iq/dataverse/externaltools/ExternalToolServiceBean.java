@@ -114,6 +114,7 @@ public class ExternalToolServiceBean {
         }
         JsonReader jsonReader = Json.createReader(new StringReader(manifest));
         JsonObject jsonObject = jsonReader.readObject();
+        //Note: ExternalToolServiceBeanTest tests are dependent on the order of these retrievals
         String displayName = getRequiredTopLevelField(jsonObject, DISPLAY_NAME);
         String description = getRequiredTopLevelField(jsonObject, DESCRIPTION);
         String typeUserInput = getRequiredTopLevelField(jsonObject, TYPE);
