@@ -95,7 +95,6 @@ public class ImportDDIServiceBean {
     public static final String NOTE_TYPE_REPLICATION_FOR = "DVN:REPLICATION_FOR";
     private static final String HARVESTED_FILE_STORAGE_PREFIX = "http://";
     private XMLInputFactory xmlInputFactory = null;
-    private static final Logger logger = Logger.getLogger(ImportDDIServiceBean.class.getName());
 
     @EJB CustomFieldServiceBean customFieldService;
 
