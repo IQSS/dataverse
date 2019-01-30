@@ -28,15 +28,24 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
     
     private final List<FileMetadata> filesToDelete;
     private boolean validateLenient = false;
+    private final DatasetVersion clone;
     
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
         this.filesToDelete = new ArrayList<>();
+        this.clone = null;
     }    
     
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete) {
         super(aRequest, theDataset);
         this.filesToDelete = filesToDelete;
+        this.clone = null;
+    }
+    
+    public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete, DatasetVersion clone) {
+        super(aRequest, theDataset);
+        this.filesToDelete = filesToDelete;
+        this.clone = clone;
     }
     
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, DataFile fileToDelete) {
@@ -44,13 +53,20 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         
         // get the latest file metadata for the file; ensuring that it is a draft version
         this.filesToDelete = new ArrayList<>();
+        this.clone = null;
         for (FileMetadata fmd : theDataset.getEditVersion().getFileMetadatas()) {
             if (fmd.getDataFile().equals(fileToDelete)) {
                 filesToDelete.add(fmd);
                 break;
             }
         }
-    }    
+    } 
+    
+    public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, DatasetVersion clone) {
+        super(aRequest, theDataset);
+        this.filesToDelete = new ArrayList<>();
+        this.clone = clone;
+    } 
 
     public boolean isValidateLenient() {
         return validateLenient;
@@ -158,7 +174,11 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
 
         updateDatasetUser(ctxt);
         ctxt.index().indexDataset(savedDataset, true);
-
+        if (clone != null) {
+            DatasetVersionDifference dvd = new DatasetVersionDifference(editVersion, clone);
+            AuthenticatedUser au = (AuthenticatedUser) getUser();
+            ctxt.datasetVersion().writeEditVersionLog(dvd, au);
+        } 
         return savedDataset; 
     }
 

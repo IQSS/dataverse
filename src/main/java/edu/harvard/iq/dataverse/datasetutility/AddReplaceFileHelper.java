@@ -129,6 +129,7 @@ public class AddReplaceFileHelper{
     // -----------------------------------
     private User user;
     private DatasetVersion workingVersion;
+    private DatasetVersion clone;
     List<DataFile> initialFileList; 
     List<DataFile> finalFileList;
     
@@ -1045,7 +1046,7 @@ public class AddReplaceFileHelper{
 
         // Load the working version of the Dataset
         workingVersion = dataset.getEditVersion();
-                
+        clone =   workingVersion.cloneDatasetVersion();
         try {
             initialFileList = FileUtil.createDataFiles(workingVersion,
                     this.newFileInputStream,
@@ -1442,7 +1443,7 @@ public class AddReplaceFileHelper{
         }
 
         Command<Dataset> update_cmd;
-        update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest);
+        update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
         ((UpdateDatasetVersionCommand) update_cmd).setValidateLenient(true);  
         
         try {            

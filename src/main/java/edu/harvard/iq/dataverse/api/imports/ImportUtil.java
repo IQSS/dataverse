@@ -12,7 +12,9 @@ package edu.harvard.iq.dataverse.api.imports;
 public interface ImportUtil {
    public enum ImportType{ 
        /** ? */
-       NEW, 
+       NEW,
+       /** TODO: had to do a distinction because of otherMath tag causing problem, will be discussing about it in pull request **/
+       IMPORT,
 
        /** Data is harvested from another Dataverse instance */
        HARVEST

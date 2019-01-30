@@ -23,8 +23,14 @@ import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 public class BuiltinAuthenticationProvider implements CredentialsAuthenticationProvider {
     
     public static final String PROVIDER_ID = "builtin";
-    private static String KEY_USERNAME_OR_EMAIL;
-    private static String KEY_PASSWORD;
+    /**
+     * TODO: Think more about if it really makes sense to have the key for a
+     * credential be a Bundle key. What if we want to reorganize our Bundle
+     * files and rename some Bundle keys? Would login be broken until we update
+     * the strings below?
+     */
+    public static final String KEY_USERNAME_OR_EMAIL = "login.builtin.credential.usernameOrEmail";
+    public static final String KEY_PASSWORD = "login.builtin.credential.password";
     private static List<Credential> CREDENTIALS_LIST;
       
     final BuiltinUserServiceBean bean;
@@ -35,8 +41,6 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
         this.bean = aBean;
         this.authBean = auBean;
         this.passwordValidatorService = passwordValidatorService;
-        KEY_USERNAME_OR_EMAIL = BundleUtil.getStringFromBundle("login.builtin.credential.usernameOrEmail");
-        KEY_PASSWORD = BundleUtil.getStringFromBundle("login.builtin.credential.password");
         CREDENTIALS_LIST = Arrays.asList(new Credential(KEY_USERNAME_OR_EMAIL), new Credential(KEY_PASSWORD, true));
     }
 

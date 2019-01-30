@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 /**
  *
@@ -22,6 +23,7 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
     
     private final DataFile file;
     private final AuthenticatedUser requester;
+    private final Boolean sendNotification;
 
 
     public RequestAccessCommand(DataverseRequest dvRequest, DataFile file) {
@@ -29,11 +31,29 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         super(dvRequest, file);        
         this.file = file;        
         this.requester = (AuthenticatedUser) dvRequest.getUser();
+        this.sendNotification = false;
+    }
+    
+        public RequestAccessCommand(DataverseRequest dvRequest, DataFile file, Boolean sendNotification) {
+        // for data file check permission on owning dataset
+        super(dvRequest, file);        
+        this.file = file;        
+        this.requester = (AuthenticatedUser) dvRequest.getUser();
+        this.sendNotification = sendNotification;
     }
 
     @Override
-    public DataFile execute(CommandContext ctxt) throws CommandException {       
+    public DataFile execute(CommandContext ctxt) throws CommandException {
+        
+       if(!file.getOwner().isFileAccessRequest()){
+            throw new CommandException(BundleUtil.getStringFromBundle("file.requestAccess.notAllowed"), this);
+       }
+        
+        
         file.getFileAccessRequesters().add(requester);
+        if(sendNotification){
+           ctxt.fileDownload().sendRequestFileAccessNotification(this.file.getOwner(), this.file.getId(), requester);
+        }
         return ctxt.files().save(file);
     }
 

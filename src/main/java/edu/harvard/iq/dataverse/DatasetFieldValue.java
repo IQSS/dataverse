@@ -115,6 +115,23 @@ public class DatasetFieldValue implements Serializable {
         return retVal;
     }
 
+    public String getUnsanitizedDisplayValue() {
+        String retVal = "";
+        if (!StringUtils.isBlank(this.getValue()) && !DatasetField.NA_VALUE.equals(this.getValue())) {
+            String format = this.datasetField.getDatasetFieldType().getDisplayFormat();
+            if (StringUtils.isBlank(format)) {
+                format = "#VALUE";
+            }           
+            String value = this.getValue();    
+            String displayValue = format
+                    .replace("#NAME",  this.datasetField.getDatasetFieldType().getTitle() == null ? "" : this.datasetField.getDatasetFieldType().getTitle())
+                    .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
+                    .replace("#VALUE", value);
+            retVal = displayValue;
+        }
+        return retVal;
+    }
+    
     public int getDisplayOrder() {
         return displayOrder;
     }

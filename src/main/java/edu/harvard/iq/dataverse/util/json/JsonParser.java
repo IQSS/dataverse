@@ -333,6 +333,7 @@ public class JsonParser {
             terms.setSizeOfCollection(obj.getString("sizeOfCollection", null));
             terms.setStudyCompletion(obj.getString("studyCompletion", null));
             terms.setLicense(parseLicense(obj.getString("license", null)));
+            terms.setFileAccessRequest(obj.getBoolean("fileAccessRequest", false));
             dsv.setTermsOfUseAndAccess(terms);
             
             dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
@@ -995,6 +996,12 @@ public class JsonParser {
             Map<String,String> paramMap = new HashMap<>();
             params.keySet().forEach(k -> paramMap.put(k,jsonValueToString(params.get(k))));
             wsd.setStepParameters(paramMap);
+        }
+        if ( json.containsKey("requiredSettings") ) {
+            JsonObject settings = json.getJsonObject("requiredSettings");
+            Map<String,String> settingsMap = new HashMap<>();
+            settings.keySet().forEach(k -> settingsMap.put(k,jsonValueToString(settings.get(k))));
+            wsd.setStepSettings(settingsMap);
         }
         return wsd;
     }

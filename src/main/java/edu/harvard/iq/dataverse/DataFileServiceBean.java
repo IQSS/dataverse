@@ -491,7 +491,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         if (MIME_TYPE_TSV.equalsIgnoreCase(contentType)) {
             Object[] dtResult;
             try {
-                dtResult = (Object[]) em.createNativeQuery("SELECT ID, UNF, CASEQUANTITY, VARQUANTITY, ORIGINALFILEFORMAT FROM dataTable WHERE DATAFILE_ID = " + id).getSingleResult();
+                dtResult = (Object[]) em.createNativeQuery("SELECT ID, UNF, CASEQUANTITY, VARQUANTITY, ORIGINALFILEFORMAT, ORIGINALFILESIZE FROM dataTable WHERE DATAFILE_ID = " + id).getSingleResult();
             } catch (Exception ex) {
                 dtResult = null;
             }
@@ -508,6 +508,8 @@ public class DataFileServiceBean implements java.io.Serializable {
                 dataTable.setVarQuantity((Long)dtResult[3]);
             
                 dataTable.setOriginalFileFormat((String)dtResult[4]);
+                
+                dataTable.setOriginalFileSize((Long)dtResult[5]);
                 
                 dataTable.setDataFile(dataFile);
                 dataFile.setDataTable(dataTable);
@@ -567,7 +569,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         int i = 0; 
         
-        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + ")) ORDER BY t0.ID").getResultList();
+        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT, t0.ORIGINALFILESIZE FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + ")) ORDER BY t0.ID").getResultList();
         
         for (Object[] result : dataTableResults) {
             DataTable dataTable = new DataTable(); 
@@ -582,6 +584,8 @@ public class DataFileServiceBean implements java.io.Serializable {
             dataTable.setVarQuantity((Long)result[4]);
             
             dataTable.setOriginalFileFormat((String)result[5]);
+            
+            dataTable.setOriginalFileSize((Long)result[6]);
             
             dataTables.add(dataTable);
             datatableMap.put(fileId, i++);
@@ -1444,7 +1448,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }  // end: isReplacementFile
     
     public List<Long> selectFilesWithMissingOriginalTypes() {
-        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND t.originalfileformat='" + MIME_TYPE_TSV + "' ORDER BY f.id");
+        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND (t.originalfileformat='" + MIME_TYPE_TSV + "' OR t.originalfileformat IS NULL) ORDER BY f.id");
         
         try {
             return query.getResultList();
@@ -1453,7 +1457,15 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
     
-    
+    public List<Long> selectFilesWithMissingOriginalSizes() {
+        Query query = em.createNativeQuery("SELECT f.id FROM datafile f, datatable t where t.datafile_id = f.id AND (t.originalfilesize IS NULL ) AND (t.originalfileformat IS NOT NULL) ORDER BY f.id");
+        
+        try {
+            return query.getResultList();
+        } catch (Exception ex) {
+            return new ArrayList<>();
+        }
+    }
     
     public String generateDataFileIdentifier(DataFile datafile, GlobalIdServiceBean idServiceBean) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
@@ -1555,7 +1567,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             .getResultList().isEmpty();
             
         try{
-            if (idServiceBean.alreadyExists(datafile)) {
+            if (idServiceBean.alreadyExists(new GlobalId(testProtocol, testAuthority, userIdentifier))) {
                 u = false;
             }
         } catch (Exception e){

@@ -69,6 +69,12 @@ public class SystemConfig {
     public static final String FILES_DIRECTORY = "dataverse.files.directory";
 
     /**
+     * Some installations may not want download URLs to their files to be
+     * available in Schema.org JSON-LD output.
+     */
+    public static final String FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS = "dataverse.files.hide-schema-dot-org-download-urls";
+
+    /**
      * A JVM option to override the number of minutes for which a password reset
      * token is valid ({@link #minutesUntilPasswordResetTokenExpires}).
      */
@@ -887,7 +893,7 @@ public class SystemConfig {
          * go through Glassfish.
          */
         RSYNC("rsal/rsync"),
-        NATIVE("NATIVE");
+        NATIVE("native/http");
         private final String text;
 
         private FileDownloadMethods(final String text) {
@@ -999,10 +1005,15 @@ public class SystemConfig {
         }        
     }
     
-    public boolean isRsyncDownload()
-    {
+    public boolean isRsyncDownload() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
+    }
+    
+    public boolean isHTTPDownload() {
+        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
+        logger.warning("Download Methods:" + downloadMethods);
+        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.NATIVE.toString());
     }
     
     private Boolean getUploadMethodAvailable(String method){

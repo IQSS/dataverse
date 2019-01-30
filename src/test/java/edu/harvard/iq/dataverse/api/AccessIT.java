@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.hamcrest.collection.IsMapContaining;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.is;
@@ -58,6 +59,10 @@ public class AccessIT {
     public static String tabFile2NameConvert;
     public static String tabFile3NameRestrictedConvert;
     public static String tabFile4NameUnpublishedConvert;
+    
+    public static int tabFile1SizeOriginal = 279;
+    public static int tabFile1SizeConverted = 4;
+    public static int tabFile1SizeConvertedWithVarHeader = 9; 
     
     @BeforeClass
     public static void setUp() throws InterruptedException {
@@ -130,23 +135,18 @@ public class AccessIT {
     }
     
     @AfterClass
-    public static void tearDown() {        
+    public static void tearDown() {   
+
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
-        
+
         Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
-        //Deleting dataset cleaning up the files
 
-        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
-        deleteDataverseResponse.prettyPrint();
-        assertEquals(200, deleteDataverseResponse.getStatusCode());
-
-        Response deleteUserResponse = UtilIT.deleteUser(username);
-        deleteUserResponse.prettyPrint();
-        assertEquals(200, deleteUserResponse.getStatusCode());
     }
+    
+
     
     //This test does a lot of testing of non-original downloads as well
     @Test
@@ -154,12 +154,19 @@ public class AccessIT {
         //Not logged in non-restricted
         Response anonDownloadOriginal = UtilIT.downloadFileOriginal(tabFile1Id);
         Response anonDownloadConverted = UtilIT.downloadFile(tabFile1Id);
+        // ... and download the same tabular data file, but without the variable name header added:
+        Response anonDownloadTabularNoHeader = UtilIT.downloadTabularFileNoVarHeader(tabFile1Id);
         assertEquals(OK.getStatusCode(), anonDownloadOriginal.getStatusCode());
-        assertEquals(OK.getStatusCode(), anonDownloadConverted.getStatusCode()); //just to ensure next test
+        assertEquals(OK.getStatusCode(), anonDownloadConverted.getStatusCode());
+        assertEquals(OK.getStatusCode(), anonDownloadTabularNoHeader.getStatusCode());
         int origSizeAnon = anonDownloadOriginal.getBody().asByteArray().length;
         int convertSizeAnon = anonDownloadConverted.getBody().asByteArray().length;
-        System.out.println("origSize: "+origSizeAnon + " | convertSize: " + convertSizeAnon);
-        assertThat(origSizeAnon, is(not(convertSizeAnon)));
+        int tabularSizeNoVarHeader = anonDownloadTabularNoHeader.getBody().asByteArray().length;
+        System.out.println("origSize: "+origSizeAnon + " | convertSize: " + convertSizeAnon + " | convertNoHeaderSize: " + tabularSizeNoVarHeader);
+
+        assertEquals(origSizeAnon, tabFile1SizeOriginal);
+        assertEquals(convertSizeAnon, tabFile1SizeConvertedWithVarHeader);        
+        assertEquals(tabularSizeNoVarHeader, tabFile1SizeConverted);
         
         //Not logged in restricted
         Response anonDownloadOriginalRestricted = UtilIT.downloadFileOriginal(tabFile3IdRestricted);
@@ -182,7 +189,7 @@ public class AccessIT {
         int convertSizeAuth = authDownloadConverted.getBody().asByteArray().length;
         System.out.println("origSize: "+origSizeAuth + " | convertSize: " + convertSizeAuth);
         assertThat(origSizeAuth, is(not(convertSizeAuth)));  
-        
+                
         //Logged in restricted
         Response authDownloadOriginalRestricted = UtilIT.downloadFileOriginal(tabFile3IdRestricted, apiToken);
         Response authDownloadConvertedRestricted = UtilIT.downloadFile(tabFile3IdRestricted, apiToken);
@@ -402,5 +409,75 @@ public class AccessIT {
         return fileStreams;
     }
     
+    @Test
+    public void testRequestAccess() throws InterruptedException {
+
+        String pathToJsonFile = "scripts/api/data/dataset-create-new.json";
+        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetIdNew = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        String tabFile3NameRestrictedNew = "stata13-auto-withstrls.dta";
+        String tab3PathToFile = "scripts/search/data/tabular/" + tabFile3NameRestrictedNew;
+        Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
+        Response tab3AddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), tab3PathToFile, apiToken);
+        Integer tabFile3IdRestrictedNew = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        Thread.sleep(3000); //Dataverse needs more time...
+        Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestrictedNew.toString(), true, apiToken);
+        restrictResponse.prettyPrint();
+        restrictResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+        String apiTokenRando = UtilIT.getApiTokenFromResponse(createUser);
+        String apiIdentifierRando = UtilIT.getUsernameFromResponse(createUser);
+
+        Response randoDownload = UtilIT.downloadFile(tabFile3IdRestrictedNew, apiTokenRando);
+        assertEquals(403, randoDownload.getStatusCode());
+
+        Response requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        //Cannot request until we set the dataset to allow requests
+        assertEquals(400, requestFileAccessResponse.getStatusCode());
+        //Update Dataset to allow requests
+        Response allowAccessRequestsResponse = UtilIT.allowAccessRequests(datasetIdNew.toString(), true, apiToken);
+        assertEquals(200, allowAccessRequestsResponse.getStatusCode());
+        //Must republish to get it to work
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetIdNew, "major", apiToken);
+        assertEquals(200, publishDataset.getStatusCode());
+
+        requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        assertEquals(200, requestFileAccessResponse.getStatusCode());
+
+        Response listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken);
+        listAccessRequestResponse.prettyPrint();
+        assertEquals(200, listAccessRequestResponse.getStatusCode());
+        System.out.println("List Access Request: " + listAccessRequestResponse.prettyPrint());
+
+        listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        listAccessRequestResponse.prettyPrint();
+        assertEquals(400, listAccessRequestResponse.getStatusCode());
+
+        Response rejectFileAccessResponse = UtilIT.rejectFileAccessRequest(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
+        assertEquals(200, rejectFileAccessResponse.getStatusCode());
+
+        requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        //grant file access
+        Response grantFileAccessResponse = UtilIT.grantFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
+        assertEquals(200, grantFileAccessResponse.getStatusCode());
+
+        //Now should be able to download
+        randoDownload = UtilIT.downloadFile(tabFile3IdRestrictedNew, apiTokenRando);
+        assertEquals(OK.getStatusCode(), randoDownload.getStatusCode());
+
+        //revokeFileAccess        
+        Response revokeFileAccessResponse = UtilIT.revokeFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
+        assertEquals(200, revokeFileAccessResponse.getStatusCode());
+
+        listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken);
+        assertEquals(400, listAccessRequestResponse.getStatusCode());
+    }
+
 
 }
