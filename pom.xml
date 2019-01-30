@@ -586,7 +586,7 @@
             <version>1.19</version>
         </dependency>
 
-        <!!-- TRSA-Web own addition -->
+        <!-- TRSA-Web own addition -->
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>
