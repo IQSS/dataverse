@@ -76,8 +76,9 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                     publishedFmd.setRestricted(draftFmd.isRestricted());
                     metadataUpdated = true;
                 }
-                if (!draftFmd.getProvFreeForm().equals(publishedFmd.getProvFreeForm())) {
-                    publishedFmd.setProvFreeForm(draftFmd.getProvFreeForm());
+                String prov = draftFmd.getProvFreeForm();
+                if (prov!=null && (!draftFmd.getProvFreeForm().equals(publishedFmd.getProvFreeForm()))){
+                    publishedFmd.setProvFreeForm(prov);
                     metadataUpdated = true;
                 }
 
