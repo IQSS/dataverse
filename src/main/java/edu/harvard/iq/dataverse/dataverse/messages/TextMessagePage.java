@@ -36,7 +36,7 @@ public class TextMessagePage implements Serializable {
         lazydataverseTextMessages.setDataverseId(dataverseId);
         dataverse = dataverseServiceBean.find(dataverseId);
 
-        if (!permissionsWrapper.canIssueEditDataverseTextMessages(dataverseId)) {
+        if (!permissionsWrapper.canEditDataverseTextMessagesAndBanners(dataverseId)) {
             return permissionsWrapper.notAuthorized();
         }
 

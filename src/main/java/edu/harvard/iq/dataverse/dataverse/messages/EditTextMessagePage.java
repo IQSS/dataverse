@@ -4,8 +4,8 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseTextMessageDto;
-import edu.harvard.iq.dataverse.dataverse.messages.validation.EndDateMustBeAFutureDate;
-import edu.harvard.iq.dataverse.dataverse.messages.validation.EndDateMustNotBeEarlierThanStartingDate;
+import edu.harvard.iq.dataverse.dataverse.validation.EndDateMustBeAFutureDate;
+import edu.harvard.iq.dataverse.dataverse.validation.EndDateMustNotBeEarlierThanStartingDate;
 import edu.harvard.iq.dataverse.util.JsfValidationHelper;
 import edu.harvard.iq.dataverse.util.JsfValidationHelper.ValidationCondition;
 
@@ -41,7 +41,7 @@ public class EditTextMessagePage implements Serializable {
     private UIInput toTimeInput;
 
     public String init() {
-        if (!permissionsWrapper.canIssueEditDataverseTextMessages(dataverseId)) {
+        if (!permissionsWrapper.canEditDataverseTextMessagesAndBanners(dataverseId)) {
             return permissionsWrapper.notAuthorized();
         }
 

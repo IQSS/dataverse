@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseMessagesMapper;
 import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseTextMessageDto;
-import edu.harvard.iq.dataverse.dataverse.messages.validation.DataverseTextMessageValidator;
+import edu.harvard.iq.dataverse.dataverse.validation.DataverseTextMessageValidator;
 import edu.harvard.iq.dataverse.locale.DataverseLocaleBean;
 
 import javax.ejb.Stateless;
@@ -62,7 +62,7 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
 
     public void save(DataverseTextMessageDto messageDto) {
 
-        DataverseTextMessageValidator.validateEndDate(messageDto);
+        DataverseTextMessageValidator.validateEndDate(messageDto.getFromTime(), messageDto.getToTime());
 
         DataverseTextMessage textMessage = new DataverseTextMessage();
 

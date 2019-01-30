@@ -1,11 +1,10 @@
-package edu.harvard.iq.dataverse.dataverse.messages.validation;
+package edu.harvard.iq.dataverse.dataverse.validation;
 
-import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseTextMessageDto;
 import edu.harvard.iq.dataverse.util.DataverseClock;
 import edu.harvard.iq.dataverse.util.DateUtil;
 
-import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * Validator for new and reuse dataverse text messages.
@@ -13,15 +12,15 @@ import java.time.LocalDateTime;
  */
 public class DataverseTextMessageValidator {
 
-    public static void validateEndDate(DataverseTextMessageDto dto) {
-        if (dto.getFromTime() == null || dto.getToTime() == null) {
+    public static void validateEndDate(Date fromTime, Date toTime) {
+        if (fromTime == null || toTime == null) {
             return;
         }
-        if (dto.getToTime().before(dto.getFromTime())) {
+        if (toTime.before(fromTime)) {
             throw new EndDateMustNotBeEarlierThanStartingDate();
         }
         LocalDateTime now = DataverseClock.now();
-        if (!dto.getToTime().after(DateUtil.convertToDate(now))) {
+        if (!toTime.after(DateUtil.convertToDate(now))) {
             throw new EndDateMustBeAFutureDate();
         }
     }

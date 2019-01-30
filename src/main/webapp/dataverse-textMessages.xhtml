@@ -17,18 +17,21 @@
         <ui:define name="body">
             <f:metadata>
                 <f:viewParam name="dataverseId" value="#{TextMessagePage.dataverseId}"/>
+                <f:viewParam name="dataverseId" value="#{BannerTab.dataverseId}"/>
                 <f:viewAction action="#{TextMessagePage.init()}"/>
+                <f:viewAction action="#{BannerTab.init()}"/>
                 <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(TextMessagePage.dataverse)}"/>
-                <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['textmessages'])}"/>
+                <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dataversemessages'])}"/>
             </f:metadata>
             <h:form id="text-messages-form">
                 <p:tabView dynamic="true" cache="true">
-                    <p:tab title="#{bundle.textmessages}">
-                        <p:commandButton value="#{bundle['textmessages.new']}" id="text-screen"
+                    <!--Text Messages Tab-->
+                    <p:tab title="#{bundle.dataversemessages}">
+                        <p:commandButton value="#{bundle['dataversemessages.textmessages.new']}" id="text-screen"
                                          style="margin-right:20px;"
                                          action="#{TextMessagePage.newTextMessagePage()}"
                         />
-                        <h3 title="#{bundle['textmessages.history']}"/>
+                        <h3 title="#{bundle['dataversemessages.textmessages.history']}"/>
 
                         <p:dataList value="#{TextMessagePage.lazydataverseTextMessages}" var="history"
                                     paginator="#{TextMessagePage.lazydataverseTextMessages.rowCount > 10 ?'true' : 'false'}"
@@ -47,45 +50,103 @@
                                     </ui:repeat>
 
                                     <div class="p-col">
-                                        <h:outputLabel for="dates" value="#{bundle['textmessages.dates']}:"
+                                        <h:outputLabel for="dates"
+                                                       value="#{bundle['dataversemessages.textmessages.dates']}:"
                                                        style="margin-right: 10px"/>
                                         <h:outputText id="dates"
                                                       value="#{history.getPrettyFromDate()} - #{history.getPrettyToTime()}"/>
                                     </div>
 
                                     <div class="p-col">
-                                        <h:outputLabel for="message-Status" value="#{bundle['textmessages.status']}:"
+                                        <h:outputLabel for="message-Status"
+                                                       value="#{bundle['dataversemessages.textmessages.status']}:"
                                                        style="margin-right: 10px"/>
                                         <h:outputText id="message-Status"
                                                       value="#{history.active ? 'Enabled' : 'Disabled'}"/>
                                     </div>
                                 </div>
 
-                                <p:commandButton value="#{bundle['textmessages.delete']}"
+                                <p:commandButton value="#{bundle['dataversemessages.textmessages.delete']}"
                                                  action="#{TextMessagePage.textMessageService.delete(history.id)}"
                                                  update=":text-messages-form"
                                                  oncomplete="reloadIfMessageCountTooLow
                                                  (#{TextMessagePage.lazydataverseTextMessages.rowCount},
                                                  #{TextMessagePage.lazydataverseTextMessages.pageSize})"/>
                                 <div style="float: right">
-                                    <p:commandButton value="#{bundle['textmessages.deactivate']}"
+                                    <p:commandButton value="#{bundle['dataversemessages.textmessages.deactivate']}"
                                                      rendered="#{history.active}"
                                                      style="margin-right:10px;"
                                                      action="#{TextMessagePage.textMessageService.deactivate(history.id)}"
                                                      update=":text-messages-form"/>
 
-                                    <p:commandButton value="#{bundle['textmessages.reuse']}"
+                                    <p:commandButton value="#{bundle['dataversemessages.textmessages.reuse']}"
                                                      action="#{TextMessagePage.reuseTextMessage(history.id)}"
                                                      update=":text-messages-form"/>
                                 </div>
                             </p:panel>
                         </p:dataList>
                     </p:tab>
-                    <p:tab title="Banners">
-                        <h:panelGrid columns="1" cellpadding="10">
-                            <h:outputText
-                                    value="Fras his customary cut of the tyro's business. With Fanucci gone, Vito's communal stature grows."/>
-                        </h:panelGrid>
+
+                    <!--Banners Tab-->
+                    <p:tab title="#{bundle['dataversemessages.banners']}">
+                        <p:commandButton value="#{bundle['dataversemessages.banners.new']}" id="new-banner-button"
+                                         style="margin-right:20px;"
+                                         action="#{BannerTab.newBannerPage()}"
+                        />
+                        <h3 title="#{bundle['dataversemessages.textmessages.history']}"/>
+
+                        <p:dataList value="#{BannerTab.lazyBannerHistory}" var="banner"
+                                    paginator="#{BannerTab.lazyBannerHistory.rowCount > 10 ?'true' : 'false'}"
+                                    lazy="true" rows="10"
+                                    itemType="none"
+                                    styleClass="paginated ui-datalist-nobullets">
+
+                            <p:panel style="margin-bottom:20px; width: 600px;">
+                                <div class="p-grid">
+                                    <ui:repeat value="#{banner.dataverseLocalizedBanner}" var="localbanner">
+                                        <div class="p-col">
+                                            <h:outputLabel for="banner-thumbnail"
+                                                           value="#{dataverseLocaleBean.getLanguage(localbanner.locale)}:"
+                                                           style="margin-right: 10px"/>
+                                            <p:graphicImage style="padding: 2px" stream="false" id="banner-thumbnail"
+                                                            value="#{localbanner.miniDisplayImage}"/>
+                                        </div>
+                                    </ui:repeat>
+
+                                    <div class="p-col">
+                                        <h:outputLabel for="banner-dates"
+                                                       value="#{bundle['dataversemessages.textmessages.dates']}:"
+                                                       style="margin-right: 10px"/>
+                                        <h:outputText id="banner-dates"
+                                                      value="#{banner.getPrettyFromDate()} - #{banner.getPrettyToTime()}"/>
+                                    </div>
+
+                                    <div class="p-col">
+                                        <h:outputLabel for="banner-message-Status"
+                                                       value="#{bundle['dataversemessages.textmessages.status']}:"
+                                                       style="margin-right: 10px"/>
+                                        <h:outputText id="banner-message-Status"
+                                                      value="#{banner.active ? bundle['dataversemessages.banners.Enabled'] :
+                                                       bundle['dataversemessages.banners.Disabled']}"/>
+                                    </div>
+                                </div>
+
+                                <p:commandButton value="#{bundle['dataversemessages.textmessages.delete']}"
+                                                 action="#{BannerTab.bannerDAO.delete(banner.id)}"
+                                                 update=":text-messages-form"/>
+                                <div style="float: right">
+                                    <p:commandButton value="#{bundle['dataversemessages.textmessages.deactivate']}"
+                                                     style="margin-right:10px;"
+                                                     rendered="#{banner.active}"
+                                                     action="#{BannerTab.bannerDAO.deactivate(banner.id)}"
+                                                     update=":text-messages-form"/>
+
+                                    <p:commandButton value="#{bundle['dataversemessages.textmessages.reuse']}"
+                                                     action="#{BannerTab.reuseBanner(banner.id)}"
+                                                     update=":text-messages-form"/>
+                                </div>
+                            </p:panel>
+                        </p:dataList>
                     </p:tab>
                 </p:tabView>
             </h:form>

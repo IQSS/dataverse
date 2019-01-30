@@ -15,11 +15,12 @@
         <f:viewAction action="#{EditTextMessagePage.init()}"/>
         <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(EditTextMessagePage.dataverse)}"/>
         <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb
-        ('/dataverse-textMessages.xhtml?dataverseId='.concat(EditTextMessagePage.dataverseId),bundle['textmessages'])}"/>
-        <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['textmessages.new'])}"/>
+        ('/dataverse-textMessages.xhtml?dataverseId='.concat(EditTextMessagePage.dataverseId),bundle['dataversemessages'])}"/>
+        <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dataversemessages.textmessages.new'])}"/>
     </f:metadata>
 
     <ui:composition template="/dataverse_template.xhtml">
+        <ui:param name="showMessagePanel" value="#{false}"/>
 
         <ui:define name="body">
             <h:form id="edit-text-messages-form">

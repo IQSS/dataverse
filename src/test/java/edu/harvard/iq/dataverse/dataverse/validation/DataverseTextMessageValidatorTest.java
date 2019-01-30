@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.dataverse.messages.validation;
+package edu.harvard.iq.dataverse.dataverse.validation;
 
 import edu.harvard.iq.dataverse.dataverse.messages.dto.DataverseTextMessageDto;
 import edu.harvard.iq.dataverse.util.DataverseClock;
@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import java.time.LocalDateTime;
 
-import static edu.harvard.iq.dataverse.dataverse.messages.validation.DataverseTextMessageValidator.validateEndDate;
+import static edu.harvard.iq.dataverse.dataverse.validation.DataverseTextMessageValidator.validateEndDate;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -37,7 +37,7 @@ public class DataverseTextMessageValidatorTest {
 
         // when
         try {
-            validateEndDate(dto);
+            validateEndDate(dto.getFromTime(), dto.getToTime());
             fail("EndDateMustBeAFutureDate validation exception should occured!");
         } catch (ValidationException ex) {
             // then
@@ -54,7 +54,7 @@ public class DataverseTextMessageValidatorTest {
 
         // when
         try {
-            validateEndDate(dto);
+            validateEndDate(dto.getFromTime(), dto.getToTime());
             fail("EndDateMustBeAFutureDate validation exception should occured!");
         } catch (ValidationException ex) {
             // then
@@ -69,7 +69,7 @@ public class DataverseTextMessageValidatorTest {
         dto.setToTime(DateUtil.convertToDate(now.plusDays(1)));
 
         // expect
-        validateEndDate(dto);
+        validateEndDate(dto.getFromTime(), dto.getToTime());
     }
 
     @Test
@@ -81,7 +81,7 @@ public class DataverseTextMessageValidatorTest {
 
         // when
         try {
-            validateEndDate(dto);
+            validateEndDate(dto.getFromTime(), dto.getToTime());
             fail("EndDateMustNotBeEarlierThanStartingDate validation exception should occured!");
         } catch (ValidationException ex) {
             // then
@@ -97,7 +97,7 @@ public class DataverseTextMessageValidatorTest {
         dto.setToTime(DateUtil.convertToDate(now.plusDays(1)));
 
         // when
-        validateEndDate(dto);
+        validateEndDate(dto.getFromTime(), dto.getToTime());
     }
 
     @Test
@@ -108,7 +108,7 @@ public class DataverseTextMessageValidatorTest {
         dto.setToTime(DateUtil.convertToDate(now.plusDays(1)));
 
         // when
-        validateEndDate(dto);
+        validateEndDate(dto.getFromTime(), dto.getToTime());
     }
 
 }

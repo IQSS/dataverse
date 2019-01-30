@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.dataverse.messages.validation;
+package edu.harvard.iq.dataverse.dataverse.validation;
 
 import edu.harvard.iq.dataverse.validation.ValidationException;
 

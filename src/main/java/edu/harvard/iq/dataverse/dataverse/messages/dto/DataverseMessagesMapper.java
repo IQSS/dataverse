@@ -32,7 +32,6 @@ public class DataverseMessagesMapper {
                         dlm.getLocale(),
                         dlm.getMessage(),
                         new DataverseLocaleBean().getLanguage(dlm.getLocale()))));
-
         dto.setDataverseLocalizedMessage(dataverseLocalizedMessageDto);
 
         return dto;

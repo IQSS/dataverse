@@ -110,7 +110,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         return canIssueCommand(dvo, CreateDataverseCommand.class);
     }
 
-    public boolean canIssueEditDataverseTextMessages(Long dataverseId) {
+    public boolean canEditDataverseTextMessagesAndBanners(Long dataverseId) {
         return permissionService.isUserCanEditDataverseTextMessagesAndBanners(dataverseId);
     }
     

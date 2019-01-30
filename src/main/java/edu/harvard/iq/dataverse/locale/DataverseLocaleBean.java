@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 @Named
@@ -57,6 +58,13 @@ public class DataverseLocaleBean implements Serializable {
         return dataverseLocales.get(locale);
     }
 
+    public Optional<String> getLocale(String language) {
+        return dataverseLocales.entrySet().stream()
+                .filter(entry -> entry.getValue().equals(language))
+                .map(Map.Entry::getKey)
+                .findFirst();
+    }
+
     public Map<String, String> getDataverseLocales(){
         return Collections.unmodifiableMap(dataverseLocales);
     }
@@ -71,10 +79,6 @@ public class DataverseLocaleBean implements Serializable {
 
     public String getLocaleTitle() {
         return dataverseLocales.get(localeCode);
-    }
-
-    public Locale getLocale() {
-        return new Locale(localeCode);
     }
 
     public void countryLocaleCodeChanged(String code) {
