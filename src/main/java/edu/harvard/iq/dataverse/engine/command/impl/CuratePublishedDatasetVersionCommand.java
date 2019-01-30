@@ -105,6 +105,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
 
         tempDataset.getEditVersion().setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());
+        
         Dataset savedDataset = ctxt.em().merge(tempDataset);
 
         ctxt.em().flush();
@@ -118,6 +119,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         ctxt.engine().submit(
                 new UpdateDvObjectPIDMetadataCommand(savedDataset, getRequest()));
 
+        savedDataset=ctxt.em().find(Dataset.class,savedDataset.getId());
         updateDatasetUser(ctxt);
         ctxt.index().indexDataset(savedDataset, true);
 
