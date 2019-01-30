@@ -265,10 +265,8 @@ public class ExternalToolServiceBeanTest {
                 .add(Json.createObjectBuilder()
                         .add("key", "{apiToken}")
                         .build())
-                .add(Json.createObjectBuilder()
-                        .add("mode", "mode1")
-                        .build())
-                .build()));
+                .build())
+            .build());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
         ExternalTool externalTool = null;
