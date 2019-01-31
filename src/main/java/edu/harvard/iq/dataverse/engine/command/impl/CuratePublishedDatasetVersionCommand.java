@@ -116,6 +116,11 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
 
         Dataset savedDataset = ctxt.em().merge(tempDataset);
 
+        // Flush before calling DeleteDatasetVersion which calls
+        // PrivateUrlServiceBean.getPrivateUrlFromDatasetId() that will query the DB and
+        // fail if our changes aren't there
+        ctxt.em().flush();
+        
         // Now delete draft version
         DeleteDatasetVersionCommand cmd;
 
