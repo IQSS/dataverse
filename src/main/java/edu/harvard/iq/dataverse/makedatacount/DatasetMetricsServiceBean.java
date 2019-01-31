@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.makedatacount;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.Dataverse;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -48,7 +47,15 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
             throw new EJBException("More than one Dataset Metric found in the dataset (id= " + dataset.getId() + "), with monthYear= " + monthYear + " and Country code = " + country  + ".");
         }
         if (resultList.size() == 1) {
+            System.out.print("retListSize == 1");
             dsm = (DatasetMetrics) resultList.get(0);
+            System.out.print("dsm.getViewsTotalRegular(): " + dsm.getViewsTotalRegular());
+            System.out.print("dsm.getViewsTotalMachine(): " + dsm.getViewsTotalMachine());
+            dsm.setViewsTotal(dsm.getViewsTotalRegular() + dsm.getViewsTotalMachine());
+            System.out.print("SUMMED: " + dsm.getViewsTotal());
+            dsm.setViewsUnique(dsm.getViewsUniqueRegular() + dsm.getViewsUniqueMachine());
+            dsm.setDownloadsTotal(dsm.getDownloadsTotalRegular() + dsm.getDownloadsTotalMachine());
+            dsm.setDownloadsUnique(dsm.getDownloadsUniqueRegular() + dsm.getDownloadsUniqueMachine());
             return dsm;
         }
         return null;
@@ -69,7 +76,9 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         }
 
         Query query = em.createNativeQuery(""
-                + "select sum(viewstotal), sum(viewsunique), sum(downloadstotal), sum(downloadsunique)  from datasetmetrics \n"
+                + "select sum(viewstotalregular), sum(viewsuniqueregular), sum(downloadstotalregular), "
+                + "sum(downloadsuniqueregular),sum(viewstotalmachine), sum(viewsuniquemachine), sum(downloadstotalmachine), sum(downloadsuniquemachine)  "
+                + "from datasetmetrics \n"
                 + whereClause
                 + ";"
         );
@@ -81,10 +90,18 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
             dm.setDataset(dataset);
             dm.setCountryCode(country);
             dm.setMonth(monthYear);
-            dm.setViewsTotal((Long) row[1]);
-            dm.setViewsUnique((Long) row[2]);
-            dm.setDownloadsTotal((Long) row[3]);
-            dm.setDownloadsTotal((Long) row[4]);
+            dm.setViewsTotalRegular((Long) row[1]);
+            dm.setViewsUniqueRegular((Long) row[2]);
+            dm.setDownloadsTotalRegular((Long) row[3]);
+            dm.setDownloadsUniqueRegular((Long) row[4]);
+            dm.setViewsTotalMachine((Long) row[5]);
+            dm.setViewsUniqueMachine((Long) row[6]);
+            dm.setDownloadsTotalMachine((Long) row[7]);
+            dm.setDownloadsUniqueMachine((Long) row[8]);
+            dm.setViewsTotal(dm.getViewsTotalRegular() + dm.getViewsTotalMachine());
+            dm.setViewsUnique(dm.getViewsUniqueRegular() + dm.getViewsUniqueMachine());
+            dm.setDownloadsTotal(dm.getDownloadsTotalRegular() + dm.getDownloadsTotalMachine());
+            dm.setDownloadsTotal(dm.getDownloadsTotalRegular() + dm.getDownloadsTotalMachine());
             retVal.add(dm);
         }
 
@@ -130,8 +147,10 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                     JsonObject period = perfObj.getJsonObject("period");
                     monthYear = period.getString("begin-date");
                     JsonArray instanceArray = perfObj.getJsonArray("instance");
+                    //"access-method": "regular", 
                     for (JsonObject instObj : instanceArray.getValuesAs(JsonObject.class)) {
                         if (instObj.getString("metric-type").equals("total-dataset-investigations")) { 
+                            String accessMethod = instObj.getString("access-method");
                             List<String[]> totalInvestigations = new ArrayList<>();
                             if (instObj.containsKey("country-counts")) {
                                 JsonObject countryCountObj = instObj.getJsonObject("country-counts");
@@ -141,14 +160,19 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                             if(!totalInvestigations.isEmpty()){
                                for(String[] investigation: totalInvestigations){
                                    DatasetMetrics dm = new DatasetMetrics();
+                                   dm.initCounts();
                                    dm.setDataset(ds);
                                    dm.setCountryCode(investigation[0]);
-                                   dm.setViewsTotal(new Long(investigation[1]));
+                                   if (accessMethod.equals("regular")){
+                                       dm.setViewsTotalRegular(new Long(investigation[1]));
+                                   } else {
+                                       dm.setViewsTotalMachine(new Long(investigation[1]));
+                                   }                                  
                                    dm.setMonth(monthYear);
                                    datasetMetricsTotal.add(dm);
                                }
                             }
-                            datasetMetricsDataset= addUpdateMetrics(datasetMetricsDataset, datasetMetricsTotal , "TotalViews");
+                            datasetMetricsDataset= addUpdateMetrics(datasetMetricsDataset, datasetMetricsTotal, "TotalViews", accessMethod);
                         }
                         if (instObj.getString("metric-type").equals("unique-dataset-investigations")) { //unique-dataset-investigations
                             List<String[]> uniqueInvestigations = new ArrayList<>();
@@ -156,18 +180,24 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                                 JsonObject countryCountObj = instObj.getJsonObject("country-counts");
                                 uniqueInvestigations = getCountryCountArray(countryCountObj);                               
                             }
+                            String accessMethod = instObj.getString("access-method");
                             List<DatasetMetrics> datasetMetricsUnique = new ArrayList<>();
                             if(!uniqueInvestigations.isEmpty()){
                                for(String[] investigation: uniqueInvestigations){
                                    DatasetMetrics dm = new DatasetMetrics();
+                                   dm.initCounts();
                                    dm.setDataset(ds);
                                    dm.setCountryCode(investigation[0]);
-                                   dm.setViewsUnique(new Long(investigation[1]));
+                                   if (accessMethod.equals("regular")){
+                                       dm.setViewsUniqueRegular(new Long(investigation[1]));
+                                   } else {
+                                       dm.setViewsUniqueMachine(new Long(investigation[1]));
+                                   } 
                                    dm.setMonth(monthYear);
                                    datasetMetricsUnique.add(dm);
                                }
                             }                           
-                           datasetMetricsDataset= addUpdateMetrics(datasetMetricsDataset, datasetMetricsUnique , "UniqueViews");
+                           datasetMetricsDataset= addUpdateMetrics(datasetMetricsDataset, datasetMetricsUnique , "UniqueViews", accessMethod);
                         }
                         if (instObj.getString("metric-type").equals("total-dataset-requests")) { //unique-dataset-investigations
                             List<String[]> totalRequests = new ArrayList<>();
@@ -175,20 +205,30 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                                 JsonObject countryCountObj = instObj.getJsonObject("country-counts");
                                 totalRequests = getCountryCountArray(countryCountObj);                               
                             }
+                            String accessMethod = instObj.getString("access-method");
                             List<DatasetMetrics> datasetMetricsRequestsTotal = new ArrayList<>();
                             if(!totalRequests.isEmpty()){
                                for(String[] investigation: totalRequests){
                                    DatasetMetrics dm = new DatasetMetrics();
+                                   dm.initCounts();
                                    dm.setDataset(ds);
                                    dm.setCountryCode(investigation[0]);
-                                   dm.setDownloadsTotal(new Long(investigation[1]));
+                                   if (accessMethod.equals("regular")){
+                                       dm.setDownloadsTotalRegular(new Long(investigation[1]));
+                                   } else {
+                                       dm.setDownloadsTotalMachine(new Long(investigation[1]));
+                                   }
                                    dm.setMonth(monthYear);
                                    datasetMetricsRequestsTotal.add(dm);
                                }
                             }                           
-                           datasetMetricsDataset= addUpdateMetrics(datasetMetricsDataset, datasetMetricsRequestsTotal , "TotalRequests");
+                           datasetMetricsDataset= addUpdateMetrics(datasetMetricsDataset, datasetMetricsRequestsTotal , "TotalRequests", accessMethod);
                         }
+                        
+                        //"volume": 26764,
                         if (instObj.getString("metric-type").equals("unique-dataset-requests")) { //unique-dataset-investigations
+                            String accessMethod = instObj.getString("access-method");
+                            Long downloadVolume = new Long (instObj.getString("volume"));
                             List<String[]> uniqueRequests = new ArrayList<>();
                             if (instObj.containsKey("country-counts")) {
                                 JsonObject countryCountObj = instObj.getJsonObject("country-counts");
@@ -198,14 +238,19 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                             if(!uniqueRequests.isEmpty()){
                                for(String[] investigation: uniqueRequests){
                                    DatasetMetrics dm = new DatasetMetrics();
+                                   dm.initCounts();
                                    dm.setDataset(ds);
                                    dm.setCountryCode(investigation[0]);
-                                   dm.setDownloadsUnique(new Long(investigation[1]));
+                                   if (accessMethod.equals("regular")){
+                                       dm.setDownloadsUniqueRegular(new Long(investigation[1]));
+                                   } else {
+                                       dm.setDownloadsUniqueMachine(new Long(investigation[1]));
+                                   }
                                    dm.setMonth(monthYear);
                                    datasetMetricsRequestsTotal.add(dm);
                                }
                             }                           
-                           datasetMetricsDataset= addUpdateMetrics(datasetMetricsDataset, datasetMetricsRequestsTotal , "UniqueRequests");
+                           datasetMetricsDataset= addUpdateMetrics(datasetMetricsDataset, datasetMetricsRequestsTotal , "UniqueRequests", accessMethod);
                         }
                     }
                 }
@@ -227,7 +272,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         return retList;
     }
     
-    private List<DatasetMetrics> addUpdateMetrics(List<DatasetMetrics> currentList, List<DatasetMetrics> compareList, String countField){
+    private List<DatasetMetrics> addUpdateMetrics(List<DatasetMetrics> currentList, List<DatasetMetrics> compareList, String countField, String accessMethod){
         
         List<DatasetMetrics> toAdd = new ArrayList();
         
@@ -238,21 +283,34 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
             while (iterator.hasNext()) {
                 DatasetMetrics next = iterator.next();
                 if (next.getCountryCode().equals(testMetric.getCountryCode())) {
-                    //Replace element
-       
+                    //Replace element      
                     if (countField.equals("TotalViews")){
-                       next.setViewsTotal(testMetric.getViewsTotal());
+                        if(accessMethod.equals("regular")){
+                            next.setViewsTotalRegular(testMetric.getViewsTotalRegular());
+                        } else {
+                            next.setViewsTotalMachine(testMetric.getViewsTotalMachine());
+                        }                      
                     }
                     if (countField.equals("UniqueViews")){
-                       next.setViewsUnique(testMetric.getViewsUnique());
-                    }
-                    
+                        if(accessMethod.equals("regular")){
+                            next.setViewsUniqueRegular(testMetric.getViewsUniqueRegular());
+                        } else {
+                            next.setViewsUniqueMachine(testMetric.getViewsUniqueMachine());
+                        }
+                    }                    
                     if (countField.equals("TotalRequests")){
-                       next.setDownloadsTotal(testMetric.getDownloadsTotal());
-                    }
-                    
+                        if(accessMethod.equals("regular")){
+                            next.setDownloadsTotalRegular(testMetric.getDownloadsTotalRegular());
+                        } else {
+                            next.setDownloadsTotalMachine(testMetric.getDownloadsTotalMachine());
+                        }
+                    }                    
                     if (countField.equals("UniqueRequests")){
-                       next.setDownloadsUnique(testMetric.getDownloadsUnique());
+                        if(accessMethod.equals("regular")){
+                            next.setDownloadsUniqueRegular(testMetric.getDownloadsUniqueRegular());
+                        } else {
+                            next.setDownloadsUniqueMachine(testMetric.getDownloadsUniqueMachine());
+                        }
                     }
 
                     iterator.set(next);

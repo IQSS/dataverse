@@ -85,19 +85,19 @@ public class MakeDataCountApiIT {
         getViewsTotalUs.prettyPrint();
         getViewsTotalUs.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.viewsTotal", equalTo(3));
+                .body("data.viewsTotal", equalTo(7));
 
         Response getViewsUniqueUs = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsUnique, monthYear, countryCodeUs, apiToken);
         getViewsUniqueUs.prettyPrint();
         getViewsUniqueUs.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.viewsUnique", equalTo(2));
+                .body("data.viewsUnique", equalTo(5));
 
         Response getDownloadsTotalUs = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricDownloadsTotal, monthYear, countryCodeUs, apiToken);
         getDownloadsTotalUs.prettyPrint();
         getDownloadsTotalUs.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.downloadsTotal", equalTo(2));
+                .body("data.downloadsTotal", equalTo(6));
 
         String countryCodeKr = "kr";
 
@@ -113,7 +113,7 @@ public class MakeDataCountApiIT {
         getDownloadsUniqueCa.prettyPrint();
         getDownloadsUniqueCa.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.downloadsUnique", equalTo(1));
+                .body("data.downloadsUnique", equalTo(3));
 
     }
 

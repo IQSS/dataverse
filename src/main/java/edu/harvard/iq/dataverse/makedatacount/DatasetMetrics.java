@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -65,13 +66,19 @@ public class DatasetMetrics implements Serializable {
      * https://help.zenodo.org/#statistics
      */
     @Column(nullable = true)
-    private Long viewsTotal;
+    private Long viewsTotalRegular;
 
     /**
      * See viewsTotal.
      */
     @Column(nullable = true)
-    private Long viewsUnique;
+    private Long viewsUniqueRegular;
+    
+    @Column(nullable = true)
+    private Long viewsTotalMachine;
+    
+    @Column(nullable = true)
+    private Long viewsUniqueMachine;
 
     /**
      * Yes, downloads are also stored in the guestbook table. New downloads will
@@ -83,14 +90,23 @@ public class DatasetMetrics implements Serializable {
      * an API endpoint for this?
      */
     @Column(nullable = true)
-    private Long downloadsTotal;
+    private Long downloadsTotalRegular;
 
     /**
      * See downloadTotal.
      */
     @Column(nullable = true)
-    private Long downloadsUnique;
+    private Long downloadsUniqueRegular;
 
+    
+    @Column(nullable = true)
+    private Long downloadsTotalMachine;
+
+    /**
+     * See downloadTotal.
+     */
+    @Column(nullable = true)
+    private Long downloadsUniqueMachine;
     /**
      * 2 character country code.
      *
@@ -132,13 +148,84 @@ public class DatasetMetrics implements Serializable {
         this.monthYear = monthYear;
     }
 
-    public Long getViewsTotal() {
-        return viewsTotal;
+    public Long getViewsTotalRegular() {
+        return viewsTotalRegular;
     }
 
-    public void setViewsTotal(Long viewsTotal) {
-        this.viewsTotal = viewsTotal;
+    public void setViewsTotalRegular(Long viewsTotalRegular) {
+        this.viewsTotalRegular = viewsTotalRegular;
     }
+
+    public Long getViewsUniqueRegular() {
+        return viewsUniqueRegular;
+    }
+
+    public void setViewsUniqueRegular(Long viewsUniqueRegular) {
+        this.viewsUniqueRegular = viewsUniqueRegular;
+    }
+
+    public Long getDownloadsTotalRegular() {
+        return downloadsTotalRegular;
+    }
+
+    public void setDownloadsTotalRegular(Long downloadsTotalRegular) {
+        this.downloadsTotalRegular = downloadsTotalRegular;
+    }
+
+    public Long getDownloadsUniqueRegular() {
+        return downloadsUniqueRegular;
+    }
+
+    public void setDownloadsUniqueRegular(Long downloadsUniqueRegular) {
+        this.downloadsUniqueRegular = downloadsUniqueRegular;
+    }
+    
+    public Long getViewsTotalMachine() {
+        return viewsTotalMachine;
+    }
+
+    public void setViewsTotalMachine(Long viewsTotalMachine) {
+        this.viewsTotalMachine = viewsTotalMachine;
+    }
+
+    public Long getViewsUniqueMachine() {
+        return viewsUniqueMachine;
+    }
+
+    public void setViewsUniqueMachine(Long viewsUniqueMachine) {
+        this.viewsUniqueMachine = viewsUniqueMachine;
+    }
+
+    public Long getDownloadsTotalMachine() {
+        return downloadsTotalMachine;
+    }
+
+    public void setDownloadsTotalMachine(Long downloadsTotalMachine) {
+        this.downloadsTotalMachine= downloadsTotalMachine;
+    }
+
+    public Long getDownloadsUniqueMachine() {
+        return downloadsUniqueMachine;
+    }
+
+    public void setDownloadsUniqueMachine(Long downloadsUniqueMachine) {
+        this.downloadsUniqueMachine = downloadsUniqueMachine;
+    }
+
+    public String getCountryCode() {
+        return countryCode;
+    }
+
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
+    }
+    
+
+    
+    @Transient private Long viewsUnique;
+    @Transient private Long viewsTotal;
+    @Transient private Long downloadsUnique;
+    @Transient private Long downloadsTotal;
 
     public Long getViewsUnique() {
         return viewsUnique;
@@ -148,12 +235,12 @@ public class DatasetMetrics implements Serializable {
         this.viewsUnique = viewsUnique;
     }
 
-    public Long getDownloadsTotal() {
-        return downloadsTotal;
+    public Long getViewsTotal() {
+        return viewsTotal;
     }
 
-    public void setDownloadsTotal(Long downloadsTotal) {
-        this.downloadsTotal = downloadsTotal;
+    public void setViewsTotal(Long viewsTotal) {
+        this.viewsTotal = viewsTotal;
     }
 
     public Long getDownloadsUnique() {
@@ -164,12 +251,23 @@ public class DatasetMetrics implements Serializable {
         this.downloadsUnique = downloadsUnique;
     }
 
-    public String getCountryCode() {
-        return countryCode;
+    public Long getDownloadsTotal() {
+        return downloadsTotal;
     }
 
-    public void setCountryCode(String countryCode) {
-        this.countryCode = countryCode;
+    public void setDownloadsTotal(Long downloadsTotal) {
+        this.downloadsTotal = downloadsTotal;
+    }
+    
+    public void initCounts(){
+        this.setDownloadsTotalMachine(new Long(0));
+        this.setDownloadsTotalRegular(new Long(0));
+        this.setDownloadsUniqueMachine(new Long(0));
+        this.setDownloadsUniqueRegular(new Long(0));
+        this.setViewsTotalMachine(new Long(0));
+        this.setViewsTotalRegular(new Long(0));
+        this.setViewsUniqueMachine(new Long(0));
+        this.setViewsUniqueRegular(new Long(0));
     }
 
 }

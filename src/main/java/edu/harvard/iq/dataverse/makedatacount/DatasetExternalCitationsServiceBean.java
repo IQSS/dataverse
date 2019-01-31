@@ -88,4 +88,21 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
         return null;
     }
     
+    public List<DatasetExternalCitations> getDatasetExternalCitationsByDataset(Dataset dataset) {
+        List<DatasetExternalCitations> retVal = new ArrayList();
+        String queryStr = "SELECT d FROM DatasetExternalCitations d WHERE d.dataset.id = " + dataset.getId();
+        Query query = em.createQuery(queryStr);
+
+        List<Object[]> result = query.getResultList();
+
+        for (Object[] row : result) {
+            DatasetExternalCitations dec = new DatasetExternalCitations();
+            dec.setDataset(dataset);
+            dec.setCitedByUrl((String) row[1]);
+            retVal.add(dec);
+        }
+        
+        return retVal;
+    }
+    
 }

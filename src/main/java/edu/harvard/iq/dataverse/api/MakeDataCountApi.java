@@ -23,6 +23,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Note that there are makeDataCount endpoints in Datasets.java as well.
@@ -86,10 +87,12 @@ public class MakeDataCountApi extends AbstractApiBean {
                 }
             } catch (WrappedResponse ex) {
                 Logger.getLogger(MakeDataCountApi.class.getName()).log(Level.SEVERE, null, ex);
+                return error(Status.BAD_REQUEST, "Wrapped response: " + ex.getLocalizedMessage());
             }
 
         } catch (IOException ex) {
             System.out.print(ex.getMessage());
+            return error(Status.BAD_REQUEST, "IOException: " + ex.getLocalizedMessage());
         }
         String msg = "Dummy Data has been added to dataset " + id;
         return ok(msg);

@@ -1555,11 +1555,43 @@ public class Datasets extends AbstractApiBean {
             if (datasetMetrics == null) {
                 return ok("No metrics available for dataset " + dataset.getId() + " for " + yyyymm + " for country code " + country + ".");
             }
+            Long viewsTotalRegular = null;
+            Long viewsUniqueRegular = null;
+            Long downloadsTotalRegular = null;
+            Long downloadsUniqueRegular = null;
+            Long viewsTotalMachine = null;
+            Long viewsUniqueMachine = null;
+            Long downloadsTotalMachine = null;
+            Long downloadsUniqueMachine = null;
             Long viewsTotal = null;
             Long viewsUnique = null;
             Long downloadsTotal = null;
             Long downloadsUnique = null;
             switch (metricSupplied) {
+                case "viewsTotalRegular":
+                    viewsTotalRegular = datasetMetrics.getViewsTotalRegular();
+                    break;
+                case "viewsUniqueRegular":
+                    viewsUniqueRegular = datasetMetrics.getViewsUniqueRegular();
+                    break;
+                case "downloadsTotalRegular":
+                    downloadsTotalRegular = datasetMetrics.getDownloadsTotalRegular();
+                    break;
+                case "downloadsUniqueRegular":
+                    downloadsUniqueRegular = datasetMetrics.getDownloadsUniqueRegular();
+                    break;
+                case "viewsTotalMachine":
+                    viewsTotalMachine = datasetMetrics.getViewsTotalMachine();
+                    break;
+                case "viewsUniqueMachine":
+                    viewsUniqueMachine = datasetMetrics.getViewsUniqueMachine();
+                    break;
+                case "downloadsTotalMachine":
+                    downloadsTotalMachine = datasetMetrics.getDownloadsTotalMachine();
+                    break;
+                case "downloadsUniqueMachine":
+                    downloadsUniqueMachine = datasetMetrics.getDownloadsUniqueMachine();
+                    break;
                 case "viewsTotal":
                     viewsTotal = datasetMetrics.getViewsTotal();
                     break;
@@ -1571,7 +1603,7 @@ public class Datasets extends AbstractApiBean {
                     break;
                 case "downloadsUnique":
                     downloadsUnique = datasetMetrics.getDownloadsUnique();
-                    break;
+                    break;     
                 default:
                     break;
             }
@@ -1581,6 +1613,14 @@ public class Datasets extends AbstractApiBean {
              * now, by country. We could return multiple metrics (viewsTotal,
              * viewsUnique, downloadsTotal, and downloadsUnique) by country.
              */
+            jsonObjectBuilder.add("viewsTotalRegular", viewsTotalRegular);
+            jsonObjectBuilder.add("viewsUniqueRegular", viewsUniqueRegular);
+            jsonObjectBuilder.add("downloadsTotalRegular", downloadsTotalRegular);
+            jsonObjectBuilder.add("downloadsUniqueRegular", downloadsUniqueRegular);
+            jsonObjectBuilder.add("viewsTotalMachine", viewsTotalMachine);
+            jsonObjectBuilder.add("viewsUniqueMachine", viewsUniqueMachine);
+            jsonObjectBuilder.add("downloadsTotalMachine", downloadsTotalMachine);
+            jsonObjectBuilder.add("downloadsUniqueMachine", downloadsUniqueMachine);
             jsonObjectBuilder.add("viewsTotal", viewsTotal);
             jsonObjectBuilder.add("viewsUnique", viewsUnique);
             jsonObjectBuilder.add("downloadsTotal", downloadsTotal);
