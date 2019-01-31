@@ -1883,7 +1883,7 @@ public class DatasetPage implements java.io.Serializable {
         } else if(releaseRadio ==2) {
             return releaseDataset(false);
         } else if(releaseRadio ==3) {
-            return registerDataset(true);
+            return updateCurrentVersion();
         } else {
             return "Invalid Choice";
         }
@@ -2070,26 +2070,12 @@ public class DatasetPage implements java.io.Serializable {
         return returnToDatasetOnly();
     }
 
-    public String registerDataset(boolean updateCurrentVersion) {
+    @Deprecated
+    public String registerDataset() {
         try {
-            CuratePublishedDatasetVersionCommand cmd = new CuratePublishedDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
-
-            for(DataFile d : dataset.getFiles()) {
-                logger.info("start: " + d.getId() + " : " + d.getFileMetadatas().size());
-            }
+            UpdateDatasetVersionCommand cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
+            cmd.setValidateLenient(true); 
             dataset = commandEngine.submit(cmd);
-            for(DataFile d : dataset.getFiles()) {
-                logger.info("mid: " + d.getId() + " : " + d.getFileMetadatas().size());
-            }
-            dataset=datasetService.find(dataset.getId());
-            
-            if(updateCurrentVersion) {
-                for(DataFile d : dataset.getFiles()) {
-                    logger.info("end: " + d.getId() + " : " + d.getFileMetadatas().size());
-                }
-                
-              //deleteDatasetVersion();
-            }
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,BundleUtil.getStringFromBundle( "dataset.registration.failed"), " - " + ex.toString()));
             logger.severe(ex.getMessage());
@@ -2098,6 +2084,20 @@ public class DatasetPage implements java.io.Serializable {
         FacesContext.getCurrentInstance().addMessage(null, message);
         return returnToDatasetOnly();
     }
+    
+    public String updateCurrentVersion() {
+        try {
+            CuratePublishedDatasetVersionCommand cmd = new CuratePublishedDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
+            dataset = commandEngine.submit(cmd);
+        } catch (CommandException ex) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,BundleUtil.getStringFromBundle( "dataset.registration.failed"), " - " + ex.toString()));
+            logger.severe(ex.getMessage());
+        }
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.registered"), BundleUtil.getStringFromBundle("dataset.registered.msg"));
+        FacesContext.getCurrentInstance().addMessage(null, message);
+        return returnToDatasetOnly();
+    }
+
 
     public void refresh(ActionEvent e) {
         refresh();
@@ -2193,7 +2193,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public String deleteDatasetVersion() {
         DeleteDatasetVersionCommand cmd;
-        
         try {
             cmd = new DeleteDatasetVersionCommand(dvRequestService.getDataverseRequest(), dataset);
             commandEngine.submit(cmd);

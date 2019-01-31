@@ -17,8 +17,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -244,42 +242,27 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      */
     //public List<RoleAssignment> directRoleAssignments(@NotNull RoleAssignee roas, @NotNull DvObject dvo) {
     public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
-        logger.info(roas.getIdentifier() + " " + dvo.getId());
-        em.flush();
-        List<RoleAssignment> test = em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier_DefinitionPointId", RoleAssignment.class).
+        // QDR Work-around - as of Jan 23, 2019, the second query below (added as part
+        // of https://github.com/IQSS/dataverse/pull/4883) was returning RA objects with
+        // null getDefinitionPoint(), causing an exception. The workaround below
+        // uses the original query and returns its value if the new one fails. (Leaving
+        // the original to be able to quickly test if machine config changes fix the
+        // problem.
+
+        List<RoleAssignment> oldList = em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier_DefinitionPointId", RoleAssignment.class).
                 setParameter("assigneeIdentifier", roas.getIdentifier()).
                 setParameter("definitionPointId", dvo.getId())
                 .getResultList();
-        logger.info("Found " + test.size() + " RAs.");
-for (RoleAssignment ra: test) {
-logger.info("Found RA id#: " + ra.getId());
-logger.info("Def pt: " + ra.getDefinitionPoint().getId());
-}
         try {
         List<RoleAssignment> unfiltered = em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class).
                             setParameter("assigneeIdentifier", roas.getIdentifier())
                             .getResultList();
-        for (RoleAssignment ra: unfiltered) {
-            logger.info(ra.getClass().getCanonicalName());
-            if(ra.getDefinitionPoint()==null) {
-                logger.info("Loading");
-                RoleAssignment ra2=em.find(RoleAssignment.class,ra.getId());
-                if(ra2.getDefinitionPoint()==null) {
-                    logger.info("Still null");
-                } else {
-                    logger.info("dpId: " + ra2.getDefinitionPoint().getId());
-                }
-            }
-            logger.info("Found RA id#: " + ra.getId());
-            logger.info("Def pt: " + ra.getDefinitionPoint().getId());
-        }
-        Stream<RoleAssignment> sra = unfiltered.stream().filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId()));
-        logger.info("Filtered size:" + sra.count());
         return unfiltered.stream().filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId())).collect(Collectors.toList());
         } catch (Exception e) {
+            
             logger.severe("Exception " + e.getClass().getCanonicalName() + " " + e.getMessage());
             e.printStackTrace();
-            return test;
+            return oldList;
         }
     }
     
