@@ -56,7 +56,8 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // we have to merge to update the database but not flush because
         // we don't want to create two draft versions!
         Dataset tempDataset = ctxt.em().merge(getDataset());
-        
+
+        // Look for file metadata changes and update published metadata if needed
         for (DataFile dataFile : tempDataset.getFiles()) {
             List<FileMetadata> fmdList = dataFile.getFileMetadatas();
             FileMetadata draftFmd = dataFile.getLatestFileMetadata();
@@ -82,7 +83,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                     metadataUpdated = true;
                 }
                 String prov = draftFmd.getProvFreeForm();
-                if (prov!=null && (!draftFmd.getProvFreeForm().equals(publishedFmd.getProvFreeForm()))){
+                if (prov != null && (!draftFmd.getProvFreeForm().equals(publishedFmd.getProvFreeForm()))) {
                     publishedFmd.setProvFreeForm(prov);
                     metadataUpdated = true;
                 }
@@ -93,41 +94,41 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             if (metadataUpdated) {
                 dataFile.setModificationTime(getTimestamp());
             }
-            // Now delete filemetadata in draft version before deleting the version itself
+            // Now delete filemetadata from draft version before deleting the version itself
             FileMetadata mergedFmd = ctxt.em().merge(draftFmd);
             ctxt.em().remove(mergedFmd);
+            // including removing metadata from the list on the datafile
             draftFmd.getDataFile().getFileMetadatas().remove(draftFmd);
             tempDataset.getEditVersion().getFileMetadatas().remove(draftFmd);
-
+            // And any references in the list held by categories
             for (DataFileCategory cat : tempDataset.getCategories()) {
                 cat.getFileMetadatas().remove(draftFmd);
             }
         }
 
-
-
-        tempDataset.getEditVersion().setLastUpdateTime(getTimestamp());
+        // Update modification time on the published version and the dataset
+        updateVersion.setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());
-        
-        Dataset savedDataset = ctxt.em().merge(tempDataset);
 
-        ctxt.em().flush();
+        Dataset savedDataset = ctxt.em().merge(tempDataset);
 
         // Now delete draft version
         DeleteDatasetVersionCommand cmd;
 
         cmd = new DeleteDatasetVersionCommand(getRequest(), savedDataset);
         ctxt.engine().submit(cmd);
-        //Running the command above reindexes the dataset, so we don't need to do it again in here.
-        
+        // Running the command above reindexes the dataset, so we don't need to do it
+        // again in here.
+
         // And update metadata at PID provider
         ctxt.engine().submit(
                 new UpdateDvObjectPIDMetadataCommand(savedDataset, getRequest()));
-        
+
+        // Update so that getDataset() in updateDatasetUser will get the up-to-date copy
+        // (with no draft version)
         setDataset(savedDataset);
         updateDatasetUser(ctxt);
-        
-       
+
         return savedDataset;
     }
 
