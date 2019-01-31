@@ -72,7 +72,7 @@ public class ExternalToolHandler {
                 String value = queryParam.getString(key);
                 String param = getQueryParam(key, value);
                 if (param != null && !param.isEmpty()) {
-                    params.add(getQueryParam(key, value));
+                    params.add(param);
                 }
             });
         });

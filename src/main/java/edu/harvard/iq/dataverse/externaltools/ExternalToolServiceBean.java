@@ -99,8 +99,8 @@ public class ExternalToolServiceBean {
         //Map tabular data to it's mimetype (the isTabularData() check assures that this code works the same as before, but it may need to change if tabular data is split into subtypes with differing mimetypes)
         final String contentType = file.isTabularData() ? DataFileServiceBean.MIME_TYPE_TSV_ALT : file.getContentType();
         allExternalTools.forEach((externalTool) -> {
-            //Match tool and file type or, as legacy support, find externalTools with contentType == null as a match for tabular data
-            if (contentType.equals(externalTool.getContentType()) || ((contentType.equals(DataFileServiceBean.MIME_TYPE_TSV_ALT))&&(externalTool.getContentType()==null))) {
+            //Match tool and file type 
+            if (contentType.equals(externalTool.getContentType())) {
                 externalTools.add(externalTool);
             }
         });
@@ -119,6 +119,10 @@ public class ExternalToolServiceBean {
         String description = getRequiredTopLevelField(jsonObject, DESCRIPTION);
         String typeUserInput = getRequiredTopLevelField(jsonObject, TYPE);
         String contentType = getOptionalTopLevelField(jsonObject, CONTENT_TYPE);
+        //Legacy support - assume tool manifests without any mimetype are for tabular data
+        if(contentType==null) {
+            contentType=DataFileServiceBean.MIME_TYPE_TSV_ALT;
+        }
         
         // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString
         ExternalTool.Type type = ExternalTool.Type.fromString(typeUserInput);
