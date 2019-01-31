@@ -334,14 +334,14 @@
         });
     }
 
-    queryMetricSimple("datasets", "", ["headAllTimeAllDatasetsValue", "activityAllTimeAllDatasetsValue"]);
+    queryMetricSimple("datasets", "?dataLocation=all", ["headAllTimeAllDatasetsValue", "activityAllTimeAllDatasetsValue"]);
     queryMetricSimple("downloads", "", ["headAllTimeAllDownloadsValue", "activityAllTimeAllDownloadsValue"]);
     queryMetricSimple("dataverses", "", "headAllTimeAllDataversesValue");
 
     writeRecentDatasetsInDataverses("(Journal)" , 3, "journals");
     writeRecentDatasetsInDataverses("(\"Research+Project\"%20OR%20Researcher%20OR%20\"Research+Group\")" , 6, "researchers");
     
-    queryMetricSimple("datasets/pastDays", "/30", "activity30DaysAllDatasetsValue");
+    queryMetricSimple("datasets/pastDays", "/30?dataLocation=all", "activity30DaysAllDatasetsValue");
     queryMetricSimple("datasets", "?dataLocation=local", "activityAllTimeDepositedDatasetsValue");
     queryMetricSimple("datasets/pastDays", "/30?dataLocation=local", "activity30DaysDepositedDatasetsValue");
     queryMetricSimple("datasets", "?dataLocation=remote", "activityAllTimeHarvestedDatasetsValue");
@@ -352,6 +352,6 @@
     queryMetricSimple("files/pastDays", "/30?dataLocation=local", "activity30DaysDepositedFilesValue");
 
     querySubjectDataverseDataset("dataversesBySubject");
-    queryMetricSearch("datasets", "");
+    queryMetricSearch("datasets", "?dataLocation=all");
 //]]>
 </script>
