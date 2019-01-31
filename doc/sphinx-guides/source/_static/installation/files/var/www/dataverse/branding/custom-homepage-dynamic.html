@@ -27,8 +27,10 @@
     @media (min-width: 768px) {
         #dataversesBySubject {-webkit-column-count: 3; -moz-column-count: 3; column-count: 3; overflow: hidden; -webkit-column-break-inside: avoid; page-break-inside: avoid; break-inside: avoid; break-inside: avoid-column;}
 
-        #journals {-webkit-column-count: 1; -moz-column-count: 1; column-count: 1; overflow: hidden; -webkit-column-break-inside: avoid; page-break-inside: avoid; break-inside: avoid; break-inside: avoid-column;}
-        #researchers {-webkit-column-count: 2; -moz-column-count: 2; column-count: 2; overflow: hidden; -webkit-column-break-inside: avoid; page-break-inside: avoid; break-inside: avoid; break-inside: avoid-column;}
+        #journals {-webkit-column-count: 1; -moz-column-count: 1; column-count: 1; overflow: hidden;}
+        #researchers {-webkit-column-count: 2; -moz-column-count: 2; column-count: 2; overflow: hidden;}
+        #journals div.hmpg-recent-block, #researchers div.hmpg-recent-block {-webkit-column-break-inside: avoid; page-break-inside: avoid; break-inside: avoid; break-inside: avoid-column;}
+
     }
     #browseBySubject p.browse-subjects {display:inline-block; width:100%; padding:0 2px;}
     #browseBySubject p.browse-subjects a {color: #C55B28;}
@@ -36,9 +38,12 @@
 
     div.hmpg-recent-col p.placeholder {display:inline-block;}
     div.hmpg-recent-col div.hmpg-recent-block {border-bottom:1px solid #DDD;margin-bottom:12px;}
+    
+    /* NOTE: REMOVED THUMBNAILS
     div.hmpg-recent-col div.col-xs-2.hmpg-recent-thumb {width: 48px !important;height:48px;padding: 0 !important;}
     div.hmpg-recent-col div.hmpg-recent-thumb img {max-height:48px;max-width:48px;}
     div.hmpg-recent-col div.hmpg-recent-thumb span {font-size:38px;}
+    */
 
     div.activity-label {line-height: 19px;margin-top: 10px;margin-bottom: 10px;}
 </style>
@@ -61,7 +66,7 @@
         </div>
         <div class="col-sm-6 col-xs-12">
             <div class="h4 lite-header">Organize datasets and gather metrics in your own repository.</div>
-            <p class="text-muted margin-bottom">A dataverse is container for all your datasets, files, and metadata.</p>
+            <p class="text-muted margin-bottom">A dataverse is a container for all your datasets, files, and metadata.</p>
             
             <p class="margin-bottom-half">
                 <span id="headAllTimeAllDataversesValue" class="h4 lite-header"></span> <span class="text-muted">dataverses</span>
@@ -143,14 +148,6 @@
 
                     <!-- RESEARCHERS RESULTS -->
                     <div id="researchers" class="row col-xs-12"><p class="placeholder text-muted">Loading...</p></div>
-
-                    <!-- VIEW ALL -->
-                    <!-- 
-                    NOTE: The alias of the root dataverse will need to be configured in this URL 
-                    -->
-                    <!--<div class="row col-xs-12">
-                        <p class="small text-muted"><a href= "/dataverse/root">ALL RECENT ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
-                    </div>-->
                 </div>
             </div>
             
@@ -160,7 +157,7 @@
                     <!-- 
                     NOTE: The alias of the root dataverse will need to be configured in this URL 
                     -->
-                    <div class="row col-xs-12 hidden-md hidden-sm hidden-xs">
+                    <div class="row col-xs-12 hidden-md hidden-sm hidden-xs margin-top">
                         <p class="small text-muted"><a href="/dataverse/root?q=%28categoryOfDataverse%3A%22Journal%22+OR+dvCategory%3A%22Journal%22%29&types=datasets%3Adataverses&sort=dateSort">ALL RECENT JOURNAL ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
                 </div>
@@ -169,7 +166,7 @@
                     <!-- 
                     NOTE: The alias of the root dataverse will need to be configured in this URL 
                     -->
-                    <div class="row col-xs-12">
+                    <div class="row col-xs-12 margin-top">
                         <p class="small text-muted"><a href= "/dataverse/root">ALL RECENT ACTIVITY</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                     </div>
                 </div>
@@ -256,7 +253,8 @@
     //switch baseUrl to point to a different server than the local box
     var baseUrl = ""; 
 
-    var thumbBaseURL = baseUrl + "/api/datasets/:persistentId/thumbnail" + "?persistentId=";
+    // NOTE: REMOVED THUMBNAILS
+    // var thumbBaseURL = baseUrl + "/api/datasets/:persistentId/thumbnail" + "?persistentId=";
     var metricBaseUrl = baseUrl + "/api/info/metrics/";
     var simpleCatSearch = baseUrl + "/api/search?q=*&type=dataset&sort=dateSort&order=desc&fq=categoryOfDataverse:";
 
@@ -267,10 +265,12 @@
                 var options = { year: 'numeric', month: 'short', day: 'numeric' };
                 var date = new Date(item.published_at).toLocaleString('en-US', options);
                 resultHtml += "<div class=\"hmpg-recent-block clearfix\">";
-                resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">";
-                resultHtml += "<object data=\"" + thumbBaseURL + item.global_id + "\" type=\"image/png\"/><span class=\"icon-dataset\"></span></object>";
-                resultHtml += "</a></div>";
-                resultHtml += "<div class=\"col-xs-9 col-md-10 hmpg-recent-metadata\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">" + item.name + "</a></p><p class=\"small text-muted\"><a href=\"/dataverse/" + item.identifier_of_dataverse + "\" class=\"highlightBold\">" + item.name_of_dataverse + "</a> " + date + "</p></div>";
+                // NOTE: REMOVED THUMBNAILS
+                // resultHtml += "<div class=\"col-xs-2 text-center hmpg-recent-thumb\"><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">";
+                // resultHtml += "<object data=\"" + thumbBaseURL + item.global_id + "\" type=\"image/png\"/><span class=\"icon-dataset\"></span></object>";
+                // resultHtml += "</a></div>";
+                // NOTE: REMOVED THUMBNAILS... in next line, change grid layout class to `col-xs-9 col-md-10`
+                resultHtml += "<div class=\"col-xs-12 hmpg-recent-metadata\"><p><a href=\"/dataset.xhtml?persistentId=" + item.global_id + "\">" + item.name + "</a></p><p class=\"small text-muted\"><a href=\"/dataverse/" + item.identifier_of_dataverse + "\" class=\"highlightBold\">" + item.name_of_dataverse + "</a> " + date + "</p></div>";
                 resultHtml += "</div>";
             });
             document.getElementById(elm).innerHTML = resultHtml;
