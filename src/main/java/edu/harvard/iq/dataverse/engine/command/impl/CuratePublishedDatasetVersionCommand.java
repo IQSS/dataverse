@@ -123,7 +123,8 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // And update metadata at PID provider
         ctxt.engine().submit(
                 new UpdateDvObjectPIDMetadataCommand(savedDataset, getRequest()));
-
+        
+        setDataset(savedDataset);
         updateDatasetUser(ctxt);
         
        
