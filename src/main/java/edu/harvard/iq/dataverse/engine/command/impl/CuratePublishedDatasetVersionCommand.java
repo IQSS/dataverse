@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.ArchiverUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -142,6 +144,15 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             logger.log(Level.WARNING, "Curate Published DatasetVersion: exception while exporting metadata files:{0}", ex.getMessage());
         }
         
+        //Update archive copy as well
+        //Delete the record of any existing copy since it is now out of date/incorrect
+        updateVersion.setArchivalCopyLocation(null);
+        //Then try to generate and submit an archival copy. If it fails the location being null signals the failure
+        String className = ctxt.settings().get(SettingsServiceBean.Key.ArchiverClassName.toString());
+        AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, getRequest(), updateVersion);
+        if (archiveCommand != null) {
+            ctxt.engine().submit(archiveCommand);
+        }
         // Update so that getDataset() in updateDatasetUser will get the up-to-date copy
         // (with no draft version)
         setDataset(savedDataset);
