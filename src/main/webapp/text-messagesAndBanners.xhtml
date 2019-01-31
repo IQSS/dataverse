@@ -1,0 +1,29 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:p="http://primefaces.org/ui">
+
+    <c:set var="messages" value="#{MessagesAndBannersFragment.textMessages(dataverse.id)}"/>
+    <c:set var="banners" value="#{MessagesAndBannersFragment.banners(dataverse.id)}"/>
+    <h:form>
+        <div class="alert alert-info p-grid" jsf:rendered="#{messages.size() > 0}">
+            <ui:repeat value="#{messages}" var="message">
+                <div class="p-col" style="text-align: center;">
+                    <span class="glyphicon glyphicon-info-sign"></span>&#160;
+                    <h:outputText value="#{message}"/>
+                </div>
+            </ui:repeat>
+
+            <ui:repeat value="#{banners}" var="banner">
+                <div class="p-col">
+                    <h:commandLink action="#{MessagesAndBannersFragment.redirect(banner.link)}">
+                        <p:graphicImage style="display: block ;margin-left: auto; margin-right: auto; padding: 2px;"
+                                        stream="false"
+                                        value="#{banner.image}"/>
+                    </h:commandLink>
+                </div>
+            </ui:repeat>
+        </div>
+    </h:form>
+</ui:composition>

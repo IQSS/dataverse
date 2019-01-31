@@ -1,13 +1,18 @@
 package edu.harvard.iq.dataverse.dataverse.banners;
 
+import edu.harvard.iq.dataverse.dataverse.banners.dto.ImageWithLinkDto;
 import edu.harvard.iq.dataverse.locale.DataverseLocaleBean;
+import org.primefaces.model.DefaultStreamedContent;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.io.ByteArrayInputStream;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Stateless
 @Named
@@ -36,6 +41,45 @@ public class BannerDAO {
 
     public DataverseBanner getBanner(Long bannerId) {
         return em.find(DataverseBanner.class, bannerId);
+    }
+
+    public List<ImageWithLinkDto> getBannersForDataverse(Long dataverseId) {
+        List<Object[]> banners = em.createNativeQuery("select r.image, r.imagelink from (select distinct dvtml.image, dvtml.imagelink, dvtm.totime  from\n" +
+                "  dataversebanner dvtm\n" +
+                "  join dataverselocalizedbanner dvtml on dvtml.dataversebanner_id = dvtm.id\n" +
+                "  where\n" +
+                "    dvtm.active = true and\n" +
+                "    dvtml.locale = ? and\n" +
+                "    ? between dvtm.fromtime and dvtm.totime and\n" +
+                "    dvtm.dataverse_id in (with recursive dv_roots as (\n" +
+                "    select\n" +
+                "        dv_obj.id,\n" +
+                "        dv_obj.owner_id,\n" +
+                "        dv.allowmessagesbanners\n" +
+                "    from dvobject dv_obj\n" +
+                "      join dataverse dv on dv_obj.id = dv.id\n" +
+                "    where\n" +
+                "        dv.id = ?\n" +
+                "        union all\n" +
+                "        select\n" +
+                "               parent_dv_obj.id,\n" +
+                "               parent_dv_obj.owner_id,\n" +
+                "               parent_dv.allowmessagesbanners\n" +
+                "        from dvobject parent_dv_obj\n" +
+                "               join dataverse parent_dv on parent_dv_obj.id = parent_dv.id\n" +
+                "               join dv_roots dv on dv_roots.owner_id = parent_dv_obj.id\n" +
+                "    )\n" +
+                "    select id from dv_roots dr where dr.allowmessagesbanners = true) order by dvtm.totime asc) r")
+                .setParameter(1, locale.getLocaleCode())
+                .setParameter(2, LocalDateTime.now())
+                .setParameter(3, dataverseId)
+                .getResultList();
+
+        return banners.stream()
+                .map(localizedBanner -> new ImageWithLinkDto(
+                        new DefaultStreamedContent(new ByteArrayInputStream((byte[]) localizedBanner[0])),
+                        (String) localizedBanner[1]))
+                .collect(Collectors.toList());
     }
 
     /**
