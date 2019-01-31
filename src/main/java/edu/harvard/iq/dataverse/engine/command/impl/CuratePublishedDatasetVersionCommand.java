@@ -62,8 +62,9 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             FileMetadata draftFmd = dataFile.getLatestFileMetadata();
             FileMetadata publishedFmd = null;
             for (FileMetadata fmd : fmdList) {
-                if (fmd.getDatasetVersion().equals(getDataset().getEditVersion())) {
+                if (fmd.getDatasetVersion().equals(updateVersion)) {
                     publishedFmd = fmd;
+                    break;
                 }
             }
             boolean metadataUpdated = false;
@@ -95,10 +96,10 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             // Now delete filemetadata in draft version before deleting the version itself
             FileMetadata mergedFmd = ctxt.em().merge(draftFmd);
             ctxt.em().remove(mergedFmd);
-            dataFile.getFileMetadatas().remove(draftFmd);
+            draftFmd.getDataFile().getFileMetadatas().remove(draftFmd);
             tempDataset.getEditVersion().getFileMetadatas().remove(draftFmd);
 
-            for (DataFileCategory cat : getDataset().getCategories()) {
+            for (DataFileCategory cat : tempDataset.getCategories()) {
                 cat.getFileMetadatas().remove(draftFmd);
             }
         }
