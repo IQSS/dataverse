@@ -20,20 +20,14 @@ import java.util.logging.Logger;
 public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(UpdateDatasetVersionCommand.class.getCanonicalName());
-    private List<FileMetadata> filesToDelete;
+    private final List<FileMetadata> filesToDelete;
     private boolean validateLenient = false;
     private final DatasetVersion clone;
-    private boolean updateCurrentVersion=false;
 
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest) {
-        this(theDataset, aRequest, false);
-    }    
-
-    public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, boolean updateCurrentVersion) {
         super(aRequest, theDataset);
         this.filesToDelete = new ArrayList<>();
         this.clone = null;
-        this.updateCurrentVersion=updateCurrentVersion;
     }    
     
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete) {
@@ -83,19 +77,19 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         }
         
         ctxt.permissions().checkEditDatasetLock(getDataset(), getRequest(), this);
-        // Invariant: Dataset has no locks preventing the update
-        DatasetVersion updateVersion=updateCurrentVersion ? getDataset().getLatestVersionForCopy() : getDataset().getEditVersion(); 
-        updateVersion.setDatasetFields(getDataset().getEditVersion().initDatasetFields());
-        validateOrDie( updateVersion, isValidateLenient() );
+        // Invariant: Dataset has no locks prventing the update
         
-        //final DatasetVersion editVersion = getDataset().getEditVersion();
-        tidyUpFields(updateVersion);
+        getDataset().getEditVersion().setDatasetFields(getDataset().getEditVersion().initDatasetFields());
+        validateOrDie( getDataset().getEditVersion(), isValidateLenient() );
+        
+        final DatasetVersion editVersion = getDataset().getEditVersion();
+        tidyUpFields(editVersion);
         
         // Merge the new version into out JPA context, if needed.
-        if ( updateVersion.getId() == null || updateVersion.getId() == 0L ) {
-            ctxt.em().persist(updateVersion);
+        if ( editVersion.getId() == null || editVersion.getId() == 0L ) {
+            ctxt.em().persist(editVersion);
         } else {
-            ctxt.em().merge(updateVersion);
+            ctxt.em().merge(editVersion);
         }
 
         
@@ -135,14 +129,6 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         // we don't want to create two draft versions!
         Dataset tempDataset = ctxt.em().merge(getDataset());
         
-        if(updateCurrentVersion) {
-            List<FileMetadata> fml = tempDataset.getEditVersion().getFileMetadatas();
-            filesToDelete= new ArrayList<FileMetadata>();
-            for(FileMetadata fmd: fml) {
-                filesToDelete.add(fmd);
-            }
-        }
-        
         for (FileMetadata fmd : filesToDelete) {
             if (!fmd.getDataFile().isReleased()) {
                 // if file is draft (ie. new to this version, delete; otherwise just remove filemetadata object)
@@ -169,60 +155,17 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         
         tempDataset.getEditVersion().setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());
+        
         Dataset savedDataset = ctxt.em().merge(tempDataset);
-        
-
-         
-        
         ctxt.em().flush();
-/*        
-        if(updateCurrentVersion) {
-        
-        List<DataFile> fl = new ArrayList<DataFile>();
-                for(DataFile d : dataset.getFiles()) {
-                    d = datafileService.find(d.getId());
-                    fl.add(d);
-                    logger.info("ddv: " + d.getId() + " : " + d.getFileMetadatas().size());
-                }
-                dataset.setFiles(fl);
-                for(DataFile d : dataset.getFiles()) {
-                    logger.info("ddv2: " + d.getId() + " : " + d.getFileMetadatas().size());
-                }
-                
-                
-                
-                
-            ctxt.engine().submit(new DeleteDatasetVersionCommand(getRequest(), savedDataset));
-            List<DatasetVersion> ldv = savedDataset.getVersions();
-            for(int i=0;i<ldv.size();i++) {
-                if(ldv.get(i).isDraft()) {
-                    ldv.remove(i);
-                    break;
-                }
-            }
-            savedDataset.setVersions(ldv);
-        }
-        */ 
-        savedDataset=ctxt.em().merge(savedDataset);
-        ctxt.em().flush();
-        if(updateCurrentVersion) {
-            DeleteDatasetVersionCommand cmd;
-
-            cmd = new DeleteDatasetVersionCommand(getRequest(), savedDataset);
-            ctxt.engine().submit(cmd);
-            ctxt.engine().submit(
-                    new UpdateDvObjectPIDMetadataCommand(savedDataset, getRequest())
-                );
-        } else {
 
         updateDatasetUser(ctxt);
         ctxt.index().indexDataset(savedDataset, true);
         if (clone != null) {
-            DatasetVersionDifference dvd = new DatasetVersionDifference(updateVersion, clone);
+            DatasetVersionDifference dvd = new DatasetVersionDifference(editVersion, clone);
             AuthenticatedUser au = (AuthenticatedUser) getUser();
             ctxt.datasetVersion().writeEditVersionLog(dvd, au);
         } 
-        }
         return savedDataset; 
     }
 
