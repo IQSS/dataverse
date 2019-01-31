@@ -53,7 +53,11 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // Merge the new version into out JPA context
         ctxt.em().merge(updateVersion);
 
-        for (DataFile dataFile : getDataset().getFiles()) {
+        // we have to merge to update the database but not flush because
+        // we don't want to create two draft versions!
+        Dataset tempDataset = ctxt.em().merge(getDataset());
+        
+        for (DataFile dataFile : tempDataset.getFiles()) {
             List<FileMetadata> fmdList = dataFile.getFileMetadatas();
             FileMetadata draftFmd = dataFile.getLatestFileMetadata();
             FileMetadata publishedFmd = null;
@@ -92,16 +96,14 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             FileMetadata mergedFmd = ctxt.em().merge(draftFmd);
             ctxt.em().remove(mergedFmd);
             dataFile.getFileMetadatas().remove(draftFmd);
-            getDataset().getEditVersion().getFileMetadatas().remove(draftFmd);
+            tempDataset.getEditVersion().getFileMetadatas().remove(draftFmd);
 
             for (DataFileCategory cat : getDataset().getCategories()) {
                 cat.getFileMetadatas().remove(draftFmd);
             }
         }
 
-        // we have to merge to update the database but not flush because
-        // we don't want to create two draft versions!
-        Dataset tempDataset = ctxt.em().merge(getDataset());
+
 
         tempDataset.getEditVersion().setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());
