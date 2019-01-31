@@ -269,4 +269,33 @@ public class ExternalToolServiceBeanTest {
         assertEquals(ExternalTool.CONTENT_TYPE + " is required.", expectedException.getMessage());
     }
 
+    @Test
+    public void testParseAddExternalToolInputNoContentType() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("description", "This tool is awesome.");
+        job.add("type", "explore");
+        job.add("toolUrl", "http://awesometool.com");
+        
+        job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
+                .add(Json.createObjectBuilder()
+                        .add("fileid", "{fileId}")
+                        .build())
+                .add(Json.createObjectBuilder()
+                        .add("key", "{apiToken}")
+                        .build())
+                .build())
+            .build());
+        String tool = job.build().toString();
+        System.out.println("tool: " + tool);
+        ExternalTool externalTool = null;
+        try {
+            externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        assertNotNull(externalTool);
+        assertEquals(externalTool.getContentType(), DataFileServiceBean.MIME_TYPE_TSV_ALT);
+    }
+
 }
