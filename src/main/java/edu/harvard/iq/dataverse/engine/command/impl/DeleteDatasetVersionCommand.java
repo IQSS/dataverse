@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -28,7 +27,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
 
     private static final Logger logger = Logger.getLogger(DeleteDatasetVersionCommand.class.getCanonicalName());
 
-    private Dataset doomed;
+    private final Dataset doomed;
 
     public DeleteDatasetVersionCommand(DataverseRequest aRequest, Dataset dataset) {
         super(aRequest, dataset);
@@ -38,7 +37,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         ctxt.permissions().checkEditDatasetLock(doomed, getRequest(), this);
-        doomed = ctxt.em().find(Dataset.class, doomed.getId());
+
         // if you are deleting a dataset that only has 1 draft, we are actually destroying the dataset
         if (doomed.getVersions().size() == 1) {
             ctxt.engine().submit(new DestroyDatasetCommand(doomed, getRequest()));
@@ -59,11 +58,6 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                         // and remove fileMetadata from list (so that it won't try to merge)
                         ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
                         fmIt.remove(); 
-                    } else {
-                        FileMetadata mergedFmd = ctxt.em().merge(fmd);
-                        ctxt.em().remove(mergedFmd);
-                        fmd.getDataFile().getFileMetadatas().remove(fmd);
-                        fmIt.remove();
                     }  
                 }
 
@@ -99,8 +93,6 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                     }
                 }
                 boolean doNormalSolrDocCleanUp = true;
-
-                ctxt.em().flush();
                 ctxt.index().indexDataset(doomed, doNormalSolrDocCleanUp);
                 return;
             }
