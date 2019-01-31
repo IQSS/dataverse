@@ -21,7 +21,6 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -127,8 +126,7 @@ public class Datasets extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Datasets.class.getCanonicalName());
 
-    @Inject
-    DataverseSession session;
+    @Inject DataverseSession session;    
 
     @EJB
     DatasetServiceBean datasetService;
@@ -171,7 +169,6 @@ public class Datasets extends AbstractApiBean {
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
-     * 
      * @param <T>
      */
     private interface DsVersionHandler<T> {
@@ -221,7 +218,8 @@ public class Datasets extends AbstractApiBean {
 
             return allowCors(Response.ok()
                     .entity(is)
-                    .type(mediaType).build());
+                    .type(mediaType).
+                    build());
         } catch (Exception wr) {
             return error(Response.Status.FORBIDDEN, "Export Failed");
         }
@@ -287,7 +285,8 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{id}/versions")
     public Response listVersions(@PathParam("id") String id) {
-        return allowCors(response(req -> ok(execCommand(new ListVersionsCommand(req, findDatasetOrDie(id)))
+        return allowCors(response( req -> 
+             ok( execCommand( new ListVersionsCommand(req, findDatasetOrDie(id)) )
                 .stream()
                 .map(d -> json(d))
                 .collect(toJsonArray()))));
@@ -767,8 +766,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     /**
-     * @deprecated This was shipped as a GET but should have been a POST, see
-     *             https://github.com/IQSS/dataverse/issues/2431
+     * @deprecated This was shipped as a GET but should have been a POST, see https://github.com/IQSS/dataverse/issues/2431
      */
     @GET
     @Path("{id}/actions/:publish")
@@ -822,7 +820,8 @@ public class Datasets extends AbstractApiBean {
             }
             // Command requires Super user - it will be tested by the command
             execCommand(new MoveDatasetCommand(
-                    createDataverseRequest(u), ds, target, force));
+                    createDataverseRequest(u), ds, target, force
+                    ));
             return ok("Dataset moved successfully");
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -843,7 +842,8 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "Linking Dataverse not found.");
             }
             execCommand(new LinkDatasetCommand(
-                    createDataverseRequest(u), linking, linked));
+                    createDataverseRequest(u), linking, linked
+                    ));
             return ok("Dataset " + linked.getId() + " linked successfully to " + linking.getAlias());
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -875,9 +875,9 @@ public class Datasets extends AbstractApiBean {
     }
 
     /**
-     * @todo Make this real. Currently only used for API testing. Copied from the
-     *       equivalent API endpoint for dataverses and simplified with values hard
-     *       coded.
+     * @todo Make this real. Currently only used for API testing. Copied from
+     * the equivalent API endpoint for dataverses and simplified with values
+     * hard coded.
      */
     @POST
     @Path("{identifier}/assignments")
@@ -905,7 +905,8 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{identifier}/assignments")
     public Response getAssignments(@PathParam("identifier") String id) {
-        return response(req -> ok(execCommand(
+        return response( req -> 
+            ok( execCommand(
                 new ListRoleAssignments(req, findDatasetOrDie(id)))
                         .stream().map(ra -> json(ra)).collect(toJsonArray())));
     }
@@ -923,7 +924,8 @@ public class Datasets extends AbstractApiBean {
     @POST
     @Path("{id}/privateUrl")
     public Response createPrivateUrl(@PathParam("id") String idSupplied) {
-        return response(req -> ok(json(execCommand(
+        return response( req -> 
+                ok(json(execCommand(
                 new CreatePrivateUrlCommand(req, findDatasetOrDie(idSupplied))))));
     }
 
@@ -993,8 +995,7 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    // TODO: Rather than only supporting looking up files by their database IDs
-    // (dataFileIdSupplied), consider supporting persistent identifiers.
+    // TODO: Rather than only supporting looking up files by their database IDs (dataFileIdSupplied), consider supporting persistent identifiers.
     @POST
     @Path("{id}/thumbnail/{dataFileId}")
     public Response setDataFileAsThumbnail(@PathParam("id") String idSupplied, @PathParam("dataFileId") long dataFileIdSupplied) {
@@ -1009,7 +1010,8 @@ public class Datasets extends AbstractApiBean {
     @POST
     @Path("{id}/thumbnail")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadDatasetLogo(@PathParam("id") String idSupplied, @FormDataParam("file") InputStream inputStream) {
+    public Response uploadDatasetLogo(@PathParam("id") String idSupplied, @FormDataParam("file") InputStream inputStream
+    ) {
         try {
             DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, inputStream));
             return ok("Thumbnail is now " + datasetThumbnail.getBase64image());
@@ -1032,8 +1034,7 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{identifier}/dataCaptureModule/rsync")
     public Response getRsync(@PathParam("identifier") String id) {
-        // TODO - does it make sense to switch this to dataset identifier for
-        // consistency with the rest of the DCM APIs?
+        //TODO - does it make sense to switch this to dataset identifier for consistency with the rest of the DCM APIs?
         if (!DataCaptureModuleUtil.rsyncSupportEnabled(settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
             return error(Response.Status.METHOD_NOT_ALLOWED, SettingsServiceBean.Key.UploadMethods + " does not contain " + SystemConfig.FileUploadMethods.RSYNC + ".");
         }
@@ -1058,20 +1059,16 @@ public class Datasets extends AbstractApiBean {
 
     /**
      * This api endpoint triggers the creation of a "package" file in a dataset
-     * after that package has been moved onto the same filesystem via the Data
-     * Capture Module. The package is really just a way that Dataverse interprets a
-     * folder created by DCM, seeing it as just one file. The "package" can be
-     * downloaded over RSAL.
+     *    after that package has been moved onto the same filesystem via the Data Capture Module.
+     * The package is really just a way that Dataverse interprets a folder created by DCM, seeing it as just one file.
+     * The "package" can be downloaded over RSAL.
      * 
-     * This endpoint currently supports both posix file storage and AWS s3 storage
-     * in Dataverse, and depending on which one is active acts accordingly.
+     * This endpoint currently supports both posix file storage and AWS s3 storage in Dataverse, and depending on which one is active acts accordingly.
      * 
-     * The initial design of the DCM/Dataverse interaction was not to use packages,
-     * but to allow import of all individual files natively into Dataverse. But due
-     * to the possibly immense number of files (millions) the package approach was
-     * taken. This is relevant because the posix ("file") code contains many
-     * remnants of that development work. The s3 code was written later and is set
-     * to only support import as packages. It takes a lot from FileRecordWriter.
+     * The initial design of the DCM/Dataverse interaction was not to use packages, but to allow import of all individual files natively into Dataverse.
+     * But due to the possibly immense number of files (millions) the package approach was taken.
+     * This is relevant because the posix ("file") code contains many remnants of that development work.
+     * The s3 code was written later and is set to only support import as packages. It takes a lot from FileRecordWriter.
      * -MAD 4.9.1
      */
     @POST
@@ -1118,8 +1115,7 @@ public class Datasets extends AbstractApiBean {
                     logger.log(Level.INFO, "S3 storage driver used for DCM (dataset id={0})", dataset.getId());
                     try {
 
-                        // Where the lifting is actually done, moving the s3 files over and having
-                        // dataverse know of the existance of the package
+                        //Where the lifting is actually done, moving the s3 files over and having dataverse know of the existance of the package
                         s3PackageImporter.copyFromS3(dataset, uploadFolder);
                         DataFile packageFile = s3PackageImporter.createPackageDataFile(dataset, uploadFolder, new Long(totalSize));
 
@@ -1135,8 +1131,7 @@ public class Datasets extends AbstractApiBean {
                             dataset.removeLock(dcmLock);
                         }
 
-                        // update version using the command engine to enforce user permissions and
-                        // constraints
+                        // update version using the command engine to enforce user permissions and constraints
                         if (dataset.getVersions().size() == 1 && dataset.getLatestVersion().getVersionState() == DatasetVersion.VersionState.DRAFT) {
                             try {
                                 Command<Dataset> cmd;
@@ -1211,9 +1206,7 @@ public class Datasets extends AbstractApiBean {
             Dataset dataset = findDatasetOrDie(idSupplied);
             String reasonForReturn = null;
             reasonForReturn = json.getString("reasonForReturn");
-            // TODO: Once we add a box for the curator to type into, pass the reason for
-            // return to the ReturnDatasetToAuthorCommand and delete this check and call to
-            // setReturnReason on the API side.
+            // TODO: Once we add a box for the curator to type into, pass the reason for return to the ReturnDatasetToAuthorCommand and delete this check and call to setReturnReason on the API side.
             if (reasonForReturn == null || reasonForReturn.isEmpty()) {
                 return error(Response.Status.BAD_REQUEST, "You must enter a reason for returning a dataset to the author(s).");
             }
@@ -1246,7 +1239,8 @@ public class Datasets extends AbstractApiBean {
             @FormDataParam("jsonData") String jsonData,
             @FormDataParam("file") InputStream fileInputStream,
             @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-            @FormDataParam("file") final FormDataBodyPart formDataBodyPart) {
+                    @FormDataParam("file") final FormDataBodyPart formDataBodyPart
+                    ){
 
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
@@ -1260,7 +1254,8 @@ public class Datasets extends AbstractApiBean {
             authUser = findUserOrDie();
         } catch (WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN,
-                    BundleUtil.getStringFromBundle("file.addreplace.error.auth"));
+                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
+                    );
         }
 
         // -------------------------------------
@@ -1283,7 +1278,8 @@ public class Datasets extends AbstractApiBean {
         for (DatasetVersion dv : dataset.getVersions()) {
             if (dv.isHasPackageFile()) {
                 return error(Response.Status.FORBIDDEN,
-                        ResourceBundle.getBundle("Bundle").getString("file.api.alreadyHasPackageFile"));
+                        ResourceBundle.getBundle("Bundle").getString("file.api.alreadyHasPackageFile")
+                );
             }
         }
 
@@ -1334,10 +1330,11 @@ public class Datasets extends AbstractApiBean {
             try {
                 // msgt("as String: " + addFileHelper.getSuccessResult());
                 /**
-                 * @todo We need a consistent, sane way to communicate a human readable message
-                 *       to an API client suitable for human consumption. Imagine if the UI were
-                 *       built in Angular or React and we want to return a message from the API
-                 *       as-is to the user. Human readable.
+                 * @todo We need a consistent, sane way to communicate a human
+                 * readable message to an API client suitable for human
+                 * consumption. Imagine if the UI were built in Angular or React
+                 * and we want to return a message from the API as-is to the
+                 * user. Human readable.
                  */
                 logger.fine("successMsg: " + successMsg);
                 return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
@@ -1361,20 +1358,15 @@ public class Datasets extends AbstractApiBean {
     }
 
     private void msgt(String m) {
-        dashes();
-        msg(m);
-        dashes();
+        dashes(); msg(m); dashes();
     }
 
     private <T> T handleVersion(String versionId, DsVersionHandler<T> hdl)
             throws WrappedResponse {
         switch (versionId) {
-        case ":latest":
-            return hdl.handleLatest();
-        case ":draft":
-            return hdl.handleDraft();
-        case ":latest-published":
-            return hdl.handleLatestPublished();
+            case ":latest": return hdl.handleLatest();
+            case ":draft": return hdl.handleDraft();
+            case ":latest-published": return hdl.handleLatestPublished();
         default:
             try {
                 String[] versions = versionId.split("\\.");

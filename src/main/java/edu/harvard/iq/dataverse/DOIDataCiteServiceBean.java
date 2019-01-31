@@ -29,7 +29,6 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         return true;
     }
 
-
     @Override
     public boolean alreadyExists(DvObject dvObject) {
         if(dvObject==null) {

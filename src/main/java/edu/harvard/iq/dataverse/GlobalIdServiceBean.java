@@ -65,8 +65,6 @@ public interface GlobalIdServiceBean {
     static GlobalIdServiceBean getBean(CommandContext ctxt) {
         return getBean(ctxt.settings().getValueForKey(Key.Protocol, ""), ctxt);
     }
-
-
     
 }
 

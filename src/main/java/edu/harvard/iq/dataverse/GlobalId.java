@@ -117,7 +117,7 @@ public class GlobalId implements java.io.Serializable {
         if (protocol == null || authority == null || identifier == null) {
             return "";
         }
-    	return protocol + ":" + authority + "/" + identifier;
+        return protocol + ":" + authority + "/" + identifier;
     }
     
     public URL toURL() {
@@ -159,10 +159,9 @@ public class GlobalId implements java.io.Serializable {
      */
     private boolean parsePersistentId(String identifierString) {
 
-        if (identifierString == null){
+        if (identifierString == null) {
             return false;
-        } 
-        
+        }
         int index1 = identifierString.indexOf(':');
         if (index1 > 0) { // ':' found with one or more characters before it
             int index2 = identifierString.indexOf('/', index1 + 1);
@@ -170,15 +169,15 @@ public class GlobalId implements java.io.Serializable {
                                                                           // between ':'
                 protocol = identifierString.substring(0, index1); // and '/' and there are characters after '/'
                 if (!"doi".equals(protocol) && !"hdl".equals(protocol)) {
-            return false; 
-        }  
+                    return false;
+                }
                 //Strip any whitespace, ; and ' from authority (should finding them cause a failure instead?)
                 authority = formatIdentifierString(identifierString.substring(index1 + 1, index2));
                 if(testforNullTerminator(authority)) return false;
                 if (protocol.equals(DOI_PROTOCOL)) {
                     if (!this.checkDOIAuthority(authority)) {
-            return false;
-        }
+                        return false;
+                    }
                 }
                 // Passed all checks
                 //Strip any whitespace, ; and ' from identifier (should finding them cause a failure instead?)
@@ -193,9 +192,7 @@ public class GlobalId implements java.io.Serializable {
             return false;
         }
         return true;
-
     }
-
     
     private static String formatIdentifierString(String str){
         
