@@ -103,6 +103,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
 import java.util.Collections;
+import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 
 import javax.faces.event.AjaxBehaviorEvent;
@@ -777,7 +778,21 @@ public class DatasetPage implements java.io.Serializable {
         setReleasedVersionTabList(resetReleasedVersionTabList());
         
     }
+    
+    public void clickDeaccessionDataset(){
+        setReleasedVersionTabList(resetReleasedVersionTabList());
+        setRenderDeaccessionPopup(true);
+    }
+    
+    private boolean renderDeaccessionPopup = false;
 
+    public boolean isRenderDeaccessionPopup() {
+        return renderDeaccessionPopup;
+    }
+
+    public void setRenderDeaccessionPopup(boolean renderDeaccessionPopup) {
+        this.renderDeaccessionPopup = renderDeaccessionPopup;
+    }
 
     public void updateSelectedLinkingDV(ValueChangeEvent event) {
         linkingDataverseId = (Long) event.getNewValue();
@@ -1972,6 +1987,7 @@ public class DatasetPage implements java.io.Serializable {
             logger.severe(ex.getMessage());
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.message.deaccessionFailure"));
         }
+        setRenderDeaccessionPopup(false);
         JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetVersion.message.deaccessionSuccess"));
         return returnToDatasetOnly();
     }
@@ -2670,7 +2686,59 @@ public class DatasetPage implements java.io.Serializable {
         return save();
     }
 
-    public String save() {
+    public void validateDeaccessionReason(FacesContext context, UIComponent toValidate, Object value) {
+
+        UIInput reasonRadio = (UIInput) toValidate.getAttributes().get("reasonRadio");
+        Object reasonRadioValue = reasonRadio.getValue();
+        Integer radioVal = new Integer(reasonRadioValue.toString());
+
+        if (radioVal == 7 && (value == null || value.toString().isEmpty())) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.textForReason.error"));
+            context.addMessage(toValidate.getClientId(context), message);
+
+        } else {
+            if (value == null || value.toString().length() <= DatasetVersion.VERSION_NOTE_MAX_LENGTH) {
+                ((UIInput) toValidate).setValid(true);
+            } else {
+                ((UIInput) toValidate).setValid(false);
+                Integer lenghtInt = DatasetVersion.VERSION_NOTE_MAX_LENGTH;
+              String lengthString =   lenghtInt.toString();
+               String userMsg = BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.limitChar.error", Arrays.asList(lengthString));
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", userMsg);
+                context.addMessage(toValidate.getClientId(context), message);
+            }
+        }
+    }
+
+    public void validateForwardURL(FacesContext context, UIComponent toValidate, Object value) {
+
+        if ((value == null || value.toString().isEmpty())) {
+            ((UIInput) toValidate).setValid(true);
+            return;
+        }
+
+        String testVal = value.toString();
+
+        if (!URLValidator.isURLValid(testVal)) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.url.error"), BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.url.error"));
+            context.addMessage(toValidate.getClientId(context), message);
+            return;
+        }
+        
+        if (value.toString().length() <= DatasetVersion.ARCHIVE_NOTE_MAX_LENGTH) {
+            ((UIInput) toValidate).setValid(true);
+        } else {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.url.error"), BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.url.error"));
+            context.addMessage(toValidate.getClientId(context), message);
+
+        }
+
+    }
+     
+     public String save() {
          //Before dataset saved, write cached prov freeform to version
         if(systemConfig.isProvCollectionEnabled()) {
             provPopupFragmentBean.saveStageProvFreeformToLatestVersion();

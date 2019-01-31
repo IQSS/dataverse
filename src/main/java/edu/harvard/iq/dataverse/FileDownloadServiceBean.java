@@ -419,6 +419,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         //SEK 12/3/2018 changing this to open the json in a new tab. 
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        // FIXME: BibTeX isn't JSON. Firefox will try to parse it and report "SyntaxError".
         response.setContentType("application/json");
 
         String fileNameString;

@@ -230,7 +230,7 @@ Configuring the RSAL Mock
 
 Info for configuring the RSAL Mock: https://github.com/sbgrid/rsal/tree/master/mocks
 
-Also, to configure Dataverse to use the new workflow you must do the following (see also the `section on workflows <http://guides.dataverse.org/en/latest/developers/workflows.html>`_):
+Also, to configure Dataverse to use the new workflow you must do the following (see also the :doc:`workflows` section):
 
 1. Configure the RSAL URL:
 

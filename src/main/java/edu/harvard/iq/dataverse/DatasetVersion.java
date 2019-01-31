@@ -48,6 +48,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import javax.validation.constraints.Size;
 
 /**
  *
@@ -56,6 +57,7 @@ import javax.validation.ValidatorFactory;
 @Entity
 @Table(indexes = {@Index(columnList="dataset_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id,versionnumber,minorversionnumber"}))
+@ValidateVersionNote(versionNote = "versionNote", versionState = "versionState")
 public class DatasetVersion implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetVersion.class.getCanonicalName());
@@ -103,6 +105,7 @@ public class DatasetVersion implements Serializable {
     private Long versionNumber;
     private Long minorVersionNumber;
     
+    @Size(min=0, max=VERSION_NOTE_MAX_LENGTH)
     @Column(length = VERSION_NOTE_MAX_LENGTH)
     private String versionNote;
     
@@ -142,7 +145,9 @@ public class DatasetVersion implements Serializable {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date archiveTime;
     
+    @Size(min=0, max=ARCHIVE_NOTE_MAX_LENGTH)
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
+    @ValidateURL()
     private String archiveNote;
     
     @Column(nullable=true, columnDefinition = "TEXT")
@@ -1585,9 +1590,10 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
+        
         return returnSet;
     }
-
+    
     public List<WorkflowComment> getWorkflowComments() {
         return workflowComments;
     }

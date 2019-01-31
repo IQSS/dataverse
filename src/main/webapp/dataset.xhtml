@@ -269,8 +269,8 @@
                                         <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.existReleasedVersion and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                             <li class="divider"></li>
                                             <li>
-                                                <p:commandLink id="deaccessionDatasetLink" onclick="PF('deaccessionBlock').show()"
-                                                               action="#{DatasetPage.updateReleasedVersions()}"
+                                                <p:commandLink id="deaccessionDatasetLink" 
+                                                               action="#{DatasetPage.clickDeaccessionDataset}"
                                                                oncomplete="PF('deaccessionBlock').show();bind_bsui_components();"
                                                                update="deaccessionBlock">
                                                     <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deaccession']}" />
@@ -765,54 +765,62 @@
                             <p:commandButton value="#{bundle.close}" onclick="PF('computeInvalid').hide();" type="button" />
                         </div>
                     </p:dialog>
-                    <p:dialog id="deaccessionBlock" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true">
-                        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.tip']}</p>
-                        <div class="form-group" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
-                            <label for="versionDeaccessionTable">#{bundle['file.deaccessionDialog.reason.question1']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
-                            <p:dataTable id="versionDeaccessionTable" value="#{DatasetPage.releasedVersionTabList}" var="versionTab" widgetVar="versionDeaccessionTable"
-                                         rowIndexVar="rowNum" selection="#{DatasetPage.selectedDeaccessionVersions}" rowKey="#{versionTab}">
-                                <p:column selectionMode="multiple" class="col-select-width text-center"/>
-                                <p:column>
-                                    <h:outputText value="#{bundle['file.deaccessionDialog.version']} #{versionTab.versionNumber}.#{versionTab.minorVersionNumber}, #{versionTab.versionDate}" />
-                                </p:column>
-                            </p:dataTable>
-                        </div>
-                        <div class="form-group">
-                            <label for="reasonOptions">#{bundle['file.deaccessionDialog.reason.question2']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
-                            <h:selectOneMenu id="reasonOptions" styleClass="form-control" value="#{DatasetPage.deaccessionReasonRadio}">
-                                <f:selectItem itemLabel="#{bundle.select}" itemValue="0" noSelectionOption="true" />
-                                <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.identifiable']}" itemValue="1" />
-                                <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.beRetracted']}" itemValue="2" />
-                                <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.beTransferred']}" itemValue="3" />
-                                <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.IRB']}" itemValue="4" />
-                                <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.legalIssue']}" itemValue="5" />
-                                <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.notValid']}" itemValue="6" />
-                                <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.other']}" itemValue="7" />
-                            </h:selectOneMenu>
-                        </div>
-                        <div class="form-group">
-                            <label for="reasonForDeaccession">
+                    <p:outputPanel autoUpdate="true">
+                        <p:dialog rendered="#{DatasetPage.renderDeaccessionPopup}" id="deaccessionBlock" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true" visible="#{facesContext.validationFailed}">
+                            <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.tip']}</p>
+                            <div class="form-group" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
+
+                                <label for="selectVersionChk">#{bundle['file.deaccessionDialog.reason.question1']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>                           
+                                <p:selectManyCheckbox id="selectVersionChk" value="#{DatasetPage.selectedDeaccessionVersions}" converter="datasetVersionConverter"
+                                                      layout="pageDirection" required="#{param['DO_DEACCESSION_VALIDATION']}" requiredMessage="#{bundle['file.deaccessionDialog.dialog.selectVersion.error']}" widgetVar="selectVersionChk">
+                                    <f:selectItems value="#{DatasetPage.releasedVersionTabList}" var="versionTab" itemLabel="#{bundle['file.deaccessionDialog.version']} #{versionTab.versionNumber}.#{versionTab.minorVersionNumber}, #{versionTab.versionDate}"  itemValue="#{versionTab}" />
+                                </p:selectManyCheckbox>
+                                <p:message for="selectVersionChk"/>
+                            </div>
+                            <div class="form-group">
+                                <label for="reasonOptions">#{bundle['file.deaccessionDialog.reason.question2']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
+                                <p:selectOneMenu  widgetVar="reasonOptions" id="reasonOptions" styleClass="form-control" value="#{DatasetPage.deaccessionReasonRadio}" required="#{param['DO_DEACCESSION_VALIDATION']}" 
+                                                  binding="#{reasonRadio}" requiredMessage="#{bundle['file.deaccessionDialog.dialog.reason.error']}">
+                                    <f:selectItem itemLabel="#{bundle.select}" itemValue="0" noSelectionOption="true" />
+                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.identifiable']}" itemValue="1" />
+                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.beRetracted']}" itemValue="2" />
+                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.beTransferred']}" itemValue="3" />
+                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.IRB']}" itemValue="4" />
+                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.legalIssue']}" itemValue="5" />
+                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.notValid']}" itemValue="6" />
+                                    <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.other']}" itemValue="7" />                               
+                                </p:selectOneMenu>
+                                <p:message for="reasonOptions"/>
+                            </div>
+                            <div class="form-group">
+                                <label for="reasonForDeaccession">
                                 #{bundle['file.deaccessionDialog.enterInfo']}
-                            </label>
-                            <p:inputTextarea id="reasonForDeaccession" styleClass="form-control" immediate="true" autoResize="false" rows="2" cols="40"
-                                             onkeyup="updateHiddenReason(this);" value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession"/>
-                            <p:message for="reasonForDeaccession"/>
-                        </div>
-                        <div class="form-group">
-                            <label for="forwardURLForDeaccession">
+                                </label>
+                                <p:inputTextarea id="reasonForDeaccession" styleClass="form-control"  autoResize="false" rows="2" cols="40"                                           
+                                                 value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession" validator="#{DatasetPage.validateDeaccessionReason}"                                              
+                                                 > 
+                                    <f:attribute name="reasonRadio" value="#{reasonRadio}" />
+                                </p:inputTextarea>
+                                <p:message for="reasonForDeaccession"/>
+                            </div>
+                            <div class="form-group">
+                                <label for="forwardURLForDeaccession">
                                 #{bundle['file.deaccessionDialog.leaveURL']}
-                            </label>
-                            <p:inputText id="forwardURLForDeaccession" styleClass="form-control" value="#{DatasetPage.deaccessionForwardURLFor}" widgetVar="forwardURLForDeaccession"/>
-                            <p:watermark for="forwardURLForDeaccession" value="#{bundle['file.deaccessionDialog.leaveURL.watermark']}" id="watermark" />
-                        </div>
-                        <div class="button-block">
-                            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.deaccession}" rendered="#{DatasetPage.releasedVersionTabList.size() > 1}"
-                                           onclick="testDeaccessionVersionSelection(true);"/>
-                            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.deaccession}" rendered="#{DatasetPage.releasedVersionTabList.size() == 1}"
-                                           onclick="testDeaccessionVersionSelection(false);"/>
-                            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.cancel}" onclick="PF('deaccessionBlock').hide();PF('blockDatasetForm').hide();"/>
-                        </div>
-                    </p:dialog>
+                                </label>
+                                <p:inputText id="forwardURLForDeaccession" styleClass="form-control" value="#{DatasetPage.deaccessionForwardURLFor}" widgetVar="forwardURLForDeaccession"
+                                             validator="#{DatasetPage.validateForwardURL}"/>
+                                <p:message for="forwardURLForDeaccession"/>
+                                <p:watermark for="forwardURLForDeaccession" value="#{bundle['file.deaccessionDialog.leaveURL.watermark']}" id="watermark" />
+                            </div>
+                            <div class="button-block">
+                                <p:commandLink styleClass="btn btn-default" value="#{bundle.deaccession}"  
+                                               oncomplete="if (args &amp;&amp; !args.validationFailed) PF('deaccessionConfirmation').show();">
+                                    <f:param name="DO_DEACCESSION_VALIDATION" value="true"/>
+                                </p:commandLink>
+                                <p:commandLink type="button" styleClass="btn btn-default" immediate ="true" value="#{bundle.cancel}" action="#{DatasetPage.setRenderDeaccessionPopup(false)}" onclick="PF('deaccessionBlock').hide();PF('blockDatasetForm').hide();"/>
+                            </div>
+                        </p:dialog>
+                    </p:outputPanel>
                     <p:dialog id="deaccessionConfirmation" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionConfirmation" modal="true">
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.deaccession.tip']}</p>
                         <div class="button-block">
@@ -1551,55 +1559,6 @@
                     }
                     function updateHiddenReason(textArea) {
                         $('input[id$="hiddenReasonInput"]').val(textArea.value);
-                    }
-                    function testDeaccessionVersionSelection(testVersion) {
-                        var deaccessionText = $('input[id$="hiddenReasonInput"]').val();
-                        var urlEntry = $('input[id$="forwardURLForDeaccession"]').val();
-                        ;
-                        var valid = true;
-                        if (testVersion === true) {
-                            var count = PF('versionDeaccessionTable').getSelectedRowsCount();
-                        }
-                        if (validateURL(urlEntry) === false) {
-                            valid = false;
-                            PF('enterForwardUrl').show();
-                        }
-                        if (valid === true) {
-                            if ($("select[id$='reasonOptions'] option:selected").val() === '7') {
-                                if (deaccessionText === '') {
-                                    valid = false;
-                                    PF('enterOtherReason').show();
-                                }
-                            }
-                        }
-                        if (deaccessionText.length >= 1001) {
-                            valid = false;
-                            PF('reasonTooManyCharacters').show();
-                        }
-                        if (valid === true) {
-                            if ($("select[id$='reasonOptions'] option:selected").val() === '0') {
-                                valid = false;
-                                PF('selectDeaccessionReason').show();
-                            }
-                        }
-                        if (valid === true) {
-                            if (testVersion === false) {
-                                PF('deaccessionAllConfirmation').show();
-                            } else {
-                                if (count === 0) {
-                                    PF('selectDeaccessionVersion').show();
-                                } else {
-                                    PF('deaccessionConfirmation').show();
-                                }
-                            }
-                        }
-                    }
-                    function validateURL(textval) {
-                        if (textval === '') {
-                            return true;
-                        }
-                        var urlregex = new RegExp("^(http|https|ftp)\://([a-zA-Z0-9\.\-]+(\:[a-zA-Z0-9\.&amp;%\$\-]+)*@)*((25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9])|([a-zA-Z0-9\-]+\.)*[a-zA-Z0-9\-]+\.(com|edu|gov|int|mil|net|org|biz|arpa|info|name|pro|aero|coop|museum|[a-zA-Z]{2}))(\:[0-9]+)*(/($|[a-zA-Z0-9\.\,\?\'\\\+&amp;%\$#\=~_\-]+))*$");
-                        return urlregex.test(textval);
                     }
                 </script>
             </ui:define>
