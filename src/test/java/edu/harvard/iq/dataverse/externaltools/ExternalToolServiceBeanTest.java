@@ -276,6 +276,7 @@ public class ExternalToolServiceBeanTest {
             System.out.println(ex.getMessage());
         }
         assertNotNull(externalTool);
+        assertEquals(externalTool.getContentType(), DataFileServiceBean.MIME_TYPE_TSV_ALT);
     }
 
 }
