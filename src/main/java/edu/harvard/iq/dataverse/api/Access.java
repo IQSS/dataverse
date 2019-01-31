@@ -269,8 +269,7 @@ public class Access extends AbstractApiBean {
         if (apiToken == null || apiToken.equals("")) {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
-        
-        //MAD: I think this should be checking ! true instead -4.10   
+         
         if (gbrecs != true && df.isReleased()){
             // Write Guestbook record if not done previously and file is released
             User apiTokenUser = findAPITokenUser(apiToken);

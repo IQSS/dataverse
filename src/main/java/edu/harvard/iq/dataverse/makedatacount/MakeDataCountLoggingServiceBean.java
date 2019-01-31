@@ -38,7 +38,7 @@ public class MakeDataCountLoggingServiceBean {
 
     public void logEntry(MakeDataCountEntry entry) {
         if(systemConfig.getMDCLogPath() != null) {
-            LoggingUtil.saveLogFile(entry.toString(), systemConfig.getMDCLogPath(), getLogFileName() , LOG_HEADER);
+            LoggingUtil.saveLogFileAppendWithHeader(entry.toString(), systemConfig.getMDCLogPath(), getLogFileName() , LOG_HEADER);
         }
     }
     
@@ -135,9 +135,7 @@ public class MakeDataCountLoggingServiceBean {
             if(null != headers && null != headers.getRequestHeader("user-agent")) {
                 setUserAgent(headers.getRequestHeader("user-agent").get(0));
             }
-            //entry.setSessionCookieId(); //Should we be getting this?
             
-            //MAD: Maybe add null check for df, but its already used above
             setFilename(df.getStorageIdentifier()); 
             setSize(String.valueOf(df.getFilesize()));
         }

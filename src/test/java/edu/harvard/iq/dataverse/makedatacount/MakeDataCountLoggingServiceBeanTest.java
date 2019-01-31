@@ -86,7 +86,33 @@ public class MakeDataCountLoggingServiceBeanTest {
         
         //19 entries are required for the Counter Processor logging 
         assertThat(entry.toString().split("\t").length, is(19)); 
-         
+        
+    }
+    
+    //Testing that when you init with no objects everything defaults to "-"
+    @Test
+    public void testDefaultConstructor() {
+        MakeDataCountEntry entry = new MakeDataCountEntry();
+        assertThat(entry.getEventTime(), is("-"));
+        assertThat(entry.getClientIp(), is("-"));
+        assertThat(entry.getSessionCookieId(), is("-"));
+        assertThat(entry.getUserCookieId(), is("-"));
+        assertThat(entry.getUserId(), is("-"));
+        assertThat(entry.getRequestUrl(), is("-"));
+        assertThat(entry.getIdentifier(), is("-"));
+        assertThat(entry.getFilename(), is("-"));
+        assertThat(entry.getSize(), is("-"));
+        assertThat(entry.getUserAgent(), is("-"));
+        assertThat(entry.getTitle(), is("-"));
+        assertThat(entry.getPublisher(), is("-"));
+        assertThat(entry.getPublisherId(), is("-"));
+        assertThat(entry.getAuthors(), is("-"));
+        assertThat(entry.getVersion(), is("-"));
+        assertThat(entry.getOtherId(), is("-"));
+        assertThat(entry.getTargetUrl(), is("-"));
+        assertThat(entry.getPublicationDate(), is("-"));
+        
+        assertThat(entry.toString().split("\t").length, is(19)); 
     }
     
     static class MockDataverseRequestServiceBean extends DataverseRequestServiceBean {

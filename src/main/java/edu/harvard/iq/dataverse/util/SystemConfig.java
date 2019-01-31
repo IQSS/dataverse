@@ -1059,7 +1059,7 @@ public class SystemConfig {
     }
     
     public String getMDCLogPath() {
-        String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null); //MAD: Do we want a default?
+        String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);
         return mDCLogPath;
     }
 }
