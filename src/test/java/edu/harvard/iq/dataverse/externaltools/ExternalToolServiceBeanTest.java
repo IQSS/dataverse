@@ -256,25 +256,6 @@ public class ExternalToolServiceBeanTest {
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
         job.add("type", "explore");
-        job.add("toolParameters", Json.createObjectBuilder().build());
-        String tool = job.build().toString();
-        System.out.println("tool: " + tool);
-        Exception expectedException = null;
-        try {
-            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
-        } catch (Exception ex) {
-            expectedException = ex;
-        }
-        assertNotNull(expectedException);
-        assertEquals(ExternalTool.CONTENT_TYPE + " is required.", expectedException.getMessage());
-    }
-
-    @Test
-    public void testParseAddExternalToolInputNoContentType() {
-        JsonObjectBuilder job = Json.createObjectBuilder();
-        job.add("displayName", "AwesomeTool");
-        job.add("description", "This tool is awesome.");
-        job.add("type", "explore");
         job.add("toolUrl", "http://awesometool.com");
         
         job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
