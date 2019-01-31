@@ -333,7 +333,6 @@ public class IndexServiceBean {
             debug.append("- semanticVersion-VersionState: " + semanticVersion + "-" + versionState + "\n");
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
             List<String> fileInfo = new ArrayList<>();
-            logger.info("FM size: " + fileMetadatas.size());
             for (FileMetadata fileMetadata : fileMetadatas) {
                 String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId();
                 /**
