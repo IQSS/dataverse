@@ -23,10 +23,17 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import javax.xml.transform.Source;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
+import org.xmlunit.builder.Input.Builder;
+import org.xmlunit.diff.Diff;
+import org.xmlunit.diff.Difference;
 
 /**
  *
@@ -112,6 +119,34 @@ public class DOIDataCiteRegisterService {
                 Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        return retString;
+    }
+    
+    public String reRegisterIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
+        String retString = "";
+        String numericIdentifier = identifier.substring(identifier.indexOf(":") + 1);
+        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+        String target = metadata.get("_target");
+        DataCiteRESTfullClient client = getClient();
+        String currentMetadata = client.getMetadata(numericIdentifier);
+        Diff myDiff = DiffBuilder.compare(xmlMetadata)
+                .withTest(currentMetadata).ignoreWhitespace().checkForSimilar()
+                .build();
+
+        if (myDiff.hasDifferences()) {
+            for(Difference d : myDiff.getDifferences()) {
+            
+              logger.fine(d.toString());
+            }
+            retString = "metadata:\\r" + client.postMetadata(xmlMetadata) + "\\r";
+        }
+        if (!target.equals(client.getUrl(numericIdentifier))) {
+            logger.fine("updating target URl to " +  target);
+            client.postUrl(numericIdentifier, target);
+            retString = retString + "url:\\r" + target;
+
+        }
+
         return retString;
     }
 
