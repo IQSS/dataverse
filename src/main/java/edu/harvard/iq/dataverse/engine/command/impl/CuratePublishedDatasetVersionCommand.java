@@ -151,8 +151,9 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         String className = ctxt.settings().get(SettingsServiceBean.Key.ArchiverClassName.toString());
         AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, getRequest(), updateVersion);
         if (archiveCommand != null) {
-            ctxt.engine().submit(archiveCommand);
+            updateVersion = ctxt.engine().submit(archiveCommand);
         }
+        updateVersion = ctxt.em().merge(updateVersion);
         // Update so that getDataset() in updateDatasetUser will get the up-to-date copy
         // (with no draft version)
         setDataset(savedDataset);
