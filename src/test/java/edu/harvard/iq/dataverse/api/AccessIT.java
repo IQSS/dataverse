@@ -65,9 +65,18 @@ public class AccessIT {
     public static int tabFile1SizeConvertedWithVarHeader = 9; 
     
     private static String testZipFileWithFolders = "scripts/api/data/zip/test.zip";
-    private static String testFileFromZipUploadWithFolders1 = "";
-    private static String testFileFromZipUploadWithFolders2 = "";
-    private static String testFileFromZipUploadWithFolders3 = "";
+    private static String testFileFromZipUploadWithFolders1 = "file1.txt"; // this file sits at the top level of the zip archive, no folders
+    private static String testFileFromZipUploadWithFolders2 = "folder1/file11.txt";
+    private static String testFileFromZipUploadWithFolders3 = "folder2/file22.txt";
+    
+    private static long testFileFromZipUploadWithFoldersSize1 = 26; 
+    private static long testFileFromZipUploadWithFoldersSize2 = 27; 
+    private static long testFileFromZipUploadWithFoldersSize3 = 27; 
+    
+    private static String testFileFromZipUploadWithFoldersChecksum1 = "";
+    private static String testFileFromZipUploadWithFoldersChecksum2 = "";
+    private static String testFileFromZipUploadWithFoldersChecksum3 = "";
+
     
     @BeforeClass
     public static void setUp() throws InterruptedException {
@@ -123,7 +132,7 @@ public class AccessIT {
         restrictResponse.then().assertThat()
         //        .body("data.message", equalTo("File stata13-auto.tab restricted."))
                 .statusCode(OK.getStatusCode());
-        
+                
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
         
@@ -136,7 +145,7 @@ public class AccessIT {
         Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
         Response tab4AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab4PathToFile, apiToken);
         tabFile4IdUnpublished = JsonPath.from(tab4AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        
+                
     }
     
     @AfterClass
@@ -360,7 +369,10 @@ public class AccessIT {
     // zipped bundle - that should have the folder hierarchy preserved. 
     @Test
     public void testZipUploadAndDownload() throws IOException {
-        
+        // Upload the zip file that has a mix of files with and without folders:
+        Response uploadZipResponse = UtilIT.uploadFileViaNative(datasetId.toString(), testZipFileWithFolders, apiToken);
+
+        Integer id = JsonPath.from(uploadZipResponse.body().asString()).getInt("data.files[0].dataFile.id");
     }
     
     //Reads an inputstream zip from a response and returns a map of outputStreams to use
