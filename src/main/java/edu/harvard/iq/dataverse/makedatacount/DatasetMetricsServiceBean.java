@@ -228,7 +228,6 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                         //"volume": 26764,
                         if (instObj.getString("metric-type").equals("unique-dataset-requests")) { //unique-dataset-investigations
                             String accessMethod = instObj.getString("access-method");
-                            Long downloadVolume = new Long (instObj.getString("volume"));
                             List<String[]> uniqueRequests = new ArrayList<>();
                             if (instObj.containsKey("country-counts")) {
                                 JsonObject countryCountObj = instObj.getJsonObject("country-counts");
