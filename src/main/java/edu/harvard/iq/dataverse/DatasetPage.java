@@ -2090,26 +2090,26 @@ public class DatasetPage implements java.io.Serializable {
             CuratePublishedDatasetVersionCommand cmd = new CuratePublishedDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,BundleUtil.getStringFromBundle( "dataset.registration.failed"), " - " + ex.toString()));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle( "dataset.update.failed") + " - " + ex.toString());
             logger.severe(ex.getMessage());
         }
         //Update archive copy as well
         try {
-        //Delete the record of any existing copy since it is now out of date/incorrect
-        DatasetVersion updateVersion = dataset.getLatestVersion();
-        updateVersion.setArchivalCopyLocation(null);
-        //Then try to generate and submit an archival copy. If it fails the location being null signals the failure
-        String className = settingsService.get(SettingsServiceBean.Key.ArchiverClassName.toString());
-        AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), updateVersion);
-        if (archiveCommand != null) {
-            updateVersion = commandEngine.submit(archiveCommand);
-        }
+            // Delete the record of any existing copy since it is now out of date/incorrect
+            DatasetVersion updateVersion = dataset.getLatestVersion();
+            updateVersion.setArchivalCopyLocation(null);
+            // Then try to generate and submit an archival copy. If it fails the location
+            // being null signals the failure
+            String className = settingsService.get(SettingsServiceBean.Key.ArchiverClassName.toString());
+            AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), updateVersion);
+            if (archiveCommand != null) {
+                updateVersion = commandEngine.submit(archiveCommand);
+            }
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,BundleUtil.getStringFromBundle( "dataset.registration.failed"), " - " + ex.toString()));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle( "datasetversion.archive.failure") + " - " + ex.toString());
             logger.severe(ex.getMessage());
         }
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.registered"), BundleUtil.getStringFromBundle("dataset.registered.msg"));
-        FacesContext.getCurrentInstance().addMessage(null, message);
+        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.updated.msg"));
         return returnToDatasetOnly();
     }
 
