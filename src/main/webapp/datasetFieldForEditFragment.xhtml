@@ -20,13 +20,13 @@
                              or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL'
                              )}"/>
 
-    <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.watermark}"></p:watermark>
+    <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
 
     <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" tabindex="#{block.index+1}"
                      rows="5" cols="60" styleClass="form-control"
                      rendered="#{dsfv.datasetField.datasetFieldType.fieldType == 'TEXTBOX'}" />
 
-    <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.watermark}"></p:watermark>
+    <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
 
     <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{dsfvIndex eq 0 and !empty dsfv.datasetField.validationMessage}">
         <span class="ui-message-error-detail">#{dsfv.datasetField.validationMessage}</span>

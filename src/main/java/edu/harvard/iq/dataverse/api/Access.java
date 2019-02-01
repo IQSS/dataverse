@@ -578,23 +578,25 @@ public class Access extends AbstractApiBean {
                                         //without doing a large deal of rewriting or architecture redo.
                                         //The previous size checks for non-original download is still quick.
                                         //-MAD 4.9.2
-                                        DataAccessRequest daReq = new DataAccessRequest();
-                                        StorageIO<DataFile> accessObject = DataAccess.getStorageIO(file, daReq);
+                                        // OK, here's the better solution: we now store the size of the original file in 
+                                        // the database (in DataTable), so we get it for free. 
+                                        // However, there may still be legacy datatables for which the size is not saved. 
+                                        // so the "inefficient" code is kept, below, as a fallback solution. 
+                                        // -- L.A., 4.10
+                                        
+                                        if (file.getDataTable().getOriginalFileSize() != null) {
+                                            size = file.getDataTable().getOriginalFileSize();
+                                        } else {
+                                            DataAccessRequest daReq = new DataAccessRequest();
+                                            StorageIO<DataFile> storageIO = DataAccess.getStorageIO(file, daReq);
+                                            storageIO.open();
+                                            size = storageIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
 
-                                        if (accessObject != null) {
-                                            Boolean gotOriginal = false;
-                                            StoredOriginalFile sof = new StoredOriginalFile();
-                                            StorageIO<DataFile> tempAccessObject = sof.retreive(accessObject);
-                                            if(null != tempAccessObject) { //If there is an original, use it
-                                                gotOriginal = true;
-                                                accessObject = tempAccessObject; 
-                                            } 
-                                            if(!gotOriginal) { //if we didn't get this from sof.retreive we have to open it
-                                                accessObject.open();
-                                            }
-                                            size = accessObject.getSize(); 
+                                            // save it permanently: 
+                                            file.getDataTable().setOriginalFileSize(size);
+                                            fileService.saveDataTable(file.getDataTable());
                                         }
-                                        if(size == 0L){
+                                        if (size == 0L){
                                             throw new IOException("Invalid file size or accessObject when checking limits of zip file");
                                         }
                                     } else {

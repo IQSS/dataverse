@@ -31,3 +31,4 @@ Developer Guide
    geospatial
    selinux
    big-data-support
+   workflows

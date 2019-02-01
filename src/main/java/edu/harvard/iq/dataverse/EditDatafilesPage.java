@@ -146,6 +146,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private List<DataFile> newFiles = new ArrayList<>();;
     private List<DataFile> uploadedFiles = new ArrayList<>();; 
     private DatasetVersion workingVersion;
+    private DatasetVersion clone;
     private String dropBoxSelection = "";
     private String displayCitation;
     private boolean datasetUpdateRequired = false; 
@@ -474,7 +475,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         
         workingVersion = dataset.getEditVersion();
-
+        clone = workingVersion.cloneDatasetVersion();
         if (workingVersion == null || !workingVersion.isDraft()) {
             // Sorry, we couldn't find/obtain a draft version for this dataset!
             return permissionsWrapper.notFound();
@@ -1220,7 +1221,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                         
             Command<Dataset> cmd;
             try {
-                cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
+                cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone);
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
                 dataset = commandEngine.submit(cmd);
             
@@ -1728,7 +1729,8 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private  void setUpRsync() {
         logger.fine("setUpRsync called...");
-        if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
+        if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))
+                && dataset.getFiles().isEmpty()) { //only check for rsync if no files exist
             try {
                 ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
                 logger.fine("script: " + scriptRequestResponse.getScript());

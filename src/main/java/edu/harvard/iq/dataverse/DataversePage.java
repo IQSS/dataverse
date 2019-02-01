@@ -46,6 +46,7 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.TransferEvent;
 
 /**
@@ -408,7 +409,7 @@ public class DataversePage implements java.io.Serializable {
         this.editMode = editMode;
         if (editMode == EditMode.INFO) {
             setupForGeneralInfoEdit();
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataverse.edit.msg") , BundleUtil.getStringFromBundle("dataverse.edit.detailmsg")));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataverse.edit.msg"), BundleUtil.getStringFromBundle("dataverse.edit.detailmsg"));
         } else if (editMode == EditMode.FEATURED) {
             initFeaturedDataverses();
         }
@@ -506,6 +507,7 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
         }
+        PrimeFaces.current().executeScript("scrollAfterUpdate();");
     }
 
     public List<SelectItem> resetSelectItems(DatasetFieldType typeIn) {

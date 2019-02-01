@@ -31,9 +31,22 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public boolean alreadyExists(DvObject dvObject) {
+        if(dvObject==null) {
+            logger.severe("Null DvObject sent to alreadyExists().");
+            return false;
+        }
+        return alreadyExists(dvObject.getGlobalId());
+    }
+
+    @Override
+    public boolean alreadyExists(GlobalId pid) {
         logger.log(Level.FINE,"alreadyExists");
+        if(pid==null) {
+            logger.severe("No identifier sent.");
+            return false;
+        }
         boolean alreadyExists;
-        String identifier = getIdentifier(dvObject);
+        String identifier = pid.asString();
         try{
             alreadyExists = doiDataCiteRegisterService.testDOIExists(identifier); 
         } catch (Exception e){
@@ -42,7 +55,6 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         }
         return  alreadyExists;
     }
-    
     
 
     @Override

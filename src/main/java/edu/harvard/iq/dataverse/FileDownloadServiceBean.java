@@ -145,14 +145,19 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         logger.fine("issued file download redirect for datafile "+guestbookResponse.getDataFile().getId());
     }
 
+    public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
+        if(!fileMetadata.getDatasetVersion().isDraft()){
+            guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
+            writeGuestbookResponseRecord(guestbookResponse);
+        }
+    }
+    
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
-
         try {
             CreateGuestbookResponseCommand cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset());
             commandEngine.submit(cmd);
         } catch (CommandException e) {
             //if an error occurs here then download won't happen no need for response recs...
-
         }
     }
     
@@ -229,6 +234,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             if (guestbookResponse != null) {
                 dataFile = guestbookResponse.getDataFile();
             }
+        }
+        //For tools to get the dataset and datasetversion ids, we need a full DataFile object (not a findCheapAndEasy() copy)
+        if(dataFile.getFileMetadata()==null) {
+            dataFile=datafileService.find(dataFile.getId());
         }
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
         // Back when we only had TwoRavens, the downloadType was always "Explore". Now we persist the name of the tool (i.e. "TwoRavens", "Data Explorer", etc.)
@@ -406,6 +415,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         //SEK 12/3/2018 changing this to open the json in a new tab. 
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        // FIXME: BibTeX isn't JSON. Firefox will try to parse it and report "SyntaxError".
         response.setContentType("application/json");
 
         String fileNameString;

@@ -14,6 +14,8 @@ public interface GlobalIdServiceBean {
     static final Logger logger = Logger.getLogger(GlobalIdServiceBean.class.getCanonicalName());
 
     boolean alreadyExists(DvObject dvo) throws Exception;
+    
+    boolean alreadyExists(GlobalId globalId) throws Exception;
 
     boolean registerWhenPublished();
     
@@ -78,6 +80,7 @@ class BeanDispatcher {
             switch ( doiProvider ) {
                 case "EZID": return ctxt.doiEZId();
                 case "DataCite": return ctxt.doiDataCite();
+                case "FAKE": return ctxt.fakePidProvider();
                 default: 
                     logger.log(Level.SEVERE, "Unknown doiProvider: {0}", doiProvider);
                     return null;
