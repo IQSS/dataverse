@@ -7,7 +7,6 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-
     <h:head>
     </h:head>
 
@@ -68,7 +67,7 @@
                                             <div class="col-sm-8">
                                                 <h:inputText rendered="#{not fc.credential.secret}" value="#{fc.value}" id="credValue" styleClass="form-control"/>
                                                 <p:message rendered="#{not fc.credential.secret}" for="credValue" display="text"/>
-                                                <h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" styleClass="form-control"/>
+						<h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" styleClass="form-control" autocomplete="off"/><!-- browsers will in general not respect autocomplete="foo", but scanners will still flag it as a potential problem -->
                                                 <p:message rendered="#{not fc.credential.secret}" for="sCredValue" display="text"/>
                                             </div>
                                         </div>

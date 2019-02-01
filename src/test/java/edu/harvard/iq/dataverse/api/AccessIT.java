@@ -60,6 +60,10 @@ public class AccessIT {
     public static String tabFile3NameRestrictedConvert;
     public static String tabFile4NameUnpublishedConvert;
     
+    public static int tabFile1SizeOriginal = 279;
+    public static int tabFile1SizeConverted = 4;
+    public static int tabFile1SizeConvertedWithVarHeader = 9; 
+    
     @BeforeClass
     public static void setUp() throws InterruptedException {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -150,12 +154,19 @@ public class AccessIT {
         //Not logged in non-restricted
         Response anonDownloadOriginal = UtilIT.downloadFileOriginal(tabFile1Id);
         Response anonDownloadConverted = UtilIT.downloadFile(tabFile1Id);
+        // ... and download the same tabular data file, but without the variable name header added:
+        Response anonDownloadTabularNoHeader = UtilIT.downloadTabularFileNoVarHeader(tabFile1Id);
         assertEquals(OK.getStatusCode(), anonDownloadOriginal.getStatusCode());
-        assertEquals(OK.getStatusCode(), anonDownloadConverted.getStatusCode()); //just to ensure next test
+        assertEquals(OK.getStatusCode(), anonDownloadConverted.getStatusCode());
+        assertEquals(OK.getStatusCode(), anonDownloadTabularNoHeader.getStatusCode());
         int origSizeAnon = anonDownloadOriginal.getBody().asByteArray().length;
         int convertSizeAnon = anonDownloadConverted.getBody().asByteArray().length;
-        System.out.println("origSize: "+origSizeAnon + " | convertSize: " + convertSizeAnon);
-        assertThat(origSizeAnon, is(not(convertSizeAnon)));
+        int tabularSizeNoVarHeader = anonDownloadTabularNoHeader.getBody().asByteArray().length;
+        System.out.println("origSize: "+origSizeAnon + " | convertSize: " + convertSizeAnon + " | convertNoHeaderSize: " + tabularSizeNoVarHeader);
+
+        assertEquals(origSizeAnon, tabFile1SizeOriginal);
+        assertEquals(convertSizeAnon, tabFile1SizeConvertedWithVarHeader);        
+        assertEquals(tabularSizeNoVarHeader, tabFile1SizeConverted);
         
         //Not logged in restricted
         Response anonDownloadOriginalRestricted = UtilIT.downloadFileOriginal(tabFile3IdRestricted);
@@ -178,7 +189,7 @@ public class AccessIT {
         int convertSizeAuth = authDownloadConverted.getBody().asByteArray().length;
         System.out.println("origSize: "+origSizeAuth + " | convertSize: " + convertSizeAuth);
         assertThat(origSizeAuth, is(not(convertSizeAuth)));  
-        
+                
         //Logged in restricted
         Response authDownloadOriginalRestricted = UtilIT.downloadFileOriginal(tabFile3IdRestricted, apiToken);
         Response authDownloadConvertedRestricted = UtilIT.downloadFile(tabFile3IdRestricted, apiToken);

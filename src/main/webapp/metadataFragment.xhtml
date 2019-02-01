@@ -13,7 +13,7 @@
                    var="metadataBlockVal" varStatus="block">
             <div class="panel panel-default">
                 <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
-                    #{metadataBlockVal.key.displayName} &#160;<span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
+                    #{metadataBlockVal.key.localeDisplayName} &#160;<span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
                 </div>
                 <div id="panelCollapse#{block.index}" class="collapse #{block.first?'in':''}">
                     <div class="panel-body metadata-panel-body">
@@ -54,8 +54,8 @@
                         <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
                             <div class="form-group">
                                 <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.description}">
-                                        #{dsf.datasetFieldType.title}
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.localeDescription}">
+                                        #{dsf.datasetFieldType.localeTitle}
                                     </span>
                                 </label>
                                 <!-- Primitive datasetFields -->
@@ -101,7 +101,7 @@
                                                                  or metadataBlockVal.key.isHasRequired())
                                                                  or (!datasetPage)}">
                     <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
-                        #{metadataBlockVal.key.displayName} <span class="glyphicon #{block.first || editMode == 'CREATE'  ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
+                        #{metadataBlockVal.key.localeDisplayName} <span class="glyphicon #{block.first || editMode == 'CREATE'  ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
                     </div>
                     <div id="panelCollapse#{block.index}" class="collapse #{block.first || editMode == 'CREATE' ? 'in' : ''}">
                         <div class="panel-body">
@@ -111,8 +111,8 @@
                                                          or (!datasetPage and dsf.include)}">
                                     <div class="form-group">
                                         <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.description}">
-                                                #{dsf.datasetFieldType.title}
+                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.localeDescription}">
+                                                #{dsf.datasetFieldType.localeTitle}
                                             </span>
                                             <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required  or dsf.datasetFieldType.hasRequiredChildren }" />
                                         </label>
@@ -158,13 +158,13 @@
                                                                              value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive SELECT TESTTEST"
                                                                              rendered="#{!dsf.datasetFieldType.allowMultiples}">
                                                                 <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
-                                                                <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />
+                                                                <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
                                                             </p:selectOneMenu>
                                                             <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{dsf.datasetFieldType.allowMultiples}">
                                                                 <p:selectManyCheckbox value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
                                                                                       layout="pageDirection">
                                                                     <f:selectItem itemLabel="#{bundle.select}" class="chkbox-label-margin" itemValue="" noSelectionOption="true"/>
-                                                                    <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />
+                                                                    <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
                                                                 </p:selectManyCheckbox>
                                                             </div>
                                                             <div class="alert-danger" jsf:rendered="#{!empty dsf.validationMessage}">
@@ -193,7 +193,7 @@
                                                                     </p>
                                                                 </ui:fragment>
                                                                 <label class="control-label" for="metadata_#{subdsf.datasetFieldType.name}">
-                                                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{subdsf.datasetFieldType.description}">#{subdsf.datasetFieldType.title}</span>
+                                                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{subdsf.datasetFieldType.localeDescription}">#{subdsf.datasetFieldType.localeTitle}</span>
                                                                     <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.required}" />
                                                                 </label>
                                                                 <ui:fragment rendered="#{!subdsf.datasetFieldType.controlledVocabulary}">
@@ -207,12 +207,12 @@
                                                                     <p:selectOneMenu tabindex="#{block.index+1}" value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;"
                                                                                      rendered="#{!subdsf.datasetFieldType.allowMultiples}">
                                                                         <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
-                                                                        <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />
+                                                                        <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
                                                                     </p:selectOneMenu>
                                                                     <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{subdsf.datasetFieldType.allowMultiples}">
                                                                         <p:selectManyCheckbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
                                                                                               layout="pageDirection">
-                                                                            <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />
+                                                                            <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
                                                                         </p:selectManyCheckbox>
                                                                     </div>
                                                                     <div class="alert-danger" jsf:rendered="#{!empty subdsf.validationMessage}">

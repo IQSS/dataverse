@@ -31,6 +31,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -264,12 +265,23 @@ public class DataCitation {
             out.write(title);
             out.write("},\r\n");
         } else {
-            out.write("title = {");
-            out.write(title);
+            out.write("title = \"{");
+            String doubleQ = "\"";
+            String doubleTick = "``";
+            String doubleAp = "''";
+            out.write(title.replaceFirst(doubleQ, doubleTick).replaceFirst(doubleQ, doubleAp));
+            out.write("}\",\r\n");
+        }
+        if(UNF != null){
+            out.write("UNF = {");
+            out.write(UNF);
             out.write("},\r\n");
         }
         out.write("year = {");
         out.write(year);
+        out.write("},\r\n");
+        out.write("version = {");
+        out.write(version);
         out.write("},\r\n");
         out.write("doi = {");
         out.write(persistentId.getAuthority());
@@ -312,9 +324,10 @@ public class DataCitation {
         if (seriesTitle != null) {
             out.write("T3  - " + seriesTitle + "\r\n");
         }
+        /* Removing abstract/description per Request from G. King in #3759
         if(description!=null) {
             out.write("AB  - " + flattenHtml(description) + "\r\n");
-        }
+        } */
         for (String author : authors) {
             out.write("AU  - " + author + "\r\n");
         }
@@ -497,12 +510,13 @@ public class DataCitation {
 
         xmlw.writeCharacters(sectionString);
         xmlw.writeEndElement(); // section
-
+/* Removing abstract/description per Request from G. King in #3759
         xmlw.writeStartElement("abstract");
         if(description!=null) {
             xmlw.writeCharacters(flattenHtml(description));
         }
         xmlw.writeEndElement(); // abstract
+         */
 
         xmlw.writeStartElement("dates");
         xmlw.writeStartElement("year");
@@ -742,11 +756,11 @@ public class DataCitation {
         String version = "";
         if (!dsv.getDataset().isHarvested()) {
             if (dsv.isDraft()) {
-                version = "DRAFT VERSION";
+                version = BundleUtil.getStringFromBundle("draftversion");
             } else if (dsv.getVersionNumber() != null) {
                 version = "V" + dsv.getVersionNumber();
                 if (dsv.isDeaccessioned()) {
-                    version += ", DEACCESSIONED VERSION";
+                    version += ", "+ BundleUtil.getStringFromBundle("deaccessionedversion");
                 }
             }
         }

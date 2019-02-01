@@ -518,13 +518,17 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 Properties p = getSwiftProperties();
                 swiftEndPoint = p.getProperty("swift.default.endpoint");
 
+                // Swift uses this to create pseudo-hierarchical folders
+                String swiftPseudoFolderPathSeparator = "/";
+
                 //swiftFolderPath = dataFile.getOwner().getDisplayName();
                 String swiftFolderPathSeparator = "-";
                 String authorityNoSlashes = owner.getAuthority().replace("/", swiftFolderPathSeparator);
                 swiftFolderPath = owner.getProtocolForFileStorage() + swiftFolderPathSeparator
-                                  + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
-                                  + swiftFolderPathSeparator + owner.getIdentifierForFileStorage();
-                swiftFileName = storageIdentifier;
+                                  + authorityNoSlashes.replace(".", swiftFolderPathSeparator);
+
+                swiftFileName = owner.getIdentifierForFileStorage() + swiftPseudoFolderPathSeparator
+                                + storageIdentifier;
                 //setSwiftContainerName(swiftFolderPath);
                 //swiftFileName = dataFile.getDisplayName();
                 //Storage Identifier is now updated after the object is uploaded on Swift.
@@ -569,10 +573,14 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 Properties p = getSwiftProperties();
                 swiftEndPoint = p.getProperty("swift.default.endpoint");
                 String swiftFolderPathSeparator = "-";
+
+                // Swift uses this to create pseudo-hierarchical folders
+                String swiftPseudoFolderPathSeparator = "/";
+
                 String authorityNoSlashes = dataset.getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
                 swiftFolderPath = dataset.getProtocolForFileStorage() + swiftFolderPathSeparator +
                     authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                    swiftFolderPathSeparator + dataset.getIdentifierForFileStorage();
+                    swiftPseudoFolderPathSeparator + dataset.getIdentifierForFileStorage();
 
                 swiftFileName = auxItemTag;
                 dvObject.setStorageIdentifier("swift://" + swiftEndPoint + ":" + swiftFolderPath);
