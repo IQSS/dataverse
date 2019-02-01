@@ -22,12 +22,13 @@ package edu.harvard.iq.dataverse.dataaccess;
 import java.io.InputStream;
 import java.io.IOException;
 
-import java.util.Iterator;
 
 import edu.harvard.iq.dataverse.DataFile;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -49,16 +50,20 @@ public class DataFileZipper {
     private List<Long> zippedFilesList = null; // list of successfully zipped files, to update guestbooks and download counts (not yet implemented)
     
     private String fileManifest = "";
+    
+    private Set<String> zippedFolders = null; 
 
     public DataFileZipper() {
         fileNameList = new ArrayList<>();
         zippedFilesList = new ArrayList<>(); 
+        zippedFolders = new HashSet<>();
     }
     
     public DataFileZipper(OutputStream outputStream) {
         this.outputStream = outputStream;
         fileNameList = new ArrayList<>();
         zippedFilesList = new ArrayList<>();
+        zippedFolders = new HashSet<>();
     }
     
     public void setOutputStream(OutputStream outputStream) {
@@ -133,12 +138,26 @@ public class DataFileZipper {
 
                 Success = false;
             } else {
+                String folderName = dataFile.getFileMetadata().getDirectoryLabel(); 
+                if (folderName != null) {
+                    while (folderName.startsWith("/")) {
+                        folderName = folderName.substring(1);
+                    }
+                    if (!"".equals(folderName)) {
+                        if (!zippedFolders.contains(folderName)) {
+                            ZipEntry d = new ZipEntry(folderName + "/");
+                            zipOutputStream.putNextEntry(d);
+                            zipOutputStream.closeEntry();
+                            zippedFolders.add(folderName);
+                        }
+                        fileName = folderName + "/" + fileName;
+                    }
+                }
+                
                 String zipEntryName = checkZipEntryName(fileName);
+                
                 ZipEntry e = new ZipEntry(zipEntryName);
                 logger.fine("created new zip entry for " + zipEntryName);
-                // support for categories: (not yet implemented)
-                //String zipEntryDirectoryName = file.getCategory(versionNum);
-                //ZipEntry e = new ZipEntry(zipEntryDirectoryName + "/" + zipEntryName);
 
                 zipOutputStream.putNextEntry(e);
 
