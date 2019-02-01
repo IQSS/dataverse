@@ -155,6 +155,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         }
         updateVersion = ctxt.em().merge(updateVersion);
         savedDataset = ctxt.em().merge(savedDataset);
+        ctxt.em().flush();
         // Update so that getDataset() in updateDatasetUser will get the up-to-date copy
         // (with no draft version)
         setDataset(savedDataset);
