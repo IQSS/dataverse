@@ -2086,30 +2086,44 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public String updateCurrentVersion() {
+        String errorMsg = null;
+        String successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
         try {
             CuratePublishedDatasetVersionCommand cmd = new CuratePublishedDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
             dataset = commandEngine.submit(cmd);
-        } catch (CommandException ex) {
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle( "dataset.update.failed") + " - " + ex.toString());
-            logger.severe(ex.getMessage());
-        }
-        //Update archive copy as well
-        try {
-            // Delete the record of any existing copy since it is now out of date/incorrect
-            DatasetVersion updateVersion = dataset.getLatestVersion();
-            updateVersion.setArchivalCopyLocation(null);
-            // Then try to generate and submit an archival copy. If it fails the location
-            // being null signals the failure
+            // If configured, update archive copy as well
             String className = settingsService.get(SettingsServiceBean.Key.ArchiverClassName.toString());
+            DatasetVersion updateVersion = dataset.getLatestVersion();
             AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), updateVersion);
             if (archiveCommand != null) {
-                updateVersion = commandEngine.submit(archiveCommand);
+                // Delete the record of any existing copy since it is now out of date/incorrect
+                updateVersion.setArchivalCopyLocation(null);
+                /*
+                 * Then try to generate and submit an archival copy. // Note that running this
+                 * command within the // CuratePublishedDatasetVersionCommand was causing an
+                 * error: "The attribute // [id] of class
+                 * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped // to a
+                 * primary key column in the database. Updates are not allowed." // To avoid
+                 * that, and to simplify reporting back to the GUI whether this // optional step
+                 * succeeded, I've pulled this out as a separate submit().
+                 */
+                try {
+                    updateVersion = commandEngine.submit(archiveCommand);
+                    successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
+                } catch (CommandException ex) {
+                    errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
+                    logger.severe(ex.getMessage());
+                }
             }
         } catch (CommandException ex) {
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle( "datasetversion.archive.failure") + " - " + ex.toString());
+            errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
             logger.severe(ex.getMessage());
         }
-        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.updated.msg"));
+        if (errorMsg != null) {
+            JsfHelper.addErrorMessage(errorMsg);
+        } else {
+            JsfHelper.addSuccessMessage(successMsg);
+        }
         return returnToDatasetOnly();
     }
 
