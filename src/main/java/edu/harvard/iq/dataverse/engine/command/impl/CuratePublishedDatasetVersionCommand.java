@@ -147,15 +147,14 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         //Update archive copy as well
         //Delete the record of any existing copy since it is now out of date/incorrect
         updateVersion.setArchivalCopyLocation(null);
+        ctxt.em().flush();
         //Then try to generate and submit an archival copy. If it fails the location being null signals the failure
         String className = ctxt.settings().get(SettingsServiceBean.Key.ArchiverClassName.toString());
         AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, getRequest(), updateVersion);
         if (archiveCommand != null) {
             updateVersion = ctxt.engine().submit(archiveCommand);
         }
-        updateVersion = ctxt.em().merge(updateVersion);
-        savedDataset = ctxt.em().merge(savedDataset);
-        ctxt.em().flush();
+
         // Update so that getDataset() in updateDatasetUser will get the up-to-date copy
         // (with no draft version)
         setDataset(savedDataset);
