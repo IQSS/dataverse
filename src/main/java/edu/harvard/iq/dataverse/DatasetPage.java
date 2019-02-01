@@ -2109,9 +2109,13 @@ public class DatasetPage implements java.io.Serializable {
                  */
                 try {
                     updateVersion = commandEngine.submit(archiveCommand);
+                    if(updateVersion.getArchivalCopyLocation()!=null) {
                     successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
+                    } else {
+                        errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
+                    }
                 } catch (CommandException ex) {
-                    errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
+                    errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure") + " - " + ex.toString();
                     logger.severe(ex.getMessage());
                 }
             }
