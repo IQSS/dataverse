@@ -64,6 +64,11 @@ public class AccessIT {
     public static int tabFile1SizeConverted = 4;
     public static int tabFile1SizeConvertedWithVarHeader = 9; 
     
+    private static String testZipFileWithFolders = "scripts/api/data/zip/test.zip";
+    private static String testFileFromZipUploadWithFolders1 = "";
+    private static String testFileFromZipUploadWithFolders2 = "";
+    private static String testFileFromZipUploadWithFolders3 = "";
+    
     @BeforeClass
     public static void setUp() throws InterruptedException {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -348,6 +353,14 @@ public class AccessIT {
         HashMap<String,ByteArrayOutputStream> files4 = readZipResponse(anonDownloadConvertedUnpublished.getBody().asInputStream());
         assertEquals(0, files4.size()); //A size of 0 indicates the zip creation was interrupted.
         assertTrue(convertAnonSize < convertAuthSize + margin);
+    }
+    
+    // This is a round trip test of uploading a zipped archive, with some folder
+    // structure, then downloading the resulting multiple files as a multi-file
+    // zipped bundle - that should have the folder hierarchy preserved. 
+    @Test
+    public void testZipUploadAndDownload() throws IOException {
+        
     }
     
     //Reads an inputstream zip from a response and returns a map of outputStreams to use
