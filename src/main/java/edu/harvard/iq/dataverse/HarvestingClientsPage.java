@@ -125,7 +125,6 @@ public class HarvestingClientsPage implements java.io.Serializable {
         configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
         
         pageMode = PageMode.VIEW;
-        FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale(localeCode));*/
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("harvestclients.title"), BundleUtil.getStringFromBundle("harvestclients.toptip")));
         return null; 
     }
