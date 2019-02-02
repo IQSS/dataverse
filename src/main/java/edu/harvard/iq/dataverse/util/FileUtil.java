@@ -543,10 +543,28 @@ public class FileUtil implements java.io.Serializable  {
             }
         }
 
-        byte[] mdbytes = md.digest();
+        return checksumDigestToString(md.digest());
+    }
+    
+    public static String CalculateChecksum(byte[] dataBytes, ChecksumType checksumType) {
+        MessageDigest md = null;
+        try {
+            // Use "SHA-1" (toString) rather than "SHA1", for example.
+            md = MessageDigest.getInstance(checksumType.toString());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+
+        md.update(dataBytes);
+
+        return checksumDigestToString(md.digest());
+        
+    }
+    
+    private static String checksumDigestToString(byte[] digestBytes) {
         StringBuilder sb = new StringBuilder("");
-        for (int i = 0; i < mdbytes.length; i++) {
-            sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
+        for (int i = 0; i < digestBytes.length; i++) {
+            sb.append(Integer.toString((digestBytes[i] & 0xff) + 0x100, 16).substring(1));
         }
         return sb.toString();
     }
