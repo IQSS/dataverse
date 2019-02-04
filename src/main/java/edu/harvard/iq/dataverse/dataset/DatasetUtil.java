@@ -34,6 +34,13 @@ import java.util.HashSet;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 
 public class DatasetUtil {
 

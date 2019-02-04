@@ -77,6 +77,13 @@ import org.apache.commons.io.FileUtils;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 
 
 /**
@@ -505,7 +512,7 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     // from MD5Checksum.java
-    public static String CalculateChecksum(String datafile, ChecksumType checksumType) {
+    public static String calculateChecksum(String datafile, ChecksumType checksumType) {
 
         FileInputStream fis = null;
         try {
@@ -514,11 +521,11 @@ public class FileUtil implements java.io.Serializable  {
             throw new RuntimeException(ex);
         }
 
-        return CalculateChecksum(fis, checksumType);
+        return FileUtil.calculateChecksum(fis, checksumType);
     }
 
     // from MD5Checksum.java
-    public static String CalculateChecksum(InputStream in, ChecksumType checksumType) {
+    public static String calculateChecksum(InputStream in, ChecksumType checksumType) {
         MessageDigest md = null;
         try {
             // Use "SHA-1" (toString) rather than "SHA1", for example.
@@ -546,7 +553,7 @@ public class FileUtil implements java.io.Serializable  {
         return checksumDigestToString(md.digest());
     }
     
-    public static String CalculateChecksum(byte[] dataBytes, ChecksumType checksumType) {
+    public static String calculateChecksum(byte[] dataBytes, ChecksumType checksumType) {
         MessageDigest md = null;
         try {
             // Use "SHA-1" (toString) rather than "SHA1", for example.
@@ -1052,7 +1059,7 @@ public class FileUtil implements java.io.Serializable  {
         try {
             // We persist "SHA1" rather than "SHA-1".
             datafile.setChecksumType(checksumType);
-            datafile.setChecksumValue(CalculateChecksum(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier(), datafile.getChecksumType()));
+            datafile.setChecksumValue(calculateChecksum(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier(), datafile.getChecksumType()));
         } catch (Exception cksumEx) {
             logger.warning("Could not calculate " + checksumType + " signature for the new file " + fileName);
         }

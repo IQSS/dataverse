@@ -31,6 +31,12 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 
 /**
  *
@@ -575,9 +581,9 @@ public class AccessIT {
         
         // And finally, check the md5 checksums of the unzipped file streams: 
         
-        assertEquals(testFileFromZipUploadWithFoldersChecksum1, FileUtil.CalculateChecksum(unzippedFiles.get(testFileFromZipUploadWithFolders1).toByteArray(), DataFile.ChecksumType.MD5));
-        assertEquals(testFileFromZipUploadWithFoldersChecksum2, FileUtil.CalculateChecksum(unzippedFiles.get(testFileFromZipUploadWithFolders2).toByteArray(), DataFile.ChecksumType.MD5)); 
-        assertEquals(testFileFromZipUploadWithFoldersChecksum3, FileUtil.CalculateChecksum(unzippedFiles.get(testFileFromZipUploadWithFolders3).toByteArray(), DataFile.ChecksumType.MD5));
+        assertEquals(testFileFromZipUploadWithFoldersChecksum1, FileUtil.calculateChecksum(unzippedFiles.get(testFileFromZipUploadWithFolders1).toByteArray(), DataFile.ChecksumType.MD5));
+        assertEquals(testFileFromZipUploadWithFoldersChecksum2, FileUtil.calculateChecksum(unzippedFiles.get(testFileFromZipUploadWithFolders2).toByteArray(), DataFile.ChecksumType.MD5)); 
+        assertEquals(testFileFromZipUploadWithFoldersChecksum3, FileUtil.calculateChecksum(unzippedFiles.get(testFileFromZipUploadWithFolders3).toByteArray(), DataFile.ChecksumType.MD5));
         
         System.out.println("MD5 checksums of the unzipped file streams are correct.");
         
