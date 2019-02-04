@@ -13,6 +13,7 @@
     <h:body>
         <f:metadata>
             <f:viewParam name="id" value="#{manageFilePermissionsPage.dataset.id}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{manageFilePermissionsPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(manageFilePermissionsPage.dataset, bundle['dataverse.permissionsFiles.title'])}"/>
         </f:metadata>
