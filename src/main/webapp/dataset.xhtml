@@ -1210,8 +1210,7 @@
                             </ui:include>
                         </div>
                     </p:dialog>
-
-                    <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
+                        <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true" >
                         <div class="form-horizontal">
                             <p class="help-block">
                                 <h:outputFormat value="#{bundle['dataverse.link.dataset.choose']}" escape="false">
@@ -1248,15 +1247,18 @@
                                         </p:column>
                                         <p:ajax process="@this" event="itemSelect" />
                                         <p:ajax process="@this" event="itemUnselect" />
+                                        <p:ajax event="itemSelect" listener="#{DatasetPage.selectedDataverseForLinking}" update="saveLinkButton" />  
                                     </p:autoComplete>
                                     <p:message for="dataverseLinkName"/>
                                 </div>
                             </div>
                         </div>
                         <div class="button-block">
-                            <p:commandLink type="button" styleClass="btn btn-default"  update=":messagePanel,linkDatasetForm"
-                                           value="#{bundle['dataset.link.save']}" action="#{DatasetPage.saveLinkingDataverses()}"/>
-                            <button type="button" class="btn btn-default" onclick="PF('linkDatasetForm').hide();PF('blockDatasetForm').hide();">
+                            <p:commandLink id="saveLinkButton" type="button" styleClass="btn btn-default"   action="#{DatasetPage.saveLinkingDataverses()}" update=":messagePanel,datasetForm:dataverseLinkName,linkDatasetForm"  
+                                           disabled="#{DatasetPage.selectedDataverseForLinking==null}"
+                                           value="#{bundle['dataset.link.save']}">                              
+                             </p:commandLink>
+                            <button type="button" class="btn btn-default"  onclick="PF('linkDatasetForm').hide();PF('blockDatasetForm').hide();">                              
                                 #{bundle.cancel}
                             </button>
                         </div>

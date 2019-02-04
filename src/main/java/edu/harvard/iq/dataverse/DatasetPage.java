@@ -108,6 +108,7 @@ import org.apache.commons.io.IOUtils;
 
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
+import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.event.data.PageEvent;
 
@@ -766,7 +767,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setRenderDeaccessionPopup(boolean renderDeaccessionPopup) {
         this.renderDeaccessionPopup = renderDeaccessionPopup;
     }
-
+    
     public void updateSelectedLinkingDV(ValueChangeEvent event) {
         linkingDataverseId = (Long) event.getNewValue();
     }
@@ -2116,6 +2117,13 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedDataverseForLinking = sdvfl;
     }
     
+    
+    public void selectedDataverseForLinking(SelectEvent event) {
+
+        //dummy method to update save link button
+        
+    }
+    
     private List<FileMetadata> selectedRestrictedFiles; // = new ArrayList<>();
 
     public List<FileMetadata> getSelectedRestrictedFiles() {
@@ -2291,15 +2299,17 @@ public class DatasetPage implements java.io.Serializable {
     
         
     public void saveLinkingDataverses() {
-
+        
         if (selectedDataverseForLinking == null) {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dataverse.link.select"));
-            FacesContext.getCurrentInstance().addMessage(null, message);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dataverse.link.select"));           
+            System.out.print("selectedLinkingDataverseMenu.getClientId(): " + selectedLinkingDataverseMenu.getClientId());
+            FacesContext.getCurrentInstance().addMessage(selectedLinkingDataverseMenu.getClientId(), message);
             return;
         }     
-
+        
         if(saveLink(selectedDataverseForLinking)){
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", getSuccessMessageArguments()));
+            RequestContext.getCurrentInstance().execute("PF('linkDatasetForm').hide()");
         } else{           
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), linkingDataverseErrorMessage);
             FacesContext.getCurrentInstance().addMessage(null, message);
