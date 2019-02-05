@@ -52,6 +52,15 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // Copy metadata from draft version to latest published version
         updateVersion.setDatasetFields(getDataset().getEditVersion().initDatasetFields());
 
+        validateOrDie(updateVersion, isValidateLenient());
+
+        // final DatasetVersion editVersion = getDataset().getEditVersion();
+        tidyUpFields(updateVersion);
+
+        // Merge the new version into out JPA context
+        ctxt.em().merge(updateVersion);
+
+
         TermsOfUseAndAccess oldTerms = updateVersion.getTermsOfUseAndAccess();
         TermsOfUseAndAccess newTerms = getDataset().getEditVersion().getTermsOfUseAndAccess();
         newTerms.setDatasetVersion(updateVersion);
@@ -67,14 +76,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             updateVersion.getWorkflowComments().addAll(newComments);
         }
 
-        validateOrDie(updateVersion, isValidateLenient());
-
-        // final DatasetVersion editVersion = getDataset().getEditVersion();
-        tidyUpFields(updateVersion);
-
-        // Merge the new version into out JPA context
-        ctxt.em().merge(updateVersion);
-
+        
         // we have to merge to update the database but not flush because
         // we don't want to create two draft versions!
         Dataset tempDataset = ctxt.em().merge(getDataset());
