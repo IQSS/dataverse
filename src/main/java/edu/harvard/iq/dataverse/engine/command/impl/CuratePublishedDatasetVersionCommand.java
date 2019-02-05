@@ -65,6 +65,8 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         TermsOfUseAndAccess newTerms = getDataset().getEditVersion().getTermsOfUseAndAccess();
         newTerms.setDatasetVersion(updateVersion);
         updateVersion.setTermsOfUseAndAccess(newTerms);
+        ctxt.em().merge(updateVersion);
+
         TermsOfUseAndAccess mergedTerms = ctxt.em().merge(oldTerms);
         ctxt.em().remove(mergedTerms);
         
