@@ -65,7 +65,8 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         TermsOfUseAndAccess newTerms = getDataset().getEditVersion().getTermsOfUseAndAccess();
         newTerms.setDatasetVersion(updateVersion);
         updateVersion.setTermsOfUseAndAccess(newTerms);
-        TermsOfUseAndAccess mergedTerms = ctxt.em().merge(oldTerms);
+        //Put old terms on version that will be deleted....
+        getDataset().getEditVersion().setTermsOfUseAndAccess(oldTerms);
         
         List<WorkflowComment> newComments = getDataset().getEditVersion().getWorkflowComments();
         if (newComments!=null && newComments.size() >0) {
@@ -139,7 +140,6 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // PrivateUrlServiceBean.getPrivateUrlFromDatasetId() that will query the DB and
         // fail if our changes aren't there
         ctxt.em().flush();
-        ctxt.em().remove(mergedTerms);
 
         // Now delete draft version
         DeleteDatasetVersionCommand cmd;
