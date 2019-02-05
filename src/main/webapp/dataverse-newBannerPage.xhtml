@@ -44,7 +44,12 @@
                                     <p:message style="margin: auto" id="second-file-warning" for="upload"
                                                display="text"/>
                                 </div>
-                                <p:fileUpload id="upload" mode="simple" value="#{lm.file}" required="true"/>
+                                <p:fileUpload id="upload" fileUploadListener="#{EditBannerPage.uploadFileEvent}"
+                                              update="image" auto="true" allowTypes="/(\.|\/)(jpe?g|png)$/"
+                                              mode="advanced" required="true">
+                                    <f:attribute name="imageLocale" value="#{lm.locale}"/>
+                                </p:fileUpload>
+                                <p:graphicImage id="image" value="#{lm.displayedImage}" stream="false"/>
 
                                 <h:outputLabel for="message-locale" value="Link: "/>
                                 <h:inputText id="message-locale" tabindex="1" styleClass="form-control"
@@ -122,7 +127,7 @@
 
                 <div class="button-block">
                     <p:commandButton styleClass="btn btn-default" value="#{bundle['saveChanges']}"
-                                     action="#{EditBannerPage.save()}" update="@form" ajax="false"/>
+                                     action="#{EditBannerPage.save()}" update="@form"/>
                     <p:commandButton styleClass="btn btn-default" value="#{bundle['cancel']}"
                                      action="#{EditBannerPage.cancel()}" immediate="true"/>
                 </div>

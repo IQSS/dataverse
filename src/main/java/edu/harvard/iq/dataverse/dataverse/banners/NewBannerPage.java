@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.dataverse.banners.dto.BannerMapper;
 import edu.harvard.iq.dataverse.dataverse.banners.dto.DataverseBannerDto;
 import edu.harvard.iq.dataverse.dataverse.validation.BannerErrorHandler;
 import org.apache.commons.lang.StringUtils;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.ByteArrayContent;
 
 import javax.ejb.EJB;
 import javax.faces.component.UIInput;
@@ -66,6 +68,21 @@ public class NewBannerPage implements Serializable {
                 mapper.mapToNewBanner(dataverseId);
 
         return StringUtils.EMPTY;
+    }
+
+    public void uploadFileEvent(FileUploadEvent event) {
+        String locale = (String) event.getComponent().getAttributes()
+                .get("imageLocale");
+
+        dto.getDataverseLocalizedBanner().stream()
+                .filter(dlb -> dlb.getLocale().equals(locale))
+                .forEach(dlb -> {
+                    dlb.setFile(event.getFile());
+                    dlb.setDisplayedImage(
+                            new ByteArrayContent(event.getFile().getContents(),
+                                    event.getFile().getContentType(),
+                                    event.getFile().getFileName()));
+                });
     }
 
     public String save() {

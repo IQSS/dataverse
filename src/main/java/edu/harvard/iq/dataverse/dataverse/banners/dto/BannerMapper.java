@@ -7,7 +7,8 @@ import edu.harvard.iq.dataverse.dataverse.banners.DataverseLocalizedBanner;
 import edu.harvard.iq.dataverse.locale.DataverseLocaleBean;
 import org.apache.commons.lang.StringUtils;
 import org.imgscalr.Scalr;
-import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.ByteArrayContent;
+import org.springframework.util.StreamUtils;
 
 import javax.ejb.Stateless;
 import javax.imageio.ImageIO;
@@ -52,16 +53,16 @@ public class BannerMapper {
 
             DataverseLocalizedBannerDto localBannerDto =
                     new DataverseLocalizedBannerDto(dlb.getId(), dlb.getLocale(),
-                            dlb.getImage(), dlb.getImageLink().isPresent() ?
-                            dlb.getImageLink().get() : StringUtils.EMPTY);
+                            dlb.getImageLink().isPresent() ?
+                                    dlb.getImageLink().get() : StringUtils.EMPTY);
 
             ByteArrayOutputStream resizedImage = convertImageToMiniSize(dlb.getImage());
 
+            localBannerDto.setDisplayedImage(new ByteArrayContent(dlb.getImage(), dlb.getContentType(), dlb.getImageName()));
             localBannerDto.setMiniDisplayImage(
-                    new DefaultStreamedContent(new ByteArrayInputStream(resizedImage.toByteArray()),
+                    new ByteArrayContent(resizedImage.toByteArray(),
                             "image/jpeg"));
 
-            localBannerDto.setContentType(dlb.getContentType());
             dlbDto.add(localBannerDto);
         }
 
@@ -88,16 +89,10 @@ public class BannerMapper {
 
         dto.getDataverseLocalizedBanner()
                 .forEach(fuDto -> {
-            DataverseLocalizedBanner dataverseLocalizedBanner = new DataverseLocalizedBanner();
-            dataverseLocalizedBanner.setImage(fuDto.getFile().getContents());
-            dataverseLocalizedBanner.setImageLink(fuDto.getImageLink());
-            dataverseLocalizedBanner.setDataverseBanner(banner);
-            dataverseLocalizedBanner.setLocale(fuDto.getLocale());
-            dataverseLocalizedBanner.setContentType(fuDto.getFile().getContentType());
-            dataverseLocalizedBanner.setImageName(fuDto.getFile().getFileName());
+                    DataverseLocalizedBanner dataverseLocalizedBanner = mapToLocalizedBanner(banner, fuDto);
 
-            banner.getDataverseLocalizedBanner().add(dataverseLocalizedBanner);
-        });
+                    banner.getDataverseLocalizedBanner().add(dataverseLocalizedBanner);
+                });
 
         return banner;
     }
@@ -109,6 +104,29 @@ public class BannerMapper {
         dto.setDataverseLocalizedBanner(mapDefaultLocales());
 
         return dto;
+    }
+
+    private DataverseLocalizedBanner mapToLocalizedBanner(DataverseBanner banner, DataverseLocalizedBannerDto fuDto) {
+        DataverseLocalizedBanner dataverseLocalizedBanner = new DataverseLocalizedBanner();
+
+        if (fuDto.getDisplayedImage() == null) {
+            dataverseLocalizedBanner.setImage(new byte[0]);
+        } else {
+
+            try {
+                dataverseLocalizedBanner.setImage(StreamUtils.copyToByteArray(fuDto.getDisplayedImage().getStream()));
+            } catch (IOException e) {
+                throw new IllegalStateException("There was a problem converting display image to byte array", e);
+            }
+
+            dataverseLocalizedBanner.setContentType(fuDto.getDisplayedImage().getContentType());
+            dataverseLocalizedBanner.setImageName(fuDto.getDisplayedImage().getName());
+        }
+
+        dataverseLocalizedBanner.setImageLink(fuDto.getImageLink());
+        dataverseLocalizedBanner.setDataverseBanner(banner);
+        dataverseLocalizedBanner.setLocale(fuDto.getLocale());
+        return dataverseLocalizedBanner;
     }
 
     private List<DataverseLocalizedBannerDto> mapDefaultLocales() {
