@@ -84,7 +84,7 @@ public class MetricsServiceBean implements Serializable {
         Query query = em.createNativeQuery(""
                 + "select cvv.strvalue, count(dataverse_id) from dataversesubjects\n"
                 + "join controlledvocabularyvalue cvv ON cvv.id = controlledvocabularyvalue_id \n"
-                + "where dataverse_id != ( select id from dvobject where owner_id is null) \n"
+                //+ "where dataverse_id != ( select id from dvobject where owner_id is null) \n" //removes root, we decided to do this in the homepage js instead
                 + "group by cvv.strvalue\n"
                 + "order by count desc;"
               

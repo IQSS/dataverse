@@ -321,7 +321,7 @@
                                 break;
                             }
                         }
-                        fullArray.push([item.subject, (item.count + dvCount).toLocaleString('en')]);
+                        fullArray.push([item.subject, (item.count + dvCount -1).toLocaleString('en')]); //subtract 1 to remove root dv from counts
                     }
                 });
                 fullArray.sort();
