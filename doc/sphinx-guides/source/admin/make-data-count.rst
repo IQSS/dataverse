@@ -62,6 +62,14 @@ After you have your first day of logs, you can process them the next day.
 
   * ``cd /usr/local/counter-processor-0.0.1``
 
+* If you are starting this installation in the middle of a month, you will need create blank log files for the previous days. e.g.:
+
+  * ``touch sample_logs/counter_2019-02-01.log``
+  
+  * ``...``
+  
+  * ``touch sample_logs/counter_2019-02-20.log``
+ 
 * Run Counter Processor.
 
   * ``CONFIG_FILE=/home/counter/counter-processor-config.yaml python36 main.py``
