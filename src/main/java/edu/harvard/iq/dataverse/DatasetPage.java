@@ -2298,11 +2298,9 @@ public class DatasetPage implements java.io.Serializable {
     }
     
         
-    public void saveLinkingDataverses() {
-        
+    public void saveLinkingDataverses(ActionEvent evt) {
         if (selectedDataverseForLinking == null) {
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dataverse.link.select"));           
-            System.out.print("selectedLinkingDataverseMenu.getClientId(): " + selectedLinkingDataverseMenu.getClientId());
             FacesContext.getCurrentInstance().addMessage(selectedLinkingDataverseMenu.getClientId(), message);
             return;
         }     
