@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
+import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,21 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
 
         // Copy metadata from draft version to latest published version
         updateVersion.setDatasetFields(getDataset().getEditVersion().initDatasetFields());
+
+        TermsOfUseAndAccess oldTerms = updateVersion.getTermsOfUseAndAccess();
+        TermsOfUseAndAccess newTerms = getDataset().getEditVersion().getTermsOfUseAndAccess();
+        newTerms.setDatasetVersion(updateVersion);
+        updateVersion.setTermsOfUseAndAccess(newTerms);
+        TermsOfUseAndAccess mergedTerms = ctxt.em().merge(oldTerms);
+        ctxt.em().remove(mergedTerms);
+        
+        List<WorkflowComment> newComments = getDataset().getEditVersion().getWorkflowComments();
+        if (newComments!=null && newComments.size() >0) {
+            for(WorkflowComment wfc: newComments) {
+                wfc.setDatasetVersion(updateVersion);
+            }
+            updateVersion.getWorkflowComments().addAll(newComments);
+        }
 
         validateOrDie(updateVersion, isValidateLenient());
 
