@@ -83,7 +83,8 @@ public class MetricsServiceBean implements Serializable {
     public List<Object[]> dataversesBySubject() {
         Query query = em.createNativeQuery(""
                 + "select cvv.strvalue, count(dataverse_id) from dataversesubjects\n"
-                + "join controlledvocabularyvalue cvv ON cvv.id = controlledvocabularyvalue_id\n"
+                + "join controlledvocabularyvalue cvv ON cvv.id = controlledvocabularyvalue_id \n"
+                + "where dataverse_id != ( select id from dvobject where owner_id is null) \n"
                 + "group by cvv.strvalue\n"
                 + "order by count desc;"
               
