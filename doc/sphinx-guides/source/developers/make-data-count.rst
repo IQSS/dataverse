@@ -58,6 +58,21 @@ TODO: Document how to put citations into your dev database using curl.
 
 TODO: Document how get citations out of your dev database using curl.
 
+Testing Make Data Count and Dataverse
+-------------------------------------
+
+A developer running Counter Processor alongside Dataverse for development or testing purposes will notice that once the raw Dataverse logs have been processed, there is no straightforward way to re-test those logs same logs.
+
+The first thing to fix is to clear two files from Counter Processor ...
+
+Second, if you are also sending your SUSHI report to Make Data Count, you will notice that re-running Counter Processor will not update the information logged on their servers. This is due to us clearing the state of Counter Processor, which in turn causes Counter Processor to send incorrectly structured requests to Make Data Count. The easiest way to resolve this issue is to ``DELETE`` the record Counter Processor has created on Make Data Count:
+
+``curl -H "Authorization: Bearer $JSON_WEB_TOKEN" -X DELETE https://$MDC_SERVER/reports/$REPORT_ID``
+
+To get the ``REPORT_ID``, look at the logs generated in ``/usr/local/counter-processor-0.0.1/tmp/datacite_response_body.txt``
+
+To read more about the Make Data Count api, see https://github.com/datacite/sashimi
+
 Resources
 ---------
 

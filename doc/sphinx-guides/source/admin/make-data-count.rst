@@ -19,7 +19,7 @@ Dataverse installations who would like support for Make Data Count must install 
 .. _Counter Processor: https://github.com/CDLUC3/counter-processor
 .. _DASH: https://cdluc3.github.io/dash/
 
-The diagram belows shows how Counter Processor interacts with Dataverse and the DataCite hub, once configured. Installations of Dataverse using Handles rather than DOIs should note the limitations in the next section of this page.
+The diagram below shows how Counter Processor interacts with Dataverse and the DataCite hub, once configured. Installations of Dataverse using Handles rather than DOIs should note the limitations in the next section of this page.
 
 |makedatacount_components|
 
@@ -35,7 +35,7 @@ The most important takeaways from the diagram are:
 Limitations for Dataverse Installations Using Handles Rather Than DOIs
 ----------------------------------------------------------------------
 
-Data repositories using Handles and other identifiers are not supported by Make Data Count but in the notes_ following a July 2018 webinar, you can see the Make Data Count project's response on this topic. In short, the DataCite hub does not want to receive reports for non-DOI datasets. Additionally, citations are only available from the DataCite hub for datasets that have DOIs. The remainder of processing is the same.
+Data repositories using Handles and other identifiers are not supported by Make Data Count but in the notes_ following a July 2018 webinar, you can see the Make Data Count project's response on this topic. In short, the DataCite hub does not want to receive reports for non-DOI datasets. Additionally, citations are only available from the DataCite hub for datasets that have DOIs. The Dataverse usage logging and Counter Processor tool can still be used to track other identifier and store the metrics in Dataverse.
 
 When editing the ``counter-processor-config.yaml`` file mentioned below, make sure that the ``upload_to_hub`` boolean is set to ``False``.
 
@@ -70,9 +70,9 @@ After you have your first day of logs, you can process them the next day.
 
 * A JSON file in SUSHI format will be created in the directory you specified under "output_file" in the config file.
 
-..  * FIXME: Explain how to load the SUSHI file into Dataverse. For now, see the :doc:`/developers/make-data-count` section of the Dev Guide.
-
 * You will want to add a cron job to load the SUSHI file periodically as well, perhaps nightly.
+
+..  * FIXME: Explain how to load the SUSHI file into Dataverse. For now, see the :doc:`/developers/make-data-count` section of the Dev Guide.
 
 Once you have contacted support@datacite.org for your JSON Web Token and changed "upload_to_hub" to "True" in the config file, the following metrics will be sent to the DataCite hub for each published dataset:
 
