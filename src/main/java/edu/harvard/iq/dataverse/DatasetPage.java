@@ -2291,20 +2291,15 @@ public class DatasetPage implements java.io.Serializable {
     
         
     public void saveLinkingDataverses(ActionEvent evt) {
-        if (selectedDataverseForLinking == null) {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dataverse.link.select"));
-            FacesContext.getCurrentInstance().addMessage(selectedLinkingDataverseMenu.getClientId(), message);
-            return;
-        }
 
         if (saveLink(selectedDataverseForLinking)) {
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", getSuccessMessageArguments()));
-            RequestContext.getCurrentInstance().execute("PF('linkDatasetForm').hide()");
         } else {
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), linkingDataverseErrorMessage);
             FacesContext.getCurrentInstance().addMessage(null, message);
         }
-    } 
+
+    }
     
     private String linkingDataverseErrorMessage = "";
 

@@ -1258,9 +1258,9 @@
                             </div>
                         </div>
                         <div class="button-block">
-                            <p:commandLink id="saveLinkButton" type="button" styleClass="btn btn-default"   actionListener="#{DatasetPage.saveLinkingDataverses}" 
-                                           update=":messagePanel  linkNameContent @([id$=Messages])" 
-                                           oncomplete="if (args &amp;&amp; !args.validationFailed) PF('linkDatasetForm').hide();"
+                            <p:commandLink id="saveLinkButton" type="button" styleClass="btn btn-default"    
+                                           update="linkNameContent @([id$=Messages])" 
+                                           oncomplete="if (args &amp;&amp; !args.validationFailed) linkDatasetCommand();"
                                            value="#{bundle['dataset.link.save']}">  
                                 <f:param name="DO_DS_LINK_VALIDATION" value="true"/>
                              </p:commandLink>
@@ -1269,6 +1269,8 @@
                             </button>
                         </div>
                     </p:dialog>
+                    
+                    <p:remoteCommand name="linkDatasetCommand" oncomplete="PF('linkDatasetForm').hide();" update=":messagePanel  @([id$=Messages])" actionListener="#{DatasetPage.saveLinkingDataverses}"/>
 
                     <p:dialog id="computeBatchListPopup" header="#{bundle['dataset.compute.computeBatchListHeader']}" widgetVar="computeBatchListPopup" modal="true">
                         <div class="text-right">
