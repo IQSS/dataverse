@@ -1699,80 +1699,128 @@ public class UtilIT {
                 .delete("/api/admin/storageSites/" + storageSiteId);
     }
 
-    static Response metricsDataversesToMonth(String yyyymm) {
+    static Response metricsDataversesToMonth(String yyyymm, String queryParams) {
         String optionalYyyyMm = "";
         if (yyyymm != null) {
             optionalYyyyMm = "/" + yyyymm;
         }
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/dataverses/toMonth" + optionalYyyyMm);
+        return requestSpecification.get("/api/info/metrics/dataverses/toMonth" + optionalYyyyMm + optionalQueryParams);
     }
 
-    static Response metricsDatasetsToMonth(String yyyymm) {
+    static Response metricsDatasetsToMonth(String yyyymm, String queryParams) {
         String optionalYyyyMm = "";
         if (yyyymm != null) {
             optionalYyyyMm = "/" + yyyymm;
         }
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/datasets/toMonth" + optionalYyyyMm);
+        return requestSpecification.get("/api/info/metrics/datasets/toMonth" + optionalYyyyMm + optionalQueryParams);
     }
 
-    static Response metricsFilesToMonth(String yyyymm) {
+    static Response metricsFilesToMonth(String yyyymm, String queryParams) {
         String optionalYyyyMm = "";
         if (yyyymm != null) {
             optionalYyyyMm = "/" + yyyymm;
         }
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/files/toMonth" + optionalYyyyMm);
+        return requestSpecification.get("/api/info/metrics/files/toMonth" + optionalYyyyMm + optionalQueryParams);
     }
 
-    static Response metricsDownloadsToMonth(String yyyymm) {
+    static Response metricsDownloadsToMonth(String yyyymm, String queryParams) {
         String optionalYyyyMm = "";
         if (yyyymm != null) {
             optionalYyyyMm = "/" + yyyymm;
         }
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/downloads/toMonth" + optionalYyyyMm);
+        return requestSpecification.get("/api/info/metrics/downloads/toMonth" + optionalYyyyMm + optionalQueryParams);
     }
     
-    static Response metricsDataversesPastDays(String days) {
+    static Response metricsDataversesPastDays(String days, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/dataverses/pastDays/" + days);
+        return requestSpecification.get("/api/info/metrics/dataverses/pastDays/" + days + optionalQueryParams);
     }
     
-    static Response metricsDatasetsPastDays(String days) {
+    static Response metricsDatasetsPastDays(String days, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/datasets/pastDays/" + days);
+        return requestSpecification.get("/api/info/metrics/datasets/pastDays/" + days + optionalQueryParams);
     }
         
-    static Response metricsFilesPastDays(String days) {
+    static Response metricsFilesPastDays(String days, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/files/pastDays/" + days);
+        return requestSpecification.get("/api/info/metrics/files/pastDays/" + days + optionalQueryParams);
     }
             
-    static Response metricsDownloadsPastDays(String days) {
+    static Response metricsDownloadsPastDays(String days, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/downloads/pastDays/" + days);
+        return requestSpecification.get("/api/info/metrics/downloads/pastDays/" + days + optionalQueryParams);
     }
 
-    static Response metricsDataversesByCategory() {
+    static Response metricsDataversesByCategory(String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/dataverses/byCategory");
+        return requestSpecification.get("/api/info/metrics/dataverses/byCategory" + optionalQueryParams);
     }
     
-    static Response metricsDataversesBySubject() {
+    static Response metricsDataversesBySubject(String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/dataverses/bySubject");
+        return requestSpecification.get("/api/info/metrics/dataverses/bySubject" + optionalQueryParams);
     }
 
-    static Response metricsDatasetsBySubject() {
+    static Response metricsDatasetsBySubject(String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/datasets/bySubject");
+        return requestSpecification.get("/api/info/metrics/datasets/bySubject" + optionalQueryParams);
     }
     
-    static Response metricsDatasetsBySubjectToMonth(String month) {
+    static Response metricsDatasetsBySubjectToMonth(String month, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
         RequestSpecification requestSpecification = given();
-        return requestSpecification.get("/api/info/metrics/datasets/bySubject/toMonth/" + month);
+        return requestSpecification.get("/api/info/metrics/datasets/bySubject/toMonth/" + month + optionalQueryParams);
     }
     
     static Response clearMetricCache() {

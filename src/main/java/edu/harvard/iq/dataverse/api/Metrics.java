@@ -2,14 +2,17 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Metric;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
+import java.util.Arrays;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import javax.ws.rs.core.UriInfo;
 
 /**
  * API endpoints for various metrics.
@@ -28,20 +31,26 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("dataverses")
-    public Response getDataversesAllTime() {
-        return getDataversesToMonth(MetricsUtil.getCurrentMonth());
+    public Response getDataversesAllTime(@Context UriInfo uriInfo) {
+        return getDataversesToMonth(uriInfo, MetricsUtil.getCurrentMonth());
     }
     
     @Deprecated //for better path
     @GET
     @Path("dataverses/toMonth")
-    public Response getDataversesToMonthCurrent() {
-        return getDataversesToMonth(MetricsUtil.getCurrentMonth());
+    public Response getDataversesToMonthCurrent(@Context UriInfo uriInfo) {
+        return getDataversesToMonth(uriInfo, MetricsUtil.getCurrentMonth());
     }
     
     @GET
     @Path("dataverses/toMonth/{yyyymm}")
-    public Response getDataversesToMonth(@PathParam("yyyymm") String yyyymm) {
+    public Response getDataversesToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm) {
+        try { 
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
+        } catch (IllegalArgumentException ia) {
+            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+        }
+            
         String metricName = "dataversesToMonth";
 
         try {
@@ -66,7 +75,13 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("dataverses/pastDays/{days}")
-    public Response getDataversesPastDays(@PathParam("days") int days) {
+    public Response getDataversesPastDays(@Context UriInfo uriInfo, @PathParam("days") int days) {
+        try { 
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
+        } catch (IllegalArgumentException ia) {
+            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+        }
+            
         String metricName = "dataversesPastDays";
         
         if(days < 1) {
@@ -91,7 +106,13 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("dataverses/byCategory")
-    public Response getDataversesByCategory() {
+    public Response getDataversesByCategory(@Context UriInfo uriInfo) {
+        try { 
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
+        } catch (IllegalArgumentException ia) {
+            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+        }
+            
         String metricName = "dataversesByCategory";
 
         try {
@@ -111,7 +132,13 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("dataverses/bySubject")
-    public Response getDataversesBySubject() {
+    public Response getDataversesBySubject(@Context UriInfo uriInfo) {
+        try { 
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
+        } catch (IllegalArgumentException ia) {
+            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+        }
+            
         String metricName = "dataversesBySubject";
         
         try {
@@ -133,20 +160,26 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("datasets")
-    public Response getDatasetsAllTime(@QueryParam("dataLocation") String dataLocation) {
-        return getDatasetsToMonth(MetricsUtil.getCurrentMonth(), dataLocation);
+    public Response getDatasetsAllTime(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation) {
+        return getDatasetsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation);
     }
     
     @Deprecated //for better path
     @GET
     @Path("datasets/toMonth")
-    public Response getDatasetsToMonthCurrent(@QueryParam("dataLocation") String dataLocation) {
-        return getDatasetsToMonth(MetricsUtil.getCurrentMonth(), dataLocation);
+    public Response getDatasetsToMonthCurrent(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation) {
+        return getDatasetsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation);
     }
 
     @GET
     @Path("datasets/toMonth/{yyyymm}")
-    public Response getDatasetsToMonth(@PathParam("yyyymm") String yyyymm, @QueryParam("dataLocation") String dataLocation) {
+    public Response getDatasetsToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("dataLocation") String dataLocation) {
+        try { 
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation"});
+        } catch (IllegalArgumentException ia) {
+            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+        }
+            
         String metricName = "datasetsToMonth";
 
         try {
@@ -170,7 +203,13 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("datasets/pastDays/{days}")
-    public Response getDatasetsPastDays(@PathParam("days") int days, @QueryParam("dataLocation") String dataLocation) {
+    public Response getDatasetsPastDays(@Context UriInfo uriInfo, @PathParam("days") int days, @QueryParam("dataLocation") String dataLocation) {
+        try { 
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation"});
+        } catch (IllegalArgumentException ia) {
+            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+        }
+            
         String metricName = "datasetsPastDays";
         
         if(days < 1) {
@@ -196,13 +235,19 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("datasets/bySubject")
-    public Response getDatasetsBySubject(@QueryParam("dataLocation") String dataLocation) {
-        return getDatasetsBySubjectToMonth(MetricsUtil.getCurrentMonth(), dataLocation);
+    public Response getDatasetsBySubject(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation) {
+        return getDatasetsBySubjectToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation);
     }
   
     @GET
     @Path("datasets/bySubject/toMonth/{yyyymm}")
-    public Response getDatasetsBySubjectToMonth(@PathParam("yyyymm") String yyyymm, @QueryParam("dataLocation") String dataLocation) {
+    public Response getDatasetsBySubjectToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("dataLocation") String dataLocation) {
+        try { 
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation"});
+        } catch (IllegalArgumentException ia) {
+            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+        }
+            
         String metricName = "datasetsBySubjectToMonth";
 
         try {
@@ -225,20 +270,26 @@ public class Metrics extends AbstractApiBean {
     /** Files */
     @GET
     @Path("files")
-    public Response getFilesAllTime(@QueryParam("dataLocation") String dataLocation) {
-        return getFilesToMonth(MetricsUtil.getCurrentMonth(), dataLocation);
+    public Response getFilesAllTime(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation) {
+        return getFilesToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation);
     }
     
     @Deprecated //for better path
     @GET
     @Path("files/toMonth")
-    public Response getFilesToMonthCurrent(@QueryParam("dataLocation") String dataLocation) {
-        return getFilesToMonth(MetricsUtil.getCurrentMonth(), dataLocation);
+    public Response getFilesToMonthCurrent(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation) {
+        return getFilesToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation);
     }
 
     @GET
     @Path("files/toMonth/{yyyymm}")
-    public Response getFilesToMonth(@PathParam("yyyymm") String yyyymm, @QueryParam("dataLocation") String dataLocation) {
+    public Response getFilesToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("dataLocation") String dataLocation) {
+        try { 
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation"});
+        } catch (IllegalArgumentException ia) {
+            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+        }
+            
         String metricName = "filesToMonth";
 
         try {
@@ -261,7 +312,13 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("files/pastDays/{days}")
-    public Response getFilesPastDays(@PathParam("days") int days, @QueryParam("dataLocation") String dataLocation) {
+    public Response getFilesPastDays(@Context UriInfo uriInfo, @PathParam("days") int days, @QueryParam("dataLocation") String dataLocation) {
+        try { 
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation"});
+        } catch (IllegalArgumentException ia) {
+            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+        }
+            
         String metricName = "filesPastDays";
         
         if(days < 1) {
@@ -289,23 +346,30 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("downloads")
-    public Response getDownloadsAllTime() {
-        return getDownloadsToMonth(MetricsUtil.getCurrentMonth());
+    public Response getDownloadsAllTime(@Context UriInfo uriInfo) {
+        return getDownloadsToMonth(uriInfo, MetricsUtil.getCurrentMonth());
     }
     
     @Deprecated //for better path
     @GET
     @Path("downloads/toMonth")
-    public Response getDownloadsToMonthCurrent() {
-        return getDownloadsToMonth(MetricsUtil.getCurrentMonth());
+    public Response getDownloadsToMonthCurrent(@Context UriInfo uriInfo) {
+        return getDownloadsToMonth(uriInfo, MetricsUtil.getCurrentMonth());
     }
 
     @GET
     @Path("downloads/toMonth/{yyyymm}")
-    public Response getDownloadsToMonth(@PathParam("yyyymm") String yyyymm) {
+    public Response getDownloadsToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm) {                
+        try { 
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
+        } catch (IllegalArgumentException ia) {
+            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+        }
+        
         String metricName = "downloadsToMonth";
-
+        
         try {
+            
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null);
 
@@ -317,6 +381,8 @@ public class Metrics extends AbstractApiBean {
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
+        } catch (IllegalArgumentException ia) {
+            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
         } catch (Exception ex) {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
@@ -324,7 +390,13 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("downloads/pastDays/{days}")
-    public Response getDownloadsPastDays(@PathParam("days") int days) {
+    public Response getDownloadsPastDays(@Context UriInfo uriInfo, @PathParam("days") int days) {
+        try { 
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
+        } catch (IllegalArgumentException ia) {
+            return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
+        }
+                
         String metricName = "downloadsPastDays";
         
         if(days < 1) {
@@ -346,5 +418,14 @@ public class Metrics extends AbstractApiBean {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
     }
-
+    //MAD: Safe?
+    private void errorIfUnrecongizedQueryParamPassed(UriInfo uriDetails, String[] allowedQueryParams) throws IllegalArgumentException {
+        for(String theKey : uriDetails.getQueryParameters().keySet()) {
+            if(!Arrays.stream(allowedQueryParams).anyMatch(theKey::equals)) {
+                throw new IllegalArgumentException("queryParameter " + theKey + " not supported for this endpont");
+            }
+        }
+        
+    }
+    
 }
