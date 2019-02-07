@@ -1,231 +1,229 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:h="http://java.sun.com/jsf/html"
-     xmlns:f="http://java.sun.com/jsf/core"
-     xmlns:ui="http://java.sun.com/jsf/facelets"
-     xmlns:c="http://java.sun.com/jsp/jstl/core"
-     xmlns:p="http://primefaces.org/ui"
-     xmlns:o="http://omnifaces.org/ui"
-     xmlns:jsf="http://xmlns.jcp.org/jsf">
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
 <!-- TERMS -->
    <div class="text-right margin-bottom" 
         jsf:rendered="#{dataverseSession.user.authenticated and empty editMode and !widgetWrapper.widgetView
                         and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
-       <p:commandLink type="button" styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('LICENSE')}" 
+       <!--<p:commandLink type="button" styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('LICENSE')}"
                       update="@form,:messagePanel" oncomplete="javascript:post_edit_terms()" disabled="#{DatasetPage.lockedFromEdits}">
            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
            <span class="glyphicon glyphicon-briefcase"/> #{bundle['file.dataFilesTab.terms.editTermsBtn']}
-       </p:commandLink>
+       </p:commandLink>-->
     </div>
     <div class="panel-group">
-       <div class="panel panel-default">
-           <div data-toggle="collapse" data-target="#panelCollapseTOU" class="panel-heading text-info">
-               #{bundle['file.dataFilesTab.terms.list.termsOfUse.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
-           </div>
-           <div id="panelCollapseTOU" class="collapse in">
-               <p:fragment id="touFragment">
-                   <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker"/>
-                   <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils" />
-                   <div class="panel-body">
-                       <div class="form-group">
-                           <label for="metadata_Terms" class="col-sm-3 control-label">
-                               <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.title']}">
-                                   #{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver']}
-                               </span>
-                           </label>
-                           <div class="col-sm-9">
-                               <ui:fragment rendered="#{empty editMode}">
-                                   <p class="help-block">
-                                       <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.txt.description']}" escape="false"/>
-                                   </p>
-                               </ui:fragment>
-                               <ui:fragment rendered="#{empty editMode and termsOfUseAndAccess.license == 'NONE'}">
-                                   <p><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.no.waiver.txt']}" escape="false"/></p>
-                               </ui:fragment>
-                               <ui:fragment rendered="#{!empty editMode}">
-                                   <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.description']}" escape="false"/></p>
-                                   <p:selectOneRadio id="options" value="#{termsOfUseAndAccess.license}">
-                                       <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.select.CCO']}" itemValue="CC0" />
-                                       <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.select.notCCO']}" itemValue="NONE" />
-                                       <p:ajax update="touFragment" oncomplete="javascript:dataverseuser_page_rebind();" />
-                                   </p:selectOneRadio>
-                               </ui:fragment>
-                               <ui:fragment rendered="#{termsOfUseAndAccess.license == 'CC0'}">
-                                   <p>#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.txt']} <img src="/resources/images/cc0.png" alt="CC0" class="waiver-CC0-inline"/></p>
-                               </ui:fragment>
-                           </div>
-                       </div>
-                       <div class="form-group" jsf:rendered="#{termsOfUseAndAccess.license != 'CC0'}">
-                           <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                               <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.title']}">
-                                   #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
-                               </span>
-                           </label>
-                           <div class="col-sm-9">
-                               <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.termsOfUse)}" escape="false" rendered="#{empty editMode}"/>
-                               <ui:fragment rendered="#{!empty editMode}">
-                                   <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.description']}" escape="false"/></p>
-                                   <p:inputTextarea value="#{termsOfUseAndAccess.termsOfUse}" rows="5" cols="60" styleClass="form-control" />
-                               </ui:fragment>
-                           </div>
-                       </div>
+        <!--<div class="panel panel-default">
+            <div data-toggle="collapse" data-target="#panelCollapseTOU" class="panel-heading text-info">
+                #{bundle['file.dataFilesTab.terms.list.termsOfUse.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
+            </div>
+            <div id="panelCollapseTOU" class="collapse in">
+                <p:fragment id="touFragment">
+                    <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker"/>
+                    <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils" />
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label for="metadata_Terms" class="col-sm-3 control-label">
+                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.title']}">
+                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver']}
+                                </span>
+                            </label>
+                            <div class="col-sm-9">
+                                <ui:fragment rendered="#{empty editMode}">
+                                    <p class="help-block">
+                                        <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.txt.description']}" escape="false"/>
+                                    </p>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{empty editMode and termsOfUseAndAccess.license == 'NONE'}">
+                                    <p><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.no.waiver.txt']}" escape="false"/></p>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{!empty editMode}">
+                                    <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.description']}" escape="false"/></p>
+                                    <p:selectOneRadio id="options" value="#{termsOfUseAndAccess.license}">
+                                        <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.select.CCO']}" itemValue="CC0" />
+                                        <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.select.notCCO']}" itemValue="NONE" />
+                                        <p:ajax update="touFragment" oncomplete="javascript:dataverseuser_page_rebind();" />
+                                    </p:selectOneRadio>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{termsOfUseAndAccess.license == 'CC0'}">
+                                    <p>#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.txt']} <img src="/resources/images/cc0.png" alt="CC0" class="waiver-CC0-inline"/></p>
+                                </ui:fragment>
+                            </div>
+                        </div>
+                        <div class="form-group" jsf:rendered="#{termsOfUseAndAccess.license != 'CC0'}">
+                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.title']}">
+                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
+                                </span>
+                            </label>
+                            <div class="col-sm-9">
+                                <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.termsOfUse)}" escape="false" rendered="#{empty editMode}"/>
+                                <ui:fragment rendered="#{!empty editMode}">
+                                    <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.description']}" escape="false"/></p>
+                                    <p:inputTextarea value="#{termsOfUseAndAccess.termsOfUse}" rows="5" cols="60" styleClass="form-control" />
+                                </ui:fragment>
+                            </div>
+                        </div>
 
-                       <!-- Additional Information
-                       <ui:fragment rendered="# {!empty editMode or empty editMode and (!empty termsOfUseAndAccess.confidentialityDeclaration 
-                                            or !empty termsOfUseAndAccess.specialPermissions or !empty termsOfUseAndAccess.restrictions or !empty termsOfUseAndAccess.citationRequirements 
-                                            or !empty termsOfUseAndAccess.depositorRequirements
-                                            or !empty termsOfUseAndAccess.conditions or !empty termsOfUseAndAccess.disclaimer)}"> -->
-                       
-                           <ui:fragment rendered="#{empty editMode}">
-                               <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.confidentialityDeclaration}">
-                                   <label for="confidentialityDeclaration" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
-                                       </span>
-                                   </label>
-                                   <div class="col-sm-9">
-                                       <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.confidentialityDeclaration)}" escape="false"/>
-                                   </div>
-                               </div>
-                               <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.specialPermissions}">
-                                   <label for="specialPermissions" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions']}
-                                       </span>
-                                   </label>
-                                   <div class="col-sm-9">
-                                       <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.specialPermissions)}" escape="false"/>
-                                   </div>
-                               </div>
-                               <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.restrictions}">
-                                   <label for="restrictions" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions']}
-                                       </span>
-                                   </label>
-                                   <div class="col-sm-9">
-                                       <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.restrictions)}" escape="false"/>
-                                   </div>
-                               </div>
-                               <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.citationRequirements}">
-                                   <label for="citationRequirements" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements']}
-                                       </span>
-                                   </label>
-                                   <div class="col-sm-9">
-                                       <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.citationRequirements)}" escape="false"/>
-                                   </div>
-                               </div>
-                               <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.depositorRequirements}">
-                                   <label for="depositorRequirements" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements']}
-                                       </span>
-                                   </label>
-                                   <div class="col-sm-9">
-                                       <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.depositorRequirements)}" escape="false"/>
-                                   </div>
-                               </div>
-                               <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.conditions}">
-                                   <label for="conditions" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions']}
-                                       </span>
-                                   </label>
-                                   <div class="col-sm-9">
-                                       <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.conditions)}" escape="false"/>
-                                   </div>
-                               </div>
-                               <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.disclaimer}">
-                                   <label for="disclaimer" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer']}
-                                       </span>
-                                   </label>
-                                   <div class="col-sm-9">
-                                       <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.disclaimer)}" escape="false"/>
-                                   </div>
-                               </div>
-                           </ui:fragment>
-                           <ui:fragment rendered="#{!empty editMode}">
-                               <div class="form-group">
-                                   <label for="confidentialityDeclaration" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
-                                       </span>
-                                   </label>
-                                   <div class="col-sm-9">
-                                       <p:inputTextarea id="confidentialityDeclaration" value="#{termsOfUseAndAccess.confidentialityDeclaration}" rows="5" cols="60" styleClass="form-control" />
-                                   </div>
-                               </div>
-                               <div class="form-group">
-                                   <label for="specialPermissions" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions']}
-                                       </span>
-                                   </label>
-                                   <div class="col-sm-9">
-                                       <p:inputTextarea id="specialPermissions" value="#{termsOfUseAndAccess.specialPermissions}" rows="5" cols="60" styleClass="form-control" />
-                                   </div>
-                               </div>
-                               <div class="form-group">
-                                   <label for="restrictions" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions']}
-                                       </span>
-                                   </label>
-                                   <div class="col-sm-9">
-                                       <p:inputTextarea id="restrictions" value="#{termsOfUseAndAccess.restrictions}" rows="5" cols="60" styleClass="form-control" />
-                                   </div>
-                               </div>
-                               <div class="form-group">
-                                   <label for="citationRequirements" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements']}
-                                       </span>
-                                   </label>
-                                   <div class="col-sm-9">
-                                       <p:inputTextarea id="citationRequirements" value="#{termsOfUseAndAccess.citationRequirements}" rows="5" cols="60" styleClass="form-control" />
-                                   </div>
-                               </div>
-                               <div class="form-group">
-                                   <label for="depositorRequirements" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements']}
-                                       </span>
-                                   </label>
-                                   <div class="col-sm-9">
-                                       <p:inputTextarea id="depositorRequirements" value="#{termsOfUseAndAccess.depositorRequirements}" rows="5" cols="60" styleClass="form-control" />
-                                   </div>
-                               </div>
-                               <div class="form-group">
-                                   <label for="conditions" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions']}
-                                       </span>
-                                   </label>
-                                   <div class="col-sm-9">
-                                       <p:inputTextarea id="conditions" value="#{termsOfUseAndAccess.conditions}" rows="5" cols="60" styleClass="form-control" />
-                                   </div>
-                               </div>
-                               <div class="form-group">
-                                   <label for="disclaimer" class="col-sm-3 control-label">
-                                       <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer.title']}">
-                                           #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer']}
-                                       </span>
-                                   </label>
-                                   <div class="col-sm-9">
-                                       <p:inputTextarea id="disclaimer" value="#{termsOfUseAndAccess.disclaimer}" rows="5" cols="60" styleClass="form-control" />
-                                   </div>
-                               </div>
-                           </ui:fragment>
-                       
-                       <!-- </ui:fragment>
-                       END: Additional Information -->
-                   </div>
-               </p:fragment>
-           </div>
-       </div>
+                        &lt;!&ndash; Additional Information
+                        <ui:fragment rendered="# {!empty editMode or empty editMode and (!empty termsOfUseAndAccess.confidentialityDeclaration
+                                             or !empty termsOfUseAndAccess.specialPermissions or !empty termsOfUseAndAccess.restrictions or !empty termsOfUseAndAccess.citationRequirements
+                                             or !empty termsOfUseAndAccess.depositorRequirements
+                                             or !empty termsOfUseAndAccess.conditions or !empty termsOfUseAndAccess.disclaimer)}"> &ndash;&gt;
+
+                            <ui:fragment rendered="#{empty editMode}">
+                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.confidentialityDeclaration}">
+                                    <label for="confidentialityDeclaration" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.confidentialityDeclaration)}" escape="false"/>
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.specialPermissions}">
+                                    <label for="specialPermissions" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.specialPermissions)}" escape="false"/>
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.restrictions}">
+                                    <label for="restrictions" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.restrictions)}" escape="false"/>
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.citationRequirements}">
+                                    <label for="citationRequirements" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.citationRequirements)}" escape="false"/>
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.depositorRequirements}">
+                                    <label for="depositorRequirements" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.depositorRequirements)}" escape="false"/>
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.conditions}">
+                                    <label for="conditions" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.conditions)}" escape="false"/>
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.disclaimer}">
+                                    <label for="disclaimer" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.disclaimer)}" escape="false"/>
+                                    </div>
+                                </div>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{!empty editMode}">
+                                <div class="form-group">
+                                    <label for="confidentialityDeclaration" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:inputTextarea id="confidentialityDeclaration" value="#{termsOfUseAndAccess.confidentialityDeclaration}" rows="5" cols="60" styleClass="form-control" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="specialPermissions" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:inputTextarea id="specialPermissions" value="#{termsOfUseAndAccess.specialPermissions}" rows="5" cols="60" styleClass="form-control" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="restrictions" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:inputTextarea id="restrictions" value="#{termsOfUseAndAccess.restrictions}" rows="5" cols="60" styleClass="form-control" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="citationRequirements" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:inputTextarea id="citationRequirements" value="#{termsOfUseAndAccess.citationRequirements}" rows="5" cols="60" styleClass="form-control" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="depositorRequirements" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:inputTextarea id="depositorRequirements" value="#{termsOfUseAndAccess.depositorRequirements}" rows="5" cols="60" styleClass="form-control" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="conditions" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:inputTextarea id="conditions" value="#{termsOfUseAndAccess.conditions}" rows="5" cols="60" styleClass="form-control" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="disclaimer" class="col-sm-3 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:inputTextarea id="disclaimer" value="#{termsOfUseAndAccess.disclaimer}" rows="5" cols="60" styleClass="form-control" />
+                                    </div>
+                                </div>
+                            </ui:fragment>
+
+                        &lt;!&ndash; </ui:fragment>
+                        END: Additional Information &ndash;&gt;
+                    </div>
+                </p:fragment>
+            </div>
+        </div>-->
 
        <div class="panel panel-default" jsf:rendered="#{!empty editMode or empty editMode and (!empty termsOfUseAndAccess.termsOfAccess
                                                         or !empty termsOfUseAndAccess.dataAccessPlace 

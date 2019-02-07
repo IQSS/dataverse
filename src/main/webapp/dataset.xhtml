@@ -4,12 +4,9 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
-      xmlns:pt="http://java.sun.com/jsf/passthrough"
-      xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:o="http://omnifaces.org/ui"
-      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+>
     <h:head>
     </h:head>
     <h:body>
@@ -622,7 +619,7 @@
                             </p:tab>
 
                             <!-- 4.2.1: see comment above -->
-                            <p:tab id="termsTab" title="#{bundle['file.dataFilesTab.terms.header']}"
+                            <p:tab id="termsTab" title="#{bundle['file.dataFilesTab.terms.list.guestbook']}"
                                    rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'LICENSE')}">
                                 <ui:include src="dataset-license-terms.xhtml">
                                     <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? 'LICENSE': ''}"/>
