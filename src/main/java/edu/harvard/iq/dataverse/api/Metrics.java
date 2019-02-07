@@ -418,7 +418,7 @@ public class Metrics extends AbstractApiBean {
             return allowCors(error(BAD_REQUEST, ex.getLocalizedMessage()));
         }
     }
-    //MAD: Safe?
+
     private void errorIfUnrecongizedQueryParamPassed(UriInfo uriDetails, String[] allowedQueryParams) throws IllegalArgumentException {
         for(String theKey : uriDetails.getQueryParameters().keySet()) {
             if(!Arrays.stream(allowedQueryParams).anyMatch(theKey::equals)) {

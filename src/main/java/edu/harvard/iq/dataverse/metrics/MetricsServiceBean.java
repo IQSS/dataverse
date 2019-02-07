@@ -101,40 +101,73 @@ public class MetricsServiceBean implements Serializable {
      * @param yyyymm Month in YYYY-MM format.
      */
     public long datasetsToMonth(String yyyymm, String dataLocation) throws Exception {
-        String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
-        if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
-            dataLocationLine = "and dataset.harvestingclient_id is not null\n";
-        } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
-            dataLocationLine = ""; //no specification will return all
-        }
+        String dataLocationLine = "(date_trunc('month', releasetime) <=  to_date('" + yyyymm +"','YYYY-MM') and dataset.harvestingclient_id IS NULL)\n"; 
         
-        Query query = em.createNativeQuery(""
-                + "select count(*)\n"
-                + "from datasetversion\n"
-                + "where datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n"
-                + "(\n"
-                + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
-                + "from datasetversion\n"
-                + "join dataset on dataset.id = datasetversion.dataset_id\n"
-                + "where versionstate='RELEASED' \n"
-                + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + dataLocationLine
-                + "group by dataset_id \n"
-                + ");"
+        if(!DATA_LOCATION_LOCAL.equals(dataLocation)) { //Default api state is DATA_LOCATION_LOCAL
+            //we have to use createtime for harvest as post dvn3 harvests do not have releasetime populated
+            String harvestBaseLine = "(date_trunc('month', createtime) <=  to_date('" + yyyymm +"','YYYY-MM') and dataset.harvestingclient_id IS NOT NULL)\n"; 
+            if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
+                dataLocationLine = harvestBaseLine; //replace
+            } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
+                dataLocationLine += " or " +harvestBaseLine; //append
+            }
+        }
+
+        Query query = em.createNativeQuery(
+             "select count(*)\n"
+            +"from (\n"
+            +   "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max\n"
+            +   "from datasetversion\n"
+            +   "join dataset on dataset.id = datasetversion.dataset_id\n"
+            +   "where versionstate='RELEASED' \n"
+            +   "and \n" 
+            +   dataLocationLine //be careful about adding more and statements after this line.
+            +   "group by dataset_id \n"
+            +") sub_temp"
         );
+        
         logger.fine("query: " + query);
 
         return (long) query.getSingleResult();
     }
     
     public List<Object[]> datasetsBySubjectToMonth(String yyyymm, String dataLocation) {        
-        String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
-        if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
-            dataLocationLine = "and dataset.harvestingclient_id is not null\n";
-        } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
-            dataLocationLine = ""; //no specification will return all
+        String dataLocationLine = "(date_trunc('month', releasetime) <=  to_date('" + yyyymm +"','YYYY-MM') and dataset.harvestingclient_id IS NULL)\n"; 
+        
+        if(!DATA_LOCATION_LOCAL.equals(dataLocation)) { //Default api state is DATA_LOCATION_LOCAL
+            //we have to use createtime for harvest as post dvn3 harvests do not have releasetime populated
+            String harvestBaseLine = "(date_trunc('month', createtime) <=  to_date('" + yyyymm +"','YYYY-MM') and dataset.harvestingclient_id IS NOT NULL)\n"; 
+            if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
+                dataLocationLine = harvestBaseLine; //replace
+            } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
+                dataLocationLine += " or " +harvestBaseLine; //append
+            }
         }
+        
         Query query = em.createNativeQuery(""
+                + "SELECT strvalue, count(dataset.id)\n"
+                + "FROM datasetfield_controlledvocabularyvalue \n"
+                + "(\n"
+                + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
+                + "from datasetversion\n"
+                + "join dataset on dataset.id = datasetversion.dataset_id\n"
+                + "JOIN controlledvocabularyvalue ON controlledvocabularyvalue.id = datasetfield_controlledvocabularyvalue.controlledvocabularyvalues_id\n"
+                + "JOIN datasetfield ON datasetfield.id = datasetfield_controlledvocabularyvalue.datasetfield_id\n"
+                + "JOIN datasetfieldtype ON datasetfieldtype.id = controlledvocabularyvalue.datasetfieldtype_id\n"
+                + "JOIN datasetversion ON datasetversion.id = datasetfield.datasetversion_id\n"
+                + "JOIN dvobject ON dvobject.id = datasetversion.dataset_id\n"
+                + "JOIN dataset ON dataset.id = datasetversion.dataset_id\n"
+                + "where versionstate='RELEASED'\n"
+                + "and"
+                + dataLocationLine
+                + "group by dataset_id \n"
+                + ")\n"
+                + "AND datasetfieldtype.name = 'subject'\n"
+                + "GROUP BY strvalue\n"
+                + "ORDER BY count(dataset.id) desc;"
+        );
+        
+        Query queryOldDelete = em.createNativeQuery(""
                 + "SELECT strvalue, count(dataset.id)\n"
                 + "FROM datasetfield_controlledvocabularyvalue \n"
                 + "JOIN controlledvocabularyvalue ON controlledvocabularyvalue.id = datasetfield_controlledvocabularyvalue.controlledvocabularyvalues_id\n"
@@ -164,25 +197,31 @@ public class MetricsServiceBean implements Serializable {
     }
     
     public long datasetsPastDays(int days, String dataLocation) throws Exception {
-        String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
-        if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
-            dataLocationLine = "and dataset.harvestingclient_id is not null\n";
-        } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
-            dataLocationLine = ""; //no specification will return all
+        String dataLocationLine = "(releasetime > current_date - interval '"+days+"' day and dataset.harvestingclient_id IS NULL)\n"; 
+        
+        if(!DATA_LOCATION_LOCAL.equals(dataLocation)) { //Default api state is DATA_LOCATION_LOCAL
+            //we have to use createtime for harvest as post dvn3 harvests do not have releasetime populated
+            String harvestBaseLine = "(createtime > current_date - interval '"+days+"' day and dataset.harvestingclient_id IS NOT NULL)\n"; 
+            if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
+                dataLocationLine = harvestBaseLine; //replace
+            } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
+                dataLocationLine += " or " +harvestBaseLine; //append
+            }
         }
-        Query query = em.createNativeQuery("select count(*)\n" +
-            "from datasetversion\n" +
-            "where datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n" +
-            "(\n" +
-            "	select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n" +
-            "	from datasetversion\n" +
-            "	join dataset on dataset.id = datasetversion.dataset_id\n" +
-            "	where versionstate='RELEASED' \n" +
-            "	and releasetime > current_date - interval '"+days+"' day\n" +
-            dataLocationLine +
-            "	group by dataset_id \n" +
-            ");"
+
+        Query query = em.createNativeQuery(
+             "select count(*)\n"
+            +"from (\n"
+            +   "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max\n"
+            +   "from datasetversion\n"
+            +   "join dataset on dataset.id = datasetversion.dataset_id\n"
+            +   "where versionstate='RELEASED' \n"
+            +   "and \n" 
+            +   dataLocationLine //be careful about adding more and statements after this line.
+            +   "group by dataset_id \n"
+            +") sub_temp"
         );
+
         logger.fine("query: " + query);
 
         return (long) query.getSingleResult();
@@ -199,7 +238,7 @@ public class MetricsServiceBean implements Serializable {
         if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
             dataLocationLine = "and dataset.harvestingclient_id is not null\n";
         } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
-            dataLocationLine = ""; //no specification will return all
+            dataLocationLine = "";
         }
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
@@ -225,7 +264,7 @@ public class MetricsServiceBean implements Serializable {
         if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
             dataLocationLine = "and dataset.harvestingclient_id is not null\n";
         } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
-            dataLocationLine = ""; //no specification will return all
+            dataLocationLine = "";
         }
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
