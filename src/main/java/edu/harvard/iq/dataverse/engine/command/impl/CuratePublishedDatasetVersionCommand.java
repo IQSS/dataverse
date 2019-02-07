@@ -98,8 +98,10 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                     publishedFmd.setLabel(draftFmd.getLabel());
                     metadataUpdated = true;
                 }
-                if (!draftFmd.getDescription().equals(publishedFmd.getDescription())) {
-                    publishedFmd.setDescription(draftFmd.getDescription());
+                String draftDesc = draftFmd.getDescription();
+                String pubDesc = publishedFmd.getDescription();
+                if ((draftDesc!=null && (!draftDesc.equals(pubDesc))) || (draftDesc==null && pubDesc!=null)) {
+                    publishedFmd.setDescription(draftDesc);
                     metadataUpdated = true;
                 }
                 if (!draftFmd.getCategories().equals(publishedFmd.getCategories())) {
@@ -110,9 +112,10 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                     publishedFmd.setRestricted(draftFmd.isRestricted());
                     metadataUpdated = true;
                 }
-                String prov = draftFmd.getProvFreeForm();
-                if (prov != null && (!draftFmd.getProvFreeForm().equals(publishedFmd.getProvFreeForm()))) {
-                    publishedFmd.setProvFreeForm(prov);
+                String draftProv = draftFmd.getProvFreeForm();
+                String pubProv = publishedFmd.getProvFreeForm();
+                if ((draftProv != null && (!draftProv.equals(pubProv)))||(draftProv==null && pubProv!=null)) {
+                    publishedFmd.setProvFreeForm(draftProv);
                     metadataUpdated = true;
                 }
 
