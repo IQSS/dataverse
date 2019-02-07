@@ -99,6 +99,6 @@ To further tailor your metric, query parameters can be provided.
 dataLocation
 ~~~~~~~~~~~~
 
-Specifies whether the metric should query ``local`` data, ``remote`` data (e.g. harvested), or ``all`` data when getting results. Only works for dataset and file metrics.
+Specifies whether the metric should query ``local`` data, ``remote`` data (e.g. harvested), or ``all`` data when getting results. Only works for dataset metrics.
 
 Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/?dataLocation=remote``

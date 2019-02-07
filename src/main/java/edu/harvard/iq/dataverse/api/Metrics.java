@@ -270,22 +270,22 @@ public class Metrics extends AbstractApiBean {
     /** Files */
     @GET
     @Path("files")
-    public Response getFilesAllTime(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation) {
-        return getFilesToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation);
+    public Response getFilesAllTime(@Context UriInfo uriInfo) {
+        return getFilesToMonth(uriInfo, MetricsUtil.getCurrentMonth());
     }
     
     @Deprecated //for better path
     @GET
     @Path("files/toMonth")
-    public Response getFilesToMonthCurrent(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation) {
-        return getFilesToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation);
+    public Response getFilesToMonthCurrent(@Context UriInfo uriInfo) {
+        return getFilesToMonth(uriInfo, MetricsUtil.getCurrentMonth());
     }
 
     @GET
     @Path("files/toMonth/{yyyymm}")
-    public Response getFilesToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("dataLocation") String dataLocation) {
+    public Response getFilesToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm) {
         try { 
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation"});
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
             return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
         }
@@ -294,14 +294,13 @@ public class Metrics extends AbstractApiBean {
 
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
-            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, validDataLocation);
+            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.filesToMonth(sanitizedyyyymm, validDataLocation);
+                Long count = metricsSvc.filesToMonth(sanitizedyyyymm);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, jsonString));
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, jsonString));
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));
@@ -312,9 +311,9 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("files/pastDays/{days}")
-    public Response getFilesPastDays(@Context UriInfo uriInfo, @PathParam("days") int days, @QueryParam("dataLocation") String dataLocation) {
+    public Response getFilesPastDays(@Context UriInfo uriInfo, @PathParam("days") int days) {
         try { 
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation"});
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
             return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
         }
@@ -325,14 +324,13 @@ public class Metrics extends AbstractApiBean {
             return allowCors(error(BAD_REQUEST, "Invalid parameter for number of days."));
         }
         try {
-            String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
-            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), validDataLocation);
+            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.filesPastDays(days, validDataLocation);
+                Long count = metricsSvc.filesPastDays(days);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, String.valueOf(days), validDataLocation, jsonString));
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, jsonString));
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonObjectBuilder(jsonString)));

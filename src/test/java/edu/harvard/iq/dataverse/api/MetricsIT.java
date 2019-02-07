@@ -91,10 +91,10 @@ public class MetricsIT {
 
         assertEquals(precache, postcache);
         
-        //Test ok when passing extra query params
+        //Test error when passing extra query params
         response = UtilIT.metricsFilesToMonth(yyyymm, "dataLocation=local");
         response.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
 
     @Test
@@ -185,10 +185,10 @@ public class MetricsIT {
 
         assertEquals(precache, postcache);
         
-        //Test ok when passing extra query params
+        //Test error when passing extra query params
         response = UtilIT.metricsFilesPastDays(days, "dataLocation=local");
         response.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
     
     @Test
@@ -275,7 +275,7 @@ public class MetricsIT {
         //Test success when passing extra query params
         response = UtilIT.metricsDatasetsBySubject("dataLocation=local");
         response.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
 
     @Test

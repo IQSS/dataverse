@@ -198,13 +198,7 @@ public class MetricsServiceBean implements Serializable {
     /**
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long filesToMonth(String yyyymm, String dataLocation) throws Exception {
-        String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
-        if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
-            dataLocationLine = "and dataset.harvestingclient_id is not null\n";
-        } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
-            dataLocationLine = "";
-        }
+    public long filesToMonth(String yyyymm) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from filemetadata\n"
@@ -216,7 +210,7 @@ public class MetricsServiceBean implements Serializable {
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "where versionstate='RELEASED'\n"
                 + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + dataLocationLine
+                + "and dataset.harvestingclient_id is null\n"
                 + "group by dataset_id \n"
                 + ");"
         );
@@ -224,13 +218,7 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public long filesPastDays(int days, String dataLocation) throws Exception {
-        String dataLocationLine = "and dataset.harvestingclient_id is null\n"; //Default is DATA_LOCATION_LOCAL
-        if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
-            dataLocationLine = "and dataset.harvestingclient_id is not null\n";
-        } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
-            dataLocationLine = "";
-        }
+    public long filesPastDays(int days) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from filemetadata\n"
@@ -242,7 +230,7 @@ public class MetricsServiceBean implements Serializable {
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "where versionstate='RELEASED'\n"
                 + "and releasetime > current_date - interval '"+days+"' day\n"
-                + dataLocationLine
+                + "and dataset.harvestingclient_id is null\n"
                 + "group by dataset_id \n"
                 + ");"
         );

@@ -348,8 +348,8 @@
     queryMetricSimple("datasets/pastDays", "/30?dataLocation=remote", "activity30DaysHarvestedDatasetsValue");
 
     queryMetricSimple("downloads/pastDays", "/30", "activity30DaysAllDownloadsValue");
-    queryMetricSimple("files", "?dataLocation=local", "activityAllTimeDepositedFilesValue");
-    queryMetricSimple("files/pastDays", "/30?dataLocation=local", "activity30DaysDepositedFilesValue");
+    queryMetricSimple("files", "", "activityAllTimeDepositedFilesValue");
+    queryMetricSimple("files/pastDays", "", "activity30DaysDepositedFilesValue");
 
     querySubjectDataverseDataset("dataversesBySubject");
     queryMetricSearch("datasets", "?dataLocation=all");
