@@ -98,6 +98,10 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                     publishedFmd.setLabel(draftFmd.getLabel());
                     metadataUpdated = true;
                 }
+                if (!draftFmd.getDescription().equals(publishedFmd.getDescription())) {
+                    publishedFmd.setDescription(draftFmd.getDescription());
+                    metadataUpdated = true;
+                }
                 if (!draftFmd.getCategories().equals(publishedFmd.getCategories())) {
                     publishedFmd.setCategories(draftFmd.getCategories());
                     metadataUpdated = true;
