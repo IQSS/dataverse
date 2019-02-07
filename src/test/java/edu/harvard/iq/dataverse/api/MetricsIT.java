@@ -296,9 +296,9 @@ public class MetricsIT {
 
         assertEquals(precache, postcache);
         
-        //Test ok when passing extra query params
+        //Test error passing extra query params
         response = UtilIT.metricsDatasetsBySubjectToMonth(thismonth, "dataLocation=local");
         response.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
 }

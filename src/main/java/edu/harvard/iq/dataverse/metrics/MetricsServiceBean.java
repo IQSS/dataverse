@@ -131,43 +131,8 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public List<Object[]> datasetsBySubjectToMonth(String yyyymm, String dataLocation) {        
-        String dataLocationLine = "(date_trunc('month', releasetime) <=  to_date('" + yyyymm +"','YYYY-MM') and dataset.harvestingclient_id IS NULL)\n"; 
-        
-        if(!DATA_LOCATION_LOCAL.equals(dataLocation)) { //Default api state is DATA_LOCATION_LOCAL
-            //we have to use createtime for harvest as post dvn3 harvests do not have releasetime populated
-            String harvestBaseLine = "(date_trunc('month', createtime) <=  to_date('" + yyyymm +"','YYYY-MM') and dataset.harvestingclient_id IS NOT NULL)\n"; 
-            if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
-                dataLocationLine = harvestBaseLine; //replace
-            } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
-                dataLocationLine += " or " +harvestBaseLine; //append
-            }
-        }
-        
+    public List<Object[]> datasetsBySubjectToMonth(String yyyymm) {        
         Query query = em.createNativeQuery(""
-                + "SELECT strvalue, count(dataset.id)\n"
-                + "FROM datasetfield_controlledvocabularyvalue \n"
-                + "(\n"
-                + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
-                + "from datasetversion\n"
-                + "join dataset on dataset.id = datasetversion.dataset_id\n"
-                + "JOIN controlledvocabularyvalue ON controlledvocabularyvalue.id = datasetfield_controlledvocabularyvalue.controlledvocabularyvalues_id\n"
-                + "JOIN datasetfield ON datasetfield.id = datasetfield_controlledvocabularyvalue.datasetfield_id\n"
-                + "JOIN datasetfieldtype ON datasetfieldtype.id = controlledvocabularyvalue.datasetfieldtype_id\n"
-                + "JOIN datasetversion ON datasetversion.id = datasetfield.datasetversion_id\n"
-                + "JOIN dvobject ON dvobject.id = datasetversion.dataset_id\n"
-                + "JOIN dataset ON dataset.id = datasetversion.dataset_id\n"
-                + "where versionstate='RELEASED'\n"
-                + "and"
-                + dataLocationLine
-                + "group by dataset_id \n"
-                + ")\n"
-                + "AND datasetfieldtype.name = 'subject'\n"
-                + "GROUP BY strvalue\n"
-                + "ORDER BY count(dataset.id) desc;"
-        );
-        
-        Query queryOldDelete = em.createNativeQuery(""
                 + "SELECT strvalue, count(dataset.id)\n"
                 + "FROM datasetfield_controlledvocabularyvalue \n"
                 + "JOIN controlledvocabularyvalue ON controlledvocabularyvalue.id = datasetfield_controlledvocabularyvalue.controlledvocabularyvalues_id\n"
@@ -183,7 +148,7 @@ public class MetricsServiceBean implements Serializable {
                 + "from datasetversion\n"
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "where versionstate='RELEASED'\n"
-                + dataLocationLine
+                + "and dataset.harvestingclient_id is null\n"
                 + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
                 + "group by dataset_id \n"
                 + ")\n"

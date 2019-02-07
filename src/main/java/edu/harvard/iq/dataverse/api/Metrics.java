@@ -235,15 +235,16 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("datasets/bySubject")
-    public Response getDatasetsBySubject(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation) {
-        return getDatasetsBySubjectToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation);
+    public Response getDatasetsBySubject(@Context UriInfo uriInfo) {
+        return getDatasetsBySubjectToMonth(uriInfo, MetricsUtil.getCurrentMonth());
     }
   
+    //TODO: This endpoint should be updated to take dataLocation
     @GET
     @Path("datasets/bySubject/toMonth/{yyyymm}")
-    public Response getDatasetsBySubjectToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("dataLocation") String dataLocation) {
+    public Response getDatasetsBySubjectToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm) {
         try { 
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation"});
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
             return allowCors(error(BAD_REQUEST, ia.getLocalizedMessage()));
         }
@@ -252,13 +253,12 @@ public class Metrics extends AbstractApiBean {
 
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
-            String jsonArrayString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, validDataLocation);
+            String jsonArrayString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null);
             
             if (null == jsonArrayString) { //run query and save
-                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubjectToMonth(sanitizedyyyymm, validDataLocation));
+                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubjectToMonth(sanitizedyyyymm));
                 jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, jsonArrayString));
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, jsonArrayString));
             }
 
             return allowCors(ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString)));
