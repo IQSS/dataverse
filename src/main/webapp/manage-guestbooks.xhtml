@@ -11,6 +11,7 @@
     <h:body>
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{manageGuestbooksPage.dataverseId}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{manageGuestbooksPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(manageGuestbooksPage.dataverse, bundle['dataset.manageGuestbooks.pageTitle'])}"/>
         </f:metadata>

@@ -10,6 +10,7 @@
     <h:body>
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{manageGroupsPage.dataverseId}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{manageGroupsPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(manageGroupsPage.dataverse, bundle['dataverse.manageGroups.pageTitle'])}"/>
         </f:metadata>

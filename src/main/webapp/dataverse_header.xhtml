@@ -80,13 +80,13 @@
                             </o:form>
                         </ui:fragment>
                         
-                        <li class="dropdown" jsf:rendered="#{dataverseLocaleBean.useLocale()}">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="#{bundle.language}">#{dataverseLocaleBean.localeTitle} <b class="caret"></b></a>
+                        <li class="dropdown" jsf:rendered="#{settingsWrapper.localesConfigured}">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="#{bundle.language}">#{dataverseSession.localeTitle} <b class="caret"></b></a>
                             <ul class="dropdown-menu">
                                 <h:form class="form-inline">
-                                    <ui:repeat value="#{dataverseLocaleBean.dataverseLocales.entrySet().toArray()}" var="language">
-                                        <li class="#{dataverseLocaleBean.localeTitle == language.value ? 'active' : ''}">
-                                            <h:commandLink value="#{language.value}" actionListener="#{dataverseLocaleBean.countryLocaleCodeChanged(language.key)}" action="submit()"
+                                    <ui:repeat value="#{settingsWrapper.configuredLocales.entrySet().toArray()}" var="language">
+                                        <li class="#{dataverseSession.localeTitle == language.value ? 'active' : ''}">
+                                            <h:commandLink value="#{language.value}" actionListener="#{dataverseSession.updateLocaleInViewRootAndRedirect(language.key)}" action="submit()"
                                                            style="padding: 3px 20px;
                                                                     clear: both;
                                                                     font-weight: 400;

@@ -13,6 +13,7 @@
     <h:body>
         <f:metadata>
             <f:viewParam name="redirectPage" value="#{LoginPage.redirectPage}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{LoginPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
