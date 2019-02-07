@@ -54,24 +54,23 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                 ctxt.em().merge(target);
                 ctxt.em().flush();
             }
-            //When updating, we want to traverse through files even if the dataset itself didn't need updating.
+            // When updating, we want to traverse through files even if the dataset itself
+            // didn't need updating.
             String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
             String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
             boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabled();
-            // We will skip trying to update the global identifiers for datafiles if they aren't being used, or
-            // if "dependent" file-level identifiers are requested, AND the naming 
-            // protocol of the dataset global id is different from the
-            // one currently configured for the Dataverse. This is to specifically 
-            // address the issue with the datasets with handle ids registered, 
-            // that are currently configured to use DOI.
-            // ...
-            // Additionally in 4.9.3 we have added a system variable to disable 
-            // using file PIDs on the installation level.
-
+            // We will skip trying to update the global identifiers for datafiles if they
+            // aren't being used.
+            // If they are, we need to assure that there's an existing PID or, as when
+            // creating PIDs, that the protocol matches that of the dataset DOI if
+            // we're going to create a DEPENDENT file PID.
+            String protocol = target.getProtocol();
             for (DataFile df : target.getFiles()) {
-                String protocol = df.getProtocol();
-                if ((currentGlobalIdProtocol.equals(protocol) || dataFilePIDFormat.equals("INDEPENDENT"))// TODO(pm) - check authority too
-                        && isFilePIDsEnabled) {
+                if (isFilePIDsEnabled && // using file PIDs and
+                        (!(df.getIdentifier() == null || df.getIdentifier().isEmpty()) || // identifier exists, or
+                                currentGlobalIdProtocol.equals(protocol) || // right protocol to create dependent DOIs, or
+                                dataFilePIDFormat.equals("INDEPENDENT"))// or independent. TODO(pm) - check authority too
+                ) {
                     doiRetString = idServiceBean.updateIdentifier(df);
                     if (doiRetString) {
                         df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
