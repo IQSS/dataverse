@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
 import java.util.Collections;
@@ -52,7 +53,25 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                 target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 ctxt.em().merge(target);
                 ctxt.em().flush();
-                for (DataFile df : target.getFiles()) {
+            }
+            //When updating, we want to traverse through files even if the dataset itself didn't need updating.
+            String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
+            String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+            boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabled();
+            // We will skip trying to update the global identifiers for datafiles if they aren't being used, or
+            // if "dependent" file-level identifiers are requested, AND the naming 
+            // protocol of the dataset global id is different from the
+            // one currently configured for the Dataverse. This is to specifically 
+            // address the issue with the datasets with handle ids registered, 
+            // that are currently configured to use DOI.
+            // ...
+            // Additionally in 4.9.3 we have added a system variable to disable 
+            // using file PIDs on the installation level.
+
+            for (DataFile df : target.getFiles()) {
+                String protocol = df.getProtocol();
+                if ((currentGlobalIdProtocol.equals(protocol) || dataFilePIDFormat.equals("INDEPENDENT"))// TODO(pm) - check authority too
+                        && isFilePIDsEnabled) {
                     doiRetString = idServiceBean.updateIdentifier(df);
                     if (doiRetString) {
                         df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
@@ -60,8 +79,6 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                         ctxt.em().flush();
                     }
                 }
-            } else {
-                //do nothing - we'll know it failed because the global id create time won't have been updated.
             }
         } catch (Exception e) {
             //do nothing - item and the problem has been logged
