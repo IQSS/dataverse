@@ -47,12 +47,8 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
             throw new EJBException("More than one Dataset Metric found in the dataset (id= " + dataset.getId() + "), with monthYear= " + monthYear + " and Country code = " + country  + ".");
         }
         if (resultList.size() == 1) {
-            System.out.print("retListSize == 1");
             dsm = (DatasetMetrics) resultList.get(0);
-            System.out.print("dsm.getViewsTotalRegular(): " + dsm.getViewsTotalRegular());
-            System.out.print("dsm.getViewsTotalMachine(): " + dsm.getViewsTotalMachine());
             dsm.setViewsTotal(dsm.getViewsTotalRegular() + dsm.getViewsTotalMachine());
-            System.out.print("SUMMED: " + dsm.getViewsTotal());
             dsm.setViewsUnique(dsm.getViewsUniqueRegular() + dsm.getViewsUniqueMachine());
             dsm.setDownloadsTotal(dsm.getDownloadsTotalRegular() + dsm.getDownloadsTotalMachine());
             dsm.setDownloadsUnique(dsm.getDownloadsUniqueRegular() + dsm.getDownloadsUniqueMachine());
@@ -61,9 +57,8 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         return null;
     }
     
-    public List<DatasetMetrics> getDatasetMetricsByDatasetForDisplay(Dataset dataset, String monthYear, String country) {
+    public DatasetMetrics getDatasetMetricsByDatasetForDisplay(Dataset dataset, String monthYear, String country) {
 
-        List<DatasetMetrics> retVal = new ArrayList();
         Long dataset_id = dataset.getId();
 
         String whereClause = " where dataset_id = " + dataset_id.toString() + " ";
@@ -83,29 +78,26 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                 + ";"
         );
 
-        List<Object[]> result = query.getResultList();
+        Object[] row = (Object[]) query.getSingleResult();
 
-        for (Object[] row : result) {
-            DatasetMetrics dm = new DatasetMetrics();
-            dm.setDataset(dataset);
-            dm.setCountryCode(country);
-            dm.setMonth(monthYear);
-            dm.setViewsTotalRegular((Long) row[1]);
-            dm.setViewsUniqueRegular((Long) row[2]);
-            dm.setDownloadsTotalRegular((Long) row[3]);
-            dm.setDownloadsUniqueRegular((Long) row[4]);
-            dm.setViewsTotalMachine((Long) row[5]);
-            dm.setViewsUniqueMachine((Long) row[6]);
-            dm.setDownloadsTotalMachine((Long) row[7]);
-            dm.setDownloadsUniqueMachine((Long) row[8]);
-            dm.setViewsTotal(dm.getViewsTotalRegular() + dm.getViewsTotalMachine());
-            dm.setViewsUnique(dm.getViewsUniqueRegular() + dm.getViewsUniqueMachine());
-            dm.setDownloadsTotal(dm.getDownloadsTotalRegular() + dm.getDownloadsTotalMachine());
-            dm.setDownloadsTotal(dm.getDownloadsTotalRegular() + dm.getDownloadsTotalMachine());
-            retVal.add(dm);
-        }
+        DatasetMetrics dm = new DatasetMetrics();
+        dm.setDataset(dataset);
+        dm.setCountryCode(country);
+        dm.setMonth(monthYear);
+        dm.setViewsTotalRegular((Long) row[1]);
+        dm.setViewsUniqueRegular((Long) row[2]);
+        dm.setDownloadsTotalRegular((Long) row[3]);
+        dm.setDownloadsUniqueRegular((Long) row[4]);
+        dm.setViewsTotalMachine((Long) row[5]);
+        dm.setViewsUniqueMachine((Long) row[6]);
+        dm.setDownloadsTotalMachine((Long) row[7]);
+        dm.setDownloadsUniqueMachine((Long) row[8]);
+        dm.setViewsTotal(dm.getViewsTotalRegular() + dm.getViewsTotalMachine());
+        dm.setViewsUnique(dm.getViewsUniqueRegular() + dm.getViewsUniqueMachine());
+        dm.setDownloadsTotal(dm.getDownloadsTotalRegular() + dm.getDownloadsTotalMachine());
+        dm.setDownloadsTotal(dm.getDownloadsTotalRegular() + dm.getDownloadsTotalMachine());
 
-        return retVal;
+        return dm;
 
     }
         

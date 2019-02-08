@@ -75,6 +75,8 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
+import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
+import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
@@ -175,7 +177,10 @@ public class Datasets extends AbstractApiBean {
 
     // TODO: Move to AbstractApiBean
     @EJB
-    DatasetMetricsServiceBean datasetMetricsSvc = new DatasetMetricsServiceBean();
+    DatasetMetricsServiceBean datasetMetricsSvc;
+    
+    @EJB
+    DatasetExternalCitationsServiceBean datasetExternalCitationsService;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1529,6 +1534,26 @@ public class Datasets extends AbstractApiBean {
 
         });
     }
+    
+    @GET
+    @Path("{id}/makeDataCount/citations")
+    public Response getMakeDataCountCitations(@PathParam("id") String idSupplied) {
+        
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            NullSafeJsonBuilder jsonObjectBuilder = jsonObjectBuilder();
+            List<DatasetExternalCitations> externalCitations = datasetExternalCitationsService.getDatasetExternalCitationsByDataset(dataset);
+            for (DatasetExternalCitations citation : externalCitations ){
+                jsonObjectBuilder.add("citation", citation.getCitedByUrl());
+            }
+                        
+            return ok(jsonObjectBuilder); 
+            
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+    }
 
     @GET
     @Path("{id}/makeDataCount/{metric}")
@@ -1551,7 +1576,7 @@ public class Datasets extends AbstractApiBean {
             }
             // FIXME: Why do we have to add "-01" here?
             String monthYear = yyyymm + "-01";
-            DatasetMetrics datasetMetrics = datasetMetricsSvc.getDatasetMetricsByDatasetMonthCountry(dataset, monthYear, country);
+            DatasetMetrics datasetMetrics = datasetMetricsSvc.getDatasetMetricsByDatasetForDisplay(dataset, monthYear, country);
             if (datasetMetrics == null) {
                 return ok("No metrics available for dataset " + dataset.getId() + " for " + yyyymm + " for country code " + country + ".");
             }

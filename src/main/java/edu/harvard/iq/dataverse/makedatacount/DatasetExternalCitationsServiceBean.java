@@ -92,7 +92,6 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
         List<DatasetExternalCitations> retVal = new ArrayList();
         String queryStr = "SELECT d FROM DatasetExternalCitations d WHERE d.dataset.id = " + dataset.getId();
         Query query = em.createQuery(queryStr);
-
         List<Object[]> result = query.getResultList();
 
         for (Object[] row : result) {
