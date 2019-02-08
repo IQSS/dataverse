@@ -33,7 +33,7 @@ public class BadRequestExceptionHandler implements ExceptionMapper<BadRequestExc
         if (exMessage != null && exMessage.toLowerCase().startsWith("tabular data required")) {
             outputMessage = BundleUtil.getStringFromBundle("access.api.exception.metadata.not.available.for.nontabular.file");
         } else {
-            outputMessage = "endpoint does not exist on this server. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.";
+            outputMessage = "Bad Request. The API request cannot be completed with the parameters supplied. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.";
         }
         return Response.status(400)
                 .entity( Json.createObjectBuilder()
