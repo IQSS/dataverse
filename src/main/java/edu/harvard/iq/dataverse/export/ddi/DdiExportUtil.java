@@ -12,10 +12,13 @@ import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.FileDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
-import edu.harvard.iq.dataverse.datavariable.VariableRange;
+
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.LEVEL_FILE;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_TAG;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_UNF;
@@ -32,24 +35,29 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.json.JsonObject;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+
+
 public class DdiExportUtil {
 
     private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
+
+    @EJB
+    VariableServiceBean variableService;
     
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
+
+
+
 
     public static String datasetDtoAsJson2ddi(String datasetDtoAsJson) {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson));
@@ -1260,7 +1268,7 @@ public class DdiExportUtil {
                 List<DataVariable> vars = dataFile.getDataTable().getDataVariables();
 
                 for (DataVariable var : vars) {
-                    createVarDDI(xmlw, var);
+                    createVarDDI(xmlw, var, fileMetadata);
                 }
             }
         }
@@ -1270,7 +1278,7 @@ public class DdiExportUtil {
         }
     }
     
-    private static void createVarDDI(XMLStreamWriter xmlw, DataVariable dv) throws XMLStreamException {
+    private static void createVarDDI(XMLStreamWriter xmlw, DataVariable dv, FileMetadata fileMetadata) throws XMLStreamException {
         xmlw.writeStartElement("var");
         writeAttribute(xmlw, "ID", "v" + dv.getId().toString());
         writeAttribute(xmlw, "name", dv.getName());
@@ -1346,10 +1354,21 @@ public class DdiExportUtil {
         }
 
         //universe
-        if (!StringUtilisEmpty(dv.getUniverse())) {
-            xmlw.writeStartElement("universe");
-            xmlw.writeCharacters(dv.getUniverse());
-            xmlw.writeEndElement(); //universe
+        VariableMetadata vm = null;
+        for (VariableMetadata vmIter : dv.getVariableMetadatas()) {
+            FileMetadata fm = vmIter.getFileMetadata();
+            if (fm != null && fm.equals(fileMetadata) ){
+                vm = vmIter;
+                break;
+            }
+        }
+
+        if (vm != null) {
+            if (!StringUtilisEmpty(vm.getUniverse())) {
+                xmlw.writeStartElement("universe");
+                xmlw.writeCharacters(vm.getUniverse());
+                xmlw.writeEndElement(); //universe
+            }
         }
 
         //sum stats
@@ -1511,5 +1530,6 @@ public class DdiExportUtil {
 
         return true;
     }
+
 
 }
