@@ -109,14 +109,26 @@ public class MetricsServiceBean implements Serializable {
             if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
                 dataLocationLine = harvestBaseLine; //replace
             } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
-                dataLocationLine += " or " +harvestBaseLine; //append
+                dataLocationLine = "(" + dataLocationLine + " OR " + harvestBaseLine + ")\n"; //append
             }
         }
+        
+        // Note that this SQL line in the code below: 
+        // datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))
+        // behaves somewhat counter-intuitively if the versionnumber and/or 
+        // minorversionnumber is/are NULL - it results in an empty string 
+        // (NOT the string "{dataset_id}:", in other words). Some harvested 
+        // versions do not have version numbers (only the ones harvested from 
+        // other Dataverses!) It works fine 
+        // for our purposes below, because we are simply counting the selected 
+        // lines - i.e. we don't care if some of these lines are empty. 
+        // But do not use this notation if you need the values returned to 
+        // meaningfully identify the datasets!
 
         Query query = em.createNativeQuery(
              "select count(*)\n"
             +"from (\n"
-            +   "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max\n"
+            +   "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))\n"
             +   "from datasetversion\n"
             +   "join dataset on dataset.id = datasetversion.dataset_id\n"
             +   "where versionstate='RELEASED' \n"
@@ -131,7 +143,44 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public List<Object[]> datasetsBySubjectToMonth(String yyyymm) {        
+    public List<Object[]> datasetsBySubjectToMonth(String yyyymm) {
+        return datasetsBySubjectToMonth(yyyymm, DATA_LOCATION_LOCAL);
+    }
+    
+    public List<Object[]> datasetsBySubjectToMonth(String yyyymm, String dataLocation) {  
+        // The SQL code below selects the local, non-harvested dataset versions:
+        // A published local datasets may have more than one released version!
+        // So that's why we have to jump through some extra hoops below
+        // in order to select the latest one:
+        String originClause = "(datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in\n" +
+      	        "(\n" +
+		"select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))\n" +
+                "       from datasetversion\n" +
+                "       join dataset on dataset.id = datasetversion.dataset_id\n" +
+                "       where versionstate='RELEASED'\n" +
+                "       	     and dataset.harvestingclient_id is null\n" +
+                "       	     and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n" +
+                "       group by dataset_id\n" +
+                "))\n";
+        
+        if(!DATA_LOCATION_LOCAL.equals(dataLocation)) { //Default api state is DATA_LOCATION_LOCAL
+            //we have to use createtime for harvest as post dvn3 harvests do not have releasetime populated
+            // But we can operate on the assumption that all the harvested datasets
+            // are published, and there is always only one version per dataset - 
+            // so the query is simpler:
+            String harvestOriginClause = "(\n" +
+                "   datasetversion.dataset_id = dataset.id\n" +
+                "   AND dataset.harvestingclient_id IS NOT null \n" +
+                "   AND date_trunc('month', datasetversion.createtime) <=  to_date('" + yyyymm + "','YYYY-MM')\n" +
+                ")\n"; 
+            
+            if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
+                originClause = harvestOriginClause; //replace
+            } else if(DATA_LOCATION_ALL.equals(dataLocation)) {
+                originClause = "(" + originClause + " OR " + harvestOriginClause + ")\n"; //append
+            }
+        }
+        
         Query query = em.createNativeQuery(""
                 + "SELECT strvalue, count(dataset.id)\n"
                 + "FROM datasetfield_controlledvocabularyvalue \n"
@@ -139,19 +188,9 @@ public class MetricsServiceBean implements Serializable {
                 + "JOIN datasetfield ON datasetfield.id = datasetfield_controlledvocabularyvalue.datasetfield_id\n"
                 + "JOIN datasetfieldtype ON datasetfieldtype.id = controlledvocabularyvalue.datasetfieldtype_id\n"
                 + "JOIN datasetversion ON datasetversion.id = datasetfield.datasetversion_id\n"
-                + "JOIN dvobject ON dvobject.id = datasetversion.dataset_id\n"
                 + "JOIN dataset ON dataset.id = datasetversion.dataset_id\n"
                 + "WHERE\n"
-                + "datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in \n"
-                + "(\n"
-                + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
-                + "from datasetversion\n"
-                + "join dataset on dataset.id = datasetversion.dataset_id\n"
-                + "where versionstate='RELEASED'\n"
-                + "and dataset.harvestingclient_id is null\n"
-                + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + "group by dataset_id \n"
-                + ")\n"
+                + originClause
                 + "AND datasetfieldtype.name = 'subject'\n"
                 + "GROUP BY strvalue\n"
                 + "ORDER BY count(dataset.id) desc;"
