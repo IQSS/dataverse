@@ -479,7 +479,7 @@ public class Access extends AbstractApiBean {
         if (df.isTabularData()) {
             dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
         } else {
-            throw new ServiceUnavailableException("Preprocessed Content Metadata requested on a non-tabular data file.");
+            throw new BadRequestException("tabular data required");
         }
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
         if (downloadInstance.checkIfServiceSupportedAndSetConverter("format", "prep")) {
