@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition>
+
+        <p:dialog id="TrsaRegistryViewDlg" widgetVar="TrsaRegistryViewDialog" modal="true" resizable="false" appendTo="@(body)" header="#{bundle_trsa_registry.ViewTrsaRegistryTitle}">
+            <h:form id="TrsaRegistryViewForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="#{trsaRegistryController.selected != null}">
+                        <h:outputText value="#{bundle_trsa_registry.ViewTrsaRegistryLabel_id}"/>
+                        <h:outputText value="#{trsaRegistryController.selected.id}" 
+                                      title="#{bundle_trsa_registry.ViewTrsaRegistryTitle_id}"/>
+                        <h:outputText value="#{bundle_trsa_registry.ViewTrsaRegistryLabel_installation}"/>
+                        <h:outputText value="#{trsaRegistryController.selected.installation}" 
+                                      title="#{bundle_trsa_registry.ViewTrsaRegistryTitle_installation}"/>
+                        <h:outputText value="#{bundle_trsa_registry.ViewTrsaRegistryLabel_email}"/>
+                        <h:outputText value="#{trsaRegistryController.selected.email}" 
+                                      title="#{bundle_trsa_registry.ViewTrsaRegistryTitle_email}"/>
+                        <h:outputText value="#{bundle_trsa_registry.ViewTrsaRegistryLabel_dataverseurl}"/>
+                        <h:outputText value="#{trsaRegistryController.selected.dataverseurl}" 
+                                      title="#{bundle_trsa_registry.ViewTrsaRegistryTitle_dataverseurl}"/>
+                        <h:outputText value="#{bundle_trsa_registry.ViewTrsaRegistryLabel_apitoken}"/>
+                        <h:outputText value="#{trsaRegistryController.selected.apitoken}" 
+                                      title="#{bundle_trsa_registry.ViewTrsaRegistryTitle_apitoken}"/>
+                        <h:outputText value="#{bundle_trsa_registry.ViewTrsaRegistryLabel_datastoragelocation}"/>
+                        <h:outputText value="#{trsaRegistryController.selected.datastoragelocation}" 
+                                      title="#{bundle_trsa_registry.ViewTrsaRegistryTitle_datastoragelocation}"/>
+                        <h:outputText value="#{bundle_trsa_registry.ViewTrsaRegistryLabel_dataaccessinfo}"/>
+                        <h:outputText value="#{trsaRegistryController.selected.dataaccessinfo}" 
+                                      title="#{bundle_trsa_registry.ViewTrsaRegistryTitle_dataaccessinfo}"/>
+                        <h:outputText value="#{bundle_trsa_registry.ViewTrsaRegistryLabel_notaryserviceurl}"/>
+                        <h:outputText value="#{trsaRegistryController.selected.notaryserviceurl}" 
+                                      title="#{bundle_trsa_registry.ViewTrsaRegistryTitle_notaryserviceurl}"/>
+                        <h:outputText value="#{bundle_trsa_registry.ViewTrsaRegistryLabel_safeserviceurl}"/>
+                        <h:outputText value="#{trsaRegistryController.selected.safeserviceurl}" 
+                                      title="#{bundle_trsa_registry.ViewTrsaRegistryTitle_safeserviceurl}"/>
+                        <h:outputText value="#{bundle_trsa_registry.ViewTrsaRegistryLabel_registertime}"/>
+                        <h:outputText value="#{trsaRegistryController.selected.registertime}" 
+                                      title="#{bundle_trsa_registry.ViewTrsaRegistryTitle_registertime}">
+                            <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                        </h:outputText>
+                        <h:outputText value="#{bundle_trsa_registry.ViewTrsaRegistryLabel_expiretime}"/>
+                        <h:outputText value="#{trsaRegistryController.selected.expiretime}" 
+                                      title="#{bundle_trsa_registry.ViewTrsaRegistryTitle_expiretime}">
+                            <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                        <h:outputText value="#{bundle_trsa_registry.ViewTrsaRegistryLabel_disabled}"/>
+                        <p:selectBooleanCheckbox value="#{trsaRegistryController.selected.disabled}" disabled="false"/>
+                        </h:outputText>
+                    </p:panelGrid>
+                    <p:commandButton value="#{bundle_trsa_registry.Close}" onclick="TrsaRegistryViewDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>

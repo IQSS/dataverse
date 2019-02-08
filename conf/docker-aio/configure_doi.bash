@@ -7,7 +7,7 @@ if [ ! -z "${DoiProvider}" ]; then
         curl -X PUT -d ${DoiProvider} http://localhost:8080/api/admin/settings/:DoiProvider
 fi
 if [ ! -z "${doi_username}" ]; then
-        bin/asadmin create-jvm-options "-Ddoi.username=${doi_password}"
+        bin/asadmin create-jvm-options "-Ddoi.username=${doi_username}"
 fi
 if [ ! -z "${doi_password}" ]; then
         bin/asadmin create-jvm-options "-Ddoi.password=${doi_password}"

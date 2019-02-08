@@ -1,10 +1,19 @@
 package edu.harvard.iq.dataverse.trsa;
 
+import com.ibm.icu.util.Calendar;
+import com.ibm.icu.util.ULocale;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Date;
+import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -37,53 +46,79 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "TrsaRegistry.findByExpiretime", query = "SELECT t FROM TrsaRegistry t WHERE t.expiretime = :expiretime"),
     @NamedQuery(name = "TrsaRegistry.findById", query = "SELECT t FROM TrsaRegistry t WHERE t.id = :id")})
 public class TrsaRegistry implements Serializable {
+    
+    private static final Logger logger = Logger.getLogger(TrsaRegistry.class.getName());
+    
+    public static Integer DEFAULT_VALID_PERIOD=1;
 
     private static final long serialVersionUID = 1L;
+    
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "ID")
+    private Long id;
+    
+    
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 255)
     @Column(nullable = false, length = 255)
     private String installation;
     // @Pattern(regexp="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message="Invalid email")//if the field contains email address consider using this annotation to enforce field validation
+    
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 255)
     @Column(nullable = false, length = 255)
     private String email;
+    
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 255)
     @Column(nullable = false, length = 255)
     private String dataverseurl;
+    
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 12)
-    @Column(nullable = false, length = 12)
+    @Size(min = 1, max = 255)
+    @Column(nullable = false, length = 255)
     private String apitoken;
-    @Size(max = 255)
-    @Column(length = 255)
+    
+    
+    @Basic(optional = false)
+    @NotNull
+    @Size(min=1, max = 255)
+    @Column(nullable = false, length = 255)
     private String datastoragelocation;
+    
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 255)
     @Column(nullable = false, length = 255)
     private String dataaccessinfo;
-    @Size(max = 255)
-    @Column(length = 255)
-    private String notaryserviceurl;
-    @Size(max = 255)
-    @Column(length = 255)
-    private String safeserviceurl;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date registertime;
-    private Boolean disabled;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date expiretime;
-    @Id
+    
     @Basic(optional = false)
     @NotNull
-    @Column(nullable = false)
-    private Long id;
+    @Size(min = 1, max = 255)
+    @Column(nullable = false, length = 255)
+    private String notaryserviceurl;
+    
+    @Basic(optional = false)
+    @NotNull
+    @Size(max = 255)
+    @Column(nullable = false, length = 255)
+    private String safeserviceurl;
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date registertime;
+    
+    private Boolean disabled;
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date expiretime;
+
 
     public TrsaRegistry() {
     }
@@ -92,13 +127,21 @@ public class TrsaRegistry implements Serializable {
         this.id = id;
     }
 
-    public TrsaRegistry(Long id, String installation, String email, String dataverseurl, String apitoken, String dataaccessinfo) {
+    public TrsaRegistry(Long id, String installation, String email, 
+            String dataverseurl, String apitoken, String datastoragelocation,
+            String dataaccessinfo, String notaryserviceurl, 
+            String safeserviceurl) {
         this.id = id;
         this.installation = installation;
         this.email = email;
         this.dataverseurl = dataverseurl;
         this.apitoken = apitoken;
+        this.datastoragelocation = datastoragelocation;
         this.dataaccessinfo = dataaccessinfo;
+        this.notaryserviceurl = notaryserviceurl;
+        this.registertime = new Timestamp(new Date().getTime());
+        this.expiretime = generateExpireTimestamp();
+        this.disabled=false;
     }
 
     public String getInstallation() {
@@ -222,4 +265,42 @@ public class TrsaRegistry implements Serializable {
         return "edu.harvard.iq.dataverse.trsa.TrsaRegistry[ id=" + id + " ]";
     }
     
+    
+    public JsonObjectBuilder toJson() {
+        JsonObjectBuilder jab = Json.createObjectBuilder();
+        return jab.add("id", getId())
+                .add("installation", getInstallation())
+                .add("email", getEmail())
+                .add("dataverseurl", getDataverseurl())
+                .add("apitoken", getApitoken())
+                .add("datastoragelocation", getDatastoragelocation())
+                .add("dataaccessinfo", getDataaccessinfo())
+                .add("notaryserviceurl", getNotaryserviceurl())
+                .add("registertime", getRegistertime().toString())
+                .add("expiretime", getExpiretime().toString())
+                ;
+        
+//        jab.add(DISPLAY_NAME, getDisplayName());
+//        jab.add(DESCRIPTION, getDescription());
+//        jab.add(TYPE, getType().text);
+//        jab.add(TOOL_URL, getToolUrl());
+//        jab.add(TOOL_PARAMETERS, getToolParameters());
+    }
+    
+    private Date generateExpireTimestamp(){
+        return generateExpireTimestamp(null);
+    }
+    
+    
+    private Date generateExpireTimestamp(Integer year){
+        if (year==null){
+            year = DEFAULT_VALID_PERIOD;
+        }
+        Date baseline= this.registertime;
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(baseline.getTime());
+        cal.add(Calendar.YEAR, year);
+        return new Date(cal.getTime().getTime());
+        
+    }
 }

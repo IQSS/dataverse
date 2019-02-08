@@ -45,6 +45,11 @@
                 <o:resourceInclude path="/CustomizationFilesServlet?customFileType=style" />
             </style>
         </ui:fragment>
+        
+        
+        <h:outputStylesheet library="css" name="jsfcrud.css"/>
+        <h:outputScript library="js" name="jsfcrud.js"/>
+        
     </h:head>
     <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
         <f:loadBundle basename="Bundle" var="bundle"/>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition template="/dataverse_template.xhtml">
+
+
+        <ui:define name="title">
+            <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle}"></h:outputText>
+        </ui:define>
+
+        <ui:define name="body">
+            <p:growl id="growl" life="3000" />
+            <h:form id="TrsaRegistryListForm">
+                <p:panel header="#{bundle_trsa_registry.ListTrsaRegistryTitle}">
+                    <p:dataTable id="datalist" value="#{trsaRegistryController.items}" var="item"
+                                 selectionMode="single" selection="#{trsaRegistryController.selected}"
+                                 paginator="true"
+                                 rowKey="#{item.id}"
+                                 rows="10"
+                                 rowsPerPageTemplate="10,20,30,40,50"
+                                 >
+
+                        <p:ajax event="rowSelect"   update="createButton viewButton editButton deleteButton"/>
+                        <p:ajax event="rowUnselect" update="createButton viewButton editButton deleteButton"/>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_id}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.id}"/>
+                        </p:column>                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_installation}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.installation}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_email}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.email}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_dataverseurl}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.dataverseurl}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_apitoken}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.apitoken}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_datastoragelocation}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.datastoragelocation}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_dataaccessinfo}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.dataaccessinfo}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_notaryserviceurl}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.notaryserviceurl}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_safeserviceurl}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.safeserviceurl}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_registertime}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.registertime}">
+                                <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_expiretime}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.expiretime}">
+                                <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_disabled}"/>
+                            </f:facet>
+                            <p:selectBooleanCheckbox value="#{item.disabled}" disabled="false"/>
+                        </p:column>
+                        <f:facet name="footer">
+                            <p:commandButton id="createButton" icon="ui-icon-plus"   value="#{bundle_trsa_registry.Create}" actionListener="#{trsaRegistryController.prepareCreate}" update=":TrsaRegistryCreateForm" oncomplete="PF('TrsaRegistryCreateDialog').show()"/>
+                            <p:commandButton id="viewButton"   icon="ui-icon-search" value="#{bundle_trsa_registry.View}" update=":TrsaRegistryViewForm" oncomplete="PF('TrsaRegistryViewDialog').show()" disabled="#{empty trsaRegistryController.selected}"/>
+                            <p:commandButton id="editButton"   icon="ui-icon-pencil" value="#{bundle_trsa_registry.Edit}" update=":TrsaRegistryEditForm" oncomplete="PF('TrsaRegistryEditDialog').show()" disabled="#{empty trsaRegistryController.selected}"/>
+                            <p:commandButton id="deleteButton" icon="ui-icon-trash"  value="#{bundle_trsa_registry.Delete}" actionListener="#{trsaRegistryController.destroy}" update=":growl,datalist" disabled="#{empty trsaRegistryController.selected}"/>
+                        </f:facet>
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+
+            <ui:include src="Create.xhtml"/>
+            <ui:include src="Edit.xhtml"/>
+            <ui:include src="View.xhtml"/>
+        </ui:define>
+    </ui:composition>
+
+</html>

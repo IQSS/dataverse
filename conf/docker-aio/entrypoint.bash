@@ -2,6 +2,7 @@
 export LANG=en_US.UTF-8
 #sudo -u postgres /usr/bin/postgres -D /var/lib/pgsql/data &
 sudo -u postgres /usr/pgsql-9.6/bin/postgres -D /var/lib/pgsql/data &
+sleep 15
 cd /opt/solr-7.3.1/
 # TODO: Run Solr as non-root and remove "-force".
 bin/solr start -force

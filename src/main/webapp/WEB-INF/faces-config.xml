@@ -13,6 +13,10 @@
             <supported-locale>fr</supported-locale>
             <supported-locale>zh_CN</supported-locale>
         </locale-config>
+        <resource-bundle>
+            <base-name>/Bundle_trsa_registry</base-name>
+            <var>bundle_trsa_registry</var>
+        </resource-bundle>
     </application>
     <render-kit>
         <renderer>
