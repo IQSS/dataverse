@@ -429,7 +429,7 @@ public class DDIExportServiceBean {
         // And now, the variables:
         xmlw.writeStartElement("dataDscr");
 
-        if (dt != null && checkField("var", excludedFieldSet, includedFieldSet)) {
+        if (checkField("var", excludedFieldSet, includedFieldSet)) {
             List<DataVariable> vars = variableService.findByDataTableId(dt.getId());
             if (checkField("catgry", excludedFieldSet, includedFieldSet)) {
                 if (checkIsWithoutFrequencies(vars)) {
@@ -619,7 +619,7 @@ public class DDIExportServiceBean {
              xmlw.writeEndElement(); // fileCont
              */
             // dimensions
-            if (dt != null && checkField("dimensns", excludedFieldSet, includedFieldSet)) {
+            if (checkField("dimensns", excludedFieldSet, includedFieldSet)) {
                 if (dt.getCaseQuantity() != null || dt.getVarQuantity() != null || dt.getRecordsPerCase() != null) {
                     xmlw.writeStartElement("dimensns");
 
@@ -663,7 +663,7 @@ public class DDIExportServiceBean {
         // various notes:
         // this specially formatted note section is used to store the UNF
         // (Universal Numeric Fingerprint) signature:
-        if (dt != null && checkField("unf", excludedFieldSet, includedFieldSet) && dt.getUnf() != null && !dt.getUnf().equals("")) {
+        if (checkField("unf", excludedFieldSet, includedFieldSet) && dt.getUnf() != null && !dt.getUnf().equals("")) {
             xmlw.writeStartElement("notes");
             writeAttribute(xmlw, "level", LEVEL_FILE);
             writeAttribute(xmlw, "type", NOTE_TYPE_UNF);

@@ -389,11 +389,13 @@ public class Access extends AbstractApiBean {
         DataFile dataFile = null; 
 
         
-        //httpHeaders.add("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
-        //httpHeaders.add("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
-        response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
-        
         dataFile = findDataFileOrDieWrapper(fileId);
+        
+        if (!dataFile.isTabularData()) { 
+           throw new BadRequestException("tabular data required");
+        }
+        
+        response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
         
         String fileName = dataFile.getFileMetadata().getLabel().replaceAll("\\.tab$", "-ddi.xml");
         response.setHeader("Content-disposition", "attachment; filename=\""+fileName+"\"");
