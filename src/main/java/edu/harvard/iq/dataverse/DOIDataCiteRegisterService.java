@@ -207,7 +207,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
 
         String xmlMetadata = metadataTemplate.generateXML(dvObject);
-        logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
+        logger.log(Level.INFO, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }
 
