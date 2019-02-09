@@ -10,7 +10,7 @@ n_retries=10
 # glassfish healthy/ready retries
 n_wait=5
 
-cd conf/docker-aio
+#cd conf/docker-aio
 ./0prep_deps.sh
 ./1prep.sh
 docker build -t dv0 -f c7.dockerfile .
@@ -21,7 +21,7 @@ do
 	# cleanup from previous runs if necessary
 	docker rm -f dv
 	# start container
-	docker run -d -p 15432:5432 -p 8084:80 -p 8083:8080 -p 9010:9009 --name dv dv0
+	docker run -d -p 5432:5432 -p 80:80 -p 8080:8080 --name dv dv0
 
 	# wait for glassfish to be healthy
 	i_wait=0
@@ -69,5 +69,5 @@ docker exec -it dv /opt/dv/configure_doi.bash
 
 cd ../..
 echo "docker-aio ready to run integration tests ($i_retry)"
-curl http://localhost:8084/api/info/version
+curl http://localhost:8080/api/info/version
 echo $?

@@ -12,7 +12,7 @@ bin/solr create_core -c collection1 -d server/solr/collection1/conf -force
 apachectl -DFOREGROUND &
 
 # TODO: Run Glassfish as non-root.
-cd /opt/glassfish4
-bin/asadmin start-domain --debug
+cd /opt/glassfish4/
+bin/asadmin start-domain
 sleep infinity
 
