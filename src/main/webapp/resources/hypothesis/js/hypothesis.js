@@ -2,7 +2,10 @@ var parentUrl = "";
 $(document)
     .ready(
         function() {
-          parentUrl = window.opener.location.href;
+          var wo = window.opener;
+          if(wo!=null) {
+            parentUrl = window.opener.location.href;
+          }
           var queryParams = new URLSearchParams(
               window.location.search.substring(1));
           var fileUrl = queryParams.get("siteUrl")
