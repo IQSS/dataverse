@@ -4,6 +4,7 @@ package edu.harvard.iq.dataverse.makedatacount;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import java.io.StringReader;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -67,7 +68,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
             whereClause += "and monthYear = '" + monthYear + "' ";
         }
         if (country != null) {
-            whereClause += "and country = '" + country + "' ";
+            whereClause += "and countryCode = '" + country + "' ";
         }
 
         Query query = em.createNativeQuery(""
@@ -84,18 +85,18 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         dm.setDataset(dataset);
         dm.setCountryCode(country);
         dm.setMonth(monthYear);
-        dm.setViewsTotalRegular((Long) row[1]);
-        dm.setViewsUniqueRegular((Long) row[2]);
-        dm.setDownloadsTotalRegular((Long) row[3]);
-        dm.setDownloadsUniqueRegular((Long) row[4]);
-        dm.setViewsTotalMachine((Long) row[5]);
-        dm.setViewsUniqueMachine((Long) row[6]);
-        dm.setDownloadsTotalMachine((Long) row[7]);
-        dm.setDownloadsUniqueMachine((Long) row[8]);
+        dm.setViewsTotalRegular(row[0] == null ? 0 : ((BigDecimal) row[0]).longValue());
+        dm.setViewsUniqueRegular( row[1] == null ? 0 : ((BigDecimal) row[1]).longValue());
+        dm.setDownloadsTotalRegular(row[2] == null ? 0 : ((BigDecimal) row[2]).longValue());
+        dm.setDownloadsUniqueRegular(row[3] == null ? 0 : ((BigDecimal) row[3]).longValue());
+        dm.setViewsTotalMachine(row[4] == null ? 0 : ((BigDecimal) row[4]).longValue());
+        dm.setViewsUniqueMachine(row[5] == null ? 0 : ((BigDecimal) row[5]).longValue());
+        dm.setDownloadsTotalMachine(row[6] == null ? 0 : ((BigDecimal) row[6]).longValue());
+        dm.setDownloadsUniqueMachine(row[7] == null ? 0 : ((BigDecimal) row[7]).longValue());
         dm.setViewsTotal(dm.getViewsTotalRegular() + dm.getViewsTotalMachine());
         dm.setViewsUnique(dm.getViewsUniqueRegular() + dm.getViewsUniqueMachine());
         dm.setDownloadsTotal(dm.getDownloadsTotalRegular() + dm.getDownloadsTotalMachine());
-        dm.setDownloadsTotal(dm.getDownloadsTotalRegular() + dm.getDownloadsTotalMachine());
+        dm.setDownloadsUnique(dm.getDownloadsUniqueRegular() + dm.getDownloadsUniqueMachine());
 
         return dm;
 

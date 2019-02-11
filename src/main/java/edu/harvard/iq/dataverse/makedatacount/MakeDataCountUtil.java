@@ -12,7 +12,7 @@ import javax.json.JsonValue;
  * about Make Data Count. Go read that first.
  *
  * The main issue for initial backend work is
- * https://github.com/IQSS/dataverse/issues/4821
+ * https://github.com/IQSS/dataverse/issues/4821 
  *
  * The following is a brain dump of additional details from participating in a
  * 2018-10-18 kickoff meeting (notes at
