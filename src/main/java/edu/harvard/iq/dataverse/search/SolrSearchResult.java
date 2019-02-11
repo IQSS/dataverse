@@ -449,6 +449,9 @@ public class SolrSearchResult {
 
         String identifierLabel = null;
         String datasetCitation = null;
+        String datasetName = null;
+        String datasetId = null;
+        String datasetPersistentId = null;
         String preferredUrl = null;
         String apiUrl = null;
         if (this.type.equals(SearchConstants.DATAVERSES)) {
@@ -471,6 +474,9 @@ public class SolrSearchResult {
              * title of the dataset it belongs to.
              */
             datasetCitation = parent.get("citation");
+            datasetName = parent.get("name");
+            datasetId = parent.get("id");
+            datasetPersistentId = parent.get(SolrSearchResult.PARENT_IDENTIFIER);
         }
 
         //displayName = null; // testing NullSafeJsonBuilder
@@ -521,6 +527,9 @@ public class SolrSearchResult {
                 .add("md5", getFileMd5())
                 .add("checksum", JsonPrinter.getChecksumTypeAndValue(getFileChecksumType(), getFileChecksumValue()))
                 .add("unf", getUnf())
+                .add("dataset_name", datasetName)
+                .add("dataset_id", datasetId)
+                .add("dataset_persistent_id", datasetPersistentId)
                 .add("dataset_citation", datasetCitation)
                 .add("deaccession_reason", this.deaccessionReason)
                 .add("citationHtml", this.citationHtml)
@@ -537,6 +546,7 @@ public class SolrSearchResult {
                 nullSafeJsonBuilder.add("entity_id", this.entityId);
             }
         }
+        
         if (showApiUrls) {
             /**
              * @todo We should probably have a metadata_url or api_url concept
