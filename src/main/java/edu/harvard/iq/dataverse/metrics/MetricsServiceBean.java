@@ -143,10 +143,6 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public List<Object[]> datasetsBySubjectToMonth(String yyyymm) {
-        return datasetsBySubjectToMonth(yyyymm, DATA_LOCATION_LOCAL);
-    }
-    
     public List<Object[]> datasetsBySubjectToMonth(String yyyymm, String dataLocation) {  
         // The SQL code below selects the local, non-harvested dataset versions:
         // A published local datasets may have more than one released version!

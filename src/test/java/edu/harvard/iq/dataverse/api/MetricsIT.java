@@ -272,10 +272,10 @@ public class MetricsIT {
 
         assertEquals(precache, postcache);
         
-        //Test success when passing extra query params
+        //Test ok when passing extra query params
         response = UtilIT.metricsDatasetsBySubject("dataLocation=local");
         response.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode());
+                .statusCode(OK.getStatusCode());
     }
 
     @Test
@@ -296,9 +296,9 @@ public class MetricsIT {
 
         assertEquals(precache, postcache);
         
-        //Test error passing extra query params
+        //Test ok passing extra query params
         response = UtilIT.metricsDatasetsBySubjectToMonth(thismonth, "dataLocation=local");
         response.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode());
+                .statusCode(OK.getStatusCode());
     }
 }
