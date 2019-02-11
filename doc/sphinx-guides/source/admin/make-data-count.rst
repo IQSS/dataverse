@@ -6,8 +6,8 @@ Make Data Count
 .. contents:: Contents:
 	:local:
 
-Origin
-------
+Introduction
+------------
 
 `Make Data Count`_ is part of a broader Research Data Alliance (RDA) `Data Usage Metrics Working Group`_ which helped to produce a specification called the `COUNTER Code of Practice for Research Data`_ (`PDF`_, `HTML`_) that Dataverse makes every effort to comply with. The Code of Practice (CoP) is built on top of existing standards such as COUNTER and SUSHI that come out of the article publishing world.  The Make Data Count project has emphasized that they would like feedback on the code of practice. You can keep up to date on the Make Data Count project by subscribing to their `newsletter`_.
 
@@ -42,27 +42,38 @@ When editing the ``counter-processor-config.yaml`` file mentioned below, make su
 Configuring Dataverse for Make Data Count Views and Downloads
 -------------------------------------------------------------
 
-To make Dataverse log dataset usage (views and downloads) for Make Data Count, you must set the ``:MDCLogPath`` database setting. See :ref:`MDCLogPath` for details.
-
 If you haven't already, follow the steps for installing Counter Processor in the :doc:`/installation/prerequisites` section of the Installation Guide.
 
+Enable Logging for Make Data Count
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To make Dataverse log dataset usage (views and downloads) for Make Data Count, you must set the ``:MDCLogPath`` database setting. See :ref:`MDCLogPath` for details.
+
 After you have your first day of logs, you can process them the next day.
+
+Configure Counter Processor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * First, become the "counter" Unix user.
 
   * ``sudo su - counter``
 
-* Download :download:`counter-processor-config.yaml <../_static/admin/counter-processor-config.yaml>`
+* Download :download:`counter-processor-config.yaml <../_static/admin/counter-processor-config.yaml>` and put it in the ``/home/counter`` directory (the home directory for the "counter" user).
 
 * Edit the config file and pay particular attention to the FIXME lines.
 
   * ``vim counter-processor-config.yaml``
 
+Populate Views and Downloads for the First Time
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Soon we will be setting up a cron job to run nightly but we start with a single successful configuration and run of Counter Processor and calls to Dataverse APIs.
+
 * Change to the directory where you installed Counter Processor.
 
   * ``cd /usr/local/counter-processor-0.0.1``
 
-* If you are starting this installation in the middle of a month, you will need create blank log files for the previous days. e.g.:
+* If you are running Counter Processor for the first time in the middle of a month, you will need create blank log files for the previous days. e.g.:
 
   * ``touch sample_logs/counter_2019-02-01.log``
   
@@ -74,15 +85,29 @@ After you have your first day of logs, you can process them the next day.
 
   * ``CONFIG_FILE=/home/counter/counter-processor-config.yaml python36 main.py``
 
-  * You will need to set up a cron job to run this script periodically, perhaps nightly.
+  * A JSON file in SUSHI format will be created in the directory you specified under "output_file" in the config file.
 
-* A JSON file in SUSHI format will be created in the directory you specified under "output_file" in the config file.
+* Populate views and downloads for your datasets based on the SUSHI JSON file.
 
-* You will want to add a cron job to load the SUSHI file periodically as well, perhaps nightly.
+  * For each published dataset PID (Persistent ID such as DOI or Handle), execute the following curl command. In the example below "$PID" could be something like "doi:10.5072/FK2/BL2IBM".
 
-..  * FIXME: Explain how to load the SUSHI file into Dataverse. For now, see the :doc:`/developers/make-data-count` section of the Dev Guide.
+  * ``curl -X POST 'http://localhost:8080/api/admin/makeDataCount/:persistentId/addUsageMetricsFromSushiReport?reportOnDisk=/tmp/sushi_sample_logs.json&persistentId=$PID``
 
-Once you have contacted support@datacite.org for your JSON Web Token and changed "upload_to_hub" to "True" in the config file, the following metrics will be sent to the DataCite hub for each published dataset:
+  * FIXME: We plan to change the API endpoint above so that you do not need to pass in the PID of the dataset. The PIDs for the datasets should come from the SUSHI JSON file.
+
+* Verify that views and downloads are available via API.
+
+  * Now that views and downloads have been recorded in the Dataverse database, you should make sure you can retrieve them from a dataset or two. Use the :ref:`Dataset Metrics <dataset-metrics-api>` endpoints in the :doc:`/api/native-api` section of the API Guide.
+
+Populate Views and Downloads Nightly
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Running ``main.py`` to create the SUSHI JSON file and the subsequent calling of the Dataverse API to process it should be added as a cron job.
+
+Sending Usage Metrics to the DataCite Hub
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Once you are satisfied with your testing, you should contact support@datacite.org for your JSON Web Token and change "upload_to_hub" to "True" in the config file. The next time you run ``main.py`` the following metrics will be sent to the DataCite hub for each published dataset:
 
 - Views ("investigations" in COUNTER)
 - Downloads ("requests" in COUNTER)
@@ -92,9 +117,21 @@ Configuring Dataverse for Make Data Count Citations
 
 Please note: as explained in the note above about limitations, this feature is not available to installations of Dataverse that use Handles.
 
-.. FIXME: Document curl command and indicate that it should be called from cron periodically.
+Please note that in the curl example, Bash environment variables are used with the idea that you can set a few environment variables and copy and paste the examples as is. For example, "$DOI" could become "doi:10.5072/FK2/BL2IBM" by issuing the following export command from Bash:
+
+``export DOI="doi:10.5072/FK2/BL2IBM"``
+
+To confirm that the environment variable was set properly, you can use echo like this:
+
+``echo $DOI``
+
+On some periodic basis (perhaps weekly) you should call the following curl command for each published dataset to update the list of citations that have been made for that dataset.
+
+``curl -X POST 'http://localhost:8080/api/admin/makeDataCount/:persistentId/updateCitationsForDataset?persistentId=$DOI``
 
 Citations will be retrieved for each published dataset and recorded in the Dataverse database.
+
+For how to get the citations out of Dataverse, see "Retrieving Citations for a Dataset" under :ref:`Dataset Metrics <dataset-metrics-api>` in the :doc:`/api/native-api` section of the API Guide.
   
 Please note that while Dataverse has a metadata field for "Related Dataset" this information is not currently sent as a citation to Crossref.
 
