@@ -46,6 +46,8 @@ After ``main.py`` has finished, you should see output that a JSON file has been 
 
 ``curl -X POST 'http://localhost:8080/api/admin/makeDataCount/:persistentId/addUsageMetricsFromSushiReport?reportOnDisk=/tmp/sushi_sample_logs.json&persistentId=doi:10.5072/FK2/BL2IBM``
 
+(Note that in production the persistentId of a dataset is not passed. Instead the PIDs for the datasets are pulled out of the JSON file.)
+
 Assuming the curl command above worked, you should be able to retrieve the views and downloads via API like this, substituting the metric you're interested in (viewsTotal, viewsUnique, downloadsTotal, downloadsUnique) and the DOI of the dataset you're testing with:
 
 ``curl -X POST 'http://localhost:8080/api/datasets/:persistentId/makeDataCount/viewsTotal/2019-01&persistentId=doi:10.5072/FK2/BL2IBM``

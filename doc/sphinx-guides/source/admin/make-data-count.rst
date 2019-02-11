@@ -87,13 +87,9 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
 
   * A JSON file in SUSHI format will be created in the directory you specified under "output_file" in the config file.
 
-* Populate views and downloads for your datasets based on the SUSHI JSON file.
+* Populate views and downloads for your datasets based on the SUSHI JSON file. The "/tmp" directory is used in the example below.
 
-  * For each published dataset PID (Persistent ID such as DOI or Handle), execute the following curl command. In the example below "$PID" could be something like "doi:10.5072/FK2/BL2IBM".
-
-  * ``curl -X POST 'http://localhost:8080/api/admin/makeDataCount/:persistentId/addUsageMetricsFromSushiReport?reportOnDisk=/tmp/sushi_sample_logs.json&persistentId=$PID``
-
-  * FIXME: We plan to change the API endpoint above so that you do not need to pass in the PID of the dataset. The PIDs for the datasets should come from the SUSHI JSON file.
+  * ``curl -X POST 'http://localhost:8080/api/admin/makeDataCount/:persistentId/addUsageMetricsFromSushiReport?reportOnDisk=/tmp/sushi_sample_logs.json``
 
 * Verify that views and downloads are available via API.
 
