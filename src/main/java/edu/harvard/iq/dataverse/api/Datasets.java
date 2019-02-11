@@ -1558,8 +1558,8 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{id}/makeDataCount/{metric}")
     public Response getMakeDataCountMetricCurrentMonth(@PathParam("id") String idSupplied, @PathParam("metric") String metricSupplied, @QueryParam("country") String country) {
-        String currentMonth = DateUtil.getCurrentYearDashMonth();
-        return getMakeDataCountMetric(idSupplied, metricSupplied, currentMonth, country);
+        String nullCurrentMonth = null;
+        return getMakeDataCountMetric(idSupplied, metricSupplied, nullCurrentMonth, country);
     }
 
     @GET
@@ -1574,8 +1574,12 @@ public class Datasets extends AbstractApiBean {
             } catch (IllegalArgumentException ex) {
                 return error(Response.Status.BAD_REQUEST, ex.getMessage());
             }
-            // FIXME: Why do we have to add "-01" here?
-            String monthYear = yyyymm + "-01";
+            String monthYear = null;
+            if (yyyymm != null) {
+                // We add "-01" because we store "2018-05-01" rather than "2018-05" in the "monthyear" column.
+                // Dates come to us as "2018-05-01" in the SUSHI JSON ("begin-date") and we decided to store them as-is.
+                monthYear = yyyymm + "-01";
+            }
             DatasetMetrics datasetMetrics = datasetMetricsSvc.getDatasetMetricsByDatasetForDisplay(dataset, monthYear, country);
             if (datasetMetrics == null) {
                 return ok("No metrics available for dataset " + dataset.getId() + " for " + yyyymm + " for country code " + country + ".");

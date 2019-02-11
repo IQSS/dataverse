@@ -633,7 +633,7 @@ To confirm that the environment variable was set properly, you can use ``echo`` 
 
 ``echo $DV_BASE_URL``
 
-.. FIXME: Explain that you have to pass in a country code (or rewrite the code so you don't have to?)
+Please note that for each of these endpoints except the "citations" endpoint, you can optionally pass the query parameter "country" with a two letter code (e.g. "country=us") and you can specify a particular month by adding it in yyyy-mm format after the requested metric (e.g. "viewsTotal/2019-02").
 
 Retrieving Total Views for a Dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -653,7 +653,7 @@ Retrieving Total Downloads for a Dataset
 Retrieving Unique Downloads for a Dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/downloadsTotal?persistentId=$DOI"``
+``curl "$DV_BASE_URL/api/datasets/:persistentId/makeDataCount/downloadsUnique?persistentId=$DOI"``
 
 Retrieving Citations for a Dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
