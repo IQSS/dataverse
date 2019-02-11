@@ -112,6 +112,8 @@ public class SolrSearchResult {
     private String identifierOfDataverse = null;
     private String nameOfDataverse = null;
     
+    private String filePersistentId = null;
+    
     public String getDvTree() {
         return dvTree;
     }
@@ -451,9 +453,11 @@ public class SolrSearchResult {
         String datasetCitation = null;
         String datasetName = null;
         String datasetId = null;
-        String datasetPersistentId = null;
+        String datasetPersistentId = null;  
+        String filePersistentId = null;
         String preferredUrl = null;
         String apiUrl = null;
+
         if (this.type.equals(SearchConstants.DATAVERSES)) {
             displayName = this.name;
             identifierLabel = "identifier";
@@ -527,6 +531,7 @@ public class SolrSearchResult {
                 .add("md5", getFileMd5())
                 .add("checksum", JsonPrinter.getChecksumTypeAndValue(getFileChecksumType(), getFileChecksumValue()))
                 .add("unf", getUnf())
+                .add("file_persistent_id", this.filePersistentId)
                 .add("dataset_name", datasetName)
                 .add("dataset_id", datasetId)
                 .add("dataset_persistent_id", datasetPersistentId)
@@ -964,7 +969,14 @@ public class SolrSearchResult {
         return null;
         //if (entity)
     }
+    
+    public String getFilePersistentId() {
+        return filePersistentId;
+    }
 
+    public void setFilePersistentId(String pid) {
+        filePersistentId = pid;
+    }
     public String getFileUrl() {
         // Nothing special needs to be done for harvested file URLs: 
         // simply directing these to the local dataset.xhtml for this dataset
