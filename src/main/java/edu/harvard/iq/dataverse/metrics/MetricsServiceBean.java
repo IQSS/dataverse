@@ -47,8 +47,8 @@ public class MetricsServiceBean implements Serializable {
                 + "where dvobject.publicationdate is not null\n"
                 + "and date_trunc('month', publicationdate) <=  to_date('" + yyyymm + "','YYYY-MM');"
         );
-        logger.fine("query: " + query);
-
+        logger.log(Level.FINE, "Metric query: {0}", query);
+        
         return (long) query.getSingleResult();
     }
     
@@ -60,9 +60,8 @@ public class MetricsServiceBean implements Serializable {
                 + "where dvobject.publicationdate is not null\n"
                 + "and publicationdate > current_date - interval '"+days+"' day;\n"
         );
-
-        logger.fine("query: " + query);
-
+        logger.log(Level.FINE, "Metric query: {0}", query);
+        
         return (long) query.getSingleResult();
     }
     
@@ -75,8 +74,8 @@ public class MetricsServiceBean implements Serializable {
                 + "group by dataversetype\n"
                 + "order by count desc;"
         );
-
-        logger.fine("query: " + query);
+        logger.log(Level.FINE, "Metric query: {0}", query);
+        
         return query.getResultList();
     }
     
@@ -87,10 +86,9 @@ public class MetricsServiceBean implements Serializable {
                 //+ "where dataverse_id != ( select id from dvobject where owner_id is null) \n" //removes root, we decided to do this in the homepage js instead
                 + "group by cvv.strvalue\n"
                 + "order by count desc;"
-              
         );
-        logger.info("query: " + query);
-
+        logger.log(Level.FINE, "Metric query: {0}", query);
+        
         return query.getResultList();
     }
     
@@ -137,9 +135,8 @@ public class MetricsServiceBean implements Serializable {
             +   "group by dataset_id \n"
             +") sub_temp"
         );
+        logger.log(Level.FINE, "Metric query: {0}", query);
         
-        logger.fine("query: " + query);
-
         return (long) query.getSingleResult();
     }
     
@@ -191,7 +188,7 @@ public class MetricsServiceBean implements Serializable {
                 + "GROUP BY strvalue\n"
                 + "ORDER BY count(dataset.id) desc;"
         );
-        logger.info("query: " + query);
+        logger.log(Level.FINE, "Metric query: {0}", query);
 
         return query.getResultList();
     }
@@ -221,8 +218,7 @@ public class MetricsServiceBean implements Serializable {
             +   "group by dataset_id \n"
             +") sub_temp"
         );
-
-        logger.fine("query: " + query);
+        logger.log(Level.FINE, "Metric query: {0}", query);
 
         return (long) query.getSingleResult();
     }
@@ -249,7 +245,8 @@ public class MetricsServiceBean implements Serializable {
                 + "group by dataset_id \n"
                 + ");"
         );
-        logger.fine("query: " + query);
+        logger.log(Level.FINE, "Metric query: {0}", query);
+        
         return (long) query.getSingleResult();
     }
     
@@ -269,8 +266,7 @@ public class MetricsServiceBean implements Serializable {
                 + "group by dataset_id \n"
                 + ");"
         );
-
-        logger.fine("query: " + query);
+        logger.log(Level.FINE, "Metric query: {0}", query);
 
         return (long) query.getSingleResult();
     }
@@ -302,7 +298,7 @@ public class MetricsServiceBean implements Serializable {
                     + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')"
                     + "or responsetime is NULL;" //includes historic guestbook records without date
                 );
-                logger.fine("query: " + query);
+                logger.log(Level.FINE, "Metric query: {0}", query);
                 return (long) query.getSingleResult();
             }
             else {
@@ -313,8 +309,6 @@ public class MetricsServiceBean implements Serializable {
             //If earlyDateQuery.getSingleResult is null, then there are no guestbooks and we can return 0
             return 0L;
         }
-        
-
 
     }
 
@@ -324,8 +318,7 @@ public class MetricsServiceBean implements Serializable {
                 + "from guestbookresponse\n"
                 + "where responsetime > current_date - interval '"+days+"' day;\n"
         );
-
-        logger.fine("query: " + query);
+        logger.log(Level.FINE, "Metric query: {0}", query);
 
         return (long) query.getSingleResult();
     }
@@ -446,7 +439,7 @@ public class MetricsServiceBean implements Serializable {
         if(dataLocation != null){ query.setParameter("dataLocation", dataLocation);}
         if(dayString != null) {query.setParameter("dayString", dayString);}
         
-        logger.log(Level.INFO, "getMetric query: {0}", query);
+        logger.log(Level.FINE, "getMetric query: {0}", query);
         
         Metric metric = null;
         try {
