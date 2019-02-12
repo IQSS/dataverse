@@ -12,7 +12,7 @@ import javax.json.JsonValue;
  * about Make Data Count. Go read that first.
  *
  * The main issue for initial backend work is
- * https://github.com/IQSS/dataverse/issues/4821 
+ * https://github.com/IQSS/dataverse/issues/4821
  *
  * The following is a brain dump of additional details from participating in a
  * 2018-10-18 kickoff meeting (notes at
@@ -45,9 +45,18 @@ public class MakeDataCountUtil {
     public enum MetricType {
 
         VIEWS_TOTAL("viewsTotal"),
+        VIEWS_TOTAL_REGULAR("viewsTotalRegular"),
+        VIEWS_TOTAL_MACHINE("viewsTotalMachine"),
         VIEWS_UNIQUE("viewsUnique"),
+        VIEWS_UNIQUE_REGULAR("viewsUniqueRegular"),
+        VIEWS_UNIQUE_MACHINE("viewsUniqueMachine"),
         DOWNLOADS_TOTAL("downloadsTotal"),
+        DOWNLOADS_TOTAL_REGULAR("downloadsTotalRegular"),
+        DOWNLOADS_TOTAL_MACHINE("downloadsTotalMachine"),
         DOWNLOADS_UNIQUE("downloadsUnique"),
+        DOWNLOADS_UNIQUE_REGULAR("downloadsUniqueRegular"),
+        DOWNLOADS_UNIQUE_MACHINE("downloadsUniqueMachine"),
+        // Technically, "citations" goes to a different API endpoint and database table.
         CITATIONS("citations");
 
         private final String text;

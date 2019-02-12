@@ -63,8 +63,4 @@ public class DateUtil {
          }
     }
 
-    public static String getCurrentYearDashMonth() {
-        return LocalDate.now().format(DateTimeFormatter.ofPattern(YEAR_DASH_MONTH_PATTERN));
-    }
-
 }

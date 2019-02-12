@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
-import edu.harvard.iq.dataverse.util.DateUtil;
 import java.io.File;
 import java.io.IOException;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -11,6 +10,7 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import org.apache.commons.io.FileUtils;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class MakeDataCountApiIT {
@@ -60,25 +60,34 @@ public class MakeDataCountApiIT {
                 .statusCode(OK.getStatusCode());
 
         String countryCodeUs = "us";
+        String countryCodeKr = "kr";
+        String countryCodeCa = "ca";
 
         String invalidMetric = "junk";
         Response invalidMetricAttempt = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), invalidMetric, countryCodeUs, apiToken);
         invalidMetricAttempt.prettyPrint();
         invalidMetricAttempt.then().assertThat()
-                .body("message", equalTo("MetricType must be one of these values: [viewsTotal, viewsUnique, downloadsTotal, downloadsUnique, citations]."))
+                .body("message", equalTo("MetricType must be one of these values: [viewsTotal, viewsTotalRegular, viewsTotalMachine, viewsUnique, viewsUniqueRegular, viewsUniqueMachine, downloadsTotal, downloadsTotalRegular, downloadsTotalMachine, downloadsUnique, downloadsUniqueRegular, downloadsUniqueMachine, citations]."))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         String metricViewsTotal = "viewsTotal";
+        String metricViewsTotalRegular = "viewsTotalRegular";
+        String metricViewsTotalMachine = "viewsTotalMachine";
         String metricViewsUnique = "viewsUnique";
+        String metricViewsUniqueRegular = "viewsUniqueRegular";
+        String metricViewsUniqueMachine = "viewsUniqueMachine";
         String metricDownloadsTotal = "downloadsTotal";
+        String metricDownloadsTotalRegular = "downloadsTotalRegular";
+        String metricDownloadsTotalMachine = "downloadsTotalMachine";
         String metricDownloadsUnique = "downloadsUnique";
+        String metricDownloadsUniqueRegular = "downloadsUniqueRegular";
+        String metricDownloadsUniqueMachine = "downloadsUniqueMachine";
 
-        String currentMonth = DateUtil.getCurrentYearDashMonth();
-        Response getViewsCurrentMonth = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsTotal, countryCodeUs, apiToken);
-        getViewsCurrentMonth.prettyPrint();
-        getViewsCurrentMonth.then().assertThat()
+        Response getViewsTotal = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsTotal, countryCodeUs, apiToken);
+        getViewsTotal.prettyPrint();
+        getViewsTotal.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.message", equalTo("No metrics available for dataset " + datasetId + " for " + currentMonth + " for country code " + countryCodeUs + "."));
+                .body("data.viewsTotal", equalTo(7));
 
         String monthYear = "2018-05";
         Response getViewsTotalUs = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsTotal, monthYear, countryCodeUs, apiToken);
@@ -87,11 +96,41 @@ public class MakeDataCountApiIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.viewsTotal", equalTo(7));
 
+        Response getViewsTotalKr = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsTotal, monthYear, countryCodeKr, apiToken);
+        getViewsTotalKr.prettyPrint();
+        getViewsTotalKr.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.viewsTotal", equalTo(2));
+
+        Response getViewsTotalRegular = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsTotalRegular, apiToken);
+        getViewsTotalRegular.prettyPrint();
+        getViewsTotalRegular.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.viewsTotalRegular", equalTo(5));
+
+        Response getViewsTotalMachine = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsTotalMachine, apiToken);
+        getViewsTotalMachine.prettyPrint();
+        getViewsTotalMachine.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.viewsTotalMachine", equalTo(12));
+
         Response getViewsUniqueUs = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsUnique, monthYear, countryCodeUs, apiToken);
         getViewsUniqueUs.prettyPrint();
         getViewsUniqueUs.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.viewsUnique", equalTo(5));
+
+        Response getViewsUniqueRegular = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsUniqueRegular, apiToken);
+        getViewsUniqueRegular.prettyPrint();
+        getViewsUniqueRegular.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.viewsUniqueRegular", equalTo(3));
+
+        Response getViewsUniqueMachine = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsUniqueMachine, apiToken);
+        getViewsUniqueMachine.prettyPrint();
+        getViewsUniqueMachine.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.viewsUniqueMachine", equalTo(7));
 
         Response getDownloadsTotalUs = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricDownloadsTotal, monthYear, countryCodeUs, apiToken);
         getDownloadsTotalUs.prettyPrint();
@@ -99,15 +138,17 @@ public class MakeDataCountApiIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.downloadsTotal", equalTo(6));
 
-        String countryCodeKr = "kr";
-
-        Response getViewsTotalKr = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsTotal, monthYear, countryCodeKr, apiToken);
-        getViewsTotalKr.prettyPrint();
-        getViewsTotalKr.then().assertThat()
+        Response getDownloadsTotalRegular = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricDownloadsTotalRegular, apiToken);
+        getDownloadsTotalRegular.prettyPrint();
+        getDownloadsTotalRegular.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.viewsTotal", equalTo(2));
+                .body("data.downloadsTotalRegular", equalTo(4));
 
-        String countryCodeCa = "ca";
+        Response getDownloadsTotalMachine = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricDownloadsTotalMachine, apiToken);
+        getDownloadsTotalMachine.prettyPrint();
+        getDownloadsTotalMachine.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.downloadsTotalMachine", equalTo(7));
 
         Response getDownloadsUniqueCa = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricDownloadsUnique, monthYear, countryCodeCa, apiToken);
         getDownloadsUniqueCa.prettyPrint();
@@ -115,8 +156,21 @@ public class MakeDataCountApiIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.downloadsUnique", equalTo(3));
 
+        Response getDownloadsUniqueRegular = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricDownloadsUniqueRegular, apiToken);
+        getDownloadsUniqueRegular.prettyPrint();
+        getDownloadsUniqueRegular.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.downloadsUniqueRegular", equalTo(3));
+
+        Response getDownloadsUniqueMachine = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricDownloadsUniqueMachine, apiToken);
+        getDownloadsUniqueMachine.prettyPrint();
+        getDownloadsUniqueMachine.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.downloadsUniqueMachine", equalTo(5));
+
     }
 
+    @Ignore
     @Test
     public void testMakeDataCountDownloadCitation() {
         String idOrPersistentIdOfDataset = "doi:10.7910/DVN/HQZOOB";
@@ -124,7 +178,6 @@ public class MakeDataCountApiIT {
         updateCitations.prettyPrint();
         updateCitations.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        // As of this writing, number of citations is 2.
     }
 
 }

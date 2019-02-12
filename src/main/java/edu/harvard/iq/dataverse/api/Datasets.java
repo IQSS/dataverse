@@ -1599,42 +1599,42 @@ public class Datasets extends AbstractApiBean {
             Long downloadsTotal = null;
             Long downloadsUnique = null;
             switch (metricSupplied) {
+                case "viewsTotal":
+                    viewsTotal = datasetMetrics.getViewsTotal();
+                    break;
                 case "viewsTotalRegular":
                     viewsTotalRegular = datasetMetrics.getViewsTotalRegular();
-                    break;
-                case "viewsUniqueRegular":
-                    viewsUniqueRegular = datasetMetrics.getViewsUniqueRegular();
-                    break;
-                case "downloadsTotalRegular":
-                    downloadsTotalRegular = datasetMetrics.getDownloadsTotalRegular();
-                    break;
-                case "downloadsUniqueRegular":
-                    downloadsUniqueRegular = datasetMetrics.getDownloadsUniqueRegular();
                     break;
                 case "viewsTotalMachine":
                     viewsTotalMachine = datasetMetrics.getViewsTotalMachine();
                     break;
-                case "viewsUniqueMachine":
-                    viewsUniqueMachine = datasetMetrics.getViewsUniqueMachine();
-                    break;
-                case "downloadsTotalMachine":
-                    downloadsTotalMachine = datasetMetrics.getDownloadsTotalMachine();
-                    break;
-                case "downloadsUniqueMachine":
-                    downloadsUniqueMachine = datasetMetrics.getDownloadsUniqueMachine();
-                    break;
-                case "viewsTotal":
-                    viewsTotal = datasetMetrics.getViewsTotal();
-                    break;
                 case "viewsUnique":
                     viewsUnique = datasetMetrics.getViewsUnique();
+                    break;
+                case "viewsUniqueRegular":
+                    viewsUniqueRegular = datasetMetrics.getViewsUniqueRegular();
+                    break;
+                case "viewsUniqueMachine":
+                    viewsUniqueMachine = datasetMetrics.getViewsUniqueMachine();
                     break;
                 case "downloadsTotal":
                     downloadsTotal = datasetMetrics.getDownloadsTotal();
                     break;
+                case "downloadsTotalRegular":
+                    downloadsTotalRegular = datasetMetrics.getDownloadsTotalRegular();
+                    break;
+                case "downloadsTotalMachine":
+                    downloadsTotalMachine = datasetMetrics.getDownloadsTotalMachine();
+                    break;
                 case "downloadsUnique":
                     downloadsUnique = datasetMetrics.getDownloadsUnique();
-                    break;     
+                    break;
+                case "downloadsUniqueRegular":
+                    downloadsUniqueRegular = datasetMetrics.getDownloadsUniqueRegular();
+                    break;
+                case "downloadsUniqueMachine":
+                    downloadsUniqueMachine = datasetMetrics.getDownloadsUniqueMachine();
+                    break;
                 default:
                     break;
             }
