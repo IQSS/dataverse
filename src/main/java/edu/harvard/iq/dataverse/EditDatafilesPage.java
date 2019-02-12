@@ -1107,7 +1107,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (dataset.isLocked() || lockTest.isLocked()) {
                 logger.log(Level.INFO, "Couldn''t save dataset: {0}", "It is locked."
                         + "");
-                populateDatasetUpdateFailureMessage();
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, getBundleString("dataset.locked.editInProgress.message"),getBundleString("dataset.locked.editInProgress.message.details"));
                 return null;
             }
         }
