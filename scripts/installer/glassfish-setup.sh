@@ -55,6 +55,15 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:PermSize=256m"
   ./asadmin $ASADMIN_OPTS delete-jvm-options -client
 
+  # alias passwords
+  for alias in "rserve_password_alias ${RSERVE_PASS}" "doi_password_alias ${DOI_PASSWORD}" "db_password_alias ${DB_PASS}"
+  do
+      set -- $alias
+      echo "AS_ADMIN_ALIASPASSWORD=$2" > /tmp/$1.txt
+      ./asadmin $ASADMIN_OPTS create-password-alias --passwordfile /tmp/$1.txt $1
+      rm /tmp/$1.txt
+  done
+
     ###
   # Add the necessary JVM options: 
   # 
@@ -65,7 +74,7 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.host=${RSERVE_HOST}"
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.port=${RSERVE_PORT}"
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.user=${RSERVE_USER}"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.password=${RSERVE_PASS}"
+  ./asadmin $ASADMIN_OPTS create-jvm-options '\-Ddataverse.rserve.password=${ALIAS=rserve_password_alias}'
   # Data Deposit API options
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.fqdn=${HOST_ADDRESS}"
   # password reset token timeout in minutes
@@ -76,7 +85,7 @@ function preliminary_setup()
   # jvm-options use colons as separators, escape as literal
   DOI_BASEURL_ESC=`echo $DOI_BASEURL | sed -e 's/:/\\\:/'`
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=${DOI_USERNAME}"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.password=${DOI_PASSWORD}"
+  ./asadmin $ASADMIN_OPTS create-jvm-options '\-Ddoi.password=${ALIAS=doi_password_alias}'
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=$DOI_BASEURL_ESC"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
@@ -114,8 +123,10 @@ function final_setup(){
 
         ./asadmin $ASADMIN_OPTS create-jdbc-connection-pool --restype javax.sql.DataSource \
                                         --datasourceclassname org.postgresql.ds.PGPoolingDataSource \
-                                        --property create=true:User=$DB_USER:PortNumber=$DB_PORT:databaseName=$DB_NAME:password=$DB_PASS:ServerName=$DB_HOST \
+                                        --property create=true:User=$DB_USER:PortNumber=$DB_PORT:databaseName=$DB_NAME:ServerName=$DB_HOST \
                                         dvnDbPool
+
+       ./asadmin $ASADMIN_OPTS set resources.jdbc-connection-pool.dvnDbPool.property.password='${ALIAS=db_password_alias}'
 
         ###
         # Create data sources

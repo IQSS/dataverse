@@ -139,7 +139,7 @@ Additional download options available for tabular data (found in the same drop-d
 - The original file uploaded by the user; 
 - Saved as R data (if the original file was not in R format); 
 - Variable Metadata (as a `DDI Codebook <http://www.ddialliance.org/Specification/DDI-Codebook/>`_ XML file);
-- Data File Citation (currently in either RIS or EndNote XML format); 
+- Data File Citation (currently in either RIS, EndNote XML, or BibTeX format); 
 - All of the above, as a zipped bundle. 
 
 |image2|
@@ -180,7 +180,9 @@ Metadata found in the header section of `Flexible Image Transport System (FITS) 
 Compressed Files
 ----------------
 
-Compressed files in zip format are unpacked automatically. If it fails to unpack, for whatever reason, it will upload as is. If the number of files inside are more than a set limit (1,000), you will get an error message and the file will uploads as is.
+Compressed files in zip format are unpacked automatically. If it fails to unpack, for whatever reason, it will upload as is. If the number of files inside are more than a set limit (1,000 by default, configurable by the Administrator), you will get an error message and the zip file will uploads as is.
+
+.. note:: If the uploaded zip file contains sub-folders, the names of the folders will be preserved as the ``DirectoryLabel`` attributes in the ``FileMetadata`` objects of the corresponding individual datafiles. As of writing this - v.4.11 - these labels are only used to restore the folder structure in multi-file, zipped download bundles (see :doc:`/api/dataaccess` for more information). In the future folder structure will be supported for organizing files on the dataset page as well. 
 
 Support for unpacking tar files will be added when this ticket is closed: https://github.com/IQSS/dataverse/issues/2195.
 
