@@ -1100,6 +1100,25 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!saveEnabled) {
             return "";
         }
+        //Mirroring the checks for DcmUpload, make sure that the db version of the dataset is not locked. 
+        //Also checking local version to save time - if data.isLocked() is true, the UpdateDatasetVersionCommand below would fail
+        if (dataset.getId() != null) {
+            Dataset lockTest = datasetService.find(dataset.getId());
+            if (dataset.isLocked() || lockTest.isLocked()) {
+                logger.log(Level.INFO, "Couldn''t save dataset: {0}", "It is locked."
+                        + "");
+                populateDatasetUpdateFailureMessage();
+                return null;
+            }
+        }
+        String lockInfoMessage = "saving current edits";
+        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.EditInProgress, session.getUser() != null ? ((AuthenticatedUser)session.getUser()).getId() : null, lockInfoMessage);
+        if (lock != null) {
+            dataset.addLock(lock);
+        } else {
+            logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
+        }
+
         if (isFileReplaceOperation()){
             try {
                 return saveReplacementFile();
@@ -1261,6 +1280,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 logger.log(Level.INFO, "Couldn''t save dataset: {0}", ex.getMessage());
                 populateDatasetUpdateFailureMessage();
                 return null;
+            } finally {
+                datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
             }
             datasetUpdateRequired = false;
             saveEnabled = false; 
@@ -1383,7 +1404,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 JsfHelper.addWarningMessage(warningMessage);
             }
         }
-        
+        //We're done making changes - remove the lock...
+        datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
 
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution:
