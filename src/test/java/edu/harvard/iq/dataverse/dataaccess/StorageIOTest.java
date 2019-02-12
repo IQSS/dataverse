@@ -69,13 +69,13 @@ public class StorageIOTest {
             instance.getDataFile();
             fail("This should have thrown");
         } catch (ClassCastException ex) {
-            assertEquals(ex.getMessage(), "edu.harvard.iq.dataverse.Dataset cannot be cast to edu.harvard.iq.dataverse.DataFile");
+            assertEquals("class edu.harvard.iq.dataverse.Dataset cannot be cast to class edu.harvard.iq.dataverse.DataFile (edu.harvard.iq.dataverse.Dataset and edu.harvard.iq.dataverse.DataFile are in unnamed module of loader 'app')", ex.getMessage());
         }
         try {
             instance.getDataverse();
             fail("This should have thrown");
         } catch (ClassCastException ex) {
-            assertEquals(ex.getMessage(), "edu.harvard.iq.dataverse.Dataset cannot be cast to edu.harvard.iq.dataverse.Dataverse");
+            assertEquals("class edu.harvard.iq.dataverse.Dataset cannot be cast to class edu.harvard.iq.dataverse.Dataverse (edu.harvard.iq.dataverse.Dataset and edu.harvard.iq.dataverse.Dataverse are in unnamed module of loader 'app')", ex.getMessage());
         }
         assertEquals(new DataFile(), new FileAccessIO<>(new DataFile()).getDataFile());
         assertEquals(new Dataverse(), new FileAccessIO<>(new Dataverse()).getDataverse());

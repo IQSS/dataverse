@@ -19,7 +19,10 @@
 */
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.hul.ois.jhove.*;
+import edu.harvard.hul.ois.jhove.App;
+import edu.harvard.hul.ois.jhove.JhoveBase;
+import edu.harvard.hul.ois.jhove.Module;
+import edu.harvard.hul.ois.jhove.RepInfo;
 import java.io.*;
 import java.util.*;
 import static java.lang.System.*;
