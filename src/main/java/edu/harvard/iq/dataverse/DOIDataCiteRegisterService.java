@@ -145,8 +145,8 @@ public class DOIDataCiteRegisterService {
             retString = "metadata:\\r" + client.postMetadata(xmlMetadata) + "\\r";
         }
         if (!target.equals(client.getUrl(numericIdentifier))) {
-            logger.info("Not updating target URl to " +  target);
-            //client.postUrl(numericIdentifier, target);
+            logger.info("Updating target URL to " +  target);
+            client.postUrl(numericIdentifier, target);
             retString = retString + "url:\\r" + target;
 
         }
