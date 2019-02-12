@@ -138,7 +138,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         // we don't want to create two draft versions!
         Dataset tempDataset = ctxt.em().merge(getDataset());
         
-        logger.log(Level.INFO, "tempDataset={0}", xstream.toXML(tempDataset));
+        logger.log(Level.FINE, "UpdateDatasetVersionCommand:execute:tempDataset={0}", xstream.toXML(tempDataset));
         
         for (FileMetadata fmd : filesToDelete) {
             if (!fmd.getDataFile().isReleased()) {
@@ -168,7 +168,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         tempDataset.setModificationTime(getTimestamp());
         
         Dataset savedDataset = ctxt.em().merge(tempDataset);
-        logger.log(Level.INFO, "savedDataset={0}", xstream.toXML(savedDataset));
+        logger.log(Level.FINE, "UpdateDatasetVersionCommand:execute:savedDataset={0}", xstream.toXML(savedDataset));
         
         ctxt.em().flush();
 

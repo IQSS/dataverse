@@ -553,7 +553,7 @@ public class JsonParser {
             // get parsing results of a DataTable
             List<DataTable> dataTables = parseDataTables(dataTablesJson);
             logger.log(Level.INFO, "dataTables:size={0}", dataTables.size());
-            logger.log(Level.INFO, "returned dataTables={0}", xstream.toXML(dataTables));
+            logger.log(Level.FINE, "returned dataTables={0}", xstream.toXML(dataTables));
             dataFile.setDataTables(dataTables);
             dataFile.setDataTable(dataTables.get(0));
             dataTables.get(0).setDataFile(dataFile);
