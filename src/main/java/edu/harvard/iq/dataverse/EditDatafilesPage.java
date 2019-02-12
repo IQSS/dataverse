@@ -1111,13 +1111,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                 return null;
             }
         }
-        String lockInfoMessage = "saving current edits";
-        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.EditInProgress, session.getUser() != null ? ((AuthenticatedUser)session.getUser()).getId() : null, lockInfoMessage);
-        if (lock != null) {
-            dataset.addLock(lock);
-        } else {
-            logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
-        }
 
         if (isFileReplaceOperation()){
             try {
@@ -1286,6 +1279,14 @@ public class EditDatafilesPage implements java.io.Serializable {
             datasetUpdateRequired = false;
             saveEnabled = false; 
         } else {
+            String lockInfoMessage = "saving current edits";
+            DatasetLock lock = datasetService.addDatasetLock(getDataset().getId(), DatasetLock.Reason.EditInProgress, session.getUser() != null ? ((AuthenticatedUser)session.getUser()).getId() : null, lockInfoMessage);
+            if (lock != null) {
+                getDataset().addLock(lock);
+            } else {
+                logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", getDataset().getId());
+            }
+
             // This is an existing Draft version (and nobody has explicitly 
             // requested that the entire dataset is updated). So we'll try to update 
             // only the filemetadatas and/or files affected, and not the 
