@@ -223,7 +223,7 @@ Solr will warn about needing to increase the number of file descriptors and max 
         solr soft nofile 65000
         solr hard nofile 65000
 
-On operating systems which use systemd such as RHEL or CentOS 7, you may then add a line like LimitNOFILE=65000 to the systemd unit file, or adjust the limits on a running process using the prlimit tool::
+On operating systems which use systemd such as RHEL or CentOS 7, you may then add a line like LimitNOFILE=65000 for the number of open file descriptors and a line with LimitNPROC=65000 for the max processes to the systemd unit file, or adjust the limits on a running process using the prlimit tool::
 
         # sudo prlimit --pid pid --nofile=65000:65000
 
