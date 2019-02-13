@@ -25,72 +25,62 @@ public class VariableMetadata implements Serializable  {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /*
+    /**
      * dataVariable: DataVariable to which this metadata belongs.
      */
-
     @ManyToOne
     @JoinColumn(nullable=false)
     private DataVariable dataVariable;
 
-    /*
+    /**
      * fileMetadta: FileMetadata to which this metadata belongs.
      */
-
     @ManyToOne
     @JoinColumn(nullable=false)
     private FileMetadata fileMetadata;
 
-    /*
+    /**
      * label: variable label.
      */
-
     @Column(columnDefinition="TEXT")
     private String label;
 
-    /*
+    /**
      * literalquestion: literal question, metadata variable field.
      */
-
     @Column(columnDefinition="TEXT")
     private String literalquestion;
 
-    /*
+    /**
      * interviewinstruction: Interview Instruction, metadata variable field.
      */
-
     @Column(columnDefinition="TEXT")
     private String interviewinstruction;
 
-    /*
+    /**
      * universe: metadata variable field.
      */
-
     private String universe;
 
-    /*
+    /**
      * notes: notes, metadata variable field (CDATA).
      */
-
     @Column(columnDefinition="TEXT")
     private String notes;
 
-    /*
+    /**
      * isweightvar: It defines if variable is a weight variable
      */
-
     private boolean isweightvar = false;
 
-    /*
+    /**
      * weighted: It defines if variable is weighted
      */
-
     private boolean weighted = false;
 
-    /*
+    /**
      * dataVariable: DataVariable with which this variable is weighted.
      */
-
     private DataVariable weightvariable;
 
     public VariableMetadata () {
@@ -102,10 +92,9 @@ public class VariableMetadata implements Serializable  {
         this.fileMetadata = fileMetadata;
     }
 
-    /*
+    /**
      * Getter and Setter functions:
      */
-
     public Long getId() {
         return id;
     }
