@@ -68,7 +68,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         }
         
         metadata.put("datacite.creator", authorString);
-        metadata.put("datacite.title", dvObjectIn.getDisplayName());
+        metadata.put("datacite.title", dvObjectIn.getCurrentName());
         metadata.put("datacite.publisher", producerString);
         metadata.put("datacite.publicationyear", generateYear(dvObjectIn));        
         return metadata;

@@ -722,6 +722,11 @@ public class DataFile extends DvObject implements Comparable {
        return getLatestFileMetadata().getLabel(); 
     }
     
+    @Override 
+    public String getCurrentName(){
+        return getLatestFileMetadata().getLabel();
+    }
+    
     @Override
     public int compareTo(Object o) {
         DataFile other = (DataFile) o;

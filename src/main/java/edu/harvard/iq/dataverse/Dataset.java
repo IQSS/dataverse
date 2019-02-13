@@ -749,6 +749,11 @@ public class Dataset extends DvObjectContainer {
         DatasetVersion dsv = getReleasedVersion();
         return dsv != null ? dsv.getTitle() : getLatestVersion().getTitle();
     }
+    
+    @Override
+    public String getCurrentName(){
+        return getLatestVersion().getTitle();
+    }
 
     @Override
     protected boolean isPermissionRoot() {
