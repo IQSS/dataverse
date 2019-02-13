@@ -1256,7 +1256,7 @@ public class Admin extends AbstractApiBean {
 						}
 						if (in == null)
 							logger.warning("Cannot retrieve file.");
-						String currentChecksum = FileUtil.CalculateChecksum(in, df.getChecksumType());
+						String currentChecksum = FileUtil.calculateChecksum(in, df.getChecksumType());
 						if (currentChecksum.equals(df.getChecksumValue())) {
 							logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
 									+ df.getIdentifier() + " is valid");
@@ -1270,7 +1270,7 @@ public class Admin extends AbstractApiBean {
 							}
 							if (in2 == null)
 								logger.warning("Cannot retrieve file to calculate new checksum.");
-							String newChecksum = FileUtil.CalculateChecksum(in2, cType);
+							String newChecksum = FileUtil.calculateChecksum(in2, cType);
 
 							df.setChecksumType(cType);
 							df.setChecksumValue(newChecksum);

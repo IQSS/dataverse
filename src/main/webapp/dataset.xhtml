@@ -49,6 +49,7 @@
                     <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
                     <f:viewParam name="fileSortField" value="#{DatasetPage.fileSortField}"/>
                     <f:viewParam name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>
                     <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, DatasetPage.workingVersion, DatasetPage.newFiles, DatasetPage.selectedFiles)}"/>
@@ -1207,8 +1208,7 @@
                             </ui:include>
                         </div>
                     </p:dialog>
-
-                    <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
+                        <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true" >
                         <div class="form-horizontal">
                             <p class="help-block">
                                 <h:outputFormat value="#{bundle['dataverse.link.dataset.choose']}" escape="false">
@@ -1227,6 +1227,7 @@
                                     <h:outputText value="#{bundle['dataverse.link.yourDataverses']}"/>
                                 </label>
                                 <div class="col-xs-8">
+                                    <p:fragment id="linkNameContent">
                                     <p:autoComplete id="dataverseLinkName" style="width:75%;"
                                                     binding="#{DatasetPage.selectedDataverseMenu}"
                                                     placeholder="#{bundle['dataverse.link.yourDataverses.inputPlaceholder']}"
@@ -1236,6 +1237,8 @@
                                                     value="#{DatasetPage.selectedDataverseForLinking}" 
                                                     multiple="false"
                                                     completeMethod="#{DatasetPage.completeLinkingDataverse}"
+                                                    required="#{param['DO_DS_LINK_VALIDATION']}" requiredMessage="#{bundle['dataverse.link.select']}"
+                                                    styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
                                                     var="dataverseLk" itemLabel="#{dataverseLk.displayName}" itemValue="#{dataverseLk}" converter="dataverseConverter">
                                         <p:column>
                                             <h:outputText value="#{dataverseLk.displayName}"/> 
@@ -1247,17 +1250,24 @@
                                         <p:ajax process="@this" event="itemUnselect" />
                                     </p:autoComplete>
                                     <p:message for="dataverseLinkName"/>
+                                     </p:fragment>  
                                 </div>
                             </div>
                         </div>
                         <div class="button-block">
-                            <p:commandLink type="button" styleClass="btn btn-default"  update=":messagePanel,linkDatasetForm"
-                                           value="#{bundle['dataset.link.save']}" action="#{DatasetPage.saveLinkingDataverses()}"/>
-                            <button type="button" class="btn btn-default" onclick="PF('linkDatasetForm').hide();PF('blockDatasetForm').hide();">
+                            <p:commandLink id="saveLinkButton" type="button" styleClass="btn btn-default"    
+                                           update="linkNameContent @([id$=Messages])" 
+                                           oncomplete="if (args &amp;&amp; !args.validationFailed) linkDatasetCommand();"
+                                           value="#{bundle['dataset.link.save']}">  
+                                <f:param name="DO_DS_LINK_VALIDATION" value="true"/>
+                             </p:commandLink>
+                            <button type="button" class="btn btn-default"  onclick="PF('linkDatasetForm').hide();PF('blockDatasetForm').hide();">                              
                                 #{bundle.cancel}
                             </button>
                         </div>
                     </p:dialog>
+                    
+                    <p:remoteCommand name="linkDatasetCommand" oncomplete="PF('linkDatasetForm').hide();" update=":messagePanel  @([id$=Messages])" actionListener="#{DatasetPage.saveLinkingDataverses}"/>
 
                     <p:dialog id="computeBatchListPopup" header="#{bundle['dataset.compute.computeBatchListHeader']}" widgetVar="computeBatchListPopup" modal="true">
                         <div class="text-right">

@@ -314,6 +314,14 @@
                 </div>
             </div>
         </nav>
+        <!-- Noscript Error -->
+        <noscript>
+            <div id="noscript-alert" class="bg-danger">
+                <div class="alert container text-danger no-margin-bottom">
+                    <h:outputText value="#{bundle['header.noscript']}"/>
+                </div>
+            </div>
+        </noscript>
         <!-- Status Alert -->
         <o:form class="form-inline">
             <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader') and !dataverseSession.isStatusDismissed()}">
