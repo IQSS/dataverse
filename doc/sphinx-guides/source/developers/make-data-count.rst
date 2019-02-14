@@ -61,7 +61,7 @@ For how to put citations into your dev database and how to get them out again, s
 Testing Make Data Count and Dataverse
 -------------------------------------
 
-A developer running Counter Processor alongside Dataverse for development or testing purposes will notice that once the raw Dataverse logs have been processed, there is no straightforward way to re-test those logs same logs.
+A developer running Counter Processor alongside Dataverse for development or testing purposes will notice that once the raw Dataverse logs have been processed, there is no straightforward way to re-test those same logs.
 
 The first thing to fix is to clear two files from Counter Processor ...
 
