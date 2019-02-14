@@ -416,7 +416,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
 
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
-        metadataTemplate.setTitle(dvObject.getDisplayName());
+        metadataTemplate.setTitle(dvObject.getCurrentName());
         String producerString = dataverseService.findRootDataverse().getName();
         if (producerString.isEmpty()) {
             producerString = ":unav";
