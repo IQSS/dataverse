@@ -1594,6 +1594,10 @@ public class DatasetPage implements java.io.Serializable {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.message"),
                         BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
             }
+            if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),
+                        BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details"));
+            }
         }
         
         for(DataFile f : dataset.getFiles()) {

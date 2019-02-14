@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -77,8 +78,14 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         }
         
         ctxt.permissions().checkEditDatasetLock(getDataset(), getRequest(), this);
-        // Invariant: Dataset has no locks prventing the update
-        
+        // Invariant: Dataset has no locks preventing the update
+        String lockInfoMessage = "saving current edits";
+        DatasetLock lock = ctxt.datasets().addDatasetLock(getDataset().getId(), DatasetLock.Reason.EditInProgress, ((AuthenticatedUser)getUser()).getId(), lockInfoMessage);
+        if (lock != null) {
+            getDataset().addLock(lock);
+        } else {
+            logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", getDataset().getId());
+        }
         getDataset().getEditVersion().setDatasetFields(getDataset().getEditVersion().initDatasetFields());
         validateOrDie( getDataset().getEditVersion(), isValidateLenient() );
         
@@ -165,6 +172,10 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             AuthenticatedUser au = (AuthenticatedUser) getUser();
             ctxt.datasetVersion().writeEditVersionLog(dvd, au);
         } 
+        
+        //We're done making changes - remove the lock...
+        ctxt.datasets().removeDatasetLocks(savedDataset, DatasetLock.Reason.EditInProgress);
+        
         return savedDataset; 
     }
 
