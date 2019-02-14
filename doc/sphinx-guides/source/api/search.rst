@@ -85,7 +85,11 @@ https://demo.dataverse.org/api/search?q=trees
                     "file_content_type":"image/png",
                     "size_in_bytes":8361,
                     "md5":"0386269a5acb2c57b4eade587ff4db64",
-                    "dataset_citation":"Spruce, Sabrina, 2016, \"Spruce Goose\", http://dx.doi.org/10.5072/FK2/NFSEHG, Root Dataverse, V1"
+                    "file_persistent_id": "doi:10.5072/FK2/XTT5BV/PCCHV7",
+                    "dataset_name": "Dataset One",
+                    "dataset_id": "32",
+                    "dataset_persistent_id": "doi:10.5072/FK2/XTT5BV",
+                    "dataset_citation":"Spruce, Sabrina, 2016, \"Spruce Goose\", http://dx.doi.org/10.5072/FK2/XTT5BV, Root Dataverse, V1"
                 },
                 {
                     "name":"Birds",
