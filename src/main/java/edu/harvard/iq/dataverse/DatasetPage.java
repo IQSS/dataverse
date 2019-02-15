@@ -2010,13 +2010,13 @@ public class DatasetPage implements java.io.Serializable {
                 // Delete the record of any existing copy since it is now out of date/incorrect
                 updateVersion.setArchivalCopyLocation(null);
                 /*
-                 * Then try to generate and submit an archival copy. // Note that running this
-                 * command within the // CuratePublishedDatasetVersionCommand was causing an
-                 * error: "The attribute // [id] of class
-                 * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped // to a
-                 * primary key column in the database. Updates are not allowed." // To avoid
-                 * that, and to simplify reporting back to the GUI whether this // optional step
-                 * succeeded, I've pulled this out as a separate submit().
+                 * Then try to generate and submit an archival copy. Note that running this
+                 * command within the CuratePublishedDatasetVersionCommand was causing an error:
+                 * "The attribute [id] of class
+                 * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped to a primary
+                 * key column in the database. Updates are not allowed." To avoid that, and to
+                 * simplify reporting back to the GUI whether this optional step succeeded, I've
+                 * pulled this out as a separate submit().
                  */
                 try {
                     updateVersion = commandEngine.submit(archiveCommand);
