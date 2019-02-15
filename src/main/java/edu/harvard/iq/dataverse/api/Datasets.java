@@ -38,10 +38,12 @@ import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AddLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CuratePublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetLinkingDataverseCommand;
@@ -76,8 +78,10 @@ import edu.harvard.iq.dataverse.S3PackageImporter;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -166,6 +170,9 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     S3PackageImporter s3PackageImporter;
+    
+    @EJB
+    SettingsServiceBean settingsService;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -781,9 +788,10 @@ public class Datasets extends AbstractApiBean {
     public Response publishDataset(@PathParam("id") String id, @QueryParam("type") String type) {
         try {
             if (type == null) {
-                return error(Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major' or 'minor').");
+                return error(Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major','minor', or 'updatecurrent').");
             }
-
+            boolean updateCurrent=false;
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
             type = type.toLowerCase();
             boolean isMinor;
             switch (type) {
@@ -793,16 +801,74 @@ public class Datasets extends AbstractApiBean {
             case "major":
                 isMinor = false;
                 break;
+            case "updatecurrent":
+                if(user.isSuperuser()) {
+                  updateCurrent=true;
+                } else {
+                    return error(Response.Status.FORBIDDEN, "Only superusers can update the current version"); 
+                }
             default:
                 return error(Response.Status.BAD_REQUEST, "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major' or 'minor'.");
             }
 
             Dataset ds = findDatasetOrDie(id);
-            PublishDatasetResult res = execCommand(new PublishDatasetCommand(ds,
-                    createDataverseRequest(findAuthenticatedUserOrDie()),
-                    isMinor));
-            return res.isCompleted() ? ok(json(res.getDataset())) : accepted(json(res.getDataset()));
+            if (updateCurrent) {
 
+                String errorMsg = null;
+                String successMsg = null;
+                try {
+                    CuratePublishedDatasetVersionCommand cmd = new CuratePublishedDatasetVersionCommand(ds, createDataverseRequest(user));
+                    ds = commandEngine.submit(cmd);
+                    successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
+
+                    // If configured, update archive copy as well
+                    String className = settingsService.get(SettingsServiceBean.Key.ArchiverClassName.toString());
+                    DatasetVersion updateVersion = ds.getLatestVersion();
+                    AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, createDataverseRequest(user), updateVersion);
+                    if (archiveCommand != null) {
+                        // Delete the record of any existing copy since it is now out of date/incorrect
+                        updateVersion.setArchivalCopyLocation(null);
+                        /*
+                         * Then try to generate and submit an archival copy. Note that running this
+                         * command within the CuratePublishedDatasetVersionCommand was causing an error:
+                         * "The attribute [id] of class
+                         * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped to a primary
+                         * key column in the database. Updates are not allowed." To avoid that, and to
+                         * simplify reporting back to the GUI whether this optional step succeeded, I've
+                         * pulled this out as a separate submit().
+                         */
+                        try {
+                            updateVersion = commandEngine.submit(archiveCommand);
+                            if (updateVersion.getArchivalCopyLocation() != null) {
+                                successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
+                            } else {
+                                successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
+                            }
+                        } catch (CommandException ex) {
+                            successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure") + " - " + ex.toString();
+                            logger.severe(ex.getMessage());
+                        }
+                    }
+                } catch (CommandException ex) {
+                    errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
+                    logger.severe(ex.getMessage());
+                }
+                if (errorMsg != null) {
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg);
+                } else {
+                    return Response.ok(Json.createObjectBuilder()
+                            .add("status", STATUS_OK)
+                            .add("status_details", successMsg)
+                            .add("data", json(ds)).build())
+                            .type(MediaType.APPLICATION_JSON)
+                            .build();
+                }
+            } else {
+                PublishDatasetResult res = execCommand(new PublishDatasetCommand(ds,
+                        createDataverseRequest(user),
+                        isMinor));
+                return res.isCompleted() ? ok(json(res.getDataset())) : accepted(json(res.getDataset()));
+            }
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
