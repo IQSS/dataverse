@@ -102,29 +102,3 @@ Available variables are:
 * ``minorVersion``
 * ``majorVersion``
 * ``releaseStatus``
-
-archiver
-++++++++
-
-A step that sends an archival copy of a Dataset Version to a configured archiver, e.g. the DuraCloud interface of Chronopolis. See the `DuraCloud/Chronopolis Integration documentation <http://guides.dataverse.org/en/latest/admin/integrations.html#id15>`_ for further detail.
-
-Note - the example step includes two settings required for any archiver and three (DuraCloud*) that are specific to DuraCloud.
-
-.. code:: json
-
-
-  {
-    "provider":":internal",
-    "stepType":"archiver",
-    "parameters": {
-      "stepName":"archive submission"
-    },
-    "requiredSettings": {
-      ":ArchiverClassName": "string",
-      ":ArchiverSettings": "string",
-      ":DuraCloudHost":"string",
-      ":DuraCloudPort":"string",
-      ":DuraCloudContext":"string" 
-    }
-  }
-
