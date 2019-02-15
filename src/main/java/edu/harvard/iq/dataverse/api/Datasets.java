@@ -793,7 +793,7 @@ public class Datasets extends AbstractApiBean {
             boolean updateCurrent=false;
             AuthenticatedUser user = findAuthenticatedUserOrDie();
             type = type.toLowerCase();
-            boolean isMinor;
+            boolean isMinor=false;
             switch (type) {
             case "minor":
                 isMinor = true;
