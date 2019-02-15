@@ -577,6 +577,10 @@
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-java-sdk-sqs</artifactId>
               </exclusion>
+              <exclusion>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+              </exclusion>
             </exclusions>
             
         </dependency>
