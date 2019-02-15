@@ -79,6 +79,11 @@ public class VariableMetadata implements Serializable  {
     private boolean weighted = false;
 
     /**
+     * wfreq: Weighted frequency for weigted variable
+     */
+    private Double wfreq;
+
+    /**
      * dataVariable: DataVariable with which this variable is weighted.
      */
     private DataVariable weightvariable;
@@ -173,6 +178,14 @@ public class VariableMetadata implements Serializable  {
 
     public boolean isWeighted() {
         return weighted;
+    }
+
+    public Double getWfreq() {
+        return wfreq;
+    }
+
+    public void setWfreq(Double wfreq) {
+        this.wfreq = wfreq;
     }
 
     @Override
