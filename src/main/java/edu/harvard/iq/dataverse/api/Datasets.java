@@ -807,8 +807,9 @@ public class Datasets extends AbstractApiBean {
                 } else {
                     return error(Response.Status.FORBIDDEN, "Only superusers can update the current version"); 
                 }
+                break;
             default:
-                return error(Response.Status.BAD_REQUEST, "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major' or 'minor'.");
+                return error(Response.Status.BAD_REQUEST, "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major', 'minor', or 'updatecurrent'.");
             }
 
             Dataset ds = findDatasetOrDie(id);
