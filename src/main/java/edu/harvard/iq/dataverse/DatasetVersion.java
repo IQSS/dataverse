@@ -48,6 +48,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import javax.validation.constraints.Size;
 
 /**
  *
@@ -56,6 +57,7 @@ import javax.validation.ValidatorFactory;
 @Entity
 @Table(indexes = {@Index(columnList="dataset_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id,versionnumber,minorversionnumber"}))
+@ValidateVersionNote(versionNote = "versionNote", versionState = "versionState")
 public class DatasetVersion implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetVersion.class.getCanonicalName());
@@ -103,6 +105,7 @@ public class DatasetVersion implements Serializable {
     private Long versionNumber;
     private Long minorVersionNumber;
     
+    @Size(min=0, max=VERSION_NOTE_MAX_LENGTH)
     @Column(length = VERSION_NOTE_MAX_LENGTH)
     private String versionNote;
     
@@ -142,8 +145,14 @@ public class DatasetVersion implements Serializable {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date archiveTime;
     
+    @Size(min=0, max=ARCHIVE_NOTE_MAX_LENGTH)
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
+    @ValidateURL()
     private String archiveNote;
+    
+    @Column(nullable=true, columnDefinition = "TEXT")
+    private String archivalCopyLocation;
+    
     
     private String deaccessionLink;
 
@@ -256,6 +265,14 @@ public class DatasetVersion implements Serializable {
                     + "  StudyVersion id=" + id + ", archiveNote=" + note);
         }
         this.archiveNote = note;
+    }
+    
+    public String getArchivalCopyLocation() {
+        return archivalCopyLocation;
+    }
+
+    public void setArchivalCopyLocation(String location) {
+        this.archivalCopyLocation = location;
     }
 
     public String getDeaccessionLink() {
@@ -514,6 +531,56 @@ public class DatasetVersion implements Serializable {
             this.setTermsOfUseAndAccess(terms);
         }
     }
+    
+    public DatasetVersion cloneDatasetVersion(){
+        DatasetVersion dsv = new DatasetVersion();
+        dsv.setVersionState(this.getPriorVersionState());
+        dsv.setFileMetadatas(new ArrayList<>());
+        
+           if (this.getUNF() != null){
+                dsv.setUNF(this.getUNF());
+            }
+            
+            if (this.getDatasetFields() != null && !this.getDatasetFields().isEmpty()) {
+                dsv.setDatasetFields(dsv.copyDatasetFields(this.getDatasetFields()));
+            }
+            
+            if (this.getTermsOfUseAndAccess()!= null){
+                dsv.setTermsOfUseAndAccess(this.getTermsOfUseAndAccess().copyTermsOfUseAndAccess());
+            } else {
+                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+                terms.setDatasetVersion(dsv);
+                terms.setLicense(TermsOfUseAndAccess.License.CC0);
+                dsv.setTermsOfUseAndAccess(terms);
+            }
+
+            for (FileMetadata fm : this.getFileMetadatas()) {
+                FileMetadata newFm = new FileMetadata();
+                // TODO: 
+                // the "category" will be removed, shortly. 
+                // (replaced by multiple, tag-like categories of 
+                // type DataFileCategory) -- L.A. beta 10
+                //newFm.setCategory(fm.getCategory());
+                // yep, these are the new categories:
+                newFm.setCategories(fm.getCategories());
+                newFm.setDescription(fm.getDescription());
+                newFm.setLabel(fm.getLabel());
+                newFm.setDirectoryLabel(fm.getDirectoryLabel());
+                newFm.setRestricted(fm.isRestricted());
+                newFm.setDataFile(fm.getDataFile());
+                newFm.setDatasetVersion(dsv);
+                newFm.setProvFreeForm(fm.getProvFreeForm());
+                
+                dsv.getFileMetadatas().add(newFm);
+            }
+
+
+
+
+        dsv.setDataset(this.getDataset());
+        return dsv;
+        
+    }
 
     public void initDefaultValues() {
         //first clear then initialize - in case values were present 
@@ -766,7 +833,7 @@ public class DatasetVersion implements Serializable {
         }
         return retList;
     }
-
+    
     public List<String> getFunders() {
         List<String> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -781,14 +848,11 @@ public class DatasetVersion implements Serializable {
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributorType)) {
                             contributorType = subField.getDisplayValue();
-                            // TODO: Consider how this will work in French, Chinese, etc.
-                            String funderString = "Funder";
-                            if (funderString.equals(contributorType)) {
-                                addFunder = true;
-                            }
                         }
                     }
-                    if (addFunder) {
+                    //SEK 02/12/2019 move outside loop to prevent contrib type to carry over to next contributor
+                    // TODO: Consider how this will work in French, Chinese, etc.
+                    if ("Funder".equals(contributorType)) {
                         retList.add(contributorName);
                     }
                 }
@@ -818,46 +882,46 @@ public class DatasetVersion implements Serializable {
                     String start = "";
                     String end = "";
                     for (DatasetField subField : timePeriodValue.getChildDatasetFields()) {
-						if (subField.getDatasetFieldType().getName()
-								.equals(DatasetFieldConstant.timePeriodCoveredStart)) {
-							if (subField.isEmptyForDisplay()) {
-								start = null;
-							} else {
-								// we want to use "getValue()", as opposed to "getDisplayValue()" here -
-								// as the latter method prepends the value with the word "Start:"!
-								start = subField.getValue();
-							}
-						}
-						if (subField.getDatasetFieldType().getName()
-								.equals(DatasetFieldConstant.timePeriodCoveredEnd)) {
-							if (subField.isEmptyForDisplay()) {
-								end = null;
-							} else {
-								// see the comment above
-								end = subField.getValue();
-							}
-						}
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.timePeriodCoveredStart)) {
+                            if (subField.isEmptyForDisplay()) {
+                                start = null;
+                            } else {
+                                // we want to use "getValue()", as opposed to "getDisplayValue()" here -
+                                // as the latter method prepends the value with the word "Start:"!
+                                start = subField.getValue();
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.timePeriodCoveredEnd)) {
+                            if (subField.isEmptyForDisplay()) {
+                                end = null;
+                            } else {
+                                // see the comment above
+                                end = subField.getValue();
+                            }
+                        }
 
-					}
-					if (start != null && end != null) {
-						retList.add(start + "/" + end);
-					}
-				}
-			}
-		}
-		return retList;
-	}
+                    }
+                    if (start != null && end != null) {
+                        retList.add(start + "/" + end);
+                    }
+                }
+            }
+        }
+        return retList;
+    }
 
-	public List<String> getDatesOfCollection() {
-		List<String> retList = new ArrayList<>();
-		for (DatasetField dsf : this.getDatasetFields()) {
-			if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfCollection)) {
-				for (DatasetFieldCompoundValue timePeriodValue : dsf.getDatasetFieldCompoundValues()) {
-					String start = "";
-					String end = "";
-					for (DatasetField subField : timePeriodValue.getChildDatasetFields()) {
-						if (subField.getDatasetFieldType().getName()
-								.equals(DatasetFieldConstant.dateOfCollectionStart)) {
+    public List<String> getDatesOfCollection() {
+        List<String> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfCollection)) {
+                for (DatasetFieldCompoundValue timePeriodValue : dsf.getDatasetFieldCompoundValues()) {
+                    String start = "";
+                    String end = "";
+                    for (DatasetField subField : timePeriodValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.dateOfCollectionStart)) {
                             if (subField.isEmptyForDisplay()) {
                                 start = null;
                             } else {
@@ -866,8 +930,8 @@ public class DatasetVersion implements Serializable {
                                 start = subField.getValue();
                             }
                         }
-						if (subField.getDatasetFieldType().getName()
-								.equals(DatasetFieldConstant.dateOfCollectionEnd)) {
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.dateOfCollectionEnd)) {
                             if (subField.isEmptyForDisplay()) {
                                 end = null;
                             } else {
@@ -914,79 +978,79 @@ public class DatasetVersion implements Serializable {
      * @return List of Strings containing the version's Topic Classifications
      */
     public List<String> getTopicClassifications() {
-		return getCompoundChildFieldValues(DatasetFieldConstant.topicClassification,
-				DatasetFieldConstant.topicClassValue);
-	}
-	
-	/**
-	 * @return List of Strings containing the version's Kind Of Data entries
-	 */
-	public List<String> getKindOfData() {
-		List<String> kod = new ArrayList<>();
-		for (DatasetField dsf : this.getDatasetFields()) {
-			if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.kindOfData)) {
-				kod.addAll(dsf.getValues());
-			}
-		}
-		return kod;
-	}
-	
-	/**
-	 * @return List of Strings containing the version's language entries
-	 */
-	public List<String> getLanguages() {
-		List<String> languages = new ArrayList<>();
-		for (DatasetField dsf : this.getDatasetFields()) {
-			if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.language)) {
-				languages.addAll(dsf.getValues());
-			}
-		}
-		return languages;
-	}
-
-        // TODO: consider calling the newer getSpatialCoverages method below with the commaSeparated boolean set to true.
-	public List<String> getSpatialCoverages() {
-		List<String> retList = new ArrayList<>();
-		for (DatasetField dsf : this.getDatasetFields()) {
-			if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.geographicCoverage)) {
-				for (DatasetFieldCompoundValue geoValue : dsf.getDatasetFieldCompoundValues()) {
-					List<String> coverage = new ArrayList<String>();
-					for (DatasetField subField : geoValue.getChildDatasetFields()) {
-						if (subField.getDatasetFieldType().getName()
-								.equals(DatasetFieldConstant.country)) {
-							if (!subField.isEmptyForDisplay()) {
-							} else {
-								coverage.add(subField.getValue());
-							}
-						}
-						if (subField.getDatasetFieldType().getName()
-								.equals(DatasetFieldConstant.state)) {
-							if (!subField.isEmptyForDisplay()) {
-								coverage.add(subField.getValue());
-							}
-						}
-						if (subField.getDatasetFieldType().getName()
-								.equals(DatasetFieldConstant.city)) {
-							if (!subField.isEmptyForDisplay()) {
-								coverage.add(subField.getValue());
-							}
-						}
-						if (subField.getDatasetFieldType().getName()
-								.equals(DatasetFieldConstant.otherGeographicCoverage)) {
-							if (!subField.isEmptyForDisplay()) {
-								coverage.add(subField.getValue());
-							}
-						}
-					}
-					if (!coverage.isEmpty()) {
-						retList.add(String.join(",", coverage));
-					}
-				}
-			}
-		}
-		return retList;
+        return getCompoundChildFieldValues(DatasetFieldConstant.topicClassification,
+                DatasetFieldConstant.topicClassValue);
     }
-
+    
+    /**
+     * @return List of Strings containing the version's Kind Of Data entries
+     */
+    public List<String> getKindOfData() {
+        List<String> kod = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.kindOfData)) {
+                kod.addAll(dsf.getValues());
+            }
+        }
+        return kod;
+    }
+    
+    /**
+     * @return List of Strings containing the version's language entries
+     */
+    public List<String> getLanguages() {
+        List<String> languages = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.language)) {
+                languages.addAll(dsf.getValues());
+            }
+        }
+        return languages;
+    }
+    
+        // TODO: consider calling the newer getSpatialCoverages method below with the commaSeparated boolean set to true.
+    public List<String> getSpatialCoverages() {
+        List<String> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.geographicCoverage)) {
+                for (DatasetFieldCompoundValue geoValue : dsf.getDatasetFieldCompoundValues()) {
+                    List<String> coverage = new ArrayList<String>();
+                    for (DatasetField subField : geoValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.country)) {
+                            if (!subField.isEmptyForDisplay()) {
+                            } else {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.state)) {
+                            if (!subField.isEmptyForDisplay()) {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.city)) {
+                            if (!subField.isEmptyForDisplay()) {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                        if (subField.getDatasetFieldType().getName()
+                                .equals(DatasetFieldConstant.otherGeographicCoverage)) {
+                            if (!subField.isEmptyForDisplay()) {
+                                coverage.add(subField.getValue());
+                            }
+                        }
+                    }
+                    if (!coverage.isEmpty()) {
+                        retList.add(String.join(",", coverage));
+                    }
+                }
+            }
+        }
+        return retList;
+    }
+ 
     public List<String> getSpatialCoverages(boolean commaSeparated) {
         List<String> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -1056,7 +1120,7 @@ public class DatasetVersion implements Serializable {
     public List<String> getKeywords() {
         return getCompoundChildFieldValues(DatasetFieldConstant.keyword, DatasetFieldConstant.keywordValue);
     }
-
+    
     public List<DatasetRelPublication> getRelatedPublications() {
         List<DatasetRelPublication> relatedPublications = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -1083,38 +1147,38 @@ public class DatasetVersion implements Serializable {
     }
     
     /**
-	 * @return List of Strings containing the version's Grant Agency(ies)
-	 */
-	public List<String> getUniqueGrantAgencyValues() {
+     * @return List of Strings containing the version's Grant Agency(ies)
+     */
+    public List<String> getUniqueGrantAgencyValues() {
 
-		// Since only grant agency names are returned, use distinct() to avoid repeats
-		// (e.g. if there are two grants from the same agency)
-		return getCompoundChildFieldValues(DatasetFieldConstant.grantNumber, DatasetFieldConstant.grantNumberAgency)
-				.stream().distinct().collect(Collectors.toList());
-	}
+        // Since only grant agency names are returned, use distinct() to avoid repeats
+        // (e.g. if there are two grants from the same agency)
+        return getCompoundChildFieldValues(DatasetFieldConstant.grantNumber, DatasetFieldConstant.grantNumberAgency)
+                .stream().distinct().collect(Collectors.toList());
+    }
 
-	/**
-	 * @return String containing the version's series title
-	 */
-	public String getSeriesTitle() {
+    /**
+     * @return String containing the version's series title
+     */
+    public String getSeriesTitle() {
 
-		List<String> seriesNames = getCompoundChildFieldValues(DatasetFieldConstant.series,
-				DatasetFieldConstant.seriesName);
-		if (seriesNames.size() > 1) {
-			logger.warning("More than one series title found for datasetVersion: " + this.id);
-		}
-		if (!seriesNames.isEmpty()) {
-			return seriesNames.get(0);
-		} else {
-			return null;
-		}
-	}
+        List<String> seriesNames = getCompoundChildFieldValues(DatasetFieldConstant.series,
+                DatasetFieldConstant.seriesName);
+        if (seriesNames.size() > 1) {
+            logger.warning("More than one series title found for datasetVersion: " + this.id);
+        }
+        if (!seriesNames.isEmpty()) {
+            return seriesNames.get(0);
+        } else {
+            return null;
+        }
+    }
 
-	/**
-	 * @param parentFieldName
-	 *            compound dataset field A (from DatasetFieldConstant.*)
-	 * @param childFieldName
-	 *            dataset field B, child field of A (from DatasetFieldConstant.*)
+    /**
+     * @param parentFieldName
+     *            compound dataset field A (from DatasetFieldConstant.*)
+     * @param childFieldName
+     *            dataset field B, child field of A (from DatasetFieldConstant.*)
      * @return List of values of the child field
      */
     public List<String> getCompoundChildFieldValues(String parentFieldName, String childFieldName) {
@@ -1146,7 +1210,7 @@ public class DatasetVersion implements Serializable {
                 for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
                     for (DatasetField subField : authorValue.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerName)) {
-                        	producerNames.add(subField.getDisplayValue().trim());
+                            producerNames.add(subField.getDisplayValue().trim());
                         }
                     }
                 }
@@ -1494,9 +1558,10 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
+        
         return returnSet;
     }
-
+    
     public List<WorkflowComment> getWorkflowComments() {
         return workflowComments;
     }
@@ -1635,7 +1700,7 @@ public class DatasetVersion implements Serializable {
         }
         
         job.add("keywords", keywords);
-
+        
         /**
          * citation: (multiple) related publication citation and URLs, if
          * present.
@@ -1671,7 +1736,7 @@ public class DatasetVersion implements Serializable {
                 job.add("citation", jsonArray);
             }
         }
-
+        
         /**
          * temporalCoverage:
          * (if available)
@@ -1685,13 +1750,13 @@ public class DatasetVersion implements Serializable {
             }
             job.add("temporalCoverage", temporalCoverage);
         }
-
+        
         /**
          * https://schema.org/version/3.4/ says, "Note that schema.org release
          * numbers are not generally included when you use schema.org. In
          * contexts (e.g. related standards work) when a particular release
          * needs to be cited, this document provides the appropriate URL."
-         *
+         * 
          * For the reason above we decided to take out schemaVersion but we're
          * leaving this Javadoc in here to remind us that we made this decision.
          * We used to include "https://schema.org/version/3.3" in the output for
@@ -1738,7 +1803,7 @@ public class DatasetVersion implements Serializable {
         if (!funderNames.isEmpty()) {
             JsonArrayBuilder funderArray = Json.createArrayBuilder();
             for (String funderName : funderNames) {
-                JsonObjectBuilder funder = Json.createObjectBuilder();
+                JsonObjectBuilder funder = NullSafeJsonBuilder.jsonObjectBuilder();
                 funder.add("@type", "Organization");
                 funder.add("name", funderName);
                 funderArray.add(funder);
