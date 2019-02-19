@@ -5,7 +5,7 @@ html {
   min-height:100%;
 }
 body {
-  /* /* Sticky footer Margin bottom by footer height */
+  /* Sticky footer Margin bottom by footer height */
   margin-bottom:160px;
 }
 body.widget-view {margin-bottom:54px;}
