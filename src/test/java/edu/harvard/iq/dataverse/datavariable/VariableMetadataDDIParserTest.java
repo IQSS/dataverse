@@ -21,7 +21,7 @@ public class VariableMetadataDDIParserTest {
      */
     public void testDDIReader()  {
 
-        String fileName = "src/test/resources/xml/DataCuration.xml";
+        String fileName = "src/test/resources/xml/dct.xml";
         XMLStreamReader xmlr = null;
 
         XMLInputFactory factory=XMLInputFactory.newInstance();
@@ -57,31 +57,40 @@ public class VariableMetadataDDIParserTest {
 
     void variableTest(Map<Long,VariableMetadata> vmMap) {
 
-        VariableMetadata vm =  vmMap.get(619L);
+        VariableMetadata vm =  vmMap.get(1170L);
         assertNotNull(vm);
 
         assertEquals(vm.getLabel(),"gender");
-        assertEquals(vm.getInterviewinstruction(),"int");
-        assertEquals(vm.getLiteralquestion(), "lit q");
-        assertEquals(vm.getNotes(), "note");
-        assertEquals(vm.getUniverse(),"univrse");
+        assertEquals(vm.getInterviewinstruction(),"These are interview instructions.");
+        assertEquals(vm.getLiteralquestion(), "This is a literal question.");
+        assertEquals(vm.getNotes(), "These are notes.\nA lot of them.");
+        assertEquals(vm.getUniverse(),"Our universe");
         assertEquals(false, vm.isIsweightvar());
         assertEquals(false, vm.isWeighted());
 
-        vm =  vmMap.get(618L);
+        vm =  vmMap.get(1169L);
         assertNotNull(vm);
         assertEquals(false, vm.isIsweightvar());
-        assertEquals(false, vm.isWeighted());
+        assertEquals(true, vm.isWeighted());
         assertEquals(vm.getLabel(), "age_rollup"  );
 
         assertEquals(vm.getInterviewinstruction(), null);
         assertEquals(vm.getLiteralquestion(), null);
-        assertEquals(vm.getNotes(), null);
+        assertEquals(vm.getNotes(), "This variable is weighted.");
         assertEquals(vm.getUniverse(), null);
+        assertNotNull(vm.getWeightvariable());
+        long idWeight = vm.getWeightvariable().getId();
+        assertEquals(idWeight, 1168);
 
-        vm =  vmMap.get(620L);
+        vm =  vmMap.get(1168L);
         assertNotNull(vm);
-
+        assertEquals(true, vm.isIsweightvar());
+        assertEquals(false, vm.isWeighted());
+        assertEquals(vm.getLabel(), "weight"  );
+        assertEquals(vm.getInterviewinstruction(), null);
+        assertEquals(vm.getLiteralquestion(), "Literal question for weight");
+        assertEquals(vm.getNotes(), "Notes");
+        assertEquals(vm.getUniverse(), null);
 
     }
 
@@ -93,9 +102,9 @@ public class VariableMetadataDDIParserTest {
         //first group
         Set<DataVariable> dvSet1 = new HashSet<DataVariable>();
         DataVariable dv = new DataVariable();
-        dv.setId(619L);
+        dv.setId(1169L);
         dvSet1.add(dv);
-        dv.setId(620L);
+        dv.setId(1170L);
         dvSet1.add(dv);
         eachGroupTest(vg1,"New Group 1",dvSet1);
 
@@ -103,7 +112,7 @@ public class VariableMetadataDDIParserTest {
         VarGroup vg2 =  varGroupMap.get(2L);
         assertNotNull(vg2);
         Set<DataVariable> dvSet2 = new HashSet<DataVariable>();
-        dv.setId(618L);
+        dv.setId(1168L);
         dvSet2.add(dv);
         eachGroupTest(vg2,"New Group 2",dvSet2);
 

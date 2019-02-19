@@ -97,9 +97,11 @@ public class VariableMetadataDDIParser {
             DataVariable weightVariable = new DataVariable();
             weightVariable.setId(wgt_id);
             newVM.setWeightvariable(weightVariable);
+            newVM.setWeighted(true);
 
         } else {
             newVM.setWeightvariable(null);
+            newVM.setWeighted(false);
         }
 
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
@@ -112,6 +114,8 @@ public class VariableMetadataDDIParser {
                     processNote(xmlr, newVM);
                 } else if (xmlr.getLocalName().equals("qstn")) {
                     processQstn(xmlr, newVM);
+                } else if (xmlr.getLocalName().equals("catgry")) {
+                    processCatgry(xmlr, dv);
                 }
 
             } else if (event == XMLStreamConstants.END_ELEMENT) {
@@ -180,6 +184,78 @@ public class VariableMetadataDDIParser {
             newVM.setNotes(note);
         }
         return;
+    }
+
+    private void processCatgry(XMLStreamReader xmlr, DataVariable dv) throws XMLStreamException {
+        VariableCategory cat = new VariableCategory();
+        cat.setMissing( "Y".equals( xmlr.getAttributeValue(null, "missing") ) ); // default is N, so null sets missing to false
+        cat.setDataVariable(dv);
+
+        if (dv.getCategories() == null || dv.getCategories().isEmpty()) {
+            // if this is the first category we encounter, we'll assume that this
+            // categorical data/"factor" variable is ordered.
+            // But we'll switch it back to unordered later, if we encounter
+            // *any* categories with no order attribute defined.
+
+            dv.setOrderedCategorical(true);
+        }
+
+
+        // Process extra level order values, if available;
+        // Currently (as of 3.6) only available in R Data ingests.
+        // TODO:
+        // revisit this (for 4.0) - we've discussed encoding this order
+        // simply by the order in which the categories appear in the
+        // DDI. (-- L.A. 4.0 beta 9)
+
+        String order = null;
+        order = xmlr.getAttributeValue(null, "order");
+        Integer orderValue = null;
+        if (order != null) {
+            try {
+                orderValue = new Integer (order);
+            } catch (NumberFormatException ex) {
+                orderValue = null;
+            }
+        }
+
+        if (orderValue != null && orderValue >= 0) {
+            cat.setOrder(orderValue);
+        } else if (!cat.isMissing()) {
+            // Everey category of an ordered categorical ("factor") variable
+            // must have the order rank defined. Which means that if we
+            // encounter a single NON-MISSING category with no ordered attribute, it
+            // will be processed as un-ordered.
+
+            dv.setOrderedCategorical(false);
+        }
+
+
+        dv.getCategories().add(cat);
+
+        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                if (xmlr.getLocalName().equals("labl")) {
+                    /*String _labl = processLabl( xmlr, LEVEL_CATEGORY );
+                    if (_labl != null && !_labl.isEmpty()) {
+                        cat.setLabel( _labl );
+                    }*/
+                } else if (xmlr.getLocalName().equals("catValu")) {
+                    cat.setValue( parseText(xmlr, false) );
+                }
+                else if (xmlr.getLocalName().equals("catStat")) {
+                    String type = xmlr.getAttributeValue(null, "type");
+                    /*if (type == null || CAT_STAT_TYPE_FREQUENCY.equalsIgnoreCase( type ) ) {
+                        String _freq = parseText(xmlr);
+                        if (_freq != null && !_freq.isEmpty()) {
+                            cat.setFrequency( new Double( _freq ) );
+                        }
+                    }*/
+                }
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+                if (xmlr.getLocalName().equals("catgry")) return;
+            }
+        }
     }
 
     private String parseText(XMLStreamReader xmlr) throws XMLStreamException {
