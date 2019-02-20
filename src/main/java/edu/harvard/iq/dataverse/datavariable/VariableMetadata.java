@@ -192,6 +192,7 @@ public class VariableMetadata implements Serializable  {
 
     public void setWfreq(Set<CategoryMetadata> categoriesMetadata) {
         this.categoriesMetadata = categoriesMetadata;
+
     }
 
     @Override
