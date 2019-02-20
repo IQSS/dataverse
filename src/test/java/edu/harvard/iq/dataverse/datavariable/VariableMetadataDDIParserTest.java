@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Collection;
 
 import static org.junit.Assert.*;
 
@@ -68,6 +69,9 @@ public class VariableMetadataDDIParserTest {
         assertEquals(false, vm.isIsweightvar());
         assertEquals(false, vm.isWeighted());
 
+        testCategoriesVar1(vm);
+
+
         vm =  vmMap.get(1169L);
         assertNotNull(vm);
         assertEquals(false, vm.isIsweightvar());
@@ -82,6 +86,8 @@ public class VariableMetadataDDIParserTest {
         long idWeight = vm.getWeightvariable().getId();
         assertEquals(idWeight, 1168);
 
+        testCategoriesVar2(vm);
+
         vm =  vmMap.get(1168L);
         assertNotNull(vm);
         assertEquals(true, vm.isIsweightvar());
@@ -92,6 +98,42 @@ public class VariableMetadataDDIParserTest {
         assertEquals(vm.getNotes(), "Notes");
         assertEquals(vm.getUniverse(), null);
 
+        testCategoriesVar3(vm);
+
+    }
+
+    void testCategoriesVar1(VariableMetadata vm) {
+        Collection<CategoryMetadata> cms = vm.getWfreq();
+        assertEquals(cms.size(),2);
+
+        for (CategoryMetadata cm : cms) {
+            switch (cm.getCategory().getValue()) {
+                case "1":
+                    assertEquals(Math.abs(cm.getWfreq() - 0) <= 0.01, true);
+                    break;
+                case "2":
+                    assertEquals(Math.abs(cm.getWfreq() - 866.44) <= 0.01, true);
+                    break;
+                case "3":
+                    assertEquals(Math.abs(cm.getWfreq() - 1226.35) <= 0.01, true);
+                    break;
+                case "4":
+                    assertEquals(Math.abs(cm.getWfreq() - 952.22) <= 0.01, true);
+                    break;
+                default:
+                    assertEquals(0,1);
+            }
+        }
+    }
+
+    void testCategoriesVar2(VariableMetadata vm) {
+        Collection<CategoryMetadata> cms = vm.getWfreq();
+        assertEquals(cms.size(),4);
+    }
+
+    void testCategoriesVar3(VariableMetadata vm) {
+        Collection<CategoryMetadata> cms = vm.getWfreq();
+        assertEquals(cms.size(),0);
     }
 
     void groupTest(Map<Long,VarGroup> varGroupMap) {

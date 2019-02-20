@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.datavariable;
 
 
+import edu.harvard.iq.dataverse.FileMetadata;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -13,6 +15,10 @@ public class VariableMetadataDDIParser {
 
 
     public static final String LEVEL_VARIABLE = "variable";
+    public static final String LEVEL_CATEGORY = "category";
+    public static final String CAT_STAT_TYPE_FREQUENCY = "freq";
+    public static final String CAT_STAT_WGTD_FREQUENCY = "wgtd";
+
 
     public VariableMetadataDDIParser () {
 
@@ -70,7 +76,6 @@ public class VariableMetadataDDIParser {
             }
         }
 
-
     }
 
     private void processVar(XMLStreamReader xmlr,  Map<Long, VariableMetadata> mapVarToVarMet ) throws XMLStreamException {
@@ -82,7 +87,9 @@ public class VariableMetadataDDIParser {
         DataVariable dv = new DataVariable();
         dv.setId(id);
 
-        VariableMetadata newVM = new VariableMetadata();
+        FileMetadata fm = new FileMetadata();
+
+        VariableMetadata newVM = new VariableMetadata(dv,fm);
 
         String wgt =  xmlr.getAttributeValue(null, "wgt");
         if (wgt != null && wgt.equals("wgt")) {
@@ -115,7 +122,7 @@ public class VariableMetadataDDIParser {
                 } else if (xmlr.getLocalName().equals("qstn")) {
                     processQstn(xmlr, newVM);
                 } else if (xmlr.getLocalName().equals("catgry")) {
-                    processCatgry(xmlr, dv);
+                    processCatgry(xmlr, newVM);
                 }
 
             } else if (event == XMLStreamConstants.END_ELEMENT) {
@@ -186,75 +193,52 @@ public class VariableMetadataDDIParser {
         return;
     }
 
-    private void processCatgry(XMLStreamReader xmlr, DataVariable dv) throws XMLStreamException {
+    private void processCatgry(XMLStreamReader xmlr, VariableMetadata newVM) throws XMLStreamException {
+        CategoryMetadata cm = new CategoryMetadata();
+        cm.setVariableMetadata(newVM);
         VariableCategory cat = new VariableCategory();
-        cat.setMissing( "Y".equals( xmlr.getAttributeValue(null, "missing") ) ); // default is N, so null sets missing to false
-        cat.setDataVariable(dv);
+        cm.setCategory(cat);
 
-        if (dv.getCategories() == null || dv.getCategories().isEmpty()) {
-            // if this is the first category we encounter, we'll assume that this
-            // categorical data/"factor" variable is ordered.
-            // But we'll switch it back to unordered later, if we encounter
-            // *any* categories with no order attribute defined.
-
-            dv.setOrderedCategorical(true);
-        }
-
-
-        // Process extra level order values, if available;
-        // Currently (as of 3.6) only available in R Data ingests.
-        // TODO:
-        // revisit this (for 4.0) - we've discussed encoding this order
-        // simply by the order in which the categories appear in the
-        // DDI. (-- L.A. 4.0 beta 9)
-
-        String order = null;
-        order = xmlr.getAttributeValue(null, "order");
-        Integer orderValue = null;
-        if (order != null) {
-            try {
-                orderValue = new Integer (order);
-            } catch (NumberFormatException ex) {
-                orderValue = null;
-            }
-        }
-
-        if (orderValue != null && orderValue >= 0) {
-            cat.setOrder(orderValue);
-        } else if (!cat.isMissing()) {
-            // Everey category of an ordered categorical ("factor") variable
-            // must have the order rank defined. Which means that if we
-            // encounter a single NON-MISSING category with no ordered attribute, it
-            // will be processed as un-ordered.
-
-            dv.setOrderedCategorical(false);
-        }
-
-
-        dv.getCategories().add(cat);
+        newVM.getWfreq().add(cm);
 
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("labl")) {
-                    /*String _labl = processLabl( xmlr, LEVEL_CATEGORY );
+                    String _labl = processLabl( xmlr, LEVEL_CATEGORY );
                     if (_labl != null && !_labl.isEmpty()) {
                         cat.setLabel( _labl );
-                    }*/
+                    }
                 } else if (xmlr.getLocalName().equals("catValu")) {
                     cat.setValue( parseText(xmlr, false) );
                 }
                 else if (xmlr.getLocalName().equals("catStat")) {
                     String type = xmlr.getAttributeValue(null, "type");
-                    /*if (type == null || CAT_STAT_TYPE_FREQUENCY.equalsIgnoreCase( type ) ) {
+                    String wgtd = xmlr.getAttributeValue(null, "wgtd");
+                    if (type != null && CAT_STAT_TYPE_FREQUENCY.equalsIgnoreCase(type) && wgtd == null) {
                         String _freq = parseText(xmlr);
                         if (_freq != null && !_freq.isEmpty()) {
-                            cat.setFrequency( new Double( _freq ) );
+                            cat.setFrequency(new Double(_freq));
                         }
-                    }*/
+                    } else if (wgtd != null && type != null && CAT_STAT_TYPE_FREQUENCY.equalsIgnoreCase(type) &&
+                            CAT_STAT_WGTD_FREQUENCY.equalsIgnoreCase(wgtd)) {
+                        String wfreq = parseText(xmlr);
+                        if (wfreq!= null && !wfreq.isEmpty()) {
+                            cm.setWfreq(new Double(wfreq));
+                        }
+                    }
+
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("catgry")) return;
             }
+        }
+    }
+
+    private String processLabl(XMLStreamReader xmlr, String level) throws XMLStreamException {
+        if (level.equalsIgnoreCase( xmlr.getAttributeValue(null, "level") ) ) {
+            return parseText(xmlr);
+        } else {
+            return null;
         }
     }
 

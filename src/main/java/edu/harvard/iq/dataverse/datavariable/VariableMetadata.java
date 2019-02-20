@@ -16,7 +16,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.CascadeType;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import java.util.ArrayList;
 
 import edu.harvard.iq.dataverse.FileMetadata;
 
@@ -101,6 +103,7 @@ public class VariableMetadata implements Serializable  {
     public VariableMetadata (DataVariable dataVariable, FileMetadata fileMetadata) {
         this.dataVariable = dataVariable;
         this.fileMetadata = fileMetadata;
+        categoriesMetadata = new ArrayList<CategoryMetadata>() ;
     }
 
     /**
