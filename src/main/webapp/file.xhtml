@@ -428,7 +428,7 @@
                                                 </div>
                                             </div>
                                             <!--Only show Public download url if identifier is available -->
-                                            <div class="form-group" jsf:rendered="#{FilePage.publiclyDownloadable and !FilePage.fileMetadata.dataFile.filePackage and FilePage.file.identifier != null}">
+                                            <div class="form-group" jsf:rendered="#{FilePage.publiclyDownloadable and !FilePage.fileMetadata.dataFile.filePackage}">
                                                 <label class="col-sm-3 control-label">                                                   
                                                    #{bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
                                                 </label>

@@ -848,14 +848,11 @@ public class DatasetVersion implements Serializable {
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributorType)) {
                             contributorType = subField.getDisplayValue();
-                            // TODO: Consider how this will work in French, Chinese, etc.
-                            String funderString = "Funder";
-                            if (funderString.equals(contributorType)) {
-                                addFunder = true;
-                            }
                         }
                     }
-                    if (addFunder) {
+                    //SEK 02/12/2019 move outside loop to prevent contrib type to carry over to next contributor
+                    // TODO: Consider how this will work in French, Chinese, etc.
+                    if ("Funder".equals(contributorType)) {
                         retList.add(contributorName);
                     }
                 }
@@ -1806,7 +1803,7 @@ public class DatasetVersion implements Serializable {
         if (!funderNames.isEmpty()) {
             JsonArrayBuilder funderArray = Json.createArrayBuilder();
             for (String funderName : funderNames) {
-                JsonObjectBuilder funder = Json.createObjectBuilder();
+                JsonObjectBuilder funder = NullSafeJsonBuilder.jsonObjectBuilder();
                 funder.add("@type", "Organization");
                 funder.add("name", funderName);
                 funderArray.add(funder);
