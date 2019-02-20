@@ -63,7 +63,7 @@ Testing Make Data Count and Dataverse
 
 A developer running Counter Processor alongside Dataverse for development or testing purposes will notice that once the raw Dataverse logs have been processed, there is no straightforward way to re-test those same logs.
 
-The first thing to fix is to clear two files from Counter Processor ...
+The first thing to fix is to clear two files from Counter Processor ``state`` folder, ``statefile.json`` and ``counter_db_[yyyy-mm].sqlite3``
 
 Second, if you are also sending your SUSHI report to Make Data Count, you will notice that re-running Counter Processor will not update the information logged on their servers. This is due to us clearing the state of Counter Processor, which in turn causes Counter Processor to send incorrectly structured requests to Make Data Count. The easiest way to resolve this issue is to ``DELETE`` the record Counter Processor has created on Make Data Count:
 

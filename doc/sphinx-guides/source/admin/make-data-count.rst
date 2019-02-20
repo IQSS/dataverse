@@ -35,7 +35,9 @@ The most important takeaways from the diagram are:
 Limitations for Dataverse Installations Using Handles Rather Than DOIs
 ----------------------------------------------------------------------
 
-Data repositories using Handles and other identifiers are not supported by Make Data Count but in the notes_ following a July 2018 webinar, you can see the Make Data Count project's response on this topic. In short, the DataCite hub does not want to receive reports for non-DOI datasets. Additionally, citations are only available from the DataCite hub for datasets that have DOIs. The Dataverse usage logging and Counter Processor tool can still be used to track other identifier and store the metrics in Dataverse.
+Data repositories using Handles and other identifiers are not supported by Make Data Count but in the notes_ following a July 2018 webinar, you can see the Make Data Count project's response on this topic. In short, the DataCite hub does not want to receive reports for non-DOI datasets. Additionally, citations are only available from the DataCite hub for datasets that have DOIs. 
+
+This being said, the Dataverse usage logging can still generate logs and process those logs with Counter Processor to create json that details usage on a dataset level. Dataverse can ingest this locally generated json.
 
 When editing the ``counter-processor-config.yaml`` file mentioned below, make sure that the ``upload_to_hub`` boolean is set to ``False``.
 
