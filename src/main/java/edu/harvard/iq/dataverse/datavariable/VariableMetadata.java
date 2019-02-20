@@ -12,6 +12,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Column;
+import javax.persistence.OneToMany;
+import javax.persistence.CascadeType;
+
+import java.util.Collection;
+import java.util.Set;
 
 import edu.harvard.iq.dataverse.FileMetadata;
 
@@ -79,9 +84,10 @@ public class VariableMetadata implements Serializable  {
     private boolean weighted = false;
 
     /**
-     * wfreq: Weighted frequency for weigted variable
+     * categoriesMetadata: variable metadata for categories that includes weighted frequencies
      */
-    private Double wfreq;
+    @OneToMany (mappedBy="VariableMetadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    private Collection<CategoryMetadata> categoriesMetadata;
 
     /**
      * dataVariable: DataVariable with which this variable is weighted.
@@ -180,12 +186,13 @@ public class VariableMetadata implements Serializable  {
         return weighted;
     }
 
-    public Double getWfreq() {
-        return wfreq;
+    public Collection<CategoryMetadata> getWfreq() {
+        return categoriesMetadata;
     }
 
-    public void setWfreq(Double wfreq) {
-        this.wfreq = wfreq;
+    public void setWfreq(Set<CategoryMetadata> categoriesMetadata) {
+        this.categoriesMetadata = categoriesMetadata;
+
     }
 
     @Override
