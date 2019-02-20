@@ -75,6 +75,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -310,6 +311,24 @@ public class Admin extends AbstractApiBean {
 		}
 		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
 	}
+        
+        @PUT
+        @Path("authenticatedUsers/changeIdentifier/{identifier}")
+        public Response changeAuthenticatedUserIdentifier(@PathParam("identifier") String oldIdentifier, String newIdentifier) {
+
+            AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(oldIdentifier); //MAD: I should understand what attributes getAuthenticatedUser works for
+            BuiltinUser builtinUser = builtinUserService.findByUserName(authenticatedUser.getUserIdentifier());
+            if (authenticatedUser == null) {
+                return error(Response.Status.BAD_REQUEST, "User " + oldIdentifier + " not found.");
+            }
+            try {
+                execCommand( new ChangeUserIdentifierCommand(createDataverseRequest(authenticatedUser), authenticatedUser, builtinUser, newIdentifier));
+            } catch (Exception e){
+                return error(Response.Status.BAD_REQUEST, "SAD! " + e);
+            }
+            
+            return ok("YEAH");
+        }
 
 	@POST
 	@Path("publishDataverseAsCreator/{id}")
@@ -1390,4 +1409,6 @@ public class Admin extends AbstractApiBean {
         return error(Response.Status.BAD_REQUEST,
                 "InheritParentRoleAssignments does not list any roles on this instance");
     }
+    
+
 }
