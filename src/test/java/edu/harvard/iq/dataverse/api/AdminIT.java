@@ -463,6 +463,46 @@ public class AdminIT {
         assertEquals(200, deleteSuperuser.getStatusCode());
 
     }
+    
+    @Test
+    public void testChangeAuthenticatedUserIdentifier() {
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+        String usernameOfUser = UtilIT.getUsernameFromResponse(createUser);
+        
+        String newUsername = "newUser_" + UtilIT.getRandomString(4);
+        Response changeAuthIdResponse = UtilIT.changeAuthenticatedUserIdentifier(usernameOfUser, newUsername, superuserApiToken);
+        changeAuthIdResponse.prettyPrint();
+        changeAuthIdResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        String newUsernameBad = ""; //one character, should fail before bean validation even
+        Response changeAuthIdResponseBad = UtilIT.changeAuthenticatedUserIdentifier(usernameOfUser, newUsernameBad, superuserApiToken);
+        changeAuthIdResponseBad.prettyPrint();
+        changeAuthIdResponseBad.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+        
+        String newUsernameBad2 = "z"; //one character, should fail bean validation
+        Response changeAuthIdResponseBad2 = UtilIT.changeAuthenticatedUserIdentifier(usernameOfUser, newUsernameBad2, superuserApiToken);
+        changeAuthIdResponseBad2.prettyPrint();
+        changeAuthIdResponseBad2.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+        
+        //if this fails likely one of the converts that said they failed actually didn't!
+        Response deleteUserToConvert = UtilIT.deleteUser(newUsername);
+        assertEquals(200, deleteUserToConvert.getStatusCode());
+
+        Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
+        assertEquals(200, deleteSuperuser.getStatusCode());
+    }
 
     @Test
     public void testCreateNonBuiltinUserViaApi() {

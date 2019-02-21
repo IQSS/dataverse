@@ -52,6 +52,7 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
         bu.setUserName(newIdentifier);
         
         //Validate the BuiltinUser change. Username validations are there.
+        //If we have our validation errors pass up to commands, this could be removed
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         Set<ConstraintViolation<BuiltinUser>> violations = validator.validate(bu);

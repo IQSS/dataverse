@@ -1045,6 +1045,14 @@ public class UtilIT {
                 .put("/api/admin/authenticatedUsers/convert/builtin2oauth");
         return response;
     }
+    
+    static Response changeAuthenticatedUserIdentifier(String oldIdentifier, String newIdentifier, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(newIdentifier)
+                .put("/api/admin/authenticatedUsers/changeIdentifier/"+ oldIdentifier );
+        return response;
+    }
 
     static Response restrictFile(String fileIdOrPersistentId, boolean restrict, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
