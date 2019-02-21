@@ -497,9 +497,9 @@
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                 <!-- Username -->
                                     <label for="userNameEmail" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.username.illegal.tip']}">
-                                            #{bundle['user.username']} <span class="glyphicon glyphicon-asterisk text-danger"/>
-                                        </span>
+                                        #{bundle['user.username']} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                        <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.username.illegal.tip']}"></span>
                                     </label>
                                     <div class="col-sm-9">
                                         <p class="help-block">#{bundle['user.username.valid']}</p>
@@ -516,9 +516,9 @@
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
                                 <!-- Current Password -->
                                     <label for="currentPassword" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.currentPasswd.tip']}">
-                                            #{bundle['user.currentPasswd']} <span class="glyphicon glyphicon-asterisk text-danger"/>
-                                        </span>
+                                        #{bundle['user.currentPasswd']} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                        <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.currentPasswd.tip']}"></span>
                                     </label>
                                     <div class="col-sm-4">
                                         <p:password id="currentPassword" label="#{bundle['user.currentPasswd']}" styleClass="form-control" value="#{DataverseUserPage.currentPassword}" autocomplete="off"/><!-- browsers will in general not respect autocomplete="foo", but scanners will still flag it as a potential problem -->
@@ -528,10 +528,10 @@
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
                                 <!-- Password -->
                                     <label for="inputPassword" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.passwd.illegal.tip']}">
-                                            <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.password'] : bundle['user.newPassword']}" />
-                                            <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                                        </span>
+                                        <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.password'] : bundle['user.newPassword']}" />
+                                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                                        <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.passwd.illegal.tip']}"></span>
                                     </label>
                                     <div class="col-sm-9">
                                         <div class="help-block">
@@ -548,9 +548,9 @@
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
                                     <!-- Retype Password -->
                                     <label for="retypePassword" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.rePasswd.tip']}">
-                                            #{bundle['user.rePasswd']} <span class="glyphicon glyphicon-asterisk text-danger"/>
-                                        </span>
+                                        #{bundle['user.rePasswd']} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                        <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.rePasswd.tip']}"></span>
                                     </label>
                                     <div class="col-sm-4">
                                         <p:password id="retypePassword" label="#{bundle['user.rePasswd']}" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" autocomplete="off"/><!-- browsers will in general not respect autocomplete="foo", but scanners will still flag it as a potential problem -->
@@ -560,9 +560,9 @@
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                 <!-- First Name -->
                                     <label for="firstName" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.firstName.tip']}">
-                                            #{bundle['user.firstName']} <span class="glyphicon glyphicon-asterisk text-danger"/>
-                                        </span>
+                                        #{bundle['user.firstName']} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                        <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.firstName.tip']}"></span>
                                     </label>
                                     <div class="col-sm-4">
                                         <p:inputText id="firstName" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.firstName}" />
@@ -572,9 +572,9 @@
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Last Name -->
                                     <label for="lastName" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.lastName.tip']}">
-                                            #{bundle['user.lastName']} <span class="glyphicon glyphicon-asterisk text-danger"/>
-                                        </span>
+                                        #{bundle['user.lastName']} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                        <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.lastName.tip']}"></span>
                                     </label>
                                     <div class="col-sm-4">
                                         <p:inputText id="lastName" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.lastName}" />
@@ -584,9 +584,9 @@
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Email -->
                                     <label for="email" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{user.email.tip}">
-                                            #{bundle.email} <span class="glyphicon glyphicon-asterisk text-danger"/>
-                                        </span>
+                                        #{bundle.email} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                        <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.email.tip']}"></span>
                                     </label>
                                     <div class="col-sm-4">
                                         <p:inputText id="email" styleClass="form-control"
@@ -599,9 +599,9 @@
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'EDIT' and DataverseUserPage.userAuthProvider.displayIdentifier}">
                                     <!-- ORCID iD, for example -->
                                     <label for="userPersistentId" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DataverseUserPage.userAuthProvider.persistentIdDescription}">
-                                            #{DataverseUserPage.userAuthProvider.persistentIdName}
-                                        </span>
+                                        #{DataverseUserPage.userAuthProvider.persistentIdName}
+                                        <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{DataverseUserPage.userAuthProvider.persistentIdDescription}"></span>
                                     </label>
                                     <div class="col-sm-4">
                                         <p class="form-control-static">
@@ -615,9 +615,9 @@
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Affiliation -->
                                     <label for="affiliation" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.affiliation.tip']}">
-                                            #{bundle.affiliation}
-                                        </span>
+                                        #{bundle.affiliation}
+                                        <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.affiliation.tip']}"></span>
                                     </label>
                                     <div class="col-sm-4">
                                         <p:inputText id="affiliation" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.affiliation}" />
@@ -627,9 +627,9 @@
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                 <!-- Position -->
                                     <label for="position" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.position.tip']}">
-                                            #{bundle['user.position']}
-                                        </span>
+                                        #{bundle['user.position']}
+                                        <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.position.tip']}"></span>
                                     </label>
                                     <div class="col-sm-4">
                                         <p:inputText id="position" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.position}" />
