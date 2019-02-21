@@ -38,22 +38,6 @@
                 // Break out of iframe
                 if (window !== top) top.location = window.location;
             </script>
-	    <script type="text/javascript">
-		// <![CDATA[
-  		var _paq = _paq || [];
-  		_paq.push(['trackPageView']);
-  		_paq.push(['enableLinkTracking']);
-  		(function() {
-    		var u="//stats.dans.knaw.nl/";
-    		_paq.push(['setTrackerUrl', u+'danstats.php']);
-    		_paq.push(['setSiteId', '5']);
-    		var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-    		g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'danstats.js'; s.parentNode.insertBefore(g,s);
-	  	})();
-		// ]]>
-	    </script>
-<noscript><p><img src="https://stats.dans.knaw.nl/danstats.php?idsite=5" style="border:0;" /></p></noscript>
- 
         </ui:fragment>
 	<ui:fragment rendered="#{!empty settingsWrapper.get(':StyleCustomizationFile')}">
             <style>
