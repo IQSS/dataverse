@@ -4,22 +4,15 @@ import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import java.sql.Array;
-import java.util.AbstractMap;
+import org.apache.commons.lang.StringUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import org.apache.commons.lang.StringUtils;
 
 /*
  * To change this license header, choose License Headers in Project Properties.

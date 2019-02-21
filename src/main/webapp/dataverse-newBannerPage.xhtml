@@ -39,19 +39,23 @@
 
                             <div class="col-sm-3 form-col-container">
                                 <div class="col-sm-11 form-col-container">
+                                    <p:message style="margin: auto" for="first-file-warning"
+                                               display="text"/>
                                     <p:message id="first-file-warning"
                                                style="margin: auto" for="second-file-warning" display="text"/>
                                     <p:message style="margin: auto" id="second-file-warning" for="upload"
                                                display="text"/>
                                 </div>
                                 <p:fileUpload id="upload" fileUploadListener="#{EditBannerPage.uploadFileEvent}"
-                                              update="image" auto="true" allowTypes="/(\.|\/)(jpe?g|png)$/"
+                                              update="image" auto="true"
                                               mode="advanced" required="true">
                                     <f:attribute name="imageLocale" value="#{lm.locale}"/>
                                 </p:fileUpload>
                                 <p:graphicImage id="image" value="#{lm.displayedImage}" stream="false"/>
 
                                 <h:outputLabel for="message-locale" value="Link: "/>
+                                <p:message style="margin: auto" for="message-locale"
+                                           display="text"/>
                                 <h:inputText id="message-locale" tabindex="1" styleClass="form-control"
                                              value="#{lm.imageLink}"/>
                             </div>
