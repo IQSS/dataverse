@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -18,6 +17,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.Channel;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -32,7 +32,7 @@ public class StorageIOTest {
     StorageIO<Dataset> instance = new FileAccessIO<>();
 
     @Test
-    public void testGetChannel() throws FileNotFoundException {
+    public void testGetChannel() throws IOException {
         assertEquals(null, instance.getChannel());
         Channel c = new RandomAccessFile("src/main/java/Bundle.properties", "r").getChannel();
         instance.setChannel(c);
@@ -104,7 +104,7 @@ public class StorageIOTest {
     }
 
     @Test
-    public void testInputStream() {
+    public void testInputStream() throws IOException {
         assertEquals(null, instance.getInputStream());
         InputStream is = new ByteArrayInputStream("Test".getBytes());
         instance.setInputStream(is);
@@ -228,7 +228,7 @@ public class StorageIOTest {
 
     @Test
     public void testGenerateVariableHeader() {
-        DataVariable var = new DataVariable();
+        DataVariable var = new DataVariable(0,null);
         var.setName("Random");
 
         @SuppressWarnings("unchecked")

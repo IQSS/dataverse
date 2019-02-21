@@ -231,4 +231,129 @@ public class DataversesIT {
         assertTrue(htmlStr4.contains(expectedErrMsg));
 
     }
+    
+    @Test
+    public void testMoveDataverse() {
+        Response createUser = UtilIT.createRandomUser();
+        
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        Response superuserResponse = UtilIT.makeSuperUser(username);
+        
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
+        
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);//.publishDataverseViaSword(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+        
+        Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse2.prettyPrint();
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
+        Response publishDataverse2 = UtilIT.publishDataverseViaNativeApi(dataverseAlias2, apiToken);
+        assertEquals(200, publishDataverse2.getStatusCode());
+        
+        Response moveResponse = UtilIT.moveDataverse(dataverseAlias, dataverseAlias2, true, apiToken);
+
+        moveResponse.prettyPrint();
+        moveResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        Response search = UtilIT.search("id:dataverse_" + dataverseId + "&subtree=" + dataverseAlias2, apiToken);
+        search.prettyPrint();
+        search.then().assertThat()
+                .body("data.total_count", equalTo(1))
+                .statusCode(200);
+    }
+    
+    @Test
+    public void testCreateDeleteDataverseLink() {
+        Response createUser = UtilIT.createRandomUser();
+        
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        Response superuserResponse = UtilIT.makeSuperUser(username);
+        
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
+        
+        Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse2.prettyPrint();
+        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
+        
+        Response createLinkingDataverseResponse = UtilIT.createDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
+        createLinkingDataverseResponse.prettyPrint();
+        
+        createLinkingDataverseResponse.then().assertThat()
+                .body("data.message", equalTo("Dataverse " + dataverseAlias + " linked successfully to " + dataverseAlias2))
+                .statusCode(200);
+        
+        Response deleteLinkingDataverseResponse = UtilIT.deleteDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
+        deleteLinkingDataverseResponse.prettyPrint();
+        deleteLinkingDataverseResponse.then().assertThat()
+                .body("data.message", equalTo("Link from Dataverse " + dataverseAlias + " to linked Dataverse " + dataverseAlias2 + " deleted"))
+                .statusCode(200);
+    }
+    
+    @Test
+    public void testUpdateDefaultContributorRole() {
+        Response createUser = UtilIT.createRandomUser();
+
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response superuserResponse = UtilIT.makeSuperUser(username);
+
+        Response createUserRando = UtilIT.createRandomUser();
+
+        createUserRando.prettyPrint();
+        String apiTokenRando = UtilIT.getApiTokenFromResponse(createUserRando);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        //Try no perms user
+        Response updateDataverseDefaultRoleNoPerms = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "curator", apiTokenRando);
+        updateDataverseDefaultRoleNoPerms.prettyPrint();
+        updateDataverseDefaultRoleNoPerms.then().assertThat()
+                .statusCode(401);
+        
+        // try role with no dataset permissions alias
+        Response updateDataverseDefaultRoleBadRolePermissions = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "dvContributor", apiToken);
+        updateDataverseDefaultRoleBadRolePermissions.prettyPrint();
+        updateDataverseDefaultRoleBadRolePermissions.then().assertThat()
+                .body("message", equalTo("Role dvContributor does not have dataset permissions."))
+                .statusCode(400);
+
+        //for test use an existing role. In practice this likely will be a custom role
+        Response updateDataverseDefaultRole = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "curator", apiToken);
+        updateDataverseDefaultRole.prettyPrint();
+        updateDataverseDefaultRole.then().assertThat()
+                .body("data.message", equalTo("Default contributor role for Dataverse " + dataverseAlias + " has been set to Curator."))
+                .statusCode(200);
+        
+        //for test use an existing role. In practice this likely will be a custom role
+        Response updateDataverseDefaultRoleNone = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "none", apiToken);
+        updateDataverseDefaultRoleNone.prettyPrint();
+        updateDataverseDefaultRoleNone.then().assertThat()
+                .body("data.message", equalTo("Default contributor role for Dataverse " + dataverseAlias + " has been set to None."))
+                .statusCode(200);
+
+        // try bad role alias
+        Response updateDataverseDefaultRoleBadRoleAlias = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "colonel", apiToken);
+        updateDataverseDefaultRoleBadRoleAlias.prettyPrint();
+        updateDataverseDefaultRoleBadRoleAlias.then().assertThat()
+                .body("message", equalTo("Role colonel not found."))
+                .statusCode(404);
+
+    }
+    
 }

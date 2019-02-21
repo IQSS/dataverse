@@ -5,7 +5,6 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:p="http://primefaces.org/ui">
-
     <h:head>
     </h:head>
 
@@ -16,6 +15,7 @@
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="dataverseId" value="#{dashboardPage.dataverseId}"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{dashboardPage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), bundle['dashboard.title'])}"/>
                 </f:metadata>
@@ -64,7 +64,7 @@
                                             <p class="small text-muted">#{bundle['harvestserver.service.empty']}</p>
                                         </div>
                                         <div class="col-xs-6" jsf:rendered="#{dashboardPage.numberOfOaiSets gt 0}">
-                                            <h:outputText value="#{dashboardPage.harvestServerEnabled ? 'Enabled' : 'Disabled'}"/>
+                                            <h:outputText value="#{dashboardPage.harvestServerEnabled ? bundle['harvestserver.service.enabled'] : bundle['harvestserver.service.disabled']}"/>
                                             <p class="small text-muted">#{bundle['dashboard.card.harvestingserver.status']}</p>
                                         </div>
                                         <div class="col-xs-6" jsf:rendered="#{dashboardPage.numberOfOaiSets gt 0}">

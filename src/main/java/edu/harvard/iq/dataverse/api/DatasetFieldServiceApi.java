@@ -55,6 +55,8 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     @EJB
     ControlledVocabularyValueServiceBean controlledVocabularyValueService;
 
+    private static final Logger logger = Logger.getLogger(DatasetFieldServiceApi.class.getName());
+    
     @GET
     public Response getAll() {
         try {
@@ -132,6 +134,15 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 parentAllowsMultiplesBoolean = parent.isAllowMultiples();
                 parentAllowsMultiplesDisplay = Boolean.toString(parentAllowsMultiplesBoolean);
             }
+            JsonArrayBuilder controlledVocabularyValues = Json.createArrayBuilder();
+            for (ControlledVocabularyValue controlledVocabularyValue : dsf.getControlledVocabularyValues()) {
+                controlledVocabularyValues.add(NullSafeJsonBuilder.jsonObjectBuilder()
+                        .add("id", controlledVocabularyValue.getId())
+                        .add("strValue", controlledVocabularyValue.getStrValue())
+                        .add("displayOrder", controlledVocabularyValue.getDisplayOrder())
+                        .add("identifier", controlledVocabularyValue.getIdentifier())
+                );
+            }
             return ok(NullSafeJsonBuilder.jsonObjectBuilder()
                     .add("name", dsf.getName())
                     .add("id", id )
@@ -140,6 +151,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                     .add("fieldType", fieldType.name())
                     .add("allowsMultiples", allowsMultiples)
                     .add("hasParent", hasParent)
+                    .add("controlledVocabularyValues", controlledVocabularyValues)
                     .add("parentAllowsMultiples", parentAllowsMultiplesDisplay)
                     .add("solrFieldSearchable", solrFieldSearchable)
                     .add("solrFieldFacetable", solrFieldFacetable)
@@ -277,7 +289,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             return error(Status.EXPECTATION_FAILED, "File not found");
             
         } catch (Exception e) {
-            Logger.getLogger(DatasetFieldServiceApi.class.getName()).log(Level.WARNING, "Error parsing dataset fields:" + e.getMessage(), e);
+            logger.log(Level.WARNING, "Error parsing dataset fields:" + e.getMessage(), e);
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             alr.setInfo( alr.getInfo() + "// " + e.getMessage());
             return error(Status.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -287,8 +299,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 try {
                     br.close();
                 } catch (IOException e) {
-                    Logger.getLogger(DatasetFieldServiceApi.class.getName())
-                            .log(Level.WARNING, "Error closing the reader while importing Dataset Fields.");
+                    logger.log(Level.WARNING, "Error closing the reader while importing Dataset Fields.");
                 }
             }
             actionLogSvc.log(alr);
@@ -308,6 +319,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             mdb.setOwner(dataverseService.findByAlias(values[2]));
         }
         mdb.setDisplayName(values[3]);
+        if (values.length>4 && !StringUtils.isEmpty(values[4])) {
+            mdb.setNamespaceUri(values[4]);
+        }
 
         metadataBlockService.save(mdb);
         return mdb.getName();
@@ -337,8 +351,13 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         dsf.setRequired(Boolean.parseBoolean(values[13]));
         if (!StringUtils.isEmpty(values[14])) {
             dsf.setParentDatasetFieldType(datasetFieldService.findByName(values[14]));
+        } else {
+            dsf.setParentDatasetFieldType(null);
         }
         dsf.setMetadataBlock(dataverseService.findMDBByName(values[15]));
+        if(values.length>16 && !StringUtils.isEmpty(values[16])) {
+          dsf.setUri(values[16]);
+        }
         datasetFieldService.save(dsf);
         return dsf.getName();
     }

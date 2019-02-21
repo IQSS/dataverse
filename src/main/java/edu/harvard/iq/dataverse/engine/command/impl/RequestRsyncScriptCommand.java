@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.datacapturemodule.UploadRequestResponse;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.DataCaptureModuleUrl;
 import java.util.Collections;
@@ -41,9 +42,12 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
     }
 
     @Override
-    public ScriptRequestResponse execute(CommandContext ctxt) throws CommandException {
+    public ScriptRequestResponse execute(CommandContext ctxt) throws CommandException {       
         if (request == null) {
-            throw new PermissionException("DataverseRequest cannot be null.", this, Collections.singleton(Permission.AddDataset), dataset);
+            throw new IllegalCommandException("DataverseRequest cannot be null.", this);
+        }
+        if(!dataset.getFiles().isEmpty()){
+            throw new IllegalCommandException("Cannot get script for a dataset that already has a file", this);
         }
         String dcmBaseUrl = ctxt.settings().getValueForKey(DataCaptureModuleUrl);
         if (dcmBaseUrl == null) {
@@ -71,6 +75,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
         int statusCode = uploadRequestResponse.getHttpStatusCode();
         String response = uploadRequestResponse.getResponse();
         if (statusCode != 200) {
+            // TODO: replace with CommandExecutionException?
             throw new RuntimeException("When making the upload request, rather than 200 the status code was " + statusCode + ". The body was \'" + response + "\'. We cannot proceed. Returning.");
         }
         long millisecondsToSleep = DataCaptureModuleServiceBean.millisecondsToSleepBetweenUploadRequestAndScriptRequestCalls;
@@ -88,7 +93,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
         }
         String script = scriptRequestResponse.getScript();
         if (script == null || script.isEmpty()) {
-            logger.warning("There was a problem getting the script. DCM returned status code: "+scriptRequestResponse.getHttpStatusCode());
+            logger.warning("There was a problem getting the script for " + dataset.getIdentifier() + " . DCM returned status code: "+scriptRequestResponse.getHttpStatusCode());
         }
         logger.fine("script for dataset " + dataset.getId() + ": " + script);
         return scriptRequestResponse;

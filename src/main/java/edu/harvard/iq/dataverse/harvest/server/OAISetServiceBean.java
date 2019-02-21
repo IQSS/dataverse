@@ -1,13 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.harvest.server;
 
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.harvest.client.ClientHarvestRun;
-import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
@@ -31,11 +24,11 @@ import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
-import org.apache.solr.client.solrj.impl.HttpSolrServer.RemoteSolrException;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -58,6 +51,9 @@ public class OAISetServiceBean implements java.io.Serializable {
     
     @EJB
     OAIRecordServiceBean oaiRecordService;
+    
+    @EJB 
+    DatasetServiceBean datasetService;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean");
     
@@ -88,12 +84,35 @@ public class OAISetServiceBean implements java.io.Serializable {
         }
         return oaiSet;
     }
+    
+    // Find the default, "no name" set:
+    public OAISet findDefaultSet() {
+        String query = "SELECT o FROM OAISet o where o.spec = ''";
+        OAISet oaiSet = null;
+        try {
+            oaiSet = (OAISet) em.createQuery(query).getSingleResult();
+        } catch (Exception e) {
+            // Do nothing, just return null. 
+        }
+        return oaiSet;
+    }
 
     public List<OAISet> findAll() {
         try {
             logger.fine("setService, findAll; query: select object(o) from OAISet as o order by o.name");
             List<OAISet> oaiSets = em.createQuery("select object(o) from OAISet as o order by o.name", OAISet.class).getResultList();
             logger.fine((oaiSets != null ? oaiSets.size() : 0) + " results found.");
+            return oaiSets;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    public List<OAISet> findAllNamedSets() {
+        try {
+            logger.info("setService, findAllNamedSets; query: select object(o) from OAISet as o where o.spec != '' order by o.spec");
+            List<OAISet> oaiSets = em.createQuery("select object(o) from OAISet as o where o.spec != '' order by o.spec", OAISet.class).getResultList();
+            logger.info((oaiSets != null ? oaiSets.size() : 0) + " results found.");
             return oaiSets;
         } catch (Exception e) {
             return null;
@@ -115,12 +134,13 @@ public class OAISetServiceBean implements java.io.Serializable {
        return em.find(OAISet.class,id);
     }   
     
-    private SolrServer solrServer = null;
+    private SolrClient solrServer = null;
     
-    private SolrServer getSolrServer () {
+    private SolrClient getSolrServer () {
         if (solrServer == null) {
         }
-        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
+        solrServer = new HttpSolrClient.Builder(urlString).build();
         
         return solrServer;
         
@@ -142,8 +162,16 @@ public class OAISetServiceBean implements java.io.Serializable {
 
         List<Long> datasetIds;
         try {
-            datasetIds = expandSetQuery(query);
-            exportLogger.info("set query expanded to " + datasetIds.size() + " datasets.");
+            if (!oaiSet.isDefaultSet()) {
+                datasetIds = expandSetQuery(query);
+                exportLogger.info("set query expanded to " + datasetIds.size() + " datasets.");
+            } else {
+                // The default set includes all the local, published datasets. 
+                // findAllLocalDatasetIds() finds the ids of all the local datasets - 
+                // including the unpublished drafts and deaccessioned ones.
+                // Those will be filtered out further down the line. 
+                datasetIds = datasetService.findAllLocalDatasetIds();
+            }
         } catch (OaiSetException ose) {
             datasetIds = null;
         }
@@ -263,8 +291,8 @@ public class OAISetServiceBean implements java.io.Serializable {
             }
             logger.fine(error);
             throw new OaiSetException(error);
-        } catch (SolrServerException ex) {
-            logger.fine("Internal Dataverse Search Engine Error");
+        } catch (SolrServerException | IOException ex) {
+            logger.warning("Internal Dataverse Search Engine Error");
             throw new OaiSetException("Internal Dataverse Search Engine Error");
         }
         

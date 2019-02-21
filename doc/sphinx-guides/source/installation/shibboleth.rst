@@ -57,7 +57,7 @@ If you are running el6 (RHEL/CentOS 6):
 Install Shibboleth Via Yum
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``yum install shibboleth shibboleth-embedded-ds``
+``yum install shibboleth-2.6.1 shibboleth-embedded-ds-2.6.1``
 
 Configure Glassfish
 -------------------
@@ -65,7 +65,7 @@ Configure Glassfish
 Apply GRIZZLY-1787 Patch
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order for the Dataverse "download as zip" feature to work well with large files without causing ``OutOfMemoryError`` problems on Glassfish 4.1 when fronted with Apache, you should stop Glassfish, with ``asadmin stop-domain domain1``, make a backup of ``glassfish4/glassfish/modules/glassfish-grizzly-extra-all.jar``, replace it with a patched version of ``glassfish-grizzly-extra-all.jar`` downloaded from :download:`here </_static/installation/files/issues/2180/grizzly-patch/glassfish-grizzly-extra-all.jar>` (the md5 is in the :download:`README <../_static/installation/files/issues/2180/grizzly-patch/readme.md>`), and start Glassfish again with ``asadmin start-domain domain1``.
+In order for the Dataverse "download as zip" feature to work well with large files without causing ``OutOfMemoryError`` problems on Glassfish 4.1 when fronted with Apache, you should stop Glassfish, with ``./asadmin stop-domain domain1``, make a backup of ``glassfish4/glassfish/modules/glassfish-grizzly-extra-all.jar``, replace it with a patched version of ``glassfish-grizzly-extra-all.jar`` downloaded from :download:`here </_static/installation/files/issues/2180/grizzly-patch/glassfish-grizzly-extra-all.jar>` (the md5 is in the :download:`README <../_static/installation/files/issues/2180/grizzly-patch/readme.md>`), and start Glassfish again with ``./asadmin start-domain domain1``.
 
 For more background on the patch, please see https://java.net/jira/browse/GRIZZLY-1787 and https://github.com/IQSS/dataverse/issues/2180 and https://github.com/payara/Payara/issues/350
 
@@ -76,20 +76,20 @@ Glassfish HTTP and HTTPS ports
 
 Apache will be listening on ports 80 and 443 so we need to make sure Glassfish isn't using them. If you've been changing the default ports used by Glassfish per the :doc:`config` section, revert the Glassfish HTTP service to listen on 8080, the default port:
 
-``asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.port=8080``
+``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.port=8080``
 
 Likewise, if necessary, revert the Glassfish HTTPS service to listen on port 8181:
 
-``asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=8181``
+``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=8181``
 
 AJP
 ~~~
 
 A ``jk-connector`` network listener should have already been set up when you ran the installer mentioned in the :doc:`installation-main` section, but for reference, here is the command that is used:
 
-``asadmin create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector``
+``./asadmin create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector``
 
-You can verify this with ``asadmin list-network-listeners``. 
+You can verify this with ``./asadmin list-network-listeners``. 
 
 This enables the `AJP protocol <http://en.wikipedia.org/wiki/Apache_JServ_Protocol>`_ used in Apache configuration files below.
 
@@ -98,7 +98,7 @@ SSLEngine Warning Workaround
 
 When fronting Glassfish with Apache and using the jk-connector (AJP, mod_proxy_ajp), in your Glassfish server.log you can expect to see "WARNING ... org.glassfish.grizzly.http.server.util.RequestUtils ... jk-connector ... Unable to populate SSL attributes java.lang.IllegalStateException: SSLEngine is null".
 
-To hide these warnings, run ``asadmin set-log-levels org.glassfish.grizzly.http.server.util.RequestUtils=SEVERE`` so that the WARNING level is hidden as recommended at https://java.net/jira/browse/GLASSFISH-20694 and https://github.com/IQSS/dataverse/issues/643#issuecomment-49654847
+To hide these warnings, run ``./asadmin set-log-levels org.glassfish.grizzly.http.server.util.RequestUtils=SEVERE`` so that the WARNING level is hidden as recommended at https://java.net/jira/browse/GLASSFISH-20694 and https://github.com/IQSS/dataverse/issues/643#issuecomment-49654847
 
 Configure Apache
 ----------------
@@ -195,6 +195,13 @@ attribute-map.xml
 ~~~~~~~~~~~~~~~~~
 
 By default, some attributes ``/etc/shibboleth/attribute-map.xml`` are commented out. Edit the file to enable them so that all the require attributes come through. You can download a :download:`sample attribute-map.xml file <../_static/installation/files/etc/shibboleth/attribute-map.xml>`.
+
+Shibboleth and ADFS
+~~~~~~~~~~~~~~~~~~~
+With appropriate configuration, Dataverse and Shibboleth can make use of "single sign on" using Active Directory.
+This requires configuring ``shibd`` and ``httpd`` to load appropriate libraries, and insuring that the attribute mapping matches those provided.
+Example configuration files for :download:`shibboleth2.xml <../_static/installation/files/etc/shibboleth/shibboleth2_adfs.xml>` and :download:`attribute-map.xml <../_static/installation/files/etc/shibboleth/attribute-map_adfs.xml>` may be helpful.
+Note that your ADFS server hostname goes in the file referenced under "MetadataProvider" in your shibboleth2.xml file.
 
 Disable or Reconfigure SELinux
 ------------------------------
@@ -395,9 +402,9 @@ Whereas users convert their own accounts from local to Shibboleth as described a
 - Support emails the user and indicates that that they should use the password reset feature to set a new password and to make sure to take note of their username under Account Information (or the password reset confirmation email) since the user never had a username before.
 - The user resets password and is able to log in with their local account. All permissions have been preserved with the exception of any permissions assigned to an institution-wide Shibboleth group to which the user formerly belonged.
 
-In the example below, the user has indicated that the new email address they'd like to have associated with their account is "former.shib.user@mailinator.com" and their user id from the ``authenticateduser`` database table is "2". The API token must belong to a superuser (probably the sysadmin executing the command).
+In the example below, the user has indicated that the new email address they'd like to have associated with their account is "former.shib.user@mailinator.com" and their user id from the ``authenticateduser`` database table is "2". The API token must belong to a superuser (probably the sysadmin executing the command). Note that the old version of this call, `convertShibToBuiltIn`, is deprecated and will be deleted in a future release.
 
-``curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d "former.shib.user@mailinator.com" http://localhost:8080/api/admin/authenticatedUsers/id/2/convertShibToBuiltIn``
+``curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d "former.shib.user@mailinator.com" http://localhost:8080/api/admin/authenticatedUsers/id/2/convertRemoteToBuiltIn``
 
 Rather than looking up the user's id in the ``authenticateduser`` database table, you can issue this command to get a listing of all users:
 

@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.File;
@@ -166,7 +167,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     public void validateTagline(FacesContext context, UIComponent component, Object value) throws ValidatorException {
 
         if (!StringUtils.isEmpty((String) value) && ((String) value).length() > 140) {
-            FacesMessage msg = new FacesMessage("Tagline must be at most 140 characters.");
+            FacesMessage msg = new FacesMessage(BundleUtil.getStringFromBundle("theme.validateTagline"));
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
 
             throw new ValidatorException(msg);
@@ -181,8 +182,8 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             }
         } catch (MalformedURLException e) {
             FacesMessage msg
-                    = new FacesMessage(" URL validation failed.",
-                            "Please provide URL.");
+                    = new FacesMessage(BundleUtil.getStringFromBundle("theme.urlValidate"),
+                    BundleUtil.getStringFromBundle("theme.urlValidate.msg"));
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
 
             throw new ValidatorException(msg);
@@ -278,13 +279,13 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             commandEngine.submit(cmd);
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "error updating dataverse theme", ex);
-           FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Dataverse Save Failed-", JH.localize("dataverse.theme.failure")));
+           FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataverse.save.failed"), BundleUtil.getStringFromBundle("dataverse.theme.failure")));
         
           return null;
         } finally {
               this.cleanupTempDirectory(); 
         }
-        JsfHelper.addSuccessMessage(JH.localize("dataverse.theme.success"));    
+        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.theme.success"));    
         return "dataverse.xhtml?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
     }
       

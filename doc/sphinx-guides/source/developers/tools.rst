@@ -13,10 +13,28 @@ Netbeans Connector Chrome Extension
 The `Netbeans Connector <https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa?hl=en>`_ extension for Chrome allows you to see changes you've made to HTML pages the moment you save the file without having to refresh your browser. See also 
 http://wiki.netbeans.org/ChromeExtensionInstallation
 
+pgAdmin
++++++++
+
+You probably installed pgAdmin when following the steps in the :doc:`dev-environment` section but if not, you can download it from https://www.pgadmin.org
+
 Maven
 +++++
 
-With Maven installed you can run `mvn package` and `mvn test` from the command line. It can be downloaded from https://maven.apache.org
+With Maven installed you can run ``mvn package`` and ``mvn test`` from the command line. It can be downloaded from https://maven.apache.org
+
+Vagrant
++++++++
+
+Vagrant allows you to spin up a virtual machine running Dataverse on your development workstation. You'll need to install Vagrant from https://www.vagrantup.com and VirtualBox from https://www.virtualbox.org.
+
+We assume you have already cloned the repo from https://github.com/IQSS/dataverse as explained in the :doc:`/developers/dev-environment` section.
+
+From the root of the git repo (where the ``Vagrantfile`` is), run ``vagrant up`` and eventually you should be able to reach an installation of Dataverse at http://localhost:8888 (the ``forwarded_port`` indicated in the ``Vagrantfile``).
+
+Please note that running ``vagrant up`` for the first time should run the ``downloads/download.sh`` script for you to download required software such as Glassfish and Solr and any patches. However, these dependencies change over time so it's a place to look if ``vagrant up`` was working but later fails.
+
+On Windows if you see an error like ``/usr/bin/perl^M: bad interpreter`` you might need to run ``dos2unix`` on the installation scripts. 
 
 PlantUML
 ++++++++
@@ -53,22 +71,6 @@ created. You can edit this file to configure PageKite to serve up port 8080
 
 According to https://pagekite.net/support/free-for-foss/ PageKite (very generously!) offers free accounts to developers writing software the meets http://opensource.org/docs/definition.php such as Dataverse.
 
-Vagrant
-+++++++
-
-Vagrant allows you to spin up a virtual machine running Dataverse on your development workstation. You'll need to install Vagrant from https://www.vagrantup.com and VirtualBox from https://www.virtualbox.org.
-
-We assume you have already cloned the repo from https://github.com/IQSS/dataverse as explained in the :doc:`/developers/dev-environment` section.
-
-From the root of the git repo, run ``vagrant up`` and eventually you
-should be able to reach an installation of Dataverse at
-http://localhost:8888 (or whatever forwarded_port indicates in the
-Vagrantfile).
-
-Please note that running ``vagrant up`` for the first time should run the ``downloads/download.sh`` script for you to download required software such as Glassfish and Solr and any patches. However, these dependencies change over time so it's a place to look if ``vagrant up`` was working but later fails.
-
-On Windows if you see an error like ``/usr/bin/perl^M: bad interpreter`` you might need to run ``dos2unix`` on the installation scripts. 
-
 MSV
 +++
 
@@ -87,6 +89,59 @@ FontCustom
 The custom file type icons were created with the help of `FontCustom <https://github.com/FontCustom/fontcustom>`. Their README provides installation instructions as well as directions for producing your own vector-based icon font.
 
 Here is a vector-based SVG file to start with as a template: :download:`icon-template.svg <../_static/icon-template.svg>`
+
+SonarQube
++++++++++
+
+SonarQube is a static analysis tool that can be used to identify possible problems in the codebase, or with new code. It may report false positives or false negatives, but can help identify potential problems before they are reported in prodution or to identify potential causes of problems reported in production.
+
+Download SonarQube from https://www.sonarqube.org and start look in the `bin` directory for a `sonar.sh` script for your architecture. Once the tool is running on http://localhost:9000 you can use it as the URL in this example script to run sonar:
+
+.. code-block:: bash
+
+    #!/bin/sh
+
+    mvn sonar:sonar \
+    -Dsonar.host.url=${your_sonar_url} \
+    -Dsonar.login=${your_sonar_token_for_project} \
+    -Dsonar.test.exclusions='src/test/**,src/main/webapp/resources/**' \
+    -Dsonar.issuesReport.html.enable=true \
+    -Dsonar.issuesReport.html.location='sonar-issues-report.html' \
+    -Dsonar.jacoco.reportPath=target/jacoco.exec
+
+Once the analysis is complete, you should be able to access http://localhost:9000/dashboard?id=edu.harvard.iq%3Adataverse to see the report. To learn about resource leaks, for example, click on "Bugs", the "Tag", then "leak" or "Rule", then "Resources should be closed".
+
+Infer
++++++
+
+Infer is another static analysis tool that can be downloaded from https://github.com/facebook/infer
+
+Example command to run infer:
+
+.. code-block:: bash
+
+    $  infer -- mvn package
+
+Look for "RESOURCE_LEAK", for example.
+
+lsof
+++++
+
+If file descriptors are not closed, eventually the open but unused resources can cause problems with system (glassfish in particular) stability.
+Static analysis and heap dumps are not always sufficient to identify the sources of these problems.
+For a quick sanity check, it can be helpful to check that the number of file descriptors does not increase after a request has finished processing.
+
+For example...
+
+.. code-block:: bash
+
+    $  lsof | grep M6EI0N | wc -l
+    0
+    $  curl -X GET "http://localhost:8083/dataset.xhtml?persistentId=doi:10.5072/FK2/M6EI0N" > /dev/null
+    $  lsof | grep M6EI0N | wc -l
+    500
+
+would be consistent with a file descriptor leak on the dataset page.
 
 ----
 

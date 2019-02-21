@@ -6,7 +6,6 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-    
     <h:head>
     </h:head>
 
@@ -21,6 +20,7 @@
                     <f:viewParam name="id" value="#{TemplatePage.templateId}"/>
                     <f:viewParam name="ownerId" value="#{TemplatePage.ownerId}"/>
                     <f:viewParam name="editMode" value="#{TemplatePage.editMode}"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{TemplatePage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(TemplatePage.template.dataverse, (TemplatePage.editMode == 'CREATE' ? bundle['dataset.manageTemplates.createBtn'] : TemplatePage.template.name))}"/>
                 </f:metadata>

@@ -1,7 +1,10 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.io.Serializable;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -43,6 +46,9 @@ public class MetadataBlock implements Serializable {
     @Column( nullable = false )
     private String displayName;
 
+    @Column( name = "namespaceuri", columnDefinition = "TEXT")
+    private String namespaceUri;
+    
     public Long getId() {
         return id;
     }
@@ -56,7 +62,14 @@ public class MetadataBlock implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-    
+
+    public String getNamespaceUri() {
+        return namespaceUri;
+    }
+    public void setNamespaceUri(String namespaceUri) {
+        this.namespaceUri = namespaceUri;
+    }
+
     @OneToMany(mappedBy = "metadataBlock", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder")
     private List<DatasetFieldType> datasetFieldTypes;
@@ -168,6 +181,14 @@ public class MetadataBlock implements Serializable {
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.MetadataBlock[ id=" + id + " ]";
-    }    
-    
+    }
+
+    public String getLocaleDisplayName()
+    {
+        try {
+            return BundleUtil.getStringFromPropertyFile("metadatablock.displayName", getName());
+        } catch (MissingResourceException e) {
+            return displayName;
+        }
+    }
 }

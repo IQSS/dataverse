@@ -5,22 +5,24 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:o="http://omnifaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       lang="en">
     <h:head>
+        <o:resourceInclude path="/CustomizationFilesServlet?customFileType=analytics" />
         <title><h:outputText value="#{pageTitle}"/></title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <meta http-equiv="Content-Language" content="en"/>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-        <link type="image/png" rel="icon" href="/resources/images/favicondataverse.png"/>
-        <h:outputStylesheet library="bs" name="css/bootstrap.min.css" />
-        <h:outputStylesheet library="bs" name="css/bootstrap-theme.min.css" />
-        <h:outputStylesheet library="css" name="ie-compat.css" />
-        <h:outputStylesheet library="css" name="owl.carousel.css" />
-        <h:outputStylesheet library="css" name="fontcustom.css"/>
-        <h:outputStylesheet library="css" name="socicon.css"/>
-        <h:outputStylesheet library="css" name="structure.css"/>
+        <link type="image/png" rel="icon" href="#{resource['images/favicondataverse.png']}" />
+        <link type="image/png" rel="image_src" href="#{resource['images/dataverseproject.png']}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap.min.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap-theme.min.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/ie-compat.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/fontcustom.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/socicon.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/structure.css']}?version=#{systemConfig.getVersion()}" />
         
         <script>
             //<![CDATA[
@@ -78,8 +80,6 @@
             </f:facet>
         </p:ajaxStatus>
         <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap-hover-dropdown.min.js']}?version=#{systemConfig.getVersion()}"></script>
         <script type="text/javascript" defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
-        <ui:include src="google-analytics-snippet.xhtml"></ui:include>
     </h:body>
 </html>

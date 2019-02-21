@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -58,6 +59,53 @@ public class DvObjectServiceBean implements java.io.Serializable {
     public List<DvObject> findAll() {
         return em.createNamedQuery("DvObject.findAll", DvObject.class).getResultList();
     }
+    
+    
+    public List<DvObject> findByOwnerId(Long ownerId) {
+        return em.createNamedQuery("DvObject.findByOwnerId").setParameter("ownerId", ownerId).getResultList();
+    }
+
+    // FIXME This type-by-string has to go, in favor of passing a class parameter.
+    public DvObject findByGlobalId(String globalIdString, String typeString) {
+        return findByGlobalId(globalIdString, typeString, false);
+    }
+    
+        // FIXME This type-by-string has to go, in favor of passing a class parameter.
+    public DvObject findByGlobalId(String globalIdString, String typeString, Boolean altId) {
+
+        try {
+            GlobalId gid = new GlobalId(globalIdString);
+
+            DvObject foundDvObject = null;
+            try {
+                Query query;                                
+                if (altId) {
+                   query = em.createNamedQuery("DvObject.findByAlternativeGlobalId"); 
+                } else{
+                   query = em.createNamedQuery("DvObject.findByGlobalId");
+                }
+                query.setParameter("identifier", gid.getIdentifier());
+                query.setParameter("protocol", gid.getProtocol());
+                query.setParameter("authority", gid.getAuthority());
+                query.setParameter("dtype", typeString);
+                foundDvObject = (DvObject) query.getSingleResult();
+            } catch (javax.persistence.NoResultException e) {
+                // (set to .info, this can fill the log file with thousands of
+                // these messages during a large harvest run)
+                logger.fine("no dvObject found: " + globalIdString);
+                // DO nothing, just return null.
+                return null;
+            } catch (Exception ex) {
+                logger.info("Exception caught in findByGlobalId: " + ex.getLocalizedMessage());
+                return null;
+            }
+            return foundDvObject;
+
+        } catch (IllegalArgumentException iae) {
+            logger.info("Invalid identifier: " + globalIdString);
+            return null;
+        }
+    }
 
     public DvObject updateContentIndexTime(DvObject dvObject) {
         /**
@@ -86,12 +134,12 @@ public class DvObjectServiceBean implements java.io.Serializable {
         Long dvObjectId = dvObject.getId();
         DvObject dvObjectToModify = findDvObject(dvObjectId);
         if (dvObjectToModify == null) {
-            logger.fine("Unable to update permission index time on DvObject with id of " + dvObjectId);
+            logger.log(Level.FINE, "Unable to update permission index time on DvObject with id of {0}", dvObjectId);
             return dvObject;
         }
         dvObjectToModify.setPermissionIndexTime(new Timestamp(new Date().getTime()));
         DvObject savedDvObject = em.merge(dvObjectToModify);
-        logger.fine("Updated permission index time for DvObject id " + dvObjectId);
+        logger.log(Level.FINE, "Updated permission index time for DvObject id {0}", dvObjectId);
         return savedDvObject;
     }
 

@@ -7,10 +7,15 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.ejb.EJB;
 
 /**
@@ -18,20 +23,33 @@ import javax.ejb.EJB;
  * @author skraffmiller
  */
 public class GlobalId implements java.io.Serializable {
-
     
     public static final String DOI_PROTOCOL = "doi";
     public static final String HDL_PROTOCOL = "hdl";
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
     public static final String DOI_RESOLVER_URL = "https://doi.org/";
     
+    public static Optional<GlobalId> parse(String identifierString) {
+        try {
+            return Optional.of(new GlobalId(identifierString));
+        } catch ( IllegalArgumentException _iae) {
+            return Optional.empty();
+        }
+    }
+    
+    private static final Logger logger = Logger.getLogger(GlobalId.class.getName());
+    
     @EJB
     SettingsServiceBean settingsService;
 
+    /**
+     * 
+     * @param identifier The string to be parsed
+     * @throws IllegalArgumentException if the passed string cannot be parsed.
+     */
     public GlobalId(String identifier) {
-        
         // set the protocol, authority, and identifier via parsePersistentId        
-        if (!this.parsePersistentId(identifier)){
+        if ( ! parsePersistentId(identifier) ){
             throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
         }
     }
@@ -41,17 +59,26 @@ public class GlobalId implements java.io.Serializable {
         this.authority = authority;
         this.identifier = identifier;
     }
-
-    public GlobalId(Dataset dataset){
-        this.authority = dataset.getAuthority();
-        this.protocol = dataset.getProtocol();
-        this.identifier = dataset.getIdentifier();
+    
+    public GlobalId(DvObject dvObject) {
+        this.authority = dvObject.getAuthority();
+        this.protocol = dvObject.getProtocol();
+        this.identifier = dvObject.getIdentifier(); 
     }
         
     private String protocol;
     private String authority;
     private String identifier;
 
+    /**
+     * Tests whether {@code this} instance has all the data required for a 
+     * global id.
+     * @return {@code true} iff all the fields are non-empty; {@code false} otherwise.
+     */
+    public boolean isComplete() {
+        return !(isEmpty(protocol)||isEmpty(authority)||isEmpty(identifier));
+    }
+    
     public String getProtocol() {
         return protocol;
     }
@@ -75,13 +102,29 @@ public class GlobalId implements java.io.Serializable {
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
-
+    
     public String toString() {
+        return asString();
+    }
+    
+    /**
+     * Returns {@code this}' string representation. Differs from {@link #toString}
+     * which can also contain debug data, if needed.
+     * 
+     * @return The string representation of this global id.
+     */
+    public String asString() {
+        if (protocol == null || authority == null || identifier == null) {
+            return "";
+        }
         return protocol + ":" + authority + "/" + identifier;
     }
     
     public URL toURL() {
         URL url = null;
+        if (identifier == null){
+            return null;
+        }
         try {
             if (protocol.equals(DOI_PROTOCOL)){
                url = new URL(DOI_RESOLVER_URL + authority + "/" + identifier); 
@@ -89,7 +132,7 @@ public class GlobalId implements java.io.Serializable {
                url = new URL(HDL_RESOLVER_URL + authority + "/" + identifier);  
             }           
         } catch (MalformedURLException ex) {
-            Logger.getLogger(GlobalId.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
         }       
         return url;
     }    
@@ -100,8 +143,8 @@ public class GlobalId implements java.io.Serializable {
      * 
      *   Example 1: doi:10.5072/FK2/BYM3IW
      *       protocol: doi
-     *       authority: 10.5072/FK2
-     *       identifier: BYM3IW
+     *       authority: 10.5072
+     *       identifier: FK2/BYM3IW
      * 
      *   Example 2: hdl:1902.1/111012
      *       protocol: hdl
@@ -109,47 +152,49 @@ public class GlobalId implements java.io.Serializable {
      *       identifier: 111012
      *
      * @param identifierString
-     * 
+     * @param separator the string that separates the authority from the identifier.
+     * @param destination the global id that will contain the parsed data.
+     * @return {@code destination}, after its fields have been updated, or
+     *         {@code null} if parsing failed.
      */
-    
-    private boolean parsePersistentId(String identifierString){
+    private boolean parsePersistentId(String identifierString) {
 
-        if (identifierString == null){
-            return false;
-        } 
-        
-        int index1 = identifierString.indexOf(':');
-        int index2 = identifierString.lastIndexOf('/');
-        if (index1==-1) {
-            return false; 
-        }  
-       
-        String protocol = identifierString.substring(0, index1);
-        
-        if (!"doi".equals(protocol) && !"hdl".equals(protocol)) {
+        if (identifierString == null) {
             return false;
         }
-        
-        
-        if (index2 == -1) {
-            return false;
-        } 
-        
-        this.protocol = protocol;
-        this.authority = formatIdentifierString(identifierString.substring(index1+1, index2));
-        this.identifier = formatIdentifierString(identifierString.substring(index2+1));
-        
-        if (this.protocol.equals(DOI_PROTOCOL)) {
-            if (!this.checkDOIAuthority(this.authority)) {
+        int index1 = identifierString.indexOf(':');
+        if (index1 > 0) { // ':' found with one or more characters before it
+            int index2 = identifierString.indexOf('/', index1 + 1);
+            if (index2 > 0 && (index2 + 1) < identifierString.length()) { // '/' found with one or more characters
+                                                                          // between ':'
+                protocol = identifierString.substring(0, index1); // and '/' and there are characters after '/'
+                if (!"doi".equals(protocol) && !"hdl".equals(protocol)) {
+                    return false;
+                }
+                //Strip any whitespace, ; and ' from authority (should finding them cause a failure instead?)
+                authority = formatIdentifierString(identifierString.substring(index1 + 1, index2));
+                if(testforNullTerminator(authority)) return false;
+                if (protocol.equals(DOI_PROTOCOL)) {
+                    if (!this.checkDOIAuthority(authority)) {
+                        return false;
+                    }
+                }
+                // Passed all checks
+                //Strip any whitespace, ; and ' from identifier (should finding them cause a failure instead?)
+                identifier = formatIdentifierString(identifierString.substring(index2 + 1));
+                if(testforNullTerminator(identifier)) return false;               
+            } else {
+                logger.log(Level.INFO, "Error parsing identifier: {0}: '':<authority>/<identifier>'' not found in string", identifierString);
                 return false;
             }
+        } else {
+            logger.log(Level.INFO, "Error parsing identifier: {0}: ''<protocol>:'' not found in string", identifierString);
+            return false;
         }
         return true;
-
     }
-
     
-    private String formatIdentifierString(String str){
+    private static String formatIdentifierString(String str){
         
         if (str == null){
             return null;
@@ -173,6 +218,12 @@ public class GlobalId implements java.io.Serializable {
         // http://www.doi.org/doi_handbook/2_Numbering.html
     }
     
+    private static boolean testforNullTerminator(String str){
+        if(str == null) {
+            return false;
+        }
+        return str.indexOf('\u0000') > 0;
+    }
     
     private boolean checkDOIAuthority(String doiAuthority){
         
@@ -186,6 +237,19 @@ public class GlobalId implements java.io.Serializable {
         
         return true;
     }
-    
-    
+
+    /**
+     * Verifies that the pid only contains allowed characters.
+     *
+     * @param pidParam
+     * @return true if pid only contains allowed characters false if pid
+     * contains characters not specified in the allowed characters regex.
+     */
+    public static boolean verifyImportCharacters(String pidParam) {
+
+        Pattern p = Pattern.compile(BundleUtil.getStringFromBundle("pid.allowedCharacters"));
+        Matcher m = p.matcher(pidParam);
+
+        return m.matches();
+    }
 }

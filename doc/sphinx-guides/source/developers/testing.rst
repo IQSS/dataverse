@@ -52,6 +52,9 @@ We are aware that there are newer testing tools such as TestNG, but we use `JUni
 
 If writing tests is new to you, poke around existing unit tests which all end in ``Test.java`` and live under ``src/test``. Each test is annotated with ``@Test`` and should have at least one assertion which specifies the expected result. In Netbeans, you can run all the tests in it by clicking "Run" -> "Test File". From the test file, you should be able to navigate to the code that's being tested by right-clicking on the file and clicking "Navigate" -> "Go to Test/Tested class". Likewise, from the code, you should be able to use the same "Navigate" menu to go to the tests.
 
+NOTE: Please remember when writing tests checking possibly localized outputs to check against ``en_US.UTF-8`` and ``UTC``
+l10n strings!
+
 Refactoring Code to Make It Unit-Testable
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -75,6 +78,17 @@ You might find studying the following test classes helpful in writing tests for 
 
 In addition, there is a writeup on "The Testable Command" at https://github.com/IQSS/dataverse/blob/develop/doc/theTestableCommand/TheTestableCommand.md .
 
+Running Non-Essential (Excluded) Unit Tests
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You should be aware that some unit tests have been deemed "non-essential" and have been annotated with ``@Category(NonEssentialTests.class)`` and are excluded from the "dev" Maven profile, which is the default profile. All unit tests (that have not been annotated with ``@Ignore``), including these non-essential tests, are run from continuous integration systems such as Jenkins and Travis CI with the following ``mvn`` command that invokes a non-default profile:
+
+``mvn test -P all-unit-tests``
+
+Typically https://travis-ci.org/IQSS/dataverse will show a higher number of unit tests executed because it uses the profile above.
+
+Generally speaking, unit tests have been flagged as non-essential because they are slow or because they require an Internet connection. You should not feel obligated to run these tests continuously but you can use the ``mvn`` command above to run them. To iterate on the unit test in Netbeans and execute it with "Run -> Test File", you must temporarily comment out the annotation flagging the test as non-essential.
+
 Integration Tests
 -----------------
 
@@ -87,6 +101,13 @@ Unfortunately, the term "integration tests" can mean different things to differe
 - Integration tests operate on an installation of Dataverse that is running and able to talk to both PostgreSQL and Solr.
 - Integration tests are written using REST Assured.
 
+Running the full API test suite using Docker
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.txt`` in the root of the repo.
+
+Alternatively, you can run tests against Glassfish running on your laptop by following the "getting set up" steps below.
+
 Getting Set Up to Run REST Assured Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -94,7 +115,7 @@ Unit tests are run automatically on every build, but dev environments and server
 
 The :doc:`dev-environment` section currently refers developers here for advice on getting set up to run REST Assured tests, but we'd like to add some sort of "dev" flag to the installer to put Dataverse in "insecure" mode, with lots of scary warnings that this dev mode should not be used in production.
 
-The instructions below assume a relatively static dev environment on a Mac. There is a newer "all in one" Docker-based approach documented in the :doc:`dev-environment` section under "Docker" that you may like to play with as well.
+The instructions below assume a relatively static dev environment on a Mac. There is a newer "all in one" Docker-based approach documented in the :doc:`/developers/containers` section under "Docker" that you may like to play with as well.
 
 The Burrito Key
 ^^^^^^^^^^^^^^^
@@ -122,11 +143,11 @@ dataverse.siteUrl
 
 When run locally (as opposed to a remote server), some of the REST Assured tests require the ``dataverse.siteUrl`` JVM option to be set to ``http://localhost:8080``. See "JVM Options" under the :doc:`/installation/config` section of the Installation Guide for advice changing JVM options. First you should check to check your JVM options with:
 
-``asadmin list-jvm-options | egrep 'dataverse|doi'``
+``./asadmin list-jvm-options | egrep 'dataverse|doi'``
 
 If ``dataverse.siteUrl`` is absent, you can add it with:
 
-``asadmin create-jvm-options "-Ddataverse.siteUrl=http\://localhost\:8080"`` 
+``./asadmin create-jvm-options "-Ddataverse.siteUrl=http\://localhost\:8080"`` 
 
 Identifier Generation 
 ^^^^^^^^^^^^^^^^^^^^^
@@ -168,7 +189,36 @@ Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)
 
   ``mvn test -Dtest=FileMetadataIT -Ddataverse.test.baseurl='http://localhost:8080'``
 
-To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.txt``.
+To see the full list of tests used by the Docker option mentioned above, see :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>`.
+
+Measuring Coverage of Integration Tests
+---------------------------------------
+Measuring the code coverage of integration tests with jacoco requires several steps:
+
+- Instrument the WAR file. Using an approach similar to :download:`this script <../_static/util/instrument_war_jacoco.bash>` is probably preferable to instrumenting the WAR directly (at least until the ``nu.xom.UnicodeUtil.decompose`` method too large exceptions get sorted).
+- Deploy the WAR file to a glassfish server with ``jacocoagent.jar`` in ``glassfish4/glassfish/lib/``
+- Run integration tests as usual
+- Use ``glassfish4/glassfish/domains/domain1/config/jacoco.exec`` to generate a report: ``java -jar ${JACOCO_HOME}/jacococli.jar report --classfiles ${DV_REPO}/target/classes --sourcefiles ${DV_REPO}/src/main/java --html ${DV_REPO}/target/coverage-it/ jacoco.exec``
+
+The same approach could be used to measure code paths exercised in normal use (by substituting the "run integration tests" step).
+There is obvious potential to improve automation of this process.
+
+Load/Performance Testing
+------------------------
+
+Locust
+~~~~~~
+
+Load and performance testing is conducted on an as-needed basis but we're open to automating it. As of this writing Locust ( https://locust.io ) scripts at https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests have been used.
+
+download-files.sh script
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+One way of generating load is by downloading many files. You can download :download:`download-files.sh <../../../../tests/performance/download-files/download-files.sh>`, make it executable (``chmod 755``), and run it with ``--help``. You can use ``-b`` to specify the base URL of the Dataverse installation and ``-s`` to specify the number of seconds to wait between requests like this:
+
+``./download-files.sh -b https://dev1.dataverse.org -s 2``
+
+The script requires a file called ``files.txt`` to operate and database IDs for the files you want to download should each be on their own line.
 
 The Phoenix Server
 ------------------
@@ -231,14 +281,13 @@ Installation Testing
 - Work with @lwo to automate testing of https://github.com/IQSS/dataverse-puppet . Consider using Travis: https://github.com/IQSS/dataverse-puppet/issues/10
 - Work with @donsizemore to automate testing of https://github.com/IQSS/dataverse-ansible with Travis or similar.
 
-Load/Performance Testing
-~~~~~~~~~~~~~~~~~~~~~~~~
+Future Work on Load/Performance Testing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Run stress tests on a period basis: https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests 
+- Clean up and copy stress tests code, config, and docs into main repo from https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests
 - Marcel Duran created a command-line wrapper for the WebPagetest API that can be used to test performance in your continuous integration pipeline (TAP, Jenkins, Travis-CI, etc): https://github.com/marcelduran/webpagetest-api/wiki/Test-Specs#jenkins-integration
-- Documentation
-- Create top-down checklist, building off the spreadsheet at https://github.com/IQSS/dataverse/issues/3358#issuecomment-256400776
+- Create top-down checklist, building off the "API Test Coverage" spreadsheet at https://github.com/IQSS/dataverse/issues/3358#issuecomment-256400776
 
 ----
 
-Previous: :doc:`version-control` | Next: :doc:`documentation`
+Previous: :doc:`sql-upgrade-scripts` | Next: :doc:`documentation`

@@ -3,11 +3,14 @@ Description = GlassFish Server v4.1
 After = syslog.target network.target
 
 [Service]
-User=glassfish
+Type = forking
 ExecStart = /usr/bin/java -jar /usr/local/glassfish4/glassfish/lib/client/appserver-cli.jar start-domain
 ExecStop = /usr/bin/java -jar /usr/local/glassfish4/glassfish/lib/client/appserver-cli.jar stop-domain
 ExecReload = /usr/bin/java -jar /usr/local/glassfish4/glassfish/lib/client/appserver-cli.jar restart-domain
-Type = forking
+User=glassfish
+LimitNOFILE=32768
+Environment="LANG=en_US.UTF-8"
+TimeoutStartSec=120s
 
 [Install]
 WantedBy = multi-user.target

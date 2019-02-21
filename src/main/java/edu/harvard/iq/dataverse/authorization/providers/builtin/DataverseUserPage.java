@@ -124,10 +124,10 @@ public class DataverseUserPage implements java.io.Serializable {
     private EditMode editMode;
     private String redirectPage = "dataverse.xhtml";
 
-    @NotBlank(message = "The new password is blank: re-type it again.")
+    @NotBlank(message = "{password.retype}")
     private String inputPassword;
 
-    @NotBlank(message = "Please enter your current password.")
+    @NotBlank(message = "{password.current}")
     private String currentPassword;
     private Long dataverseId;
     private List<UserNotification> notificationsList;
@@ -156,7 +156,7 @@ public class DataverseUserPage implements java.io.Serializable {
                 
             } else {
                  // in create mode for new user
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("user.signup.tip"));
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("user.message.signup.label"), BundleUtil.getStringFromBundle("user.message.signup.tip"));
                 userDisplayInfo = new AuthenticatedUserDisplayInfo();
                 return "";
             }
@@ -271,7 +271,7 @@ public class DataverseUserPage implements java.io.Serializable {
             ((UIInput) toValidate).setValid(false);
 
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Password Error", "Please enter a new password for your account.");
+                    BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesError"), BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesErrorDesc"));
             context.addMessage(toValidate.getClientId(context), message);
             return;
 
@@ -308,13 +308,12 @@ public class DataverseUserPage implements java.io.Serializable {
             // Create a new built-in user.
             BuiltinUser builtinUser = new BuiltinUser();
             builtinUser.setUserName( getUsername() );
-            builtinUser.applyDisplayInfo(userDisplayInfo);
             builtinUser.updateEncryptedPassword(PasswordEncryption.get().encrypt(inputPassword),
                                                 PasswordEncryption.getLatestVersionNumber());
             
             AuthenticatedUser au = authenticationService.createAuthenticatedUser(
                     new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName()),
-                    builtinUser.getUserName(), builtinUser.getDisplayInfo(), false);
+                    builtinUser.getUserName(), userDisplayInfo, false);
             if ( au == null ) {
                 // Username already exists, show an error message
                 getUsernameField().setValid(false);
@@ -339,6 +338,16 @@ public class DataverseUserPage implements java.io.Serializable {
                     UserNotification.Type.CREATEACC, null);
 
             // go back to where user came from
+            
+            // (but if they came from the login page, then send them to the 
+            // root dataverse page instead. the only situation where we do 
+            // want to send them back to the login page is if they hit 
+            // 'cancel'. 
+            
+            if ("/loginpage.xhtml".equals(redirectPage) || "loginpage.xhtml".equals(redirectPage)) {
+                redirectPage = "/dataverse.xhtml";
+            }
+            
             if ("dataverse.xhtml".equals(redirectPage)) {
                 redirectPage = redirectPage + "?alias=" + dataverseService.findRootDataverse().getAlias();
             }
@@ -364,15 +373,11 @@ public class DataverseUserPage implements java.io.Serializable {
             AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo);
             String emailAfterUpdate = savedUser.getEmail();
             editMode = null;
-            StringBuilder msg = new StringBuilder( passwordChanged ? "Your account password has been successfully changed." 
-                                                                   : "Your account information has been successfully updated.");
+            StringBuilder msg = new StringBuilder( passwordChanged ? BundleUtil.getStringFromBundle("userPage.passwordChanged" )
+                                                                   :  BundleUtil.getStringFromBundle("userPage.informationUpdated"));
             if (!emailBeforeUpdate.equals(emailAfterUpdate)) {
                 String expTime = ConfirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires());
-                msg.append(" Your email address has changed and must be re-verified. Please check your inbox at ")
-                        .append(currentUser.getEmail())
-                        .append(" and follow the link we've sent. \n\nAlso, please note that the link will only work for the next ")
-                        .append(expTime)
-                        .append(" before it has expired.");
+                List<String> args = Arrays.asList(currentUser.getEmail(),expTime);
                 // delete unexpired token, if it exists (clean slate)
                 confirmEmailService.deleteTokenForUser(currentUser);
                 try {
@@ -381,7 +386,7 @@ public class DataverseUserPage implements java.io.Serializable {
                     logger.log(Level.INFO, "Unable to send email confirmation link to user id {0}", savedUser.getId());
                 }
                 session.setUser(currentUser);
-                JsfHelper.addSuccessMessage(msg.toString());
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.changed", args));
             } else {
                 JsfHelper.addFlashMessage(msg.toString());
             }
@@ -684,5 +689,17 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public String getPasswordRequirements() {
         return passwordValidatorService.getGoodPasswordDescription(passwordErrors);
+    }
+    
+    public String getRequestorName(UserNotification notification) {
+        if(notification == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+        if(notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
+        return (notification.getRequestor().getLastName() != null && notification.getRequestor().getLastName() != null) ? notification.getRequestor().getFirstName() + " " + notification.getRequestor().getLastName() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+    }
+    
+    public String getRequestorEmail(UserNotification notification) {
+        if(notification == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
+        if(notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
+        return notification.getRequestor().getEmail() != null ? notification.getRequestor().getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
     }
 }

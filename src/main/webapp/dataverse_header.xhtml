@@ -17,7 +17,7 @@
             <div class="container">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-pressed="false">
-                        <span class="sr-only">Toggle navigation</span>
+                        <span class="sr-only">#{bundle.toggleNavigation}</span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
@@ -29,57 +29,78 @@
                         <h:graphicImage rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}"
                             url="#{settingsWrapper.get(':LogoCustomizationFile')}" styleClass="navbar-brand custom-logo"/>
                     </a>
-                    <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
-                        <span class="label label-default status">#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
-                    </h:outputLink>
-                    <ui:fragment rendered="#{empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader')}">
-                        <span class="label label-default status">#{settingsWrapper.get(':StatusMessageHeader')}</span>
-                    </ui:fragment>
                 </div>
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
-                         <li>
-                            <a href="#" id="navbar-search-toggle" title="#{bundle['header.search.title']}">
-                                <span class="glyphicon glyphicon-search"></span>
-                            </a>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle.search} <b class="caret"></b></a>
+                            <ul class="dropdown-menu" style="padding:12px;min-width:350px;">
+                                <form class="form-inline" role="search">
+                                    <label class="sr-only" for="navbarsearch">#{bundle.search}</label>
+                                    <div class="input-group">
+                                        <input id="navbarsearch" type="text" class="form-control" size="28" value="" placeholder="#{bundle['header.search.title']}"/>
+                                        <span class="input-group-btn">
+                                            <button type="submit" class="btn btn-default" onclick="window.location = '/dataverse/#{dataverseServiceBean.findRootDataverse().alias}&#63;q=' + document.getElementById('navbarsearch').value;
+                                                    return false;">
+                                                <span class="glyphicon glyphicon-search"/> #{bundle.find}
+                                            </button>
+                                        </span>
+                                    </div>
+                                </form>
+                            </ul>
                         </li>
-                        <form class="navbar-form navbar-left" role="search" style="display:none;">
-                            <div class="form-group">
-                                <label class="sr-only" for="navbarsearch">#{bundle.search}</label>
-                                <input id="navbarsearch" type="text" class="search-input ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="#{bundle['header.search.title']}"/>            
-                            </div>                            
-                            <button type="submit" class="btn btn-default" onclick="window.location = '/dataverse/#{dataverseServiceBean.findRootDataverse().alias}&#63;q=' + document.getElementById('navbarsearch').value;
-                                    return false;">
-                                <span class="glyphicon glyphicon-search"/> #{bundle.find}
-                            </button>
-                        </form>
-                        <ui:fragment rendered="#{!empty settingsWrapper.get(':NavbarAboutUrl')}">
-                        <li>
+                        
+                        <li jsf:rendered="#{!empty settingsWrapper.get(':NavbarAboutUrl')}">
                             <h:outputLink value="#{settingsWrapper.get(':NavbarAboutUrl')}" target="_blank">
-                                #{bundle['header.about']}
-                            </h:outputLink>                         
+                                <h:outputText value="#{bundle['header.about']}"/>
+                            </h:outputLink>
                         </li>
-                        </ui:fragment>
 
                         <li>
                             <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{systemConfig.guidesVersion}/user" target="_blank">
-                                #{bundle['header.guides.user']}
+                                <h:outputText value="#{bundle['header.guides.user']}"/>
                             </h:outputLink>
+                        </li>
+                        
+                        <li jsf:rendered="#{!empty settingsWrapper.get(':NavbarSupportUrl')}">
+                            <h:outputLink value="#{settingsWrapper.get(':NavbarSupportUrl')}" target="_blank">
+                                <h:outputText value="#{bundle['header.support']}"/>
+                            </h:outputLink>
+                        </li>
+                        
+                        <ui:fragment rendered="#{empty settingsWrapper.get(':NavbarSupportUrl')}">
+                            <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
+                                <p:commandLink oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                    <h:outputText value="#{bundle['header.support']}"/>
+                                </p:commandLink>
+                            </o:form>
+                        </ui:fragment>
+                        
+                        <li class="dropdown" jsf:rendered="#{settingsWrapper.localesConfigured}">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="#{bundle.language}">#{dataverseSession.localeTitle} <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <h:form class="form-inline">
+                                    <ui:repeat value="#{settingsWrapper.configuredLocales.entrySet().toArray()}" var="language">
+                                        <li class="#{dataverseSession.localeTitle == language.value ? 'active' : ''}">
+                                            <h:commandLink value="#{language.value}" actionListener="#{dataverseSession.updateLocaleInViewRootAndRedirect(language.key)}" action="submit()"
+                                                           style="padding: 3px 20px;
+                                                                    clear: both;
+                                                                    font-weight: 400;
+                                                                    line-height: 1.42857143;
+                                                                    color: rgb(51, 51, 51);
+                                                                    white-space: nowrap;
+                                                                    text-decoration: none;
+                                                                    display: block;"/>
+                                        </li>
+                                    </ui:repeat>
+                                </h:form>
+                            </ul>
                         </li>
 
-                        <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
-                            <p:commandLink value="#{bundle['header.support']}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                            </p:commandLink>
-                        </o:form>
-                        <li jsf:rendered="#{dataverseSession.user.superuser}">
-                            <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}">
-                                <h:outputText value="#{bundle['header.dashboard']}" />
-                            </h:outputLink>
-                        </li>
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                             <li>
                                 <h:outputLink rendered="#{dataverseHeaderFragment.signupAllowed}"
@@ -93,6 +114,7 @@
                                 </h:outputLink>
                             </li>
                         </ui:fragment>
+                        
                         <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                             <li class="dropdown accountName">
                                 <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown" role="menu" aria-haspopup="true" aria-expanded="false">
@@ -138,9 +160,15 @@
                                             <h:outputText value="#{bundle['header.user.selectTab.apiToken']}" />
                                         </h:outputLink>
                                     </li>
-                                    <li class="divider" tabindex="-1"></li>
+                                    <li class="divider"></li>
+                                    <li jsf:rendered="#{dataverseSession.user.superuser}" tabindex="-1">
+                                        <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}">
+                                            <h:outputText value="#{bundle['header.dashboard']}" />
+                                        </h:outputLink>
+                                    </li>
+                                    <li class="divider" jsf:rendered="#{dataverseSession.user.superuser}"></li>
                                     <li class="logout" tabindex="-1">
-                                        <o:form useRequestURI="true" styleClass="navbar-form navbar-left" pt:role="logout">
+                                        <o:form useRequestURI="true" pt:role="logout">
                                             <h:commandLink action="#{dataverseHeaderFragment.logout}" id="lnk_header_logout">
                                                 <h:outputText value="#{bundle['header.logOut']}" />
                                             </h:commandLink>
@@ -153,6 +181,25 @@
                 </div>
             </div>
         </nav>
+        <!-- Noscript Error -->
+        <noscript>
+            <div id="noscript-alert" class="bg-danger">
+                <div class="alert container text-danger no-margin-bottom">
+                    <h:outputText value="#{bundle['header.noscript']}"/>
+                </div>
+            </div>
+        </noscript>
+        <!-- Status Alert -->
+        <o:form class="form-inline">
+            <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader') and !dataverseSession.isStatusDismissed()}">
+                <div class="alert alert-dismissible container text-warning">
+                    <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.setStatusDismissed(true)}" update="@form" value="&#215;" />
+<!--                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&#215;</span></button>-->
+                    <h:outputText styleClass="highlightBold" value="#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}"/>
+                    <h:outputText rendered="#{!empty settingsWrapper.get(':StatusMessageText')}" value=" – #{settingsWrapper.get(':StatusMessageText')}" escape="false"/>
+                </div>
+            </div>
+        </o:form>
         <!-- Header Panel -->
         <!-- FIXME: Rather than hard-coding "FFFFFF", get it from the backend (ThemeWidgetFragment.DEFAULT_BACKGROUND_COLOR). -->
         <div id="dataverseHeader" class="container bg-muted"
@@ -207,7 +254,7 @@
                             </a>
                         </ui:fragment>
                         <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataset}">
-                            <c:set var="dsUrl" value="/dataset.xhtml?persistentId=#{breadcrumb.dvObject.globalId}#{breadcrumb.optionalUrlExtension }"/>
+                            <c:set var="dsUrl" value="/dataset.xhtml?persistentId=#{breadcrumb.dvObject.globalIdString}#{breadcrumb.optionalUrlExtension }"/>
                             <a id="breadcrumbLnk#{status.index}" href="#{widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? widgetWrapper.wrapURL(dsUrl) : dsUrl}" target="#{!widgetWrapper.widgetView or widgetWrapper.isWidgetTarget(breadcrumb.dvObject) ? '' : '_blank'}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>
                             </a>
@@ -225,7 +272,10 @@
 
         <ui:remove>
             <!-- Removing this temporarily until we can fix the performance issues with it;
-                 replaced with generic bookmarks; will have to see how to best make this work-->
+                 replaced with generic bookmarks; will have to see how to best make this work
+                 ...ALSO removed the 'bs/js/bootstrap-hover-dropdown.min.js' resource that this dropdown menu used;
+                 if/when this breadcrumb dropdown menu is restored to the UI, add the latest version of the js plugin from:
+                 https://github.com/CWSpear/bootstrap-hover-dropdown -->
             <div class="dropdown #{dataverseHeaderFragment.hasVisibleChildren(dv) ? 'dropdown-toggle keep-on' : ''}" data-delay="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? '800' : ''}" data-hover="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? 'dropdown' : ''}" data-target="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? '#' : ''}" data-close-others="#{dataverseHeaderFragment.hasVisibleChildren(dv) ? 'true' : ''}">
                 <h:outputText value="#{dv.name}" styleClass="#{dataverse.id == dv.id ? 'breadcrumbActive' : ''}" rendered="#{dataverse.id == dv.id and dataset == null}"/>
                 <ui:fragment rendered="#{dataverse.id != dv.id or dataset != null}" >
@@ -252,6 +302,9 @@
             </div>
         </ui:remove>
 
+        
+
+        
         <!-- Message Panel -->
         <p:fragment id="messagePanel" rendered="#{showMessagePanel}">
             <div class="container messagePanel">

@@ -16,9 +16,12 @@ import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OaiSetException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -127,18 +130,25 @@ public class HarvestingSetsPage implements java.io.Serializable {
             return navigationWrapper.notAuthorized();
         }
         
-        
         configuredHarvestingSets = oaiSetService.findAll();
         pageMode = PageMode.VIEW;
         
         if (isHarvestingServerEnabled()) {
             oaiServerStatusRadio = oaiServerStatusRadioEnabled;
+            checkIfDefaultSetExists();
         } else {
             oaiServerStatusRadio = oaiServerStatusRadioDisabled;
         }
                 
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, JH.localize("harvestserver.title"), JH.localize("harvestserver.toptip")));
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("harvestserver.title"), BundleUtil.getStringFromBundle("harvestserver.toptip")));
         return null; 
+    }
+    
+    private void checkIfDefaultSetExists() {
+        OAISet defaultSet = oaiSetService.findDefaultSet();
+        if (defaultSet == null) {
+            createDefaultSet();
+        }
     }
     
     public List<OAISet> getConfiguredOAISets() {
@@ -147,6 +157,11 @@ public class HarvestingSetsPage implements java.io.Serializable {
     
     public void setConfiguredOAISets(List<OAISet> oaiSets) {
         configuredHarvestingSets = oaiSets; 
+    }
+    
+    public boolean isHasNamedOAISets() {
+        List<OAISet> namedSets = oaiSetService.findAllNamedSets();
+        return namedSets != null && namedSets.size() > 0;
     }
     
     public boolean isHarvestingServerEnabled() {
@@ -158,7 +173,8 @@ public class HarvestingSetsPage implements java.io.Serializable {
             systemConfig.disableOAIServer();
         } else {
             systemConfig.enableOAIServer();
-            JsfHelper.addSuccessMessage(JH.localize("harvestserver.service.enable.success"));
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("harvestserver.service.enable.success"));
+            checkIfDefaultSetExists();
         }
     }
     
@@ -215,6 +231,10 @@ public class HarvestingSetsPage implements java.io.Serializable {
         this.setQueryValidated = false;
         this.setQueryResult = -1;
         
+        if (oaiSet.isDefaultSet()) {
+            setSetQueryValidated(true);
+        }
+        
         setSelectedSet(oaiSet);
     }
     
@@ -233,13 +253,13 @@ public class HarvestingSetsPage implements java.io.Serializable {
         try {
             oaiSetService.save(newOaiSet);
             configuredHarvestingSets = oaiSetService.findAll();  
-            String successMessage = JH.localize("harvestserver.newSetDialog.success");
+            String successMessage = BundleUtil.getStringFromBundle("harvestserver.newSetDialog.success");
             successMessage = successMessage.replace("{0}", newOaiSet.getSpec());
             JsfHelper.addSuccessMessage(successMessage);
             success = true;
 
         } catch (Exception ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Failed to create OAI set");
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("harvest.oaicreate.fail"));
              logger.log(Level.SEVERE, "Failed to create OAI set" + ex.getMessage(), ex);
         }
         
@@ -276,12 +296,11 @@ public class HarvestingSetsPage implements java.io.Serializable {
         try {
             oaiSetService.save(oaiSet);
             configuredHarvestingSets = oaiSetService.findAll(); 
-                        
-            JsfHelper.addSuccessMessage("Succesfully updated OAI set &#34;" + oaiSet.getSpec() + "&#34;.");
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("harvest.oaiupdate.success",   Arrays.asList(oaiSet.isDefaultSet() ? "default" : oaiSet.getSpec())));
             success = true;
 
         } catch (Exception ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Failed to update OAI set.");
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("harvest.oaiupdate.fail"));
              logger.log(Level.SEVERE, "Failed to update OAI set." + ex.getMessage(), ex);
         }
         
@@ -307,15 +326,51 @@ public class HarvestingSetsPage implements java.io.Serializable {
                 selectedSet = null; 
 
                 configuredHarvestingSets = oaiSetService.findAll();
-                JsfHelper.addInfoMessage(JH.localize("harvestserver.tab.header.action.delete.infomessage"));
+                JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("harvestserver.tab.header.action.delete.infomessage"));
             } catch (Exception ex) {
-                String failMessage = "Failed to delete harvesting set; unknown exception: "+ex.getMessage();
+                String failMessage = BundleUtil.getStringFromBundle("harvest.delete.fail")+ex.getMessage();
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             }
         } else {
             logger.warning("Delete called, with a null selected harvesting set!");
         }
         
+    }
+    
+    private void createDefaultSet() {
+        
+        OAISet newOaiSet = new OAISet();
+        
+        
+        newOaiSet.setSpec("");
+        newOaiSet.setName("");
+        // The default description of the default set. The admin will be  
+        // able to modify it later, if necessary.
+        newOaiSet.setDescription(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setdescription.default"));
+        newOaiSet.setDefinition("");
+        
+        boolean success = false;
+        
+        try {
+            oaiSetService.save(newOaiSet);
+            configuredHarvestingSets = oaiSetService.findAll();  
+            success = true;
+
+        } catch (Exception ex) {
+            // should be a warning perhaps??
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("harvest.oaicreate.defaultset.fail"));
+            logger.log(Level.SEVERE, "Failed to create the Default OAI set" + ex.getMessage(), ex);
+        }
+        
+        if (success) {
+            OAISet savedSet = oaiSetService.findBySpec(getNewSetSpec());
+            if (savedSet != null) {
+                runSetExport(savedSet);
+                configuredHarvestingSets = oaiSetService.findAll(); 
+            }
+        }
+        
+        setPageMode(HarvestingSetsPage.PageMode.VIEW);        
     }
     
     public boolean isSetSpecValidated() {
@@ -380,6 +435,10 @@ public class HarvestingSetsPage implements java.io.Serializable {
     }
     
     public int getSetInfoNumOfDatasets(OAISet oaiSet) {
+        if (oaiSet.isDefaultSet()) {
+            return getSetInfoNumOfExported(oaiSet);
+        }
+        
         String query = oaiSet.getDefinition();
         
         try {
@@ -421,7 +480,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             datasetsFound = oaiSetService.validateDefinitionQuery(getNewSetQuery());
         } catch (OaiSetException ose) {
             FacesContext.getCurrentInstance().addMessage(getNewSetQueryInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "Search failed for the query provided. Message from the Dataverse search server: "+ose.getMessage()));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvest.search.failed")+ose.getMessage()));
             setSetQueryValidated(false);
             return;
         }
@@ -448,7 +507,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             if (! Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", getNewSetSpec()) ) {
                 //input.setValid(false);
                 FacesContext.getCurrentInstance().addMessage(getNewSetSpecInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.invalid")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.invalid")));
                 setSetSpecValidated(false);
                 return;
 
@@ -456,7 +515,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             } else if ( oaiSetService.findBySpec(getNewSetSpec()) != null ) {
                 //input.setValid(false);
                 FacesContext.getCurrentInstance().addMessage(getNewSetSpecInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.alreadyused")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.alreadyused")));
                 setSetSpecValidated(false);
                 return;
             }
@@ -466,7 +525,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         
         // Nickname field is empty:
         FacesContext.getCurrentInstance().addMessage(getNewSetSpecInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.required")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required")));
         setSetSpecValidated(false);
         return;
     }*/
@@ -479,17 +538,24 @@ public class HarvestingSetsPage implements java.io.Serializable {
         if (context.getExternalContext().getRequestParameterMap().get("DO_VALIDATION") != null) {
             
             if (!StringUtils.isEmpty(value)) {
+                if (value.length() > 30){
+                    input.setValid(false);
+                    context.addMessage(toValidate.getClientId(),
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.sizelimit")));
+                    return;
+                    
+                }
                 if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", value)) {
                     input.setValid(false);
                     context.addMessage(toValidate.getClientId(),
-                            new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.invalid")));
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.invalid")));
                     return;
 
                     // If it passes the regex test, check 
                 } else if (oaiSetService.findBySpec(value) != null) {
                     input.setValid(false);
                     context.addMessage(toValidate.getClientId(),
-                            new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.alreadyused")));
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.alreadyused")));
                     return;
                 }
 
@@ -500,7 +566,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             // the field can't be left empty either: 
             input.setValid(false);
             context.addMessage(toValidate.getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestserver.newSetDialog.setspec.required")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required")));
 
         }
         
@@ -512,12 +578,12 @@ public class HarvestingSetsPage implements java.io.Serializable {
         try {          
             runSetExport(oaiSet);
         } catch (Exception ex) {
-            String failMessage = "Sorry, could not start re-export on selected OAI set (unknown server error).";
+            String failMessage = BundleUtil.getStringFromBundle("harvest.reexport.fail");
             JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             return;
         } 
                 
-        String successMessage = JH.localize("harvestserver.actions.runreexport.success");
+        String successMessage = BundleUtil.getStringFromBundle("harvestserver.actions.runreexport.success");
         successMessage = successMessage.replace("{0}", oaiSet.getSpec());
         JsfHelper.addSuccessMessage(successMessage);
         configuredHarvestingSets = oaiSetService.findAll(); 

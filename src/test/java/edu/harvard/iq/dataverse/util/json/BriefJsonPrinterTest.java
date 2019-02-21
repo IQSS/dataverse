@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
@@ -12,6 +11,9 @@ import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import javax.json.JsonObject;
 import org.junit.Test;
+
+import java.util.Collections;
+
 import static org.junit.Assert.*;
 
 /**
@@ -21,25 +23,6 @@ import static org.junit.Assert.*;
 public class BriefJsonPrinterTest {
     
     public BriefJsonPrinterTest() {
-    }
-
-    /**
-     * Test of json method, of class BriefJsonPrinter.
-     */
-    @Test
-    public void testJson_BuiltinUser() {
-        BuiltinUser laurenIpsum = new BuiltinUser();
-        laurenIpsum.setFirstName("Lauren");
-        laurenIpsum.setLastName("Ipsum");
-        laurenIpsum.setAffiliation("IQSS");
-        
-        BriefJsonPrinter sut = new BriefJsonPrinter();
-        JsonObject res = sut.json(laurenIpsum).build();
-        
-        assertEquals("Lauren", res.getString("firstName"));
-        assertEquals("Ipsum", res.getString("lastName"));
-        assertEquals("IQSS", res.getString("affiliation"));
-        assertEquals(3, res.keySet().size());
     }
 
     /**

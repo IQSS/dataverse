@@ -41,9 +41,13 @@ import org.hibernate.validator.constraints.NotEmpty;
  */
 @NamedQueries({
     @NamedQuery(name = "Dataverse.ownedObjectsById", query = "SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
+    @NamedQuery(name = "Dataverse.findAll", query = "SELECT d FROM Dataverse d order by d.name"),
+    @NamedQuery(name = "Dataverse.findRoot", query = "SELECT d FROM Dataverse d where d.owner.id=null"),
     @NamedQuery(name = "Dataverse.findByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias)=:alias"),
+    @NamedQuery(name = "Dataverse.findByOwnerId", query="select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name"),
     @NamedQuery(name = "Dataverse.filterByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias) LIKE :alias order by dv.alias"),
-    @NamedQuery(name = "Dataverse.filterByAliasNameAffiliation", query="SELECT dv FROM Dataverse dv WHERE (LOWER(dv.alias) LIKE :alias) OR (LOWER(dv.name) LIKE :name) OR (LOWER(dv.affiliation) LIKE :affiliation) order by dv.alias")
+    @NamedQuery(name = "Dataverse.filterByAliasNameAffiliation", query="SELECT dv FROM Dataverse dv WHERE (LOWER(dv.alias) LIKE :alias) OR (LOWER(dv.name) LIKE :name) OR (LOWER(dv.affiliation) LIKE :affiliation) order by dv.alias"),
+    @NamedQuery(name = "Dataverse.filterByName", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.name) LIKE :name  order by dv.alias")
 })
 @Entity
 @Table(indexes = {@Index(columnList="defaultcontributorrole_id")
@@ -65,25 +69,25 @@ public class Dataverse extends DvObjectContainer {
     
     private static final long serialVersionUID = 1L;
 
-    @NotBlank(message = "Please enter a name.")
+    @NotBlank(message = "{dataverse.name}")
     @Column( nullable = false )
     private String name;
 
     /**
      * @todo add @Column(nullable = false) for the database to enforce non-null
      */
-    @NotBlank(message = "Please enter an alias.")
+    @NotBlank(message = "{dataverse.alias}")
     @Column(nullable = false, unique=true)
-    @Size(max = 60, message = "Alias must be at most 60 characters.")
-    @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'."), 
-        @Pattern(regexp=".*\\D.*", message="Alias should not be a number")})
+    @Size(max = 60, message = "{dataverse.aliasLength}")
+    @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "{dataverse.nameIllegalCharacters}"),
+        @Pattern(regexp=".*\\D.*", message="{dataverse.aliasNotnumber}")})
     private String alias;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @NotNull(message = "Please select a category for your dataverse.")
+    @NotNull(message = "{dataverse.category}")
     @Column( nullable = false )
     private DataverseType dataverseType;
        
@@ -149,7 +153,7 @@ public class Dataverse extends DvObjectContainer {
     private Set<DataverseRole> roles;
     
     @ManyToOne
-    @JoinColumn(nullable = false)
+    @JoinColumn(nullable = true)
     private DataverseRole defaultContributorRole;
 
     public DataverseRole getDefaultContributorRole() {
@@ -744,5 +748,4 @@ public class Dataverse extends DvObjectContainer {
         }
         return false;
     }
-
 }

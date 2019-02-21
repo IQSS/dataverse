@@ -43,8 +43,6 @@ Unless you already have it, install pip (https://pip.pypa.io/en/latest/installin
 
 run ``pip install sphinx`` in a terminal
 
-
-
 This is all you need. You should now be able to build HTML/pdf documentation from git sources locally.
 
 Using Sphinx
@@ -58,7 +56,7 @@ Once you are done, open a terminal and change directories to ~/dataverse/doc/sph
 
 - ``make clean``
 
-- ``make html Makefile``
+- ``make html``
 
 After sphinx is done processing the files you should notice that the html folder in ~/dataverse/doc/sphinx-guides/build directory has been updated.
 You can click on the files in the html folder to preview the changes.
@@ -75,6 +73,39 @@ Every non-index page should use the following code to display a table of content
 
 This code should be placed below any introductory text/images and directly above the first subheading, much like a Wikipedia page.
 
+Images
+------
+
+A good documentation is just like a website enhanced and upgraded by adding high quality and self-explanatory images.
+Often images depict a lot of written text in a simple manner. Within our Sphinx docs, you can add them in two ways: a) add a
+PNG image directly and include or b) use inline description languages like GraphViz (current only option).
+
+While PNGs in the git repo can be linked directly via URL, Sphinx-generated images do not need a manual step and might
+provide higher visual quality. Especially in terms of quality of content, generated images can be extendend and improved
+by a textbased and reviewable commit, without needing raw data or source files and no diff around.
+
+GraphViz based images
+~~~~~~~~~~~~~~~~~~~~~
+
+In some parts of the documentation, graphs are rendered as images via Sphinx GraphViz extension.
+
+This requires `GraphViz <http://graphviz.org/>`_ installed and either ``dot`` on the path or
+`adding options to the make call <https://groups.google.com/forum/#!topic/sphinx-users/yXgNey_0M3I>`_.
+
+This has been tested and works on Mac, Linux, and Windows. If you have not properly configured GraphViz, then the worst thing that might happen is a warning and missing images in your local documentation build.
+
+
+Versions
+--------
+
+For installations hosting their own copies of the guides, note that as each version of Dataverse is released, there is an updated version of the guides released with it. Google and other search engines index all versions, which may confuse users who discover your guides in the search results as to which version they should be looking at. When learning about your installation from the search results, it is best to be viewing the *latest* version.
+
+In order to make it clear to the crawlers that we only want the latest version discoverable in their search results, we suggest adding this to your ``robots.txt`` file::
+
+        User-agent: *
+        Allow: /en/latest/
+        Disallow: /en/
+
 ----
 
-Previous: :doc:`testing` | Next: :doc:`debugging`
+Previous: :doc:`testing` | Next: :doc:`dependencies`

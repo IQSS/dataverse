@@ -34,3 +34,13 @@ Export Failures
 ---------------
 
 An export batch job, whether started via the API, or by the application timer, will leave a detailed log in your configured logs directory. This is the same location where your main Glassfish server.log is found. The name of the log file is ``export_[timestamp].log`` - for example, *export_2016-08-23T03-35-23.log*. The log will contain the numbers of datasets processed successfully and those for which metadata export failed, with some information on the failures detected. Please attach this log file if you need to contact Dataverse support about metadata export problems.
+
+Downloading Metadata via GUI
+----------------------------
+
+The :doc:`/user/dataset-management` section of the User Guide explains how end users can download the metadata formats above from the Dataverse GUI.
+
+Downloading Metadata via API
+----------------------------
+
+The :doc:`/api/native-api` section of the API Guide explains how end users can download the metadata formats above via API.

@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
@@ -30,17 +29,22 @@ import javax.persistence.StoredProcedureParameter;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.UniqueConstraint;
-import org.hibernate.validator.constraints.NotBlank;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 /**
  *
  * @author skraffmiller
  */
-@NamedQueries(
-        @NamedQuery(name = "Dataset.findByIdentifier",
-                query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier")
-)
+@NamedQueries({
+    @NamedQuery(name = "Dataset.findByIdentifier",
+               query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier"),
+    @NamedQuery(name = "Dataset.findByIdentifierAuthorityProtocol",
+               query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier AND d.protocol=:protocol AND d.authority=:authority"),
+    @NamedQuery(name = "Dataset.findIdByOwnerId", 
+                query = "SELECT o.identifier FROM Dataset o WHERE o.owner.id=:ownerId"),
+    @NamedQuery(name = "Dataset.findByOwnerId", 
+                query = "SELECT o FROM Dataset o WHERE o.owner.id=:ownerId"),
+})
 
 /*
     Below is the stored procedure for getting a numeric value from a database 
@@ -71,8 +75,7 @@ import org.hibernate.validator.constraints.NotBlank;
 @Entity
 @Table(indexes = {
     @Index(columnList = "guestbook_id"),
-    @Index(columnList = "thumbnailfile_id")},
-        uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier,doiseparator"}))
+    @Index(columnList = "thumbnailfile_id")})
 public class Dataset extends DvObjectContainer {
 
     public static final String TARGET_URL = "/citation?persistentId=";
@@ -82,19 +85,9 @@ public class Dataset extends DvObjectContainer {
     @OrderBy("id")
     private List<DataFile> files = new ArrayList<>();
 
-    private String protocol;
-    private String authority;
-    private String doiSeparator;
-
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date globalIdCreateTime;
-    
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date lastExportTime;
 
-    @NotBlank(message = "Please enter an identifier for your dataset.")
-    @Column(nullable = false)
-    private String identifier;
     
     @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("versionNumber DESC, minorVersionNumber DESC")
@@ -186,7 +179,7 @@ public class Dataset extends DvObjectContainer {
     public Set<DatasetLock> getLocks() {
         // lazy set creation
         if ( datasetLocks == null ) {
-            setLocks( new HashSet<>() );
+            datasetLocks = new HashSet<>();
         }
         return datasetLocks;
     }
@@ -211,51 +204,6 @@ public class Dataset extends DvObjectContainer {
         return !getLocks().isEmpty();
     }
     
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
-
-    public String getAuthority() {
-        return authority;
-    }
-
-    public void setAuthority(String authority) {
-        this.authority = authority;
-    }
-
-    /**
-     * @return dataset identifier.
-     *         For example, a dataset with database id (primary key) 3, persistent ID
-     *         doi:10.5072/FK2/abcde, this should return "abcde".
-     */
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
-    }
-
-    public String getDoiSeparator() {
-        return doiSeparator;
-    }
-
-    public void setDoiSeparator(String doiSeparator) {
-        this.doiSeparator = doiSeparator;
-    }
-
-    public Date getGlobalIdCreateTime() {
-        return globalIdCreateTime;
-    }
-
-    public void setGlobalIdCreateTime(Date globalIdCreateTime) {
-        this.globalIdCreateTime = globalIdCreateTime;
-    }
-
     public Date getLastExportTime() {
         return lastExportTime;
     }
@@ -283,11 +231,7 @@ public class Dataset extends DvObjectContainer {
     public String getPersistentURL() {
         return new GlobalId(this).toURL().toString();
     }
-
-    public String getGlobalId() {       
-        return new GlobalId(this).toString();
-    }
-
+    
     public List<DataFile> getFiles() {
         return files;
     }
@@ -380,6 +324,8 @@ public class Dataset extends DvObjectContainer {
                 newFm.setRestricted(fm.isRestricted());
                 newFm.setDataFile(fm.getDataFile());
                 newFm.setDatasetVersion(dsv);
+                newFm.setProvFreeForm(fm.getProvFreeForm());
+                
                 dsv.getFileMetadatas().add(newFm);
             }
         }
@@ -474,15 +420,14 @@ public class Dataset extends DvObjectContainer {
 
         // "Documentation", "Data" and "Code" are the 3 default categories that we 
         // present by default:
-        // (TODO: ? - provide these as constants somewhere? -- L.A. beta15)
-        if (!ret.contains("Documentation")) {
-            ret.add("Documentation");
+        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.documentation"))) {
+            ret.add(BundleUtil.getStringFromBundle("dataset.category.documentation"));
         }
-        if (!ret.contains("Data")) {
-            ret.add("Data");
+        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.data"))) {
+            ret.add(BundleUtil.getStringFromBundle("dataset.category.data"));
         }
-        if (!ret.contains("Code")) {
-            ret.add("Code");
+        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.code"))) {
+            ret.add(BundleUtil.getStringFromBundle("dataset.category.code"));
         }
 
         return ret;
@@ -542,12 +487,64 @@ public class Dataset extends DvObjectContainer {
         if (filesRootDirectory == null || filesRootDirectory.equals("")) {
             filesRootDirectory = "/tmp/files";
         }
+        
+        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
+            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
+                if (api.isStorageLocationDesignator()) {
+                    studyDir = Paths.get(filesRootDirectory, api.getAuthority(), api.getIdentifier());
+                    return studyDir;
+                }
+            }
+        }
 
         if (this.getAuthority() != null && this.getIdentifier() != null) {
             studyDir = Paths.get(filesRootDirectory, this.getAuthority(), this.getIdentifier());
         }
 
         return studyDir;
+    }
+    
+    public String getAlternativePersistentIdentifier(){
+        String retVal = null;            
+        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
+            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
+                retVal = retVal != null ? retVal + "; " : "";
+                retVal += api.getProtocol() + ":";
+                retVal += api.getAuthority() + "/";
+                retVal +=  api.getIdentifier();
+            }
+        }
+        return retVal;       
+    }
+    
+    public String getProtocolForFileStorage(){
+         String retVal = getProtocol();            
+        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
+            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
+                retVal = api.getProtocol();
+            }
+        }
+        return retVal;         
+    }
+    
+    public String getAuthorityForFileStorage(){
+         String retVal = getAuthority();            
+        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
+            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
+                retVal = api.getAuthority();
+            }
+        }
+        return retVal;         
+    }
+    
+    public String getIdentifierForFileStorage(){
+         String retVal = getIdentifier();            
+        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
+            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
+                retVal = api.getIdentifier();
+            }
+        }
+        return retVal;         
     }
 
     public String getNextMajorVersionString() {
@@ -659,13 +656,13 @@ public class Dataset extends DvObjectContainer {
     public String getRemoteArchiveURL() {
         if (isHarvested()) {
             if (HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(this.getHarvestedFrom().getHarvestStyle())) {
-                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId();
+                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalIdString();
             } else if (HarvestingClient.HARVEST_STYLE_VDC.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 String rootArchiveUrl = this.getHarvestedFrom().getHarvestingUrl();
                 int c = rootArchiveUrl.indexOf("/OAIHandler");
                 if (c > 0) {
                     rootArchiveUrl = rootArchiveUrl.substring(0, c);
-                    return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId();
+                    return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalIdString();
                 }
             } else if (HarvestingClient.HARVEST_STYLE_ICPSR.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 // For the ICPSR, it turns out that the best thing to do is to 
@@ -673,7 +670,7 @@ public class Dataset extends DvObjectContainer {
                 // the study: 
                 //String icpsrId = identifier;
                 //return this.getOwner().getHarvestingClient().getArchiveUrl() + "/icpsrweb/ICPSR/studies/"+icpsrId+"?q="+icpsrId+"&amp;searchSource=icpsr-landing";
-                return "http://doi.org/" + authority + "/" + identifier;
+                return "http://doi.org/" + this.getAuthority() + "/" + this.getIdentifier();
             } else if (HarvestingClient.HARVEST_STYLE_NESSTAR.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 String nServerURL = this.getHarvestedFrom().getArchiveUrl();
                 // chop any trailing slashes in the server URL - or they will result
@@ -684,16 +681,16 @@ public class Dataset extends DvObjectContainer {
                 String nServerURLencoded = nServerURL;
 
                 nServerURLencoded = nServerURLencoded.replace(":", "%3A").replace("/", "%2F");
-
+                //SEK 09/13/18
                 String NesstarWebviewPage = nServerURL
                         + "/webview/?mode=documentation&submode=abstract&studydoc="
                         + nServerURLencoded + "%2Fobj%2FfStudy%2F"
-                        + identifier
+                        + this.getIdentifier()
                         + "&top=yes";
 
                 return NesstarWebviewPage;
             } else if (HarvestingClient.HARVEST_STYLE_ROPER.equals(this.getHarvestedFrom().getHarvestStyle())) {
-                return this.getHarvestedFrom().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + identifier;
+                return this.getHarvestedFrom().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + this.getIdentifier();
             } else if (HarvestingClient.HARVEST_STYLE_HGL.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 // a bit of a hack, true. 
                 // HGL documents, when turned into Dataverse studies/datasets
@@ -766,7 +763,7 @@ public class Dataset extends DvObjectContainer {
     public DatasetThumbnail getDatasetThumbnail() {
         return DatasetUtil.getThumbnail(this);
     }
-
+    
     /** 
      * Handle the case where we also have the datasetVersionId.
      * This saves trying to find the latestDatasetVersion, and 

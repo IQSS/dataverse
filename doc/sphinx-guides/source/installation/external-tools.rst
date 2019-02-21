@@ -9,11 +9,16 @@ External tools can provide additional features that are not part of Dataverse it
 Inventory of External Tools
 ---------------------------
 
-Support for external tools is just getting off the ground but TwoRavens has been converted into an external tool. See the :doc:`/user/data-exploration/tworavens` section of the User Guide for more information on TwoRavens from the user perspective and :doc:`r-rapache-tworavens` for more information on installing TwoRavens.
+Support for external tools is just getting off the ground but the following tools have been successfully integrated with Dataverse:
 
-- TwoRavens: a system of interlocking statistical tools for data exploration, analysis, and meta-analysis: http://2ra.vn
-- Data Explorer: a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis. For installation instructions see the README.md file at https://github.com/scholarsportal/Dataverse-Data-Explorer.
+- TwoRavens: a system of interlocking statistical tools for data exploration, analysis, and meta-analysis: http://2ra.vn. See the :doc:`/user/data-exploration/tworavens` section of the User Guide for more information on TwoRavens from the user perspective and the :doc:`r-rapache-tworavens` section of the Installation Guide. 
+
+- Data Explorer: a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis. See the README.md file at https://github.com/scholarsportal/Dataverse-Data-Explorer for the instructions on adding Data Explorer to your Dataverse; and the :doc:`prerequisites` section of the Installation Guide for the instructions on how to set up **basic R configuration required** (specifically, Dataverse uses R to generate .prep metadata files that are needed to run Data Explorer). 
+
+- `Whole Tale <https://wholetale.org>`_: a platform for the creation of reproducible research packages that allows users to launch containerized interactive analysis environments based on popular tools such as Jupyter and RStudio. Using this integration, Dataverse users can launch Jupyter and RStudio environments to analyze published datasets. For more information, see the `Whole Tale User Guide <https://wholetale.readthedocs.io/en/stable/users_guide/integration.html>`_.
+
 - [Your tool here! Please get in touch! :) ]
+
 
 Downloading and Adjusting an External Tool Manifest File
 --------------------------------------------------------
@@ -24,13 +29,17 @@ External tools must be expressed in an external tool manifest file, a specific J
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/awesomeTool.json
 
-``type`` is required and must be ``explore`` or ``configure`` to make the tool appear under a button called "Explore" or "Configure", respectively. Currently external tools only operate on tabular files that have been successfully ingested. (For more on ingest, see the :doc:`/user/tabulardataingest/ingestprocess` of the User Guide.)
+``type`` is required and must be ``explore`` or ``configure`` to make the tool appear under a button called "Explore" or "Configure", respectively. 
+
+External tools can operate on any file, including tabular files that have been created by successful ingestion. (For more on ingest, see the :doc:`/user/tabulardataingest/ingestprocess` of the User Guide.) The optional ``contentType`` entry specifies the mimetype a tool works on. (Not providing this parameter makes the tool work on ingested tabular files and is equivalent to specifying the ``contentType`` as "text/tab-separated-values".)  
 
 In the example above, a mix of required and optional reserved words appear that can be used to insert dynamic values into tools. The supported values are:
 
 - ``{fileId}`` (required) - The Dataverse database ID of a file the external tool has been launched on.
 - ``{siteUrl}`` (optional) - The URL of the Dataverse installation that hosts the file with the fileId above.
 - ``{apiToken}`` (optional) - The Dataverse API token of the user launching the external tool, if available.
+- ``{datasetId}`` (optional) - The ID of the dataset containing the file.
+- ``{datasetVersion}`` (optional) - The friendly version number ( or \:draft ) of the dataset version the tool is being launched from.
 
 Making an External Tool Available in Dataverse
 ----------------------------------------------

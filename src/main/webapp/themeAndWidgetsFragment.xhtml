@@ -7,7 +7,8 @@
     <!-- Theme and Widgets Edit Tabs -->
         <p:tabView  rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
             <p:tab id="themeTab" title="#{bundle['dataverse.theme.title']}" rendered="#{not settingsWrapper.rootDataverseThemeDisabled or themeWidgetFragment.editDv.owner != null}">
-                <p:fragment autoUpdate="true">
+                <p:fragment>
+                    <p:autoUpdate/>
                     <!-- Dataverse Theme Panel -->
                     <div class="row form-horizontal">
                         <div class="form-group" jsf:rendered="#{themeWidgetFragment.editDv.owner!=null}">
@@ -180,7 +181,7 @@
                     </ui:fragment>
                 </p:fragment>
                 <div class="button-block">
-                    <p:commandButton class="btn btn-default" value="#{bundle.saveChanges}" update=":#{p:component('messagePanel')}, :themeWidgetsForm" action="#{themeWidgetFragment.save()}" oncomplete="bind_bsui_components();"/>
+                    <p:commandButton class="btn btn-default" value="#{bundle.saveChanges}" update=":#{p:resolveClientId('messagePanel', view)}, :themeWidgetsForm" action="#{themeWidgetFragment.save()}" oncomplete="bind_bsui_components();"/>
                     <p:commandButton class="btn btn-default" action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeCancel" value="#{bundle.cancel}"/>
                 </div>
             </p:tab>
@@ -249,5 +250,5 @@
                 </ui:fragment>
             </p:tab>
         </p:tabView>
-    <p:remoteCommand name="saveRedirectUrl" process="@this" update=":#{p:component('messagePanel')}, :themeWidgetsForm, @([id$=Messages])" actionListener="#{themeWidgetFragment.save()}"/>
+    <p:remoteCommand name="saveRedirectUrl" process="@this" update=":#{p:resolveClientId('messagePanel', view)}, :themeWidgetsForm, @([id$=Messages])" actionListener="#{themeWidgetFragment.save()}"/>
 </ui:composition>

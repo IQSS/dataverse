@@ -39,7 +39,7 @@ public class ShibGroupServiceBean {
     GroupServiceBean groupService;
     @EJB
     ActionLogServiceBean actionLogSvc;
-	
+
     /**
      * @return A ShibGroup or null.
      */
@@ -61,17 +61,16 @@ public class ShibGroupServiceBean {
 
     public ShibGroup save(String name, String shibIdpAttribute, String shibIdp) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "shibCreate");
-        alr.setInfo( name + ": " + shibIdp + "/" + shibIdpAttribute );
-        
+        alr.setInfo(name + ": " + shibIdp + "/" + shibIdpAttribute);
+
         ShibGroup institutionalGroup = new ShibGroup(name, shibIdpAttribute, shibIdp, groupService.getShibGroupProvider());
         em.persist(institutionalGroup);
         em.flush();
         ShibGroup merged = em.merge(institutionalGroup);
-        
+
         actionLogSvc.log(alr);
         return merged;
     }
-
     public Set<ShibGroup> findFor(AuthenticatedUser authenticatedUser) {
         Set<ShibGroup> groupsForUser = new HashSet<>();
         String shibIdp = authenticatedUser.getShibIdentityProvider();
@@ -86,23 +85,24 @@ public class ShibGroupServiceBean {
             typedQuery.setParameter("shibIdP", shibIdp);
             List<ShibGroup> matches = typedQuery.getResultList();
             groupsForUser.addAll(matches);
+            /**
+             * @todo In addition to supporting institution-wide Shibboleth
+             * groups (Harvard, UNC, etc.), allow arbitrary Shibboleth
+             * attributes to be matched (with a regex) such as "memberOf"
+             * etc.
+             */
         }
-        /**
-         * @todo In addition to supporting institution-wide Shibboleth groups
-         * (Harvard, UNC, etc.), allow arbitrary Shibboleth attributes to be
-         * matched (with a regex) such as "memberOf" etc.
-         */
         return groupsForUser;
     }
 
     public boolean delete(ShibGroup doomed) throws Exception {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "shibDelete");
-        alr.setInfo( doomed.getName() + ":" + doomed.getIdentifier() );
-        
+        alr.setInfo(doomed.getName() + ":" + doomed.getIdentifier());
+
         List<RoleAssignment> assignments = roleAssigneeSvc.getAssignmentsFor(doomed.getIdentifier());
         if (assignments.isEmpty()) {
             em.remove(doomed);
-            actionLogSvc.log( alr );
+            actionLogSvc.log(alr);
             return true;
         } else {
             /**
@@ -114,9 +114,9 @@ public class ShibGroupServiceBean {
             }
             String message = "Could not delete Shibboleth group id " + doomed.getId() + " due to existing role assignments: " + assignmentIds;
             logger.info(message);
-            actionLogSvc.log( alr.setActionResult(ActionLogRecord.Result.BadRequest)
-                                 .setInfo( alr.getInfo() + "// " + message ) );
-            
+            actionLogSvc.log(alr.setActionResult(ActionLogRecord.Result.BadRequest)
+                    .setInfo(alr.getInfo() + "// " + message));
+
             throw new Exception(message);
         }
     }

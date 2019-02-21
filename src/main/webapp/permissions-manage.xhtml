@@ -6,13 +6,13 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://java.sun.com/jsp/jstl/core"
       xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-
     <h:head>
     </h:head>
 
     <h:body>
         <f:metadata>
             <f:viewParam name="id" value="#{managePermissionsPage.dvObject.id}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{managePermissionsPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(managePermissionsPage.dvObject, (managePermissionsPage.dvObject.instanceofDataverse ? bundle['dataverse.permissions.title'] : bundle['dataverse.permissions.dataset.title']))}"/>
         </f:metadata>
@@ -73,6 +73,9 @@
                                                             </ui:fragment>
                                                             <ui:fragment rendered="#{managePermissionsPage.defaultContributorRoleAlias eq 'curator'}">
                                                                 #{bundle.curator} <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.curator.description']}</span>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered="#{managePermissionsPage.isCustomDefaultContributorRole()}">
+                                                                #{managePermissionsPage.customDefaultContributorRoleName} <span class="text-muted">#{managePermissionsPage.customDefaultContributorRoleDescription}</span>
                                                             </ui:fragment>
                                                         </p>
                                                     </div>
@@ -161,7 +164,7 @@
                                                                     and dataverseSession.user.superuser}"
                                                        actionListener="#{managePermissionsPage.createNewRole}"
                                                        oncomplete="PF('roleForm').show();handleResizeDialog('rolesPermissionsDialog');bind_bsui_components();"
-                                                       update=":#{p:component('editRolePanel')}">
+                                                       update=":#{p:resolveClientId('rolesPermissionsForm:editRolePanel', view)}">
                                             <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.permissions.roles.add']}
                                         </p:commandLink>
                                     </div>
@@ -176,16 +179,16 @@
                                                                             and dataverseSession.user.superuser}"
                                                                actionListener="#{managePermissionsPage.editRole(role.id)}"
                                                                oncomplete="PF('roleForm').show();handleResizeDialog('rolesPermissionsDialog');"
-                                                               update=":#{p:component('editRolePanel')}"><span class="glyphicon glyphicon-pencil"></span></p:commandLink>
+                                                               update=":#{p:resolveClientId('rolesPermissionsForm:editRolePanel', view)}"><span class="glyphicon glyphicon-pencil"></span></p:commandLink>
                                                 <p:commandLink title="#{bundle['dataverse.permissions.roles.copy']}" styleClass="icon-inline-action bootstrap-button-tooltip"
                                                                rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)
                                                                             and dataverseSession.user.superuser}"
                                                                actionListener="#{managePermissionsPage.cloneRole(role.id)}"
                                                                oncomplete="PF('roleForm').show();handleResizeDialog('rolesPermissionsDialog');"
-                                                               update=":#{p:component('editRolePanel')}"><span class="glyphicon glyphicon-duplicate"></span></p:commandLink>
+                                                               update=":#{p:resolveClientId('rolesPermissionsForm:editRolePanel', view)}"><span class="glyphicon glyphicon-duplicate"></span></p:commandLink>
                                                 <div>
                                                     <ui:repeat value="#{role.permissions().toArray()}" var="prm">
-                                                        <span class="label label-default">#{prm}</span>
+                                                        <span class="label label-default">#{bundle['permission.'.concat(prm).concat('.label')]}</span>
                                                     </ui:repeat>
                                                 </div>
                                             </div>
@@ -202,7 +205,7 @@
                         <ui:include src="permissions-configure.xhtml"/>
                         <div class="button-block">
                             <p:commandLink value="#{bundle['saveChanges']}" styleClass="btn btn-default"
-                                           update=":#{p:component('configureSettings')} @([id$=assignedRoles]) assignedRoles @([id$=Messages])"
+                                           update=":#{p:resolveClientId('rolesPermissionsForm:configureSettings', view)} @([id$=assignedRoles]) assignedRoles @([id$=Messages])"
                                            actionListener="#{managePermissionsPage.saveConfiguration}"
                                            oncomplete="PF('accessForm').hide()"/>
                             <button type="button" class="btn btn-default" onclick="PF('accessForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
@@ -221,7 +224,7 @@
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confirmation').hide()" 
                                              action="#{managePermissionsPage.removeRoleAssignment()}" 
-                                             update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])" />
+                                             update=":#{p:resolveClientId('rolesPermissionsForm:configureSettings', view)} assignedRoles @([id$=Messages])" />
                             <button type="button" class="btn btn-default" onclick="PF('confirmation').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
                         </div>
                     </p:dialog>

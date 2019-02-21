@@ -18,9 +18,10 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -43,6 +44,7 @@ import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.IOUtils;
 import org.ocpsoft.common.util.Strings;
 
 /**
@@ -92,7 +94,6 @@ import org.ocpsoft.common.util.Strings;
 public class AddReplaceFileHelper{
     
     private static final Logger logger = Logger.getLogger(AddReplaceFileHelper.class.getCanonicalName());
-
     
     public static String FILE_ADD_OPERATION = "FILE_ADD_OPERATION";
     public static String FILE_REPLACE_OPERATION = "FILE_REPLACE_OPERATION";
@@ -128,6 +129,7 @@ public class AddReplaceFileHelper{
     // -----------------------------------
     private User user;
     private DatasetVersion workingVersion;
+    private DatasetVersion clone;
     List<DataFile> initialFileList; 
     List<DataFile> finalFileList;
     
@@ -828,9 +830,9 @@ public class AddReplaceFileHelper{
             throw new NullPointerException("msgName cannot be null");
         }
         if (isErr){        
-            return ResourceBundle.getBundle("Bundle").getString("file.addreplace.error." + msgName);
+            return BundleUtil.getStringFromBundle("file.addreplace.error." + msgName);
         }else{
-            return ResourceBundle.getBundle("Bundle").getString("file.addreplace.success." + msgName);
+            return BundleUtil.getStringFromBundle("file.addreplace.success." + msgName);
         }
        
     }
@@ -897,7 +899,7 @@ public class AddReplaceFileHelper{
         
         // Make a temp. command
         //
-        CreateDatasetCommand createDatasetCommand = new CreateDatasetCommand(datasetToCheck, dvRequest, false);
+        Command createDatasetCommand = new CreateNewDatasetCommand(datasetToCheck, dvRequest);
         
         // Can this user run the command?
         //
@@ -1041,7 +1043,7 @@ public class AddReplaceFileHelper{
 
         // Load the working version of the Dataset
         workingVersion = dataset.getEditVersion();
-                
+        clone =   workingVersion.cloneDatasetVersion();
         try {
             initialFileList = FileUtil.createDataFiles(workingVersion,
                     this.newFileInputStream,
@@ -1058,10 +1060,10 @@ public class AddReplaceFileHelper{
             logger.severe(ex.toString());
             this.runMajorCleanup(); 
             return false;
-        } 
-        
-        
-        /**
+        } finally {
+            IOUtils.closeQuietly(this.newFileInputStream);
+         }
+         /**
          * This only happens:
          *  (1) the dataset was empty
          *  (2) the new file (or new file unzipped) did not ingest via "createDataFiles"
@@ -1088,7 +1090,6 @@ public class AddReplaceFileHelper{
         }
         
         if (this.step_040_auto_checkForDuplicates()){
-            ingestService.addFilesToDataset(workingVersion, finalFileList);
             return true;
         }
                        
@@ -1410,9 +1411,19 @@ public class AddReplaceFileHelper{
             this.addErrorSevere(getBundleErr("final_file_list_empty"));                
             return false;
         }
+        
+        int nFiles = finalFileList.size();
+        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList);
 
-        ingestService.addFiles(workingVersion, finalFileList);
-
+        if (nFiles != finalFileList.size()) {
+            if (nFiles == 1) {
+                addError("Failed to save the content of the uploaded file.");
+            } else {
+                addError("Failed to save the content of at least one of the uploaded files.");
+            }
+            return false;
+        }
+        
         return true;
     }
     
@@ -1429,8 +1440,8 @@ public class AddReplaceFileHelper{
         }
 
         Command<Dataset> update_cmd;
-        update_cmd = new UpdateDatasetCommand(dataset, dvRequest);
-        ((UpdateDatasetCommand) update_cmd).setValidateLenient(true);  
+        update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
+        ((UpdateDatasetVersionCommand) update_cmd).setValidateLenient(true);  
         
         try {            
             // Submit the update dataset command 
@@ -1799,7 +1810,7 @@ public class AddReplaceFileHelper{
         // start the ingest!
         //
                
-        ingestService.startIngestJobs(dataset, dvRequest.getAuthenticatedUser());
+        ingestService.startIngestJobsForDataset(dataset, dvRequest.getAuthenticatedUser());
         
         msg("post ingest start");
         return true;
@@ -1930,7 +1941,7 @@ public class AddReplaceFileHelper{
             // (but should we really be doing it here? - maybe a better approach to do it
             // in the ingest service bean, when the files get uploaded.)
             // Finally, save the files permanently: 
-            ingestService.addFiles(workingVersion, newFiles);
+            ingestService.saveAndAddFilesToDataset(workingVersion, newFiles);
 
          (3) Use the API to save the dataset
             - make new CreateDatasetCommand

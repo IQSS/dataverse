@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
 import java.io.FileInputStream;
@@ -24,6 +25,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import org.passay.CharacterRule;
+import org.apache.commons.io.IOUtils;
 
 /**
  * System-wide configuration
@@ -65,6 +67,12 @@ public class SystemConfig {
      * A JVM option for where files are stored on the file system.
      */
     public static final String FILES_DIRECTORY = "dataverse.files.directory";
+
+    /**
+     * Some installations may not want download URLs to their files to be
+     * available in Schema.org JSON-LD output.
+     */
+    public static final String FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS = "dataverse.files.hide-schema-dot-org-download-urls";
 
     /**
      * A JVM option to override the number of minutes for which a password reset
@@ -180,6 +188,8 @@ public class SystemConfig {
                             appVersionString = mavenProperties.getProperty("version");                        
                         } catch (IOException ioex) {
                             logger.warning("caught IOException trying to read and parse the pom properties file.");
+                        } finally {
+                            IOUtils.closeQuietly(mavenPropertiesInputStream);
                         }
                     }
                     
@@ -219,10 +229,42 @@ public class SystemConfig {
     }
 
     public String getSolrHostColonPort() {
-        String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, saneDefaultForSolrHostColonPort);
+        String SolrHost;
+        if ( System.getenv("SOLR_SERVICE_HOST") != null && System.getenv("SOLR_SERVICE_HOST") != ""){
+            SolrHost = System.getenv("SOLR_SERVICE_HOST");
+        }
+        else SolrHost = saneDefaultForSolrHostColonPort;
+        String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, SolrHost);
         return solrHostColonPort;
     }
 
+    public boolean isProvCollectionEnabled() {
+        String provCollectionEnabled = settingsService.getValueForKey(SettingsServiceBean.Key.ProvCollectionEnabled, null);
+        if("true".equalsIgnoreCase(provCollectionEnabled)){         
+            return true;
+        }
+        return false;
+
+    }
+    
+    public int getMetricsCacheTimeoutMinutes() {
+        int defaultValue = 10080; //one week in minutes
+        SettingsServiceBean.Key key = SettingsServiceBean.Key.MetricsCacheTimeoutMinutes;
+        String metricsCacheTimeString = settingsService.getValueForKey(key);
+        int returnInt = 0;
+        try {
+            returnInt = Integer.parseInt(metricsCacheTimeString);
+            if (returnInt >= 0) {
+                return returnInt;
+            } else {
+                logger.info("Returning " + defaultValue + " for " + key + " because value must be greater than zero, not \"" + metricsCacheTimeString + "\".");
+            }
+        } catch (NumberFormatException ex) {
+            logger.info("Returning " + defaultValue + " for " + key + " because value must be an integer greater than zero, not \"" + metricsCacheTimeString + "\".");
+        }
+        return defaultValue;
+    }
+    
     public int getMinutesUntilConfirmEmailTokenExpires() {
         final int minutesInOneDay = 1440;
         final int reasonableDefault = minutesInOneDay;
@@ -489,13 +531,13 @@ public class SystemConfig {
     }
     
     public String getApplicationTermsOfUse() {
-        String saneDefaultForAppTermsOfUse = "There are no Terms of Use for this Dataverse installation.";
+        String saneDefaultForAppTermsOfUse = BundleUtil.getStringFromBundle("system.app.terms");
         String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
         return appTermsOfUse;
     }
 
     public String getApiTermsOfUse() {
-        String saneDefaultForApiTermsOfUse = "There are no API Terms of Use for this Dataverse installation.";
+        String saneDefaultForApiTermsOfUse = BundleUtil.getStringFromBundle("system.api.terms");
         String apiTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApiTermsOfUse, saneDefaultForApiTermsOfUse);
         return apiTermsOfUse;
     }
@@ -520,8 +562,11 @@ public class SystemConfig {
     }
 
     public Long getMaxFileUploadSize(){
-
          return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
+     }
+    
+    public String getHumanMaxFileUploadSize(){
+         return bytesToHumanReadable(getMaxFileUploadSize());
      }
 
     public Integer getSearchHighlightFragmentSize() {
@@ -786,10 +831,30 @@ public class SystemConfig {
         return numConsecutiveDigitsAllowed;
     }
 
+    /**
+     * Below are three related enums having to do with big data support:
+     *
+     * - FileUploadMethods
+     *
+     * - FileDownloadMethods
+     *
+     * - TransferProtocols
+     *
+     * There is a good chance these will be consolidated in the future.
+     */
     public enum FileUploadMethods {
 
+        /**
+         * DCM stands for Data Capture Module. Right now it supports upload over
+         * rsync+ssh but DCM may support additional methods in the future.
+         */
         RSYNC("dcm/rsync+ssh"),
-        NATIVE("NATIVE");
+        /**
+         * Traditional Dataverse file handling, which tends to involve users
+         * uploading and downloading files using a browser or APIs.
+         */
+        NATIVE("native/http");
+
 
         private final String text;
 
@@ -815,10 +880,20 @@ public class SystemConfig {
         
         
     }
-    
+
+    /**
+     * See FileUploadMethods.
+     *
+     * TODO: Consider if dataverse.files.s3-download-redirect belongs here since
+     * it's a way to bypass Glassfish when downloading.
+     */
     public enum FileDownloadMethods {
+        /**
+         * RSAL stands for Repository Storage Abstraction Layer. Downloads don't
+         * go through Glassfish.
+         */
         RSYNC("rsal/rsync"),
-        NATIVE("NATIVE");
+        NATIVE("native/http");
         private final String text;
 
         private FileDownloadMethods(final String text) {
@@ -842,6 +917,63 @@ public class SystemConfig {
         }
         
     }
+    
+    public enum DataFilePIDFormat {
+        DEPENDENT("DEPENDENT"),
+        INDEPENDENT("INDEPENDENT");
+        private final String text;
+
+        public String getText() {
+            return text;
+        }
+        
+        private DataFilePIDFormat(final String text){
+            this.text = text;
+        }
+        
+        @Override
+        public String toString() {
+            return text;
+        }
+        
+    }
+
+    /**
+     * See FileUploadMethods.
+     */
+    public enum TransferProtocols {
+
+        RSYNC("rsync"),
+        /**
+         * POSIX includes NFS. This is related to Key.LocalDataAccessPath in
+         * SettingsServiceBean.
+         */
+        POSIX("posix"),
+        GLOBUS("globus");
+
+        private final String text;
+
+        private TransferProtocols(final String text) {
+            this.text = text;
+        }
+
+        public static TransferProtocols fromString(String text) {
+            if (text != null) {
+                for (TransferProtocols transferProtocols : TransferProtocols.values()) {
+                    if (text.equals(transferProtocols.text)) {
+                        return transferProtocols;
+                    }
+                }
+            }
+            throw new IllegalArgumentException("TransferProtocols must be one of these values: " + Arrays.asList(TransferProtocols.values()) + ".");
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+
+    }
 
     public boolean isPublicInstall(){
         boolean saneDefault = false;
@@ -849,15 +981,81 @@ public class SystemConfig {
     }
     
     public boolean isRsyncUpload(){
-        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
-        return uploadMethods != null &&  uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
     }
     
-    public boolean isRsyncDownload()
-    {
+    // Controls if HTTP upload is enabled for both GUI and API.
+    public boolean isHTTPUpload(){       
+        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());       
+    }
+    
+    public boolean isRsyncOnly(){       
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-        return downloadMethods !=null && downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString());
+        if(downloadMethods == null){
+            return false;
+        }
+        if (!downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString())){
+            return false;
+        }
+        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
+        if (uploadMethods==null){
+            return false;
+        } else {
+           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+        }        
     }
     
-
+    public boolean isRsyncDownload() {
+        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
+        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
+    }
+    
+    public boolean isHTTPDownload() {
+        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
+        logger.warning("Download Methods:" + downloadMethods);
+        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.NATIVE.toString());
+    }
+    
+    private Boolean getUploadMethodAvailable(String method){
+        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
+        if (uploadMethods==null){
+            return false;
+        } else {
+           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+        }
+    }
+    
+    public Integer getUploadMethodCount(){
+        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
+        if (uploadMethods==null){
+            return 0;
+        } else {
+           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
+        }       
+    }
+    public boolean isDataFilePIDSequentialDependent(){
+        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+        if (doiIdentifierType.equals("sequentialNumber") && doiDataFileFormat.equals("DEPENDENT")){
+            return true;
+        }
+        return false;
+    }
+    
+    public int getPIDAsynchRegFileCount() {
+        String fileCount = settingsService.getValueForKey(SettingsServiceBean.Key.PIDAsynchRegFileCount, "10");
+        int retVal = 10;
+        try {
+            retVal = Integer.parseInt(fileCount);
+        } catch (NumberFormatException e) {           
+            //if no number in the setting we'll return 10
+        }
+        return retVal;
+    }
+    
+    public boolean isFilePIDsEnabled() {
+        boolean safeDefaultIfKeyNotFound = true;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, safeDefaultIfKeyNotFound);
+    }
+    
 }

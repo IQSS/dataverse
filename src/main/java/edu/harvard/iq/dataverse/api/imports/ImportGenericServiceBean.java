@@ -393,7 +393,7 @@ public class ImportGenericServiceBean {
     private String reassignIdentifierAsGlobalId(String identifierString, DatasetDTO datasetDTO) {
 
         int index1 = identifierString.indexOf(':');
-        int index2 = identifierString.lastIndexOf('/');
+        int index2 = identifierString.indexOf('/');
         if (index1==-1) {
             logger.warning("Error parsing identifier: " + identifierString + ". ':' not found in string");
             return null; 
@@ -411,23 +411,24 @@ public class ImportGenericServiceBean {
             if (identifierString.startsWith(GlobalId.HDL_RESOLVER_URL)) {
                 logger.fine("Processing Handle identifier formatted as a resolver URL: "+identifierString);
                 protocol = GlobalId.HDL_PROTOCOL;
-                index1 = GlobalId.HDL_RESOLVER_URL.length() - 1; 
+                index1 = GlobalId.HDL_RESOLVER_URL.length() - 1;
+                index2 = identifierString.indexOf("/", index1 + 1);
             } else if (identifierString.startsWith(GlobalId.DOI_RESOLVER_URL)) {
                 logger.fine("Processing DOI identifier formatted as a resolver URL: "+identifierString);
                 protocol = GlobalId.DOI_PROTOCOL;
                 index1 = GlobalId.DOI_RESOLVER_URL.length() - 1; 
+                index2 = identifierString.indexOf("/", index1 + 1);
             } else {
                 logger.warning("HTTP Url in supplied as the identifier is neither a Handle nor DOI resolver: "+identifierString);
                 return null;
             }
-            // index2 was already found as the *last* index of '/' - so it's still good. 
         } else {
             logger.warning("Unknown identifier format: "+identifierString);
             return null; 
         }
         
         if (index2 == -1) {
-            logger.warning("Error parsing identifier: " + identifierString + ". Second separator not found in string");
+            logger.warning("Error parsing identifier: " + identifierString + ". Second '/' not found in string");
             return null;
         }
 
@@ -435,7 +436,6 @@ public class ImportGenericServiceBean {
         String identifier = identifierString.substring(index2 + 1);
 
         datasetDTO.setProtocol(protocol);
-        datasetDTO.setDoiSeparator("/");
         datasetDTO.setAuthority(authority);
         datasetDTO.setIdentifier(identifier);
 

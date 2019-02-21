@@ -170,13 +170,21 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
             return null; 
         }
         
-        
+        // Check if the search result ("card") contains an entity, before 
+        // attempting to convert it to a Dataset. It occasionally happens that 
+        // solr has indexed datasets that are no longer in the database. If this
+        // is the case, the entity will be null here; and proceeding any further
+        // results in a long stack trace in the log file. 
+        if (result.getEntity() == null) {
+            return null;
+        }
         Dataset dataset = (Dataset)result.getEntity();
+        
         Long versionId = result.getDatasetVersionId();
 
-        return getDatasetCardImageAsBase64Url(dataset, versionId);
+        return getDatasetCardImageAsBase64Url(dataset, versionId, result.isPublishedState());
     }
-    public String getDatasetCardImageAsBase64Url(Dataset dataset, Long versionId) {
+    public String getDatasetCardImageAsBase64Url(Dataset dataset, Long versionId, boolean autoselect) {
         Long datasetId = dataset.getId();
         if (datasetId != null) {
             if (this.dvobjectThumbnailsMap.containsKey(datasetId)) {
@@ -205,16 +213,16 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
             dataAccess = DataAccess.getStorageIO(dataset);
         }
         catch(IOException ioex){
-          //  return null;
+          // ignore
         }
         
         InputStream in = null;
+        // See if the dataset already has a dedicated thumbnail ("logo") saved as
+        // an auxilary file on the dataset level: 
+        // (don't bother checking if it exists; just try to open the input stream)
         try {
-            if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
                 in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
-            }
         } catch (Exception ioex) {
-//            return null;
               //ignore
         }
         
@@ -231,18 +239,29 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
                 // (alternatively, we could ignore the exception, and proceed with the 
                 // regular process of selecting the thumbnail from the available 
                 // image files - ?)
-            }
+            } finally
+	    {
+		    IOUtils.closeQuietly(in);
+	    }
         } 
 
-        if (dataset != null) {
-            cardImageUrl = this.getAssignedDatasetImage(dataset);
+        // If not, see if the dataset has one of its image files already assigned
+        // to be the designated thumbnail:
+        cardImageUrl = this.getAssignedDatasetImage(dataset);
 
-            if (cardImageUrl != null) {
-                //logger.info("dataset id " + result.getEntity().getId() + " has a dedicated image assigned; returning " + cardImageUrl);
-                return cardImageUrl;
-            }
+        if (cardImageUrl != null) {
+            //logger.info("dataset id " + result.getEntity().getId() + " has a dedicated image assigned; returning " + cardImageUrl);
+            return cardImageUrl;
+        }
+        
+        // And finally, try to auto-select the thumbnail (unless instructed not to):
+        
+        if (!autoselect) {
+            return null;
         }
 
+        // We attempt to auto-select via the optimized, native query-based method 
+        // from the DatasetVersionService:
         Long thumbnailImageFileId = datasetVersionService.getThumbnailByVersionId(versionId);
 
         if (thumbnailImageFileId != null) {

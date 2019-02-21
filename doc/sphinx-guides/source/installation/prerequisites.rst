@@ -1,3 +1,5 @@
+.. role:: fixedwidthplain
+
 =============
 Prerequisites
 =============
@@ -87,6 +89,18 @@ This recommendation comes from http://www.c2b2.co.uk/middleware-blog/glassfish-4
 	# /usr/local/glassfish4/bin/asadmin start-domain
 	# /usr/local/glassfish4/bin/asadmin osgi lb | grep 'Weld OSGi Bundle'
 
+The Certificate Authority (CA) certificate bundle file from Glassfish contains certs that expired in August 2018, causing problems with ORCID login.
+
+- The actual expiration date is August 22, 2018, which you can see with the following command::
+
+	# keytool -list -v -keystore /usr/local/glassfish4/glassfish/domains/domain1/config/cacerts.jks
+
+- Overwrite Glassfish's CA certs file with the file that ships with the operating system and restart Glassfish::
+
+	# cp /etc/pki/ca-trust/extracted/java/cacerts /usr/local/glassfish4/glassfish/domains/domain1/config/cacerts.jks
+	# /usr/local/glassfish4/bin/asadmin stop-domain
+	# /usr/local/glassfish4/bin/asadmin start-domain
+
 Launching Glassfish on system boot
 ==================================
 
@@ -100,6 +114,10 @@ It is not necessary for Glassfish to be running before you execute the Dataverse
 
 Please note that you must run Glassfish in an English locale. If you are using something like ``LANG=de_DE.UTF-8``, ingest of tabular data will fail with the message "RoundRoutines:decimal separator no in right place".
 
+Also note that Glassfish may utilize more than the default number of file descriptors, especially when running batch jobs such as harvesting. We have increased ours by adding ulimit -n 32768 to our glassfish init script. On operating systems which use systemd such as RHEL or CentOS 7, file descriptor limits may be increased by adding a line like LimitNOFILE=32768 to the systemd unit file. You may adjust the file descriptor limits on running processes by using the prlimit utility::
+
+	# sudo prlimit --pid pid --nofile=32768:32768
+
 PostgreSQL
 ----------
 
@@ -108,15 +126,19 @@ Installing PostgreSQL
 
 Version 9.x is required. Previous versions have not been tested.
 
-The version that ships with el7 and above is fine::
+Version 9.6 is anticipated as an "LTS" release in RHEL and on other platforms::
 
-	# yum install postgresql-server
-        # service postgresql initdb
-	# service postgresql start
+	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+	# yum makecache fast
+	# yum install -y postgresql96-server
+	# /usr/pgsql-9.6/bin/postgresql96-setup initdb
+	# /usr/bin/systemctl start postgresql-9.6
+	# /usr/bin/systemctl enable postgresql-9.6
+	
+Note these steps are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
 
-The standard init script that ships with el7 should work fine. Enable it with this command::
-
-        # chkconfig postgresql on
+	# service postgresql-9.6 initdb
+	# service postgresql-9.6 start
 
 Configuring Database Access for the Dataverse Application (and the Dataverse Installer) 
 =======================================================================================
@@ -150,8 +172,12 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
 
   The file ``postgresql.conf`` will be located in the same directory as the ``pg_hba.conf`` above.
 
-- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL and similar (provided you installed Postgres as instructed above)::
-        
+- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL/CentOS 7 and similar (provided you installed Postgres as instructed above)::
+
+        # systemctl restart postgresql-9.6
+
+  or on RHEL/CentOS 6::
+
         # service postgresql restart
 
   On MacOS X a "Reload Configuration" icon is usually supplied in the PostgreSQL application folder. Or you could look up the process id of the PostgreSQL postmaster process, and send it the SIGHUP signal:: 
@@ -166,39 +192,69 @@ The Dataverse search index is powered by Solr.
 Installing Solr
 ===============
 
-Download and install Solr with these commands::
+You should not run Solr as root. Create a user called ``solr`` and a directory to install Solr into::
 
-	# wget https://archive.apache.org/dist/lucene/solr/4.6.0/solr-4.6.0.tgz
-	# tar xvzf solr-4.6.0.tgz 
-	# rsync -auv solr-4.6.0 /usr/local/
-	# cd /usr/local/solr-4.6.0/example/solr/collection1/conf/
-	# cp -a schema.xml schema.xml.orig
+        useradd solr
+        mkdir /usr/local/solr
+        chown solr:solr /usr/local/solr
 
-The reason for backing up the ``schema.xml`` file is that Dataverse requires a custom Solr schema to operate. This ``schema.xml`` file is contained in the "dvinstall" zip supplied in each Dataverse release at https://github.com/IQSS/dataverse/releases . Download this zip file, extract ``schema.xml`` from it, and put it into place (in the same directory as above)::
+Become the ``solr`` user and then download and configure Solr::
 
-	# cp /tmp/schema.xml schema.xml
+        su - solr
+        cd /usr/local/solr
+        wget https://archive.apache.org/dist/lucene/solr/7.3.1/solr-7.3.1.tgz
+        tar xvzf solr-7.3.1.tgz
+        cd solr-7.3.1
+        cp -r server/solr/configsets/_default server/solr/collection1
 
-With the Dataverse-specific schema in place, you can now start Solr::
+You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
 
-	# cd /usr/local/solr-4.6.0/example
-	# java -jar start.jar
+        cp /tmp/dvinstall/schema.xml /usr/local/solr/solr-7.3.1/server/solr/collection1/conf
+        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.3.1/server/solr/collection1/conf
+
+Note: Dataverse has customized Solr to boost results that come from certain indexed elements inside Dataverse, for example prioritizing results from Dataverses over Datasets. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents. If you have ideas about how this boosting could be improved, feel free to contact us through our Google Group https://groups.google.com/forum/#!forum/dataverse-dev .
+
+Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.3.1/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
+
+Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script, and the following to ``/etc/security/limits.conf``::
+
+        solr soft nproc 65000
+        solr hard nproc 65000
+        solr soft nofile 65000
+        solr hard nofile 65000
+
+On operating systems which use systemd such as RHEL or CentOS 7, you may then add a line like LimitNOFILE=65000 for the number of open file descriptors and a line with LimitNPROC=65000 for the max processes to the systemd unit file, or adjust the limits on a running process using the prlimit tool::
+
+        # sudo prlimit --pid pid --nofile=65000:65000
+
+Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability. Installation of this package isn't required but will prevent a warning in the log at startup.
+
+Finally, you may start Solr and create the core that will be used to manage search information::
+
+        cd /usr/local/solr/solr-7.3.1
+        bin/solr start
+        bin/solr create_core -c collection1 -d server/solr/collection1/conf/
+	
 
 Solr Init Script
 ================
 
-The command above will start Solr in the foreground which is good for a quick sanity check that Solr accepted the schema file, but letting the system start Solr automatically is recommended.
- 
-- This :download:`Solr Systemd file<../_static/installation/files/etc/systemd/solr.service>` will launch Solr on boot as the solr user for RHEL/CentOS 7 or Ubuntu 16+ systems, or
-- For systems using init.d, you may attempt to adjust this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` for your needs or write your own.
+For systems running systemd, as root, download :download:`solr.service<../_static/installation/files/etc/systemd/solr.service>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
 
-Solr should be running before the Dataverse installation script is executed.
+        cp /tmp/solr.service /usr/lib/systemd/system
+        systemctl start solr.service
+        systemctl enable solr.service
+
+For systems using init.d, download this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
+
+        cp /tmp/solr /etc/init.d
+        service solr start
+        chkconfig solr on
 
 Securing Solr
 =============
 
-Solr must be firewalled off from all hosts except the server(s) running Dataverse. Otherwise, any host  that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://wiki.apache.org/solr/SolrSecurity
-
-You may want to poke a temporary hole in your firewall to play with the Solr GUI. More information on this can be found in the :doc:`/developers/dev-environment` section of the Developer Guide.
+Solr must be firewalled off from all hosts except the server(s) running Dataverse. Otherwise, any host  that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://lucene.apache.org/solr/guide/7_2/securing-solr.html
 
 jq
 --
@@ -236,7 +292,116 @@ If the installed location of the convert executable is different from ``/usr/bin
 
 (see the :doc:`config` section for more information on the JVM options)
 
+R
+-
 
+Dataverse uses `R <https://https://cran.r-project.org/>`_ to handle
+tabular data files. The instructions below describe a **minimal** R
+installation. It will allow you to ingest R (.RData) files as tabular
+data; to export tabular data as .RData files; and to run `Data
+Explorer <https://github.com/scholarsportal/Dataverse-Data-Explorer>`_
+(specifically, R is used to generate .prep metadata files that Data
+Explorer uses).  R can be considered an optional component, meaning
+that if you don't have R installed, you will still be able to run and
+use Dataverse - but the functionality specific to tabular data
+mentioned above will not be available to your users.  **Note** that if
+you choose to also install `TwoRavens
+<https://github.com/IQSS/TwoRavens>`_, it will require some extra R
+components and libraries.  Please consult the instructions in the
+TowRavens section of the Installation Guide.
+
+
+Installing R
+============
+
+Can be installed with :fixedwidthplain:`yum`::
+
+       yum install R-core R-core-devel
+
+EPEL distribution is strongly recommended. The version of R currently available from epel6 and epel7 is 3.5; it has been tested and is known to work on RedHat and CentOS versions 6 and 7.
+
+If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ):
+
+RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 7::
+
+       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 6::
+
+       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+
+RHEL users will want to log in to their organization's respective RHN interface, find the particular machine in question and:
+
+• click on "Subscribed Channels: Alter Channel Subscriptions"
+• enable EPEL, Server Extras, Server Optional
+
+Installing the required R libraries
+===================================
+
+The following R packages (libraries) are required::
+
+    R2HTML
+    rjson
+    DescTools
+    Rserve
+    haven
+
+Install them following the normal R package installation procedures. For example, with the following R commands::
+
+	install.packages("R2HTML", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("rjson", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("DescTools", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("Rserve", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+	install.packages("haven", repos="https://cloud.r-project.org/", lib="/usr/lib64/R/library" )
+
+Rserve
+======
+
+Dataverse uses `Rserve <https://rforge.net/Rserve/>`_ to communicate
+to R. Rserve is installed as a library package, as described in the
+step above. It runs as a daemon process on the server, accepting
+network connections on a dedicated port. This requires some extra 
+configuration and we provide a  script (:fixedwidthplain:`scripts/r/rserve/rserve-setup.sh`) for setting it up.  
+Run the script as follows (as root)::
+
+    cd <DATAVERSE SOURCE TREE>/scripts/r/rserve
+    ./rserve-setup.sh
+
+The setup script will create a system user :fixedwidthplain:`rserve`
+that will run the daemon process.  It will install the startup script
+for the daemon (:fixedwidthplain:`/etc/init.d/rserve`), so that it
+gets started automatically when the system boots.  This is an
+:fixedwidthplain:`init.d`-style startup file. If this is a
+RedHat/CentOS 7 system, you may want to use the
+:fixedwidthplain:`systemctl`-style file
+:fixedwidthplain:`rserve.service` instead. (Copy it into the
+:fixedwidthplain:`/usr/lib/systemd/system/` directory)
+
+
+
+Note that the setup will also set the Rserve password to
+":fixedwidthplain:`rserve`".  Rserve daemon runs under a
+non-privileged user id, so there's not much potential for security
+damage through unauthorized access. It is however still a good idea
+**to change the password**. The password is specified in
+:fixedwidthplain:`/etc/Rserv.pwd`.  You can consult `Rserve
+documentation <https://rforge.net/Rserve/doc.html>`_ for more
+information on password encryption and access security.
+
+You should already have the following 4 JVM options added to your
+:fixedwidthplain:`domain.xml` by the Dataverse installer::
+
+        <jvm-options>-Ddataverse.rserve.host=localhost</jvm-options>
+        <jvm-options>-Ddataverse.rserve.port=6311</jvm-options>
+        <jvm-options>-Ddataverse.rserve.user=rserve</jvm-options>
+        <jvm-options>-Ddataverse.rserve.password=rserve</jvm-options>
+
+If you have changed the password, make sure it is correctly specified
+in the :fixedwidthplain:`dataverse.rserve.password` option above.  If
+Rserve is running on a host that's different from your Dataverse
+server, change the :fixedwidthplain:`dataverse.rserve.host` option
+above as well (and make sure the port 6311 on the Rserve host is not
+firewalled from your Dataverse host).
 
 Now that you have all the prerequisites in place, you can proceed to the :doc:`installation-main` section.
 

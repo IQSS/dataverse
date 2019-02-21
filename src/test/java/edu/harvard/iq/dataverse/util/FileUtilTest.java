@@ -22,18 +22,17 @@ public class FileUtilTest {
 
         assertEquals(null, FileUtil.getCiteDataFileFilename(null, null));
 
-        FileMetadata png = new FileMetadata();
-        png.setLabel("trees.png");
-        assertEquals("trees.png-endnote.xml", FileUtil.getCiteDataFileFilename(png, FileUtil.FileCitationExtension.ENDNOTE));
-        assertEquals("trees.png.ris", FileUtil.getCiteDataFileFilename(png, FileUtil.FileCitationExtension.RIS));
-        assertEquals("trees.png.bib", FileUtil.getCiteDataFileFilename(png, FileUtil.FileCitationExtension.BIBTEX));
-        assertEquals(null, FileUtil.getCiteDataFileFilename(png, null));
+        String fileName = "trees.png";
+        assertEquals("trees.png-endnote.xml", FileUtil.getCiteDataFileFilename(fileName, FileUtil.FileCitationExtension.ENDNOTE));
+        assertEquals("trees.png.ris", FileUtil.getCiteDataFileFilename(fileName, FileUtil.FileCitationExtension.RIS));
+        assertEquals("trees.png.bib", FileUtil.getCiteDataFileFilename(fileName, FileUtil.FileCitationExtension.BIBTEX));
+        assertEquals(null, FileUtil.getCiteDataFileFilename(fileName, null));
 
-        FileMetadata tabular = new FileMetadata();
-        tabular.setLabel("50by1000.tab");
-        assertEquals("50by1000-endnote.xml", FileUtil.getCiteDataFileFilename(tabular, FileUtil.FileCitationExtension.ENDNOTE));
-        assertEquals("50by1000.ris", FileUtil.getCiteDataFileFilename(tabular, FileUtil.FileCitationExtension.RIS));
-        assertEquals("50by1000.bib", FileUtil.getCiteDataFileFilename(tabular, FileUtil.FileCitationExtension.BIBTEX));
+        
+        String tabFileName="50by1000.tab";
+        assertEquals("50by1000-endnote.xml", FileUtil.getCiteDataFileFilename(tabFileName, FileUtil.FileCitationExtension.ENDNOTE));
+        assertEquals("50by1000.ris", FileUtil.getCiteDataFileFilename(tabFileName, FileUtil.FileCitationExtension.RIS));
+        assertEquals("50by1000.bib", FileUtil.getCiteDataFileFilename(tabFileName, FileUtil.FileCitationExtension.BIBTEX));
     }
 
     @Test
@@ -152,7 +151,7 @@ public class FileUtilTest {
         assertEquals("/api/access/datafile/bundle/42", FileUtil.getFileDownloadUrlPath("bundle", fileId, false));
         assertEquals("/api/access/datafile/42?format=original", FileUtil.getFileDownloadUrlPath("original", fileId, false));
         assertEquals("/api/access/datafile/42?format=RData", FileUtil.getFileDownloadUrlPath("RData", fileId, false));
-        assertEquals("/api/meta/datafile/42", FileUtil.getFileDownloadUrlPath("var", fileId, false));
+        assertEquals("/api/access/datafile/42/metadata", FileUtil.getFileDownloadUrlPath("var", fileId, false));
         assertEquals("/api/access/datafile/42?format=tab", FileUtil.getFileDownloadUrlPath("tab", fileId, false));
         assertEquals("/api/access/datafile/42?format=tab&gbrecs=true", FileUtil.getFileDownloadUrlPath("tab", fileId, true));
         assertEquals("/api/access/datafile/42?gbrecs=true", FileUtil.getFileDownloadUrlPath(null, fileId, true));
@@ -160,8 +159,10 @@ public class FileUtilTest {
 
     @Test
     public void testGetPublicDownloadUrl() {
-        assertEquals(null, FileUtil.getPublicDownloadUrl(null, null));
-        assertEquals("https://demo.dataverse.org/api/access/datafile/42", FileUtil.getPublicDownloadUrl("https://demo.dataverse.org", 42l));
+        assertEquals(null, FileUtil.getPublicDownloadUrl(null, null, null));
+        assertEquals("https://demo.dataverse.org/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/TLU3EP", FileUtil.getPublicDownloadUrl("https://demo.dataverse.org", "doi:10.5072/FK2/TLU3EP", 33L)); //pid before fileId
+        assertEquals("https://demo.dataverse.org/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/TLU3EP", FileUtil.getPublicDownloadUrl("https://demo.dataverse.org", "doi:10.5072/FK2/TLU3EP", null));
+        assertEquals("https://demo.dataverse.org/api/access/datafile/33", FileUtil.getPublicDownloadUrl("https://demo.dataverse.org", null, 33L)); //pid before fileId
     }
 
     @Test

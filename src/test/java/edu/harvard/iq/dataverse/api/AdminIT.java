@@ -7,6 +7,8 @@ import static edu.harvard.iq.dataverse.api.UtilIT.getRandomString;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import static java.lang.Thread.sleep;
 import java.util.ArrayList;
 import java.util.List;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
@@ -17,9 +19,14 @@ import org.junit.BeforeClass;
 import java.util.UUID;
 import javax.validation.constraints.AssertTrue;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Ignore;
 
 public class AdminIT {
 
@@ -265,7 +272,7 @@ public class AdminIT {
         createUserToConvert.prettyPrint();
 
         long idOfUserToConvert = createUserToConvert.body().jsonPath().getLong("data.authenticatedUser.id");
-        String emailOfUserToConvert = createUserToConvert.body().jsonPath().getString("data.user.email");
+        String emailOfUserToConvert = createUserToConvert.body().jsonPath().getString("data.authenticatedUser.email");
         String usernameOfUserToConvert = UtilIT.getUsernameFromResponse(createUserToConvert);
 
         String password = usernameOfUserToConvert;
@@ -352,7 +359,7 @@ public class AdminIT {
         createUserToConvert.prettyPrint();
 
         long idOfUserToConvert = createUserToConvert.body().jsonPath().getLong("data.authenticatedUser.id");
-        String emailOfUserToConvert = createUserToConvert.body().jsonPath().getString("data.user.email");
+        String emailOfUserToConvert = createUserToConvert.body().jsonPath().getString("data.authenticatedUser.email");
         String usernameOfUserToConvert = UtilIT.getUsernameFromResponse(createUserToConvert);
 
         String password = usernameOfUserToConvert;
@@ -468,6 +475,8 @@ public class AdminIT {
         Response deleteUserToConvert = UtilIT.deleteUser(persistentUserId);
         assertEquals(200, deleteUserToConvert.getStatusCode());
     }
+    
+
 
     @Test
     public void testFindPermissonsOn() {
@@ -500,6 +509,71 @@ public class AdminIT {
 
         Response deleteSuperuser = UtilIT.deleteUser(username);
         assertEquals(200, deleteSuperuser.getStatusCode());
+    }
+    
+    @Test
+    @Ignore
+    public void testMigrateHDLToDOI() {
+        /*
+        This test is set to ignore because it requires a setup that will
+        mint both handles and doi identifiers        
+        Can re-enable when if test environments are running handle servers.        
+        SEK 09/27/2018
+        */
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+
+        // change this to register new dataset witha handle
+        UtilIT.setSetting(SettingsServiceBean.Key.Protocol, "hdl");
+        UtilIT.setSetting(SettingsServiceBean.Key.Authority, "20.500.12050");
+        UtilIT.setSetting(SettingsServiceBean.Key.Shoulder, "");
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = JsonPath.from(createDataverse.body().asString()).getString("data.alias");
+
+        String pathToJsonFile = "src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-hdl.json";
+        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response pubdv = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        Response publishDSViaNative = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDSViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response migrateIdentifierResponseStillHDL = UtilIT.migrateDatasetIdentifierFromHDLToPId(datasetId.toString(), apiToken);
+        migrateIdentifierResponseStillHDL.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("May not migrate while installation protocol set to \"hdl\". Protocol must be \"doi\""))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        UtilIT.setSetting(SettingsServiceBean.Key.Protocol, "doi");
+        UtilIT.setSetting(SettingsServiceBean.Key.Authority, "10.5072");
+        UtilIT.setSetting(SettingsServiceBean.Key.Shoulder, "FK2/");
+        Response migrateIdentifierResponseMustBeSuperUser = UtilIT.migrateDatasetIdentifierFromHDLToPId(datasetId.toString(), apiToken);
+        migrateIdentifierResponseMustBeSuperUser.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("Forbidden. You must be a superuser."))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+        
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        UtilIT.makeSuperUser(superuserUsername);
+        
+        Response migrateIdentifierResponse = UtilIT.migrateDatasetIdentifierFromHDLToPId(datasetId.toString(), superuserApiToken);
+        migrateIdentifierResponse.prettyPrint();
+        migrateIdentifierResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 
 }

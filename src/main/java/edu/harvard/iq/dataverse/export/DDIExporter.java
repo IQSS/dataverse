@@ -6,11 +6,11 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.OutputStream;
-import javax.ejb.EJB;
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import javax.xml.stream.XMLOutputFactory;
 
 /**
  *
@@ -42,6 +42,9 @@ public class DDIExporter implements Exporter {
     @Override
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
         try {
+        XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
+        xmlw.writeStartDocument();
+        xmlw.flush();
             DdiExportUtil.datasetJson2ddi(json, version, outputStream);
         } catch (XMLStreamException xse) {
             throw new ExportException ("Caught XMLStreamException performing DDI export");
@@ -69,17 +72,17 @@ public class DDIExporter implements Exporter {
     
     @Override
     public String getXMLNameSpace() throws ExportException {
-        return this.DEFAULT_XML_NAMESPACE;   
+        return DDIExporter.DEFAULT_XML_NAMESPACE;   
     }
     
     @Override
     public String getXMLSchemaLocation() throws ExportException {
-        return this.DEFAULT_XML_SCHEMALOCATION;
+        return DDIExporter.DEFAULT_XML_SCHEMALOCATION;
     }
     
     @Override
     public String getXMLSchemaVersion() throws ExportException {
-        return this.DEFAULT_XML_VERSION;
+        return DDIExporter.DEFAULT_XML_VERSION;
     }
     
     @Override

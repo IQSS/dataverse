@@ -71,6 +71,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
             return toolHandler;
         }
         
+        //TODO: Pretty sure the below command is doing absolutely nothing --MAD
         datafileService.find(fileId);
         
         ApiToken apiToken = new ApiToken();

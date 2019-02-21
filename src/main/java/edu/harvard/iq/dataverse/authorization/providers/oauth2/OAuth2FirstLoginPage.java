@@ -74,11 +74,11 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     OAuth2UserRecord newUser;
 
-    @NotBlank(message = "Please enter your username.")
+    @NotBlank(message = "{oauth.username}")
     String username;
 
-    @NotBlank(message = "Please enter a valid email address.")
-    @ValidateEmail(message = "Please enter a valid email address.")
+    @NotBlank(message = "{user.invalidEmail}")
+    @ValidateEmail(message = "{user.invalidEmail}")
     String selectedEmail;
 
     String password;
@@ -199,13 +199,13 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public String convertExistingAccount() {
-        BuiltinAuthenticationProvider biap = new BuiltinAuthenticationProvider(builtinUserSvc, passwordValidatorService);
+        BuiltinAuthenticationProvider biap = new BuiltinAuthenticationProvider(builtinUserSvc, passwordValidatorService, authenticationSvc);
         AuthenticationRequest auReq = new AuthenticationRequest();
         final List<CredentialsAuthenticationProvider.Credential> creds = biap.getRequiredCredentials();
-        auReq.putCredential(creds.get(0).getTitle(), getUsername());
-        auReq.putCredential(creds.get(1).getTitle(), getPassword());
+        auReq.putCredential(creds.get(0).getKey(), getUsername());
+        auReq.putCredential(creds.get(1).getKey(), getPassword());
         try {
-            AuthenticatedUser existingUser = authenticationSvc.getCreateAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, auReq);
+            AuthenticatedUser existingUser = authenticationSvc.getUpdateAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, auReq);
             authenticationSvc.updateProvider(existingUser, newUser.getServiceId(), newUser.getIdInService());
             builtinUserSvc.removeUser(existingUser.getUserIdentifier());
 

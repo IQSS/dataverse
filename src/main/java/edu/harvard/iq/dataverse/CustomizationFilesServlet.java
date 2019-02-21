@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import javax.ejb.EJB;
+import org.apache.commons.io.IOUtils;
 
 /**
  *
@@ -50,12 +51,14 @@ public class CustomizationFilesServlet extends HttpServlet {
         String filePath = getFilePath(customFileType);
 
         Path physicalPath = Paths.get(filePath);
+        FileInputStream inputStream = null;
+        BufferedReader in = null;
         try {
             File fileIn = physicalPath.toFile();
             if (fileIn != null) {
-                FileInputStream inputStream = new FileInputStream(fileIn);
+                inputStream = new FileInputStream(fileIn);
 
-                BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
+                in = new BufferedReader(new InputStreamReader(inputStream));
                 String line;
 
                 StringBuilder responseData = new StringBuilder();
@@ -80,6 +83,9 @@ public class CustomizationFilesServlet extends HttpServlet {
                 /*
                    If the file doesn't exist or it is unreadable we don't care
                 */
+        } finally {
+            IOUtils.closeQuietly(inputStream);
+            IOUtils.closeQuietly(in);
         }
 
     }
@@ -107,6 +113,11 @@ public class CustomizationFilesServlet extends HttpServlet {
             
             // Style (css)               
             return settingsService.getValueForKey(SettingsServiceBean.Key.StyleCustomizationFile, nonNullDefaultIfKeyNotFound);
+        
+        } else if (fileTypeParam.equals(CustomizationConstants.fileTypeAnalytics)) {
+
+            // Analytics - appears in head               
+            return settingsService.getValueForKey(SettingsServiceBean.Key.WebAnalyticsCode, nonNullDefaultIfKeyNotFound);
         
         } else if (fileTypeParam.equals(CustomizationConstants.fileTypeLogo)) {
 

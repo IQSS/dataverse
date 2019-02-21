@@ -14,6 +14,8 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -21,7 +23,7 @@ import java.util.Date;
  *
  * @author skraffmiller
  */
-@RequiredPermissions(Permission.PublishDataverse)
+@RequiredPermissions(Permission.PublishDataset)
 public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse> {
     
     private final Dataset linkedDataset;
@@ -35,6 +37,17 @@ public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse>
 
     @Override
     public DatasetLinkingDataverse execute(CommandContext ctxt) throws CommandException {
+        
+        if (!linkedDataset.isReleased()) {
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.published"), this);
+        }       
+        if (linkedDataset.getOwner().equals(linkingDataverse)) {           
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.to.owner"), this);
+        }
+        if (linkedDataset.getOwner().getOwners().contains(linkingDataverse)) {
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.to.parent.dataverse"), this);
+        }
+       
         DatasetLinkingDataverse datasetLinkingDataverse = new DatasetLinkingDataverse();
         datasetLinkingDataverse.setDataset(linkedDataset);
         datasetLinkingDataverse.setLinkingDataverse(linkingDataverse);

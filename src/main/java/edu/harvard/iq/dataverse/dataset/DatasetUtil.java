@@ -22,18 +22,16 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 
 public class DatasetUtil {
 
@@ -64,9 +62,7 @@ public class DatasetUtil {
 
             InputStream in = null;
             try {
-                if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
                     in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
-                }
             } catch (Exception ioex) {
             }
 
@@ -83,6 +79,7 @@ public class DatasetUtil {
             } else {
                 logger.fine("There is no thumbnail created from a dataset logo");
             }
+	    IOUtils.closeQuietly(in);
         }
         for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();
@@ -119,21 +116,20 @@ public class DatasetUtil {
                 
         try{
             dataAccess = DataAccess.getStorageIO(dataset);
-            
         }
         catch(IOException ioex){
-            logger.warning("Failed to initialize dataset for thumbnail " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
+            logger.warning("getThumbnail(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
         }
         
         InputStream in = null;
         try {
             if (dataAccess == null) {
-                logger.info("Cannot retrieve thumbnail file.");
+                logger.warning("getThumbnail(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier());
             } else if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
                 in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             }
         } catch (IOException ex) {
-            logger.info("Cannot retrieve dataset thumbnail file, will try to get thumbnail from file.");
+            logger.fine("Dataset-level thumbnail file does not exist, or failed to open; will try to find an image file that can be used as the thumbnail.");
         }
 
         
@@ -147,7 +143,10 @@ public class DatasetUtil {
             } catch (IOException ex) {
                 logger.fine("Unable to read thumbnail image from file: " + ex);
                 return null;
-            }
+            } finally
+	    {
+		    IOUtils.closeQuietly(in);
+	    }
         } else {
             DataFile thumbnailFile = dataset.getThumbnailFile();
 
@@ -239,13 +238,21 @@ public class DatasetUtil {
         }
 
         if (datasetVersion == null) {
-            logger.fine("getting latest version of dataset");
-            datasetVersion = dataset.getLatestVersion();
+            logger.fine("getting a published version of the dataset");
+            // We want to use published files only when automatically selecting 
+            // dataset thumbnails.
+            datasetVersion = dataset.getReleasedVersion(); 
+        }
+        
+        // No published version? - No [auto-selected] thumbnail for you.
+        if (datasetVersion == null) {
+            return null; 
         }
 
         for (FileMetadata fmd : datasetVersion.getFileMetadatas()) {
             DataFile testFile = fmd.getDataFile();
-            if (FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
+            // We don't want to use a restricted image file as the dedicated thumbnail:
+            if (!testFile.isRestricted() && FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
                 return testFile;
             }
         }

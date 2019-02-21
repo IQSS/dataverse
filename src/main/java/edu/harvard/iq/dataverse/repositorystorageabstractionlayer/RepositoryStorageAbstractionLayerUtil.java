@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.repositorystorageabstractionlayer;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.locality.StorageSite;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +24,7 @@ public class RepositoryStorageAbstractionLayerUtil {
         for (JsonObject site : rsalSitesAsJson.getValuesAs(JsonObject.class)) {
             String name = site.getString("name");
             String fqdn = site.getString("fqdn");
-            String country = site.getString("country");
-            RsyncSite rsyncSite = new RsyncSite(name, fqdn, country, fullRemotePathToDirectory);
+            RsyncSite rsyncSite = new RsyncSite(name, fqdn, fullRemotePathToDirectory);
             rsalSites.add(rsyncSite);
         }
         return rsalSites;
@@ -33,7 +34,7 @@ public class RepositoryStorageAbstractionLayerUtil {
         if (localDataAccessParentDir == null) {
             localDataAccessParentDir = File.separator + "UNCONFIGURED ( " + SettingsServiceBean.Key.LocalDataAccessPath + " )";
         }
-        boolean leafDirectoryOnly = false;
+        boolean leafDirectoryOnly = true;
         return localDataAccessParentDir + File.separator + getDirectoryContainingTheData(dataset, leafDirectoryOnly);
     }
 
@@ -61,12 +62,13 @@ public class RepositoryStorageAbstractionLayerUtil {
          */
         boolean onlyOnPackagePerDatasetIsSupported = true;
         if (onlyOnPackagePerDatasetIsSupported) {
-            String leafDirectory = dataset.getIdentifier();
+            String leafDirectory = dataset.getIdentifierForFileStorage();
             if (leafDirectoryOnly) {
-                return leafDirectory;
+		    File f = new File( leafDirectory );
+		    return f.getName();
             } else {
-                // The "authority" is something like "10.5072/FK2".
-                String relativePathToLeafDir = dataset.getAuthority();
+                // The "authority" is something like "FK2".
+                String relativePathToLeafDir = dataset.getAuthorityForFileStorage();
                 return relativePathToLeafDir + File.separator + leafDirectory;
             }
         } else {
@@ -79,20 +81,24 @@ public class RepositoryStorageAbstractionLayerUtil {
      * RSAL or some other "big data" component live for a list of remotes sites
      * to which a particular dataset is replicated to.
      */
-    public static JsonArray getSitesFromDb(String replicationSitesInDB) {
+    static JsonArray getStorageSitesAsJson(List<StorageSite> storageSites) {
         JsonArrayBuilder arraybuilder = Json.createArrayBuilder();
-        if (replicationSitesInDB == null || replicationSitesInDB.isEmpty()) {
+        if (storageSites == null || storageSites.isEmpty()) {
             return arraybuilder.build();
         }
         // Right now we have all the data right in the database setting but we should probably query RSAL to get the list.
-        String[] sites = replicationSitesInDB.split(",");
-        for (String site : sites) {
-            String[] parts = site.split(":");
+        int countOfPrimarySites = 0;
+        for (StorageSite storageSite : storageSites) {
+            if (storageSite.isPrimaryStorage()) {
+                countOfPrimarySites++;
+            }
             arraybuilder.add(Json.createObjectBuilder()
-                    .add("fqdn", parts[0])
-                    .add("name", parts[1])
-                    .add("country", parts[2])
-            );
+                    .add("fqdn", storageSite.getHostname())
+                    .add("name", storageSite.getName()));
+        }
+        int numExpectedPrimarySites = 1;
+        if (countOfPrimarySites != numExpectedPrimarySites) {
+            logger.warning("The number of expected primary sites is " + numExpectedPrimarySites + " but " + countOfPrimarySites + " were found.");
         }
         return arraybuilder.build();
     }

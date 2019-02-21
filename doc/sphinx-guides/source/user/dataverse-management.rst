@@ -112,6 +112,8 @@ When you access a dataverse's permissions page, you will see three sections:
 
 **Roles:** Here you can reference a full list of roles that can be assigned to users of your dataverse. Each role lists the permissions that it offers.
 
+Please note that even on a newly created dataverse, you may see user and groups have already been granted role(s) if your installation has ``:InheritParentRoleAssignments`` set. For more on this setting, see the :doc:`/installation/config` section of the Installation Guide.
+
 Setting Access Configurations
 ---------------------------------------------
 Under the Permissions tab, you can click the "Edit Access" button to open a box where you can add to your dataverse and what permissions are granted to those who add to your dataverse.
@@ -126,7 +128,7 @@ Both of these settings can be changed at any time.
 
 Assigning Roles to Users and Groups
 ------------------------------------------
-Under the Users/Groups tab, you can add, edit, or remove the roles granted to users and groups on your dataverse. A role is a set of permissions granted to a user or group when they're using your dataverse. For example, giving your research assistant the "Contributor" role would give him the following self-explanatory permissions on your dataverse and all datasets within your dataverse: "ViewUnpublishedDataset", "DownloadFile", "EditDataset", and "DeleteDatasetDraft". He would, however, lack the "PublishDataset" permission, and thus would be unable to publish datasets on your dataverse. If you wanted to give him that permission, you would give him a role with that permission, like the Curator role. Users and groups can hold multiple roles at the same time if needed. Roles can be removed at any time. All roles and their associated permissions are listed under the "Roles" tab of the same page.
+Under the Users/Groups tab, you can add, edit, or remove the roles granted to users and groups on your dataverse. A role is a set of permissions granted to a user or group when they're using your dataverse. For example, giving your research assistant the "Contributor" role would give her the following self-explanatory permissions on your dataverse and all datasets within your dataverse: "ViewUnpublishedDataset", "DownloadFile", "EditDataset", and "DeleteDatasetDraft". She would, however, lack the "PublishDataset" permission, and thus would be unable to publish datasets on your dataverse. If you wanted to give her that permission, you would give her a role with that permission, like the Curator role. Users and groups can hold multiple roles at the same time if needed. Roles can be removed at any time. All roles and their associated permissions are listed under the "Roles" tab of the same page.
 
 |image5|
 
@@ -189,12 +191,26 @@ Click on Featured Dataverses and a pop up will appear. Select which sub datavers
 
 Note: Featured Dataverses can only be used with published dataverses.
 
-Linked Dataverses + Linked Datasets
+Dataset Linking
+===============
+
+Dataset linking allows a dataverse owner to "link" their dataverse to a dataset that exists outside of that dataverse, so it appears in the dataverse’s list of contents without actually *being* in that dataverse. You can link other users' datasets to your dataverse, but that does not transfer editing or other special permissions to you. The linked dataset will still be under the original user's control. 
+
+For example, researchers working on a collaborative study across institutions can each link their own individual institutional dataverses to the one collaborative dataset, making it easier for interested parties from each institution to find the study.
+
+In order to link a dataset, you will need your account to have the "Add Dataset" permission on the Dataverse that is doing the linking. If you created the dataverse then you should have this permission already, but if not then you will need to ask the admin of that dataverse to assign that permission to your account. You do not need any special permissions on the dataset being linked.
+
+To link a dataset to your dataverse, you must navigate to that dataset and click the white "Link" button in the upper-right corner of the dataset page. This will open up a window where you can type in the name of the dataverse that you would like to link the dataset to. Select your dataverse and click the save button. This will establish the link, and the dataset will now appear under your dataverse.
+
+There is currently no way to remove established links in the UI. If you need to remove a link between a dataverse and a dataset, please contact the support team for the Dataverse installation you are using.
+
+
+Dataverse Linking
 ======================================================
 
-Currently, the ability to link a dataverse to another dataverse or a dataset to a dataverse is a super user only feature. 
+Similarly to dataset linking, dataverse linking allows a dataverse owner to "link" their dataverse to another dataverse, so the dataverse being linked will appear in the linking dataverse's list of contents without actually *being* in that dataverse. Currently, the ability to link a dataverse to another dataverse is a superuser only feature. 
 
-If you need to have a dataverse or dataset linked to your dataverse, please contact the support team for the Dataverse installation you are using.
+If you need to have a dataverse linked to your dataverse, please contact the support team for the Dataverse installation you are using.
 
 Publish Your Dataverse
 =================================================================

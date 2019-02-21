@@ -331,14 +331,16 @@ public class SearchIncludeFragment implements java.io.Serializable {
             int numRows = 10;
             HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
             DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), httpServletRequest);
-            solrQueryResponse = searchService.search(dataverseRequest, dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
+            List<Dataverse> dataverses = new ArrayList<>();
+            dataverses.add(dataverse);
+            solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
             if (solrQueryResponse.hasError()){
                 logger.info(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);
             }
             // This 2nd search() is for populating the facets: -- L.A. 
             // TODO: ...
-            solrQueryResponseAllTypes = searchService.search(dataverseRequest, dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
+            solrQueryResponseAllTypes = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
             if (solrQueryResponse.hasError()){
                 logger.info(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);
@@ -1174,8 +1176,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
                  */
                 result.setImageUrl(thumbnailServiceWrapper.getDataverseCardImageAsBase64Url(result));
             } else if (result.getType().equals("datasets")) {
-                
-                result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(result));
+                if (result.getEntity() != null) {
+                    result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(result));
+                }
                 
                 if (result.isHarvested()) {
                     if (harvestedDatasetIds == null) {
@@ -1230,7 +1233,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 if (dataverse.getId().equals(result.getParentIdAsLong())) {
                     // definitely NOT linked:
                     result.setIsInTree(true);
-                } else if (result.getParentIdAsLong() == 1L) {
+                } else if (result.getParentIdAsLong() == dataverseService.findRootDataverse().getId()) {
                     // the object's parent is the root Dv; and the current 
                     // Dv is NOT root... definitely linked:
                     result.setIsInTree(false);

@@ -1,5 +1,4 @@
 package edu.harvard.iq.dataverse.dataaccess;
-
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -31,6 +30,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.javaswift.joss.client.factory.AccountFactory;
 import static org.javaswift.joss.client.factory.AuthenticationMethod.BASIC;
+import static org.javaswift.joss.client.factory.AuthenticationMethod.KEYSTONE_V3;
 import org.javaswift.joss.model.Account;
 import org.javaswift.joss.model.Container;
 import org.javaswift.joss.model.StoredObject;
@@ -41,7 +41,7 @@ import org.javaswift.joss.model.StoredObject;
  * @param <T> what it stores
  */
 /* 
-    Experimental Swift driver, implemented as part of the Dataverse - Mass Open Cloud
+    Swift driver, implemented as part of the Dataverse - Mass Open Cloud
     collaboration. 
  */
 public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
@@ -68,6 +68,9 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     private Account account = null;
     private StoredObject swiftFileObject = null;
     private Container swiftContainer = null;
+    //TODO: when swift containers can be private, change this -SF
+    boolean publicSwiftContainer = true;
+
         
     //for hash
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
@@ -153,8 +156,6 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         } else {
             throw new IOException("Data Access: Invalid DvObject type");
         }
-        
-        
     }
 
 
@@ -302,6 +303,34 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException(failureMsg);
         }
     }
+    
+    @Override
+    public void revertBackupAsAux(String auxItemTag) throws IOException {
+        // We are going to try and overwrite the current main file 
+        // with the contents of the stored original, currently saved as an 
+        // Aux file. So we need WRITE access on the main file: 
+        
+        if (swiftFileObject == null || swiftContainer == null || !this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+
+        try {
+            // We are writing FROM the saved AUX object, back to the main object;
+            // So we need READ access on the AUX object:
+            
+            StoredObject swiftAuxObject = openSwiftAuxFile(auxItemTag);
+            swiftAuxObject.copyObject(swiftContainer, swiftFileObject);
+
+        } catch (Exception ex) {
+            String failureMsg = ex.getMessage();
+            if (failureMsg == null) {
+                failureMsg = "Swift AccessIO: Unknown exception occured while renaming orig file";
+            }
+
+            throw new IOException(failureMsg);
+        }
+
+    }
 
     @Override
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
@@ -411,7 +440,6 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         // What should this be, for a Swift file? 
         // A Swift URL? 
         // Or a Swift URL with an authenticated Auth token? 
-
         return null;
     }
 
@@ -490,14 +518,17 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 Properties p = getSwiftProperties();
                 swiftEndPoint = p.getProperty("swift.default.endpoint");
 
+                // Swift uses this to create pseudo-hierarchical folders
+                String swiftPseudoFolderPathSeparator = "/";
+
                 //swiftFolderPath = dataFile.getOwner().getDisplayName();
                 String swiftFolderPathSeparator = "-";
-                String authorityNoSlashes = owner.getAuthority().replace(owner.getDoiSeparator(), swiftFolderPathSeparator);
-                swiftFolderPath = owner.getProtocol() + swiftFolderPathSeparator
-                                  + authorityNoSlashes.replace(".", swiftFolderPathSeparator)
-                                  + swiftFolderPathSeparator + owner.getIdentifier();
+                String authorityNoSlashes = owner.getAuthority().replace("/", swiftFolderPathSeparator);
+                swiftFolderPath = owner.getProtocolForFileStorage() + swiftFolderPathSeparator
+                                  + authorityNoSlashes.replace(".", swiftFolderPathSeparator);
 
-                swiftFileName = storageIdentifier;
+                swiftFileName = owner.getIdentifierForFileStorage() + swiftPseudoFolderPathSeparator
+                                + storageIdentifier;
                 //setSwiftContainerName(swiftFolderPath);
                 //swiftFileName = dataFile.getDisplayName();
                 //Storage Identifier is now updated after the object is uploaded on Swift.
@@ -542,10 +573,14 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 Properties p = getSwiftProperties();
                 swiftEndPoint = p.getProperty("swift.default.endpoint");
                 String swiftFolderPathSeparator = "-";
-                String authorityNoSlashes = dataset.getAuthority().replace(dataset.getDoiSeparator(), swiftFolderPathSeparator);
-                swiftFolderPath = dataset.getProtocol() + swiftFolderPathSeparator +
+
+                // Swift uses this to create pseudo-hierarchical folders
+                String swiftPseudoFolderPathSeparator = "/";
+
+                String authorityNoSlashes = dataset.getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
+                swiftFolderPath = dataset.getProtocolForFileStorage() + swiftFolderPathSeparator +
                     authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                    swiftFolderPathSeparator + dataset.getIdentifier();
+                    swiftPseudoFolderPathSeparator + dataset.getIdentifierForFileStorage();
 
                 swiftFileName = auxItemTag;
                 dvObject.setStorageIdentifier("swift://" + swiftEndPoint + ":" + swiftFolderPath);
@@ -582,19 +617,20 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             // This is a new object being created.
             this.swiftContainer = account.getContainer(swiftFolderPath); //changed from swiftendpoint
         }
-
         if (!this.swiftContainer.exists()) {
             if (writeAccess) {
                 //creates a private data container
                 swiftContainer.create();
-//                 try {
-//                     //creates a public data container
-//                     this.swiftContainer.makePublic();
-//                 }
-//                 catch (Exception e){
-//                     //e.printStackTrace();
-//                     logger.warning("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
-//                 }
+                if (publicSwiftContainer) {
+                    try {
+                        //creates a public data container
+                        this.swiftContainer.makePublic();
+                    }
+                    catch (Exception e){
+                        //e.printStackTrace();
+                        logger.warning("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
+                    }
+                }
             } else {
                 // This is a fatal condition - it has to exist, if we were to 
                 // read an existing object!
@@ -688,16 +724,28 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         Also, the AuthUrl is now the identity service endpoint of MOC Openstack
         environment instead of the Object store service endpoint.
          */
-        // Keystone vs. Basic
+        // Keystone vs. Basic vs. Keystone V3
         try {
             if (swiftEndPointAuthMethod.equals("keystone")) {
+                logger.fine("Authentication type: keystone v2.0");
                 account = new AccountFactory()
                         .setTenantName(swiftEndPointTenantName)
                         .setUsername(swiftEndPointUsername)
                         .setPassword(swiftEndPointSecretKey)
                         .setAuthUrl(swiftEndPointAuthUrl)
                         .createAccount();
-            } else { // assume BASIC
+            } else if (swiftEndPointAuthMethod.equals("keystone_v3")) {
+                logger.fine("Authentication type: keystone_v3");
+                account = new AccountFactory()
+                        .setTenantName(swiftEndPointTenantName)
+                        .setUsername(swiftEndPointUsername)
+                        .setAuthenticationMethod(KEYSTONE_V3)
+                        .setPassword(swiftEndPointSecretKey)
+                        .setAuthUrl(swiftEndPointAuthUrl)
+                        .createAccount();
+            }
+            else { // assume BASIC
+                logger.fine("Authentication type: basic");
                 account = new AccountFactory()
                         .setUsername(swiftEndPointUsername)
                         .setPassword(swiftEndPointSecretKey)
@@ -789,10 +837,10 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             swiftFolderPathSeparator = "_";
         }
         if (dvObject instanceof DataFile) {
-            String authorityNoSlashes = this.getDataFile().getOwner().getAuthority().replace(this.getDataFile().getOwner().getDoiSeparator(), swiftFolderPathSeparator);
-            return this.getDataFile().getOwner().getProtocol() + swiftFolderPathSeparator
+            String authorityNoSlashes = this.getDataFile().getOwner().getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
+            return this.getDataFile().getOwner().getProtocolForFileStorage() + swiftFolderPathSeparator
                    +            authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifier();
+                swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifierForFileStorage();
         }
         return null;
      }

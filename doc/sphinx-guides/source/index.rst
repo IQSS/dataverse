@@ -3,10 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Dataverse 4.8.5 Guides
-======================
+Dataverse |version| Guides
+==========================
 
-These guides are for the most recent version of Dataverse. For the guides for **version 4.8.4** please go `here <http://guides.dataverse.org/en/4.8.4/>`_.
+These guides are for the |version| version of Dataverse. To find guides belonging to previous versions, :ref:`guides_versions` has a list of all available versions.
 
 .. toctree::
   :glob:
@@ -60,11 +60,14 @@ We maintain an email based support service that's free of charge. We
 attempt to respond within one business day to all questions and if it
 cannot be resolved immediately, we'll let you know what to expect.
 
-The support email address is
-`support@dataverse.org <mailto:support@dataverse.org>`__.
+The support email address is `support@dataverse.org <mailto:support@dataverse.org>`__.
 
-This is the same address as the Report Issue link. We try to respond
-within one business day.
+**Reporting Issues and Contributing**
+
+Report bugs and add feature requests in `GitHub Issues <https://github.com/IQSS/dataverse/issues>`__
+or use `GitHub pull requests <http://guides.dataverse.org/en/latest/developers/version-control.html#how-to-make-a-pull-request>`__,
+if you have some code, scripts or documentation that you'd like to share.
+If you have a **security issue** to report, please email `security@dataverse.org <mailto:security@dataverse.org>`__.
 
 
 Indices and tables

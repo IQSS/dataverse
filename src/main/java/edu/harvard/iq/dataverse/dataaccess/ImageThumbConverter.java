@@ -48,6 +48,7 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
 import org.primefaces.util.Base64;
 
 /**
@@ -145,12 +146,11 @@ public class ImageThumbConverter {
 
         try {
             storageIO.open();
-            Channel cachedThumbnailChannel = storageIO.openAuxChannel(THUMBNAIL_SUFFIX + size);
-            if (cachedThumbnailChannel == null) {
-                logger.warning("Null channel for aux object " + THUMBNAIL_SUFFIX + size);
+            cachedThumbnailInputStream = storageIO.getAuxFileAsInputStream(THUMBNAIL_SUFFIX + size);
+            if (cachedThumbnailInputStream == null) {
+                logger.warning("Null stream for aux object " + THUMBNAIL_SUFFIX + size);
                 return null;
             }
-            cachedThumbnailInputStream = Channels.newInputStream((ReadableByteChannel) cachedThumbnailChannel);
             int cachedThumbnailSize = (int) storageIO.getAuxObjectSize(THUMBNAIL_SUFFIX + size);
 
             InputStreamIO inputStreamIO = new InputStreamIO(cachedThumbnailInputStream, cachedThumbnailSize);
@@ -163,7 +163,7 @@ public class ImageThumbConverter {
                 inputStreamIO.setFileName(fileName);
             }
             return inputStreamIO;
-        } catch (IOException ioex) {
+        } catch (Exception ioex) {
             if (cachedThumbnailInputStream != null) {
                 try {
                     cachedThumbnailInputStream.close();
@@ -216,13 +216,13 @@ public class ImageThumbConverter {
                 storageIO.open();
                 //inputStream = storageIO.getInputStream();
                 pdfFileChannel = storageIO.getReadChannel();
-            } catch (IOException ioex) {
-                logger.warning("caught IOException trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier());
+            } catch (Exception ioex) {
+                logger.warning("caught Exception trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier());
                 return false;
             }
 
             File tempFile;
-            FileChannel tempFileChannel;
+            FileChannel tempFileChannel = null;
             try {
                 tempFile = File.createTempFile("tempFileToRescale", ".tmp");
                 tempFileChannel = new FileOutputStream(tempFile).getChannel();
@@ -231,6 +231,8 @@ public class ImageThumbConverter {
             } catch (IOException ioex) {
                 logger.warning("GenerateImageThumb: failed to save pdf bytes in a temporary file.");
                 return false;
+            } finally {
+                IOUtils.closeQuietly(tempFileChannel);
             }
             sourcePdfFile = tempFile;
         }
@@ -268,12 +270,12 @@ public class ImageThumbConverter {
 
         try {
             storageIO.open();
+            return generateImageThumbnailFromInputStream(storageIO, size, storageIO.getInputStream());
         } catch (IOException ioex) {
             logger.warning("caught IOException trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier() + ioex);
             return false;
         }
-
-        return generateImageThumbnailFromInputStream(storageIO, size, storageIO.getInputStream());
+        
     }
 
     /*
@@ -331,7 +333,7 @@ public class ImageThumbConverter {
         try {
             logger.fine("attempting to read the image file with ImageIO.read(InputStream), " + storageIO.getDataFile().getStorageIdentifier());
             fullSizeImage = ImageIO.read(inputStream);
-        } catch (IOException ioex) {
+        } catch (Exception ioex) {
             logger.warning("Caught exception attempting to read the image file with ImageIO.read(InputStream)");
             return false;
         }
@@ -361,7 +363,7 @@ public class ImageThumbConverter {
             Channel outputChannel = storageIO.openAuxChannel(THUMBNAIL_SUFFIX + size, DataAccessOption.WRITE_ACCESS);
             outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
             logger.fine("Opened an auxiliary channel/output stream " + THUMBNAIL_SUFFIX + size + " on " + storageIO.getDataFile().getStorageIdentifier());
-        } catch (IOException ioex) {
+        } catch (Exception ioex) {
             logger.fine("Failed to open an auxiliary channel/output stream " + THUMBNAIL_SUFFIX + size + " on " + storageIO.getDataFile().getStorageIdentifier());
             tempFileRequired = true;
         }
@@ -393,7 +395,7 @@ public class ImageThumbConverter {
                 storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), THUMBNAIL_SUFFIX + size);
             }
 
-        } catch (IOException ioex) {
+        } catch (Exception ioex) {
             logger.warning("Failed to rescale and/or save the image: " + ioex.getMessage());
             return false;
         }
@@ -406,8 +408,8 @@ public class ImageThumbConverter {
         boolean cached;
         try {
             cached = storageIO.isAuxObjectCached(THUMBNAIL_SUFFIX + size);
-        } catch (IOException ioex) {
-            logger.fine("caught IO exception while checking for a cached thumbnail (file " + storageIO.getDataFile().getStorageIdentifier() + ")");
+        } catch (Exception ioex) {
+            logger.fine("caught Exception while checking for a cached thumbnail (file " + storageIO.getDataFile().getStorageIdentifier() + ")");
             return false;
         }
 
@@ -441,7 +443,7 @@ public class ImageThumbConverter {
 
         try {
             storageIO = file.getStorageIO();
-        } catch (IOException ioEx) {
+        } catch (Exception ioEx) {
             logger.fine("Caught an exception while trying to obtain a thumbnail as Base64 string - could not open StorageIO on the datafile.");
             return null;
         }
@@ -467,7 +469,7 @@ public class ImageThumbConverter {
         Channel cachedThumbnailChannel = null;
         try {
             cachedThumbnailChannel = storageIO.openAuxChannel(THUMBNAIL_SUFFIX + size);
-        } catch (IOException ioEx) {
+        } catch (Exception ioEx) {
             cachedThumbnailChannel = null;
         }
 
@@ -488,7 +490,7 @@ public class ImageThumbConverter {
                 // try to open again: 
                 try {
                     cachedThumbnailChannel = storageIO.openAuxChannel(THUMBNAIL_SUFFIX + size);
-                } catch (IOException ioEx) {
+                } catch (Exception ioEx) {
                     cachedThumbnailChannel = null;
                 }
             }
@@ -670,9 +672,11 @@ public class ImageThumbConverter {
 
         try {
             rescaleImage(fullSizeImage, width, height, size, outputFileStream);
-        } catch (IOException ioex) {
-            logger.warning("caught IO exceptiopn trying to create rescaled image " + outputLocation);
+        } catch (Exception ioex) {
+            logger.warning("caught Exceptiopn trying to create rescaled image " + outputLocation);
             return null;
+        } finally {
+            IOUtils.closeQuietly(outputFileStream);
         }
 
         return outputLocation;

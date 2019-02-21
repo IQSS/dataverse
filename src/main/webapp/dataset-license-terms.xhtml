@@ -270,9 +270,13 @@
                                </span>
                            </label>
                            <div class="col-sm-9">
-                               <p>
+                               <p jsf:rendered="#{!DatasetPage.workingVersion.draft}">
                                    <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.request']}" rendered="#{DatasetPage.dataset.fileAccessRequest}"/>
                                    <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.notRequest']}" rendered="#{!DatasetPage.dataset.fileAccessRequest}"/>
+                               </p>
+                               <p jsf:rendered="#{DatasetPage.workingVersion.draft}">
+                                   <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.request']}" rendered="#{DatasetPage.workingVersion.termsOfUseAndAccess.fileAccessRequest}"/>
+                                   <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.notRequest']}" rendered="#{!DatasetPage.workingVersion.termsOfUseAndAccess.fileAccessRequest}"/>
                                </p>
                            </div>
                        </div>
@@ -438,7 +442,7 @@
            </div>
        </div>
 
-       <div class="panel panel-default" jsf:rendered="#{!settingsWrapper.rsyncDownload and (managePage==false or datasetPage == true)}">
+        <div class="panel panel-default" jsf:rendered="#{!settingsWrapper.rsyncOnly and (managePage==false or datasetPage == true)}">
            <div data-toggle="collapse" data-target="#panelCollapseGuestbook" class="panel-heading text-info">
                #{bundle['file.dataFilesTab.terms.list.guestbook']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
            </div>

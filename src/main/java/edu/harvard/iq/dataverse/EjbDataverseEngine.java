@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -14,7 +15,9 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import java.util.Map;
@@ -30,6 +33,8 @@ import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Resource;
+import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
@@ -55,9 +60,6 @@ public class EjbDataverseEngine {
     DataverseServiceBean dataverseService;
 
     @EJB
-    DataverseRoleServiceBean roleService;
-
-    @EJB
     DataverseRoleServiceBean rolesService;
 
     @EJB
@@ -65,6 +67,9 @@ public class EjbDataverseEngine {
 
     @EJB
     IndexServiceBean indexService;
+    
+    @EJB
+    IndexBatchServiceBean indexBatchService;
 
     @EJB
     SolrIndexServiceBean solrIndexService;
@@ -104,7 +109,10 @@ public class EjbDataverseEngine {
     
     @EJB
     DOIDataCiteServiceBean doiDataCite;
-    
+
+    @EJB
+    FakePidProviderServiceBean fakePidProvider;
+
     @EJB
     HandlenetServiceBean handleNet;
     
@@ -125,7 +133,10 @@ public class EjbDataverseEngine {
 
     @EJB
     ExplicitGroupServiceBean explicitGroups;
-    
+
+    @EJB
+    GroupServiceBean groups;
+
     @EJB
     RoleAssigneeServiceBean roleAssignees;
     
@@ -158,6 +169,13 @@ public class EjbDataverseEngine {
     
     @EJB
     WorkflowServiceBean workflowService;
+    
+    @EJB
+    FileDownloadServiceBean fileDownloadService;
+    
+    
+    @Resource
+    EJBContext ejbCtxt;
 
     private CommandContext ctxt;
     
@@ -214,13 +232,17 @@ public class EjbDataverseEngine {
                 return aCommand.execute(getContext());
                 
             } catch ( EJBException ejbe ) {
-                logRec.setActionResult(ActionLogRecord.Result.InternalError);                
                 throw new CommandException("Command " + aCommand.toString() + " failed: " + ejbe.getMessage(), ejbe.getCausedByException(), aCommand);
-            }
-            
+            } 
+        } catch (CommandException cmdEx) {
+            if (!(cmdEx instanceof PermissionException)) {            
+                logRec.setActionResult(ActionLogRecord.Result.InternalError); 
+            } 
+            logRec.setInfo(logRec.getInfo() + " (" + cmdEx.getMessage() +")");
+            throw cmdEx;
         } catch ( RuntimeException re ) {
             logRec.setActionResult(ActionLogRecord.Result.InternalError);
-            logRec.setInfo( re.getMessage() );   
+            logRec.setInfo(logRec.getInfo() + " (" + re.getMessage() +")");   
             
             Throwable cause = re;          
             while (cause != null) {
@@ -233,7 +255,7 @@ public class EjbDataverseEngine {
                     }
                     logger.log(Level.SEVERE, sb.toString());
                     // set this more detailed info in action log
-                    logRec.setInfo( sb.toString() );
+                    logRec.setInfo(logRec.getInfo() + " (" +  sb.toString() +")");
                 }
                 cause = cause.getCause();
             }           
@@ -243,6 +265,8 @@ public class EjbDataverseEngine {
         } finally {
             if ( logRec.getActionResult() == null ) {
                 logRec.setActionResult( ActionLogRecord.Result.OK );
+            } else {
+                ejbCtxt.setRollbackOnly();
             }
             logRec.setEndTime( new java.util.Date() );
             logSvc.log(logRec);
@@ -276,6 +300,11 @@ public class EjbDataverseEngine {
                 @Override
                 public IndexServiceBean index() {
                     return indexService;
+                }
+                
+                @Override
+                public IndexBatchServiceBean indexBatch() {
+                    return indexBatchService;
                 }
 
                 @Override
@@ -347,7 +376,12 @@ public class EjbDataverseEngine {
                 public DOIDataCiteServiceBean doiDataCite() {
                     return doiDataCite;
                 }
-                
+
+                @Override
+                public FakePidProviderServiceBean fakePidProvider() {
+                    return fakePidProvider;
+                }
+
                 @Override
                 public HandlenetServiceBean handleNet() {
                     return handleNet;
@@ -390,6 +424,11 @@ public class EjbDataverseEngine {
                 @Override
                 public ExplicitGroupServiceBean explicitGroups() {
                     return explicitGroups;
+                }
+                
+                @Override
+                public GroupServiceBean groups() {
+                    return groups;
                 }
 
                 @Override
@@ -435,6 +474,11 @@ public class EjbDataverseEngine {
                 @Override
                 public DataCaptureModuleServiceBean dataCaptureModule() {
                     return dataCaptureModule;
+                }
+                
+                @Override
+                public FileDownloadServiceBean fileDownload() {
+                    return fileDownloadService;
                 }
 
             };

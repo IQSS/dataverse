@@ -6,13 +6,13 @@
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
-
     <h:head>
     </h:head>
 
     <h:body>
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{harvestingClientsPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/>
@@ -75,7 +75,7 @@
                                     <ui:remove>
                                     <!-- Filter feature removed -->
                                     <div id="datatable_filter" class="dataTables_filter">
-                                        <label>Filter
+                                        <label>#{bundle.filter}
                                             <input type="search" style="display:inline !important; width:auto !important;" class="form-control input-sm" placeholder="" aria-controls="datatable"/>
                                         </label>
                                     </div>
@@ -140,6 +140,11 @@
                                     </p:commandLink>
                                 </div>
                             </div>
+                            <script type="text/javascript" jsf:rendered="#{harvestClient.harvestingNow or harvestClient.deleteInProgress}">
+                                if (window.refreshTimer === undefined){
+                                    window.refreshTimer = setTimeout(function(){window.location.reload();},5000);
+                                }
+                            </script>
                         </p:column>
                     </p:dataTable>
 
@@ -251,7 +256,7 @@
                                                         emptyMessage="#{bundle['harvestclients.newClientDialog.dataverse.menu.invalidMsg']}"
                                                         value="#{harvestingClientsPage.selectedDestinationDataverse}"
                                                         completeMethod="#{harvestingClientsPage.completeSelectedDataverse}"
-                                                        var="destDV"
+                                                        var="destDV" styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
                                                         itemLabel="#{destDV.alias}" itemValue="#{destDV}" converter="dataverseConverter">
                                             <p:column>
                                                 <h:outputText value="#{destDV.name}"/>
@@ -263,6 +268,9 @@
                                             <p:ajax process="@this" event="itemSelect" />
                                             <p:ajax process="@this" event="itemUnselect" />
                                         </p:autoComplete>
+                                        <script type="text/javascript">
+                                            handle_dropdown_popup_scroll();
+                                        </script>
                                         <p:message for="destinationDataverseMenu"/>
                                     </div>
                                 </div>

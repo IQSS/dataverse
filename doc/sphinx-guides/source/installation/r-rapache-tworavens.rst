@@ -21,6 +21,14 @@ of Dataverse v.4.6.1) version of the installer scripts and updated this guide. W
 installation process, particularly the difficult process of installing
 correct versions of the required third party R packages.
 
+**Note that the installation process below supercedes the basic R
+setup described in the "Prerequisites" portion of the Installation
+Guide. Meaning that once completed, it installs everything needed to
+run TwoRavens, PLUS all the libraries and components required to
+ingest RData files, export as RData, and use Data Explorer.**
+
+
+
 Please be warned: 
 
 - This process may still require some system administration skills. 
@@ -92,7 +100,6 @@ install TwoRavens in the past, and it didn't work, please see the part of
 section ``1.b.`` where we explain how to completely erase all the previously 
 built packages.
  
-
 1. Prerequisites
 ++++++++++++++++
 
@@ -132,23 +139,16 @@ change it to
 b. R:
 -----
 
-Can be installed with :fixedwidthplain:`yum`::
+The simplest way to install R on RHEL/CentOS systems is with yum, using the EPEL repository::
 
-       yum install R R-devel
+       yum install epel-release
+       yum install R-core R-core-devel
 
-EPEL distribution recommended; version 3.3.2 is **strongly** recommended. Note that R 3.3.2 comes from EPEL on el6 but R 3.4.2 comes from EPEL on el7.
+Both EPEL6 and EPEL7 currently provide R 3.5, which has been tested and appears to work well. R 3.4, offered by EPEL until also works well. We recommend using the currently available EPEL version for all the new installations. But if you already have a working R 3.4 installation from EPEL and you don't have a specific need to upgrade, you may lock that version in place using the ``yum-versionlock`` yum plugin, or simply add this line to the "epel" section of /etc/yum.repos.d/epel.repo::
 
-If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ): 
+	exclude=R-*,openblas-*,libRmath*
 
-RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 7::
-
-       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-
-RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 6::
-
-       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
-
-RHEL users will want to log in to their organization's respective RHN interface, find the particular machine in question and:
+RHEL users may need to log in to their organization's respective RHN interface, find the particular machine in question and:
 
 • click on "Subscribed Channels: Alter Channel Subscriptions"
 • enable EPEL, Server Extras, Server Optional
@@ -159,25 +159,44 @@ R completely**, erasing all the extra R packages that may have been already buil
 
 Uninstall R::
 
-        yum erase R R-devel
+        yum erase R-core R-core-devel
 
 Wipe clean any R packages that were left behind:: 
 
         rm -rf /usr/lib64/R/library/*
         rm -rf /usr/share/R/library/*
 
-... then install R with :fixedwidthplain:`yum`.  
+... then re-install R with :fixedwidthplain:`yum install`
 
 c. rApache: 
 -----------
 
-For RHEL/CentOS 6, we recommend that you download :download:`rapache-1.2.6-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.6-rpm0.x86_64.rpm>` and install it with::
+We maintain the following rpms of rApache, built for the following version of RedHat/CentOS distribution:
+
+For RHEL/CentOS 6 and R 3.4, download :download:`rapache-1.2.6-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.6-rpm0.x86_64.rpm>` and install it with::
 
 	yum install rapache-1.2.6-rpm0.x86_64.rpm
 
-If you are using RHEL/CentOS 7, you can download our experimental :download:`rapache-1.2.7-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.7-rpm0.x86_64.rpm>` and install it with::
+For RHEL/CentOS 6 and R 3.5, download :download:`rapache-1.2.9_R-3.5-RH6.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.9_R-3.5-RH6.x86_64.rpm>` and install it with::
+
+	yum install rapache-1.2.9_R-3.5-RH6.x86_64.rpm
+
+If you are using RHEL/CentOS 7 and R 3.4, download :download:`rapache-1.2.7-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.7-rpm0.x86_64.rpm>` and install it with::
 
 	yum install apache-1.2.7-rpm0.x86_64.rpm
+
+If you are using RHEL/CentOS 7 in combination with R 3.5, download :download:`rapache-1.2.9_R-3.5.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.9_R-3.5.x86_64.rpm>` and install it with::
+
+       	yum install rapache-1.2.9_R-3.5.x86_64.rpm
+
+**Please note:** 
+The rpms above cannot be *guaranteed* to work on your
+system. You may have a collection of system libraries installed on
+your system that will create a version conflict. If that's the case,
+or if you are trying to install on an operating system that's listed
+above, do not despair: simply build rApache from `source
+<http://rapache.net/downloads.html>`_ . **Make sure** to build with
+the R that's the same version you are planning on using.
 
 d. Install the build environment for R:
 ---------------------------------------
@@ -195,25 +214,32 @@ Depending on how your system was originally set up, you may end up needing to in
 
 We provide a shell script (``r-setup.sh``) that will try to install all the needed packages. **Note:** the script is now part of the TwoRavens distribution (it **used to be** in the Dataverse source tree). 
 
+
 The script will attempt to download the packages from CRAN (or a mirror), so the system must have access to the Internet.
 
 In order to run the script: 
 
-Download the TwoRavens distribution from `https://github.com/IQSS/TwoRavens/archive/a6869eb.zip <https://github.com/IQSS/TwoRavens/archive/a6869eb.zip>`_.
-Note that the link above points to a specific snapshot of the sources. Do not download the master distribution, as it may have changed since this guide, and 
-the installation scripts were written.   
+Download the current snapshot of the "dataverse-distribution" branch
+of TwoRavens from github:
+`https://github.com/IQSS/TwoRavens/archive/dataverse-distribution.zip
+<https://github.com/IQSS/TwoRavens/archive/dataverse-distribution.zip>`_.
+Once again, it is important that you download the
+"dataverse-distribution" branch, and NOT the master distribution!
 Unpack the zip file, then run the script::
 
-        unzip a6869eb.zip
-        cd TwoRavens-a6869eb28693d6df529e7cb3888c40de5f302b66/r-setup
+        unzip dataverse-distribution.zip
+        cd TwoRavens-dataverse-distribution/r-setup
         chmod +x r-setup.sh
         ./r-setup.sh
 
 
 See the section ``II.`` of the Appendix for trouble-shooting tips. 
 
-For the Rserve package the setup script will also create a system user :fixedwidthplain:`rserve`, and install the startup script for the daemon (``/etc/init.d/rserve``). 
-The script will skip this part, if this has already been done on this system (i.e., it should be safe to run it repeatedly). 
+For the Rserve package the setup script will also create a system user
+:fixedwidthplain:`rserve`, and install the startup script for the
+daemon (``/etc/init.d/rserve``).  The script will skip this part, if
+this has already been done on this system (i.e., it should be safe to
+run it repeatedly).
 
 Note that the setup will set the Rserve password to :fixedwidthplain:`"rserve"`. 
 Rserve daemon runs under a non-privileged user id, and there appears to be a 
@@ -236,12 +262,12 @@ a. download and unzip the application
 (though you may have already done so, in step ``2.`` above - see the instructions there). 
 
 
-b. Rename the resulting directory ``dataexplore``...
+b. Rename the resulting directory "dataexplore" ...
 --------------------------------------------------------
 
 ...and place it in the web root directory of your apache server. We'll assume ``/var/www/html/dataexplore`` in the examples below::
 
-        mv TwoRavens-a6869eb28693d6df529e7cb3888c40de5f302b66 /var/www/html/dataexplore
+        mv TwoRavens-dataverse-distribution /var/www/html/dataexplore
 
 
 c. run the installer
@@ -309,7 +335,7 @@ Compare the two files. **It is important that the two copies are identical**.
 - unless this is a brand new Dataverse installation, it may have cached summary statistics fragments that were produced with the older version of this R code. You **must remove** all such cached files::
 
         cd <DATAVERSE FILES DIRECTORY>
-        find . -name '*.prep' | while read file; do /bin/rm $f; done
+        find . -name '*.prep' | while read file; do /bin/rm $file; done
 
 *(Yes, this is a HACK! We are working on finding a better way to ensure this compatibility between 
 TwoRavens and Dataverse!)*
@@ -400,7 +426,7 @@ Correct this, if necessary, then try again.
 
 If you ARE getting JSON output, but the TwoRavens view is still broken: 
 
-- Look closely at the very beginning of the JSON fragment. Does it have the ``{"prvate":false}`` entry, as shown in the example above? If not, this likely an R code version mismatch, described in section ``3.d.``, above. Correct the problem as described there, then try again. 
+- Look closely at the very beginning of the JSON fragment. Does it have the ``{"private":false}`` entry, as shown in the example above? If not, this likely an R code version mismatch, described in section ``3.d.``, above. Correct the problem as described there, then try again. 
 
 - If the JSON looks *exactly* as the fragment above, yet still no data pebbles - enable the JavaScript error console in the TwoRavens window, and try again. Look for any error messages; and, specifically, for any URLs that TwoRavens is failing to access. Look for the debugging entry that shows TwoRavens attempting to download the ``format=prep`` fragment. Does the URL have the correct host name, port and/or the protocol (http vs. https)? If not, re-run the installer, specifying the correct Dataverse URL, and try again. 
 

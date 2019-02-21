@@ -5,13 +5,18 @@ import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import static edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordJobListener.SEP;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +44,8 @@ import org.apache.commons.lang.StringUtils;
 public class DatasetVersionServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetVersionServiceBean.class.getCanonicalName());
+
+    private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
     @EJB
     DatasetServiceBean datasetService;
@@ -99,7 +106,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 if (DatasetVersionServiceBean.this.isVersionAskingForDraft(this.requestedVersion)){
                     userMsg = BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.draftNotFound");
                 }else{
-                    userMsg = BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.versionNotFound", Arrays.asList(this.requestedVersion));
+                    userMsg = BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.versionNotFound", Arrays.asList(MarkupChecker.escapeHtml(this.requestedVersion)));
                 }
                 
                 if (DatasetVersionServiceBean.this.isVersionAskingForDraft(this.actualVersion)){
@@ -146,7 +153,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     }
 
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
-        //FIXME: this logic doesn't work
         Long majorVersionNumber = null;
         Long minorVersionNumber = null;
 
@@ -163,7 +169,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         } catch (NumberFormatException n) {
             return null;
         }
-
         if (minorVersionNumber != null) {
             String queryStr = "SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber and v.minorVersionNumber= :minorVersionNumber";
             DatasetVersion foundDatasetVersion = null;
@@ -178,17 +183,13 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 // DO nothing, just return null.
             }
             return foundDatasetVersion;
-
         }
-        
+
         if (majorVersionNumber == null && minorVersionNumber == null) {
-
             return null;
-
         }
 
         if (majorVersionNumber != null && minorVersionNumber == null) {
-
             try {
                 TypedQuery<DatasetVersion> typedQuery = em.createQuery("SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber", DatasetVersion.class);
                 typedQuery.setParameter("datasetId", datasetId);
@@ -204,18 +205,16 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         }
                     }
                 }
-
                 return retVal;
-
             } catch (javax.persistence.NoResultException e) {
                 logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
                 // DO nothing, just return null.
             }
 
         }
-
         return null;
     }
+
     
     /** 
      *   Parse a Persistent Id and return as 3 strings.        
@@ -680,6 +679,18 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         return null;          
     } // end: retrieveDatasetVersionByVersionId
 
+    // This is an optimized, native query-based method for picking an image 
+    // that can be used as the thumbnail for a given dataset/version. 
+    // It is primarily designed to be used when thumbnails are requested
+    // from the Dataverse page, which is Solr search object based; meaning we 
+    // may not have the Dataset, DatasetVersion, etc. entities initialized.
+    // And since we may need to look up/generate these thumbnails for a large 
+    // number of search results, actually instantiating full entities for each
+    // one may be prohibitively expensive. It is also used by the DatasetPage, 
+    // when in read-only, optimized mode, when we similarly try to serve the 
+    // page while minimizing full lookup of entities via EJB. 
+    // (in both cases above the method is called via ThumbnailServiceWrapper)
+    
     public Long getThumbnailByVersionId(Long versionId) {
         if (versionId == null) {
             return null;
@@ -782,6 +793,19 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         } catch (Exception ex) {
             // it's ok to just ignore... 
         }
+    }
+    
+    public void writeEditVersionLog(DatasetVersionDifference dvd, AuthenticatedUser au) {
+
+        String logDir = System.getProperty("com.sun.aas.instanceRoot") + SEP + "logs" + SEP + "edit-drafts" + SEP;
+        String identifier = dvd.getOriginalVersion().getDataset().getIdentifier();
+        identifier = identifier.substring(identifier.indexOf("/") + 1);
+        String datasetId = dvd.getOriginalVersion().getDataset().getId().toString();
+        String summary = au.getFirstName() + " " + au.getLastName() + " (" + au.getIdentifier() + ") updated " + dvd.getEditSummaryForLog();
+        String logTimestamp = logFormatter.format(new Date());
+        String fileName = "/edit-draft-" + datasetId + "-" + identifier + "-" + logTimestamp + ".txt";
+        LoggingUtil.saveLogFile(summary, logDir, fileName);
+        
     }
     
     public void populateDatasetSearchCard(SolrSearchResult solrSearchResult) {

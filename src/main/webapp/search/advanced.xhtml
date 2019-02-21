@@ -5,7 +5,6 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-
     <h:head>
     </h:head>
 
@@ -17,6 +16,7 @@
             <ui:param name="ownerId" value="#{DataversePage.ownerId}"/>
             <ui:define name="body">
                 <f:metadata>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{AdvancedSearchPage.init}"/>
                     <f:viewParam name="dataverseIdentifier" value="#{AdvancedSearchPage.dataverseIdentifier}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(AdvancedSearchPage.dataverse, bundle['dataverse.search.advancedSearch'])}"/>
@@ -41,6 +41,16 @@
                                     </label>
                                     <div class="col-sm-6">
                                         <p:inputText id="dvFieldName" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldName}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.identifier.title']}">
+                                            #{bundle.identifier}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-6">
+                                        <p:inputText id="dvFieldAlias" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldAlias}"/>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -73,7 +83,7 @@
                                         <div class="ui-inputfield form-control select-scroll-block">
                                             <p:selectManyCheckbox value="#{AdvancedSearchPage.dvFieldSubject}" layout="pageDirection">
                                                 <f:selectItems value="#{AdvancedSearchPage.dvFieldSubjectValues}" var="cvv"
-                                                               itemLabel="#{cvv.strValue}" itemValue="#{cvv.strValue}"/>
+                                                               itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv.strValue}"/>
                                             </p:selectManyCheckbox>
                                         </div>
                                     </div>
@@ -84,13 +94,13 @@
                         <ui:repeat value="#{AdvancedSearchPage.metadataBlocks}" var="mdb" varStatus="status">
                             <div class="panel panel-default" jsf:rendered="#{not empty AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}">
                                 <div data-toggle="collapse" data-target="#panelCollapseCitationFieldList#{mdb.id}" class="panel-heading">
-                                    <h:outputText value="#{bundle['advanced.search.header.datasets']}: #{mdb.displayName}"/> &#160;<span class="glyphicon #{status.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
+                                    <h:outputText value="#{bundle['advanced.search.header.datasets']}: #{mdb.localeDisplayName}"/> &#160;<span class="glyphicon #{status.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
                                 </div>
                                 <div id="panelCollapseCitationFieldList#{mdb.id}" class="collapse #{status.first?'in':''} panel-body form-horizontal">
                                     <ui:repeat value="#{AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}" var="item">
                                         <div class="form-group">
                                             <label class="col-sm-4 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{item.description}">
+                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{item.localeDescription}">
                                                     #{item.displayName}
                                                 </span>
                                             </label>
@@ -99,7 +109,7 @@
                                                 <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{!empty item.controlledVocabularyValues}">
                                                     <p:selectManyCheckbox value="#{item.listValues}" layout="pageDirection">
                                                         <f:selectItems value="#{item.controlledVocabularyValues}" var="cvs"
-                                                                       itemLabel="#{cvs.strValue}" itemValue="#{cvs.strValue}"/>
+                                                                       itemLabel="#{cvs.localeStrValue}" itemValue="#{cvs.strValue}"/>
                                                     </p:selectManyCheckbox>
                                                 </div>
                                             </div>
@@ -108,8 +118,8 @@
                                     <ui:fragment rendered="#{mdb.id == '1'}">
                                         <div class="form-group">
                                             <label class="col-sm-4 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.publicationDate.tip']}">
-                                                    #{bundle['dataset.metadata.publicationDate']}
+                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.publicationYear.tip']}">
+                                                    #{bundle['dataset.metadata.publicationYear']}
                                                 </span>
                                             </label>
                                             <div class="col-sm-6">
@@ -164,6 +174,16 @@
                                     </label>
                                     <div class="col-sm-6">
                                         <p:inputText id="fileFieldFiletype" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldFiletype}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.files.persistentId.tip']}">
+                                            #{bundle['advanced.search.files.persistentId']}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-6">
+                                        <p:inputText id="fileFieldPersistentId" styleClass="form-control" value="#{AdvancedSearchPage.filePersistentId}"/>
                                     </div>
                                 </div>
                                 <div class="form-group">

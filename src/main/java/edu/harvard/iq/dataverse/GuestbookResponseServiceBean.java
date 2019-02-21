@@ -133,6 +133,7 @@ public class GuestbookResponseServiceBean {
         }
         
         queryString += ";";
+        logger.fine("stream responses query: " + queryString);
         
         List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
 
@@ -247,7 +248,7 @@ public class GuestbookResponseServiceBean {
         
         queryString += ";";
         
-        logger.info("search query: "+queryString);
+        logger.fine("search query: " + queryString);
         
         List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
         
@@ -333,7 +334,7 @@ public class GuestbookResponseServiceBean {
                 + "and o.owner_id = " + dataverseId;
                 
         if (guestbookId != null) {
-            cqString += ( "and g.guestbook_id = " + guestbookId);
+            cqString += ( " and g.guestbook_id = " + guestbookId);
         }
         
         if (firstResponse != null) {
@@ -344,7 +345,11 @@ public class GuestbookResponseServiceBean {
             cqString += (" and r.guestbookResponse_id <= " + lastResponse);
         }
         
+        // Preserve the order of the question/answer pairs.
+        cqString += " order by g.id, q.id";
+
         cqString += ";";
+        logger.fine("custom questions query: " + cqString);
 
         List<Object[]> customResponses = em.createNativeQuery(cqString).getResultList();
 
@@ -375,7 +380,7 @@ public class GuestbookResponseServiceBean {
             }
         }
 
-        logger.info("Found " + count + " responses to custom questions");
+        logger.fine("Found " + count + " responses to custom questions");
 
         return ret;
     }
@@ -590,19 +595,13 @@ public class GuestbookResponseServiceBean {
     }
     
     
-    public GuestbookResponse initGuestbookResponseForFragment(Dataset dataset, FileMetadata fileMetadata, DataverseSession session){   
-        
-        DatasetVersion workingVersion;
-        if (fileMetadata != null){
-            workingVersion = fileMetadata.getDatasetVersion();
-        } else {
-            workingVersion = dataset.getLatestVersion();
-        }
+    public GuestbookResponse initGuestbookResponseForFragment(DatasetVersion workingVersion, FileMetadata fileMetadata, DataverseSession session){   
        
+        Dataset dataset = workingVersion.getDataset();
        
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         
-        if(workingVersion != null && workingVersion.isDraft()){           
+        if(workingVersion.isDraft()){           
             guestbookResponse.setWriteResponse(false);
         } 
         
@@ -613,7 +612,7 @@ public class GuestbookResponseServiceBean {
         }
 
         if (dataset.getGuestbook() != null) {
-            guestbookResponse.setGuestbook(workingVersion.getDataset().getGuestbook());
+            guestbookResponse.setGuestbook(dataset.getGuestbook());
             setUserDefaultResponses(guestbookResponse, session);
             if (fileMetadata != null){
                 guestbookResponse.setDataFile(fileMetadata.getDataFile());
@@ -638,7 +637,7 @@ public class GuestbookResponseServiceBean {
     
     public GuestbookResponse initGuestbookResponseForFragment(FileMetadata fileMetadata, DataverseSession session){    
 
-        return initGuestbookResponseForFragment(fileMetadata.getDatasetVersion().getDataset(), fileMetadata, session);
+        return initGuestbookResponseForFragment(fileMetadata.getDatasetVersion(), fileMetadata, session);
     }
     
     public void initGuestbookResponse(FileMetadata fileMetadata, String downloadType, DataverseSession session){
@@ -823,17 +822,10 @@ public class GuestbookResponseServiceBean {
         }
         if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {
             in.setWriteResponse(false);
-        }
+        } 
         return in;
     }
     
-    public GuestbookResponse modifySelectedFileIds(GuestbookResponse in, String fileIds) {
-        if (in != null && fileIds != null) {
-            in.setSelectedFileIds(fileIds);
-        }
-        return in;
-    }
-
     public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format) {
         if (in != null && fm.getDataFile() != null) {
             in.setFileFormat(format);

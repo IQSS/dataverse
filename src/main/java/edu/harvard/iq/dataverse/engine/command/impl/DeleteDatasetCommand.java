@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
- * Deletes a data set.
+ * Deletes a dataset.
  *
  * @author michael
  */

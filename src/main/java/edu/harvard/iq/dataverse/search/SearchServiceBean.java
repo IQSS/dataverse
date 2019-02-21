@@ -1,33 +1,31 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -42,12 +40,12 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionRolledbackLocalException;
 import javax.inject.Named;
 import javax.persistence.NoResultException;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
-import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
-import org.apache.solr.client.solrj.impl.HttpSolrServer.RemoteSolrException;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.RangeFacet;
@@ -79,22 +77,26 @@ public class SearchServiceBean {
     @EJB
     SystemConfig systemConfig;
 
-    public static final JsfHelper JH = new JsfHelper();
-    private SolrServer solrServer;
+    private SolrClient solrServer;
     
     @PostConstruct
-    public void init(){
-        solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+    public void init() {
+        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
+        solrServer = new HttpSolrClient.Builder(urlString).build();
     }
     
     @PreDestroy
-    public void close(){
-        if(solrServer != null){
-            solrServer.shutdown();
+    public void close() {
+        if (solrServer != null) {
+            try {
+                solrServer.close();
+            } catch (IOException e) {
+                logger.warning("Solr closing error: " + e);
+            }
             solrServer = null;
         }
     }
-
+    
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
      * access to Private Data for the correct user
@@ -104,7 +106,7 @@ public class SearchServiceBean {
      *
      *
      * @param dataverseRequest
-     * @param dataverse
+     * @param dataverses
      * @param query
      * @param filterQueries
      * @param sortField
@@ -115,8 +117,8 @@ public class SearchServiceBean {
      * @return
      * @throws SearchException
      */
-    public SolrQueryResponse search(DataverseRequest dataverseRequest, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
-        return search(dataverseRequest, dataverse, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
+    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
+        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
     }
     
     /**
@@ -127,8 +129,8 @@ public class SearchServiceBean {
      * related to permissions
      *
      *
-     * @param user
-     * @param dataverse
+     * @param dataverseRequest
+     * @param dataverses
      * @param query
      * @param filterQueries
      * @param sortField
@@ -140,7 +142,7 @@ public class SearchServiceBean {
      * @return
      * @throws SearchException
      */
-    public SolrQueryResponse search(DataverseRequest dataverseRequest, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities) throws SearchException {
+    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities) throws SearchException {
 
         if (paginationStart < 0) {
             throw new IllegalArgumentException("paginationStart must be 0 or greater");
@@ -168,6 +170,7 @@ public class SearchServiceBean {
         solrQuery.setHighlightSimplePre("<span class=\"search-term-match\">");
         solrQuery.setHighlightSimplePost("</span>");
         Map<String, String> solrFieldsToHightlightOnMap = new HashMap<>();
+        // TODO: Do not hard code "Name" etc as English here.
         solrFieldsToHightlightOnMap.put(SearchFields.NAME, "Name");
         solrFieldsToHightlightOnMap.put(SearchFields.AFFILIATION, "Affiliation");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_FRIENDLY, "File Type");
@@ -175,8 +178,9 @@ public class SearchServiceBean {
         solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_NAME, "Variable Name");
         solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_LABEL, "Variable Label");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_SEARCHABLE, "File Type");
-        solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PUBLICATION_DATE, "Publication Date");
-        solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PERSISTENT_ID, localize("advanced.search.datasets.persistentId"));
+        solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PUBLICATION_DATE, "Publication Year");
+        solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PERSISTENT_ID, BundleUtil.getStringFromBundle("advanced.search.datasets.persistentId"));
+        solrFieldsToHightlightOnMap.put(SearchFields.FILE_PERSISTENT_ID, BundleUtil.getStringFromBundle("advanced.search.files.persistentId"));
         /**
          * @todo Dataverse subject and affiliation should be highlighted but
          * this is commented out right now because the "friendly" names are not
@@ -188,7 +192,7 @@ public class SearchServiceBean {
         /**
          * @todo: show highlight on file card?
          * https://redmine.hmdc.harvard.edu/issues/3848
-         */
+         */      
         solrFieldsToHightlightOnMap.put(SearchFields.FILENAME_WITHOUT_EXTENSION, "Filename Without Extension");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TAG_SEARCHABLE, "File Tag");
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
@@ -203,7 +207,7 @@ public class SearchServiceBean {
             solrQuery.addHighlightField(solrField);
         }
         solrQuery.setParam("fl", "*,score");
-        solrQuery.setParam("qt", "/spell");
+        solrQuery.setParam("qt", "/select");
         solrQuery.setParam("facet", "true");
         /**
          * @todo: do we need facet.query?
@@ -213,13 +217,7 @@ public class SearchServiceBean {
             solrQuery.addFilterQuery(filterQuery);
         }
 
-        // -----------------------------------
-        // PERMISSION FILTER QUERY
-        // -----------------------------------
-        String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
-        if (permissionFilterQuery != null) {
-            solrQuery.addFilterQuery(permissionFilterQuery);
-        }
+
 
         // -----------------------------------
         // Facets to Retrieve
@@ -229,7 +227,7 @@ public class SearchServiceBean {
         solrQuery.addFacetField(SearchFields.DATAVERSE_CATEGORY);
         solrQuery.addFacetField(SearchFields.METADATA_SOURCE);
 //        solrQuery.addFacetField(SearchFields.AFFILIATION);
-        solrQuery.addFacetField(SearchFields.PUBLICATION_DATE);
+        solrQuery.addFacetField(SearchFields.PUBLICATION_YEAR);
 //        solrQuery.addFacetField(SearchFields.CATEGORY);
 //        solrQuery.addFacetField(SearchFields.FILE_TYPE_MIME);
 //        solrQuery.addFacetField(SearchFields.DISTRIBUTOR);
@@ -245,12 +243,31 @@ public class SearchServiceBean {
          * if advancedSearchField is true or false
          *
          */
-        if (dataverse != null) {
-            for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
-                DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
-                solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
+        
+        //I'm not sure if just adding null here is good for hte permissions system... i think it needs something
+        if(dataverses != null) {
+            for(Dataverse dataverse : dataverses) {
+                // -----------------------------------
+                // PERMISSION FILTER QUERY
+                // -----------------------------------
+                String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
+                if (permissionFilterQuery != null) {
+                    solrQuery.addFilterQuery(permissionFilterQuery);
+                }
+                if (dataverse != null) {
+                    for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
+                        DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
+                        solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
+                    }
+                }
+            }
+        } else {
+            String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, null, onlyDatatRelatedToMe);
+            if (permissionFilterQuery != null) {
+                solrQuery.addFilterQuery(permissionFilterQuery);
             }
         }
+        
         solrQuery.addFacetField(SearchFields.FILE_TYPE);
         /**
          * @todo: hide the extra line this shows in the GUI... at least it's
@@ -301,7 +318,7 @@ public class SearchServiceBean {
         // -----------------------------------  
         // Make the solr query
         // -----------------------------------
-        QueryResponse queryResponse;
+        QueryResponse queryResponse = null;
         try {
             queryResponse = solrServer.query(solrQuery);
         } catch (RemoteSolrException ex) {
@@ -331,7 +348,7 @@ public class SearchServiceBean {
             exceptionSolrQueryResponse.setTypeFacetCategories(exceptionFacetCategoryList);
             exceptionSolrQueryResponse.setSpellingSuggestionsByToken(emptySpellingSuggestion);
             return exceptionSolrQueryResponse;
-        } catch (SolrServerException ex) {
+        } catch (SolrServerException | IOException ex) {
             throw new SearchException("Internal Dataverse Search Engine Error", ex);
         }
 
@@ -361,6 +378,7 @@ public class SearchServiceBean {
         Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
         String baseUrl = systemConfig.getDataverseSiteUrl();
 
+        //Going through the results
         for (SolrDocument solrDocument : docs) {
             String id = (String) solrDocument.getFieldValue(SearchFields.ID);
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
@@ -384,6 +402,9 @@ public class SearchServiceBean {
             Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
             String dateToDisplayOnCard = (String) solrDocument.getFirstValue(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT);
             String dvTree = (String) solrDocument.getFirstValue(SearchFields.SUBTREE);
+            String identifierOfDataverse = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER_OF_DATAVERSE);
+            String nameOfDataverse = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_NAME);
+
             List<String> matchedFields = new ArrayList<>();
             List<Highlight> highlights = new ArrayList<>();
             Map<SolrField, Highlight> highlightsMap = new HashMap<>();
@@ -492,6 +513,10 @@ public class SearchServiceBean {
 
                 solrSearchResult.setCitation(citation);
                 solrSearchResult.setCitationHtml(citationPlainHtml);
+                
+                solrSearchResult.setIdentifierOfDataverse(identifierOfDataverse);
+                solrSearchResult.setNameOfDataverse(nameOfDataverse);
+                
                 if (title != null) {
 //                    solrSearchResult.setTitle((String) titles.get(0));
                     solrSearchResult.setTitle(title);
@@ -550,6 +575,10 @@ public class SearchServiceBean {
                 if (tabularDataTags != null) {
                     Collections.sort(tabularDataTags);
                     solrSearchResult.setTabularDataTags(tabularDataTags);
+                }
+                String filePID = (String) solrDocument.getFieldValue(SearchFields.FILE_PERSISTENT_ID);
+                if(null != filePID && !"".equals(filePID) && !"".equals("null")) {
+                    solrSearchResult.setFilePersistentId(filePID);
                 }
             }
             /**
@@ -740,16 +769,6 @@ public class SearchServiceBean {
         solrQueryResponse.setPublicationStatusCounts(queryResponse.getFacetField("publicationStatus"));
 
         return solrQueryResponse;
-    }
-
-    private static String localize(String bundleKey) {
-        try {
-            String value = JH.localize(bundleKey);
-            return value;
-        } catch (Exception e) {
-            // can throw MissingResourceException
-            return "Match";
-        }
     }
 
     public String getCapitalizedName(String name) {

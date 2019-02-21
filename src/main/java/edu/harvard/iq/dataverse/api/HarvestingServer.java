@@ -19,16 +19,23 @@ import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.authorization.users.User;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import javax.json.JsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.faces.application.FacesMessage;
 import javax.json.Json;
+import javax.json.JsonReader;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.ws.rs.DELETE;
@@ -39,6 +46,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -104,30 +112,76 @@ public class HarvestingServer extends AbstractApiBean {
                     "Internal error: failed to produce output for OAI set " + spec + ".");
         }
     }
-    
+   
+    /**
+     * create an OAI set from spec in path and other parameters from POST body
+     * (as JSON). {"name":$set_name,
+     * "description":$optional_set_description,"definition":$set_search_query_string}.
+     */
     @POST
     @Path("{specname}")
     public Response createOaiSet(String jsonBody, @PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
+        /*
+	     * authorization modeled after the UI (aka HarvestingSetsPage)
+         */
+        AuthenticatedUser dvUser;
+        try {
+            dvUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        if (!dvUser.isSuperuser()) {            
+            return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.superUser.required"));
+        }
+
+        StringReader rdr = new StringReader(jsonBody);
         
-        //try () { 
-            StringReader rdr = new StringReader(jsonBody);
-            JsonObject json = Json.createReader(rdr).readObject();
-            
-            OAISet set = new OAISet();
-            // TODO: check that it doesn't exist yet...
-            set.setSpec(spec);
-            // TODO: jsonParser().parseOaiSet(json, set);
-            
-            oaiSetService.save(set);
-            
-            return created( "/harvest/server/oaisets" + spec, oaiSetAsJson(set));
-                    
-        //} catch (JsonParseException ex) {
-          //  return errorResponse( Response.Status.BAD_REQUEST, "Error parsing OAI set: " + ex.getMessage() );
-            
-        //} catch (WrappedResponse ex) {
-        //    return ex.getResponse();  
-        //}
+	try( JsonReader jrdr = Json.createReader(rdr) )
+	{
+		JsonObject json = jrdr.readObject();
+
+		OAISet set = new OAISet();
+		//Validating spec 
+		if (!StringUtils.isEmpty(spec)) {
+			if (spec.length() > 30) {
+				return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.sizelimit"));
+			}
+			if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", spec)) {
+				return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.invalid"));
+				// If it passes the regex test, check 
+			}
+			if (oaiSetService.findBySpec(spec) != null) {
+				return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.alreadyused"));
+			}
+
+		} else {
+			return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
+		}
+		set.setSpec(spec);
+		String name, desc, defn;
+
+		try {
+			name = json.getString("name");
+		} catch (NullPointerException npe_name) {
+			return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
+		}
+		try {
+			defn = json.getString("definition");
+		} catch (NullPointerException npe_defn) {
+			throw new JsonParseException("definition unspecified");
+		}
+		try {
+			desc = json.getString("description");
+		} catch (NullPointerException npe_desc) {
+			desc = ""; //treating description as optional
+		}
+		set.setName(name);
+		set.setDescription(desc);
+		set.setDefinition(defn);
+		oaiSetService.save(set);
+		return created("/harvest/server/oaisets" + spec, oaiSetAsJson(set));
+	}
+	
     }
 
     @PUT

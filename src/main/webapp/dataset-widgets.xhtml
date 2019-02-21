@@ -18,6 +18,7 @@
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="datasetId" value="#{DatasetWidgetsPage.datasetId}"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DatasetWidgetsPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetWidgetsPage.dataset, bundle['dataset.thumbnailsAndWidget.breadcrumbs.title'])}"/>
                 </f:metadata>
@@ -174,7 +175,7 @@
                             </div>
                         </ui:fragment>
                         <div class="button-block">
-                            <h:outputLink class="btn btn-default" value="/dataset.xhtml?persistentId=#{DatasetWidgetsPage.dataset.globalId}">
+                            <h:outputLink class="btn btn-default" value="/dataset.xhtml?persistentId=#{DatasetWidgetsPage.dataset.globalIdString}">
                                 <h:outputText value="#{bundle.done}"/></h:outputLink>
                         </div>
                     </p:tab>

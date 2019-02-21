@@ -7,7 +7,6 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:o="http://omnifaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-
     <h:head>
     </h:head>
 
@@ -21,6 +20,7 @@
                     <f:viewParam name="alias" value="#{DataversePage.dataverse.alias}"/>
                     <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
                     <f:viewParam name="editMode" value="#{DataversePage.editMode}"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DataversePage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DataversePage.dataverse)}"/>
                     <f:viewParam name="alias" value="#{SearchIncludeFragment.dataverseAlias}"/>
@@ -45,7 +45,7 @@
 
                 <h:form id="dataverseForm">
                     <!-- Edit Mode -->
-                    <ui:fragment rendered="#{DataversePage.editMode == 'INFO'}">
+                    <ui:fragment rendered="#{DataversePage.editMode == 'INFO' or DataversePage.editMode == 'CREATE'}">
                         <p:focus context="dataverseForm"/>
                         <!-- Sample Block -->
                         <!-- Name Panel -->
@@ -131,7 +131,8 @@
                                     </div>
                                 </div>
                                 <div class="form-group clearfix">
-                                    <p:fragment autoUpdate="true">
+                                    <p:fragment>
+                                       <p:autoUpdate />
                                         <label class="col-sm-3 control-label" for="contactEmail">
                                             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.email.title']}">
                                                 #{bundle['dataverse.email']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
@@ -221,9 +222,8 @@
                                         </p:commandButton>
                                         <p:commandButton value="Direct" id="resetToInherit"
                                                          style="display:none"
-                                                         update="@widgetVar(optionBlock)"
-                                                         process="@this @widgetVar(optionBlock)"
-                                                         actionListener="#{DataversePage.editMetadataBlocks(true)}">
+                                                         update="@all"
+                                                         action="#{DataversePage.resetToInherit()}">
                                         </p:commandButton>
 
                                         <ui:repeat value="#{DataversePage.allMetadataBlocks}" var="mdb">
@@ -240,7 +240,7 @@
                                                         <p:ajax update="@widgetVar(optionBlock)" />
                                                     </input>
 
-                                                    <h:outputText value="#{mdb.displayName} #{mdb.required ? bundle['dataverse.field.required']: ''}"
+                                                    <h:outputText value="#{mdb.localeDisplayName} #{mdb.required ? bundle['dataverse.field.required']: ''}"
                                                                   styleClass="#{DataversePage.inheritMetadataBlockFromParent ? 'text-muted' : ''}"/>
                                                     <p:commandLink id="showDSFT" style="margin-left:1em;"
                                                                    update="@widgetVar(optionBlock)"
@@ -268,7 +268,7 @@
                                                                     <tr>
                                                                         <td>
                                                                             <p:selectBooleanCheckbox rendered="#{!dsft.hasParent}" value="#{dsft.include}" itemLabel="#{dsft.displayName}"
-                                                                                                      onchange="#{DataversePage.updateInclude(mdb.id, dsft.id)}"
+                                                                                                      onchange="scrollPos=document.getElementById('metadataFieldOptionsPanel-Body').scrollTop;#{DataversePage.updateInclude(mdb.id, dsft.id)}"
                                                                                                      disabled="#{(!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required)) or DataversePage.editInputLevel == false }">
                                                                                 <p:ajax update="@widgetVar(OptButton#{dsft.id}), @widgetVar(optionBlock)" />
                                                                             </p:selectBooleanCheckbox>
@@ -330,11 +330,11 @@
                                                                  disabled="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null}"
                                                                  value="#{DataversePage.facetMetadataBlockId}">
                                                     <f:selectItem itemLabel="#{bundle['dataverse.facetPickList.metadataBlockList.all']}" itemValue=""/>
-                                                    <f:selectItems value="#{DataversePage.allMetadataBlocks}" var="mdb" itemLabel="#{mdb.displayName}" itemValue="#{mdb.id}" />
+                                                    <f:selectItems value="#{DataversePage.allMetadataBlocks}" var="mdb" itemLabel="#{mdb.localeDisplayName}" itemValue="#{mdb.id}" />
                                                     <p:ajax process="editFacets" update="editFacets" listener="#{DataversePage.changeFacetsMetadataBlock}"/>
                                                 </p:selectOneMenu>
                                             </f:facet>
-                                            <f:facet name="targetCaption">Selected</f:facet>
+                                            <f:facet name="targetCaption">#{bundle['dataverse.selected']}</f:facet>
                                             <p:ajax event="transfer" listener="#{DataversePage.onFacetTransfer}" update="editFacets" />
                                         </p:pickList>
                                     </div>
@@ -404,12 +404,12 @@
                                             </li>
                                             <li class="divider" role="presentation"></li>
                                             <li>
-                                                <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form" oncomplete="javascript:post_edit_dv_general_info();initPopover();">
+                                                <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form,:dataverseForm,:searchResults,:messagePanel" oncomplete="javascript:post_edit_dv_general_info();initPopover();">
                                                     <h:outputText value="#{bundle['dataverse.option.generalInfo']}" />
                                                 </p:commandLink>
                                             </li>
                                             <li>
-                                                <h:link outcome="ThemeAndWidgets" id="themeWidgetsOpts" >
+                                                <h:link outcome="ThemeAndWidgets" id="themeWidgetsOpts">
                                                     <f:param name="id" value="#{DataversePage.dataverse.id}" />
                                                     <h:outputText value="#{bundle['dataverse.option.themeAndWidgets']}" />
                                                 </h:link>
@@ -436,7 +436,7 @@
                                                     <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
                                                 </h:link>
                                             </li>
-                                            <li jsf:rendered="#{!settingsWrapper.rsyncDownload}">
+                                            <li jsf:rendered="#{!settingsWrapper.rsyncOnly}">
                                                 <h:link id="manageGuestbooks" styleClass="ui-commandlink ui-widget" outcome="manage-guestbooks">
                                                     <h:outputText value="#{bundle['dataverse.option.datasetGuestbooks']}" />
                                                     <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
@@ -465,7 +465,7 @@
                             <!-- END: Edit/Publish Button Group -->
                             <!-- Email/Link/Share Button Group -->
                             <div class="btn-group pull-right" role="group">
-                                <p:commandLink type="button" styleClass="text-button bootstrap-button-tooltip" title="#{bundle['dataverse.contact']}"
+                                <p:commandLink type="button" styleClass="text-button btn-contact bootstrap-button-tooltip" title="#{bundle['dataverse.contact']}"
                                                update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
@@ -474,7 +474,7 @@
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DataversePage.dataverse}"/>
                                         <span class="glyphicon glyphicon-envelope"/> #{bundle['contact.contact']}
                                 </p:commandLink>
-                                <p:commandLink type="button" styleClass="text-button bootstrap-button-tooltip"
+                                <p:commandLink type="button" styleClass="text-button btn-share bootstrap-button-tooltip"
                                    title="#{bundle['dataverse.share.dataverseShare']}"
                                    oncomplete="PF('shareDialog').show();sharrre();">
                                     <span class="glyphicon glyphicon-share"/> #{bundle['share']}
@@ -493,7 +493,7 @@
                             </p:dialog>
                             <!-- END: Email/Link/Share Button Group -->
                             <!-- Metrics for Root Dataverse -->
-                            <div id="metrics-block" class="col-xs-3" jsf:rendered="#{DataversePage.isRootDataverse() and !settingsWrapper.rsyncDownload}">
+                            <div id="metrics-block" class="col-xs-3" jsf:rendered="#{DataversePage.isRootDataverse() and !settingsWrapper.rsyncOnly}">
                                 <div id="metrics-label" class="col-xs-4 small text-center">
                                     <h:outputLink value="#{systemConfig.metricsUrl}" target="_blank" title="#{bundle['metrics.title.tip']}" rendered="#{systemConfig.metricsUrl != null}">
                                         <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
@@ -567,7 +567,7 @@
                         <p:commandButton id="save" tabindex="9" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all">
                             <f:ajax onerror="window.scrollTo(0, 0)" />
                         </p:commandButton>
-                        <p:commandButton id="cancel" tabindex="10" value="#{bundle.cancel}" actionListener="#{DataversePage.cancel}" process="@this" update="@form" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:post_cancel_edit_dv()" />
+                        <p:commandButton id="cancel" tabindex="10" value="#{bundle.cancel}" actionListener="#{DataversePage.cancel}" process="@this" update="@form,:searchResults,:messagePanel" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:post_cancel_edit_dv()" />
                         <p:button tabindex="10" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DataversePage.dataverse.owner.alias}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
                     </div>
 
@@ -629,9 +629,11 @@
                 </h:form>
 
                 <!-- Search/Browse Facets Panel -->
-                <ui:fragment rendered="#{empty DataversePage.editMode}">
-                    <ui:include src="search-include-fragment.xhtml"/>
-                </ui:fragment>
+                <p:fragment id="searchResults">
+                    <ui:fragment rendered="#{empty DataversePage.editMode}">
+                        <ui:include src="search-include-fragment.xhtml"/>
+                    </ui:fragment>
+                </p:fragment>
 
                 <!-- Link Dataverse Popup -->
                 <p:dialog id="linkDataverseForm" header="#{DataversePage.linkMode == 'SAVEDSEARCH' ? bundle['dataverse.savedsearch.link'] : bundle['dataverse.link']}" widgetVar="linkDataverseForm" modal="true">
@@ -742,6 +744,9 @@
 
                 <script type="text/javascript">
                     //<![CDATA[
+                    
+                    var scrollPos=0;
+
                     $(document).ready(function () {
                         initPopover();
                         initCarousel();
@@ -797,6 +802,10 @@
                     function updateInclude() {
                         $('button[id$="hiddenRefresh"]').trigger('click');
                     }
+                    
+                    function scrollAfterUpdate() {
+                        document.getElementById('metadataFieldOptionsPanel-Body').scrollTop = scrollPos;
+                    }
 
                     function updateMetadata(checkbox) {
                         var checked = checkbox.checked;
@@ -809,7 +818,7 @@
                     }
 
                     function check() {
-                        $('button[id$="resetToInherit"]').trigger('click');
+                            $('button[id$="resetToInherit"]').trigger('click');
                     }
 
                      function uncheck() {

@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -14,9 +15,11 @@ import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -27,10 +30,10 @@ import java.util.logging.Logger;
  *
  * @author skraffmi
  */
-
-// the permission annotation is open, since this is a superuser-only command - 
-// and that's enforced in the command body:
-@RequiredPermissions({})
+@RequiredPermissionsMap({
+    @RequiredPermissions(dataverseName = "moved", value = {Permission.PublishDataset})
+    ,	@RequiredPermissions(dataverseName = "destination", value = {Permission.AddDataset, Permission.PublishDataset})
+})
 public class MoveDatasetCommand extends AbstractVoidCommand {
 
     private static final Logger logger = Logger.getLogger(MoveDatasetCommand.class.getCanonicalName());
@@ -39,7 +42,11 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
     final Boolean force;
 
     public MoveDatasetCommand(DataverseRequest aRequest, Dataset moved, Dataverse destination, Boolean force) {
-        super(aRequest, moved);
+        super(
+                aRequest,
+                dv("moved", moved),
+                dv("destination", destination)
+        );
         this.moved = moved;
         this.destination = destination;
         this.force= force;
@@ -47,14 +54,11 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
 
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
-        
-       // first check if  user is a superuser
-        if ( (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser() ) ) {      
-            throw new PermissionException("Move Dataset can only be called by superusers.",
-                this,  Collections.singleton(Permission.DeleteDatasetDraft), moved);                
+        boolean removeGuestbook = false, removeLinkDs = false;
+        if (!(getUser() instanceof AuthenticatedUser)) {
+            throw new PermissionException("Move Dataset can only be called by authenticated users.", this, Collections.singleton(Permission.DeleteDatasetDraft), moved);
         }
-        
-        
+
         // validate the move makes sense
         if (moved.getOwner().equals(destination)) {
             throw new IllegalCommandException("Dataset already in this Dataverse ", this);
@@ -73,17 +77,56 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
             boolean inheritGuestbooksValue = !destination.isGuestbookRoot();
             if (inheritGuestbooksValue && destination.getOwner() != null) {
                 for (Guestbook pg : destination.getParentGuestbooks()) {
-
                     gbs.add(pg);
                 }
             }
             if (gbs == null || !gbs.contains(gb)) {
                 if (force == null  || !force){
-                    throw new IllegalCommandException("Dataset guestbook is not in target dataverse. Please use the parameter ?forceMove=true to complete the move. This will delete the guestbook from the Dataset", this);
+                    removeGuestbook = true;
+                } else {
+                    moved.setGuestbook(null);
                 }
-                moved.setGuestbook(null);
             }
         }
+        
+        // generate list of all possible parent dataverses to check against
+        List<Dataverse> ownersToCheck = new ArrayList<>();
+        ownersToCheck.add(destination);
+        if (destination.getOwners() != null) {
+            ownersToCheck.addAll(destination.getOwners());
+        }
+        
+        // if the dataset is linked to the new dataverse or any of 
+        // its parent dataverses then remove the link
+        List<DatasetLinkingDataverse> linkingDatasets = new ArrayList<>();
+        if (moved.getDatasetLinkingDataverses() != null) {
+            linkingDatasets.addAll(moved.getDatasetLinkingDataverses());
+        }
+        for (DatasetLinkingDataverse dsld : linkingDatasets) {
+            for (Dataverse owner : ownersToCheck){
+                if ((dsld.getLinkingDataverse()).equals(owner)){
+                    if (force == null || !force) {
+                        removeLinkDs = true;
+                        break;
+                    }
+                    boolean index = false;
+                    ctxt.engine().submit(new DeleteDatasetLinkingDataverseCommand(getRequest(), dsld.getDataset(), dsld, index));
+                    moved.getDatasetLinkingDataverses().remove(dsld);
+                }
+            }
+        }
+        
+        if (removeGuestbook || removeLinkDs) {
+            StringBuilder errorString = new StringBuilder();
+            if (removeGuestbook) {
+                errorString.append("Dataset guestbook is not in target dataverse. ");
+            }
+            if (removeLinkDs) {
+                errorString.append("Dataset is linked to target dataverse or one of its parents. ");
+            }
+            throw new IllegalCommandException(errorString + "Please use the parameter ?forceMove=true to complete the move. This will remove anything from the dataset that is not compatible with the target dataverse.", this);
+        }
+
 
         // OK, move
         moved.setOwner(destination);

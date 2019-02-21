@@ -151,6 +151,8 @@ public abstract class StorageIO<T extends DvObject> {
     
     public abstract void backupAsAux(String auxItemTag) throws IOException; 
     
+    public abstract void revertBackupAsAux(String auxItemTag) throws IOException; 
+    
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
     public abstract void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException;
     
@@ -225,7 +227,7 @@ public abstract class StorageIO<T extends DvObject> {
 
     // getters:
     
-    public Channel getChannel() {
+    public Channel getChannel() throws IOException {
         return channel;
     }
 
@@ -274,7 +276,7 @@ public abstract class StorageIO<T extends DvObject> {
         return size;
     }
 
-    public InputStream getInputStream() {
+    public InputStream getInputStream() throws IOException {
         return in;
     }
     

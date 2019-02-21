@@ -25,7 +25,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
 import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.FileView;
-import edu.harvard.iq.dataverse.search.IndexAllServiceBean;
+import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.IndexUtil;
@@ -69,7 +69,7 @@ public class Index extends AbstractApiBean {
     @EJB
     IndexServiceBean indexService;
     @EJB
-    IndexAllServiceBean indexAllService;
+    IndexBatchServiceBean indexAllService;
     @EJB
     SolrIndexServiceBean solrIndexService;
     @EJB
@@ -304,7 +304,7 @@ public class Index extends AbstractApiBean {
             JsonObjectBuilder data = Json.createObjectBuilder();
             data.add("message", "Reindexed dataset " + persistentId);
             data.add("id", dataset.getId());
-            data.add("persistentId", dataset.getGlobalId());
+            data.add("persistentId", dataset.getGlobalIdString());
             JsonArrayBuilder versions = Json.createArrayBuilder();
             for (DatasetVersion version : dataset.getVersions()) {
                 JsonObjectBuilder versionObject = Json.createObjectBuilder();
@@ -486,7 +486,7 @@ public class Index extends AbstractApiBean {
             }
             String multivalued = datasetField.getSolrField().isAllowedToBeMultivalued().toString();
             // <field name="datasetId" type="text_general" multiValued="false" stored="true" indexed="true"/>
-            sb.append("   <field name=\"" + nameSearchable + "\" type=\"" + type + "\" multiValued=\"" + multivalued + "\" stored=\"true\" indexed=\"true\"/>\n");
+            sb.append("    <field name=\"" + nameSearchable + "\" type=\"" + type + "\" multiValued=\"" + multivalued + "\" stored=\"true\" indexed=\"true\"/>\n");
         }
 
         List<String> listOfStaticFields = new ArrayList<>();
@@ -533,8 +533,8 @@ public class Index extends AbstractApiBean {
                 }
             }
 
-            // <copyField source="*_i" dest="text" maxChars="3000"/>
-            sb.append("   <copyField source=\"").append(nameSearchable).append("\" dest=\"text\" maxChars=\"3000\"/>\n");
+            // <copyField source="*_i" dest="_text_" maxChars="3000"/>
+            sb.append("    <copyField source=\"").append(nameSearchable).append("\" dest=\""+ SearchFields.FULL_TEXT + "\" maxChars=\"3000\"/>\n");
         }
 
         return sb.toString();
@@ -560,7 +560,7 @@ public class Index extends AbstractApiBean {
 
         User user = findUserByApiToken(apiToken);
         if (user == null) {
-            return error(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
+            return error(Response.Status.UNAUTHORIZED, "Invalid apikey ");
         }
 
         Dataverse subtreeScope = dataverseService.findRootDataverse();
@@ -571,8 +571,10 @@ public class Index extends AbstractApiBean {
         boolean dataRelatedToMe = false;
         int numResultsPerPage = Integer.MAX_VALUE;
         SolrQueryResponse solrQueryResponse;
+        List<Dataverse> dataverses = new ArrayList<>();
+        dataverses.add(subtreeScope);
         try {
-            solrQueryResponse = searchService.search(createDataverseRequest(user), subtreeScope, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
+            solrQueryResponse = searchService.search(createDataverseRequest(user), dataverses, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
         } catch (SearchException ex) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage() + ": " + ex.getCause().getLocalizedMessage());
         }
@@ -597,7 +599,7 @@ public class Index extends AbstractApiBean {
 
         User user = findUserByApiToken(apiToken);
         if (user == null) {
-            return error(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
+            return error(Response.Status.UNAUTHORIZED, "Invalid apikey");
         }
 
         DvObject dvObjectToLookUp = dvObjectService.findDvObject(dvObjectId);

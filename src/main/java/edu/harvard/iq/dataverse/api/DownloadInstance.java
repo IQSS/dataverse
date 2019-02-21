@@ -84,7 +84,7 @@ public class DownloadInstance {
     }
 
     // Move this method into the DownloadInfo instead -- ?
-    public Boolean isDownloadServiceSupported(String serviceArg, String serviceArgValue) {
+    public Boolean checkIfServiceSupportedAndSetConverter(String serviceArg, String serviceArgValue) {
         if (downloadInfo == null || serviceArg == null) {
             return false;
         }
@@ -93,12 +93,21 @@ public class DownloadInstance {
 
         for (OptionalAccessService dataService : servicesAvailable) {
             if (dataService != null) {
-                // Special case for the subsetting parameter (variables=<LIST>):
                 if (serviceArg.equals("variables")) {
+                    // Special case for the subsetting parameter (variables=<LIST>):
                     if ("subset".equals(dataService.getServiceName())) {
                         conversionParam = "subset";
                         conversionParamValue = serviceArgValue; 
                         return true; 
+                    }
+                } else if (serviceArg.equals("noVarHeader")) {
+                    // Another special case available for tabular ("subsettable") data files - 
+                    // "do not add variable header" flag:
+                    if ("true".equalsIgnoreCase(serviceArgValue) || "1".equalsIgnoreCase(serviceArgValue)) {
+                        if ("subset".equals(dataService.getServiceName())) {
+                            this.conversionParam = serviceArg;
+                            return true;
+                        }
                     }
                 } else if ("imageThumb".equals(serviceArg)) {
                     if ("true".equals(serviceArgValue)) {

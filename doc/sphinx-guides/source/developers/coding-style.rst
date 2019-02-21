@@ -16,14 +16,63 @@ Formatting Code
 Tabs vs. Spaces
 ^^^^^^^^^^^^^^^
 
-Don't use tabs. Use spaces.
+Don't use tabs. Use 4 spaces.
+
+Braces Placement
+^^^^^^^^^^^^^^^^
+
+Place curly braces according to the style below, which is an example you can see from Netbeans.
+
+.. code-block:: java
+
+    public class ClassA {
+
+        private String letters[] = new String[]{"A", "B"};
+
+        public int meth(String text, int number) {
+            BinaryOperator plus = (a, b) -> {
+                return a + b;
+            };
+            if (text != null) {
+                try {
+                    meth("Some text", text.length());
+                } catch (Throwable t) {
+                } finally {
+                }
+            } else if (number >= 0) {
+                text = number == 0 ? "empty" : "nonempty";
+            }
+            do {
+                number = number + 1;
+            } while (number < 2);
+            for (int i = 1; i < 100; i++) {
+                number = number + i;
+            }
+            while (number > 0) {
+                number--;
+            }
+        }
+    }
 
 Format Code You Changed with Netbeans
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 As you probably gathered from the :doc:`dev-environment` section, IQSS has standardized on Netbeans. It is much appreciated when you format your code (but only the code you touched!) using the out-of-the-box Netbeans configuration. If you have created an entirely new Java class, you can just click Source -> Format. If you are adjusting code in an existing class, highlight the code you changed and then click Source -> Format. Keeping the "diff" in your pull requests small makes them easier to code review.
 
-We would like to someday automate the detection and possibly correction of code that hasn't been formatted using our house style (the default Netbeans style). We've heard that https://maven.apache.org/plugins/maven-checkstyle-plugin/ can do this but we would be happy to see a pull request in this area, especially if it also hooks up to our builds at https://travis-ci.org/IQSS/dataverse .
+Checking Your Formatting With Checkstyle
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The easiest way to adopt Dataverse coding style is to use Netbeans as your IDE, avoid change the default Netbeans formatting settings, and only reformat code you've changed, as described above.
+
+If you do not use Netbeans, you are encouraged to check the formatting of your code using Checkstyle.
+
+To check the entire project:
+
+``mvn checkstyle:checkstyle``
+
+To check a single file:
+
+``mvn checkstyle:checkstyle -Dcheckstyle.includes=**\/SystemConfig*.java``
 
 Logging
 ~~~~~~~
@@ -54,6 +103,20 @@ If you just downloaded Netbeans and are using the out-of-the-box settings, you s
 
 If you know of a way to easily share Netbeans configuration across a team, please get in touch.
 
+Bash
+----
+
+Generally, Google's Shell Style Guide at https://google.github.io/styleguide/shell.xml seems to have good advice.
+
+Formatting Code
+~~~~~~~~~~~~~~~
+
+Tabs vs. Spaces
+^^^^^^^^^^^^^^^
+
+Don't use tabs. Use 2 spaces.
+
+shfmt from https://github.com/mvdan/sh seems like a decent way to enforce indentation of two spaces (i.e. ``shfmt -i 2 -w path/to/script.sh``) but be aware that it makes other changes.
 
 Bike Shedding
 -------------
@@ -64,4 +127,4 @@ Come debate with us about coding style in this Google doc that has public commen
 
 ----
 
-Previous: :doc:`debugging` | Next: :doc:`making-releases`
+Previous: :doc:`debugging` | Next: :doc:`deployment`

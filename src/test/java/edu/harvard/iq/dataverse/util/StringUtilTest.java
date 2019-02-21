@@ -1,10 +1,8 @@
-/*
- *  (C) Michael Bar-Sinai
- */
 package edu.harvard.iq.dataverse.util;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.Stream;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -131,16 +129,13 @@ public class StringUtilTest {
     }
     
     @Test
-    public void testIsValidEmail() {
-        assertTrue( StringUtil.isValidEmail("hello@world.com") );
-        assertTrue( StringUtil.isValidEmail("hello@world.co.il") );
-        assertTrue( StringUtil.isValidEmail("hello@under.world.co.il") );
+    public void testIsTrue() {
+        Stream.of("yes", "Yes", "  yes  ", "1", "allow", "tRuE")
+            .forEach( v -> assertTrue(StringUtil.isTrue(v)) );
         
-        assertFalse( StringUtil.isValidEmail("hello at under.world.co.il") );
-        assertFalse( StringUtil.isValidEmail("hellounder.world.co.il") );
-        assertFalse( StringUtil.isValidEmail("hellounder@.world.co.il") );
-        assertFalse( StringUtil.isValidEmail("hellounder") );
-        assertFalse( StringUtil.isValidEmail("") );
-        assertFalse( StringUtil.isValidEmail(null) );
+        Stream.of("es", "no", " 0 s  ", "0", "x", "false")
+            .forEach( v -> assertFalse(StringUtil.isTrue(v)) );
+        
+        assertFalse( StringUtil.isTrue(null) );
     }
 }

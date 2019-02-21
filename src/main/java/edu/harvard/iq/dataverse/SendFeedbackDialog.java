@@ -1,9 +1,13 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.feedback.Feedback;
+import edu.harvard.iq.dataverse.feedback.FeedbackUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -16,56 +20,86 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.mail.internet.InternetAddress;
-
 import org.apache.commons.validator.routines.EmailValidator;
 
-/**
- *
- * @author Naomi
- */
 @ViewScoped
 @Named
 public class SendFeedbackDialog implements java.io.Serializable {
 
+    private static final Logger logger = Logger.getLogger(SendFeedbackDialog.class.getCanonicalName());
+
+    /**
+     * The email address supplied by the person filling out the contact form.
+     */
     private String userEmail = "";
+
+    /**
+     * Body of the message.
+     */
     private String userMessage = "";
+
+    /**
+     * Becomes the subject of the email.
+     */
     private String messageSubject = "";
-    private String messageTo = "";
-    // FIXME: Remove "support@thedata.org". There's no reason to email the Dataverse *project*. People should email the *installation* instead.
-    private String defaultRecipientEmail = "support@thedata.org";
-    Long op1, op2, userSum;
-    // Either the dataverse or the dataset that the message is pertaining to
-    // If there is no recipient, this is a general feeback message
+
+    /**
+     * First operand in addition problem.
+     */
+    Long op1;
+
+    /**
+     * Second operand in addition problem.
+     */
+    Long op2;
+
+    /**
+     * The guess the user makes in addition problem.
+     */
+    Long userSum;
+
+    /**
+     * Either the dataverse or the dataset that the message is pertaining to. If
+     * there is no recipient, this is a general feedback message.
+     */
     private DvObject recipient;
-    private Logger logger = Logger.getLogger(SendFeedbackDialog.class.getCanonicalName());
+
+    /**
+     * :SystemEmail (the main support address for an installation).
+     */
     private InternetAddress systemAddress;
-    
+
     @EJB
     MailServiceBean mailService;
+
     @EJB
     SettingsServiceBean settingsService;
-    
+
     @EJB
-    DataverseServiceBean dataverseService; 
-    @Inject DataverseSession dataverseSession;
-    
-    public void setUserEmail (String uEmail) {
+    DataverseServiceBean dataverseService;
+
+    @EJB
+    SystemConfig systemConfig;
+
+    @Inject
+    DataverseSession dataverseSession;
+
+    public void setUserEmail(String uEmail) {
         userEmail = uEmail;
     }
 
     public String getUserEmail() {
         return userEmail;
     }
-    
+
     public void initUserInput(ActionEvent ae) {
-        userEmail="";
-        userMessage="";
-        messageTo="";
-        messageSubject="";
+        userEmail = "";
+        userMessage = "";
+        messageSubject = "";
         Random random = new Random();
         op1 = new Long(random.nextInt(10));
         op2 = new Long(random.nextInt(10));
-        userSum=null;
+        userSum = null;
         String systemEmail = settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail);
         systemAddress = MailUtil.parseSystemAddress(systemEmail);
     }
@@ -93,48 +127,47 @@ public class SendFeedbackDialog implements java.io.Serializable {
     public void setUserSum(Long userSum) {
         this.userSum = userSum;
     }
-    
-    
+
     public String getMessageTo() {
         if (recipient == null) {
             return BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
         } else if (recipient.isInstanceofDataverse()) {
-            return ((Dataverse) recipient).getDisplayName() + " " + JH.localize("contact.contact");
+            return ((Dataverse) recipient).getDisplayName() + " " + BundleUtil.getStringFromBundle("contact.contact");
         } else {
-            return JH.localize("dataset") + " " + JH.localize("contact.contact");
+            return BundleUtil.getStringFromBundle("dataset") + " " + BundleUtil.getStringFromBundle("contact.contact");
         }
     }
-    
+
     public String getFormHeader() {
         if (recipient == null) {
             return BrandingUtil.getContactHeader(systemAddress, dataverseService.findRootDataverse().getName());
         } else if (recipient.isInstanceofDataverse()) {
-            return   JH.localize("contact.dataverse.header");
-        } else 
-            return JH.localize("contact.dataset.header");
+            return BundleUtil.getStringFromBundle("contact.dataverse.header");
+        } else {
+            return BundleUtil.getStringFromBundle("contact.dataset.header");
+        }
     }
 
-    public void setUserMessage (String mess) {
-        System.out.println("setUserMessage: "+mess);
+    public void setUserMessage(String mess) {
         userMessage = mess;
     }
-    
+
     public String getUserMessage() {
         return userMessage;
     }
-    
+
     public void setMessageSubject(String messageSubject) {
         this.messageSubject = messageSubject;
     }
-    
+
     public String getMessageSubject() {
-         return messageSubject; 
+        return messageSubject;
     }
-    
+
     public boolean isLoggedIn() {
         return dataverseSession.getUser().isAuthenticated();
     }
-    
+
     public String loggedInUserEmail() {
         return dataverseSession.getUser().getDisplayInfo().getEmailAddress();
     }
@@ -144,91 +177,41 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
 
     public void setRecipient(DvObject recipient) {
-          this.recipient = recipient;
+        this.recipient = recipient;
     }
-    
-    private String getDataverseEmail(Dataverse dataverse) {
-        String email = "";
-       
-        for (DataverseContact dc : dataverse.getDataverseContacts()) {
-            if (!email.isEmpty()) {
-                email += ",";
-            }
-            email += dc.getContactEmail();
-        }
-        return email;
-    }
-      public void validateUserSum(FacesContext context, UIComponent component, Object value) throws ValidatorException {
 
-        if (op1 + op2 !=(Long)value) {
-
+    public void validateUserSum(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        if (op1 + op2 != (Long) value) {
             // TODO: Remove this English "Sum is incorrect" string. contactFormFragment.xhtml uses contact.sum.invalid instead.
-            FacesMessage msg
-                    = new FacesMessage("Sum is incorrect, please try again.");
+            FacesMessage msg = new FacesMessage(BundleUtil.getStringFromBundle("contact.sum.invalid"));
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-
             throw new ValidatorException(msg);
         }
-
     }
-      
-  public void validateUserEmail(FacesContext context, UIComponent component, Object value) throws ValidatorException {
 
-        if (!EmailValidator.getInstance().isValid((String)value)) {
-
-            FacesMessage msg
-                    = new FacesMessage("Invalid email.");
+    public void validateUserEmail(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        if (!EmailValidator.getInstance().isValid((String) value)) {
+            FacesMessage msg = new FacesMessage(BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"));
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-
             throw new ValidatorException(msg);
         }
+    }
 
-    }     
     public String sendMessage() {
-        String email = "";
-        if (recipient!=null) {
-            if (recipient.isInstanceofDataverse() ) {
-               email = getDataverseEmail((Dataverse)recipient);
-            }
-            else if (recipient.isInstanceofDataset()) {
-                Dataset d = (Dataset)recipient;
-                for (DatasetField df : d.getLatestVersion().getFlatDatasetFields()){
-                    if (df.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
-                        if (!email.isEmpty()) {
-                            email+=",";
-                        }
-                        email+=df.getValue();
-                    }
-                }
-                if (email.isEmpty()) {
-                    email = getDataverseEmail(d.getOwner());
-                }
-            }
-        }
-        if (email.isEmpty()) {
-                String systemEmail =  settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail);
-                InternetAddress systemAddress =  MailUtil.parseSystemAddress(systemEmail);
-                if (systemAddress != null){
-                    email = systemAddress.toString();
-                } else{
-                    email = defaultRecipientEmail;
-                }
-        }
-        if (isLoggedIn() && userMessage!=null) {
-            mailService.sendMail(loggedInUserEmail(), email, getMessageSubject(), userMessage);
-            userMessage = "";
+        // FIXME: move dataverseService.findRootDataverse() to init
+        String rootDataverseName = dataverseService.findRootDataverse().getName();
+        String installationBrandName = BrandingUtil.getInstallationBrandName(rootDataverseName);
+        String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName);
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(recipient, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName);
+        if (feedbacks.isEmpty()) {
+            logger.warning("No feedback has been sent!");
             return null;
-        } else {
-            if (userEmail != null && userMessage != null) {
-                mailService.sendMail(userEmail, email, getMessageSubject(), userMessage);
-                userMessage = "";
-                return null;
-            } else {
-                userMessage = "";
-                return null;
-            }
         }
+        for (Feedback feedback : feedbacks) {
+            logger.fine("sending feedback: " + feedback);
+            mailService.sendMail(feedback.getFromEmail(), feedback.getToEmail(), feedback.getSubject(), feedback.getBody());
+        }
+        return null;
     }
 
-    
 }

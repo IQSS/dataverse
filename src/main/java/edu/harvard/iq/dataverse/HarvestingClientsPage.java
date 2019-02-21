@@ -17,11 +17,13 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -123,7 +125,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
         
         pageMode = PageMode.VIEW;
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, JH.localize("harvestclients.title"), JH.localize("harvestclients.toptip")));
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("harvestclients.title"), BundleUtil.getStringFromBundle("harvestclients.toptip")));
         return null; 
     }
     
@@ -210,12 +212,12 @@ public class HarvestingClientsPage implements java.io.Serializable {
             DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), (HttpServletRequest)null);
             harvesterService.doAsyncHarvest(dataverseRequest, harvestingClient);        
         } catch (Exception ex) {
-            String failMessage = "Sorry, harvest could not be started for the selected harvesting client configuration (unknown server error).";
+            String failMessage = BundleUtil.getStringFromBundle("harvest.start.error");
             JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             return;
         } 
                 
-        String successMessage = JH.localize("harvestclients.actions.runharvest.success");
+        String successMessage = BundleUtil.getStringFromBundle("harvestclients.actions.runharvest.success");
         successMessage = successMessage.replace("{0}", harvestingClient.getName());
         JsfHelper.addSuccessMessage(successMessage);
         
@@ -296,13 +298,13 @@ public class HarvestingClientsPage implements java.io.Serializable {
                 
                 //engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
                 harvestingClientService.deleteClient(selectedClient.getId());
-                JsfHelper.addInfoMessage(JH.localize("harvestclients.tab.header.action.delete.infomessage"));
+                JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("harvestclients.tab.header.action.delete.infomessage"));
                 
             //} catch (CommandException ex) {
             //    String failMessage = "Selected harvesting client cannot be deleted.";
             //    JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             } catch (Exception ex) {
-                String failMessage = "Selected harvesting client cannot be deleted; unknown exception: "+ex.getMessage();
+                String failMessage = BundleUtil.getStringFromBundle("harvest.delete.error")+ex.getMessage();
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             }
         } else {
@@ -322,8 +324,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         newHarvestingClient.setName(newNickname);
         
         if (getSelectedDestinationDataverse() == null) {
-            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
-                                    "Failed to create a new Harvesting Client configuration: no destination dataverse selected.");
+            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,BundleUtil.getStringFromBundle("harvest.create.error"));
         }
         
         newHarvestingClient.setDataverse(getSelectedDestinationDataverse());
@@ -365,7 +366,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         // from the harvesting url:
         newHarvestingClient.setArchiveUrl(makeDefaultArchiveUrl());
         // set default description - they can customize it as they see fit:
-        newHarvestingClient.setArchiveDescription(JH.localize("harvestclients.viewEditDialog.archiveDescription.default.generic"));
+        newHarvestingClient.setArchiveDescription(BundleUtil.getStringFromBundle("harvestclients.viewEditDialog.archiveDescription.default.generic"));
         
         
         // will try to save it now:
@@ -378,7 +379,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
             // NO, we no longer create timers here. It is the job of the Mother Timer!
             //dataverseTimerService.createHarvestTimer(newHarvestingClient);
             
-            String successMessage = JH.localize("harvestclients.newClientDialog.success");
+            String successMessage = BundleUtil.getStringFromBundle("harvestclients.newClientDialog.success");
             successMessage = successMessage.replace("{0}", newHarvestingClient.getName());
             JsfHelper.addSuccessMessage(successMessage);
 
@@ -391,11 +392,11 @@ public class HarvestingClientsPage implements java.io.Serializable {
         }*/ catch (CommandException ex) {
             logger.log(Level.WARNING, "Harvesting client creation command failed", ex);
             JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
-                                    "Harvesting Client creation command failed.",
+                    BundleUtil.getStringFromBundle("harvest.createCommand.error"),
                                     ex.getMessage());
         } catch (Exception ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Harvesting client creation failed (reason unknown).");
-             logger.log(Level.SEVERE, "Harvesting client creation failed (reason unknown)." + ex.getMessage(), ex);
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("harvest.create.fail"));
+            logger.log(Level.SEVERE, "Harvesting client creation failed (reason unknown)." + ex.getMessage(), ex);
         }
         setPageMode(PageMode.VIEW);
 
@@ -456,15 +457,15 @@ public class HarvestingClientsPage implements java.io.Serializable {
             if (!harvestingClient.isScheduled()) {
                 dataverseTimerService.removeHarvestTimer(harvestingClient);
             }
-            JsfHelper.addSuccessMessage("Succesfully updated harvesting client " + harvestingClient.getName());
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("harvest.update.success") + harvestingClient.getName());
 
         } catch (CommandException ex) {
             logger.log(Level.WARNING, "Failed to save harvesting client", ex);
             JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
-                                    "Failed to save harvesting client",
+                    BundleUtil.getStringFromBundle("harvest.save.failure1"),
                                     ex.getMessage());
         } catch (Exception ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Failed to save harvesting client (reason unknown).");
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("harvest.save.failure2"));
              logger.log(Level.SEVERE, "Failed to save harvesting client (reason unknown)." + ex.getMessage(), ex);
         }
         setPageMode(PageMode.VIEW);
@@ -486,7 +487,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
 
             input.setValid(false);
             context.addMessage(toValidate.getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.oaiMetadataFormat.required")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.oaiMetadataFormat.required")));
 
         }
     }
@@ -498,14 +499,14 @@ public class HarvestingClientsPage implements java.io.Serializable {
             if (getNewNickname().length() > 30 || (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", getNewNickname())) ) {
                 //input.setValid(false);
                 FacesContext.getCurrentInstance().addMessage(getNewClientNicknameInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.nickname.invalid")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.nickname.invalid")));
                 return false;
 
                 // If it passes the regex test, check 
             } else if ( harvestingClientService.findByNickname(getNewNickname()) != null ) {
                 //input.setValid(false);
                 FacesContext.getCurrentInstance().addMessage(getNewClientNicknameInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.nickname.alreadyused")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.nickname.alreadyused")));
                 return false;
             }
             return true;
@@ -513,14 +514,14 @@ public class HarvestingClientsPage implements java.io.Serializable {
         
         // Nickname field is empty:
         FacesContext.getCurrentInstance().addMessage(getNewClientNicknameInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.nickname.required")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.nickname.required")));
         return false;
     }
     
     public boolean validateSelectedDataverse() {
         if (selectedDestinationDataverse == null) {
             FacesContext.getCurrentInstance().addMessage(getSelectedDataverseMenu().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("harvestclients.newClientDialog.dataverse.required")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.dataverse.required")));
             return false;
         }
         return true;
@@ -579,12 +580,12 @@ public class HarvestingClientsPage implements java.io.Serializable {
             }
 
             FacesContext.getCurrentInstance().addMessage(getNewClientUrlInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", getNewHarvestingUrl() + ": " + JH.localize("harvestclients.newClientDialog.url.invalid")));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", getNewHarvestingUrl() + ": " + BundleUtil.getStringFromBundle("harvestclients.newClientDialog.url.invalid")));
             return false;
 
         }
         FacesContext.getCurrentInstance().addMessage(getNewClientUrlInputField().getClientId(),
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, "", getNewHarvestingUrl() + ": " + JH.localize("harvestclients.newClientDialog.url.required")));
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, "", getNewHarvestingUrl() + ": " + BundleUtil.getStringFromBundle("harvestclients.newClientDialog.url.required")));
         return false;
     }
     

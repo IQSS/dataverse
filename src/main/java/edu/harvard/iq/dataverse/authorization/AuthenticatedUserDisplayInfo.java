@@ -9,9 +9,9 @@ import org.hibernate.validator.constraints.NotBlank;
  */
 public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
 
-    @NotBlank(message = "Please enter your last name.")
+    @NotBlank(message = "{user.lastName}")
     private String lastName;
-    @NotBlank(message = "Please enter your first name.")
+    @NotBlank(message = "{user.firstName}")
     private String firstName;
     private String position;
     

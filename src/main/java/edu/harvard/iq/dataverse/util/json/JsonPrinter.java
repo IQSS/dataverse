@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileTag;
@@ -10,6 +9,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -39,20 +40,11 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
-import java.util.ArrayList;
-import java.util.Set;
+
+import java.util.*;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import java.util.Date;
-import java.util.List;
-import java.util.TreeSet;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.EnumSet;
-import java.util.LinkedList;
-import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -73,14 +65,15 @@ public class JsonPrinter {
 
     private static final Logger logger = Logger.getLogger(JsonPrinter.class.getCanonicalName());
 
-    static SettingsServiceBean settingsService;
+    static SettingsServiceBean settingsService = null;
 
-    public JsonPrinter(SettingsServiceBean settingsService) {
-        this.settingsService = settingsService;
+    // Passed to DatasetFieldWalker so it can check the :ExcludeEmailFromExport setting
+    public static void setSettingsService(SettingsServiceBean ssb) {
+            settingsService = ssb;
     }
 
     public JsonPrinter() {
-        this(null);
+   
     }
 
     public static final BriefJsonPrinter brief = new BriefJsonPrinter();
@@ -121,21 +114,30 @@ public class JsonPrinter {
                 .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
     
-    public static JsonObjectBuilder json( RoleAssignment ra ) {
-		return jsonObjectBuilder()
-				.add("id", ra.getId())
-				.add("assignee", ra.getAssigneeIdentifier() )
-				.add("roleId", ra.getRole().getId() )
-				.add("_roleAlias", ra.getRole().getAlias())
-				.add("privateUrlToken", ra.getPrivateUrlToken())
-				.add("definitionPointId", ra.getDefinitionPoint().getId() );
-	}
-	
-	public static JsonArrayBuilder json( Set<Permission> permissions ) {
-		JsonArrayBuilder bld = Json.createArrayBuilder();
-        permissions.forEach(p ->bld.add(p.name()));
-		return bld;
-	}
+    public static JsonObjectBuilder json(RoleAssignment ra) {
+        return jsonObjectBuilder()
+                .add("id", ra.getId())
+                .add("assignee", ra.getAssigneeIdentifier())
+                .add("roleId", ra.getRole().getId())
+                .add("_roleAlias", ra.getRole().getAlias())
+                .add("privateUrlToken", ra.getPrivateUrlToken())
+                .add("definitionPointId", ra.getDefinitionPoint().getId());
+    }
+
+    public static JsonArrayBuilder json(Set<Permission> permissions) {
+        JsonArrayBuilder bld = Json.createArrayBuilder();
+        permissions.forEach(p -> bld.add(p.name()));
+        return bld;
+    }
+
+    public static JsonObjectBuilder json(DatasetLock lock) {
+        return jsonObjectBuilder()
+                .add("lockType", lock.getReason().toString())
+                .add("date", lock.getStartTime().toString())
+                .add("user", lock.getUser().getUserIdentifier())
+                .add("message", lock.getInfo());
+
+    }
     
     public static JsonObjectBuilder json( RoleAssigneeDisplayInfo d ) {
         return jsonObjectBuilder()
@@ -218,7 +220,8 @@ public class JsonPrinter {
             for ( WorkflowStepData stp : wf.getSteps() ) {
                 arr.add( jsonObjectBuilder().add("stepType", stp.getStepType())
                                    .add("provider", stp.getProviderId())
-                                   .add("parameters", mapToObject(stp.getStepParameters())) );
+                                   .add("parameters", mapToObject(stp.getStepParameters()))
+                                   .add("requiredSettings", mapToObject(stp.getStepSettings())) );
             }
             bld.add("steps", arr );
         }
@@ -280,12 +283,7 @@ public class JsonPrinter {
                 ? null
                 : jsonObjectBuilder()
                 .add("id", user.getId())
-                .add("firstName", user.getFirstName())
-                .add("lastName", user.getLastName())
-                .add("userName", user.getUserName())
-                .add("affiliation", user.getAffiliation())
-                .add("position", user.getPosition())
-                .add("email", user.getEmail());
+                .add("userName", user.getUserName());
     }
 
     public static JsonObjectBuilder json(Dataset ds) {
@@ -296,12 +294,14 @@ public class JsonPrinter {
                 .add("protocol", ds.getProtocol())
                 .add("authority", ds.getAuthority())
                 .add("publisher", getRootDataverseNameforCitation(ds))
-                .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD());
+                .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
+                .add("storageIdentifier", ds.getStorageIdentifier());
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId())
+                .add("storageIdentifier", dsv.getDataset().getStorageIdentifier())
                 .add("versionNumber", dsv.getVersionNumber())
                 .add("versionMinorNumber", dsv.getMinorVersionNumber())
                 .add("versionState", dsv.getVersionState().name())
@@ -558,9 +558,16 @@ public class JsonPrinter {
             fileName = df.getFileMetadata().getLabel();
         }
         
+        String pidURL = "";
+        
+        if (new GlobalId(df).toURL() != null){
+            pidURL = new GlobalId(df).toURL().toString();
+        }
         
         return jsonObjectBuilder()
                 .add("id", df.getId())
+                .add("persistentId", df.getGlobalIdString())
+                .add("pidURL", pidURL)
                 .add("filename", fileName)
                 .add("contentType", df.getContentType())            
                 .add("filesize", df.getFilesize())            
@@ -570,6 +577,7 @@ public class JsonPrinter {
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
+                .add ("originalFileSize", df.getOriginalFileSize())
                 .add("UNF", df.getUnf())
                 //---------------------------------------------
                 // For file replace: rootDataFileId, previousDataFileId
@@ -579,7 +587,7 @@ public class JsonPrinter {
                 //---------------------------------------------
                 // Checksum
                 // * @todo Should we deprecate "md5" now that it's under
-                // * "checksum" (which may also be a SHA-1 rather than an MD5)?
+                // * "checksum" (which may also be a SHA-1 rather than an MD5)? - YES!
                 //---------------------------------------------
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
@@ -606,7 +614,7 @@ public class JsonPrinter {
         return fileCategories;
     }
 
-    private static JsonArrayBuilder getTabularFileTags(DataFile df) {
+    public static JsonArrayBuilder getTabularFileTags(DataFile df) {
         if (df == null) {
             return null;
         }

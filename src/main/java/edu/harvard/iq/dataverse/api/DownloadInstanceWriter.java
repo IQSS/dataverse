@@ -33,7 +33,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.RedirectionException;
 
 /**
@@ -70,7 +72,13 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             StorageIO<DataFile> storageIO = DataAccess.getStorageIO(dataFile, daReq);
                         
             if (storageIO != null) {
-                storageIO.open();
+                try {
+                    storageIO.open();
+                } catch (IOException ioex) {
+                    //throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+                    logger.log(Level.INFO, "Datafile {0}: Failed to locate and/or open physical file. Error message: {1}", new Object[]{dataFile.getId(), ioex.getLocalizedMessage()});
+                    throw new NotFoundException("Datafile "+dataFile.getId()+": Failed to locate and/or open physical file.");
+                }
                 
                 if (di.getConversionParam() != null) {
                     // Image Thumbnail and Tabular data conversion: 
@@ -211,9 +219,24 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     }
                 } else {
                     if (storageIO instanceof S3AccessIO && !(dataFile.isTabularData()) && isRedirectToS3()) {
+                        // definitely close the (still open) S3 input stream, 
+                        // since we are not going to use it. The S3 documentation
+                        // emphasizes that it is very important not to leave these
+                        // lying around un-closed, since they are going to fill 
+                        // up the S3 connection pool!
+                        try {storageIO.getInputStream().close();} catch (IOException ioex) {}
                         // [attempt to] redirect: 
-                        String redirect_url_str = ((S3AccessIO)storageIO).generateTemporaryS3Url();
-                        // better exception handling here? 
+                        String redirect_url_str; 
+                        try {
+                            redirect_url_str = ((S3AccessIO)storageIO).generateTemporaryS3Url();
+                        } catch (IOException ioex) {
+                            redirect_url_str = null; 
+                        }
+                        
+                        if (redirect_url_str == null) {
+                            throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+                        }
+                        
                         logger.info("Data Access API: direct S3 url: "+redirect_url_str);
                         URI redirect_uri; 
 
@@ -224,13 +247,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             redirect_uri = null; 
                         }
                         if (redirect_uri != null) {
-                            // definitely close the (still open) S3 input stream, 
-                            // since we are not going to use it. The S3 documentation
-                            // emphasizes that it is very important not to leave these
-                            // lying around un-closed, since they are going to fill 
-                            // up the S3 connection pool!
-                            storageIO.getInputStream().close();
-                            
                             // increment the download count, if necessary:
                             if (di.getGbr() != null) {
                                 try {
@@ -246,6 +262,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             logger.info("Issuing redirect to the file location on S3.");
                             throw new RedirectionException(response);
                         }
+                        throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
                     }
                 }
                 

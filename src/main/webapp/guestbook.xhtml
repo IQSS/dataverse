@@ -6,7 +6,6 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-
     <h:head>
     </h:head>
 
@@ -22,6 +21,7 @@
                     <f:viewParam name="ownerId" value="#{GuestbookPage.ownerId}"/>
                     <f:viewParam name="sourceId" value="#{GuestbookPage.sourceId}"/>
                     <f:viewParam name="editMode" value="#{GuestbookPage.editMode}"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{GuestbookPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(GuestbookPage.dataverse, (GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : GuestbookPage.guestbook.name))}"/>
                 </f:metadata>

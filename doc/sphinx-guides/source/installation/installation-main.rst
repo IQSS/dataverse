@@ -22,10 +22,13 @@ You should have already downloaded the installer from https://github.com/IQSS/da
 
 Unpack the zip file - this will create the directory ``dvinstall``.
 
+**Important:** The installer will need to use the PostgreSQL command line utility ``psql`` in order to configure the database. If the executable is not in your system PATH, the installer will try to locate it on your system. However, we strongly recommend that you check and make sure it is in the PATH. This is especially important if you have multiple versions of PostgreSQL installed on your system. Make sure the psql that came with the version that you want to use with your Dataverse is the first on your path. For example, if the PostgreSQL distribution you are running is installed in  /Library/PostgreSQL/9.6, add /Library/PostgreSQL/9.6/bin to the beginning of your $PATH variable. If you are *running* multiple PostgreSQL servers, make sure you know the port number of the one you want to use, as the installer will need it in order to connect to the database (the first PostgreSQL distribution installed on your system is likely using the default port 5432; but the second will likely be on 5433, etc.) Does every word in this paragraph make sense? If it does, great - because you definitely need to be comfortable with basic system tasks in order to install Dataverse. If not - if you don't know how to check where your PostgreSQL is installed, or what port it is running on, or what a $PATH is... it's not too late to stop. Because it will most likely not work. And if you contact us for help, these will be the questions we'll be asking you - so, again, you need to be able to answer them comfortably for it to work. 
+
 Execute the installer script like this (but first read the note below about not running the installer as root)::
 
         $ cd dvinstall
         $ ./install
+
 
 **It is no longer necessary to run the installer as root!**
 
@@ -66,7 +69,29 @@ This allows the installer to be run in non-interactive mode (with ``./install -y
 
 All the Glassfish configuration tasks performed by the installer are isolated in the shell script ``dvinstall/glassfish-setup.sh`` (as ``asadmin`` commands). 
 
+**IMPORTANT:** As a security measure, the ``glassfish-setup.sh`` script stores passwords as "aliases" rather than plaintext. If you change your database password, for example, you will need to update the alias with ``asadmin update-password-alias db_password_alias``, for example. Here is a list of the password aliases that are set by the installation process and entered into Glassfish's ``domain.xml`` file:
+
+- ``db_password_alias``
+- ``doi_password_alias``
+- ``rserve_password_alias``
+
+Glassfish does not provide up to date documentation but Payara (a fork of Glassfish) does so for more information, please see https://docs.payara.fish/documentation/payara-server/password-aliases/password-alias-asadmin-commands.html
+
+**IMPORTANT:** The installer will also ask for an external site URL for Dataverse. It is *imperative* that this value be supplied accurately, or a long list of functions will be inoperable, including:
+
+- email confirmation links
+- password reset links
+- generating a Private URL
+- exporting to Schema.org format (and showing JSON-LD in HTML's <meta/> tag)
+- exporting to DDI format
+- which Dataverse installation an "external tool" should return to
+- which Dataverse installation Geoconnect should return to
+
 **IMPORTANT:** Please note, that "out of the box" the installer will configure the Dataverse to leave unrestricted access to the administration APIs from (and only from) localhost. Please consider the security implications of this arrangement (anyone with shell access to the server can potentially mess with your Dataverse). An alternative solution would be to block open access to these sensitive API endpoints completely; and to only allow requests supplying a pre-defined "unblock token" (password). If you prefer that as a solution, please consult the supplied script ``post-install-api-block.sh`` for examples on how to set it up. See also "Securing Your Installation" under the :doc:`config` section.
+
+Dataverse uses JHOVE_ to help identify the file format (CSV, PNG, etc.) for files that users have uploaded. The installer places files called ``jhove.conf`` and ``jhoveConfig.xsd`` into the directory ``/usr/local/glassfish4/glassfish/domains/domain1/config`` by default and makes adjustments to the jhove.conf file based on the directory into which you chose to install Glassfish.
+
+.. _JHOVE: http://jhove.openpreservation.org
 
 The script is to a large degree a derivative of the old installer from DVN 3.x. It is written in Perl. If someone in the community is eager to rewrite it, perhaps in a different language, please get in touch. :)
 
@@ -109,7 +134,7 @@ Problems Sending Email
 
 If your Dataverse installation is not sending system emails, you may need to provide authentication for your mail host. First, double check the SMTP server being used with this Glassfish asadmin command:
 
-``asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
+``./asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
 
 This should return the DNS of the mail host you configured during or after installation. mail/notifyMailSession is the JavaMail Session that's used to send emails to users. 
 
@@ -159,8 +184,8 @@ mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
 
 The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. See the below example:
 
-- Delete: ``asadmin delete-javamail-resource mail/MyMailSession``
-- Create (remove brackets and replace the variables inside): ``asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
+- Delete: ``./asadmin delete-javamail-resource mail/notifyMailSession``
+- Create (remove brackets and replace the variables inside): ``./asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
 
 Be sure you save the changes made here and then restart your Glassfish server to test it out.
 
@@ -179,15 +204,15 @@ Drop database
 
 In order to drop the database, you have to stop Glassfish, which will have open connections. Before you stop Glassfish, you may as well undeploy the war file. First, find the name like this:
 
-``asadmin list-applications``
+``./asadmin list-applications``
 
 Then undeploy it like this:
 
-``asadmin undeploy dataverse-VERSION``
+``./asadmin undeploy dataverse-VERSION``
 
 Stop Glassfish with the init script provided in the :doc:`prerequisites` section or just use:
 
-``asadmin stop-domain``
+``./asadmin stop-domain``
 
 With Glassfish down, you should now be able to drop your database and recreate it:
 
@@ -198,7 +223,7 @@ Clear Solr
 
 The database is fresh and new but Solr has stale data it in. Clear it out with this command:
 
-``curl http://localhost:8983/solr/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"``
+``curl http://localhost:8983/solr/collection1/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"``
 
 
 Deleting Uploaded Files
