@@ -20,9 +20,9 @@
                         <ui:fragment rendered="#{block.index == '0' and datasetPage}">
                             <div class="form-group">
                                 <label for="metadata_persistentId" class="col-sm-3 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.persistentId.tip']}">
-                                        #{bundle['dataset.metadata.persistentId']}
-                                    </span>
+                                    #{bundle['dataset.metadata.persistentId']}
+                                    <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.persistentId.tip']}"></span>
                                 </label>
                                 <div class="col-sm-9">
                                     #{globalId}
@@ -31,9 +31,9 @@
                             <ui:fragment rendered="#{!empty altPID}">
                             <div class="form-group">
                                 <label for="metadata_persistentId" class="col-sm-3 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.alternativePersistentId.tip']}">
-                                        #{bundle['dataset.metadata.alternativePersistentId']}
-                                    </span>
+                                    #{bundle['dataset.metadata.alternativePersistentId']}
+                                    <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.alternativePersistentId.tip']}"></span>
                                 </label>
                                 <div class="col-sm-9">
                                     #{altPID}
@@ -42,9 +42,9 @@
                             </ui:fragment>
                             <div class="form-group" jsf:rendered="#{!empty publicationDate}">
                                 <label for="metadata_publicationDate" class="col-sm-3 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.publicationDate.tip']}">
-                                        #{bundle['dataset.metadata.publicationDate']}
-                                    </span>
+                                    #{bundle['dataset.metadata.publicationDate']}
+                                    <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.publicationDate.tip']}"></span>
                                 </label>
                                 <div class="col-sm-9">
                                     #{publicationDate}
@@ -54,9 +54,9 @@
                         <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
                             <div class="form-group">
                                 <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.localeDescription}">
-                                        #{dsf.datasetFieldType.localeTitle}
-                                    </span>
+                                    #{dsf.datasetFieldType.localeTitle}
+                                    <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                 </label>
                                 <!-- Primitive datasetFields -->
                                 <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.primitive}">   
@@ -111,10 +111,10 @@
                                                          or (!datasetPage and dsf.include)}">
                                     <div class="form-group">
                                         <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.localeDescription}">
-                                                #{dsf.datasetFieldType.localeTitle}
-                                            </span>
+                                            #{dsf.datasetFieldType.localeTitle}
                                             <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required  or dsf.datasetFieldType.hasRequiredChildren }" />
+                                            <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                         </label>
                                         <!-- Primitive fields -->
                                         <p:fragment id="editPrimitiveValueFragment" rendered="#{dsf.datasetFieldType.primitive}">
@@ -193,8 +193,10 @@
                                                                     </p>
                                                                 </ui:fragment>
                                                                 <label class="control-label" for="metadata_#{subdsf.datasetFieldType.name}">
-                                                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{subdsf.datasetFieldType.localeDescription}">#{subdsf.datasetFieldType.localeTitle}</span>
+                                                                    #{subdsf.datasetFieldType.localeTitle}
                                                                     <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.required}" />
+                                                                    <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{subdsf.datasetFieldType.localeDescription}"></span>
                                                                 </label>
                                                                 <ui:fragment rendered="#{!subdsf.datasetFieldType.controlledVocabulary}">
                                                                     <ui:include src="datasetFieldForEditFragment.xhtml">
