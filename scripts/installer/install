@@ -47,7 +47,6 @@ my $jq_exec_path = "";
 my $psql_exec_path = "";
 my $cwd;
 my $WARFILE_LOCATION = "dataverse.war"; 
-my $REFERENCE_DATA_SQL = "../database/reference_data.sql";
 
 
 my @CONFIG_VARIABLES;
@@ -381,22 +380,7 @@ unless ($postgresonly)
 # 1b. check and remember the working dir:
     chomp( $cwd = `pwd` );
 
-# 1c. check if the reference data SQL file is there:
-
-    $REFERENCE_DATA_SQL = "../database/reference_data.sql";
-
-    unless ( -f $REFERENCE_DATA_SQL ) {
-	# if it's not in ../database, then we're probably running out of the 
-	# unzipped installer bundle, so it should be right here in the current directory:
-	$REFERENCE_DATA_SQL = "reference_data.sql";
-    }
-
-    unless ( -f $REFERENCE_DATA_SQL ) {
-	print "\nWARNING: Can't find .sql data template!\n";
-	print "(are you running the installer in the right directory?)\n";
-	
-	exit 0;
-    }
+# 1c. check if the reference data SQL file is there: [Responsibility of populating database with reference data was moved to flyway]
 
 # 1d. jq executable: 
 
@@ -605,13 +589,7 @@ my $glassfish_dir = $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'};
 
 my $done = &setup_glassfish();
 
-# 7. POPULATE THE DATABASE WITH REFERENCE DATA
-# TODO: move this further down
-# (in this step some pre-supplied content is inserted into the database that we have just created;
-# it is not *necessary* for the application to run in the very basic mode; but some features - certain 
-# types of metadata imports, for example - will be unavailable if it's not done. 
-
-&import_reference_data();
+# 7. POPULATE THE DATABASE WITH REFERENCE DATA [Responsibility of populating database with reference data was moved to flyway]
 
 
 # Check if the App is running: 
@@ -645,54 +623,8 @@ print "\nOK, the Dataverse application appears to be running...\n\n";
 
 # Run the additional setup scripts, that populate the metadata block field values, create users
 # and dataverses, etc.
+# [Responsibility of default setup moved to application properties and flyway]
 
-unless ( -d "data" && -f "setup-datasetfields.sh" && -f "setup-users.sh" && -f "setup-dvs.sh" && -f "setup-all.sh" ) {
-    chdir("../api");
-}
-
-unless ( -d "data" && -f "setup-datasetfields.sh" && -f "setup-users.sh" && -f "setup-dvs.sh" && -f "setup-builtin-roles.sh" && -f "setup-all.sh" ) {
-    print "\nERROR: Can't find the metadata and user/dataverse setup scripts!\n";
-    print "\tAre you running the installer in the right directory?\n";
-    exit 1;
-}
-
-# if there's an admin_email set from arguments, replace the value in `dv-root.json` (called by `setup-all.sh`)
-if ($admin_email)
-{
-	print "setting contact email for root dataverse to: $admin_email\n";
-	set_root_contact_email( $admin_email );
-}
-else
-{
-	print "using default contact email for root dataverse\n";
-}
-
-for my $script ( "setup-all.sh" ) {
-    # (there's only 1 setup script to run now - it runs all the other required scripts)
-    print "Executing post-deployment setup script " . $script . "... ";
-
-    my $my_hostname = $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'};
-
-    # We used to filter the supplied scripts, replacing "localhost" and the port, in 
-    # case they are running Dataverse on a different port... Now we are simply requiring
-    # that the port 8080 is still configured in domain.xml when they are running the 
-    # installer:
-    my $run_script;
-    #if ( $my_hostname ne "localhost" ) {
-    #    system( "sed 's/localhost:8080/$my_hostname/g' < " . $script . " > tmpscript.sh; chmod +x tmpscript.sh" );
-    #    $run_script = "tmpscript.sh";
-    #}
-    #else {
-    $run_script = $script;
-    #}
-
-    unless ( my $exit_code = system( "./" . $run_script . " > $run_script.$$.log 2>&1") == 0 ) 
-    {
-        print "\nERROR executing script " . $script . "!\n";
-        exit 1;
-    }
-    print "done!\n";
-}
 
 # SOME ADDITIONAL SETTINGS THAT ARE NOT TAKEN CARE OF BY THE setup-all SCRIPT 
 # NEED TO BE CONFIGURED HERE:
@@ -700,35 +632,11 @@ for my $script ( "setup-all.sh" ) {
 print "Making additional configuration changes...\n\n";
 
 
-# a. Configure the Admin email in the Dataverse settings:
+# a. Configure the Admin email in the Dataverse settings: (Responsibility moved to application properties - see dataverse.default.properties)
 
-print "Executing " . "curl -X PUT -d " . $CONFIG_DEFAULTS{'ADMIN_EMAIL'} . " " . $API_URL . "/admin/settings/:SystemEmail" . "\n";
-
-my $exit_code = system("curl -X PUT -d " . $CONFIG_DEFAULTS{'ADMIN_EMAIL'} . " " . $API_URL . "/admin/settings/:SystemEmail"); 
-if ( $exit_code )       
-{
-    print "WARNING: failed to configure the admin email in the Dataverse settings!\n\n";
-} 
-else 
-{
-    print "OK.\n\n";
-}
     
 # b. If this installation is going to be using a remote SOLR search engine service, configure its location in the settings:
-
-if ($CONFIG_DEFAULTS{'SOLR_LOCATION'} ne 'LOCAL')
-{
-    print "Executing " . "curl -X PUT -d " . $CONFIG_DEFAULTS{'SOLR_LOCATION'} . " " . $API_URL . "/admin/settings/:SolrHostColonPort" . "\n";
-    my $exit_code = system("curl -X PUT -d " . $CONFIG_DEFAULTS{'SOLR_LOCATION'} . " " . $API_URL . "/admin/settings/:SolrHostColonPort"); 
-    if ( $exit_code )       
-    {
-	print "WARNING: failed to configure the location of the remote SOLR service!\n\n";
-    }
-    else 
-    {
-	print "OK.\n\n";
-    }
-}
+# (Responsibility moved to application properties - see dataverse.default.properties)
 
 
 
@@ -1551,46 +1459,3 @@ sub setup_postgres {
 	exit 1; 
     }
 }
-
-sub import_reference_data {
-    print "\npopulating the database with reference data:\n\n";
-
-    # (we have already verified that the referenceData.sql file exists)
-
-    my $psql_command = $psql_exec_path . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'}
-        . " -p " . $CONFIG_DEFAULTS{'POSTGRES_PORT'}
-        . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'}
-        . " -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " -f " . $REFERENCE_DATA_SQL;
-
-    print "EXECUTING PSQL COMMAND: $psql_command\n";
-    unless ( ( my $exitcode = system("$psql_command") ) == 0 )
-    {
-        print "WARNING: Could not pre-populate Postgres database for the Dataverse application!\n";
-        print "(command: " . $psql_command . ")\n";
-        print "(psql exit code: " . $exitcode . ")\n";
-        print "\nYou must populate the database in order for all the features of your \n";
-        print "new Dataverse to be available. \n";
-        print "\n";
-        print "You can try this again, by executing the following on the command line:\n";
-        print "   psql -U $CONFIG_DEFAULTS{'POSTGRES_USER'} -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $REFERENCE_DATA_SQL\n";
-        print "then re-start glassfish  \n\n";
-        print "\n";
-        print "If it's still failing, please consult the installation manual and/or\n";
-        print "seek support from the Dataverse team.\n\n";
-        
-        print "Press any key to continue... ";
-        
-	unless ($noninteractive) 
-	{
-	    system "stty cbreak </dev/tty >/dev/tty 2>&1";
-	    my $key = getc(STDIN);
-	    system "stty -cbreak </dev/tty >/dev/tty 2>&1";
-	    print "\n";
-	}
-    }
-    else
-    {
-        print "\nOK, done!\n";
-    }
-}
-

@@ -4,19 +4,28 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 import edu.harvard.iq.dataverse.util.StringUtil;
+
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 /**
- * Service bean accessing a persistent hash map, used as settings in the application.
+ * Service bean accessing and manipulating application settings.
+ * Settings are resolved from database and property files (db ones takes precedence).
+ * 
  * @author michael
+ * 
+ * @see FileBasedSettingsFetcher
  */
 @Stateless
 @Named
@@ -405,10 +414,13 @@ public class SettingsServiceBean {
     }
     
     @PersistenceContext
-    EntityManager em;
+    private EntityManager em;
     
     @EJB
-    ActionLogServiceBean actionLogSvc;
+    private ActionLogServiceBean actionLogSvc;
+    
+    @EJB
+    private FileBasedSettingsFetcher fileBasedSettingsFetcher;
     
     /**
      * Basic functionality - get the name, return the setting, or {@code null}.
@@ -417,7 +429,7 @@ public class SettingsServiceBean {
      */
     public String get( String name ) {
         Setting s = em.find( Setting.class, name );
-        return (s!=null) ? s.getContent() : null;
+        return (s!=null) ? s.getContent() : fileBasedSettingsFetcher.getSetting(name);
     }
     
     /**
@@ -519,8 +531,16 @@ public class SettingsServiceBean {
                 .executeUpdate();
     }
     
-    public Set<Setting> listAll() {
-        return new HashSet<>(em.createNamedQuery("Setting.findAll", Setting.class).getResultList());
+    public Map<String, String> listAll() {
+    	Map<String, String> mergedSettings = new HashMap<>();
+    	
+    	Map<String, String> fileSettings = fileBasedSettingsFetcher.getAllSettings();
+    	mergedSettings.putAll(fileSettings);
+    	
+    	List<Setting> dbSettings = em.createNamedQuery("Setting.findAll", Setting.class).getResultList();
+    	dbSettings.forEach(s -> mergedSettings.put(s.getName(), s.getContent()));
+    	
+    	return mergedSettings;
     }
     
     

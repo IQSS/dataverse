@@ -110,10 +110,7 @@ public class SettingsWrapper implements java.io.Serializable {
 
     private void initSettingsMap() {
         // initialize settings map
-        settingsMap = new HashMap<>();
-        for (Setting setting : settingService.listAll()) {
-            settingsMap.put(setting.getName(), setting.getContent());
-        }
+        settingsMap = settingService.listAll();
     }
 
     

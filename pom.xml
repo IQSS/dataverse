@@ -626,6 +626,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
+                    <include>**/*.properties</include>
                     <include>**/*.sql</include>
                     <include>**/*.xml</include>
                 </includes>
