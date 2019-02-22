@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -75,6 +76,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -310,7 +312,45 @@ public class Admin extends AbstractApiBean {
 		}
 		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
 	}
+        
+        @PUT
+        @Path("authenticatedUsers/mergeIntoUser/{identifier}")
+        public Response mergeInAuthenticatedUser(@PathParam("identifier") String baseIdentifier, String consumedIdentifier) {
 
+            //MAD: Some of the objects we get here may not be needed?
+            //MAD: Should probably confirm the baseIdentifier is real before doing command...
+            
+            if(null == baseIdentifier || baseIdentifier.isEmpty()) {
+                return error(Response.Status.BAD_REQUEST, "Base identifier provided to change is empty.");
+            } else if(null == consumedIdentifier || consumedIdentifier.isEmpty()) {
+                return error(Response.Status.BAD_REQUEST, "Identifier to merge in is empty.");
+            }
+
+            AuthenticatedUser consumedAuthenticatedUser = authSvc.getAuthenticatedUser(consumedIdentifier);
+            if (consumedAuthenticatedUser == null) {
+                return error(Response.Status.BAD_REQUEST, "User " + consumedIdentifier + " not found in AuthenticatedUser");
+            }
+
+            BuiltinUser consumedBuiltinUser = builtinUserService.findByUserName(consumedAuthenticatedUser.getUserIdentifier());
+            if (consumedBuiltinUser == null) {
+                return error(Response.Status.BAD_REQUEST, "User " + consumedIdentifier + " not found in BuiltinUser");
+            }
+
+            List<RoleAssignment> baseRAList = roleAssigneeSvc.getAssignmentsFor("@" + baseIdentifier); //only AuthenticatedUser supported
+            List<RoleAssignment> consumedRAList = roleAssigneeSvc.getAssignmentsFor("@" + consumedIdentifier); //only AuthenticatedUser supported
+            
+            try {
+                execCommand(new MergeInAccountCommand(createDataverseRequest(consumedAuthenticatedUser), baseIdentifier, consumedIdentifier, consumedAuthenticatedUser, consumedBuiltinUser, baseRAList, consumedRAList));
+            } catch (Exception e){
+                return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
+            }
+
+            //return ok("UserIdentifier changed from " + oldIdentifier + " to " + newIdentifier);
+
+            return ok("DEFAULT");
+        }
+        
+        
 	@POST
 	@Path("publishDataverseAsCreator/{id}")
 	public Response publishDataverseAsCreator(@PathParam("id") long id) {
