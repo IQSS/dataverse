@@ -320,9 +320,6 @@ public class Admin extends AbstractApiBean {
             if(null == oldIdentifier || oldIdentifier.isEmpty()) {
                 return error(Response.Status.BAD_REQUEST, "Old identifier provided to change is empty.");
             } else if(null == newIdentifier || newIdentifier.isEmpty()) {
-                //TODO: This does not check that the identifier is valid
-                //Instead if relies on the ejb constraints, which would be fine but our command engine
-                //turns those errors into a lot of mess.
                 return error(Response.Status.BAD_REQUEST, "New identifier provided to change is empty.");
             }
             
