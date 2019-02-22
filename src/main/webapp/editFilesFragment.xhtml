@@ -547,9 +547,9 @@
         <div class="form-horizontal">
             <div class="form-group">
                 <label for="metadata_TermsAccess" class="col-sm-3 control-label">
-                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
-                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                    </span>
+                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                    <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                          data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                 </label>
                 <ui:fragment rendered="#{!datasetPage}">
                 <div class="col-sm-9" jsf:rendered="#{!empty version.termsOfUseAndAccess}">
@@ -564,9 +564,9 @@
             </div>
             <div class="form-group">
                 <label for="metadata_RequestAccess" class="col-sm-3 control-label">
-                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
-                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
-                    </span>
+                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                    <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                          data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
                 </label>
                 <ui:fragment rendered="#{!datasetPage}">
                 <div class="col-sm-9" jsf:rendered="#{!empty version.termsOfUseAndAccess}">
