@@ -13,9 +13,9 @@
                     <div class="row form-horizontal">
                         <div class="form-group" jsf:rendered="#{themeWidgetFragment.editDv.owner!=null}">
                             <label class="col-sm-3 control-label" for="inheritCustomization">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.inheritCustomization.title']}">
-                                    #{bundle['dataverse.theme.inheritCustomization.label']}
-                                </span>
+                                #{bundle['dataverse.theme.inheritCustomization.label']}
+                                <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.inheritCustomization.title']}"></span>
                             </label>
                             <div class="col-sm-9">
                                 <div class="checkbox">
@@ -34,9 +34,9 @@
                         </div>
                         <div class="form-group" jsf:rendered="#{themeWidgetFragment.editDv.themeRoot}">
                             <label class="col-sm-3 control-label" for="logoFormat">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.logo.image.title']}">
-                                    #{bundle['dataverse.theme.logo.image']}
-                                </span>
+                                #{bundle['dataverse.theme.logo.image']}
+                                <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.logo.image.title']}"></span>
                             </label>
                             <div class="col-sm-9">
                                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.theme.logo.tip']}</p>
@@ -58,9 +58,9 @@
                                 <ui:fragment rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logo}">
                                     <div class="form-col-container col-sm-4">
                                         <label for="logoFormat" class="control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.logo.format.title']}">
-                                                #{bundle['dataverse.theme.logo.format']}
-                                            </span>
+                                            #{bundle['dataverse.theme.logo.format']}
+                                            <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.logo.format.title']}"></span>
                                         </label>
                                         <div>
                                             <p:selectOneRadio id="logoFormat" value="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat}">
@@ -74,9 +74,9 @@
                                     <ui:fragment rendered="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat=='RECTANGLE'}">
                                         <div class="form-col-container col-sm-3">
                                             <label for="logoAlignment" class="control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.logo.alignment.title']}">
-                                                    #{bundle['dataverse.theme.logo.alignment']}
-                                                </span>
+                                                #{bundle['dataverse.theme.logo.alignment']}
+                                                <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.logo.alignment.title']}"></span>
                                             </label>
                                             <div>
                                                 <p:selectOneMenu id="logoAlignment" styleClass="form-control" value="#{themeWidgetFragment.editDv.dataverseTheme.logoAlignment}">
@@ -89,9 +89,9 @@
                                         </div>
                                         <div class="form-col-container col-sm-4">
                                             <label for="logoBackgroundColor" class="control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.logo.backColor.title']}">
-                                                    #{bundle['dataverse.theme.logo.backColor']}
-                                                </span>
+                                                #{bundle['dataverse.theme.logo.backColor']}
+                                                <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.logo.backColor.title']}"></span>
                                             </label>
                                             <div>
                                                 <p:colorPicker id="logoBackgroundColor" value="#{themeWidgetFragment.editDv.dataverseTheme.logoBackgroundColor}"/>
@@ -107,16 +107,16 @@
                         <div class="row form-horizontal">
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.headerColor.tip']}">
-                                        #{bundle['dataverse.theme.headerColor']}
-                                    </span>
+                                    #{bundle['dataverse.theme.headerColor']}
+                                    <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.headerColor.tip']}"></span>
                                 </label>
                                 <div class="form-group col-sm-9">
                                     <div class="form-col-container col-sm-4">
                                         <label for="backgroundColor" class="control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.backColor.title']}">
-                                                #{bundle['dataverse.theme.backColor']}
-                                            </span>
+                                            #{bundle['dataverse.theme.backColor']}
+                                            <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.backColor.title']}"></span>
                                         </label>
                                         <div>
                                             <p:colorPicker id="backgroundColor" value="#{themeWidgetFragment.editDv.dataverseTheme.backgroundColor}"/>
@@ -125,9 +125,9 @@
                                     </div>
                                     <div class="form-col-container col-sm-4">
                                         <label for="linkColor" class="control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.linkColor.title']}">
-                                                #{bundle['dataverse.theme.linkColor']}
-                                            </span>
+                                            #{bundle['dataverse.theme.linkColor']}
+                                            <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.linkColor.title']}"></span>
                                         </label>
                                         <div>
                                             <p:colorPicker id="linkColor" value="#{themeWidgetFragment.editDv.dataverseTheme.linkColor}"/>
@@ -136,9 +136,9 @@
                                     </div>
                                     <div class="form-col-container col-sm-4">
                                         <label for="textColor" class="control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.txtColor.title']}">
-                                                #{bundle['dataverse.theme.txtColor']}
-                                            </span>
+                                            #{bundle['dataverse.theme.txtColor']}
+                                            <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.txtColor.title']}"></span>
                                         </label>
                                         <div>
                                             <p:colorPicker id="textColor" value="#{themeWidgetFragment.editDv.dataverseTheme.textColor}"/>
@@ -149,9 +149,9 @@
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label" for="tagline">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.tagline.title']}">
-                                        #{bundle['dataverse.theme.tagline']}
-                                    </span>
+                                    #{bundle['dataverse.theme.tagline']}
+                                    <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.tagline.title']}"></span>
                                 </label>
                                 <h:inputHidden id="linkAndUrl" value="true">
                                     <f:validator validatorId="linkValidator"/>
@@ -166,9 +166,9 @@
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label" for="website">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.website.title']}">
-                                        #{bundle['dataverse.theme.website']}
-                                    </span>
+                                    #{bundle['dataverse.theme.website']}
+                                    <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.website.title']}"></span>
                                 </label>
                                 <div class="col-sm-6">
                                     <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.theme.website.tip']}</p>

@@ -203,9 +203,10 @@
                             <div class="form-horizontal">
                                 <div class="form-group">
                                     <label for="setquery" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setquery.tip']}">
-                                            #{bundle['harvestserver.newSetDialog.setquery']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{!harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
-                                        </span>
+                                        #{bundle['harvestserver.newSetDialog.setquery']} 
+                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{!harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
+                                        <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestserver.newSetDialog.setquery.tip']}"></span>
                                     </label>
                                     <div class="col-sm-8">
                                         <p:inputText id="setquery" styleClass="form-control"
@@ -232,9 +233,9 @@
                                 <!-- the set spec is not editable in "edit existing set" mode; so we just show it here as a label: -->
                                 <div class="form-group" jsf:rendered="#{harvestingSetsPage.editMode}">
                                     <label for="setspec" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setspec.tip']}">
-                                            #{bundle['harvestserver.newSetDialog.setspec']}
-                                        </span>
+                                        #{bundle['harvestserver.newSetDialog.setspec']}
+                                        <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestserver.newSetDialog.setspec.tip']}"></span>
                                     </label>
                                     <div class="col-sm-8">
                                         <p class="form-control-static" jsf:rendered="#{!harvestingSetsPage.selectedSet.defaultSet}"><h:outputText rendered="#{!harvestingSetsPage.selectedSet.defaultSet}" value="#{harvestingSetsPage.newSetSpec}"/></p>
@@ -267,9 +268,10 @@
                                     <!-- the set spec is only editable in "create" mode; in the "edit existing set" mode the set spec name is shown as a label in the first step popup. -->
                                     <div class="form-group" jsf:rendered="#{harvestingSetsPage.createMode}">
                                         <label for="setspec" class="col-sm-3 control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setspec.tip']}">
-                                                #{bundle['harvestserver.newSetDialog.setspec']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
-                                            </span>
+                                            #{bundle['harvestserver.newSetDialog.setspec']} 
+                                            <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setQueryValidated}" title="#{bundle.requiredField}"/>
+                                            <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestserver.newSetDialog.setspec.tip']}"></span>
                                         </label>
                                         <div class="col-sm-8">
                                             <p:inputText id="setspec" styleClass="form-control"
@@ -282,9 +284,10 @@
                                     
                                     <div class="form-group">
                                         <label for="setdescription" class="col-sm-3 control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['harvestserver.newSetDialog.setdescription.tip']}">
-                                                #{bundle['harvestserver.newSetDialog.setdescription']} <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setSpecValidated}" title="#{bundle.requiredField}"/>
-                                            </span>
+                                            #{bundle['harvestserver.newSetDialog.setdescription']} 
+                                            <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{harvestingSetsPage.setSpecValidated}" title="#{bundle.requiredField}"/>
+                                            <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestserver.newSetDialog.setdescription.tip']}"></span>
                                         </label>
                                         <div class="col-sm-8">
                                             <p:inputText id="setdescription" styleClass="form-control"

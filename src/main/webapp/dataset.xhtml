@@ -375,13 +375,17 @@
                                         
                                         <div id="keywords" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay and dsf.datasetFieldType.id==DatasetPage.datasetVersionUI.keyword.datasetFieldType.id}">
                                             <label class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.localeDescription}">#{bundle['dataset.keywordDisplay.title']}</span>
+                                                #{bundle['dataset.keywordDisplay.title']}
+                                                <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.localeDescription}"></span>
                                             </label>
                                             <div class="col-sm-9">#{DatasetPage.datasetVersionUI.keywordDisplay}</div>
                                         </div>
                                         <div id="publication" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationCitation and dsf.datasetFieldType.name=='publication'}">
                                             <label class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}">#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).title}</span>
+                                                #{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).title}
+                                                <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}"></span>
                                             </label>
                                             <div class="col-sm-9">
                                                 <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}" escape="false"/>
@@ -391,9 +395,9 @@
                                      
                                         <div class="form-group" jsf:rendered="#{dsf.datasetFieldType.name!='publication' and dsf.datasetFieldType.name!='keyword'  }">
                                             <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.localeDescription}">
-                                                        #{dsf.datasetFieldType.localeTitle}
-                                                </span>
+                                                #{dsf.datasetFieldType.localeTitle}
+                                                <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                             </label>
                                             <!-- Primitive datasetFields -->
                                             <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.primitive}">
@@ -436,9 +440,9 @@
                     <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                         <div class="form-group">
                             <label for="select_HostDataverse" class="col-sm-2 control-label">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.host.title']}">
-                                    #{bundle.hostDataverse}
-                                </span>
+                                #{bundle.hostDataverse}
+                                <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.host.title']}"></span>
                             </label>
                             <div class="col-sm-10">
                                 <h:outputText styleClass="highlightBold" value="#{DatasetPage.dataset.owner.name}"/>
@@ -452,9 +456,9 @@
                         </div>
                         <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataverseTemplates and DatasetPage.editMode == 'CREATE'}">
                             <label for="select_DatasetTemplate" class="col-sm-2 control-label">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate.title']}">
-                                    #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
-                                </span>
+                                #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
+                                <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate.title']}"></span>
                             </label>
                             <div class="col-sm-6">
                                 <p class="help-block">
@@ -1305,9 +1309,9 @@
                             <div class="form-horizontal">
                                 <div class="form-group">
                                     <label for="metadata_TermsAccess" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
-                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                                        </span>
+                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                                        <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                                     </label>
                                     <div class="col-sm-9">
                                         <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa" />
@@ -1315,9 +1319,9 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="metadata_RequestAccess" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
-                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
-                                        </span>
+                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                                        <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
                                     </label>
                                     <div class="col-sm-9">
                                         <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
