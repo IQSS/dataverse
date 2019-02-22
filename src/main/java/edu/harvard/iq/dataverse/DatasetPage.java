@@ -766,7 +766,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setRenderDeaccessionPopup(boolean renderDeaccessionPopup) {
         this.renderDeaccessionPopup = renderDeaccessionPopup;
     }
-
+    
     public void updateSelectedLinkingDV(ValueChangeEvent event) {
         linkingDataverseId = (Long) event.getNewValue();
     }
@@ -2290,21 +2290,16 @@ public class DatasetPage implements java.io.Serializable {
     }
     
         
-    public void saveLinkingDataverses() {
+    public void saveLinkingDataverses(ActionEvent evt) {
 
-        if (selectedDataverseForLinking == null) {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dataverse.link.select"));
-            FacesContext.getCurrentInstance().addMessage(null, message);
-            return;
-        }     
-
-        if(saveLink(selectedDataverseForLinking)){
+        if (saveLink(selectedDataverseForLinking)) {
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", getSuccessMessageArguments()));
-        } else{           
+        } else {
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), linkingDataverseErrorMessage);
             FacesContext.getCurrentInstance().addMessage(null, message);
         }
-    } 
+
+    }
     
     private String linkingDataverseErrorMessage = "";
 
@@ -4395,7 +4390,8 @@ public class DatasetPage implements java.io.Serializable {
                 return jsonLd;
             } else {
                 logger.fine("No cached schema.org JSON-LD available. Going to the database.");
-                return workingVersion.getJsonLd();
+                String jsonLdProduced = workingVersion.getJsonLd(); 
+                return  jsonLdProduced != null ? jsonLdProduced : "";
             }
         }
         return "";
