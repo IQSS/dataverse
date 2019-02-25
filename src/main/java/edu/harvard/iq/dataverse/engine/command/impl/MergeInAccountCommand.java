@@ -9,6 +9,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
@@ -84,14 +85,18 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
                         .executeUpdate();
         logger.log(Level.INFO, "Number of roles deleted : ({0})", resultCount);
         
+        //TODO: Change id or delete all the objects with foreign keys connected to the old identifier.
+        //Refer to the script in /scripts/migration/scrub_duplicate_emails.sql
+        //Those this may be doable via adding the objects to be altered in java and using cascade.
         
         //delete:
         //  builtin user
         //  authenticated user
         //  AuthenticatedUserLookup
-
-        //After this,we will do the sql to change all the foreign keys
-        
+        AuthenticatedUserLookup consumedAUL = consumedAU.getAuthenticatedUserLookup();
+        ctxt.em().remove(consumedAUL);//do we need this with cascade?
+        ctxt.em().remove(consumedAU);
+        ctxt.em().remove(consumedBU);      
     }
     
 }

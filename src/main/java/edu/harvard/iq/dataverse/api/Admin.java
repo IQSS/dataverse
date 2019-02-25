@@ -317,8 +317,7 @@ public class Admin extends AbstractApiBean {
         @Path("authenticatedUsers/mergeIntoUser/{identifier}")
         public Response mergeInAuthenticatedUser(@PathParam("identifier") String baseIdentifier, String consumedIdentifier) {
 
-            //MAD: Some of the objects we get here may not be needed?
-            //MAD: Should probably confirm the baseIdentifier is real before doing command...
+            //TODO: Confirm the baseIdentifier is real before doing command...
             
             if(null == baseIdentifier || baseIdentifier.isEmpty()) {
                 return error(Response.Status.BAD_REQUEST, "Base identifier provided to change is empty.");
@@ -345,9 +344,7 @@ public class Admin extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
             }
 
-            //return ok("UserIdentifier changed from " + oldIdentifier + " to " + newIdentifier);
-
-            return ok("DEFAULT");
+            return ok("CHANGEME");
         }
         
         
