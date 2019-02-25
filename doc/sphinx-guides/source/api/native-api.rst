@@ -1210,9 +1210,11 @@ POSTed JSON example::
 Change User Identifier
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The body of the PUT request is the new identifier for the user. Changes identifier for user in ``AuthenticatedUser``, ``BuiltinUser``, ``AuthenticatedUserLookup`` & ``RoleAssignment``.
+The body of the PUT request is the new identifier for the user. Changes identifier for user in ``AuthenticatedUser``, ``BuiltinUser``, ``AuthenticatedUserLookup`` & ``RoleAssignment``. ::
 
     PUT http://$SERVER/api/admin/authenticatedUsers/changeIdentifier/$identifier
+
+Example: ``curl -X PUT -d newUsername https://demo.dataverse.org/api/admin/authenticatedUsers/changeIdentifier/oldUsername``
 
 Make User a SuperUser
 ~~~~~~~~~~~~~~~~~~~~~
