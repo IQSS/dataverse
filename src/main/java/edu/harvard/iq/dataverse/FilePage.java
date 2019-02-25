@@ -188,12 +188,18 @@ public class FilePage implements java.io.Serializable {
            
            this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
            
-          //  this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
-
+            // Find external tools based on their type, the file content type, and whether
+            // ingest has created a derived file for that type
+            // Currently, tabular data files are the only type of derived file created, so
+            // isTabularData() works - true for tabular types where a .tab file has been
+            // created and false for other mimetypes
+            String contentType = file.getContentType();
+            //For tabular data, indicate successful ingest by returning a contentType for the derived .tab file
             if (file.isTabularData()) {
-                configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
-                exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
+                contentType=DataFileServiceBean.MIME_TYPE_TSV_ALT;
             }
+            configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE, contentType);
+            exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE, contentType);
 
         } else {
 
