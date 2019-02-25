@@ -1986,7 +1986,7 @@ public class UtilIT {
             optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
         }
         RequestSpecification requestSpecification = given();
-
+        System.out.print("/api/admin/makeDataCount/" + idInPath + "/addUsageMetricsFromSushiReport?reportOnDisk=" + reportOnDisk + optionalQueryParam);
         return requestSpecification.post("/api/admin/makeDataCount/" + idInPath + "/addUsageMetricsFromSushiReport?reportOnDisk=" + reportOnDisk + optionalQueryParam);
     }
 

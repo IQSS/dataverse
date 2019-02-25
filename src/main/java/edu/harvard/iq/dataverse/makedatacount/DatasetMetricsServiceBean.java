@@ -131,6 +131,9 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
             } else {
                 if (globalId != null){
                     ds = datasetService.findByGlobalId(globalId);
+                } 
+                if (ds == null){
+                    continue;
                 }
             }
             if (obj.containsKey("performance")) {
@@ -323,6 +326,9 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
     
     public DatasetMetrics save(DatasetMetrics datasetMetrics) {  
         //Replace existing if necessary
+        if(datasetMetrics.getDataset() == null){
+            return null;
+        }
         Dataset testDs =  datasetMetrics.getDataset();
         String testMonth = datasetMetrics.getMonthYear();
         String testCountry = datasetMetrics.getCountryCode();

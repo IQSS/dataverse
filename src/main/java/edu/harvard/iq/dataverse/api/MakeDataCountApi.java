@@ -97,7 +97,31 @@ public class MakeDataCountApi extends AbstractApiBean {
         String msg = "Dummy Data has been added to dataset " + id;
         return ok(msg);
     }
+    
+    @POST
+    @Path("/addUsageMetricsFromSushiReport")
+    public Response addUsageMetricsFromSushiReportAll(@PathParam("id") String id, @QueryParam("reportOnDisk") String reportOnDisk) {
 
+        JsonObject report;
+
+        try (FileReader reader = new FileReader(reportOnDisk)) {
+            report = Json.createReader(reader).readObject();
+
+            List<DatasetMetrics> datasetMetrics = datasetMetricsService.parseSushiReport(report, null);
+            if (!datasetMetrics.isEmpty()) {
+                for (DatasetMetrics dm : datasetMetrics) {
+                    datasetMetricsService.save(dm);
+                }
+            }
+
+        } catch (IOException ex) {
+            System.out.print(ex.getMessage());
+            return error(Status.BAD_REQUEST, "IOException: " + ex.getLocalizedMessage());
+        }
+        String msg = "Usage Metrics Data has been added to all datasets from file  " + reportOnDisk;
+        return ok(msg);
+    }
+    
     @POST
     @Path("{id}/updateCitationsForDataset")
     public Response updateCitationsForDataset(@PathParam("id") String id) throws MalformedURLException, IOException {
