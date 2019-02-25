@@ -48,12 +48,25 @@ public class ExternalToolServiceBean {
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findByType(Type type) {
+        return findByType(type, null);
+    }
+    
+    /**
+     * @param type 
+     * @param contentType  - mimetype
+     * @return A list of tools or an empty list.
+     */
+    public List<ExternalTool> findByType(Type type, String contentType) {
 
         List<ExternalTool> externalTools = new ArrayList<>();
         
         //If contentType==null, get all tools of the given ExternalTool.Type 
-        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
+        TypedQuery<ExternalTool> typedQuery = contentType != null ? em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type AND o.contentType = :contentType", ExternalTool.class):
+            em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
         typedQuery.setParameter("type", type);
+        if(contentType!=null) {
+            typedQuery.setParameter("contentType", contentType);
+        }
         List<ExternalTool> toolsFromQuery = typedQuery.getResultList();
         if (toolsFromQuery != null) {
             externalTools = toolsFromQuery;
@@ -161,6 +174,8 @@ public class ExternalToolServiceBean {
             return null;
         }
     }
+
+
 
 
 }
