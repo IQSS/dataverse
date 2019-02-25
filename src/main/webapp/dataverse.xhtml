@@ -404,7 +404,7 @@
                                             </li>
                                             <li class="divider" role="presentation"></li>
                                             <li>
-                                                <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form,:dataverseForm,:searchResults,:messagePanel" oncomplete="javascript:post_edit_dv_general_info();initPopover();">
+                                                <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form,:dataverseForm,:searchResults,:messagePanel" oncomplete="javascript:post_edit_dv_general_info();">
                                                     <h:outputText value="#{bundle['dataverse.option.generalInfo']}" />
                                                 </p:commandLink>
                                             </li>
@@ -748,7 +748,6 @@
                     var scrollPos=0;
 
                     $(document).ready(function () {
-                        initPopover();
                         initCarousel();
                         popoverHTML('#{bundle.htmlAllowedTitle}');
                     });
@@ -783,20 +782,6 @@
                     function callOnError(){
                         alert("in js");
                         window.scrollTo(0, 0);
-                    }
-
-                    function initPopover() {
-                        $('[data-toggle="tooltip"]').tooltip({container: 'body'});
-                        $('[data-toggle="popover"]').popover();
-                        $('body').on('click', function (e) {
-                            $('label[data-toggle="popover"]').each(function () {
-                                //the 'is' for buttons that trigger popups
-                                //the 'has' for icons within a button that triggers a popup
-                                if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
-                                    $(this).popover('hide');
-                                }
-                            });
-                        });
                     }
 
                     function updateInclude() {

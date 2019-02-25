@@ -31,10 +31,6 @@ function bind_bsui_components(){
     // Custom Popover with HTML code snippet -- from dataverse_template
     popoverHTML();
     
-    //Metrics
-    //DISABLED TOGGLE UNTIL FURTHER DEVELOPMENT ON METRICS IS COMPLETED
-    //metricsTabs();
-    
     // Dialog Listener For Calling handleResizeDialog
     PrimeFaces.widget.Dialog.prototype.postShow = function() {
         var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
@@ -60,8 +56,8 @@ function dataverseuser_page_rebind(){
 
 function bind_tooltip_popover(){
     // rebind tooltips and popover to all necessary elements
-    $(".bootstrap-button-tooltip, [data-toggle='tooltip'], #citation span.glyphicon").tooltip({container: 'body'});
-    $("span[data-toggle='popover']").popover();
+    $(".bootstrap-button-tooltip, [data-toggle='tooltip']").tooltip({container: 'body'});
+    $("[data-toggle='popover']").popover({container: 'body'});
 }
 
 function toggle_dropdown(){
@@ -104,8 +100,6 @@ function show_info_msg(mtitle, mtext){
  * Called after "Edit Dataverse" - "General Information"
  */
 function post_edit_dv_general_info(){
-    // show_info_msg('Edit Dataverse', 'Edit your dataverse and click Save Changes. Asterisks indicate required fields.');
-    // hide_search_panels();
     bind_bsui_components();
 }
 
@@ -113,38 +107,9 @@ function post_edit_dv_general_info(){
  * Used after cancelling "Edit Dataverse"
  */
 function post_cancel_edit_dv(){
-   // show_search_panels()
-   // hide_info_msg();
    bind_bsui_components();
    initCarousel();
 }
-
-/*
- * Hide search panels when editing a dv
- * NO LONGER IN USE, INSTEAD ADDED p:fragment TO DV PG
- */
-//function hide_search_panels(){
-//    if($(".panelSearchForm").length>0){
-//       $(".panelSearchForm").hide();
-//        if($(".panelSearchForm").next().length>0){
-//            $(".panelSearchForm").next().hide();
-//        }
-//   }
-//}
-
-/*
- * Show search panels when cancel a dv edit
- * NO LONGER IN USE, INSTEAD ADDED p:fragment TO DV PG
- */
-//function show_search_panels(){
-//    if($(".panelSearchForm").length>0){
-//        if($(".panelSearchForm").next().length>0){
-//            $(".panelSearchForm").next().show();
-//        }
-//       $(".panelSearchForm").show();
-//   }
-//}
-
 
 /*
  * Called after "Upload + Edit Files"
@@ -251,20 +216,8 @@ function sharrre(){
 }
 
 /*
- * Metrics Tabs
- * DISABLED TOGGLE UNTIL FURTHER DEVELOPMENT ON METRICS IS COMPLETED
+ * Select dataset/file citation onclick event
  */
-// function metricsTabs() {
-    // $('#metrics-tabs a[data-toggle="tab"]').on('shown', function (e) {
-        // e.target // activated tab
-        // e.relatedTarget // previous tab
-    // });
-    // $('#metrics-tabs a[data-toggle="tab"]').mouseover(function(){
-        // $(this).click();
-    // });
-    // $('#metrics-tabs a.first[data-toggle="tab"]').tab('show');
-// }
-
 function selectText(ele) {
     try {
         var div = document.createRange();
