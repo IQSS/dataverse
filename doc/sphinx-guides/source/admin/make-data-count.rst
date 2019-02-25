@@ -81,11 +81,13 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
 
 * If you are running Counter Processor for the first time in the middle of a month, you will need create blank log files for the previous days. e.g.:
 
-  * ``touch sample_logs/counter_2019-02-01.log``
+  * ``cd /usr/local/glassfish4/glassfish/domains/domain1/logs``
+
+  * ``touch counter_2019-02-01.log``
   
   * ``...``
   
-  * ``touch sample_logs/counter_2019-02-20.log``
+  * ``touch counter_2019-02-20.log``
  
 * Run Counter Processor.
 
@@ -95,7 +97,7 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
 
 * Populate views and downloads for your datasets based on the SUSHI JSON file. The "/tmp" directory is used in the example below.
 
-  * ``curl -X POST "http://localhost:8080/api/admin/makeDataCount/addUsageMetricsFromSushiReport?reportOnDisk=/tmp/sushi_sample_logs.json"``
+  * ``curl -X POST "http://localhost:8080/api/admin/makeDataCount/addUsageMetricsFromSushiReport?reportOnDisk=/tmp/make-data-count-report.json"``
 
 * Verify that views and downloads are available via API.
 
