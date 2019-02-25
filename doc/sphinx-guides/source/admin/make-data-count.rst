@@ -60,7 +60,11 @@ Configure Counter Processor
 
   * ``sudo su - counter``
 
-* Download :download:`counter-processor-config.yaml <../_static/admin/counter-processor-config.yaml>` and put it in the ``/home/counter`` directory (the home directory for the "counter" user).
+* Change to the directory where you installed Counter Processor.
+
+  * ``cd /usr/local/counter-processor-0.0.1``
+
+* Download :download:`counter-processor-config.yaml <../_static/admin/counter-processor-config.yaml>` to ``/usr/local/counter-processor-0.0.1``.
 
 * Edit the config file and pay particular attention to the FIXME lines.
 
@@ -85,13 +89,13 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
  
 * Run Counter Processor.
 
-  * ``CONFIG_FILE=/home/counter/counter-processor-config.yaml python36 main.py``
+  * ``CONFIG_FILE=counter-processor-config.yaml python36 main.py``
 
   * A JSON file in SUSHI format will be created in the directory you specified under "output_file" in the config file.
 
 * Populate views and downloads for your datasets based on the SUSHI JSON file. The "/tmp" directory is used in the example below.
 
-  * ``curl -X POST 'http://localhost:8080/api/admin/makeDataCount/addUsageMetricsFromSushiReport?reportOnDisk=/tmp/sushi_sample_logs.json``
+  * ``curl -X POST "http://localhost:8080/api/admin/makeDataCount/addUsageMetricsFromSushiReport?reportOnDisk=/tmp/sushi_sample_logs.json"``
 
 * Verify that views and downloads are available via API.
 
@@ -125,7 +129,7 @@ To confirm that the environment variable was set properly, you can use echo like
 
 On some periodic basis (perhaps weekly) you should call the following curl command for each published dataset to update the list of citations that have been made for that dataset.
 
-``curl -X POST 'http://localhost:8080/api/admin/makeDataCount/:persistentId/updateCitationsForDataset?persistentId=$DOI``
+``curl -X POST "http://localhost:8080/api/admin/makeDataCount/:persistentId/updateCitationsForDataset?persistentId=$DOI"``
 
 Citations will be retrieved for each published dataset and recorded in the Dataverse database.
 

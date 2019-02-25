@@ -413,48 +413,42 @@ Installing Counter Processor
 
 Counter Processor has only been tested on el7 (see "Linux" above). Please note that a scripted installation using Ansible is mentioned in the :doc:`/developers/make-data-count` section of the Developer Guide.
 
-As root, create a "counter" user and become that user.
+As root, download and install Counter Processor::
 
-``useradd counter``
+        cd /usr/local
+        wget https://github.com/CDLUC3/counter-processor/archive/v0.0.1.tar.gz
+        tar xvfz v0.0.1.tar.gz
 
-``su - counter``
+As root, change to the Counter Processor directory you just created, download the GeoLite2-Country tarball, untar it, and copy the geoip database into place::
 
-Download https://github.com/CDLUC3/counter-processor/archive/v0.0.1.tar.gz and un-tar it.
+        cd /usr/local/counter-processor-0.0.1
+        wget https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz
+        tar xvfz GeoLite2-Country.tar.gz
+        cp GeoLite2-Country_*/GeoLite2-Country.mmdb maxmind_geoip
 
-``tar xvfz v0.0.1.tar.gz``
+As root, create a "counter" user and change ownership of Counter Processor directory to this new user::
 
-Change to the Counter Processor directory.
-
-``cd /home/counter/counter-processor-0.0.1``
-
-Download https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz and un-tar it.
-
-``tar xvfz GeoLite2-Country.tar.gz``
-
-Copy the GeoIP database into place.
-
-``cp GeoLite2-Country_*/GeoLite2-Country.mmdb maxmind_geoip``
+        useradd counter
+        chown -R counter:counter /usr/local/counter-processor-0.0.1
 
 Installing Counter Processor Python Requirements
 ================================================
 
 Counter Processor requires Python 3.6.4 or higher. The following commands are intended to be run as root but we are aware that Pythonistas might prefer fancy virtualenv or similar setups. Pull requests are welcome to improve these steps!
 
-Enable the EPEL repo if you haven't already.
+Enable the EPEL repo if you haven't already::
 
-``yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm``
+        yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
-Install Python 3.6.
+Install Python 3.6::
 
-``yum install python36``
+        yum install python36
 
-Install Counter Processor Python requirements.
+Install Counter Processor Python requirements::
 
-``python3.6 -m ensurepip``
-
-``cd /home/counter/counter-processor-0.0.1``
-
-``pip3 install -r requirements.txt``
+        python3.6 -m ensurepip
+        cd /usr/local/counter-processor-0.0.1
+        pip3 install -r requirements.txt
 
 See the :doc:`/admin/make-data-count` section of the Admin Guide for how to configure and run Counter Processor.
 
