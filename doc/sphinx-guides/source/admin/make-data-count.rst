@@ -91,7 +91,7 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
 
 * Populate views and downloads for your datasets based on the SUSHI JSON file. The "/tmp" directory is used in the example below.
 
-  * ``curl -X POST 'http://localhost:8080/api/admin/makeDataCount/:persistentId/addUsageMetricsFromSushiReport?reportOnDisk=/tmp/sushi_sample_logs.json``
+  * ``curl -X POST 'http://localhost:8080/api/admin/makeDataCount/addUsageMetricsFromSushiReport?reportOnDisk=/tmp/sushi_sample_logs.json``
 
 * Verify that views and downloads are available via API.
 
