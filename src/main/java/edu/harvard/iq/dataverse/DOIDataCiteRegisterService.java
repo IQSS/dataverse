@@ -27,7 +27,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.xml.transform.Source;
-
 import org.apache.commons.lang.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -215,7 +214,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
 
         String xmlMetadata = metadataTemplate.generateXML(dvObject);
-        logger.log(Level.INFO, "XML to send to DataCite: {0}", xmlMetadata);
+        logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }
 

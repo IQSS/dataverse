@@ -1366,11 +1366,18 @@ public class FileUtil implements java.io.Serializable  {
      * This is what the UI displays for "Download URL" on the file landing page
      * (DOIs rather than file IDs.
      */
-    public static String getPublicDownloadUrl(String dataverseSiteUrl, String persistentId) {
-        String path = "/api/access/datafile/:persistentId?persistentId=" + persistentId;
-        return dataverseSiteUrl + path;
+    public static String getPublicDownloadUrl(String dataverseSiteUrl, String persistentId, Long fileId) {
+        String path = null;
+        if(persistentId != null) {
+            path = dataverseSiteUrl + "/api/access/datafile/:persistentId?persistentId=" + persistentId;
+        } else if( fileId != null) {
+            path = dataverseSiteUrl + "/api/access/datafile/" + fileId;
+        } else {
+            logger.info("In getPublicDownloadUrl but persistentId & fileId are both null!");
+        }
+        return path;
     }
-
+    
     /**
      * The FileDownloadServiceBean operates on file IDs, not DOIs.
      */
