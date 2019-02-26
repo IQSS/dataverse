@@ -11,6 +11,7 @@ box "Dataverse" #DDD
   participant downloadApi as "download\nAPI"
   participant metricsApi as "metrics\nAPI"
   participant datasetMetrics as "datasetmetrics\ntable"
+  participant datasetExternalCitations as "datasetexternalcitations\ntable"
   participant sushiParser as "SUSHI\nparser"
   participant citationParser as "citation\nparser"
 end box
@@ -53,12 +54,13 @@ sushiParser --> datasetMetrics : write metrics to datasetmetrics table
 
 events --> crossrefApi : retrieve citations periodically 
 citationParser --> events : retrieve citations nightly
-citationParser --> datasetMetrics : write citations to datasetmetrics table
+citationParser --> datasetExternalCitations : write citations to datasetexternalcitations table
 
 == Retrieving Usage Metrics ==
 
 user --> metricsApi: request number of views, downloads, and citations
 metricsApi --> datasetMetrics: get data from table
+metricsApi --> datasetExternalCitations: get data from table
 metricsApi --> user: return data
 
 @enduml
