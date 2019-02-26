@@ -93,6 +93,7 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1541,13 +1542,14 @@ public class Datasets extends AbstractApiBean {
         
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
-            NullSafeJsonBuilder jsonObjectBuilder = jsonObjectBuilder();
+            JsonArrayBuilder datasetsCitations = Json.createArrayBuilder();
             List<DatasetExternalCitations> externalCitations = datasetExternalCitationsService.getDatasetExternalCitationsByDataset(dataset);
             for (DatasetExternalCitations citation : externalCitations ){
-                jsonObjectBuilder.add("citation", citation.getCitedByUrl());
-            }
-                        
-            return ok(jsonObjectBuilder); 
+                JsonObjectBuilder candidateObj = Json.createObjectBuilder();
+                candidateObj.add("citation", citation.getCitedByUrl());
+                datasetsCitations.add(candidateObj);
+            }                       
+            return ok(datasetsCitations); 
             
         } catch (WrappedResponse wr) {
             return wr.getResponse();
