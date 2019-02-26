@@ -66,6 +66,11 @@ public class DataVariable implements Serializable {
      */
     @Column(columnDefinition="TEXT")
     private String label;
+
+    /*
+     * weighted: indicates if this variable is weighted.
+     */
+    private boolean weighted;
     
     /*
      * fileStartPosition: this property is specific to fixed-width data; 
@@ -251,6 +256,9 @@ public class DataVariable implements Serializable {
         this.label = label;
     }
 
+    public boolean isWeighted() {
+        return this.weighted;
+    }
     
     public java.lang.Long getFileStartPosition() {
         return this.fileStartPosition;
