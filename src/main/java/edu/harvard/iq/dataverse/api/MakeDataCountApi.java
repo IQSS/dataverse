@@ -31,6 +31,8 @@ import javax.ws.rs.core.Response.Status;
 @Path("admin/makeDataCount")
 public class MakeDataCountApi extends AbstractApiBean {
 
+    private static final Logger logger = Logger.getLogger(MakeDataCountApi.class.getCanonicalName());
+
     @EJB
     DatasetMetricsServiceBean datasetMetricsService;
     @EJB
@@ -97,7 +99,7 @@ public class MakeDataCountApi extends AbstractApiBean {
         String msg = "Dummy Data has been added to dataset " + id;
         return ok(msg);
     }
-    
+
     @POST
     @Path("/addUsageMetricsFromSushiReport")
     public Response addUsageMetricsFromSushiReportAll(@PathParam("id") String id, @QueryParam("reportOnDisk") String reportOnDisk) {
@@ -121,7 +123,7 @@ public class MakeDataCountApi extends AbstractApiBean {
         String msg = "Usage Metrics Data has been added to all datasets from file  " + reportOnDisk;
         return ok(msg);
     }
-    
+
     @POST
     @Path("{id}/updateCitationsForDataset")
     public Response updateCitationsForDataset(@PathParam("id") String id) throws MalformedURLException, IOException {
@@ -144,6 +146,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             // TODO: Do something with non 200 status.
             System.out.println("status: " + status);
             JsonObject report = Json.createReader(connection.getInputStream()).readObject();
+            logger.fine("body of citation response: " + report.toString());
             List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(report);
 
             if (!datasetExternalCitations.isEmpty()) {

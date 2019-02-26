@@ -170,6 +170,16 @@ public class MakeDataCountApiIT {
 
     }
 
+    /**
+     * Ignore is set on this test because it requires database edits to pass.
+     * There are currently two citions for doi:10.7910/DVN/HQZOOB but you have
+     * to pick one of your datasets (10 in the example below) and update the
+     * "identifier" and "authority" to match that doi like this:
+     *
+     * update dvobject set identifier = 'DVN/HQZOOB' where id = 10;
+     *
+     * update dvobject set authority = '10.7910' where id = 10;
+     */
     @Ignore
     @Test
     public void testMakeDataCountDownloadCitation() {
