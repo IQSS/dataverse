@@ -16,8 +16,9 @@ function bind_bsui_components(){
       $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
     });
     
-    // Hide open tooltips
-    $('div.tooltip').hide();
+    // Hide open tooltips + popovers
+    $('.bootstrap-button-tooltip, [data-toggle="tooltip"]').tooltip("hide");
+    $("[data-toggle='popover']").popover("hide");
 
     // Tooltip + popover functionality
     bind_tooltip_popover();
@@ -71,30 +72,6 @@ function disabledLinks(){
         }
     });
 }
-
-/*
- * Hide notification message
- */
-function hide_info_msg(){
-    if ($('div.messagePanel').length > 0){
-        $('div.messagePanel').html('');
-    }
-}
-
-/*
- * Show notification message
- */
-function show_info_msg(mtitle, mtext){
-   if ($('div.messagePanel').length > 0){
-       edit_msg = '<div class="alert alert-dismissable alert-info"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>'
-                       + '<span class="glyphicon glyphicon-info-sign"/>'
-                       + '<strong> ' + mtitle + '</strong> &#150; ' + mtext + '</div>';
-       $('div.messagePanel').html(edit_msg );
-   }else{
-     //console.log('message panel does not exist');
-   }
-}
-
 
 /*
  * Called after "Edit Dataverse" - "General Information"
