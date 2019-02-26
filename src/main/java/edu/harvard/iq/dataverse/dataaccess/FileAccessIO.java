@@ -50,7 +50,7 @@ import java.util.ArrayList;
 public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
     public FileAccessIO () {
-        this(null);
+        this((T)null);
     }
 
     public FileAccessIO(T dvObject) {
@@ -63,6 +63,12 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         super(dvObject, req);
 
         this.setIsLocalFile(true);
+    }
+    
+    // "Direct" File Access IO, opened on a physical file not associated with
+    // a specific DvObject
+    public FileAccessIO(String storageLocation) {
+        physicalPath = Paths.get(storageLocation);
     }
     
     private Path physicalPath = null; 
@@ -166,7 +172,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         // This "status" is a leftover from 3.6; we don't have a use for it 
         // in 4.0 yet; and we may not need it at all. 
         // -- L.A. 4.0.2
-        this.setStatus(200);
+        /*this.setStatus(200);*/
     }
     
     @Override
@@ -435,7 +441,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         return getFileSystemPath().toFile().exists();
     }
     
-    @Override
+    /*@Override
     public void delete() throws IOException {
         Path victim = getFileSystemPath();
         
@@ -444,6 +450,21 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         } else {
             throw new IOException("Could not locate physical file location for the Filesystem object.");
         }
+    }*/
+    
+    @Override
+    public void delete() throws IOException {
+        if (!isDirectAccess()) {
+            throw new IOException("Direct Access IO must be used to permanently delete stored file objects");
+        }
+
+        if (physicalPath == null) {
+            throw new IOException("Attempted delete on an unspecified physical path");
+        }
+        
+        /* TODO: delete all the auxiliary files as well */ 
+        Files.delete(physicalPath);
+
     }
     
     // Auxilary helper methods, filesystem access-specific:
