@@ -10,7 +10,7 @@ import javax.sql.DataSource;
 
 @Startup
 @Singleton
-class StartupFlywayMigrator {
+public class StartupFlywayMigrator {
 
     @Resource(lookup = "jdbc/VDCNetDS")
     private DataSource dataSource;

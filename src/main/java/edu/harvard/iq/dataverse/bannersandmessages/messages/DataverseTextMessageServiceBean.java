@@ -32,10 +32,10 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    DataverseTextMessageServiceBean() {
+    public DataverseTextMessageServiceBean() {
     }
 
-    DataverseTextMessageServiceBean(EntityManager em, DataverseMessagesMapper mapper) {
+    public DataverseTextMessageServiceBean(EntityManager em, DataverseMessagesMapper mapper) {
         this.em = em;
         this.mapper = mapper;
     }
