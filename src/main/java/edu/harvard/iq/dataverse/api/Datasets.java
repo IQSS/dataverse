@@ -1546,7 +1546,14 @@ public class Datasets extends AbstractApiBean {
             List<DatasetExternalCitations> externalCitations = datasetExternalCitationsService.getDatasetExternalCitationsByDataset(dataset);
             for (DatasetExternalCitations citation : externalCitations ){
                 JsonObjectBuilder candidateObj = Json.createObjectBuilder();
-                candidateObj.add("citation", citation.getCitedByUrl());
+                /**
+                 * In the future we can imagine storing and presenting more
+                 * information about the citation such as the title of the paper
+                 * and the names of the authors. For now, we'll at least give
+                 * the URL of the citation so people can click and find out more
+                 * about the citation.
+                 */
+                candidateObj.add("citationUrl", citation.getCitedByUrl());
                 datasetsCitations.add(candidateObj);
             }                       
             return ok(datasetsCitations); 
