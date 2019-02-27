@@ -807,7 +807,12 @@ public class Datasets extends AbstractApiBean {
 
             Dataset ds = findDatasetOrDie(id);
             if (updateCurrent) {
-
+                /*
+                 * Note: The code here mirrors that in the
+                 * edu.harvard.iq.dataverse.DatasetPage:updateCurrentVersion method. Any changes
+                 * to the core logic (i.e. beyond updating the messaging about results) should
+                 * be applied to the code there as well.
+                 */
                 String errorMsg = null;
                 String successMsg = null;
                 try {

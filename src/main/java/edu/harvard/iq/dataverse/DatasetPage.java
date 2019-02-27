@@ -1997,6 +1997,12 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public String updateCurrentVersion() {
+        /*
+         * Note: The code here mirrors that in the
+         * edu.harvard.iq.dataverse.api.Datasets:publishDataset method (case
+         * "updatecurrent"). Any changes to the core logic (i.e. beyond updating the
+         * messaging about results) should be applied to the code there as well.
+         */
         String errorMsg = null;
         String successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
         try {
