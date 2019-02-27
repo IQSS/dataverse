@@ -316,15 +316,18 @@ public class Admin extends AbstractApiBean {
         @PUT
         @Path("authenticatedUsers/mergeIntoUser/{identifier}")
         public Response mergeInAuthenticatedUser(@PathParam("identifier") String baseIdentifier, String consumedIdentifier) {
-
-            //TODO: Confirm the baseIdentifier is real before doing command...
             
             if(null == baseIdentifier || baseIdentifier.isEmpty()) {
                 return error(Response.Status.BAD_REQUEST, "Base identifier provided to change is empty.");
             } else if(null == consumedIdentifier || consumedIdentifier.isEmpty()) {
                 return error(Response.Status.BAD_REQUEST, "Identifier to merge in is empty.");
             }
-
+            
+            AuthenticatedUser baseAuthenticatedUser = authSvc.getAuthenticatedUser(baseIdentifier);
+            if (baseAuthenticatedUser == null) {
+                return error(Response.Status.BAD_REQUEST, "User " + baseIdentifier + " not found in AuthenticatedUser");
+            }
+            
             AuthenticatedUser consumedAuthenticatedUser = authSvc.getAuthenticatedUser(consumedIdentifier);
             if (consumedAuthenticatedUser == null) {
                 return error(Response.Status.BAD_REQUEST, "User " + consumedIdentifier + " not found in AuthenticatedUser");
@@ -339,12 +342,12 @@ public class Admin extends AbstractApiBean {
             List<RoleAssignment> consumedRAList = roleAssigneeSvc.getAssignmentsFor("@" + consumedIdentifier); //only AuthenticatedUser supported
             
             try {
-                execCommand(new MergeInAccountCommand(createDataverseRequest(consumedAuthenticatedUser), baseIdentifier, consumedIdentifier, consumedAuthenticatedUser, consumedBuiltinUser, baseRAList, consumedRAList));
+                execCommand(new MergeInAccountCommand(createDataverseRequest(consumedAuthenticatedUser), baseIdentifier, consumedIdentifier, consumedAuthenticatedUser, consumedBuiltinUser, baseAuthenticatedUser, baseRAList, consumedRAList));
             } catch (Exception e){
                 return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
             }
 
-            return ok("CHANGEME");
+            return ok("Role Assignements for " + consumedIdentifier + " have been merged into " + baseIdentifier + ".");
         }
         
         

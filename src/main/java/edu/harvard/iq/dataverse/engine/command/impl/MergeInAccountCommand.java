@@ -6,9 +6,12 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -18,6 +21,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
+import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +40,7 @@ import javax.persistence.Query;
 public class MergeInAccountCommand extends AbstractVoidCommand {
     final AuthenticatedUser consumedAU;
     final BuiltinUser consumedBU;
+    final AuthenticatedUser ongoingAU;
     final String baseIdentifier;
     final String consumedIdentifier;
     final List<RoleAssignment> baseRAList;
@@ -42,7 +48,8 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
     
     private static final Logger logger = Logger.getLogger(MergeInAccountCommand.class.getCanonicalName());
     
-    public MergeInAccountCommand(DataverseRequest createDataverseRequest, String baseIdentifier, String consumedIdentifier, AuthenticatedUser consumedAuthenticatedUser, BuiltinUser consumedBuiltinUser, List<RoleAssignment> baseRAList, List<RoleAssignment> consumedRAList) {
+    public MergeInAccountCommand(DataverseRequest createDataverseRequest, String baseIdentifier, String consumedIdentifier, AuthenticatedUser consumedAuthenticatedUser, 
+            BuiltinUser consumedBuiltinUser, AuthenticatedUser ongoingAU, List<RoleAssignment> baseRAList, List<RoleAssignment> consumedRAList) {
         super(
             createDataverseRequest,
             (DvObject) null
@@ -53,6 +60,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         this.consumedRAList = consumedRAList;
         this.baseIdentifier = baseIdentifier;
         this.consumedIdentifier = consumedIdentifier;
+        this.ongoingAU = ongoingAU;
     }
     
     @Override
@@ -84,6 +92,56 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
                         setParameter("assigneeIdentifier", '@'+consumedIdentifier)
                         .executeUpdate();
         logger.log(Level.INFO, "Number of roles deleted : ({0})", resultCount);
+        
+        // DatasetVersionUser
+        for (DatasetVersionUser user : ctxt.datasetVersion().getDatasetVersionUsersByAuthenticatedUser(consumedAU)) {
+            user.setAuthenticatedUser(ongoingAU);
+            ctxt.em().merge(user);
+        }
+        
+        //DatasetLocks
+        for (DatasetLock lock : ctxt.datasets().getDatasetLocksByUser(consumedAU)) {
+            lock.setUser(ongoingAU);
+            ctxt.em().merge(lock);
+        }
+        
+        //DVObjects creator and release
+        for (DvObject dvo : ctxt.dvObjects().findByAuthenticatedUserId(consumedAU)) {
+            if (dvo.getCreator().equals(consumedAU)){
+                dvo.setCreator(ongoingAU);
+            }
+            if (dvo.getReleaseUser().equals(consumedAU)){
+                dvo.setReleaseUser(ongoingAU);
+            }
+            ctxt.em().merge(dvo);
+        }
+        
+        //GuestbookResponse
+        for (GuestbookResponse gbr : ctxt.responses().findByAuthenticatedUserId(consumedAU)) {
+            gbr.setAuthenticatedUser(ongoingAU);
+            ctxt.em().merge(gbr);
+        }
+        
+        //UserNotification
+        for (UserNotification note : ctxt.notifications().findByUser(consumedAU.getId())) {
+            note.setUser(ongoingAU);
+            ctxt.em().merge(note);
+        }
+        
+        //SavedSearch
+        for (SavedSearch search : ctxt.savedSearches().findByAuthenticatedUser(consumedAU)) {
+            search.setCreator(ongoingAU);
+            ctxt.em().merge(search);
+        }
+        
+        //Workflow Comments
+        for (WorkflowComment wc : ctxt.authentication().getWorkflowCommentsByAuthenticatedUser(consumedAU)) {
+            wc.setAuthenticatedUser(ongoingAU);
+            ctxt.em().merge(wc);
+        }
+        
+        //Access Request is not an entity. May have to update via sql?
+        
         
         //TODO: Change id or delete all the objects with foreign keys connected to the old identifier.
         //Refer to the script in /scripts/migration/scrub_duplicate_emails.sql

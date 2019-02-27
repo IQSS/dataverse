@@ -313,7 +313,15 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             }
         }
         return contNames;
-    }   
+    } 
+    
+    public List<DatasetVersionUser> getDatasetVersionUsersByAuthenticatedUser(AuthenticatedUser user){
+        
+        TypedQuery<DatasetVersionUser> typedQuery = em.createQuery("SELECT u from DatasetVersionUser u where u.authenticatedUser.id = :authenticatedUserId  r", DatasetVersionUser.class);
+                typedQuery.setParameter("authenticatedUserId", user.getId());
+                return typedQuery.getResultList();        
+
+    }
 
     /**
      * Query to return the last Released DatasetVersion by Persistent ID
