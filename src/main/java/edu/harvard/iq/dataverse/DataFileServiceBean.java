@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
@@ -9,6 +11,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1576,6 +1579,16 @@ public class DataFileServiceBean implements java.io.Serializable {
 
        
         return u;
+    }
+    
+    public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
+        // Verify that the DataFile no longer exists: 
+        if (find(dataFileId) != null) {
+            throw new IOException("Attempted to permanently delete a physical file still associated with an existing DvObject "
+                    + "(id: " + dataFileId + ", location: " + storageLocation);
+        }
+        StorageIO directStorageAccess = DataAccess.getDirectStorageIO(storageLocation);
+        directStorageAccess.delete();
     }
     
 }

@@ -2521,6 +2521,9 @@ public class DatasetPage implements java.io.Serializable {
                         if (fmd.getDataFile().equals(dataset.getThumbnailFile())) {
                             dataset.setThumbnailFile(null);
                         }
+                        /* It should not be possible to get here if this file 
+                           is not in fact released! - so the code block below 
+                           is not needed.
                         //if not published then delete identifier
                         if (!fmd.getDataFile().isReleased()){
                             try{
@@ -2529,7 +2532,7 @@ public class DatasetPage implements java.io.Serializable {
                                  //this command is here to delete the identifier of unreleased files
                                  //if it fails then a reserved identifier may still be present on the remote provider
                             }                           
-                        }
+                        } */
                         fmit.remove();
                         break;
                     }

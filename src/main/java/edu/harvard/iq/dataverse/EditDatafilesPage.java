@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -1291,20 +1292,51 @@ public class EditDatafilesPage implements java.io.Serializable {
 
                 if (!fmd.getDataFile().isReleased()) {
                     // if file is draft (ie. new to this version, delete; otherwise just remove filemetadata object)
-                    try {
-                        commandEngine.submit(new DeleteDataFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest()));
-                        dataset.getFiles().remove(fmd.getDataFile());
-                        workingVersion.getFileMetadatas().remove(fmd);
-                        // added this check to handle issue where you could not deleter a file that shared a category with a new file
-                        // the relationship does not seem to cascade, yet somehow it was trying to merge the filemetadata
-                        // todo: clean this up some when we clean the create / update dataset methods
-                        for (DataFileCategory cat : dataset.getCategories()) {
-                            cat.getFileMetadatas().remove(fmd);
+                    boolean deleteCommandSuccess = false;
+                    Long dataFileId = fmd.getDataFile().getId();
+                    String storageLocation = null;
+
+                    if (dataFileId != null) { // is this necessary?
+                        try {
+                            StorageIO<DataFile> storageIO = fmd.getDataFile().getStorageIO();
+                            storageIO.open();
+                            storageLocation = storageIO.getStorageLocation();
+                        } catch (IOException ioex) {
+                            // something potentially wrong with the physical file
+                            // or connection to the physical storage? 
+                            // we'll still try to delete the datafile from the database
                         }
-                    } catch (CommandException cmde) {
-                        // TODO: 
-                        // add diagnostics reporting for individual data files that 
-                        // we failed to delete.
+                        try {
+                            commandEngine.submit(new DeleteDataFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest()));
+                            dataset.getFiles().remove(fmd.getDataFile());
+                            workingVersion.getFileMetadatas().remove(fmd);
+                            // added this check to handle an issue where you could not delete a file that shared a category with a new file
+                            // the relationship does not seem to cascade, yet somehow it was trying to merge the filemetadata
+                            // todo: clean this up some when we clean the create / update dataset methods
+                            for (DataFileCategory cat : dataset.getCategories()) {
+                                cat.getFileMetadatas().remove(fmd);
+                            }
+                            deleteCommandSuccess = true;
+                        } catch (CommandException cmde) {
+                            // TODO: 
+                            // add diagnostics reporting for individual data files that 
+                            // we failed to delete.
+                            logger.info("Failed to delete DataFile id=" + dataFileId + " from the database; " + cmde.getMessage());
+                        }
+                        if (deleteCommandSuccess) {
+                            if (storageLocation != null) {
+                                // Finalize the delete of the physical file 
+                                // (File service will double-check that the datafile no 
+                                // longer exists in the database, before proceeding to 
+                                // delete the physical file)
+                                try {
+                                    datafileService.finalizeFileDelete(dataFileId, storageLocation);
+                                } catch (IOException ioex) {
+                                    logger.info("Failed to delete the physical file associated with the deleted datafile id="
+                                            + dataFileId + ", storage location: " + storageLocation);
+                                }
+                            }
+                        }
                     }
                 } else {
                     datafileService.removeFileMetadata(fmd);
