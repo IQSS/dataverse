@@ -1591,4 +1591,17 @@ public class DataFileServiceBean implements java.io.Serializable {
         directStorageAccess.delete();
     }
     
+    public void finalizeFileDeletes(Map<Long, String> storageLocations) {
+        storageLocations.keySet().stream().forEach((dataFileId) -> {
+            String storageLocation = storageLocations.get(dataFileId);
+
+            try {
+                finalizeFileDelete(dataFileId, storageLocation);
+            } catch (IOException ioex) {
+                logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                        + dataFileId + ", storage location: " + storageLocation);
+            }
+        });
+    }
+    
 }

@@ -2643,7 +2643,9 @@ public class DatasetPage implements java.io.Serializable {
         
         // Use the Create or Update command to save the dataset: 
         Command<Dataset> cmd;
-        try {
+        Map<Long, String> deleteStorageLocations = null;
+        
+        try { 
             if (editMode == EditMode.CREATE) {                
                 if ( selectedTemplate != null ) {
                     if ( isSessionUserAuthenticated() ) {
@@ -2657,6 +2659,24 @@ public class DatasetPage implements java.io.Serializable {
                 }
                 
             } else {
+                if (!filesToBeDeleted.isEmpty()) {
+                    deleteStorageLocations = new HashMap<>();
+                    for (FileMetadata fmd : filesToBeDeleted) {
+                        try {
+                            DataFile dataFile = fmd.getDataFile();
+                            StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+                            storageIO.open();
+                            String storageLocation = storageIO.getStorageLocation();
+                            if (storageLocation != null) {
+                                deleteStorageLocations.put(dataFile.getId(), storageLocation);
+                            }
+                        } catch (IOException ioex) {
+                            // something potentially wrong with the physical file,
+                            // or connection to the physical storage? 
+                            // we'll still try to delete the datafile from the database
+                        }
+                    }
+                }
                 cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone );
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);  
             }
@@ -2685,6 +2705,16 @@ public class DatasetPage implements java.io.Serializable {
             logger.log(Level.SEVERE, "CommandException, when attempting to update the dataset: " + ex.getMessage(), ex);
             populateDatasetUpdateFailureMessage();
             return returnToDraftVersion();
+        }
+        
+        // Have we just deleted some draft datafiles (successfully)? 
+        // finalize the physical file deletes:
+        // (DataFileService will double-check that the datafiles no 
+        // longer exist in the database, before attempting to delete 
+        // the physical files)
+        
+        if (deleteStorageLocations != null) {
+            datafileService.finalizeFileDeletes(deleteStorageLocations);
         }
         
         if (editMode != null) {

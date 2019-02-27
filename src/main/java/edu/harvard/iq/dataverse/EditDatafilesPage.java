@@ -1321,7 +1321,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                             // TODO: 
                             // add diagnostics reporting for individual data files that 
                             // we failed to delete.
-                            logger.info("Failed to delete DataFile id=" + dataFileId + " from the database; " + cmde.getMessage());
+                            logger.warning("Failed to delete DataFile id=" + dataFileId + " from the database; " + cmde.getMessage());
                         }
                         if (deleteCommandSuccess) {
                             if (storageLocation != null) {
@@ -1332,7 +1332,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                                 try {
                                     datafileService.finalizeFileDelete(dataFileId, storageLocation);
                                 } catch (IOException ioex) {
-                                    logger.info("Failed to delete the physical file associated with the deleted datafile id="
+                                    logger.warning("Failed to delete the physical file associated with the deleted datafile id="
                                             + dataFileId + ", storage location: " + storageLocation);
                                 }
                             }
