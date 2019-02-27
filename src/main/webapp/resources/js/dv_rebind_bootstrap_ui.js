@@ -60,17 +60,19 @@ function bind_tooltip_popover(){
     $(".bootstrap-button-tooltip, [data-toggle='tooltip']").tooltip({container: 'body'});
     $("[data-toggle='popover']").popover({container: 'body'});
     
-    // DEBUG CODE
-    $("span.text-muted[data-toggle='tooltip']").css({"color":"#800080"});
-    
-    // CLOSE OPEN TOOLTIPS ON CLICKS
+    // CLOSE OPEN TOOLTIPS ON BODY CLICKS
     $('body').on("touchstart", function(e){
         $(".bootstrap-button-tooltip, [data-toggle='tooltip']").each(function () {
-            // hide any open tooltips when the anywhere else in the body is clicked
+            // hide any open tooltips when anywhere else in body is clicked
             if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('div.tooltip').has(e.target).length === 0) {
                 $(this).tooltip('hide');
             }////end if
         });
+    });
+    
+    // CLOSE OPEN TOOLTIPS ON BUTTON CLICKS
+    $('.bootstrap-button-tooltip').on('click', function () {
+        $(this).tooltip('hide');
     });
 }
 
