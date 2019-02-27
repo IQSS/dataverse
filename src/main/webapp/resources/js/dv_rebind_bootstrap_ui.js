@@ -2,12 +2,6 @@
  * Rebind bootstrap UI components after Primefaces ajax calls
  */
 function bind_bsui_components(){
-    
-    
-    // DEBIG CODE
-    alert('DEBUG MODE');
-    
-    
     // Breadcrumb Tree Keep Open
     $(document).on('click', '.dropdown-menu', function (e) {
         $(this).hasClass('keep-open'),
@@ -63,13 +57,21 @@ function dataverseuser_page_rebind(){
 
 function bind_tooltip_popover(){
     // rebind tooltips and popover to all necessary elements
-    $(".bootstrap-button-tooltip, [data-toggle='tooltip']").tooltip({container: 'body', trigger : 'hover'});
+    $(".bootstrap-button-tooltip, [data-toggle='tooltip']").tooltip({container: 'body'});
     $("[data-toggle='popover']").popover({container: 'body'});
     
     // DEBUG CODE
-    var iconcount = $("span.text-muted[data-toggle='tooltip']").length;
-    alert('bind_tooltip_popover() ' + iconcount);
-    $("span.text-muted[data-toggle='tooltip']").css({"color":"#FFD700"});
+    $("span.text-muted[data-toggle='tooltip']").css({"color":"#800080"});
+    
+    // CLOSE OPEN TOOLTIPS ON CLICKS
+    $('body').on("touchstart", function(e){
+        $(".bootstrap-button-tooltip, [data-toggle='tooltip']").each(function () {
+            // hide any open tooltips when the anywhere else in the body is clicked
+            if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('div.tooltip').has(e.target).length === 0) {
+                $(this).tooltip('hide');
+            }////end if
+        });
+    });
 }
 
 function toggle_dropdown(){
