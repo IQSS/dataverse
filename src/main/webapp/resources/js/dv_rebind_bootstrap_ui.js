@@ -63,17 +63,13 @@ function dataverseuser_page_rebind(){
 
 function bind_tooltip_popover(){
     // rebind tooltips and popover to all necessary elements
-    $(".bootstrap-button-tooltip, [data-toggle='tooltip']").tooltip({container: 'body'});
+    $(".bootstrap-button-tooltip, [data-toggle='tooltip']").tooltip({container: 'body', trigger : 'hover'});
     $("[data-toggle='popover']").popover({container: 'body'});
     
     // DEBUG CODE
     var iconcount = $("span.text-muted[data-toggle='tooltip']").length;
     alert('bind_tooltip_popover() ' + iconcount);
-    $("span.text-muted[data-toggle='tooltip']").css({"color":"#800080"});
-    
-    $(".bootstrap-button-tooltip, [data-toggle='tooltip']").on('click', function () {
-        $(this).blur();
-    });
+    $("span.text-muted[data-toggle='tooltip']").css({"color":"#FFD700"});
 }
 
 function toggle_dropdown(){
