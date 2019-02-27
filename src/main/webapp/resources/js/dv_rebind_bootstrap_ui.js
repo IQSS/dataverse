@@ -2,6 +2,12 @@
  * Rebind bootstrap UI components after Primefaces ajax calls
  */
 function bind_bsui_components(){
+    
+    
+    // DEBIG CODE
+    alert('DEBUG MODE');
+    
+    
     // Breadcrumb Tree Keep Open
     $(document).on('click', '.dropdown-menu', function (e) {
         $(this).hasClass('keep-open'),
@@ -59,6 +65,11 @@ function bind_tooltip_popover(){
     // rebind tooltips and popover to all necessary elements
     $(".bootstrap-button-tooltip, [data-toggle='tooltip']").tooltip({container: 'body'});
     $("[data-toggle='popover']").popover({container: 'body'});
+    
+    // DEBUG CODE
+    var iconcount = $("span.text-muted[data-toggle='tooltip']").length;
+    alert('bind_tooltip_popover() ' + iconcount);
+    $("span.text-muted[data-toggle='tooltip']").css({"color":"#800080"});
     
     $(".bootstrap-button-tooltip, [data-toggle='tooltip']").on('click', function () {
         $(this).blur();
