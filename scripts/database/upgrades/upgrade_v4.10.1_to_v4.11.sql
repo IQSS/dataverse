@@ -12,4 +12,3 @@ ALTER TABLE metric RENAME COLUMN metricName TO name;
 -- issue 5513
 ALTER TABLE datavariable
 DROP COLUMN  if exists universe;
-
