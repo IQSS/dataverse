@@ -1207,6 +1207,13 @@ POSTed JSON example::
       "email": "pete@mailinator.com"
     }
 
+Delete an Authenticated User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Please read https://github.com/IQSS/dataverse/issues/1929 and make sure you understand the **consequences and limitations** before deleting a user account.
+
+``curl -X DELETE http://$SERVER/api/admin/authenticatedUsers/$identifier``
+
 Make User a SuperUser
 ~~~~~~~~~~~~~~~~~~~~~
 
