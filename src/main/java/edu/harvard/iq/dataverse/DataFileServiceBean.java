@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -1602,6 +1603,69 @@ public class DataFileServiceBean implements java.io.Serializable {
                         + dataFileId + ", storage location: " + storageLocation);
             }
         });
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(DatasetVersion datasetVersion) {
+        return getPhysicalFilesToDelete(datasetVersion, false);
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(DatasetVersion datasetVersion, boolean destroy) {
+        // Gather the locations of the physical files associated with DRAFT
+        // (unpublished) DataFiles (or ALL the DataFiles, if "destroy") in the 
+        // DatasetVersion, that will need to be deleted once the 
+        // DeleteDatasetVersionCommand execution has been finalized:
+
+        Map<Long, String> deleteStorageLocations = new HashMap<>();
+
+        Iterator<FileMetadata> dfIt = datasetVersion.getFileMetadatas().iterator();
+        while (dfIt.hasNext()) {
+            DataFile df = dfIt.next().getDataFile();
+
+            if (destroy || !df.isReleased()) {
+                try {
+                    StorageIO<DataFile> storageIO = df.getStorageIO();
+                    String storageLocation = storageIO.getStorageLocation();
+                    if (storageLocation != null) {
+                        deleteStorageLocations.put(df.getId(), storageLocation);
+                    }
+                } catch (IOException ioex) {
+                    // something potentially wrong with the physical file,
+                    // or connection to the physical storage? 
+                    // we don't care (?) - we'll still try to delete the datafile from the database.
+                }
+            }
+        }
+        
+        return deleteStorageLocations;
+    }
+  
+    public Map<Long, String> getPhysicalFilesToDelete(Dataset dataset) {
+        // Gather the locations of ALL the physical files associated with 
+        // a DATASET that is being DESTROYED, that will need to be deleted
+        // once the DestroyDataset command execution has been finalized. 
+        // Once again, note that we are selecting all the files from the dataset
+        // - not just drafts. 
+
+        Map<Long, String> deleteStorageLocations = new HashMap<>();
+
+        Iterator<DataFile> dfIt = dataset.getFiles().iterator();
+        while (dfIt.hasNext()) {
+            DataFile df = dfIt.next();
+
+            try {
+                StorageIO<DataFile> storageIO = df.getStorageIO();
+                String storageLocation = storageIO.getStorageLocation();
+                if (storageLocation != null) {
+                    deleteStorageLocations.put(df.getId(), storageLocation);
+                }
+            } catch (IOException ioex) {
+                // something potentially wrong with the physical file,
+                // or connection to the physical storage? 
+                // we don't care (?) - we'll still try to delete the datafile from the database.
+            }
+        }
+
+        return deleteStorageLocations;
     }
     
 }
