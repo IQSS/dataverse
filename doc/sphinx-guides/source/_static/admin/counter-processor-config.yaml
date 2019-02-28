@@ -9,15 +9,18 @@ log_name_pattern: /usr/local/glassfish4/glassfish/domains/domain1/logs/counter_(
 # Dataverse Note: the url matches on this does not include the query params, so dataset.xhtml\S+ will not match
 path_types:
   investigations:
-    - ^/dataset.xhtml\S*$
-    - ^/file.xhtml\S*$
+    - ^.*/dataset.xhtml\S*$
+    - ^.*/file.xhtml\S*$
+    - ^.*/api/datasets/export\S+$
+    - ^.*/api/v1/datasets/export\S+$
     ## Below historic regex for testing
     #- ^/api/datasets/[^\/]+$
     #- ^/api/versions/\d+$
     #- ^/stash/dataset/\S+$
     #- ^/stash/data_paper/\S+$
   requests:
-    - ^/api/access/datafile\S+$
+    - ^.*/api/access/datafile\S+$
+    - ^.*/api/v1/access/datafile\S+$
     ## Below historic regex for testing
     #- ^/api/datasets/[^\/]+/download$
     #- ^/api/versions/\d+/download$

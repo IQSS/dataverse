@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.makedatacount;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
@@ -129,8 +130,8 @@ public class MakeDataCountLoggingServiceBean {
             this(null, dvRequestService, df.getLatestPublishedFileMetadata().getDatasetVersion());
             
             if(uriInfo != null) {
-                setRequestUrl("/api/" + uriInfo.getPath());
-                setTargetUrl("/api/" + uriInfo.getPath());
+                setRequestUrl(uriInfo.getRequestUri().toString());
+                setTargetUrl(uriInfo.getRequestUri().toString());
             }
             if(null != headers && null != headers.getRequestHeader("user-agent")) {
                 setUserAgent(headers.getRequestHeader("user-agent").get(0));
@@ -138,6 +139,19 @@ public class MakeDataCountLoggingServiceBean {
             
             setFilename(df.getStorageIdentifier()); 
             setSize(String.valueOf(df.getFilesize()));
+        }
+        
+        //Originally used when downloading dataset metadata
+        public MakeDataCountEntry(UriInfo uriInfo, HttpHeaders headers, DataverseRequestServiceBean dvRequestService, Dataset ds) throws UnsupportedOperationException{
+            this(null, dvRequestService, ds.getReleasedVersion());
+            
+            if(uriInfo != null) {
+                setRequestUrl(uriInfo.getRequestUri().toString());
+                setTargetUrl(uriInfo.getRequestUri().toString());
+            }
+            if(null != headers && null != headers.getRequestHeader("user-agent")) {
+                setUserAgent(headers.getRequestHeader("user-agent").get(0));
+            }
         }
 
         @Override
