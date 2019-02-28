@@ -18,7 +18,7 @@ function bind_bsui_components(){
     
     // Hide open tooltips + popovers
     $('.bootstrap-button-tooltip, [data-toggle="tooltip"]').tooltip("hide");
-    $("[data-toggle='popover']").popover("hide");
+    // $("[data-toggle='popover']").popover("hide");
 
     // Tooltip + popover functionality
     bind_tooltip_popover();
@@ -60,13 +60,20 @@ function bind_tooltip_popover(){
     $(".bootstrap-button-tooltip, [data-toggle='tooltip']").tooltip({container: 'body'});
     $("[data-toggle='popover']").popover({container: 'body'});
     
-    // CLOSE OPEN TOOLTIPS ON BODY CLICKS
+    // CLOSE OPEN TOOLTIPS + POPOVERS ON BODY CLICKS
     $('body').on("touchstart", function(e){
         $(".bootstrap-button-tooltip, [data-toggle='tooltip']").each(function () {
             // hide any open tooltips when anywhere else in body is clicked
             if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('div.tooltip').has(e.target).length === 0) {
                 $(this).tooltip('hide');
             }////end if
+        });
+        $("a.popoverHTML, [data-toggle='popover']").each(function () {
+            //the 'is' for buttons that trigger popups
+            //the 'has' for icons within a button that triggers a popup
+            if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('div.popover').has(e.target).length === 0) {
+                $(this).popover('hide');
+            }
         });
     });
     
@@ -136,7 +143,6 @@ function post_cancel_edit_files_or_metadata(){
 * Custom Popover with HTML code snippet
 */
 function popoverHTML(popoverTitleHTML) {
-
    var popoverTemplateHTML = ['<div class="popover">',
        '<div class="arrow"></div>',
        '<h3 class="popover-title"></h3>',
@@ -149,7 +155,7 @@ function popoverHTML(popoverTitleHTML) {
        '</code>'].join('');
 
    $('body').popover({
-       selector: 'span.popoverHTML',
+       selector: 'a.popoverHTML',
        title: popoverTitleHTML,
        trigger: 'hover',
        content: popoverContentHTML,

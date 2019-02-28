@@ -112,7 +112,7 @@
                                     <label class="col-sm-3 control-label" for="dataverseCategory">
                                         #{bundle['dataverse.category']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                         <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
-                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.category.title']}"></span>
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.category.title']}"></span>
                                     </label>
                                     <div class="col-sm-9 form-col-container">
                                         <h:selectOneMenu id="dataverseCategory" tabindex="5" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}">
@@ -246,14 +246,16 @@
                                                                    update="@widgetVar(optionBlock)"
                                                                    process="@this"
                                                                    rendered="#{!mdb.showDatasetFieldTypes and (mdb.selected or mdb.required) and !DataversePage.openMetadataBlock and !DataversePage.inheritMetadataBlockFromParent}"
-                                                                    actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}">
+                                                                   actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}"
+                                                                   oncomplete="javascript:bind_bsui_components();">
                                                          <h:outputText value="#{bundle['dataverse.field.set.tip']}" />
                                                      </p:commandLink>
                                                      <p:commandLink id="viewDSFT" style="margin-left:1em;"
                                                                     update="@widgetVar(optionBlock)"
                                                                     process="@this"
                                                                     rendered="#{!mdb.showDatasetFieldTypes and (!mdb.selected or DataversePage.inheritMetadataBlockFromParent)   and !DataversePage.openMetadataBlock}"
-                                                                    actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id, false)}">
+                                                                    actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id, false)}"
+                                                                    oncomplete="javascript:bind_bsui_components();">
                                                          <h:outputText value="#{bundle['dataverse.field.set.view']}" />
                                                      </p:commandLink>
                                                 </label>
@@ -294,7 +296,10 @@
                                                         </table>
                                                     </div>
                                                 </div>
-                                                <p:commandLink id="hideDSFT" styleClass="btn btn-default"  update="@widgetVar(optionBlock)" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" rendered="#{mdb.showDatasetFieldTypes}">
+                                                <p:commandLink id="hideDSFT" styleClass="btn btn-default" 
+                                                               update="@widgetVar(optionBlock)" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" 
+                                                               oncomplete="javascript:bind_bsui_components();"
+                                                               rendered="#{mdb.showDatasetFieldTypes}">
                                                     <h:outputText value="#{bundle.done}" />
                                                 </p:commandLink>
                                             </div>

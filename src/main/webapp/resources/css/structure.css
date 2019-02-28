@@ -685,7 +685,7 @@ div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
 
 div.popover.fade.top.in {max-width: none;}
 div.popover.fade.top.in div.popover-content {text-align:center; vertical-align: middle; display:table-cell; width:428px; height:418px;}
-span.text-info.popoverHTML {display:inline-block;}
+a.popoverHTML {display:inline-block;}
 
 /*div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}*/
 /*div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}*/
