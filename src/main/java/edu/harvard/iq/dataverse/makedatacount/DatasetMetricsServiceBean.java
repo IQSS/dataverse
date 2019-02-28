@@ -112,7 +112,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         JsonArray reportDatasets = report.getJsonArray("report_datasets");
         for (JsonValue reportDataset : reportDatasets) {
             List<DatasetMetrics> datasetMetricsDataset = new ArrayList<>();
-            String globalId = null; 
+            String globalId = null;
             Dataset ds = null;
             StringReader rdr = new StringReader(reportDataset.toString());
             JsonReader jrdr = Json.createReader(rdr);
@@ -125,14 +125,14 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                 jsonGlobalId = idObj.getString("value");
                 globalIdType = idObj.getString("type");
                 globalId = globalIdType + ":" + jsonGlobalId;
-            } 
-            if (dataset != null){
+            }
+            if (dataset != null) {
                 ds = dataset;
             } else {
-                if (globalId != null){
+                if (globalId != null) {
                     ds = datasetService.findByGlobalId(globalId);
-                } 
-                if (ds == null){
+                }
+                if (ds == null) {
                     continue;
                 }
             }
@@ -145,108 +145,34 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                     JsonArray instanceArray = perfObj.getJsonArray("instance");
                     //"access-method": "regular", 
                     for (JsonObject instObj : instanceArray.getValuesAs(JsonObject.class)) {
-                        if (instObj.getString("metric-type").equals("total-dataset-investigations")) { 
-                            String accessMethod = instObj.getString("access-method");
-                            List<String[]> totalInvestigations = new ArrayList<>();
-                            if (instObj.containsKey("country-counts")) {
-                                JsonObject countryCountObj = instObj.getJsonObject("country-counts");
-                                totalInvestigations = getCountryCountArray(countryCountObj);                               
-                            }
-                            List<DatasetMetrics> datasetMetricsTotal = new ArrayList<>();
-                            if(!totalInvestigations.isEmpty()){
-                               for(String[] investigation: totalInvestigations){
-                                   DatasetMetrics dm = new DatasetMetrics();
-                                   dm.initCounts();
-                                   dm.setDataset(ds);
-                                   dm.setCountryCode(investigation[0]);
-                                   if (accessMethod.equals("regular")){
-                                       dm.setViewsTotalRegular(new Long(investigation[1]));
-                                   } else {
-                                       dm.setViewsTotalMachine(new Long(investigation[1]));
-                                   }                                  
-                                   dm.setMonth(monthYear);
-                                   datasetMetricsTotal.add(dm);
-                               }
-                            }
-                            datasetMetricsDataset= addUpdateMetrics(datasetMetricsDataset, datasetMetricsTotal, "TotalViews", accessMethod);
+                        List<DatasetMetrics> datasetMetricsList = new ArrayList<>();
+                        String metricType = instObj.getString("metric-type");
+                        String accessMethod = instObj.getString("access-method");
+                        Long totalCount = new Long(instObj.getInt("count"));
+                        List<String[]> countArray = new ArrayList<>();
+                        if (instObj.containsKey("country-counts")) {
+                            JsonObject countryCountObj = instObj.getJsonObject("country-counts");
+                            countArray = getCountryCountArray(countryCountObj);
                         }
-                        if (instObj.getString("metric-type").equals("unique-dataset-investigations")) { //unique-dataset-investigations
-                            List<String[]> uniqueInvestigations = new ArrayList<>();
-                            if (instObj.containsKey("country-counts")) {
-                                JsonObject countryCountObj = instObj.getJsonObject("country-counts");
-                                uniqueInvestigations = getCountryCountArray(countryCountObj);                               
-                            }
-                            String accessMethod = instObj.getString("access-method");
-                            List<DatasetMetrics> datasetMetricsUnique = new ArrayList<>();
-                            if(!uniqueInvestigations.isEmpty()){
-                               for(String[] investigation: uniqueInvestigations){
-                                   DatasetMetrics dm = new DatasetMetrics();
-                                   dm.initCounts();
-                                   dm.setDataset(ds);
-                                   dm.setCountryCode(investigation[0]);
-                                   if (accessMethod.equals("regular")){
-                                       dm.setViewsUniqueRegular(new Long(investigation[1]));
-                                   } else {
-                                       dm.setViewsUniqueMachine(new Long(investigation[1]));
-                                   } 
-                                   dm.setMonth(monthYear);
-                                   datasetMetricsUnique.add(dm);
-                               }
-                            }                           
-                           datasetMetricsDataset= addUpdateMetrics(datasetMetricsDataset, datasetMetricsUnique , "UniqueViews", accessMethod);
+
+                        for (String[] row : countArray) {
+                            DatasetMetrics dm = new DatasetMetrics();
+                            dm.initCounts();
+                            dm.setDataset(ds);
+                            dm.setCountryCode(row[0]);
+                            dm.setMonth(monthYear);
+                            Long count = new Long(row[1]);
+                            dm = loadMetrics(dm, count, accessMethod, metricType);
+                            datasetMetricsList.add(dm);
+                            totalCount -= count;
                         }
-                        if (instObj.getString("metric-type").equals("total-dataset-requests")) { //unique-dataset-investigations
-                            List<String[]> totalRequests = new ArrayList<>();
-                            if (instObj.containsKey("country-counts")) {
-                                JsonObject countryCountObj = instObj.getJsonObject("country-counts");
-                                totalRequests = getCountryCountArray(countryCountObj);                               
-                            }
-                            String accessMethod = instObj.getString("access-method");
-                            List<DatasetMetrics> datasetMetricsRequestsTotal = new ArrayList<>();
-                            if(!totalRequests.isEmpty()){
-                               for(String[] investigation: totalRequests){
-                                   DatasetMetrics dm = new DatasetMetrics();
-                                   dm.initCounts();
-                                   dm.setDataset(ds);
-                                   dm.setCountryCode(investigation[0]);
-                                   if (accessMethod.equals("regular")){
-                                       dm.setDownloadsTotalRegular(new Long(investigation[1]));
-                                   } else {
-                                       dm.setDownloadsTotalMachine(new Long(investigation[1]));
-                                   }
-                                   dm.setMonth(monthYear);
-                                   datasetMetricsRequestsTotal.add(dm);
-                               }
-                            }                           
-                           datasetMetricsDataset= addUpdateMetrics(datasetMetricsDataset, datasetMetricsRequestsTotal , "TotalRequests", accessMethod);
+
+                        if (totalCount.intValue() > 0) {
+                            DatasetMetrics ncDm = addNoCountryMetric(ds, accessMethod, metricType, totalCount, monthYear);
+                            datasetMetricsList.add(ncDm);
                         }
-                        
-                        //"volume": 26764,
-                        if (instObj.getString("metric-type").equals("unique-dataset-requests")) { //unique-dataset-investigations
-                            String accessMethod = instObj.getString("access-method");
-                            List<String[]> uniqueRequests = new ArrayList<>();
-                            if (instObj.containsKey("country-counts")) {
-                                JsonObject countryCountObj = instObj.getJsonObject("country-counts");
-                                uniqueRequests = getCountryCountArray(countryCountObj);                               
-                            }
-                            List<DatasetMetrics> datasetMetricsRequestsTotal = new ArrayList<>();
-                            if(!uniqueRequests.isEmpty()){
-                               for(String[] investigation: uniqueRequests){
-                                   DatasetMetrics dm = new DatasetMetrics();
-                                   dm.initCounts();
-                                   dm.setDataset(ds);
-                                   dm.setCountryCode(investigation[0]);
-                                   if (accessMethod.equals("regular")){
-                                       dm.setDownloadsUniqueRegular(new Long(investigation[1]));
-                                   } else {
-                                       dm.setDownloadsUniqueMachine(new Long(investigation[1]));
-                                   }
-                                   dm.setMonth(monthYear);
-                                   datasetMetricsRequestsTotal.add(dm);
-                               }
-                            }                           
-                           datasetMetricsDataset= addUpdateMetrics(datasetMetricsDataset, datasetMetricsRequestsTotal , "UniqueRequests", accessMethod);
-                        }
+                        datasetMetricsDataset = addUpdateMetrics(datasetMetricsDataset, datasetMetricsList, metricType, accessMethod);
+
                     }
                 }
             }
@@ -267,6 +193,52 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         return retList;
     }
     
+    private DatasetMetrics loadMetrics(DatasetMetrics dmIn, Long count, String accessMethod, String metricType) {
+
+        if (accessMethod.equals("regular")) {
+            switch (metricType) {
+                case "total-dataset-investigations":
+                    dmIn.setViewsTotalRegular(count);
+                    break;
+                case "unique-dataset-investigations":
+                    dmIn.setViewsUniqueRegular(count);
+                    break;
+                case "total-dataset-requests":
+                    dmIn.setDownloadsTotalRegular(count);
+                    break;
+                case "unique-dataset-requests":
+                    dmIn.setDownloadsUniqueRegular(count);
+                    break;
+            }
+        } else {
+            switch (metricType) {
+                case "total-dataset-investigations":
+                    dmIn.setViewsTotalMachine(count);
+                    break;
+                case "unique-dataset-investigations":
+                    dmIn.setViewsUniqueMachine(count);
+                    break;
+                case "total-dataset-requests":
+                    dmIn.setDownloadsTotalMachine(count);
+                    break;
+                case "unique-dataset-requests":
+                    dmIn.setDownloadsUniqueMachine(count);
+                    break;
+            }
+        }
+        return dmIn;
+    }
+    
+    private DatasetMetrics addNoCountryMetric(Dataset ds, String accessMethod, String metricType, Long remaining, String monthYear) {
+        DatasetMetrics dm = new DatasetMetrics();
+        dm.initCounts();
+        dm.setDataset(ds);
+        dm.setCountryCode("");
+        dm.setMonth(monthYear);
+        dm = loadMetrics(dm, remaining, accessMethod,  metricType ); 
+        return dm;
+    }
+    
     private List<DatasetMetrics> addUpdateMetrics(List<DatasetMetrics> currentList, List<DatasetMetrics> compareList, String countField, String accessMethod){
         
         List<DatasetMetrics> toAdd = new ArrayList();
@@ -279,28 +251,28 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                 DatasetMetrics next = iterator.next();
                 if (next.getCountryCode().equals(testMetric.getCountryCode())) {
                     //Replace element      
-                    if (countField.equals("TotalViews")){
+                    if (countField.equals("total-dataset-investigations")){
                         if(accessMethod.equals("regular")){
                             next.setViewsTotalRegular(testMetric.getViewsTotalRegular());
                         } else {
                             next.setViewsTotalMachine(testMetric.getViewsTotalMachine());
                         }                      
                     }
-                    if (countField.equals("UniqueViews")){
+                    if (countField.equals("unique-dataset-investigations")){
                         if(accessMethod.equals("regular")){
                             next.setViewsUniqueRegular(testMetric.getViewsUniqueRegular());
                         } else {
                             next.setViewsUniqueMachine(testMetric.getViewsUniqueMachine());
                         }
                     }                    
-                    if (countField.equals("TotalRequests")){
+                    if (countField.equals("total-dataset-requests")){
                         if(accessMethod.equals("regular")){
                             next.setDownloadsTotalRegular(testMetric.getDownloadsTotalRegular());
                         } else {
                             next.setDownloadsTotalMachine(testMetric.getDownloadsTotalMachine());
                         }
                     }                    
-                    if (countField.equals("UniqueRequests")){
+                    if (countField.equals("unique-dataset-requests")){
                         if(accessMethod.equals("regular")){
                             next.setDownloadsUniqueRegular(testMetric.getDownloadsUniqueRegular());
                         } else {

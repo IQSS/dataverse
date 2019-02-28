@@ -85,7 +85,7 @@
             {
               "access-method": "regular",
               "metric-type": "total-dataset-requests",
-              "count": 4,
+              "count": 9,
               "volume": 26764,              
               "country-counts": {
                 "us": 2,
@@ -95,7 +95,7 @@
             {
               "access-method": "regular",
               "metric-type": "unique-dataset-requests",
-              "count": 3,
+              "count": 5,
               "country-counts": {
                 "us": 2,
                 "ca": 1
@@ -104,7 +104,7 @@
             {
               "access-method": "machine",
               "metric-type": "total-dataset-requests",
-              "count": 7,
+              "count": 8,
               "country-counts": {
                 "us": 4,
                 "ca": 3
@@ -113,7 +113,7 @@
             {
               "access-method": "machine",
               "metric-type": "unique-dataset-requests",
-              "count": 5,
+              "count": 6,
               "country-counts": {
                 "us": 3,
                 "ca": 2
@@ -122,7 +122,7 @@
             {
               "access-method": "regular",
               "metric-type": "total-dataset-investigations",
-              "count": 5,
+              "count": 7,
               "country-counts": {
                 "us": 3,
                 "kr": 2
@@ -131,7 +131,7 @@
             {
               "access-method": "machine",
               "metric-type": "total-dataset-investigations",
-              "count": 12,
+              "count": 17,
               "country-counts": {
                 "us": 4,
                 "de": 2,
@@ -142,7 +142,7 @@
             {
               "access-method": "regular",
               "metric-type": "unique-dataset-investigations",
-              "count": 3,
+              "count": 6,
               "country-counts": {
                 "us": 2,
                 "kr": 1
@@ -151,7 +151,7 @@
             {
               "access-method": "machine",
               "metric-type": "unique-dataset-investigations",
-              "count": 7,
+              "count": 9,
               "country-counts": {
                 "us": 3,
                 "de": 1,

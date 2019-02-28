@@ -106,13 +106,13 @@ public class MakeDataCountApiIT {
         getViewsTotalRegular.prettyPrint();
         getViewsTotalRegular.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.viewsTotalRegular", equalTo(5));
+                .body("data.viewsTotalRegular", equalTo(7));
 
         Response getViewsTotalMachine = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsTotalMachine, apiToken);
         getViewsTotalMachine.prettyPrint();
         getViewsTotalMachine.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.viewsTotalMachine", equalTo(12));
+                .body("data.viewsTotalMachine", equalTo(17));
 
         Response getViewsUniqueUs = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsUnique, monthYear, countryCodeUs, apiToken);
         getViewsUniqueUs.prettyPrint();
@@ -124,13 +124,13 @@ public class MakeDataCountApiIT {
         getViewsUniqueRegular.prettyPrint();
         getViewsUniqueRegular.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.viewsUniqueRegular", equalTo(3));
+                .body("data.viewsUniqueRegular", equalTo(6));
 
         Response getViewsUniqueMachine = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricViewsUniqueMachine, apiToken);
         getViewsUniqueMachine.prettyPrint();
         getViewsUniqueMachine.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.viewsUniqueMachine", equalTo(7));
+                .body("data.viewsUniqueMachine", equalTo(9));
 
         Response getDownloadsTotalUs = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricDownloadsTotal, monthYear, countryCodeUs, apiToken);
         getDownloadsTotalUs.prettyPrint();
@@ -142,13 +142,13 @@ public class MakeDataCountApiIT {
         getDownloadsTotalRegular.prettyPrint();
         getDownloadsTotalRegular.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.downloadsTotalRegular", equalTo(4));
+                .body("data.downloadsTotalRegular", equalTo(9));
 
         Response getDownloadsTotalMachine = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricDownloadsTotalMachine, apiToken);
         getDownloadsTotalMachine.prettyPrint();
         getDownloadsTotalMachine.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.downloadsTotalMachine", equalTo(7));
+                .body("data.downloadsTotalMachine", equalTo(8));
 
         Response getDownloadsUniqueCa = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricDownloadsUnique, monthYear, countryCodeCa, apiToken);
         getDownloadsUniqueCa.prettyPrint();
@@ -160,13 +160,13 @@ public class MakeDataCountApiIT {
         getDownloadsUniqueRegular.prettyPrint();
         getDownloadsUniqueRegular.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.downloadsUniqueRegular", equalTo(3));
+                .body("data.downloadsUniqueRegular", equalTo(5));
 
         Response getDownloadsUniqueMachine = UtilIT.makeDataCountGetMetricForDataset(datasetId.toString(), metricDownloadsUniqueMachine, apiToken);
         getDownloadsUniqueMachine.prettyPrint();
         getDownloadsUniqueMachine.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.downloadsUniqueMachine", equalTo(5));
+                .body("data.downloadsUniqueMachine", equalTo(6));
 
     }
 
