@@ -1,0 +1,16 @@
+{
+  "displayName":"Read Document",
+  "description":"Read a pdf document.",
+  "type":"explore",
+  "toolUrl":"https://dv.dev-aws.qdr.org/resources/previewers/PDFPreview.html",
+  "toolParameters": {
+      "queryParameters":[
+        {"fileid":"{fileId}"},
+        {"siteUrl":"{siteUrl}"},
+        {"key":"{apiToken}"},
+        {"datasetid":"{datasetId}"},
+        {"datasetversion":"{datasetVersion}"}
+      ]
+    },
+  "contentType":"application/pdf"
+}

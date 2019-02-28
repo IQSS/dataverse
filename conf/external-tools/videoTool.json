@@ -1,0 +1,16 @@
+{
+  "displayName":"Play Video",
+  "description":"Watch a video file.",
+  "type":"explore",
+  "toolUrl":"https://dv.dev-aws.qdr.org/resources/previewers/VideoPreview.html",
+  "toolParameters": {
+      "queryParameters":[
+        {"fileid":"{fileId}"},
+        {"siteUrl":"{siteUrl}"},
+        {"key":"{apiToken}"},
+        {"datasetid":"{datasetId}"},
+        {"datasetversion":"{datasetVersion}"}
+      ]
+    },
+  "contentType":"video/ogg"
+}

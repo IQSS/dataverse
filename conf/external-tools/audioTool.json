@@ -1,0 +1,16 @@
+{
+  "displayName":"Play Audio",
+  "description":"Listen to an audio file.",
+  "type":"explore",
+  "toolUrl":"https://dv.dev-aws.qdr.org/resources/previewers/AudioPreview.html",
+  "toolParameters": {
+      "queryParameters":[
+        {"fileid":"{fileId}"},
+        {"siteUrl":"{siteUrl}"},
+        {"key":"{apiToken}"},
+        {"datasetid":"{datasetId}"},
+        {"datasetversion":"{datasetVersion}"}
+      ]
+    },
+  "contentType":"audio/mp3"
+}
