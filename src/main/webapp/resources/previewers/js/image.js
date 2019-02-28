@@ -20,6 +20,11 @@ $(document)
             versionUrl = versionUrl + "?key=" + apiKey;
           }
           $("#previewedImage").attr("src",fileUrl);
+      $("#previewedImage")
+    .wrap('<span style="display:inline-block"></span>')
+    .css('display', 'block')
+    .parent()
+    .zoom({on:'grab'});
         });
 
 function returnToDataset(parentUrl) {
