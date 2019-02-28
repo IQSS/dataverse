@@ -2665,7 +2665,7 @@ public class DatasetPage implements java.io.Serializable {
                         try {
                             DataFile dataFile = fmd.getDataFile();
                             StorageIO<DataFile> storageIO = dataFile.getStorageIO();
-                            storageIO.open();
+                            //storageIO.open();
                             String storageLocation = storageIO.getStorageLocation();
                             if (storageLocation != null) {
                                 deleteStorageLocations.put(dataFile.getId(), storageLocation);

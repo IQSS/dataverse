@@ -73,7 +73,10 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -88,8 +91,10 @@ import java.io.StringReader;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -234,8 +239,49 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @Path("{id}/destroy")
     public Response destroyDataset( @PathParam("id") String id) {
+        
         return response( req -> {
-            execCommand( new DestroyDatasetCommand(findDatasetOrDie(id), req) );
+            // first check if dataset is released, and if so, if user is a superuser
+            Dataset doomed = findDatasetOrDie(id);
+            User u = findUserOrDie();
+            DestroyDatasetCommand destroyCommand = new DestroyDatasetCommand(doomed, req);
+            
+            if (doomed.isReleased() && (!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
+                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Destroy can only be called by superusers.")); 
+            }
+        
+            // Gather the locations of the physical files that will need to be 
+            // deleted once the destroy command execution has been finalized:
+            
+            Map<Long, String> deleteStorageLocations = null;
+            
+            Iterator<DataFile> dfIt = doomed.getFiles().iterator();
+            while (dfIt.hasNext()) {
+                DataFile df = dfIt.next();
+               
+                try {
+                    StorageIO<DataFile> storageIO = df.getStorageIO();
+                    String storageLocation = storageIO.getStorageLocation();
+                    if (storageLocation != null) {
+                        deleteStorageLocations.put(df.getId(), storageLocation);
+                    }
+                } catch (IOException ioex) {
+                    // something potentially wrong with the physical file,
+                    // or connection to the physical storage? 
+                    // we don't care (?) - we'll still try to delete the datafile from the database.
+                }
+            }
+            execCommand( new DestroyDatasetCommand(doomed, req));
+            
+            // If we have gotten this far, the destroy command has succeeded, 
+            // so we can finalize permanently deleting the physical files:
+            // (DataFileService will double-check that the datafiles no 
+            // longer exist in the database, before attempting to delete 
+            // the physical files)
+            if (deleteStorageLocations != null) {
+                fileService.finalizeFileDeletes(deleteStorageLocations);
+            }            
+            
             return ok("Dataset " + id + " destroyed");
         });
     }
