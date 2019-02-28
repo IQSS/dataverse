@@ -902,59 +902,8 @@ sub setup_glassfish {
 	
 	exit 1;
     }
-    
-# 5e. Additional config files:
-    
-    my $JHOVE_CONFIG = "jhove.conf";
-    my $JHOVE_CONF_SCHEMA = "jhoveConfig.xsd";
-    
 
-    my $JHOVE_CONFIG_DIST = $JHOVE_CONFIG; 
-    my $JHOVE_CONF_SCHEMA_DIST = $JHOVE_CONF_SCHEMA; 
-    
-# (if the installer is being run NOT as part of a distribution zipped bundle, but
-# from inside the source tree - adjust the locations of the jhove config files:
 
-    unless ( -f $JHOVE_CONFIG ) {
-	$JHOVE_CONFIG_DIST = "../../conf/jhove/jhove.conf";
-	$JHOVE_CONF_SCHEMA_DIST = "../../conf/jhove/jhoveConfig.xsd";
-    }
-
-# but if we can't find the files in either location, it must mean
-# that they are not running the script in the correct directory - so 
-# nothing else left for us to do but give up:
-
-    unless ( -f $JHOVE_CONFIG_DIST && -f $JHOVE_CONF_SCHEMA_DIST ) {
-	print "\nERROR! JHOVE configuration files not found in the config dir!\n";
-	print "(are you running the installer in the right directory?\n";
-	print "Aborting...\n";
-	exit 1;
-    }
-
-    print "\nCopying additional configuration files... ";
-
-    #system( "/bin/cp -f " . $JHOVE_CONF_SCHEMA_DIST . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
-    my $jhove_success = copy ($JHOVE_CONF_SCHEMA_DIST, $glassfish_dir . "/glassfish/domains/domain1/config");
-    unless ($jhove_success) 
-    {
-	print "\n*********************\n";
-	print "ERROR: failed to copy jhove config file into " . $glassfish_dir . "/glassfish/domains/domain1/config - do you have write permission in that directory?";
-	exit 1;
-    }
-
-# The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
-# - so it may need to be readjusted here: 
-
-    if ( $glassfish_dir ne "/usr/local/glassfish4" )
-    {
-	system( "sed 's:/usr/local/glassfish4:$glassfish_dir:g' < " . $JHOVE_CONFIG_DIST . " > " . $glassfish_dir . "/glassfish/domains/domain1/config/" . $JHOVE_CONFIG);
-    }
-    else 
-    {
-	system( "/bin/cp -f " . $JHOVE_CONFIG_DIST . " " . $glassfish_dir . "/glassfish/domains/domain1/config" );
-    }
-
-    print "done!\n";
     
 # 5f. check if glassfish is running:
 # TODO.

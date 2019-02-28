@@ -687,6 +687,7 @@
                     <include>**/*.properties</include>
                     <include>**/*.sql</include>
                     <include>**/*.xml</include>
+                    <include>**/*.conf</include>
                 </includes>
             </resource>
         </resources>
