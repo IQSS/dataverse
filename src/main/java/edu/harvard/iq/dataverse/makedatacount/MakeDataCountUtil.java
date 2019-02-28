@@ -37,15 +37,6 @@ import javax.json.JsonValue;
  *
  * Parts of DataOne are written in Java so perhaps there is some code that can
  * be reused?
- * 
- * On 2019-02-26 we made some decisions at tech hours that we wanted to document
- * in a code comment:
- *
- * 1. If a country cannot be determined, don't persist the metric.
- *
- * 2. We know that an external tool might come along in the future that could
- * come from localhost or a private IP address and we knowingly are not counting
- * these views and downloads because a country cannot be determined.
  */
 public class MakeDataCountUtil {
 
