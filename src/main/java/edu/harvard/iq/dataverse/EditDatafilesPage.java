@@ -1219,7 +1219,28 @@ public class EditDatafilesPage implements java.io.Serializable {
                     tabularDataTagsUpdated = false;
                 }
             }
-                        
+            
+            Map<Long, String> deleteStorageLocations = null;
+            
+            if (!filesToBeDeleted.isEmpty()) {
+                deleteStorageLocations = new HashMap<>();
+                for (FileMetadata fmd : filesToBeDeleted) {
+                    try {
+                        DataFile dataFile = fmd.getDataFile();
+                        StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+                        storageIO.open();
+                        String storageLocation = storageIO.getStorageLocation();
+                        if (storageLocation != null) {
+                            deleteStorageLocations.put(dataFile.getId(), storageLocation);
+                        }
+                    } catch (IOException ioex) {
+                        // something potentially wrong with the physical file,
+                        // or connection to the physical storage? 
+                        // we'll still try to delete the datafile from the database
+                    }
+                }
+            }
+
             Command<Dataset> cmd;
             try {
                 cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone);
@@ -1245,6 +1266,16 @@ public class EditDatafilesPage implements java.io.Serializable {
                 populateDatasetUpdateFailureMessage();
                 return null;
             }
+            
+            // Have we just deleted some draft datafiles (successfully)? 
+            // finalize the physical file deletes:
+            // (DataFileService will double-check that the datafiles no 
+            // longer exist in the database, before attempting to delete 
+            // the physical files)
+            if (deleteStorageLocations != null) {
+                datafileService.finalizeFileDeletes(deleteStorageLocations);
+            }
+
             datasetUpdateRequired = false;
             saveEnabled = false; 
         } else {
