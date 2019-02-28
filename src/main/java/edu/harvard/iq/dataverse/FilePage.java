@@ -331,43 +331,41 @@ public class FilePage implements java.io.Serializable {
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
     public String deleteFile() {
-        
+
         String fileNames = this.getFileMetadata().getLabel();
 
         editDataset = this.getFileMetadata().getDataFile().getOwner();
-        
+
         FileMetadata markedForDelete = null;
-        
-        for (FileMetadata fmd : editDataset.getEditVersion().getFileMetadatas() ){
-            
-            if (fmd.getDataFile().getId().equals(this.getFile().getId())){
+
+        for (FileMetadata fmd : editDataset.getEditVersion().getFileMetadatas()) {
+
+            if (fmd.getDataFile().getId().equals(this.getFile().getId())) {
                 markedForDelete = fmd;
             }
         }
 
-            if (markedForDelete.getId() != null) {
-                // the file already exists as part of this dataset
-                // so all we remove is the file from the fileMetadatas (for display)
-                // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
-                editDataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
-                filesToBeDeleted.add(markedForDelete);
-                
-            } else {
-                 List<FileMetadata> filesToKeep = new ArrayList<>();
-                 for (FileMetadata fmo: editDataset.getEditVersion().getFileMetadatas()){
-                      if (!fmo.getDataFile().getId().equals(this.getFile().getId())){
-                          filesToKeep.add(fmo);
-                      }
-                 }
-                 editDataset.getEditVersion().setFileMetadatas(filesToKeep);
-            }
+        if (markedForDelete.getId() != null) {
+            // the file already exists as part of this dataset
+            // so all we remove is the file from the fileMetadatas (for display)
+            // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
+            editDataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+            filesToBeDeleted.add(markedForDelete);
 
-    
+        } else {
+            List<FileMetadata> filesToKeep = new ArrayList<>();
+            for (FileMetadata fmo : editDataset.getEditVersion().getFileMetadatas()) {
+                if (!fmo.getDataFile().getId().equals(this.getFile().getId())) {
+                    filesToKeep.add(fmo);
+                }
+            }
+            editDataset.getEditVersion().setFileMetadatas(filesToKeep);
+        }
 
         fileDeleteInProgress = true;
         save();
         return returnToDatasetOnly();
-        
+
     }
     
     private int activeTabIndex;
@@ -531,9 +529,26 @@ public class FilePage implements java.io.Serializable {
                
 
         Command<Dataset> cmd;
+        boolean updateCommandSuccess = false;
+        Long deleteFileId = null;
+        String deleteStorageLocation = null;
+
+        if (!filesToBeDeleted.isEmpty()) { 
+            // We want to delete a file!
+            try {
+                StorageIO<DataFile> storageIO = filesToBeDeleted.get(0).getDataFile().getStorageIO();
+                deleteStorageLocation = storageIO.getStorageLocation();
+            } catch (IOException ioex) {
+                // something potentially wrong with the physical file
+                // or connection to the physical storage? 
+                // we'll still try to delete the datafile from the database
+            }
+        }
+        
         try {
             cmd = new UpdateDatasetVersionCommand(editDataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
             commandEngine.submit(cmd);
+            updateCommandSuccess = true;
 
         } catch (EJBException ex) {
             
@@ -557,6 +572,22 @@ public class FilePage implements java.io.Serializable {
 
 
         if (fileDeleteInProgress) {
+            
+            if (updateCommandSuccess) {
+                if (deleteStorageLocation != null) {
+                    // Finalize the delete of the physical file 
+                    // (File service will double-check that the datafile no 
+                    // longer exists in the database, before proceeding to 
+                    // delete the physical file)
+                    try {
+                        datafileService.finalizeFileDelete(deleteFileId, deleteStorageLocation);
+                    } catch (IOException ioex) {
+                        logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                                + deleteFileId + ", storage location: " + deleteStorageLocation);
+                    }
+                }
+            }
+            
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.message.deleteSuccess"));
             fileDeleteInProgress = false;
         } else {
