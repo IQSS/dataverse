@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -159,9 +160,20 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         logger.fine("preparing to delete file id " + fileIdLong);
                         DataFile fileToDelete = dataFileService.find(fileIdLong);
                         if (fileToDelete != null) {
+                            boolean deleteCommandSuccess = false; 
                             Dataset dataset = fileToDelete.getOwner();
                             Dataset datasetThatOwnsFile = fileToDelete.getOwner();
                             Dataverse dataverseThatOwnsFile = datasetThatOwnsFile.getOwner();
+                            String storageLocation = null; 
+                            
+                            try {
+                                StorageIO<DataFile> storageIO = fileToDelete.getStorageIO();
+                                storageLocation = storageIO.getStorageLocation();
+                            } catch (IOException ioex) {
+                                // something potentially wrong with the physical file
+                                // or connection to the physical storage? 
+                                // it's ok - we'll still try to delete the datafile from the database
+                            }
                             /**
                              * @todo it would be nice to have this check higher
                              * up. Do we really need the file ID? Should the
@@ -174,8 +186,24 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                             }
                             try {
                                 commandEngine.submit(updateDatasetCommand);
+                                deleteCommandSuccess = true; 
                             } catch (CommandException ex) {
                                 throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
+                            }
+                            
+                            if (deleteCommandSuccess) {
+                                if (storageLocation != null) {
+                                    // Finalize the delete of the physical file 
+                                    // (File service will double-check that the datafile no 
+                                    // longer exists in the database, before proceeding to 
+                                    // delete the physical file)
+                                    try {
+                                        dataFileService.finalizeFileDelete(fileIdLong, storageLocation);
+                                    } catch (IOException ioex) {
+                                        logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                                                + fileIdLong + ", storage location: " + storageLocation);
+                                    }
+                                }
                             }
                         } else {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find file id " + fileIdLong + " from URL: " + uri);
