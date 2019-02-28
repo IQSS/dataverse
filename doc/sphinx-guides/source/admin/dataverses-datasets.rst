@@ -76,4 +76,4 @@ Forces update to metadata provided to the PID provider of a published dataset. O
 Make Metadata Updates Without Changing Dataset Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As a superuser, click "Update Current Version" when publishing.
+As a superuser, click "Update Current Version" when publishing. (This option is only available when a 'Minor' update would be allowed.)
