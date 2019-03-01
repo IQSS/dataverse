@@ -61,7 +61,7 @@
                                     </p:commandLink>
                                 </div>
                                 <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true"  rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
+                                    <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
 
                                         <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{FilePage.fileMetadata.datasetVersion.dataset.globalIdString}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
 
@@ -270,7 +270,7 @@
                                                         </li>
                                                     </ul>
                                                 </div>
-                                                <div class="small text-muted text-right citation-standards"><span class="glyphicon glyphicon-info-sign"></span> <h:outputText value=" #{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
+                                                <div class="small text-muted text-right citation-standards"><h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
                                             </div>
                                         </div>
                                     </div>
@@ -315,7 +315,7 @@
                                                         </li>
                                                     </ul>
                                                 </div>
-                                                <div class="small text-muted text-right citation-standards"><span class="glyphicon glyphicon-info-sign"></span> <h:outputText value=" #{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
+                                                <div class="small text-muted text-right citation-standards"><h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
                                             </div>
                                             <!-- END: Cite Data Button -->
                                         </div>
@@ -439,8 +439,7 @@
                                                 </label>
                                                 <div class="col-sm-9">
                                                     <p class="help-block">
-                                                        <span class="glyphicon glyphicon-info-sign"></span>
-                                                        <h:outputFormat value=" #{bundle['file.metadataTab.fileMetadata.downloadUrl.info']}" escape="false">
+                                                        <h:outputFormat value="#{bundle['file.metadataTab.fileMetadata.downloadUrl.info']}" escape="false">
                                                             <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                                             <f:param value="#{systemConfig.guidesVersion}"/>
                                                         </h:outputFormat>

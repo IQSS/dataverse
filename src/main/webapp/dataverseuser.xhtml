@@ -334,8 +334,7 @@
                                 <div class="form-group" jsf:rendered="#{not DataverseUserPage.accountDetailsEditable}">
                                     <div class="col-sm-12">
                                         <p class="help-block">
-                                            <span class="glyphicon glyphicon-info-sign"/>
-                                            <h:outputText value=" #{bundle['user.isShibUser']}" />
+                                            <h:outputText value="#{bundle['user.isShibUser']}" />
                                             <h:outputText value=" #{bundle['user.helpShibUserMigrateOffShibBeforeLink']} " />
                                             <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
@@ -350,8 +349,7 @@
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.userAuthProvider.OAuthProvider}">
                                     <div class="col-sm-12">
                                         <p class="help-block">
-                                            <span class="glyphicon glyphicon-info-sign"/>
-                                            <h:outputFormat value=" #{bundle['user.helpOAuthBeforeLink']} ">
+                                            <h:outputFormat value="#{bundle['user.helpOAuthBeforeLink']} ">
                                                 <f:param value="#{DataverseUserPage.userAuthProvider.info.title}"/>
                                             </h:outputFormat>
                                             <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
@@ -453,7 +451,6 @@
                         </p:tab>
                         <p:tab id="apiTokenTab" title="#{bundle['apitoken.title']}">
                             <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"/>&#160;
                                 <h:outputFormat value="#{bundle['apitoken.message']}" escape="false">
                                     <f:param value="&lt;a href=&#34;#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/api&#34; target=&#34;_blank&#34;&gt;"/>
                                     <f:param value="&lt;/a&gt;"/>
@@ -481,7 +478,7 @@
                         </p:tab>
                         <ui:remove>
                             <p:tab id="groupsRoles" title="#{bundle['header.user.selectTab.groupsAndRoles']}">
-                                <span class="glyphicon glyphicon-info-sign"></span> #{bundle['groupAndRoles.manageTips']}
+                                #{bundle['groupAndRoles.manageTips']}
                             </p:tab>
                         </ui:remove>
                     </p:tabView>
@@ -490,7 +487,7 @@
                         <p:tab id="accountInfoEdit" title="#{bundle['account.info']}">
                             <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' and DataverseUserPage.nonLocalLoginEnabled}">
                                 <p class="help-block">
-                                    <span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['user.signup.otherLogInOptions.tip']}" escape="false"/>
+                                    <h:outputText value="#{bundle['user.signup.otherLogInOptions.tip']}" escape="false"/>
                                 </p>
                             </ui:fragment>
                             <div class="form-horizontal">

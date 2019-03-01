@@ -66,14 +66,13 @@
                             </div>
                             <div class="panel-body" jsf:id="contentOfHttpPanel" jsf:rendered="#{!EditDatafilesPage.workingVersion.hasPackageFile}">
                                 <p class="help-block">
-                                    <span class="glyphicon glyphicon-info-sign"/>
+                                    <h:outputFormat value="#{bundle['file.selectToAdd.tipMoreInformation']}" escape="false">
+                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                        <f:param value="#{systemConfig.guidesVersion}"/>
+                                    </h:outputFormat>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false" 
                                                     rendered="#{systemConfig.maxFileUploadSize !=null and !empty systemConfig.maxFileUploadSize}">
                                         <f:param value="#{systemConfig.humanMaxFileUploadSize}"/>
-                                    </h:outputFormat>
-                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipMoreInformation']}" escape="false">
-                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                        <f:param value="#{systemConfig.guidesVersion}"/>
                                     </h:outputFormat>
                                 </p>
                     
@@ -140,7 +139,7 @@
                                 
                                 <div jsf:id="dropboxBlock" jsf:rendered="#{settingsWrapper.isHasDropBoxKey() and !lockedFromEdits }"  class="margin-top">
                                     <!-- Dropbox upload widget -->
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.fromDropbox.tip']}</p>
+                                    <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
                                     <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
                                     <p:commandButton id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
                                     <p:commandButton id="dropBoxUserButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
@@ -163,7 +162,7 @@
                                 <ui:fragment rendered="#{createDataset}">
                                     <ui:fragment rendered="#{empty EditDatafilesPage.fileMetadatas}">
                                         <p class="help-block">
-                                            <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.createUploadDisabled']}
+                                            #{bundle['file.createUploadDisabled']}
                                         </p>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty EditDatafilesPage.fileMetadatas}">
@@ -176,8 +175,7 @@
                                     <!-- NO RSYNC/PACKAGE FILE YET. PROVIDE INSTRUCTIONS: DOWNLOAD TO UPLOAD. -->
                                     <ui:fragment rendered="#{empty EditDatafilesPage.fileMetadatas and EditDatafilesPage.isHasRsyncScript()}">
                                         <p class="help-block">
-                                            <span class="glyphicon glyphicon-info-sign"></span>
-                                            <h:outputFormat value=" #{bundle['file.rsyncUpload.info']}" escape="false">
+                                            <h:outputFormat value="#{bundle['file.rsyncUpload.info']}" escape="false">
                                                 <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                                 <f:param value="#{systemConfig.guidesVersion}"/>
                                             </h:outputFormat>
@@ -594,7 +592,7 @@
                     #{bundle['file.spss-savEncoding']}
                 </label>
                 <div class="col-sm-8">
-                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.spss-savEncoding.title']}</p>
+                    <p class="help-block">#{bundle['file.spss-savEncoding.title']}</p>
                     <p class="form-control-static"><h:outputText id="selectedEncoding" value="#{bundle['file.spss-savEncoding.current']} #{EditDatafilesPage.ingestLanguageEncoding}"/></p>
                     <p:tieredMenu id="spssSavEncodingLanguage" styleClass="form-control">
                         <p:submenu label="#{bundle['editfilesfragment.mainlabel']}">
@@ -756,7 +754,7 @@
                     #{bundle['file.spss-porExtraLabels']}
                 </label>
                 <div class="col-sm-8">
-                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.spss-porExtraLabels.title']}</p>
+                    <p class="help-block">#{bundle['file.spss-porExtraLabels.title']}</p>
                     <p:growl id="messageForLabelsFileUpload" showDetail="true" />
                     <p:fileUpload id="labelsFileUpload" label="#{bundle['file.spss-porExtraLabels.selectToAddBtn']}" update="messageForLabelsFileUpload" mode="advanced" auto="true" fileUploadListener="#{EditDatafilesPage.handleLabelsFileUpload}"/>
                 </div>
@@ -799,7 +797,7 @@
     </p:dialog>
     <ui:include rendered="#{systemConfig.provCollectionEnabled}" src="provenance-popups-fragment.xhtml"/>
     <p:dialog id="editFileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="editFileTagsPopup" modal="true">
-        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
+        <p class="help-block">#{bundle['file.editTagsDialog.tip']}</p>
 
         <div class="form-horizontal" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForTagsPopup)}">
             <div class="form-group text-left">

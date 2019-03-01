@@ -303,7 +303,7 @@
                                 </p:commandLink>
                             </div>
                             <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
+                                <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
 
                                 <div id="sharrre-widget" data-url="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
 
@@ -412,8 +412,7 @@
                                             <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.compound}">
                                                 <ui:fragment rendered="#{dsf.datasetFieldType.name == 'datasetContact'}">
                                                     <p class="help-block">
-                                                        <span class="glyphicon glyphicon-info-sign"/>
-                                                        <h:outputText value=" #{bundle['dataset.contact.tip']}"/>
+                                                        <h:outputText value="#{bundle['dataset.contact.tip']}"/>
                                                     </p>
                                                 </ui:fragment>
                                                 <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue">
@@ -462,7 +461,7 @@
                             </label>
                             <div class="col-sm-6">
                                 <p class="help-block">
-                                    <span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.template.tip']}
+                                    #{bundle['dataset.template.tip']}
                                 </p>
                                 <p:selectOneMenu value="#{DatasetPage.selectedTemplate}" onchange="updateTemplate()"
                                                  converter="templateConverter" id="select_DatasetTemplate" styleClass="form-control"
@@ -669,7 +668,7 @@
                     <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noValidSelectedFilesForDownload']}</p>
                         <ui:fragment rendered="#{DatasetPage.dataset.fileAccessRequest}">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.requestAccessToRestrictedFiles']}</p>
+                            <p class="help-block">#{bundle['dataset.requestAccessToRestrictedFiles']}</p>
                         </ui:fragment>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('downloadInvalid').hide();" type="button" />
@@ -685,7 +684,7 @@
                             </ui:repeat>
                         </table>
                         <div class="button-block">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.downloadUnrestricted']}</p>
+                            <p class="help-block">#{bundle['dataset.downloadUnrestricted']}</p>
                             <ui:fragment rendered="#{!DatasetPage.downloadPopupRequired}">
                                 <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload()}" />
                             </ui:fragment>
@@ -712,7 +711,7 @@
                     </p:dialog>
                     <p:dialog id="privateUrlId" styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}" widgetVar="privateUrlConfirmation" modal="true">
                         <p:fragment id="privateUrlPanel" rendered="#{DatasetPage.userCanCreatePrivateURL}">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>&#160;
+                            <p class="help-block">
                                 <h:outputFormat value="#{bundle['dataset.privateurl.tip']}" escape="false">
                                     <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                     <f:param value="#{systemConfig.guidesVersion}"/>
@@ -1062,7 +1061,7 @@
                     <!-- p:remoteCommand  name="openEditFilesPageCommand" action=" {DatasetPage.editFileMetadata()}"  / -->
 
                     <p:dialog id="fileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="fileTagsPopup" modal="true">
-                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
+                        <p class="help-block">#{bundle['file.editTagsDialog.tip']}</p>
                         <div class="form-horizontal" jsf:rendered="#{!(empty DatasetPage.selectedFiles)}">
                             <div class="form-group text-left">
                                 <label for="selectedTagsList" class="col-sm-4 control-label">
@@ -1382,7 +1381,7 @@
                             <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetPublishCustomText)}" escape="false"/>
                         </div>
                         <p class="help-block">
-                            <span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.publishBoth.tip']}
+                            #{bundle['dataset.publishBoth.tip']}
                         </p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle['dataset.mayNotBePublished.both.button']}" onclick="PF('publishParent').hide();
@@ -1400,7 +1399,7 @@
                         </div>
                         <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
                             <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.selectVersionNumber']}
+                                #{bundle['dataset.selectVersionNumber']}
                             </p>
                             <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">
                                 <f:selectItem itemLabel="#{bundle['dataset.minorRelease']} (#{DatasetPage.datasetNextMinorVersion})" itemValue="1" />

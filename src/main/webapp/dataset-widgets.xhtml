@@ -32,8 +32,8 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>               
-                                        <h:outputFormat value=" #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.tip']}" escape="false">
+                                    <p class="help-block">
+                                        <h:outputFormat value="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.tip']}" escape="false">
                                             <f:param value="#{systemConfig.uploadLogoSizeLimit/1000}"/>
                                         </h:outputFormat>
                                     </p>
@@ -149,8 +149,8 @@
                         </div>
 
                         <ui:fragment rendered="#{DatasetWidgetsPage.dataset.released}">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> 
-                                <h:outputFormat value=" #{bundle['dataset.widgets.tip']}" escape="false">
+                            <p class="help-block">
+                                <h:outputFormat value="#{bundle['dataset.widgets.tip']}" escape="false">
                                     <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                     <f:param value="#{systemConfig.guidesVersion}"/>
                                 </h:outputFormat>

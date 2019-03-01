@@ -160,7 +160,6 @@
                         </p>
                         <!-- TODO: We probably don't need this extra text anymore - let's review
                           p class="help-block">
-                            <span class="glyphicon glyphicon-info-sign"/>
                             <h:outputFormat value=" _{bundle['harvestclients.tab.header.action.btn.delete.dialog.tip']}">
                                 <f:param value="_{harvestingClientsPage.getSelectedClient().name}"/>
                             </h:outputFormat>
@@ -178,7 +177,7 @@
                         <p:fragment id="newHarvestingClientDialogContent">
                             <p:focus context="newHarvestingClientDialogContent"/>
                             <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['harvestclients.newClientDialog.help']}"/>
+                                <h:outputText value="#{bundle['harvestclients.newClientDialog.help']}"/>
                             </p>
                             <fieldset id="addClientStepOne" class="form-horizontal" jsf:rendered="#{harvestingClientsPage.createStepOne}">
                                 <!-- STEP 1 - Info -->

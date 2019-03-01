@@ -42,7 +42,6 @@
                     <p:fragment id="serviceDisabled" rendered="#{!harvestingSetsPage.harvestingServerEnabled}">
                         <div>
                             <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"/>&#160;
                                 <h:outputText value="#{bundle['harvestserver.service.disabled.msg']}"/>
                             </p>
                         </div>
@@ -198,7 +197,7 @@
                         <p:fragment id="newOAISetDialogContent">
                             <p:focus context="newOAISetDialogContent"/>
                             <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['harvestserver.newSetDialog.help']}"/>
+                                <h:outputText value="#{bundle['harvestserver.newSetDialog.help']}"/>
                             </p>
                             <div class="form-horizontal">
                                 <div class="form-group">

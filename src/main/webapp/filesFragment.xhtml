@@ -36,8 +36,8 @@
                 <!-- Cloud Storage Access -->
                 <div class="form-group col-xs-12 text-left">
                     <div class="col-xs-12">
-                        <p class="help-block text-muted"><span class="glyphicon glyphicon-info-sign"/> 
-                            <h:outputFormat value=" #{bundle['file.cloudStorageAccess.help']}" escape="false">
+                        <p class="help-block">
+                            <h:outputFormat value="#{bundle['file.cloudStorageAccess.help']}" escape="false">
                                 <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                 <f:param value="#{systemConfig.guidesVersion}"/>
                                 <f:param value="#{DatasetPage.cloudEnvironmentName}"/>

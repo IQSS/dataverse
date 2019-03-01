@@ -39,7 +39,7 @@
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.logo.image.title']}"></span>
                             </label>
                             <div class="col-sm-9">
-                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.theme.logo.tip']}</p>
+                                <p class="help-block">#{bundle['dataverse.theme.logo.tip']}</p>
                                 <p:panelGrid rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="2" styleClass="noBorders" columnClasses="text-center,uploadNewLogo">
                                     <p:column>
                                         <p>
@@ -159,7 +159,7 @@
                                     <f:attribute name="taglineInput" value="#{themeWidgetFragment.taglineInput}"/>
                                 </h:inputHidden>
                                 <div class="col-sm-8">
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.theme.tagline.tip']}</p>
+                                    <p class="help-block">#{bundle['dataverse.theme.tagline.tip']}</p>
                                     <p:inputText id="tagline" styleClass="form-control" binding="#{themeWidgetFragment.taglineInput}" validator="#{themeWidgetFragment.validateTagline}" value="#{themeWidgetFragment.editDv.dataverseTheme.tagline}"/>
                                     <p:message for="tagline" display="text"/>
                                 </div>
@@ -171,7 +171,7 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.website.title']}"></span>
                                 </label>
                                 <div class="col-sm-6">
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.theme.website.tip']}</p>
+                                    <p class="help-block">#{bundle['dataverse.theme.website.tip']}</p>
                                     <p:inputText id="website" styleClass="form-control" binding="#{themeWidgetFragment.linkUrlInput}" validatorMessage="#{bundle['dataverse.theme.website.invalidMsg']}" validator="#{themeWidgetFragment.validateUrl}" value="#{themeWidgetFragment.editDv.dataverseTheme.linkUrl}"/>
                                     <p:watermark for="website" value="#{bundle['dataverse.theme.website.watermark']}" id="watermark" />
                                     <p:message for="website" display="text"/>

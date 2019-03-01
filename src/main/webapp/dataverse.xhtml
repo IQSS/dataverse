@@ -177,8 +177,7 @@
                                 </label>
                                 <div class="col-sm-9 form-col-container">
                                     <p class="help-block">
-                                        <span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputFormat value=" #{bundle.htmlAllowedMsg}" escape="false">
+                                        <h:outputFormat value="#{bundle.htmlAllowedMsg}" escape="false">
                                             <f:param value="#{bundle.htmlAllowedTags}"/>
                                         </h:outputFormat>
                                     </p>
@@ -203,7 +202,7 @@
                                 <div class="col-sm-12 form-group">
                                     <label class="col-sm-3 control-label" for="mdbSelect">#{bundle['dataverse.metadataElements']}</label>
                                     <div class="col-sm-9">
-                                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.metadataElements.tip']}</p>
+                                        <p class="help-block">#{bundle['dataverse.metadataElements.tip']}</p>
 
                                         <label class="metadata-blocks-default" for="metadataRoot" jsf:rendered="#{DataversePage.dataverse.owner != null}">
                                             <h:selectBooleanCheckbox id="metadataRoot" tabindex="7" styleClass="metadata-blocks-default"
@@ -314,7 +313,7 @@
                                 <div class="col-sm-12 form-group">
                                     <label class="col-sm-3 control-label" for="facetPickListCreate">#{bundle['dataverse.facetPickList.text']}</label>
                                     <div class="col-sm-9">
-                                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.facetPickList.tip']}</p>
+                                        <p class="help-block">#{bundle['dataverse.facetPickList.tip']}</p>
 
                                         <label class="metadata-blocks-default" for="facetsRoot" jsf:rendered="#{DataversePage.dataverse.owner != null}">
                                             <h:selectBooleanCheckbox id="facetsRoot" tabindex="8" styleClass="facets-blocks-default"
@@ -486,7 +485,7 @@
                                 </p:commandLink>
                             </div>
                             <p:dialog id="shareDialog" header="#{bundle['dataverse.share.dataverseShare']}" widgetVar="shareDialog" modal="true">
-                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.share.dataverseShare.tip']}</p>
+                                <p class="help-block">#{bundle['dataverse.share.dataverseShare.tip']}</p>
 
                                 <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataverse/#{DataversePage.dataverse.alias}" data-text="#{bundle['dataverse.share.dataverseShare.shareText']}"></div>
 
@@ -581,7 +580,7 @@
                     <p:dialog id="browseOptsForm" header="#{bundle['dataverse.option.featuredDataverse']}" widgetVar="browseOptsForm" modal="true">
                         <ui:fragment rendered="#{!empty DataversePage.featuredDataverses.source or !empty DataversePage.featuredDataverses.target}">
                         <div class="form-group">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.selectToFeature']}</p>
+                            <p class="help-block">#{bundle['dataverse.selectToFeature']}</p>
                             <p:pickList id="featuredDataverseList" value="#{DataversePage.featuredDataverses}" var="featureddataverse"
                                         itemLabel="#{featureddataverse.name}"
                                         itemValue="#{featureddataverse}" converter="dataverseConverter"
@@ -644,10 +643,10 @@
                 <p:dialog id="linkDataverseForm" header="#{DataversePage.linkMode == 'SAVEDSEARCH' ? bundle['dataverse.savedsearch.link'] : bundle['dataverse.link']}" widgetVar="linkDataverseForm" modal="true">
                     <h:form styleClass="form-horizontal" rendered="#{DataversePage.dataversesForLinking.size() > 1}">
                         <ui:fragment rendered="#{DataversePage.linkMode == 'LINKDATAVERSE'}">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.link.dataverse.choose']}</p>
+                            <p class="help-block">#{bundle['dataverse.link.dataverse.choose']}</p>
                         </ui:fragment>
                         <ui:fragment rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.savedsearch.dataverse.choose']}</p>
+                            <p class="help-block">#{bundle['dataverse.savedsearch.dataverse.choose']}</p>
                         </ui:fragment>
                         <div class="form-group">
                             <label class="col-sm-4 control-label">
@@ -708,7 +707,7 @@
                         </div>
                     </h:form>
                     <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 1}">
-                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.link.no.choice']}</p>
+                        <p class="help-block">#{bundle['dataverse.link.no.choice']}</p>
                         <div class="form-horizontal">
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">
