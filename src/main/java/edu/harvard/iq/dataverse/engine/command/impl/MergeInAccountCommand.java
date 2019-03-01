@@ -29,12 +29,9 @@ import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.persistence.Query;
 
 /**
  * Merges one account into another.
- * NOTE THAT THIS COMMAND IS INCOMPLETE AND DOES NOT PORT FOREIGN KEYS
- * This is done for the api after the command is called
  * 
  * @author matthew
  */
