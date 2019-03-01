@@ -42,4 +42,4 @@ done
 #LOG_GLOB="sample_logs/counter_2018-05-*.log"
 #START_DATE="2018-05-08"
 #END_DATE="2018-05-09"
-CONFIG_FILE=/dataverse/scripts/vagrant/counter-processor-config.yaml python36 main.py
+CONFIG_FILE=/dataverse/scripts/vagrant/counter-processor-config.yaml python3.6 main.py
