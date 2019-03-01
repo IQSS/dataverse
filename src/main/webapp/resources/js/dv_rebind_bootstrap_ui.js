@@ -16,9 +16,12 @@ function bind_bsui_components(){
       $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
     });
     
+    // rebind for dropdown menus on restrict button
+    $('.dropdown-toggle').dropdown();
+    
     // Hide open tooltips + popovers
     $('.bootstrap-button-tooltip, [data-toggle="tooltip"]').tooltip("hide");
-    // $("[data-toggle='popover']").popover("hide");
+    $("[data-toggle='popover']").popover("hide");
 
     // Tooltip + popover functionality
     bind_tooltip_popover();
@@ -37,22 +40,6 @@ function bind_bsui_components(){
         var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
         handleResizeDialog(dialog_id);
     }
-
-}
-
-function dataset_fileupload_rebind(){
-    //console.log('dataset_fileupload_rebind');
-    bind_bsui_components();
-    // rebind for dropdown menus on restrict button
-    $('.dropdown-toggle').dropdown();
-
-}
-
-function dataverseuser_page_rebind(){
-    bind_bsui_components();
-    // rebind for dropdown menus on dataverseuser.xhtml
-    $('.dropdown-toggle').dropdown();
-
 }
 
 function bind_tooltip_popover(){
@@ -93,50 +80,6 @@ function disabledLinks(){
             e.preventDefault();
         }
     });
-}
-
-/*
- * Called after "Edit Dataverse" - "General Information"
- */
-function post_edit_dv_general_info(){
-    bind_bsui_components();
-}
-
-/*
- * Used after cancelling "Edit Dataverse"
- */
-function post_cancel_edit_dv(){
-   bind_bsui_components();
-   initCarousel();
-}
-
-/*
- * Called after "Upload + Edit Files"
- */
-function post_edit_files(){
-   bind_bsui_components();
-}
-
-/*
- * Called after "Edit Metadta"
- */
-function post_edit_metadata(){
-   bind_bsui_components();
-}
-
-/*
- * Called after "Edit Terms"
- */
-
-function post_edit_terms(){
-   bind_bsui_components();
-}
-
-/*
- *  Used when cancelling either "Upload + Edit Files" or "Edit Metadata"
- */
-function post_cancel_edit_files_or_metadata(){
-   bind_bsui_components();
 }
 
 /*

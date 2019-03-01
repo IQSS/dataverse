@@ -23,7 +23,7 @@
                                         <h:selectBooleanCheckbox id="themeRoot" tabindex="7" styleClass="metadata-blocks-default" 
                                                                  rendered="#{themeWidgetFragment.editDv.owner != null}"
                                                                  value="#{themeWidgetFragment.inheritCustomization}" >
-                                            <p:ajax update="@widgetVar(content)" oncomplete="javascript:dataverseuser_page_rebind();" listener="#{themeWidgetFragment.checkboxListener()}"/>
+                                            <p:ajax update="@widgetVar(content)" oncomplete="javascript:bind_bsui_components();" listener="#{themeWidgetFragment.checkboxListener()}"/>
                                         </h:selectBooleanCheckbox>
                                         <h:outputFormat value="#{bundle['dataverse.theme.inheritCustomization.checkbox']}">
                                             <f:param value="#{themeWidgetFragment.editDv.themeRootDataverseName}"/>
@@ -66,7 +66,7 @@
                                             <p:selectOneRadio id="logoFormat" value="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat}">
                                                 <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.format.selectTab.square2']}" itemValue="SQUARE"/>
                                                 <f:selectItem itemLabel="#{bundle['dataverse.theme.logo.format.selectTab.rectangle2']}" itemValue="RECTANGLE"/>
-                                                <p:ajax update="@widgetVar(content)" oncomplete="dataverseuser_page_rebind();" />
+                                                <p:ajax update="@widgetVar(content)" oncomplete="bind_bsui_components();" />
                                             </p:selectOneRadio>
                                             <p:message for="logoFormat" display="text"/>
                                         </div>

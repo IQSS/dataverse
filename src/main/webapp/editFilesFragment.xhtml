@@ -129,7 +129,7 @@
                                   process="filesTable" 
                                   update=":datasetForm:filesTable, @([id$=filesButtons])"
                                   label="#{bundle['file.selectToAddBtn']}"
-                                  oncomplete="javascript:dataset_fileupload_rebind();uploadFinished(PF('fileUploadWidget'));"
+                                  oncomplete="javascript:bind_bsui_components();uploadFinished(PF('fileUploadWidget'));"
                                   onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
                                   onerror="javascript:uploadFailure();"
                                   sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"
