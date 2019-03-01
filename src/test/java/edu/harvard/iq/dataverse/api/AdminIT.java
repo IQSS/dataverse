@@ -548,6 +548,18 @@ public class AdminIT {
         mergeAccounts = UtilIT.mergeAccounts(targetname, usernameConsumed);
         assertEquals(200, mergeAccounts.getStatusCode());
         mergeAccounts.prettyPrint();
+        
+        //Make sure that you can publish the dataverse/dataset as the newly assigned user
+        
+        Response publishDataverseResponse =  UtilIT.publishDataverseViaNativeApi(dataverseAlias, targetToken);
+        assertEquals(200, publishDataverseResponse.getStatusCode());
+        publishDataverseResponse.prettyPrint();
+        
+        Response publishDatasetResponse =  UtilIT.publishDatasetViaNativeApi(datasetId, "major", targetToken);
+        assertEquals(200, publishDatasetResponse.getStatusCode());
+        publishDatasetResponse.prettyPrint();
+        
+        
     }
     
     @Test
