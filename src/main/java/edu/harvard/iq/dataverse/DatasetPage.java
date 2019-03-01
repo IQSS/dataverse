@@ -315,15 +315,6 @@ public class DatasetPage implements java.io.Serializable {
 
     private String thumbnailString = null; 
 
-    public String getThumbnailPath() {
-        try {
-            return DataAccess.getStorageIO(dataset).getAuxObjectAsPath(DatasetUtil.datasetLogoThumbnail + DatasetUtil.thumb48addedByImageThumbConverter).toString();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
     // This is the Dataset-level thumbnail; 
     // it's either the thumbnail of the designated datafile, 
     // or scaled down uploaded "logo" file, or randomly selected
