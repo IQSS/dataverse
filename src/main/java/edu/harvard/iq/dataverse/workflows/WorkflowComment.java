@@ -119,4 +119,8 @@ public class WorkflowComment implements Serializable {
         return created;
     }
 
+    public void setDatasetVersion(DatasetVersion dv) {
+        datasetVersion=dv;
+    }
+
 }
