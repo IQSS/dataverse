@@ -323,9 +323,9 @@ public class Datasets extends AbstractApiBean {
     
     @GET
     @Path("{id}/versions/{versionId}")
-    public Response getVersion( @PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
+    public Response getVersion( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return allowCors(response( req -> {
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId));            
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);            
             return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
                                                         : ok(json(dsv));
         }));
@@ -333,17 +333,17 @@ public class Datasets extends AbstractApiBean {
     
     @GET
     @Path("{id}/versions/{versionId}/files")
-    public Response getVersionFiles( @PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
+    public Response getVersionFiles( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return allowCors(response( req -> ok( jsonFileMetadatas(
-                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId)).getFileMetadatas()))));
+                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getFileMetadatas()))));
     }
     
     @GET
     @Path("{id}/versions/{versionId}/metadata")
-    public Response getVersionMetadata( @PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
+    public Response getVersionMetadata( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return allowCors(response( req -> ok(
                     jsonByBlocks(
-                        getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId) )
+                        getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers )
                                 .getDatasetFields()))));
     }
     
@@ -351,10 +351,12 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/versions/{versionNumber}/metadata/{block}")
     public Response getVersionMetadataBlock( @PathParam("id") String datasetId, 
                                              @PathParam("versionNumber") String versionNumber, 
-                                             @PathParam("block") String blockName ) {
+                                             @PathParam("block") String blockName, 
+                                             @Context UriInfo uriInfo, 
+                                             @Context HttpHeaders headers ) {
         
         return allowCors(response( req -> {
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId) );
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId), uriInfo, headers );
             
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
             for ( Map.Entry<MetadataBlock, List<DatasetField>> p : fieldsByBlock.entrySet() ) {
@@ -1418,7 +1420,7 @@ public class Datasets extends AbstractApiBean {
         }
     }
     
-    private DatasetVersion getDatasetVersionOrDie( final DataverseRequest req, String versionNumber, final Dataset ds ) throws WrappedResponse {
+    private DatasetVersion getDatasetVersionOrDie( final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers) throws WrappedResponse {
         DatasetVersion dsv = execCommand( handleVersion(versionNumber, new DsVersionHandler<Command<DatasetVersion>>(){
 
                 @Override
@@ -1444,6 +1446,10 @@ public class Datasets extends AbstractApiBean {
         if ( dsv == null || dsv.getId() == null ) {
             throw new WrappedResponse( notFound("Dataset version " + versionNumber + " of dataset " + ds.getId() + " not found") );
         }
+        
+        MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, ds);
+        mdcLogService.logEntry(entry);
+        
         return dsv;
     }
     

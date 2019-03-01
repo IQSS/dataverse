@@ -11,8 +11,8 @@ path_types:
   investigations:
     - ^.*/dataset.xhtml\S*$
     - ^.*/file.xhtml\S*$
-    - ^.*/api/datasets/export\S*$
-    - ^.*/api/v1/datasets/export\S*$
+    - ^.*/api/datasets\S*$
+    - ^.*/api/v1/datasets\S*$
     ## Below historic regex for testing
     #- ^/api/datasets/[^\/]+$
     #- ^/api/versions/\d+$

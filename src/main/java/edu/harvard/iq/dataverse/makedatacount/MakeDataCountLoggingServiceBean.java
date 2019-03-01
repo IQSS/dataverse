@@ -96,10 +96,16 @@ public class MakeDataCountLoggingServiceBean {
                 setPublisherId("tbd"); //"tbd" is a special case in counter processor that gives values that pass MDC.
                 setTitle(publishedVersion.getTitle());
                 setVersion(String.valueOf(publishedVersion.getVersionNumber()));
-                setPublicationYear(new SimpleDateFormat("yyyy").format(publishedVersion.getReleaseTime()));
+                
+                Date releaseTime = publishedVersion.getReleaseTime();
+                if(null == releaseTime) { //Seems to be null when called from Datasets api
+                    releaseTime = publishedVersion.getLastUpdateTime();
+                }
+                setPublicationYear(new SimpleDateFormat("yyyy").format(releaseTime));
+                
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");     
                     format.setTimeZone(TimeZone.getTimeZone("GMT"));
-                    setPublicationDate(format.format(publishedVersion.getReleaseTime()));
+                setPublicationDate(format.format(releaseTime));
             }
 
             if(dvRequestService != null) {
