@@ -35,7 +35,7 @@
                                 <label for="position" class="col-sm-3 control-label">
                                     #{bundle['user.username']} 
                                     <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                    <span class="glyphicon glyphicon-question-sign text-muted"
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.username.illegal.tip']}"></span>
                                 </label>
                                 <div class="col-sm-4">
@@ -52,7 +52,7 @@
                                 <label for="givenName" class="col-sm-3 control-label">
                                     #{bundle['user.firstName']} 
                                     <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                    <span class="glyphicon glyphicon-question-sign text-muted"
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.firstName.tip']}"></span>
                                 </label>
                                 <div class="col-sm-4">
@@ -64,7 +64,7 @@
                                 <label for="familyName" class="col-sm-3 control-label">
                                     #{bundle['user.lastName']} 
                                     <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                    <span class="glyphicon glyphicon-question-sign text-muted"
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.lastName.tip']}"></span>
                                 </label>
                                 <div class="col-sm-4">
@@ -76,7 +76,7 @@
                                 <label for="selectedEmail" class="col-sm-3 control-label">
                                     #{bundle['email']} 
                                     <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                    <span class="glyphicon glyphicon-question-sign text-muted"
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.email.tip']}"></span>
                                 </label>
                                 <div class="col-sm-4" jsf:rendered="#{OAuth2FirstLoginPage.getEmailsToPickFrom().size() lt 2}">
@@ -96,7 +96,7 @@
                             <div class="form-group" jsf:rendered="#{OAuth2FirstLoginPage.authProvider.displayIdentifier}">
                                 <label for="persistentUserId" class="col-sm-3 control-label">
                                     #{OAuth2FirstLoginPage.authProvider.persistentIdName}
-                                    <span class="glyphicon glyphicon-question-sign text-muted"
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{OAuth2FirstLoginPage.authProvider.persistentIdDescription}"></span>
                                 </label>
                                 <div class="col-sm-4">
@@ -113,7 +113,7 @@
                                 <label for="affiliation" class="col-sm-3 control-label">
                                     #{bundle['affiliation']} 
                                     <span class="glyphicon text-danger" title="#{bundle.requiredField}"/>
-                                    <span class="glyphicon glyphicon-question-sign text-muted"
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.affiliation.tip']}"></span>
                                 </label>
                                 <div class="col-sm-4">
@@ -124,7 +124,7 @@
                                 <label for="position" class="col-sm-3 control-label">
                                     #{bundle['user.position']} 
                                     <span class="glyphicon text-danger" title="#{bundle.requiredField}"/>
-                                    <span class="glyphicon glyphicon-question-sign text-muted"
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.position.tip']}"></span>
                                 </label>
                                 <div class="col-sm-4">
