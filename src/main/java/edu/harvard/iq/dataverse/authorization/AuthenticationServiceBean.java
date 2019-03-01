@@ -876,7 +876,7 @@ public class AuthenticationServiceBean {
     
     public List <WorkflowComment> getWorkflowCommentsByAuthenticatedUser(AuthenticatedUser user){ 
         Query query = em.createQuery("SELECT wc FROM WorkflowComment wc WHERE wc.authenticatedUser.id = :auid");
-        query.setParameter(":auid", user.getId());       
+        query.setParameter("auid", user.getId());       
         return query.getResultList();
     }
 

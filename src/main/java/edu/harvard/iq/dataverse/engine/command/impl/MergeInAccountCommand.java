@@ -14,7 +14,9 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -67,12 +69,13 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         
         //merge role assignments
+        System.out.print(ctxt);
         for(RoleAssignment cra : consumedRAList) {
             if(cra.getAssigneeIdentifier().charAt(0) == '@') {
                 //This still needs to check if the same Role Assignment exists in the baseRAList and if so... what?
                 
                 boolean willDelete = false;
-                for(RoleAssignment bra : consumedRAList) {
+                for(RoleAssignment bra : baseRAList) {
                     //Matching on the id not the whole DVObject as I'm suspicious of dvobject equality
                     if( bra.getDefinitionPoint().getId().equals(cra.getDefinitionPoint().getId())
                         && bra.getRole().equals(cra.getRole())) { //TODO: Match on privateurltoken as well?? What does this do?
@@ -81,6 +84,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
                 }
                 if(!willDelete) {
                     cra.setAssigneeIdentifier("@" + baseIdentifier);
+                    ctxt.em().merge(cra);
                 }
             } else {
                 throw new IllegalCommandException("Original userIdentifier provided does not seem to be an AuthenticatedUser", this);
@@ -110,7 +114,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
             if (dvo.getCreator().equals(consumedAU)){
                 dvo.setCreator(ongoingAU);
             }
-            if (dvo.getReleaseUser().equals(consumedAU)){
+            if (dvo.getReleaseUser() != null &&  dvo.getReleaseUser().equals(consumedAU)){
                 dvo.setReleaseUser(ongoingAU);
             }
             ctxt.em().merge(dvo);
@@ -140,17 +144,23 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
             ctxt.em().merge(wc);
         }
         
-        //Access Request is not an entity. May have to update via sql?
+        //ConfirmEmailData  
         
+        ConfirmEmailData confirmEmailData = ctxt.confirmEmail().findSingleConfirmEmailDataByUser(consumedAU);       
+        ctxt.em().remove(confirmEmailData);
         
-        //TODO: Change id or delete all the objects with foreign keys connected to the old identifier.
-        //Refer to the script in /scripts/migration/scrub_duplicate_emails.sql
-        //Those this may be doable via adding the objects to be altered in java and using cascade.
+        //Access Request is not an entity. have to update with native query
+        
+        ctxt.em().createNativeQuery("UPDATE fileaccessrequests SET authenticated_user_id="+ongoingAU.getId()+" WHERE authenticated_user_id="+consumedAU.getId()).executeUpdate();
+               
         
         //delete:
         //  builtin user
         //  authenticated user
         //  AuthenticatedUserLookup
+        //  apiToken
+        ApiToken toRemove = ctxt.authentication().findApiTokenByUser(consumedAU);
+        ctxt.em().remove(toRemove);
         AuthenticatedUserLookup consumedAUL = consumedAU.getAuthenticatedUserLookup();
         ctxt.em().remove(consumedAUL);//do we need this with cascade?
         ctxt.em().remove(consumedAU);

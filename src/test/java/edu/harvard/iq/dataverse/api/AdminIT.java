@@ -512,6 +512,46 @@ public class AdminIT {
     }
     
     @Test
+    public void testMergeAccounts(){
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String usernameConsumed = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = JsonPath.from(createDataverse.body().asString()).getString("data.alias");
+
+        String pathToJsonFile = "src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-hdl.json";
+        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        
+        
+        Response mergeAccounts = UtilIT.mergeAccounts(apiToken, usernameConsumed);
+        System.out.print("$$$$$$$$$$$$$$After call to UtilIT");
+        assertEquals(400, mergeAccounts.getStatusCode());
+        System.out.print(mergeAccounts.prettyPrint());
+        
+        Response targetUser = UtilIT.createRandomUser();
+        targetUser.prettyPrint();
+        String targetname = UtilIT.getUsernameFromResponse(targetUser);
+        String targetToken = UtilIT.getApiTokenFromResponse(targetUser);
+        
+        mergeAccounts = UtilIT.mergeAccounts(targetname, usernameConsumed);
+        assertEquals(200, mergeAccounts.getStatusCode());
+        System.out.print(mergeAccounts.prettyPrint());
+    }
+    
+    @Test
     @Ignore
     public void testMigrateHDLToDOI() {
         /*

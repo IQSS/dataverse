@@ -54,7 +54,7 @@ import javax.persistence.NamedQuery;
     @NamedQuery(name = "DatasetLock.getLocksByDatasetId",
             query = "SELECT lock FROM DatasetLock lock WHERE lock.dataset.id=:datasetId"),
             @NamedQuery(name = "DatasetLock.getLocksByAuthenticatedUserId",
-            query = "SELECT lock FROM DatasetLock lock WHERE lock.authenticatedUser.id=:authenticatedUserId")
+            query = "SELECT lock FROM DatasetLock lock WHERE lock.user.id=:authenticatedUserId")
 }
 )
 public class DatasetLock implements Serializable {

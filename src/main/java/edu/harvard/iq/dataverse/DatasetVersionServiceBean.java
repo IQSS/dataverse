@@ -317,7 +317,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     
     public List<DatasetVersionUser> getDatasetVersionUsersByAuthenticatedUser(AuthenticatedUser user){
         
-        TypedQuery<DatasetVersionUser> typedQuery = em.createQuery("SELECT u from DatasetVersionUser u where u.authenticatedUser.id = :authenticatedUserId  r", DatasetVersionUser.class);
+        TypedQuery<DatasetVersionUser> typedQuery = em.createQuery("SELECT u from DatasetVersionUser u where u.authenticatedUser.id = :authenticatedUserId", DatasetVersionUser.class);
                 typedQuery.setParameter("authenticatedUserId", user.getId());
                 return typedQuery.getResultList();        
 

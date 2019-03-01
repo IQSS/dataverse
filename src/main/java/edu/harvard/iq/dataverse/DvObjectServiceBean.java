@@ -69,7 +69,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
     public List<DvObject> findByAuthenticatedUserId(AuthenticatedUser user) {
         Query query = em.createNamedQuery("DvObject.findByAuthenticatedUserId"); 
         query.setParameter("ownerId", user.getId());
-        query.setParameter("releaseUser", user.getId());
+        query.setParameter("releaseUserId", user.getId());
         return query.getResultList();
     }
 

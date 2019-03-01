@@ -1919,4 +1919,15 @@ public class UtilIT {
         String apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
         return given().get(apiPath);
     }
+    
+    static Response mergeAccounts(String baseId, String consumedId) {
+        
+        String apiPath = String.format("/api/admin/authenticatedUsers/mergeIntoUser/%s", baseId  );
+        System.out.print(apiPath);
+        return given()
+                .body(consumedId)
+                .put(apiPath);
+    }
+    
+    
 }

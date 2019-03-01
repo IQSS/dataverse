@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -227,6 +228,11 @@ public class TestCommandContext implements CommandContext {
     
     @Override
     public FileDownloadServiceBean fileDownload() {
+        return null;
+    }
+    
+    @Override
+    public ConfirmEmailServiceBean confirmEmail() {
         return null;
     }
 }

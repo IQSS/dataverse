@@ -943,7 +943,7 @@ public class GuestbookResponseServiceBean {
     
     public List<GuestbookResponse> findByAuthenticatedUserId(AuthenticatedUser user) {
         Query query = em.createNamedQuery("GuestbookResponse.findByAuthenticatedUserId"); 
-        query.setParameter("authenticatedUser", user.getId());
+        query.setParameter("authenticatedUserId", user.getId());
         return query.getResultList();
     }
     
