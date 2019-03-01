@@ -21,7 +21,7 @@
                             <div class="form-group">
                                 <label for="metadata_persistentId" class="col-sm-3 control-label">
                                     #{bundle['dataset.metadata.persistentId']}
-                                    <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                    <span class="glyphicon glyphicon-question-sign text-muted"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.persistentId.tip']}"></span>
                                 </label>
                                 <div class="col-sm-9">
@@ -32,7 +32,7 @@
                             <div class="form-group">
                                 <label for="metadata_persistentId" class="col-sm-3 control-label">
                                     #{bundle['dataset.metadata.alternativePersistentId']}
-                                    <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                    <span class="glyphicon glyphicon-question-sign text-muted"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.alternativePersistentId.tip']}"></span>
                                 </label>
                                 <div class="col-sm-9">
@@ -43,7 +43,7 @@
                             <div class="form-group" jsf:rendered="#{!empty publicationDate}">
                                 <label for="metadata_publicationDate" class="col-sm-3 control-label">
                                     #{bundle['dataset.metadata.publicationDate']}
-                                    <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                    <span class="glyphicon glyphicon-question-sign text-muted"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.publicationDate.tip']}"></span>
                                 </label>
                                 <div class="col-sm-9">
@@ -55,7 +55,7 @@
                             <div class="form-group">
                                 <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
                                     #{dsf.datasetFieldType.localeTitle}
-                                    <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                    <span class="glyphicon glyphicon-question-sign text-muted"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                 </label>
                                 <!-- Primitive datasetFields -->
@@ -113,7 +113,7 @@
                                         <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
                                             #{dsf.datasetFieldType.localeTitle}
                                             <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required  or dsf.datasetFieldType.hasRequiredChildren }" />
-                                            <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                            <span class="glyphicon glyphicon-question-sign text-muted"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                         </label>
                                         <!-- Primitive fields -->
@@ -195,7 +195,7 @@
                                                                 <label class="control-label" for="metadata_#{subdsf.datasetFieldType.name}">
                                                                     #{subdsf.datasetFieldType.localeTitle}
                                                                     <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.required}" />
-                                                                    <span class="glyphicon glyphicon-question-sign text-muted tooltiplabel"
+                                                                    <span class="glyphicon glyphicon-question-sign text-muted"
                                                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{subdsf.datasetFieldType.localeDescription}"></span>
                                                                 </label>
                                                                 <ui:fragment rendered="#{!subdsf.datasetFieldType.controlledVocabulary}">

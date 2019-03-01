@@ -7,6 +7,7 @@ function bind_bsui_components(){
         $(this).hasClass('keep-open'),
         e.stopPropagation();
     });
+    
     // Collapse Header Icons
     $('div[id^="panelCollapse"]').on('shown.bs.collapse', function () {
       $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-up");
@@ -16,23 +17,23 @@ function bind_bsui_components(){
       $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
     });
     
-    // rebind for dropdown menus on restrict button
+    // Button dropdown menus 
     $('.dropdown-toggle').dropdown();
     
     // Hide open tooltips + popovers
     $('.bootstrap-button-tooltip, [data-toggle="tooltip"]').tooltip("hide");
     $("[data-toggle='popover']").popover("hide");
 
-    // Tooltip + popover functionality
+    // Tooltips + popovers
     bind_tooltip_popover();
 
-    // Disabled
+    // Disabled pagination links
     disabledLinks();
     
     // Sharrre
     sharrre();
     
-    // Custom Popover with HTML code snippet -- from dataverse_template
+    // Custom Popover with HTML content
     popoverHTML();
     
     // Dialog Listener For Calling handleResizeDialog
@@ -184,7 +185,6 @@ function handleResizeDialog(dialog) {
         
         function calculateResize() {
             var overlay = $('#' + dialog + '_modal');
-            
             var bodyHeight = '';
             var bodyWidth = '';
         
@@ -200,7 +200,6 @@ function handleResizeDialog(dialog) {
             el.css('position', elPos);
             doc.css('width', bodyWidth);
             doc.css('height', bodyHeight);
-            
             
             var pos = el.offset();
             if (pos.top + el.height() > doc.height()) {
