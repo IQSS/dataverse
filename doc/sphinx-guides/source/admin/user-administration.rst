@@ -61,3 +61,9 @@ Combining Accounts
 
 If a user has created multiple accounts and has been performed actions under both accounts that need to be preserved, these accounts can be combined.  One account can be merged into another account and all data associated with both accounts will be combined in the surviving account.
 
+This command::
+
+	curl -X PUT -d "$mergedIdentifier" http://$server/api/admin/authenticatedUsers/mergeIntoUser/$continuingIdentifier
+
+moves account data from $mergedIdentifier into the account $continuingIdentifier and deletes the account of $mergedIdentifier.
+
