@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.util.List;
@@ -83,6 +84,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
                     }
                 }
                 if(!willDelete) {
+                    IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(cra.getDefinitionPoint());
                     cra.setAssigneeIdentifier("@" + baseIdentifier);
                     ctxt.em().merge(cra);
                 }
