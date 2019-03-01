@@ -1615,27 +1615,30 @@ public class DataFileServiceBean implements java.io.Serializable {
         // DatasetVersion, that will need to be deleted once the 
         // DeleteDatasetVersionCommand execution has been finalized:
 
+        return getPhysicalFilesToDelete(datasetVersion.getFileMetadatas(), destroy);
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(List<FileMetadata> fileMetadatasToDelete) {
+        return getPhysicalFilesToDelete(fileMetadatasToDelete, false);
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(List<FileMetadata> fileMetadatasToDelete, boolean destroy) {
         Map<Long, String> deleteStorageLocations = new HashMap<>();
 
-        Iterator<FileMetadata> dfIt = datasetVersion.getFileMetadatas().iterator();
+        Iterator<FileMetadata> dfIt = fileMetadatasToDelete.iterator();
         while (dfIt.hasNext()) {
             DataFile df = dfIt.next().getDataFile();
 
             if (destroy || !df.isReleased()) {
-                try {
-                    StorageIO<DataFile> storageIO = df.getStorageIO();
-                    String storageLocation = storageIO.getStorageLocation();
-                    if (storageLocation != null) {
-                        deleteStorageLocations.put(df.getId(), storageLocation);
-                    }
-                } catch (IOException ioex) {
-                    // something potentially wrong with the physical file,
-                    // or connection to the physical storage? 
-                    // we don't care (?) - we'll still try to delete the datafile from the database.
+
+                String storageLocation = getPhysicalFileToDelete(df);
+                if (storageLocation != null) {
+                    deleteStorageLocations.put(df.getId(), storageLocation);
                 }
+
             }
         }
-        
+
         return deleteStorageLocations;
     }
   
@@ -1652,20 +1655,26 @@ public class DataFileServiceBean implements java.io.Serializable {
         while (dfIt.hasNext()) {
             DataFile df = dfIt.next();
 
-            try {
-                StorageIO<DataFile> storageIO = df.getStorageIO();
-                String storageLocation = storageIO.getStorageLocation();
-                if (storageLocation != null) {
-                    deleteStorageLocations.put(df.getId(), storageLocation);
-                }
-            } catch (IOException ioex) {
-                // something potentially wrong with the physical file,
-                // or connection to the physical storage? 
-                // we don't care (?) - we'll still try to delete the datafile from the database.
+            String storageLocation = getPhysicalFileToDelete(df);
+            if (storageLocation != null) {
+                deleteStorageLocations.put(df.getId(), storageLocation);
             }
+
         }
 
         return deleteStorageLocations;
     }
     
+    public String getPhysicalFileToDelete(DataFile dataFile) {
+        try {
+            StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+            return storageIO.getStorageLocation();
+
+        } catch (IOException ioex) {
+            // something potentially wrong with the physical file,
+            // or connection to the physical storage? 
+            // we don't care (?) - we'll still try to delete the datafile from the database.
+        }
+        return null;
+    }
 }

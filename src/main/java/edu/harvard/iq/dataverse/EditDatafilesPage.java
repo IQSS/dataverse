@@ -1223,22 +1223,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             Map<Long, String> deleteStorageLocations = null;
             
             if (!filesToBeDeleted.isEmpty()) {
-                deleteStorageLocations = new HashMap<>();
-                for (FileMetadata fmd : filesToBeDeleted) {
-                    try {
-                        DataFile dataFile = fmd.getDataFile();
-                        StorageIO<DataFile> storageIO = dataFile.getStorageIO();
-                        storageIO.open();
-                        String storageLocation = storageIO.getStorageLocation();
-                        if (storageLocation != null) {
-                            deleteStorageLocations.put(dataFile.getId(), storageLocation);
-                        }
-                    } catch (IOException ioex) {
-                        // something potentially wrong with the physical file,
-                        // or connection to the physical storage? 
-                        // we'll still try to delete the datafile from the database
-                    }
-                }
+                deleteStorageLocations = datafileService.getPhysicalFilesToDelete(filesToBeDeleted);
             }
 
             Command<Dataset> cmd;
@@ -1325,18 +1310,12 @@ public class EditDatafilesPage implements java.io.Serializable {
                     // if file is draft (ie. new to this version, delete; otherwise just remove filemetadata object)
                     boolean deleteCommandSuccess = false;
                     Long dataFileId = fmd.getDataFile().getId();
-                    String storageLocation = null;
+                    String deleteStorageLocation = null;
 
-                    if (dataFileId != null) { // is this necessary?
-                        try {
-                            StorageIO<DataFile> storageIO = fmd.getDataFile().getStorageIO();
-                            storageIO.open();
-                            storageLocation = storageIO.getStorageLocation();
-                        } catch (IOException ioex) {
-                            // something potentially wrong with the physical file
-                            // or connection to the physical storage? 
-                            // we'll still try to delete the datafile from the database
-                        }
+                    if (dataFileId != null) { // is this check necessary?
+                        
+                        deleteStorageLocation = datafileService.getPhysicalFileToDelete(fmd.getDataFile());
+                        
                         try {
                             commandEngine.submit(new DeleteDataFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest()));
                             dataset.getFiles().remove(fmd.getDataFile());
@@ -1355,16 +1334,16 @@ public class EditDatafilesPage implements java.io.Serializable {
                             logger.warning("Failed to delete DataFile id=" + dataFileId + " from the database; " + cmde.getMessage());
                         }
                         if (deleteCommandSuccess) {
-                            if (storageLocation != null) {
+                            if (deleteStorageLocation != null) {
                                 // Finalize the delete of the physical file 
                                 // (File service will double-check that the datafile no 
                                 // longer exists in the database, before proceeding to 
                                 // delete the physical file)
                                 try {
-                                    datafileService.finalizeFileDelete(dataFileId, storageLocation);
+                                    datafileService.finalizeFileDelete(dataFileId, deleteStorageLocation);
                                 } catch (IOException ioex) {
                                     logger.warning("Failed to delete the physical file associated with the deleted datafile id="
-                                            + dataFileId + ", storage location: " + storageLocation);
+                                            + dataFileId + ", storage location: " + deleteStorageLocation);
                                 }
                             }
                         }

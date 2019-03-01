@@ -164,16 +164,11 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                             Dataset dataset = fileToDelete.getOwner();
                             Dataset datasetThatOwnsFile = fileToDelete.getOwner();
                             Dataverse dataverseThatOwnsFile = datasetThatOwnsFile.getOwner();
-                            String storageLocation = null; 
+                            String deleteStorageLocation = null; 
                             
-                            try {
-                                StorageIO<DataFile> storageIO = fileToDelete.getStorageIO();
-                                storageLocation = storageIO.getStorageLocation();
-                            } catch (IOException ioex) {
-                                // something potentially wrong with the physical file
-                                // or connection to the physical storage? 
-                                // it's ok - we'll still try to delete the datafile from the database
-                            }
+                            
+                            deleteStorageLocation = dataFileService.getPhysicalFileToDelete(fileToDelete);
+                            
                             /**
                              * @todo it would be nice to have this check higher
                              * up. Do we really need the file ID? Should the
@@ -192,16 +187,16 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                             }
                             
                             if (deleteCommandSuccess) {
-                                if (storageLocation != null) {
+                                if (deleteStorageLocation != null) {
                                     // Finalize the delete of the physical file 
                                     // (File service will double-check that the datafile no 
                                     // longer exists in the database, before proceeding to 
                                     // delete the physical file)
                                     try {
-                                        dataFileService.finalizeFileDelete(fileIdLong, storageLocation);
+                                        dataFileService.finalizeFileDelete(fileIdLong, deleteStorageLocation);
                                     } catch (IOException ioex) {
                                         logger.warning("Failed to delete the physical file associated with the deleted datafile id="
-                                                + fileIdLong + ", storage location: " + storageLocation);
+                                                + fileIdLong + ", storage location: " + deleteStorageLocation);
                                     }
                                 }
                             }

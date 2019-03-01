@@ -2053,9 +2053,13 @@ public class DatasetPage implements java.io.Serializable {
     public String deleteDataset() {
 
         DestroyDatasetCommand cmd;
+        boolean deleteCommandSuccess = false;
+        Map<Long,String> deleteStorageLocations = datafileService.getPhysicalFilesToDelete(dataset); 
+        
         try {
             cmd = new DestroyDatasetCommand(dataset, dvRequestService.getDataverseRequest());
             commandEngine.submit(cmd);
+            deleteCommandSuccess = true;
             /* - need to figure out what to do 
              Update notification in Delete Dataset Method
              for (UserNotification und : userNotificationService.findByDvObject(dataset.getId())){
@@ -2065,7 +2069,12 @@ public class DatasetPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.message.deleteFailure"));
             logger.severe(ex.getMessage());
         }
+        
+        if (deleteCommandSuccess) {
+            datafileService.finalizeFileDeletes(deleteStorageLocations);
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.deleteSuccess"));
+        }
+        
         return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";
     }
     
@@ -2660,22 +2669,7 @@ public class DatasetPage implements java.io.Serializable {
                 
             } else {
                 if (!filesToBeDeleted.isEmpty()) {
-                    deleteStorageLocations = new HashMap<>();
-                    for (FileMetadata fmd : filesToBeDeleted) {
-                        try {
-                            DataFile dataFile = fmd.getDataFile();
-                            StorageIO<DataFile> storageIO = dataFile.getStorageIO();
-                            //storageIO.open();
-                            String storageLocation = storageIO.getStorageLocation();
-                            if (storageLocation != null) {
-                                deleteStorageLocations.put(dataFile.getId(), storageLocation);
-                            }
-                        } catch (IOException ioex) {
-                            // something potentially wrong with the physical file,
-                            // or connection to the physical storage? 
-                            // we'll still try to delete the datafile from the database
-                        }
-                    }
+                    deleteStorageLocations = datafileService.getPhysicalFilesToDelete(filesToBeDeleted);
                 }
                 cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone );
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);  

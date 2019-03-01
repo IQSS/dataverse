@@ -321,7 +321,7 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion doomed = dataset.getLatestVersion();
             
             if (!doomed.isDraft()) {
-                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only the :draft version can be deleted by this API"));
+                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "This is NOT a DRAFT version"));
             }
             
             // Gather the locations of the physical files that will need to be 

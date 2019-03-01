@@ -534,15 +534,9 @@ public class FilePage implements java.io.Serializable {
         String deleteStorageLocation = null;
 
         if (!filesToBeDeleted.isEmpty()) { 
-            // We want to delete a file!
-            try {
-                StorageIO<DataFile> storageIO = filesToBeDeleted.get(0).getDataFile().getStorageIO();
-                deleteStorageLocation = storageIO.getStorageLocation();
-            } catch (IOException ioex) {
-                // something potentially wrong with the physical file
-                // or connection to the physical storage? 
-                // we'll still try to delete the datafile from the database
-            }
+            // We want to delete the file (there's always only one file with this page)
+            
+            deleteStorageLocation = datafileService.getPhysicalFileToDelete(filesToBeDeleted.get(0).getDataFile());
         }
         
         try {
