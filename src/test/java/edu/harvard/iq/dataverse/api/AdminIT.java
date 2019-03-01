@@ -537,9 +537,8 @@ public class AdminIT {
         
         
         Response mergeAccounts = UtilIT.mergeAccounts(apiToken, usernameConsumed);
-        System.out.print("$$$$$$$$$$$$$$After call to UtilIT");
         assertEquals(400, mergeAccounts.getStatusCode());
-        System.out.print(mergeAccounts.prettyPrint());
+        mergeAccounts.prettyPrint();
         
         Response targetUser = UtilIT.createRandomUser();
         targetUser.prettyPrint();
@@ -548,7 +547,7 @@ public class AdminIT {
         
         mergeAccounts = UtilIT.mergeAccounts(targetname, usernameConsumed);
         assertEquals(200, mergeAccounts.getStatusCode());
-        System.out.print(mergeAccounts.prettyPrint());
+        mergeAccounts.prettyPrint();
     }
     
     @Test

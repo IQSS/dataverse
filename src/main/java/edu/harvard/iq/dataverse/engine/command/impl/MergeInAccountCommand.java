@@ -84,9 +84,10 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
                     }
                 }
                 if(!willDelete) {
-                    IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(cra.getDefinitionPoint());
                     cra.setAssigneeIdentifier("@" + baseIdentifier);
                     ctxt.em().merge(cra);
+                    IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(cra.getDefinitionPoint());
+                    ctxt.index().indexDvObject(cra.getDefinitionPoint());
                 }
             } else {
                 throw new IllegalCommandException("Original userIdentifier provided does not seem to be an AuthenticatedUser", this);
