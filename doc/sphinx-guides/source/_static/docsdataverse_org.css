@@ -96,6 +96,10 @@ div.code-example .color-swatch {
     margin: 0 5px;
     border-radius: 3px
 }
+div.code-example .messagePanel .glyphicon {
+    font-size: 1.5em;
+    vertical-align: bottom;
+}
 
 #breadcrumbNavBlock {margin-top:.5em;}
 #breadcrumbNavBlock .breadcrumbBlock {float:left; position:relative;}

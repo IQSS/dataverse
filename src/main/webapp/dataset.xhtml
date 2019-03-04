@@ -852,7 +852,7 @@
                     <p:confirmDialog id="reasonTooManyCharacters" message="#{bundle['file.deaccessionDialog.dialog.limitChar.tip']}" header="#{bundle['file.deaccessionDialog.dialog.limitChar.header']}" widgetVar="reasonTooManyCharacters"> </p:confirmDialog>
                     <p:inputText id="hiddenReasonInput" style="display:none" widgetVar="hiddenReasonInput"/>
                     <p:dialog id="compareTwo" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="compareTwo" modal="true">
-                        <p class="help-block"><span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['file.viewDiffDialog.dialog.warning']}</span></p>
+                        <p class="help-block"><span class="glyphicon glyphicon-exclamation-sign text-danger"/> <span class="text-danger">#{bundle['file.viewDiffDialog.dialog.warning']}</span></p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('compareTwo').hide();PF('blockDatasetForm').hide();" type="button" />
                         </div>

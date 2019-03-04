@@ -50,12 +50,12 @@
                     </div>
                 </div>
             </p:panel>
-            <p:panel id="editRolePermissionPanel" styleClass="panelLayoutBlock" header="#{bundle['dataverse.permissions.roles.roleList.header']}">
+            <p:panel id="editRolePermissionPanel" styleClass="panelLayoutBlock form-group" header="#{bundle['dataverse.permissions.roles.roleList.header']}">
                 <p class="help-block">
-                    <span class="text-info"><i class="glyphicon glyphicon glyphicon-info-sign"></i> #{bundle['dataverse.permissions.roles.roleList.authorizedUserOnly']}</span>
+                    <span class="glyphicon glyphicon glyphicon-asterisk text-info"></span> <span class="text-info">#{bundle['dataverse.permissions.roles.roleList.authorizedUserOnly']}</span>
                 </p>
                 <c:set var="authOnlyRemark">
-                    <i class="glyphicon glyphicon glyphicon-info-sign text-info"></i>
+                    <span class="glyphicon glyphicon glyphicon-asterisk text-info"></span>
                 </c:set>
                 <h:selectManyCheckbox value="#{managePermissionsPage.selectedPermissions}"
                                       layout="pageDirection" styleClass="selectManyCheckboxBlock">

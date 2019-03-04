@@ -178,8 +178,8 @@
                     <!-- confirmation dialog for deleting a set: -->
                     <p:dialog id="deleteConfirmation" header="#{bundle['harvestserver.tab.header.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="help-block">
-                            <span class="glyphicon glyphicon-warning-sign text-danger"/> 
-                            <h:outputFormat styleClass="text-danger" value=" #{bundle['harvestserver.tab.header.action.btn.delete.dialog.tip']}">
+                            <span class="glyphicon glyphicon-warning-sign text-warning"/> 
+                            <h:outputFormat styleClass="text-warning" value=" #{bundle['harvestserver.tab.header.action.btn.delete.dialog.tip']}">
                                 <f:param value="#{harvestingSetsPage.getSelectedSet().spec}"/>
                             </h:outputFormat>
                         </p>

@@ -237,7 +237,7 @@
                                     <!-- CAN'T DOWNLOAD RSYNC SCRIPT DUE to DCM BACKEND BROKEN. -->
                                     <ui:fragment rendered="#{empty EditDatafilesPage.workingVersion.fileMetadatas and !EditDatafilesPage.isHasRsyncScript()}">
                                         <p class="help-block">
-                                            <span class="glyphicon glyphicon-warning-sign text-danger"></span>
+                                            <span class="glyphicon glyphicon-exclamation-sign text-danger"></span>
                                             <h:outputFormat class="text-danger" value=" #{bundle['file.rsyncUpload.noScriptBroken']}" escape="false">
                                                 <o:param>
                                                     <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
@@ -787,7 +787,7 @@
     <p:dialog id="fileThumbnailConfirm" styleClass="smallPopUp" header="#{bundle['file.setThumbnail.header']}" widgetVar="fileThumbnailConfirm" modal="true">
         <div>
             <p class="help-block">
-                <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['file.setThumbnail.confirmation']}</span>
+                <span class="glyphicon glyphicon-exclamation-sign text-danger"/> <span class="text-danger">#{bundle['file.setThumbnail.confirmation']}</span>
             </p>
         </div>
         <div class="button-block">
