@@ -112,7 +112,7 @@ public class DataTableImportDDI {
             dv.setIntervalDiscrete();
         }
 
-        //dv.setWeighted( VAR_WEIGHTED.equals( xmlr.getAttributeValue(null, "wgt") ) );
+        dv.setWeighted( VAR_WEIGHTED.equals( xmlr.getAttributeValue(null, "wgt") ) );
         // default is not-wgtd, so null sets weighted to false
 
 

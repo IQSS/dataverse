@@ -16,8 +16,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.CascadeType;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 import java.util.ArrayList;
 
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -97,7 +95,7 @@ public class VariableMetadata implements Serializable  {
     private DataVariable weightvariable;
 
     public VariableMetadata () {
-
+        categoriesMetadata = new ArrayList<CategoryMetadata>() ;
     }
 
     public VariableMetadata (DataVariable dataVariable, FileMetadata fileMetadata) {
@@ -189,11 +187,11 @@ public class VariableMetadata implements Serializable  {
         return weighted;
     }
 
-    public Collection<CategoryMetadata> getWfreq() {
+    public Collection<CategoryMetadata> getCategoriesMetadata() {
         return categoriesMetadata;
     }
 
-    public void setWfreq(Set<CategoryMetadata> categoriesMetadata) {
+    public void setCategoriesMetadata(ArrayList<CategoryMetadata> categoriesMetadata) {
         this.categoriesMetadata = categoriesMetadata;
 
     }
