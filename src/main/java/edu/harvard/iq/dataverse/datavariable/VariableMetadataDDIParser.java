@@ -194,12 +194,9 @@ public class VariableMetadataDDIParser {
     }
 
     private void processCatgry(XMLStreamReader xmlr, VariableMetadata newVM) throws XMLStreamException {
-        CategoryMetadata cm = new CategoryMetadata();
-        cm.setVariableMetadata(newVM);
-        VariableCategory cat = new VariableCategory();
-        cm.setCategory(cat);
 
-        newVM.getWfreq().add(cm);
+        CategoryMetadata cm = null;
+        VariableCategory cat = new VariableCategory();
 
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
@@ -211,7 +208,12 @@ public class VariableMetadataDDIParser {
                 } else if (xmlr.getLocalName().equals("catValu")) {
                     cat.setValue(parseText(xmlr, false));
                 } else if (xmlr.getLocalName().equals("catStat")){
-                    processCatStat(xmlr, cat, cm);
+                    cm = processCatStat(xmlr, cat);
+                    if (cm != null) {
+                        cm.setVariableMetadata(newVM);
+                        cm.setCategory(cat);
+                        newVM.getCategoriesMetadata().add(cm);
+                    }
                 }
 
             } else if (event == XMLStreamConstants.END_ELEMENT) {
@@ -220,7 +222,8 @@ public class VariableMetadataDDIParser {
         }
     }
 
-    private void processCatStat(XMLStreamReader xmlr, VariableCategory cat, CategoryMetadata cm) throws XMLStreamException {
+    private CategoryMetadata processCatStat(XMLStreamReader xmlr, VariableCategory cat) throws XMLStreamException {
+        CategoryMetadata cm = null;
         String type = xmlr.getAttributeValue(null, "type");
         String wgtd = xmlr.getAttributeValue(null, "wgtd");
         if (type != null && CAT_STAT_TYPE_FREQUENCY.equalsIgnoreCase(type) && wgtd == null) {
@@ -230,11 +233,13 @@ public class VariableMetadataDDIParser {
                         }
         } else if (wgtd != null && type != null && CAT_STAT_TYPE_FREQUENCY.equalsIgnoreCase(type) &&
                             CAT_STAT_WGTD_FREQUENCY.equalsIgnoreCase(wgtd)) {
+                        cm = new CategoryMetadata();
                         String wfreq = parseText(xmlr);
                         if (wfreq != null && !wfreq.isEmpty()) {
                             cm.setWfreq(new Double(wfreq));
                         }
         }
+        return cm;
     }
 
     private String processLabl(XMLStreamReader xmlr, String level) throws XMLStreamException {
