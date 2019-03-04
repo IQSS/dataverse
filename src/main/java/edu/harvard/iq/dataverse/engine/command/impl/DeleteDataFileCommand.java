@@ -122,6 +122,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 logger.info("Successfully deleted the package file "+doomed.getStorageIdentifier());
                 
             } else {
+                logger.info("Skipping deleting the physical file on the storage volume (will be done outside the command)");
                 /* We no longer attempt to delete the physical file from inside the command, 
                  * since commands are executed as (potentially nested) transactions, 
                  * and it is prudent to assume that this database transaction may 
@@ -232,6 +233,16 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
          * https://redmine.hmdc.harvard.edu/issues/3643
          */
 
+    }
+    
+    @Override 
+    public String describe() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.describe());
+        sb.append("DataFile:");
+        sb.append(doomed.getId());
+        sb.append(" ");
+        return sb.toString();
     }
 
 }
