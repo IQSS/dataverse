@@ -354,6 +354,15 @@
                             </p:inputText>
                             <p:message for="fileName"/>
                         </ui:fragment>
+                        <ui:fragment>
+                            <label class="control-label" for="fileDirectoryLabel" style="margin-right:1em;margin-bottom:.5em;">
+                                #{bundle['file.directoryLabel']}
+                            </label>
+                            <p:inputText id="fileDirectoryName" value="#{fileMetadata.directoryLabel}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}">
+                            <p:ajax event="change" listener="#{EditDatafilesPage.handleFileDirectoryChange}" update="fileName" />
+                            </p:inputText>
+                            <p:message for="fileDirectoryName"/>
+                        </ui:fragment>
                         <!-- TYPE + SIZE + DATE + CHECKSUM -->
                         <div class="text-muted small">
                             <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>

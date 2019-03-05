@@ -2718,6 +2718,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void handleNameChange(final AjaxBehaviorEvent event) {        
         datasetUpdateRequired = true;
     }
+    
+    public void handleFileDirectoryChange(final AjaxBehaviorEvent event) {        
+        datasetUpdateRequired = true;
+    }
         
     /* 
      * Items for the "Advanced (Ingest) Options" popup. 
