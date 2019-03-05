@@ -1,0 +1,65 @@
+.page-title {
+    display: inline-block;
+    width: 58%;
+    text-align:center;
+}
+
+.page-title a {
+    color: #56B7CB;
+}
+
+.preview-header {
+    font-size:14px;
+    font-family: sans-serif;
+    color: darkslategray;
+    overflow-wrap: break-word;
+    margin-bottom: 10px;
+    background: #ECF6FB;
+    border-color: #9acfea;
+    border-style: solid;
+    border-width:1px;
+    padding: 15px 15px 5px 15px;
+}
+.preview-header div {
+    margin: 10px 5px 5px 0px;
+}
+.preview-header #filename {
+font-size: 16px;
+}
+
+.preview-header #dataset {
+font-style: italic;
+}
+
+.preview-note {
+    float:right;
+    font-size: 12px;
+    padding-top:20px;
+}
+
+.preview-container {
+margin-left: 40px;
+} 
+
+.preview {
+    margin: 0 auto;
+    padding: 10px 10px 5px 10px;
+}
+
+.preview audio {
+    margin:20px auto;
+    display: table;
+}
+
+.preview video {
+    margin:20px auto;
+    min-width:600px;
+    display: table;
+}
+
+body<img {
+    display: inline-block;
+    margin-left: 40px;
+    width: 236px;
+}
+                                                        
