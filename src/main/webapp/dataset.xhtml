@@ -38,8 +38,8 @@
                 <script type="application/ld+json">
                     <h:outputText value="#{DatasetPage.jsonLd}"/>
                 </script>
-        </ui:define>
-        <ui:define name="og_header">
+	    </ui:define>
+	    <ui:define name="og_header">
             <meta property="og:title" content="#{DatasetPage.title}" />
             <meta property="og:type" content="article" />
             <meta property="og:url" content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" />
@@ -50,7 +50,7 @@
                 <meta property="article:author" content="#{author}" />
             </ui:repeat>
             <meta property="article:published_time" content="#{DatasetPage.workingVersion.publicationDateAsString}" />
-        </ui:define>
+	    </ui:define>
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                 <f:metadata>
