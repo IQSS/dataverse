@@ -1049,8 +1049,7 @@ public class UtilIT {
     static Response changeAuthenticatedUserIdentifier(String oldIdentifier, String newIdentifier, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(newIdentifier)
-                .put("/api/admin/authenticatedUsers/changeIdentifier/"+ oldIdentifier );
+                .put("/api/admin/authenticatedUsers/" + oldIdentifier + "/changeIdentifier/"+ newIdentifier );
         return response;
     }
 

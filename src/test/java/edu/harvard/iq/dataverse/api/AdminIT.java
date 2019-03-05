@@ -19,6 +19,7 @@ import org.junit.BeforeClass;
 import java.util.UUID;
 import javax.validation.constraints.AssertTrue;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
@@ -485,10 +486,11 @@ public class AdminIT {
                 .statusCode(OK.getStatusCode());
         
         String newUsernameBad = ""; //one character, should fail before bean validation even
+        //Without second param url is not found.
         Response changeAuthIdResponseBad = UtilIT.changeAuthenticatedUserIdentifier(usernameOfUser, newUsernameBad, superuserApiToken);
         changeAuthIdResponseBad.prettyPrint();
         changeAuthIdResponseBad.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode());
+                .statusCode(NOT_FOUND.getStatusCode());
         
         String newUsernameBad2 = "z"; //one character, should fail bean validation
         Response changeAuthIdResponseBad2 = UtilIT.changeAuthenticatedUserIdentifier(usernameOfUser, newUsernameBad2, superuserApiToken);
