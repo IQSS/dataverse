@@ -462,7 +462,8 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("Attempted delete on an unspecified physical path");
         }
         
-        /* TODO: delete all the auxiliary files as well */ 
+        deleteAllAuxObjects();
+        
         Files.delete(physicalPath);
 
     }
@@ -558,13 +559,22 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         // as <filesystemname>.*; for example, <filename>.thumb64 or 
         // <filename>.RData.
         
-        if (this.getDataFile() == null || this.getDataFile().getStorageIdentifier() == null || this.getDataFile().getStorageIdentifier().isEmpty()) {
-            throw new IOException("Null or invalid DataFile in FileAccessIO object.");
-        }
+        String baseName; 
+        Path datasetDirectoryPath; 
         
-        String baseName = this.getDataFile().getStorageIdentifier();
+        if (isDirectAccess()) {
+            baseName = physicalPath.getFileName().toString();
+            datasetDirectoryPath = physicalPath.getParent();
+            
+        } else {
+            if (this.getDataFile() == null || this.getDataFile().getStorageIdentifier() == null || this.getDataFile().getStorageIdentifier().isEmpty()) {
+                throw new IOException("Null or invalid DataFile in FileAccessIO object.");
+            }
+        
+            baseName = this.getDataFile().getStorageIdentifier();
 
-        Path datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory();
+            datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory();
+        }
 
         if (datasetDirectoryPath == null) {
             throw new IOException("Could not determine the filesystem directory of the parent dataset.");
