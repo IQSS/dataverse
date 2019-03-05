@@ -48,7 +48,7 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {  
         
-        List<RoleAssignment> raList = ctxt.roleAssignees().getAssignmentsFor("@" + au.getIdentifier()); //only AuthenticatedUser supported
+        List<RoleAssignment> raList = ctxt.roleAssignees().getAssignmentsFor(au.getIdentifier()); //only AuthenticatedUser supported
         au.setUserIdentifier(newIdentifier);
         bu.setUserName(newIdentifier);
         //Validate the BuiltinUser change. Username validations are there.
