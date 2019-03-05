@@ -1212,9 +1212,9 @@ Change User Identifier
 
 The body of the PUT request is the new identifier for the user. Changes identifier for user in ``AuthenticatedUser``, ``BuiltinUser``, ``AuthenticatedUserLookup`` & ``RoleAssignment``. ::
 
-    PUT http://$SERVER/api/admin/authenticatedUsers/changeIdentifier/$identifier
+    PUT http://$SERVER/api/admin/authenticatedUsers/$oldIdentifier/changeIdentifier/$newIdentifier
 
-Example: ``curl -X PUT -d newUsername https://demo.dataverse.org/api/admin/authenticatedUsers/changeIdentifier/oldUsername``
+Example: ``curl -X PUT -d  https://demo.dataverse.org/api/admin/authenticatedUsers/oldIdentifier/changeIdentifier/newIdentifier``
 
 Make User a SuperUser
 ~~~~~~~~~~~~~~~~~~~~~
