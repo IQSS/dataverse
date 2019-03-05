@@ -780,7 +780,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private String temporaryUrl = null;
     private String generateTemporarySwiftUrl(String swiftEndPoint, String containerName, String objectName, int duration) throws IOException {
-        String baseUrl = System.getProperty("dataverse.file.swift-swift-endpoint." + swiftEndPoint);
+        String baseUrl = System.getProperty("dataverse.file.swift-endpoint." + swiftEndPoint);
         String path = "/v1/" + containerName + "/" + objectName;
         
         if (temporaryUrl == null || isExpiryExpired(generateTempUrlExpiry(duration, System.currentTimeMillis()), duration, System.currentTimeMillis())) {
