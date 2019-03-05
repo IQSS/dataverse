@@ -41,37 +41,29 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
     final AuthenticatedUser consumedAU;
     final BuiltinUser consumedBU;
     final AuthenticatedUser ongoingAU;
-    final String baseIdentifier;
-    final String consumedIdentifier;
-    final List<RoleAssignment> baseRAList;
-    final List<RoleAssignment> consumedRAList;
-    
+
     private static final Logger logger = Logger.getLogger(MergeInAccountCommand.class.getCanonicalName());
     
-    public MergeInAccountCommand(DataverseRequest createDataverseRequest, String baseIdentifier, String consumedIdentifier, AuthenticatedUser consumedAuthenticatedUser, 
-            BuiltinUser consumedBuiltinUser, AuthenticatedUser ongoingAU, List<RoleAssignment> baseRAList, List<RoleAssignment> consumedRAList) {
+    public MergeInAccountCommand(DataverseRequest createDataverseRequest, AuthenticatedUser consumedAuthenticatedUser, 
+            BuiltinUser consumedBuiltinUser, AuthenticatedUser ongoingAU) {
         super(
             createDataverseRequest,
             (DvObject) null
         );
         consumedAU = consumedAuthenticatedUser;
         consumedBU = consumedBuiltinUser;
-        this.baseRAList = baseRAList;
-        this.consumedRAList = consumedRAList;
-        this.baseIdentifier = baseIdentifier;
-        this.consumedIdentifier = consumedIdentifier;
         this.ongoingAU = ongoingAU;
     }
     
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         
-        //merge role assignments
-        System.out.print(ctxt);
+        List<RoleAssignment> baseRAList = ctxt.roleAssignees().getAssignmentsFor(ongoingAU.getIdentifier());
+        List<RoleAssignment> consumedRAList = ctxt.roleAssignees().getAssignmentsFor(consumedAU.getIdentifier());
+        
         for(RoleAssignment cra : consumedRAList) {
             if(cra.getAssigneeIdentifier().charAt(0) == '@') {
                 //This still needs to check if the same Role Assignment exists in the baseRAList and if so... what?
-                
                 boolean willDelete = false;
                 for(RoleAssignment bra : baseRAList) {
                     //Matching on the id not the whole DVObject as I'm suspicious of dvobject equality
@@ -81,7 +73,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
                     }
                 }
                 if(!willDelete) {
-                    cra.setAssigneeIdentifier("@" + baseIdentifier);
+                    cra.setAssigneeIdentifier(ongoingAU.getIdentifier());
                     ctxt.em().merge(cra);
                     IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(cra.getDefinitionPoint());
                     ctxt.index().indexDvObject(cra.getDefinitionPoint());
@@ -93,7 +85,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         
         //Delete role assignments for consumedIdentifier not merged, e.g. duplicates
         int resultCount = ctxt.em().createNamedQuery("RoleAssignment.deleteAllByAssigneeIdentifier", RoleAssignment.class).
-                        setParameter("assigneeIdentifier", '@'+consumedIdentifier)
+                        setParameter("assigneeIdentifier", consumedAU.getIdentifier())
                         .executeUpdate();
         logger.log(Level.INFO, "Number of roles deleted : ({0})", resultCount);
         
@@ -108,7 +100,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
             lock.setUser(ongoingAU);
             ctxt.em().merge(lock);
         }
-        
+
         //DVObjects creator and release
         for (DvObject dvo : ctxt.dvObjects().findByAuthenticatedUserId(consumedAU)) {
             if (dvo.getCreator().equals(consumedAU)){
@@ -164,7 +156,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         AuthenticatedUserLookup consumedAUL = consumedAU.getAuthenticatedUserLookup();
         ctxt.em().remove(consumedAUL);//do we need this with cascade?
         ctxt.em().remove(consumedAU);
-        ctxt.em().remove(consumedBU);      
+        ctxt.em().remove(consumedBU);  
     }
     
 }

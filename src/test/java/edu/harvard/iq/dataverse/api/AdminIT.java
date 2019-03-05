@@ -534,9 +534,9 @@ public class AdminIT {
         datasetAsJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
         
-        
-        
-        Response mergeAccounts = UtilIT.mergeAccounts(apiToken, usernameConsumed);
+        String randomString = UtilIT.getRandomIdentifier();
+
+        Response mergeAccounts = UtilIT.mergeAccounts(randomString, usernameConsumed);
         assertEquals(400, mergeAccounts.getStatusCode());
         mergeAccounts.prettyPrint();
         

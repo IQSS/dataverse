@@ -314,8 +314,8 @@ public class Admin extends AbstractApiBean {
 	}
         
         @PUT
-        @Path("authenticatedUsers/mergeIntoUser/{identifier}")
-        public Response mergeInAuthenticatedUser(@PathParam("identifier") String baseIdentifier, String consumedIdentifier) {
+        @Path("authenticatedUsers/{baseIdentifier}/mergeIntoUser/{consumedIdentifier}")
+        public Response mergeInAuthenticatedUser(@PathParam("baseIdentifier") String baseIdentifier, @PathParam("consumedIdentifier") String consumedIdentifier) {
             
             if(null == baseIdentifier || baseIdentifier.isEmpty()) {
                 return error(Response.Status.BAD_REQUEST, "Base identifier provided to change is empty.");
@@ -338,11 +338,8 @@ public class Admin extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "User " + consumedIdentifier + " not found in BuiltinUser");
             }
 
-            List<RoleAssignment> baseRAList = roleAssigneeSvc.getAssignmentsFor("@" + baseIdentifier); //only AuthenticatedUser supported
-            List<RoleAssignment> consumedRAList = roleAssigneeSvc.getAssignmentsFor("@" + consumedIdentifier); //only AuthenticatedUser supported
-            
             try {
-                execCommand(new MergeInAccountCommand(createDataverseRequest(consumedAuthenticatedUser), baseIdentifier, consumedIdentifier, consumedAuthenticatedUser, consumedBuiltinUser, baseAuthenticatedUser, baseRAList, consumedRAList));
+                execCommand(new MergeInAccountCommand(createDataverseRequest(consumedAuthenticatedUser), consumedAuthenticatedUser, consumedBuiltinUser, baseAuthenticatedUser));
             } catch (Exception e){
                 return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
             }
