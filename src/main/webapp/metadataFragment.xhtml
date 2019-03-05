@@ -117,7 +117,7 @@
                                             <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required  or dsf.datasetFieldType.hasRequiredChildren }" />
                                         </label>
                                         <!-- Primitive fields -->
-                                        <p:fragment rendered="#{dsf.datasetFieldType.primitive}">
+                                        <p:fragment id="editPrimitiveValueFragment" rendered="#{dsf.datasetFieldType.primitive}">
                                             <p:autoUpdate/>
                                             <div class="form-group">
                                                 <ui:remove><!-- There is an issue with the dynamic +/- and the primefaces autoupdate where they are not working
@@ -138,7 +138,7 @@
                                                                     <p:commandLink tabindex="#{block.index+1}" title="#{bundle.add}"
                                                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                                    actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}"
-                                                                                   update=":#{p:resolveClientIds('@id(editMetadataFragement)', view)}"
+                                                                                   update=":#{p:resolveClientIds('@id(editPrimitiveValueFragment)', view)}"
                                                                                    oncomplete="javascript:bind_bsui_components();">
                                                                         <span class="glyphicon glyphicon-plus no-text"/>
                                                                     </p:commandLink>
@@ -146,7 +146,7 @@
                                                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                                    rendered="#{dsf.datasetFieldValues.size() > 1}"
                                                                                    actionListener="#{dsf.removeDatasetFieldValue(valCount.index)}"
-                                                                                   update=":#{p:resolveClientIds('@id(editMetadataFragement)', view)}"
+                                                                                   update=":#{p:resolveClientIds('@id(editPrimitiveValueFragment)', view)}"
                                                                                    oncomplete="javascript:bind_bsui_components();">
                                                                         <span class="glyphicon glyphicon-minus no-text"/>
                                                                     </p:commandLink>
@@ -176,7 +176,7 @@
                                             </div>
                                         </p:fragment>
                                         <!-- Compound fields -->
-                                        <p:fragment rendered="#{dsf.datasetFieldType.compound}">
+                                        <p:fragment id="editCompoundValueFragment" rendered="#{dsf.datasetFieldType.compound}">
                                             <p:autoUpdate/>
                                             <div class="form-group form-col-container col-sm-9 dataset-field-values">
                                                 <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue" varStatus="valCount">
@@ -226,7 +226,7 @@
                                                         <p:commandLink tabindex="#{block.index+1}" title="#{bundle.add}"
                                                                        styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                        actionListener="#{dsf.addDatasetFieldCompoundValue(valCount.index + 1)}"   
-                                                                       update=":#{p:resolveClientIds('@id(editMetadataFragement)', view)}"
+                                                                       update=":#{p:resolveClientIds('@id(editCompoundValueFragment)', view)}"
                                                                        oncomplete="javascript:bind_bsui_components();">
                                                             <span class="glyphicon glyphicon-plus no-text"/>
                                                         </p:commandLink>
@@ -234,13 +234,14 @@
                                                                        styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                        rendered="#{dsf.datasetFieldCompoundValues.size() > 1}"
                                                                        actionListener="#{dsf.removeDatasetFieldCompoundValue(valCount.index)}"
-                                                                       update=":#{p:resolveClientIds('@id(editMetadataFragement)', view)}"
+                                                                       update=":#{p:resolveClientIds('@id(editCompoundValueFragment)', view)}"
                                                                        oncomplete="javascript:bind_bsui_components();">
                                                             <span class="glyphicon glyphicon-minus no-text"/>
                                                         </p:commandLink>
                                                     </div>
                                                 </ui:repeat>
                                             </div>
+                                            <!--/p:autoUpdate-->    
                                         </p:fragment>
                                     </div>
                                 </ui:fragment>

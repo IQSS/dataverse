@@ -29,7 +29,9 @@ External tools must be expressed in an external tool manifest file, a specific J
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/awesomeTool.json
 
-``type`` is required and must be ``explore`` or ``configure`` to make the tool appear under a button called "Explore" or "Configure", respectively. Currently external tools only operate on tabular files that have been successfully ingested. (For more on ingest, see the :doc:`/user/tabulardataingest/ingestprocess` of the User Guide.)
+``type`` is required and must be ``explore`` or ``configure`` to make the tool appear under a button called "Explore" or "Configure", respectively. 
+
+External tools can operate on any file, including tabular files that have been created by successful ingestion. (For more on ingest, see the :doc:`/user/tabulardataingest/ingestprocess` of the User Guide.) The optional ``contentType`` entry specifies the mimetype a tool works on. (Not providing this parameter makes the tool work on ingested tabular files and is equivalent to specifying the ``contentType`` as "text/tab-separated-values".)  
 
 In the example above, a mix of required and optional reserved words appear that can be used to insert dynamic values into tools. The supported values are:
 
