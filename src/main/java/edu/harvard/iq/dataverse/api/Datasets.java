@@ -81,7 +81,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
-import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -814,7 +813,12 @@ public class Datasets extends AbstractApiBean {
 
             Dataset ds = findDatasetOrDie(id);
             if (updateCurrent) {
-
+                /*
+                 * Note: The code here mirrors that in the
+                 * edu.harvard.iq.dataverse.DatasetPage:updateCurrentVersion method. Any changes
+                 * to the core logic (i.e. beyond updating the messaging about results) should
+                 * be applied to the code there as well.
+                 */
                 String errorMsg = null;
                 String successMsg = null;
                 try {
