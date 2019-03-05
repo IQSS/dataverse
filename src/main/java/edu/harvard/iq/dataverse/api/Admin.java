@@ -314,8 +314,8 @@ public class Admin extends AbstractApiBean {
 	}
         
         @PUT
-        @Path("authenticatedUsers/changeIdentifier/{identifier}")
-        public Response changeAuthenticatedUserIdentifier(@PathParam("identifier") String oldIdentifier, String newIdentifier) {
+        @Path("authenticatedUsers/{identifier}/changeIdentifier/{newIdentifier}")
+        public Response changeAuthenticatedUserIdentifier(@PathParam("identifier") String oldIdentifier, @PathParam("newIdentifier")  String newIdentifier) {
 
             if(null == oldIdentifier || oldIdentifier.isEmpty()) {
                 return error(Response.Status.BAD_REQUEST, "Old identifier provided to change is empty.");
@@ -333,10 +333,10 @@ public class Admin extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "User " + oldIdentifier + " not found in BuiltinUser");
             }
             
-            List<RoleAssignment> raList = roleAssigneeSvc.getAssignmentsFor("@" + oldIdentifier); //only AuthenticatedUser supported
+            
 
             try {
-                execCommand(new ChangeUserIdentifierCommand(createDataverseRequest(authenticatedUser), authenticatedUser, builtinUser, newIdentifier, raList));
+                execCommand(new ChangeUserIdentifierCommand(createDataverseRequest(authenticatedUser), authenticatedUser, builtinUser, newIdentifier));
             } catch (Exception e){
                 return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
             }

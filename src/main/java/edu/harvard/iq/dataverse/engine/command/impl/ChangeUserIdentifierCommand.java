@@ -33,9 +33,9 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
     final AuthenticatedUser au;
     final BuiltinUser bu;
     final String newIdentifier;
-    final List<RoleAssignment> raList;
+
     
-    public ChangeUserIdentifierCommand(DataverseRequest aRequest, AuthenticatedUser au, BuiltinUser bu, String newIdentifier, List<RoleAssignment> raList) {
+    public ChangeUserIdentifierCommand(DataverseRequest aRequest, AuthenticatedUser au, BuiltinUser bu, String newIdentifier) {
         super(
                 aRequest,
                 (DvObject) null
@@ -43,14 +43,14 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
         this.au = au;
         this.newIdentifier = newIdentifier;
         this.bu = bu;
-        this.raList = raList;
     }
     
     @Override
-    public void executeImpl(CommandContext ctxt) throws CommandException {     
+    public void executeImpl(CommandContext ctxt) throws CommandException {  
+        
+        List<RoleAssignment> raList = ctxt.roleAssignees().getAssignmentsFor("@" + au.getIdentifier()); //only AuthenticatedUser supported
         au.setUserIdentifier(newIdentifier);
         bu.setUserName(newIdentifier);
-        
         //Validate the BuiltinUser change. Username validations are there.
         //If we have our validation errors pass up to commands, this could be removed
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
