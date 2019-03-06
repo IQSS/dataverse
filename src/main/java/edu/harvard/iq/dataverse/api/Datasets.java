@@ -209,12 +209,15 @@ public class Datasets extends AbstractApiBean {
     
     @GET
     @Path("{id}")
-    public Response getDataset(@PathParam("id") String id) {
+    public Response getDataset(@PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
         return response( req -> {
             final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(id)));
             final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
             final JsonObjectBuilder jsonbuilder = json(retrieved);
 
+            MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, retrieved);
+            mdcLogService.logEntry(entry);
+            
             return allowCors(ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null)));
         });
     }
