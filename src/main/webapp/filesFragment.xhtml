@@ -194,6 +194,11 @@
                     #{fileMetadata.label}
                 </a>
             </ui:fragment>
+            <ui:fragment rendered="#{!empty fileMetadata.directoryLabel}">
+                <div>
+                    <h:outputText id="directoryLabel" value="#{fileMetadata.directoryLabel}" />
+                </div>
+            </ui:fragment>
 
             <!-- TYPE + SIZE + DATE + CHECKSUM -->
             <div class="text-muted small">

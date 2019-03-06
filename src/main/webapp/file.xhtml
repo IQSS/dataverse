@@ -326,6 +326,11 @@
                                         </ui:fragment>
                                     </div>
                                 </div>
+                                <ui:fragment rendered="#{!empty FilePage.fileMetadata.directoryLabel}">
+                                    <div>
+                                        <h:outputText id="directoryLabel" value="#{FilePage.fileMetadata.directoryLabel}" />
+                                    </div>
+                                </ui:fragment>
                                 <div id="fileMetadataBlock" class="col-xs-12">
                                     <div class="text-muted">
                                         <h:outputText id="fileTypeOutputRegular" value="#{FilePage.fileMetadata.dataFile.friendlyType}" rendered="#{!(FilePage.fileMetadata.dataFile.tabularData)}"/>
