@@ -1,24 +1,24 @@
 var parentUrl = "";
-var retrieveFile=false;
-var queryParams=null;
-var version=null;
-var fileDownloadUrl=null;
+var retrieveFile = false;
+var queryParams = null;
+var version = null;
+var fileDownloadUrl = null;
 
 $(document)
     .ready(
         function() {
           // Setup return URL
           var wo = window.opener;
-          if(wo!=null) {
+          if (wo != null) {
             parentUrl = window.opener.location.href;
           }
           // Retrieve tool launch parameters from URL
-          queryParams = new URLSearchParams(
-              window.location.search.substring(1));
+          queryParams = new URLSearchParams(window.location.search
+              .substring(1));
           var fileUrl = queryParams.get("siteUrl")
               + "/api/access/datafile/"
               + queryParams.get("fileid") + "?gbrecs=false";
-	  fileDownloadUrl = queryParams.get("siteUrl")
+          fileDownloadUrl = queryParams.get("siteUrl")
               + "/api/access/datafile/"
               + queryParams.get("fileid") + "?gbrecs=true";
 
@@ -32,132 +32,137 @@ $(document)
           }
           // Get metadata for dataset/version/file
           $
-            .getJSON(
-                            versionUrl,
-                            function(json, status) {
-                              var mdFields = json.data.metadataBlocks.citation.fields;
+              .getJSON(
+                  versionUrl,
+                  function(json, status) {
+                    var mdFields = json.data.metadataBlocks.citation.fields;
 
-                              var title = "";
-                              var authors = "";
-                              var datasetUrl = json.data.storageIdentifier;
-                              datasetUrl = datasetUrl
-                                  .substring(datasetUrl
-                                      .indexOf("//") + 2);
-                              version = queryParams
-                                  .get("datasetversion");
-                              if (version === ":draft") {
-                                version = "DRAFT";
-                              }
-                              // Use parentUrl if
-                              // we got it from
-                              // the opener,
-                              // otherwise return
-                              // to the dataset
-                              // page
-                              if ((parentUrl == null)
-                                  || (parentUrl === "")) {
-                                parentUrl = queryParams
-                                    .get("siteUrl")
-                                    + "/dataset.xhtml?persistentId=doi:"
-                                    + datasetUrl
-                                    + "&version="
-                                    + version;
-                              }
-                              for ( var field in mdFields) {
-                                if (mdFields[field].typeName === "title") {
-                                  title = mdFields[field].value;
-                                }
-                                if (mdFields[field].typeName === "author") {
-                                  var authorFields = mdFields[field].value;
-                                  for ( var author in authorFields) {
-                                    if (authors.length > 0) {
-                                      authors = authors
-                                          + "; ";
-                                    }
-                                    authors = authors
-                                        + authorFields[author].authorName.value;
-                                  }
-                                }
-                              }
-                              var datafiles = json.data.files;
-                              for ( var entry in datafiles) {
-                                if (JSON
-                                    .stringify(datafiles[entry].dataFile.id) === queryParams
-                                    .get("fileid")) {
-                                	if(retrieveFile) {
-                                        $
-                                        .getJSON(
+                    var title = "";
+                    var authors = "";
+                    var datasetUrl = json.data.storageIdentifier;
+                    datasetUrl = datasetUrl
+                        .substring(datasetUrl
+                            .indexOf("//") + 2);
+                    version = queryParams
+                        .get("datasetversion");
+                    if (version === ":draft") {
+                      version = "DRAFT";
+                    }
+                    // Use parentUrl if
+                    // we got it from
+                    // the opener,
+                    // otherwise return
+                    // to the dataset
+                    // page
+                    if ((parentUrl == null)
+                        || (parentUrl === "")) {
+                      parentUrl = queryParams
+                          .get("siteUrl")
+                          + "/dataset.xhtml?persistentId=doi:"
+                          + datasetUrl
+                          + "&version="
+                          + version;
+                    }
+                    for ( var field in mdFields) {
+                      if (mdFields[field].typeName === "title") {
+                        title = mdFields[field].value;
+                      }
+                      if (mdFields[field].typeName === "author") {
+                        var authorFields = mdFields[field].value;
+                        for ( var author in authorFields) {
+                          if (authors.length > 0) {
+                            authors = authors
+                                + "; ";
+                          }
+                          authors = authors
+                              + authorFields[author].authorName.value;
+                        }
+                      }
+                    }
+                    var datafiles = json.data.files;
+                    for ( var entry in datafiles) {
+                      if (JSON
+                          .stringify(datafiles[entry].dataFile.id) === queryParams
+                          .get("fileid")) {
+                        if (retrieveFile) {
+                          $
+                              .getJSON(
+                                  fileUrl,
+                                  function(
+                                      data,
+                                      status) {
+                                    writeContentAndData(
+                                        data,
                                         fileUrl,
-                                        function(data, status) {
-                                            writeContentAndData(
-                                                    data,
-						    fileUrl,
-                                                    datafiles[entry].dataFile,
-                                                    title,
-                                                    authors,
-                                                    parentUrl);
-					})
-                                        .fail(
-                                        function(jqXHR) {
-                                        reportFailure(
-                                            "Unable to retrieve dataset metadata.",
-                                            jqXHR.status);
-                                        });
-                                		
-                                	} else {
-                                  writeContent(
-				      fileUrl,
-                                      datafiles[entry].dataFile,
-                                      title,
-                                      authors,
-                                      parentUrl);
-                                }
-                                }
-                              }
-                            })
-                        .fail(
-                            function(jqXHR) {
-                              reportFailure(
-                                  "Unable to retrieve annotations file.",
-                                  jqXHR.status);
-                            });
+                                        datafiles[entry].dataFile,
+                                        title,
+                                        authors,
+                                        parentUrl);
+                                  })
+                              .fail(
+                                  function(
+                                      jqXHR) {
+                                    reportFailure(
+                                        "Unable to retrieve dataset metadata.",
+                                        jqXHR.status);
+                                  });
+
+                        } else {
+                          writeContent(
+                              fileUrl,
+                              datafiles[entry].dataFile,
+                              title, authors,
+                              parentUrl);
+                        }
+                      }
+                    }
+                  })
+              .fail(
+                  function(jqXHR) {
+                    reportFailure(
+                        "Unable to retrieve annotations file.",
+                        jqXHR.status);
                   });
-        
-var filePageUrl=null;
+        });
+
+var filePageUrl = null;
 function addStandardPreviewHeader(file, title, authors, parentUrl) {
-                                filePageUrl = queryParams
-                                    .get("siteUrl")
-                                    + "/file.xhtml?";
-if(file.persistentId.length==0) {
-filePageUrl = filePageUrl + "fileId=" + file.id;
-} else {
-filePageUrl=filePageUrl +  "persistentId=" + file.persistentId;
-}
-filePageUrl=filePageUrl +  "&version=" + version;
-var header = $('.preview-header').append($('<div/>'));
-      header.append($("<div/>").html("Filename: " + file.filename).attr('id','filename'));
-if(file.description.length>0) {
-header.append($('<div/>').html("Description: " + file.description));
-}
-      header.append($('<div/>').text("In ").append($('<span/>').attr('id','dataset').html(title)).append($('<span/>').text(" (version " + version + ")").attr('id','version')).append($('<span/>').text(", by " + authors).attr('id','authors')));
-      header.append($("<div/>")
-          .addClass("btn btn-default")
-          .html(
-              "<a href='" + fileDownloadUrl + "'>Download File</a>"));
-      header.append($("<div/>")
+  filePageUrl = queryParams.get("siteUrl") + "/file.xhtml?";
+  if (file.persistentId.length == 0) {
+    filePageUrl = filePageUrl + "fileId=" + file.id;
+  } else {
+    filePageUrl = filePageUrl + "persistentId=" + file.persistentId;
+  }
+  filePageUrl = filePageUrl + "&version=" + version;
+  var header = $('.preview-header').append($('<div/>'));
+  header.append($("<div/>").html("Filename: " + file.filename).attr('id',
+      'filename'));
+  if ((file.description != null) && (file.description.length > 0)) {
+    header.append($('<div/>').html("Description: " + file.description));
+  }
+  header.append($('<div/>').text("In ").append(
+      $('<span/>').attr('id', 'dataset').html(title)).append(
+      $('<span/>').text(" (version " + version + ")").attr('id',
+          'version')).append(
+      $('<span/>').text(", by " + authors).attr('id', 'authors')));
+  header.append($("<div/>").addClass("btn btn-default").html(
+      "<a href='" + fileDownloadUrl + "'>Download File</a>"));
+  header
+      .append($("<div/>")
           .addClass("btn btn-default")
           .html(
               "<a href=\"javascript:returnToUrl(parentUrl);\">Return to Previous Page</a>"));
-	header.append($("<div/>").addClass("preview-note").text(
+  header.append($("<div/>").addClass("preview-note").text(
       "File uploaded on " + file.creationDate));
 }
-
 
 function reportFailure(msg, statusCode) {
   var preview = $(".preview");
   preview.addClass("alert alert-danger");
-  preview.text(msg + " If problem persists (has your login timed out?), report error code: " + statusCode
-      + " to the repository administrator.");
+  preview
+      .text(msg
+          + " If problem persists (has your login timed out?), report error code: "
+          + statusCode + " to the repository administrator.");
 }
 
 function returnToUrl(parentUrl) {
@@ -169,20 +174,17 @@ function returnToUrl(parentUrl) {
     try {
       if (window.opener.location.href === parentUrl) {
         // Yes - close the opener and reopen the dataset here (since just
-		// closing this window may not bring the opener to the front)
+        // closing this window may not bring the opener to the front)
         window.opener.close();
         window.open(parentUrl, "_parent");
       } else {
-      // No - so leave the opener alone and open the dataset here
+        // No - so leave the opener alone and open the dataset here
         window.location.assign(parentUrl);
       }
     } catch (err) {
       // No, and the opener has navigated to some other site, so just open the
-		// dataset here
+      // dataset here
       window.location.assign(parentUrl);
     }
   }
 }
-
-
-
