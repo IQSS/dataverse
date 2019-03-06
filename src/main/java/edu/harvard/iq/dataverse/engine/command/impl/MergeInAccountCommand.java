@@ -27,7 +27,6 @@ import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -68,7 +67,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
                 for(RoleAssignment bra : baseRAList) {
                     //Matching on the id not the whole DVObject as I'm suspicious of dvobject equality
                     if( bra.getDefinitionPoint().getId().equals(cra.getDefinitionPoint().getId())
-                        && bra.getRole().equals(cra.getRole())) { //TODO: Match on privateurltoken as well?? What does this do?
+                        && bra.getRole().equals(cra.getRole())) { 
                         willDelete = true; //more or less a skip, as we run a delete query afterwards
                     }
                 }
@@ -87,7 +86,6 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         int resultCount = ctxt.em().createNamedQuery("RoleAssignment.deleteAllByAssigneeIdentifier", RoleAssignment.class).
                         setParameter("assigneeIdentifier", consumedAU.getIdentifier())
                         .executeUpdate();
-        logger.log(Level.INFO, "Number of roles deleted : ({0})", resultCount);
         
         // DatasetVersionUser
         for (DatasetVersionUser user : ctxt.datasetVersion().getDatasetVersionUsersByAuthenticatedUser(consumedAU)) {
@@ -154,7 +152,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         ApiToken toRemove = ctxt.authentication().findApiTokenByUser(consumedAU);
         ctxt.em().remove(toRemove);
         AuthenticatedUserLookup consumedAUL = consumedAU.getAuthenticatedUserLookup();
-        ctxt.em().remove(consumedAUL);//do we need this with cascade?
+        ctxt.em().remove(consumedAUL);
         ctxt.em().remove(consumedAU);
         ctxt.em().remove(consumedBU);  
     }
