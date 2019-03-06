@@ -111,6 +111,8 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 if (!draftFmd.isRestricted() == publishedFmd.isRestricted()) {
                     publishedFmd.setRestricted(draftFmd.isRestricted());
                     metadataUpdated = true;
+                    //Must also update state of file
+                    dataFile.setRestricted(draftFmd.isRestricted());
                 }
                 String draftProv = draftFmd.getProvFreeForm();
                 String pubProv = publishedFmd.getProvFreeForm();
