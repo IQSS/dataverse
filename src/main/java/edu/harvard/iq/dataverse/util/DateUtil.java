@@ -25,9 +25,6 @@ public class DateUtil {
             Locale currentLocale = BundleUtil.getCurrentLocale();
             dateFormatter = DateFormat.getDateInstance(DateFormat.DEFAULT, currentLocale);
             formattedDate = dateFormatter.format(dateToformat);
-            logger.log(Level.SEVERE, "******** JUAN ******: Fecha Formateada en formatDate: {0}", formattedDate);
-            logger.log(Level.SEVERE, "******** JUAN ******: Locale en formatDate: {0}", currentLocale.getDisplayName());
-
             return formattedDate;
         } catch(Exception e) {
             return null;
@@ -35,25 +32,27 @@ public class DateUtil {
     }
 
     public static String formatDate(String dateToformat, String format) {
-
-        
-        
         String formattedDate = "";
         DateFormat inputFormat = new SimpleDateFormat(format);
         Date _date = null;
-        logger.log(Level.SEVERE, "******** JUAN ******: Fecha A formatear en formatDate instancia 2: {0}", dateToformat);
-        logger.log(Level.SEVERE, "******** JUAN ******: Formato en formatDate instancia 2: {0}", format);
+        logger.log(Level.SEVERE, "**** For testing: Date received in parameter dateToformat in formatDate method: {0}", dateToformat);
         try {
-            Locale currentLocale = BundleUtil.getCurrentLocale();
-            DateFormat dateFormatter = DateFormat.getDateInstance(DateFormat.DEFAULT, currentLocale);
-            
-            
             _date = inputFormat.parse(dateToformat);
             formattedDate = formatDate(_date);
             return formattedDate;
         } catch (ParseException e) {
-            e.printStackTrace();
-            return null;
+            // Trick to evite the ParseException in French and Spanish Operating System installation
+            // Have the solr dateToDisplayOnCard parameter the date in a localized format?
+            try { 
+                format="dd-MMM-yyyy";
+                inputFormat = new SimpleDateFormat(format);
+                _date = inputFormat.parse(dateToformat);
+                formattedDate = formatDate(_date);
+                return formattedDate;
+            } catch (ParseException ex) {
+                ex.printStackTrace();
+                return null;
+            }
         }
     }
 
