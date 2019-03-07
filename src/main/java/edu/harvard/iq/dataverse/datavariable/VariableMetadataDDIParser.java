@@ -21,7 +21,6 @@ public class VariableMetadataDDIParser {
 
 
     public VariableMetadataDDIParser () {
-
     }
 
     public void processDataDscr(XMLStreamReader xmlr, Map<Long,VariableMetadata> mapVarToVarMet, Map<Long,VarGroup> varGroupMap) throws XMLStreamException {
@@ -75,7 +74,6 @@ public class VariableMetadataDDIParser {
                 }
             }
         }
-
     }
 
     private void processVar(XMLStreamReader xmlr,  Map<Long, VariableMetadata> mapVarToVarMet ) throws XMLStreamException {
@@ -133,7 +131,6 @@ public class VariableMetadataDDIParser {
                 }
             }
         }
-
     }
 
     private void processLabel (XMLStreamReader xmlr, VarGroup vg ) throws XMLStreamException {
@@ -172,7 +169,6 @@ public class VariableMetadataDDIParser {
                 if (xmlr.getLocalName().equals("qstn")) return;
             }
         }
-
     }
 
     private void processUniverse (XMLStreamReader xmlr, VariableMetadata newVM ) throws XMLStreamException {
@@ -288,5 +284,4 @@ public class VariableMetadataDDIParser {
         }
         return content.toString();
     }
-
 }
