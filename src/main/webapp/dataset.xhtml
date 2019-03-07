@@ -218,13 +218,13 @@
                                             </h:outputLink>
                                         </li>
                                         <li>
-                                            <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:post_edit_metadata()">
+                                            <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:bind_bsui_components();">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}" />
                                             </p:commandLink>
                                         </li>
                                         <li>
-                                            <p:commandLink id="editTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:post_edit_terms()">
+                                            <p:commandLink id="editTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:bind_bsui_components();">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.terms']}" />
                                             </p:commandLink>
@@ -315,7 +315,7 @@
                                 </p:commandLink>
                             </div>
                             <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
+                                <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
 
                                 <div id="sharrre-widget" data-url="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
 
@@ -387,13 +387,17 @@
                                         
                                         <div id="keywords" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay and dsf.datasetFieldType.id==DatasetPage.datasetVersionUI.keyword.datasetFieldType.id}">
                                             <label class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.localeDescription}">#{bundle['dataset.keywordDisplay.title']}</span>
+                                                #{bundle['dataset.keywordDisplay.title']}
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.localeDescription}"></span>
                                             </label>
                                             <div class="col-sm-9">#{DatasetPage.datasetVersionUI.keywordDisplay}</div>
                                         </div>
                                         <div id="publication" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationCitation and dsf.datasetFieldType.name=='publication'}">
                                             <label class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}">#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).title}</span>
+                                                #{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).title}
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}"></span>
                                             </label>
                                             <div class="col-sm-9">
                                                 <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}" escape="false"/>
@@ -403,9 +407,9 @@
                                      
                                         <div class="form-group" jsf:rendered="#{dsf.datasetFieldType.name!='publication' and dsf.datasetFieldType.name!='keyword'  }">
                                             <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{dsf.datasetFieldType.localeDescription}">
-                                                        #{dsf.datasetFieldType.localeTitle}
-                                                </span>
+                                                #{dsf.datasetFieldType.localeTitle}
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                             </label>
                                             <!-- Primitive datasetFields -->
                                             <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.primitive}">
@@ -420,8 +424,7 @@
                                             <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.compound}">
                                                 <ui:fragment rendered="#{dsf.datasetFieldType.name == 'datasetContact'}">
                                                     <p class="help-block">
-                                                        <span class="glyphicon glyphicon-info-sign"/>
-                                                        <h:outputText value=" #{bundle['dataset.contact.tip']}"/>
+                                                        <h:outputText value="#{bundle['dataset.contact.tip']}"/>
                                                     </p>
                                                 </ui:fragment>
                                                 <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue">
@@ -448,9 +451,9 @@
                     <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                         <div class="form-group">
                             <label for="select_HostDataverse" class="col-sm-2 control-label">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.host.title']}">
-                                    #{bundle.hostDataverse}
-                                </span>
+                                #{bundle.hostDataverse}
+                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.host.title']}"></span>
                             </label>
                             <div class="col-sm-10">
                                 <h:outputText styleClass="highlightBold" value="#{DatasetPage.dataset.owner.name}"/>
@@ -464,13 +467,13 @@
                         </div>
                         <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataverseTemplates and DatasetPage.editMode == 'CREATE'}">
                             <label for="select_DatasetTemplate" class="col-sm-2 control-label">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate.title']}">
-                                    #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
-                                </span>
+                                #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
+                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate.title']}"></span>
                             </label>
                             <div class="col-sm-6">
                                 <p class="help-block">
-                                    <span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.template.tip']}
+                                    #{bundle['dataset.template.tip']}
                                 </p>
                                 <p:selectOneMenu value="#{DatasetPage.selectedTemplate}" onchange="updateTemplate()"
                                                  converter="templateConverter" id="select_DatasetTemplate" styleClass="form-control"
@@ -483,7 +486,7 @@
                                 <p:commandButton value="#{bundle['file.dataFilesTab.button.direct']}" id="updateTemplate"
                                                  style="display:none"
                                                  update=":datasetForm,accessPopup"
-                                                 action="#{DatasetPage.handleChangeButton}">
+                                                 action="#{DatasetPage.handleChangeButton}" oncomplete="javascript:bind_bsui_components();">
                                 </p:commandButton>
                             </div>
                         </div>
@@ -507,7 +510,7 @@
                     <!-- Edit editMode -->
                     <div class="button-block form-top" jsf:rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE'}">
                         <p:commandButton id="saveTop" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockDatasetForm').show();" />
-                        <p:commandButton id="cancelTop" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
+                        <p:commandButton id="cancelTop" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
                     </div>
@@ -604,7 +607,7 @@
                                              and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
 
                                 <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DatasetPage.editMode}">
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_metadata()" 
+                                    <p:commandLink type="button" styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" oncomplete="javascript:bind_bsui_components();" 
                                                    disabled="#{DatasetPage.locked}" rendered="#{!widgetWrapper.widgetView and (DatasetPage.sessionUserAuthenticated and empty DatasetPage.editMode and !widgetWrapper.widgetView
                                                                and DatasetPage.canUpdateDataset() and !DatasetPage.dataset.deaccessioned)}">
                                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
@@ -659,7 +662,7 @@
                     <!-- Create/Save Dataset Button Panel -->
                     <div class="button-block" jsf:rendered="#{!empty DatasetPage.editMode}">
                         <p:commandButton tabindex="1000" id="save" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockDatasetForm').show();" />
-                        <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
+                        <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:bind_bsui_components();">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
                         <p:button id="cancelCreate" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" rendered="#{DatasetPage.editMode == 'CREATE'}" />
@@ -677,7 +680,7 @@
                     <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noValidSelectedFilesForDownload']}</p>
                         <ui:fragment rendered="#{DatasetPage.dataset.fileAccessRequest}">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.requestAccessToRestrictedFiles']}</p>
+                            <p class="help-block">#{bundle['dataset.requestAccessToRestrictedFiles']}</p>
                         </ui:fragment>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('downloadInvalid').hide();" type="button" />
@@ -693,7 +696,7 @@
                             </ui:repeat>
                         </table>
                         <div class="button-block">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.downloadUnrestricted']}</p>
+                            <p class="help-block">#{bundle['dataset.downloadUnrestricted']}</p>
                             <ui:fragment rendered="#{!DatasetPage.downloadPopupRequired}">
                                 <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload()}" />
                             </ui:fragment>
@@ -720,7 +723,7 @@
                     </p:dialog>
                     <p:dialog id="privateUrlId" styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}" widgetVar="privateUrlConfirmation" modal="true">
                         <p:fragment id="privateUrlPanel" rendered="#{DatasetPage.userCanCreatePrivateURL}">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>&#160;
+                            <p class="help-block">
                                 <h:outputFormat value="#{bundle['dataset.privateurl.tip']}" escape="false">
                                     <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                     <f:param value="#{systemConfig.guidesVersion}"/>
@@ -861,7 +864,7 @@
                     <p:confirmDialog id="reasonTooManyCharacters" message="#{bundle['file.deaccessionDialog.dialog.limitChar.tip']}" header="#{bundle['file.deaccessionDialog.dialog.limitChar.header']}" widgetVar="reasonTooManyCharacters"> </p:confirmDialog>
                     <p:inputText id="hiddenReasonInput" style="display:none" widgetVar="hiddenReasonInput"/>
                     <p:dialog id="compareTwo" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="compareTwo" modal="true">
-                        <p class="help-block"><span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['file.viewDiffDialog.dialog.warning']}</span></p>
+                        <p class="help-block"><span class="glyphicon glyphicon-exclamation-sign text-danger"/> <span class="text-danger">#{bundle['file.viewDiffDialog.dialog.warning']}</span></p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.close}" onclick="PF('compareTwo').hide();PF('blockDatasetForm').hide();" type="button" />
                         </div>
@@ -1070,7 +1073,7 @@
                     <!-- p:remoteCommand  name="openEditFilesPageCommand" action=" {DatasetPage.editFileMetadata()}"  / -->
 
                     <p:dialog id="fileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="fileTagsPopup" modal="true">
-                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
+                        <p class="help-block">#{bundle['file.editTagsDialog.tip']}</p>
                         <div class="form-horizontal" jsf:rendered="#{!(empty DatasetPage.selectedFiles)}">
                             <div class="form-group text-left">
                                 <label for="selectedTagsList" class="col-sm-4 control-label">
@@ -1317,9 +1320,9 @@
                             <div class="form-horizontal">
                                 <div class="form-group">
                                     <label for="metadata_TermsAccess" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
-                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                                        </span>
+                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                                     </label>
                                     <div class="col-sm-9">
                                         <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa" />
@@ -1327,9 +1330,9 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="metadata_RequestAccess" class="col-sm-3 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
-                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
-                                        </span>
+                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
                                     </label>
                                     <div class="col-sm-9">
                                         <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
@@ -1390,7 +1393,7 @@
                             <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetPublishCustomText)}" escape="false"/>
                         </div>
                         <p class="help-block">
-                            <span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.publishBoth.tip']}
+                            #{bundle['dataset.publishBoth.tip']}
                         </p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle['dataset.mayNotBePublished.both.button']}" onclick="PF('publishParent').hide();
@@ -1408,7 +1411,7 @@
                         </div>
                         <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
                             <p class="help-block">
-                                <span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.selectVersionNumber']}
+                                #{bundle['dataset.selectVersionNumber']}
                             </p>
                             <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">
                                 <f:selectItem itemLabel="#{bundle['dataset.minorRelease']} (#{DatasetPage.datasetNextMinorVersion})" itemValue="1" />
