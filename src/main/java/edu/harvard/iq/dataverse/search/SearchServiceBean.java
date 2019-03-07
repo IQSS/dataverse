@@ -576,6 +576,10 @@ public class SearchServiceBean {
                     Collections.sort(tabularDataTags);
                     solrSearchResult.setTabularDataTags(tabularDataTags);
                 }
+                String filePID = (String) solrDocument.getFieldValue(SearchFields.FILE_PERSISTENT_ID);
+                if(null != filePID && !"".equals(filePID) && !"".equals("null")) {
+                    solrSearchResult.setFilePersistentId(filePID);
+                }
             }
             /**
              * @todo store PARENT_ID as a long instead and cast as such

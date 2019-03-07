@@ -39,6 +39,18 @@
                     <h:outputText value="#{DatasetPage.jsonLd}"/>
                 </script>
 	    </ui:define>
+	    <ui:define name="og_header">
+                <meta property="og:title" content="#{DatasetPage.title}" />
+                <meta property="og:type" content="article" />
+                <meta property="og:url" content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" />
+                <meta property="og:image" content="#{DatasetPage.dataverseSiteUrl.concat(resource['images/favicondataverse.png'])}" />
+                <meta property="og:site_name" content="#{DatasetPage.publisher}" />
+                <meta property="og:description" content="#{(DatasetPage.description.length()>150 ? DatasetPage.description.substring(0,147).concat('...'): DatasetPage.description)}" />
+                <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
+                    <meta property="article:author" content="#{author}" />
+                </ui:repeat>
+                <meta property="article:published_time" content="#{DatasetPage.workingVersion.publicationDateAsString}" />
+	    </ui:define>
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                 <f:metadata>
@@ -1401,6 +1413,9 @@
                             <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">
                                 <f:selectItem itemLabel="#{bundle['dataset.minorRelease']} (#{DatasetPage.datasetNextMinorVersion})" itemValue="1" />
                                 <f:selectItem itemLabel="#{bundle['dataset.majorRelease']} (#{DatasetPage.datasetNextMajorVersion})" itemValue="2" />
+                                <c:if test="#{dataverseSession.user.isSuperuser()}">
+                                    <f:selectItem rendered="#" itemLabel="#{bundle['dataset.updateRelease']}" itemValue="3" />
+                                </c:if>
                             </p:selectOneRadio>
                         </ui:fragment>
                         <p>
@@ -1558,9 +1573,6 @@
                     }
                     function updateTemplate() {
                         $('button[id$="updateTemplate"]').trigger('click');
-                    }
-                    function registerDataset() {
-                        $('button[id$="registerDataset"]').trigger('click');
                     }
                     function checkNewlyRestricted() {
                         if ($('input[id$="showAccessPopup"]').val() === 'true') {
