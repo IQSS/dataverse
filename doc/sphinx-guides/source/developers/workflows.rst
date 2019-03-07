@@ -8,7 +8,7 @@ Dataverse has a flexible workflow mechanism that can be used to trigger actions 
 
 
 Introduction
----------
+------------
 
 Dataverse can perform two sequences of actions when datasets are published: one prior to publishing (marked by a ``PrePublishDataset`` trigger), and one after the publication has succeeded (``PostPublishDataset``). The pre-publish workflow is useful for having an external system prepare a dataset for being publicly accessed (a possibly lengthy activity that requires moving files around, uploading videos to a streaming server, etc.), or to start an approval process. A post-publish workflow might be used for sending notifications about the newly published dataset.
 
@@ -104,7 +104,7 @@ Available variables are:
 * ``releaseStatus``
 
 archiver
-+++++++
+++++++++
 
 A step that sends an archival copy of a Dataset Version to a configured archiver, e.g. the DuraCloud interface of Chronopolis. See the `DuraCloud/Chronopolis Integration documentation <http://guides.dataverse.org/en/latest/admin/integrations.html#id15>`_ for further detail.
 
