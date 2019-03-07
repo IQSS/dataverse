@@ -354,7 +354,9 @@
                         </ui:fragment>
                         <ui:fragment>
                             <label class="control-label" for="fileDirectoryLabel" style="margin-right:1em;margin-bottom:.5em;">
-                                #{bundle['file.directoryLabel']}
+                                #{bundle['file.metadataTab.hierarchy.label']}
+                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.metadataTab.hierarchy.tip']}"></span>
                             </label>
                             <p:inputText id="fileDirectoryName" value="#{fileMetadata.directoryLabel}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}">
                             <p:ajax event="change" listener="#{EditDatafilesPage.handleFileDirectoryChange}" update="fileName" />

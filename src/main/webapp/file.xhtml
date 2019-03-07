@@ -331,11 +331,6 @@
                                         </ui:fragment>
                                     </div>
                                 </div>
-                                <ui:fragment rendered="#{!empty FilePage.fileMetadata.directoryLabel}">
-                                    <div>
-                                        <h:outputText id="directoryLabel" value="#{FilePage.fileMetadata.directoryLabel}" />
-                                    </div>
-                                </ui:fragment>
                                 <div id="fileMetadataBlock" class="col-xs-12">
                                     <div class="text-muted">
                                         <h:outputText id="fileTypeOutputRegular" value="#{FilePage.fileMetadata.dataFile.friendlyType}" rendered="#{!(FilePage.fileMetadata.dataFile.tabularData)}"/>
@@ -506,6 +501,14 @@
                                                 </label>
                                                 <div class="col-sm-9">
                                                     <h:outputText value="#{FilePage.file.dataTable.caseQuantity}"/>
+                                                </div>
+                                            </div>
+                                            <div class="form-group" jsf:rendered="#{!empty FilePage.fileMetadata.directoryLabel}">
+                                                <label class="col-sm-3 control-label">
+                                                   #{bundle['file.metadataTab.hierarchy.label']}
+                                                </label>
+                                                <div class="col-sm-9">
+                                                    <h:outputText value="#{FilePage.fileMetadata.directoryLabel}"/>
                                                 </div>
                                             </div>
                                             <div class="form-group" jsf:rendered="#{!(empty FilePage.fileMetadata.description)}">
