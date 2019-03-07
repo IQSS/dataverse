@@ -107,8 +107,7 @@
                             <div id="remoteProvider" jsf:rendered="#{LoginPage.authProvider.id == 'shib'}">
                                 <h:form>
                                     <p class="help-block">
-                                        <span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputFormat value=" #{bundle['login.institution.blurb']} " escape="false">
+                                        <h:outputFormat value="#{bundle['login.institution.blurb']} " escape="false">
                                             <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                             <f:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>
@@ -169,8 +168,7 @@
                             <div class="form-horizontal" jsf:rendered="#{LoginPage.authProvider.OAuthProvider}">
                                 <o:form useRequestURI="true">
                                     <p class="help-block">
-                                        <span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputFormat value=" #{bundle['auth.providers.blurb']}" escape="false">
+                                        <h:outputFormat value="#{bundle['auth.providers.blurb']}" escape="false">
                                             <o:param value="#{LoginPage.authProvider.info.title}"/>
                                             <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                             <o:param value="#{systemConfig.guidesVersion}"/>
@@ -214,8 +212,8 @@
                                     </ui:repeat>
                                 </h:form>
                                 <div jsf:rendered="#{LoginPage.authProvider.id == 'builtin'}">
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputFormat value=" #{bundle['auth.providers.tip']}" escape="false">
+                                    <p class="help-block">
+                                        <h:outputFormat value="#{bundle['auth.providers.tip']}" escape="false">
                                             <o:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                             <o:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>
