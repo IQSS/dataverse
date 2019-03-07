@@ -10,8 +10,7 @@
 
 <ui:fragment rendered="#{widgetWrapper.widgetView}">
     <p class="help-block">
-        <span class="glyphicon glyphicon-info-sign"/>
-        <h:outputFormat value=" #{bundle['file.dataFilesTab.versions.widget.viewMoreInfo']}" escape="false">
+        <h:outputFormat value="#{bundle['file.dataFilesTab.versions.widget.viewMoreInfo']}" escape="false">
             <f:param value="#{DatasetPage.dataset.globalIdString}"/>
             <f:param value="#{DatasetPage.dataset.displayName}"/>
             <f:param value="#{dataverseServiceBean.findRootDataverse().displayName}"/>

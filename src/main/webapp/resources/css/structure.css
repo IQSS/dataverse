@@ -121,7 +121,8 @@ table.selectManyCheckboxBlock label {font-weight:normal;}
 hr {border-color: #ddd;}
 
 span.glyphicon[data-toggle='tooltip'] {cursor: default;}
-.tooltip {z-index:999999 !important;}
+span.glyphicon-question-sign.tooltip-icon {color: #99bcdb !important;}
+span.glyphicon-question-sign.tooltip-icon:hover {color: #337AB7 !important;}
 
 /* Dropdown submenu */
 .dropdown-submenu {
@@ -694,7 +695,7 @@ div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
 
 div.popover.fade.top.in {max-width: none;}
 div.popover.fade.top.in div.popover-content {text-align:center; vertical-align: middle; display:table-cell; width:428px; height:418px;}
-span.text-info.popoverHTML {display:inline-block;}
+a.popoverHTML {display:inline-block;}
 
 /*div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}*/
 /*div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}*/
@@ -869,7 +870,7 @@ div.ui-dialog.ui-widget-content {z-index:100001 !important;}
 
 /* POPUP DROPDOWN MENUS + TOOLTIPS + BLOCK UI */
 div.ui-selectcheckboxmenu-panel, div.ui-selectonemenu-panel, div.ui-autocomplete-panel,
-.ui-selectonemenu-list, .ui-selectcheckboxmenu-list, div.tooltip {z-index:100002 !important;}
+.ui-selectonemenu-list, .ui-selectcheckboxmenu-list, div.tooltip, div.popover {z-index:100002 !important;}
 
 /* Overwrite Primefaces */
 .ui-tabs.ui-widget-content .ui-tabs-nav li.ui-tabs-selected a {color: #555555;}

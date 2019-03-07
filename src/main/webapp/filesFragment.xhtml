@@ -36,8 +36,8 @@
                 <!-- Cloud Storage Access -->
                 <div class="form-group col-xs-12 text-left">
                     <div class="col-xs-12">
-                        <p class="help-block text-muted"><span class="glyphicon glyphicon-info-sign"/> 
-                            <h:outputFormat value=" #{bundle['file.cloudStorageAccess.help']}" escape="false">
+                        <p class="help-block">
+                            <h:outputFormat value="#{bundle['file.cloudStorageAccess.help']}" escape="false">
                                 <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                 <f:param value="#{systemConfig.guidesVersion}"/>
                                 <f:param value="#{DatasetPage.cloudEnvironmentName}"/>
@@ -45,9 +45,9 @@
                         </p>
                     </div>
                     <label class="col-sm-3 control-label">
-                        <span data-toggle="tooltip" data-placement="auto top" class="tooltiplabel text-info" data-original-title="#{bundle['file.cloudStorageAccess.tip']}">
-                            #{bundle['file.cloudStorageAccess']}
-                        </span>
+                        #{bundle['file.cloudStorageAccess']}
+                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                              data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.cloudStorageAccess.tip']}"></span>
                     </label>
                     <div class="col-md-4 col-sm-5 col-xs-6 input-group">
                         <div id="copy-input" class="form-control">#{DatasetPage.swiftContainerName}</div>

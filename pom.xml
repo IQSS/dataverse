@@ -328,7 +328,7 @@
         <dependency>
             <groupId>net.handle</groupId>
             <artifactId>handle</artifactId>
-            <version>2006-06-16-generated</version>
+            <version>8.1.1</version>
         </dependency>
         <!-- UNF v5 (buggy), (temporarily) added for testing ingest against DVN v3  - L.A. -->
         <dependency>
