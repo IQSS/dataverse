@@ -116,11 +116,11 @@ function setParentUrl() {
   var wo = window.opener;
   if (wo != null) {
     parentUrl = window.opener.location.href;
-    returnLabel = "Go to Data Project Page";
+    returnLabel = "Go to Data Project";
     if (parentUrl.indexOf("dataset.xhtml") != -1) {
-      returnLabel = "Return to Data Project Page";
+      returnLabel = "Return to Data Project";
     } else if (parentUrl.indexOf("file.xhtml") != -1) {
-      returnLabel = "Return to Data File Page";
+      returnLabel = "Return to Data File";
     }
   }
 
