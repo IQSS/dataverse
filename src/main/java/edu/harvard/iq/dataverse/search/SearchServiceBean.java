@@ -647,14 +647,18 @@ public class SearchServiceBean {
              * the todo above but we need a way to lookup by Solr field, so
              * we'll build a hashmap
              */
+            logger.info("BBBBBBBBBB JUAN 1" + facetCategory.getFriendlyName() + " " + facetCategory.getName());
             for (DatasetFieldType datasetField : datasetFields) {
                 String solrFieldNameForDataset = datasetField.getSolrField().getNameFacetable();
                 String friendlyName = datasetField.getDisplayName();
                 if (solrFieldNameForDataset != null && facetField.getName().endsWith(datasetField.getTmpNullFieldTypeIdentifier())) {
+                    logger.info("BBBBBBBBBB JUAN 2.1");
                     // give it the non-friendly name so we remember to update the reference data script for datasets
                     facetCategory.setName(facetField.getName());
                 } else if (solrFieldNameForDataset != null && facetField.getName().equals(solrFieldNameForDataset)) {
+                    logger.info("BBBBBBBBBB JUAN 2.2");
                     if (friendlyName != null && !friendlyName.isEmpty()) {
+                        logger.info("BBBBBBBBBB JUAN 2.3");
                         facetCategory.setFriendlyName(friendlyName);
                         // stop examining available dataset fields. we found a match
                         break;
@@ -662,6 +666,7 @@ public class SearchServiceBean {
                 }
                 datasetfieldFriendlyNamesBySolrField.put(datasetField.getSolrField().getNameFacetable(), friendlyName);
             }
+            logger.info("BBBBBBBBBB JUAN 3" + facetCategory.getFriendlyName() + " " + facetCategory.getName());
             /**
              * @todo get rid of this crazy reflection, per todo above... or
              * should we... let's put into a hash the friendly names of facet
@@ -733,6 +738,8 @@ public class SearchServiceBean {
             }
             facetCategory.setName(rangeFacet.getName());
             facetCategory.setFacetLabel(facetLabelList);
+            logger.info("BBBBBBBBBB JUAN " + facetCategory.getFriendlyName() + " " + facetCategory.getName());
+
             // reverse to show the newest citation year range at the top
             List<FacetLabel> facetLabelListReversed = new ArrayList<>();
             ListIterator<FacetLabel> li = facetLabelList.listIterator(facetLabelList.size());
