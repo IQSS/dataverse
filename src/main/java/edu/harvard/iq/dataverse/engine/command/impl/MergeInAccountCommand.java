@@ -38,19 +38,16 @@ import java.util.logging.Logger;
 @RequiredPermissions({})
 public class MergeInAccountCommand extends AbstractVoidCommand {
     final AuthenticatedUser consumedAU;
-    final BuiltinUser consumedBU;
     final AuthenticatedUser ongoingAU;
 
     private static final Logger logger = Logger.getLogger(MergeInAccountCommand.class.getCanonicalName());
     
-    public MergeInAccountCommand(DataverseRequest createDataverseRequest, AuthenticatedUser consumedAuthenticatedUser, 
-            BuiltinUser consumedBuiltinUser, AuthenticatedUser ongoingAU) {
+    public MergeInAccountCommand(DataverseRequest createDataverseRequest, AuthenticatedUser consumedAuthenticatedUser, AuthenticatedUser ongoingAU) {
         super(
             createDataverseRequest,
             (DvObject) null
         );
         consumedAU = consumedAuthenticatedUser;
-        consumedBU = consumedBuiltinUser;
         this.ongoingAU = ongoingAU;
     }
     
@@ -62,7 +59,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         
         for(RoleAssignment cra : consumedRAList) {
             if(cra.getAssigneeIdentifier().charAt(0) == '@') {
-                //This still needs to check if the same Role Assignment exists in the baseRAList and if so... what?
+                
                 boolean willDelete = false;
                 for(RoleAssignment bra : baseRAList) {
                     //Matching on the id not the whole DVObject as I'm suspicious of dvobject equality
@@ -76,7 +73,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
                     ctxt.em().merge(cra);
                     IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(cra.getDefinitionPoint());
                     ctxt.index().indexDvObject(cra.getDefinitionPoint());
-                }
+                } // no else here because the any willDelete == true will happen in the named query below.
             } else {
                 throw new IllegalCommandException("Original userIdentifier provided does not seem to be an AuthenticatedUser", this);
             }
@@ -145,7 +142,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
                
         
         //delete:
-        //  builtin user
+        //  builtin user - if applicable
         //  authenticated user
         //  AuthenticatedUserLookup
         //  apiToken
@@ -154,7 +151,11 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         AuthenticatedUserLookup consumedAUL = consumedAU.getAuthenticatedUserLookup();
         ctxt.em().remove(consumedAUL);
         ctxt.em().remove(consumedAU);
-        ctxt.em().remove(consumedBU);  
+        BuiltinUser consumedBuiltinUser = ctxt.builtinUsers().findByUserName(consumedAU.getUserIdentifier());
+        if (consumedBuiltinUser != null){
+            ctxt.em().remove(consumedBuiltinUser); 
+        }
+ 
     }
     
 }

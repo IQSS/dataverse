@@ -333,13 +333,9 @@ public class Admin extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "User " + consumedIdentifier + " not found in AuthenticatedUser");
             }
 
-            BuiltinUser consumedBuiltinUser = builtinUserService.findByUserName(consumedAuthenticatedUser.getUserIdentifier());
-            if (consumedBuiltinUser == null) {
-                return error(Response.Status.BAD_REQUEST, "User " + consumedIdentifier + " not found in BuiltinUser");
-            }
 
             try {
-                execCommand(new MergeInAccountCommand(createDataverseRequest(consumedAuthenticatedUser), consumedAuthenticatedUser, consumedBuiltinUser, baseAuthenticatedUser));
+                execCommand(new MergeInAccountCommand(createDataverseRequest(consumedAuthenticatedUser), consumedAuthenticatedUser,  baseAuthenticatedUser));
             } catch (Exception e){
                 return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
             }
