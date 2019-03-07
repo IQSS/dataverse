@@ -22,6 +22,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -31,38 +32,47 @@ import javax.validation.ValidatorFactory;
 public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
 
     final AuthenticatedUser au;
-    final BuiltinUser bu;
     final String newIdentifier;
 
     
-    public ChangeUserIdentifierCommand(DataverseRequest aRequest, AuthenticatedUser au, BuiltinUser bu, String newIdentifier) {
+    public ChangeUserIdentifierCommand(DataverseRequest aRequest, AuthenticatedUser au, String newIdentifier) {
         super(
                 aRequest,
                 (DvObject) null
         );
         this.au = au;
         this.newIdentifier = newIdentifier;
-        this.bu = bu;
     }
     
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {  
         
-        List<RoleAssignment> raList = ctxt.roleAssignees().getAssignmentsFor(au.getIdentifier()); //only AuthenticatedUser supported
-        au.setUserIdentifier(newIdentifier);
-        bu.setUserName(newIdentifier);
-        //Validate the BuiltinUser change. Username validations are there.
-        //If we have our validation errors pass up to commands, this could be removed
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-        Set<ConstraintViolation<BuiltinUser>> violations = validator.validate(bu);
-        int numViolations = violations.size();
-        if (numViolations > 0) {
-            StringBuilder logMsg = new StringBuilder();
-            for (ConstraintViolation<?> violation : violations) {
-                logMsg.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage());
-            }
+        AuthenticatedUser authenticatedUserTestNewIdentifier = ctxt.authentication().getAuthenticatedUser(newIdentifier);
+        if (authenticatedUserTestNewIdentifier != null) {
+            String logMsg = " User " + newIdentifier + " already exists. Cannot use this as new identifier";
             throw new IllegalCommandException("Validation of submitted data failed. Details: " + logMsg, this);
+        }
+        
+        List<RoleAssignment> raList = ctxt.roleAssignees().getAssignmentsFor(au.getIdentifier()); //only AuthenticatedUser supported
+        BuiltinUser bu = ctxt.builtinUsers().findByUserName(au.getUserIdentifier());
+        au.setUserIdentifier(newIdentifier);
+        
+        if (bu != null) {
+            bu.setUserName(newIdentifier);
+            //Validate the BuiltinUser change. Username validations are there.
+            //If we have our validation errors pass up to commands, this could be removed
+            ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+            Validator validator = factory.getValidator();
+
+            Set<ConstraintViolation<BuiltinUser>> violations = validator.validate(bu);
+            int numViolations = violations.size();
+            if (numViolations > 0) {
+                StringBuilder logMsg = new StringBuilder();
+                for (ConstraintViolation<?> violation : violations) {
+                    logMsg.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage());
+                }
+                throw new IllegalCommandException("Validation of submitted data failed. Details: " + logMsg, this);
+            }
         }
         
         AuthenticatedUserLookup aul = au.getAuthenticatedUserLookup();

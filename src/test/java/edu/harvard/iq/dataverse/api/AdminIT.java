@@ -479,21 +479,33 @@ public class AdminIT {
         assertEquals(200, createUser.getStatusCode());
         String usernameOfUser = UtilIT.getUsernameFromResponse(createUser);
         
+        Response createUserForAlreadyExists = UtilIT.createRandomUser();
+        createUserForAlreadyExists.prettyPrint();
+        assertEquals(200, createUserForAlreadyExists.getStatusCode());
+        String usernameOfUserAlreadyExists = UtilIT.getUsernameFromResponse(createUserForAlreadyExists);
+        
         String newUsername = "newUser_" + UtilIT.getRandomString(4);
         Response changeAuthIdResponse = UtilIT.changeAuthenticatedUserIdentifier(usernameOfUser, newUsername, superuserApiToken);
         changeAuthIdResponse.prettyPrint();
         changeAuthIdResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         
+
+        //Try changing to already existing username
+        Response changeAuthIdResponseBadAlreadyExists= UtilIT.changeAuthenticatedUserIdentifier(newUsername, usernameOfUserAlreadyExists, superuserApiToken);
+        changeAuthIdResponseBadAlreadyExists.prettyPrint();
+        changeAuthIdResponseBadAlreadyExists.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+        
         String newUsernameBad = ""; //one character, should fail before bean validation even
         //Without second param url is not found.
-        Response changeAuthIdResponseBad = UtilIT.changeAuthenticatedUserIdentifier(usernameOfUser, newUsernameBad, superuserApiToken);
+        Response changeAuthIdResponseBad = UtilIT.changeAuthenticatedUserIdentifier(newUsername, newUsernameBad, superuserApiToken);
         changeAuthIdResponseBad.prettyPrint();
         changeAuthIdResponseBad.then().assertThat()
                 .statusCode(NOT_FOUND.getStatusCode());
         
-        String newUsernameBad2 = "z"; //one character, should fail bean validation
-        Response changeAuthIdResponseBad2 = UtilIT.changeAuthenticatedUserIdentifier(usernameOfUser, newUsernameBad2, superuserApiToken);
+        String newUsernameBad2 = "q"; //one character, should fail bean validation
+        Response changeAuthIdResponseBad2 = UtilIT.changeAuthenticatedUserIdentifier(newUsername, newUsernameBad2, superuserApiToken);
         changeAuthIdResponseBad2.prettyPrint();
         changeAuthIdResponseBad2.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
