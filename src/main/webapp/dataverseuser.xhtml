@@ -50,12 +50,13 @@
                                 <ui:fragment rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
                                     <li>
                                         <p:commandLink id="editAccount" rendered="#{DataverseUserPage.accountDetailsEditable}"
-                                                       actionListener="#{DataverseUserPage.edit}" update="@form" oncomplete="bind_bsui_components();">
+                                                       actionListener="#{DataverseUserPage.edit}" update="@form" oncomplete="javascript:bind_bsui_components();">
                                             <h:outputText value="#{bundle['account.info']}" />
                                         </p:commandLink>
                                     </li>
                                     <li>
-                                        <p:commandLink id="changePassword" rendered="#{DataverseUserPage.passwordEditable}" actionListener="#{DataverseUserPage.changePassword}" update="@form">
+                                        <p:commandLink id="changePassword" rendered="#{DataverseUserPage.passwordEditable}" 
+                                                       actionListener="#{DataverseUserPage.changePassword}" update="@form" oncomplete="javascript:bind_bsui_components();">
                                             <h:outputText value="#{bundle.passwd}" />
                                         </p:commandLink>
                                     </li>

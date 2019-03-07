@@ -474,7 +474,7 @@
                                 <p:commandButton value="#{bundle['file.dataFilesTab.button.direct']}" id="updateTemplate"
                                                  style="display:none"
                                                  update=":datasetForm,accessPopup"
-                                                 action="#{DatasetPage.handleChangeButton}">
+                                                 action="#{DatasetPage.handleChangeButton}" oncomplete="javascript:bind_bsui_components();">
                                 </p:commandButton>
                             </div>
                         </div>
