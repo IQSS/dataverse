@@ -32,9 +32,9 @@ public class DateUtil {
         }
     }
 
-    public static String formatDate(String dateToformat, String format) {
+    public static String formatDate(String dateToformat, String format, Locale formatLocale) {
         String formattedDate = "";
-        DateFormat inputFormat = new SimpleDateFormat(format);
+        DateFormat inputFormat = new SimpleDateFormat(format, formatLocale);
         Date _date = null;
         try {
             _date = inputFormat.parse(dateToformat);

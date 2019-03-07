@@ -8,15 +8,18 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
+
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.logging.Logger;
+
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 public class SolrSearchResult {
@@ -886,7 +889,7 @@ public class SolrSearchResult {
     }
 
     public String getDateToDisplayOnCard() {
-        return DateUtil.formatDate(dateToDisplayOnCard,"MMM dd, yyyy");
+        return DateUtil.formatDate(dateToDisplayOnCard, "MMM dd, yyyy", Locale.US);
     }
 
     public void setDateToDisplayOnCard(String dateToDisplayOnCard) {
