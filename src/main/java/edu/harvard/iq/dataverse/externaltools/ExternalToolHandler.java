@@ -47,6 +47,11 @@ public class ExternalToolHandler {
             logger.warning("Error in ExternalToolHandler constructor: " + error);
             throw new IllegalArgumentException(error);
         }
+        if (version == null) {
+            String error = "A DatasetVersion is required.";
+            logger.warning("Error in ExternalToolHandler constructor: " + error);
+            throw new IllegalArgumentException(error);
+        }
         this.dataFile = dataFile;
         this.apiToken = apiToken;
         this.version = version;

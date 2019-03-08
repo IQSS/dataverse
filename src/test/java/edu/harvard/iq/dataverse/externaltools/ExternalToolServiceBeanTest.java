@@ -39,7 +39,7 @@ public class ExternalToolServiceBeanTest {
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
         ExternalTool.Type type = ExternalTool.Type.EXPLORE;
         ExternalTool externalTool = new ExternalTool("displayName", "description", type, "http://foo.com", "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
-        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken);
+        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, dv, apiToken);
         List<ExternalTool> externalTools = new ArrayList<>();
         externalTools.add(externalTool);
         List<ExternalTool> availableExternalTools = ExternalToolServiceBean.findExternalToolsByFile(externalTools, dataFile);
@@ -80,7 +80,7 @@ public class ExternalToolServiceBeanTest {
         dataFile.setFileMetadatas(fmdl);
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, dv, apiToken);
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         System.out.println("result: " + toolUrl);
         assertEquals("http://awesometool.com?fileid=42&key=7196b5ce-f200-4286-8809-03ffdbc255d7", toolUrl);
