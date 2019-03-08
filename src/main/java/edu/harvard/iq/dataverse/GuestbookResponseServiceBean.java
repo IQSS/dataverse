@@ -848,6 +848,9 @@ public class GuestbookResponseServiceBean {
         if (in != null && externalTool != null) {
             in.setExternalTool(externalTool);
         }
+        if (in != null && fm != null && fm.getDatasetVersion() != null) {
+            in.setDatasetVersion(fm.getDatasetVersion());
+        }
         return modifyDatafileAndFormat(in, fm, format);
     }
 

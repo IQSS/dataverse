@@ -391,6 +391,7 @@
                 <ui:include src="file-configure-dropdown-fragment.xhtml">
                     <ui:param name="configureTools" value="#{DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id)}"/>
                     <ui:param name="fileId" value="#{fileMetadata.dataFile.id}"/>
+                    <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
                 </ui:include>
             </ui:fragment>
