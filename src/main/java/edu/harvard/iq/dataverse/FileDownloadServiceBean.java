@@ -29,6 +29,9 @@ import javax.persistence.PersistenceContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
+import org.primefaces.PrimeFaces;
+import org.primefaces.context.RequestContext;
+
 /**
  *
  * @author skraffmi
@@ -249,11 +252,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         guestbookResponse.setDownloadtype(externalTool.getDisplayName());
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         logger.fine("Exploring with " + toolUrl);
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(toolUrl);
-        } catch (IOException ex) {
-            logger.info("Problem exploring with " + toolUrl + " - " + ex);
-        }
+       // try {
+            //FacesContext.getCurrentInstance().getExternalContext().redirect(toolUrl);
+            PrimeFaces.current().executeScript("window.open("+toolUrl + ", target='_blank');");
+      //  } catch (IOException ex) {
+     //       logger.info("Problem exploring with " + toolUrl + " - " + ex);
+     //   }
         // This is the old logic from TwoRavens, null checks and all.
         if (guestbookResponse != null && guestbookResponse.isWriteResponse()
                 && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)) {
