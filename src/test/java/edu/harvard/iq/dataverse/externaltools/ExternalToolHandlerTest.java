@@ -121,7 +121,7 @@ public class ExternalToolHandlerTest {
                         )
                 )
                 .build().toString());
-        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, nullDatasetVersion, nullApiToken);
+        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, dv, nullApiToken);
         String result4 = externalToolHandler4.getQueryParametersForUrl();
         System.out.println("result4: " + result4);
         assertEquals("?key1=42", result4);
