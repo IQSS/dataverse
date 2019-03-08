@@ -252,12 +252,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         guestbookResponse.setDownloadtype(externalTool.getDisplayName());
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         logger.fine("Exploring with " + toolUrl);
-       // try {
-            //FacesContext.getCurrentInstance().getExternalContext().redirect(toolUrl);
-            PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');");
-      //  } catch (IOException ex) {
-     //       logger.info("Problem exploring with " + toolUrl + " - " + ex);
-     //   }
+        PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');");
         // This is the old logic from TwoRavens, null checks and all.
         if (guestbookResponse != null && guestbookResponse.isWriteResponse()
                 && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)) {
