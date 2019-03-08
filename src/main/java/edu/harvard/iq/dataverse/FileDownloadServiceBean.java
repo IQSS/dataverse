@@ -223,12 +223,15 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
+        DatasetVersion version = fmd.getDatasetVersion();
+        if(version.isDraft()||(fmd.getDataFile().isRestricted())) {
         if (user instanceof AuthenticatedUser) {
             AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
             apiToken = authService.findApiTokenByUser(authenticatedUser);
             if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
                 apiToken = authService.generateApiTokenForUser(authenticatedUser);
             }
+        }
         }
         DataFile dataFile = null;
         if (fmd != null) {
@@ -243,7 +246,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         if(dataFile.getFileMetadata()==null) {
             dataFile=datafileService.find(dataFile.getId());
         }
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, version, apiToken);
         // Back when we only had TwoRavens, the downloadType was always "Explore". Now we persist the name of the tool (i.e. "TwoRavens", "Data Explorer", etc.)
         guestbookResponse.setDownloadtype(externalTool.getDisplayName());
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
