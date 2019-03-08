@@ -254,7 +254,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         logger.fine("Exploring with " + toolUrl);
        // try {
             //FacesContext.getCurrentInstance().getExternalContext().redirect(toolUrl);
-            PrimeFaces.current().executeScript("window.open("+toolUrl + ", target='_blank');");
+            PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');");
       //  } catch (IOException ex) {
      //       logger.info("Problem exploring with " + toolUrl + " - " + ex);
      //   }
