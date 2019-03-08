@@ -10,6 +10,7 @@
 
     <h:body>
         <f:metadata>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{Shib.init}"/>
             <!--Only allow existing email to be specified while in development, to test account conversion.-->
             <!--<f:viewParam name="exisitingEmail" value="#{Shib.existingEmail}"/>-->
@@ -108,7 +109,7 @@
                                     #{bundle['shib.currentDataversePassword']}
                                 </label>
                                 <div class="col-sm-3">
-                                    <p:password id="builtinPassword" styleClass="form-control" value="#{Shib.builtinPassword}"/>
+					<p:password id="builtinPassword" styleClass="form-control" value="#{Shib.builtinPassword}" autocomplete="off"/><!-- browsers will in general not respect autocomplete="foo", but scanners will still flag it as a potential problem -->
                                     <p class="help-block">
                                         <a href="passwordreset.xhtml">#{bundle['login.forgot.text']}</a>
                                     </p>

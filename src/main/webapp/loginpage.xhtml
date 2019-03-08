@@ -13,6 +13,7 @@
     <h:body>
         <f:metadata>
             <f:viewParam name="redirectPage" value="#{LoginPage.redirectPage}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{LoginPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
@@ -67,7 +68,7 @@
                                             <div class="col-sm-8">
                                                 <h:inputText rendered="#{not fc.credential.secret}" value="#{fc.value}" id="credValue" styleClass="form-control"/>
                                                 <p:message rendered="#{not fc.credential.secret}" for="credValue" display="text"/>
-                                                <h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" styleClass="form-control"/>
+						<h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" styleClass="form-control" autocomplete="off"/><!-- browsers will in general not respect autocomplete="foo", but scanners will still flag it as a potential problem -->
                                                 <p:message rendered="#{not fc.credential.secret}" for="sCredValue" display="text"/>
                                             </div>
                                         </div>

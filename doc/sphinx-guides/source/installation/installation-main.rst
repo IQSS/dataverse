@@ -69,6 +69,14 @@ This allows the installer to be run in non-interactive mode (with ``./install -y
 
 All the Glassfish configuration tasks performed by the installer are isolated in the shell script ``dvinstall/glassfish-setup.sh`` (as ``asadmin`` commands). 
 
+**IMPORTANT:** As a security measure, the ``glassfish-setup.sh`` script stores passwords as "aliases" rather than plaintext. If you change your database password, for example, you will need to update the alias with ``asadmin update-password-alias db_password_alias``, for example. Here is a list of the password aliases that are set by the installation process and entered into Glassfish's ``domain.xml`` file:
+
+- ``db_password_alias``
+- ``doi_password_alias``
+- ``rserve_password_alias``
+
+Glassfish does not provide up to date documentation but Payara (a fork of Glassfish) does so for more information, please see https://docs.payara.fish/documentation/payara-server/password-aliases/password-alias-asadmin-commands.html
+
 **IMPORTANT:** The installer will also ask for an external site URL for Dataverse. It is *imperative* that this value be supplied accurately, or a long list of functions will be inoperable, including:
 
 - email confirmation links
