@@ -53,9 +53,9 @@
                         <div class="row">
                             <div class="col-xs-6 form-group form-col-container">
                                 <label class="col-sm-3 control-label" for="name">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.title']}">
-                                        #{bundle.dataverse} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                    </span>
+                                    #{bundle.dataverse} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.title']}"></span>
                                 </label>
                                 <div class="col-sm-9 form-col-container">
                                     <p:inputText id="name" tabindex="1" styleClass="form-control" value="#{DataversePage.dataverse.name}"/>
@@ -63,9 +63,9 @@
                             </div>
                             <div class="col-xs-6 form-group form-col-container">
                                 <label class="col-sm-3 control-label" for="affiliation">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.affiliation.title']}">
-                                        #{bundle.affiliation}
-                                    </span>
+                                    #{bundle.affiliation}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.affiliation.title']}"></span>
                                 </label>
                                 <div class="col-sm-9 form-col-container">
                                     <p:inputText id="affiliation" tabindex="2" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
@@ -76,9 +76,9 @@
                         <div class="row">
                             <div class="col-xs-6 form-group form-col-container">
                                 <label class="col-sm-3 control-label" for="identifier">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.identifier.title']}">
-                                        #{bundle.identifier} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                    </span>
+                                    #{bundle.identifier} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.identifier.title']}"></span>
                                 </label>
                                 <div class="col-sm-9 form-col-container">
                                     <div class="input-group">
@@ -90,9 +90,9 @@
                             </div>
                             <div class="col-xs-6 form-group" jsf:rendered="#{DataversePage.ownerId != null}">
                                 <label class="col-sm-3 control-label" for="hostDataverse">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.host.title']}">
-                                        #{bundle.hostDataverse}
-                                    </span>
+                                    #{bundle.hostDataverse}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.host.title']}"></span>
                                 </label>
                                 <div class="col-sm-9 form-col-container">
                                     <p class="form-control-static">#{DataversePage.dataverse.getOwner().name}</p>
@@ -110,9 +110,9 @@
                             <div class="col-xs-6 form-group form-col-container">
                                 <div class="form-group clearfix">
                                     <label class="col-sm-3 control-label" for="dataverseCategory">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.category.title']}">
-                                            #{bundle['dataverse.category']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                        </span>
+                                        #{bundle['dataverse.category']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.category.title']}"></span>
                                     </label>
                                     <div class="col-sm-9 form-col-container">
                                         <h:selectOneMenu id="dataverseCategory" tabindex="5" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}">
@@ -134,9 +134,9 @@
                                     <p:fragment>
                                        <p:autoUpdate />
                                         <label class="col-sm-3 control-label" for="contactEmail">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.email.title']}">
-                                                #{bundle['dataverse.email']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                            </span>
+                                            #{bundle['dataverse.email']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.email.title']}"></span>
                                         </label>
                                         <div class="col-sm-9 form-col-container edit-compound-field">
                                             <ui:repeat value="#{DataversePage.dataverse.dataverseContacts}" var="contacts" varStatus="valCount">
@@ -171,14 +171,13 @@
                             </div>
                             <div class="col-xs-6 form-group form-col-container">
                                 <label class="col-sm-3 control-label" for="description">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.description.title']}">
-                                        #{bundle.description}
-                                    </span>
+                                    #{bundle.description}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.description.title']}"></span>
                                 </label>
                                 <div class="col-sm-9 form-col-container">
                                     <p class="help-block">
-                                        <span class="glyphicon glyphicon-info-sign"/>
-                                        <h:outputFormat value=" #{bundle.htmlAllowedMsg}" escape="false">
+                                        <h:outputFormat value="#{bundle.htmlAllowedMsg}" escape="false">
                                             <f:param value="#{bundle.htmlAllowedTags}"/>
                                         </h:outputFormat>
                                     </p>
@@ -203,7 +202,7 @@
                                 <div class="col-sm-12 form-group">
                                     <label class="col-sm-3 control-label" for="mdbSelect">#{bundle['dataverse.metadataElements']}</label>
                                     <div class="col-sm-9">
-                                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.metadataElements.tip']}</p>
+                                        <p class="help-block">#{bundle['dataverse.metadataElements.tip']}</p>
 
                                         <label class="metadata-blocks-default" for="metadataRoot" jsf:rendered="#{DataversePage.dataverse.owner != null}">
                                             <h:selectBooleanCheckbox id="metadataRoot" tabindex="7" styleClass="metadata-blocks-default"
@@ -246,14 +245,16 @@
                                                                    update="@widgetVar(optionBlock)"
                                                                    process="@this"
                                                                    rendered="#{!mdb.showDatasetFieldTypes and (mdb.selected or mdb.required) and !DataversePage.openMetadataBlock and !DataversePage.inheritMetadataBlockFromParent}"
-                                                                    actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}">
+                                                                   actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}"
+                                                                   oncomplete="javascript:bind_bsui_components();">
                                                          <h:outputText value="#{bundle['dataverse.field.set.tip']}" />
                                                      </p:commandLink>
                                                      <p:commandLink id="viewDSFT" style="margin-left:1em;"
                                                                     update="@widgetVar(optionBlock)"
                                                                     process="@this"
                                                                     rendered="#{!mdb.showDatasetFieldTypes and (!mdb.selected or DataversePage.inheritMetadataBlockFromParent)   and !DataversePage.openMetadataBlock}"
-                                                                    actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id, false)}">
+                                                                    actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id, false)}"
+                                                                    oncomplete="javascript:bind_bsui_components();">
                                                          <h:outputText value="#{bundle['dataverse.field.set.view']}" />
                                                      </p:commandLink>
                                                 </label>
@@ -294,7 +295,10 @@
                                                         </table>
                                                     </div>
                                                 </div>
-                                                <p:commandLink id="hideDSFT" styleClass="btn btn-default"  update="@widgetVar(optionBlock)" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" rendered="#{mdb.showDatasetFieldTypes}">
+                                                <p:commandLink id="hideDSFT" styleClass="btn btn-default" 
+                                                               update="@widgetVar(optionBlock)" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" 
+                                                               oncomplete="javascript:bind_bsui_components();"
+                                                               rendered="#{mdb.showDatasetFieldTypes}">
                                                     <h:outputText value="#{bundle.done}" />
                                                 </p:commandLink>
                                             </div>
@@ -309,7 +313,7 @@
                                 <div class="col-sm-12 form-group">
                                     <label class="col-sm-3 control-label" for="facetPickListCreate">#{bundle['dataverse.facetPickList.text']}</label>
                                     <div class="col-sm-9">
-                                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.facetPickList.tip']}</p>
+                                        <p class="help-block">#{bundle['dataverse.facetPickList.tip']}</p>
 
                                         <label class="metadata-blocks-default" for="facetsRoot" jsf:rendered="#{DataversePage.dataverse.owner != null}">
                                             <h:selectBooleanCheckbox id="facetsRoot" tabindex="8" styleClass="facets-blocks-default"
@@ -404,7 +408,7 @@
                                             </li>
                                             <li class="divider" role="presentation"></li>
                                             <li>
-                                                <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form,:dataverseForm,:searchResults,:messagePanel" oncomplete="javascript:post_edit_dv_general_info();initPopover();">
+                                                <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form,:dataverseForm,:searchResults,:messagePanel" oncomplete="javascript:bind_bsui_components();">
                                                     <h:outputText value="#{bundle['dataverse.option.generalInfo']}" />
                                                 </p:commandLink>
                                             </li>
@@ -481,7 +485,7 @@
                                 </p:commandLink>
                             </div>
                             <p:dialog id="shareDialog" header="#{bundle['dataverse.share.dataverseShare']}" widgetVar="shareDialog" modal="true">
-                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.share.dataverseShare.tip']}</p>
+                                <p class="help-block">#{bundle['dataverse.share.dataverseShare.tip']}</p>
 
                                 <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataverse/#{DataversePage.dataverse.alias}" data-text="#{bundle['dataverse.share.dataverseShare.shareText']}"></div>
 
@@ -567,7 +571,7 @@
                         <p:commandButton id="save" tabindex="9" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all">
                             <f:ajax onerror="window.scrollTo(0, 0)" />
                         </p:commandButton>
-                        <p:commandButton id="cancel" tabindex="10" value="#{bundle.cancel}" actionListener="#{DataversePage.cancel}" process="@this" update="@form,:searchResults,:messagePanel" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:post_cancel_edit_dv()" />
+                        <p:commandButton id="cancel" tabindex="10" value="#{bundle.cancel}" actionListener="#{DataversePage.cancel}" process="@this" update="@form,:searchResults,:messagePanel" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:bind_bsui_components();initCarousel();" />
                         <p:button tabindex="10" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DataversePage.dataverse.owner.alias}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
                     </div>
 
@@ -576,7 +580,7 @@
                     <p:dialog id="browseOptsForm" header="#{bundle['dataverse.option.featuredDataverse']}" widgetVar="browseOptsForm" modal="true">
                         <ui:fragment rendered="#{!empty DataversePage.featuredDataverses.source or !empty DataversePage.featuredDataverses.target}">
                         <div class="form-group">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.selectToFeature']}</p>
+                            <p class="help-block">#{bundle['dataverse.selectToFeature']}</p>
                             <p:pickList id="featuredDataverseList" value="#{DataversePage.featuredDataverses}" var="featureddataverse"
                                         itemLabel="#{featureddataverse.name}"
                                         itemValue="#{featureddataverse}" converter="dataverseConverter"
@@ -639,10 +643,10 @@
                 <p:dialog id="linkDataverseForm" header="#{DataversePage.linkMode == 'SAVEDSEARCH' ? bundle['dataverse.savedsearch.link'] : bundle['dataverse.link']}" widgetVar="linkDataverseForm" modal="true">
                     <h:form styleClass="form-horizontal" rendered="#{DataversePage.dataversesForLinking.size() > 1}">
                         <ui:fragment rendered="#{DataversePage.linkMode == 'LINKDATAVERSE'}">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.link.dataverse.choose']}</p>
+                            <p class="help-block">#{bundle['dataverse.link.dataverse.choose']}</p>
                         </ui:fragment>
                         <ui:fragment rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.savedsearch.dataverse.choose']}</p>
+                            <p class="help-block">#{bundle['dataverse.savedsearch.dataverse.choose']}</p>
                         </ui:fragment>
                         <div class="form-group">
                             <label class="col-sm-4 control-label">
@@ -703,7 +707,7 @@
                         </div>
                     </h:form>
                     <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 1}">
-                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.link.no.choice']}</p>
+                        <p class="help-block">#{bundle['dataverse.link.no.choice']}</p>
                         <div class="form-horizontal">
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">
@@ -748,7 +752,6 @@
                     var scrollPos=0;
 
                     $(document).ready(function () {
-                        initPopover();
                         initCarousel();
                         popoverHTML('#{bundle.htmlAllowedTitle}');
                     });
@@ -783,20 +786,6 @@
                     function callOnError(){
                         alert("in js");
                         window.scrollTo(0, 0);
-                    }
-
-                    function initPopover() {
-                        $('[data-toggle="tooltip"]').tooltip({container: 'body'});
-                        $('[data-toggle="popover"]').popover();
-                        $('body').on('click', function (e) {
-                            $('label[data-toggle="popover"]').each(function () {
-                                //the 'is' for buttons that trigger popups
-                                //the 'has' for icons within a button that triggers a popup
-                                if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
-                                    $(this).popover('hide');
-                                }
-                            });
-                        });
                     }
 
                     function updateInclude() {

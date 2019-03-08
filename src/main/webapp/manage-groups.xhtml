@@ -88,7 +88,7 @@
                     </div>
                     <p:dialog header="#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="help-block">
-                            <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.tip']}</span>
+                            <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.tip']}</span>
                         </p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.deleteGroup()}" update="@all" />

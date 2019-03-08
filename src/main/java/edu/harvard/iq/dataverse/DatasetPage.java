@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CuratePublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePrivateUrlCommand;
@@ -1803,8 +1804,12 @@ public class DatasetPage implements java.io.Serializable {
     public String releaseDraft() {
         if (releaseRadio == 1) {
             return releaseDataset(true);
-        } else {
+        } else if(releaseRadio ==2) {
             return releaseDataset(false);
+        } else if(releaseRadio ==3) {
+            return updateCurrentVersion();
+        } else {
+            return "Invalid Choice";
         }
     }
 
@@ -1989,6 +1994,7 @@ public class DatasetPage implements java.io.Serializable {
         return returnToDatasetOnly();
     }
 
+    @Deprecated
     public String registerDataset() {
         try {
             UpdateDatasetVersionCommand cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
@@ -2002,6 +2008,61 @@ public class DatasetPage implements java.io.Serializable {
         FacesContext.getCurrentInstance().addMessage(null, message);
         return returnToDatasetOnly();
     }
+    
+    public String updateCurrentVersion() {
+        /*
+         * Note: The code here mirrors that in the
+         * edu.harvard.iq.dataverse.api.Datasets:publishDataset method (case
+         * "updatecurrent"). Any changes to the core logic (i.e. beyond updating the
+         * messaging about results) should be applied to the code there as well.
+         */
+        String errorMsg = null;
+        String successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
+        try {
+            CuratePublishedDatasetVersionCommand cmd = new CuratePublishedDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
+            dataset = commandEngine.submit(cmd);
+            // If configured, and currently published version is archived, try to update archive copy as well
+            DatasetVersion updateVersion = dataset.getLatestVersion();
+            if (updateVersion.getArchivalCopyLocation() != null) {
+                String className = settingsService.get(SettingsServiceBean.Key.ArchiverClassName.toString());
+                AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), updateVersion);
+                if (archiveCommand != null) {
+                    // Delete the record of any existing copy since it is now out of date/incorrect
+                    updateVersion.setArchivalCopyLocation(null);
+                    /*
+                     * Then try to generate and submit an archival copy. Note that running this
+                     * command within the CuratePublishedDatasetVersionCommand was causing an error:
+                     * "The attribute [id] of class
+                     * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped to a primary
+                     * key column in the database. Updates are not allowed." To avoid that, and to
+                     * simplify reporting back to the GUI whether this optional step succeeded, I've
+                     * pulled this out as a separate submit().
+                     */
+                    try {
+                        updateVersion = commandEngine.submit(archiveCommand);
+                        if (updateVersion.getArchivalCopyLocation() != null) {
+                            successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
+                        } else {
+                            errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
+                        }
+                    } catch (CommandException ex) {
+                        errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure") + " - " + ex.toString();
+                        logger.severe(ex.getMessage());
+                    }
+                }
+            }
+        } catch (CommandException ex) {
+            errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
+            logger.severe(ex.getMessage());
+        }
+        if (errorMsg != null) {
+            JsfHelper.addErrorMessage(errorMsg);
+        } else {
+            JsfHelper.addSuccessMessage(successMsg);
+        }
+        return returnToDatasetOnly();
+    }
+
 
     public void refresh(ActionEvent e) {
         refresh();
