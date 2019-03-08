@@ -24,7 +24,7 @@ public class ExternalToolHandlerTest {
         String toolUrl = "http://example.com";
         ExternalTool externalTool = new ExternalTool("displayName", "description", type, toolUrl, "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
 
-        // One query parameter, not a reserved word, no {fileId} (required) used.
+        // One query parameter, not a reserved word, no {file} (required) used.
         externalTool.setToolParameters(Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()
@@ -33,16 +33,34 @@ public class ExternalToolHandlerTest {
                 )
                 .build().toString());
         DataFile nullDataFile = null;
+        DatasetVersion nullDatasetVersion = null;
         ApiToken nullApiToken = null;
         Exception expectedException1 = null;
         try {
-            ExternalToolHandler externalToolHandler1 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken);
+            ExternalToolHandler externalToolHandler1 = new ExternalToolHandler(externalTool, nullDataFile, nullDatasetVersion, nullApiToken);
         } catch (Exception ex) {
             expectedException1 = ex;
         }
         assertNotNull(expectedException1);
         assertEquals("A DataFile is required.", expectedException1.getMessage());
 
+        // One query parameter, not a reserved word, no {version} (required) used.
+        externalTool.setToolParameters(Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("mode", "mode1")
+                        )
+                )
+                .build().toString());
+        try {
+            ExternalToolHandler externalToolHandler1 = new ExternalToolHandler(externalTool, nullDataFile, nullDatasetVersion, nullApiToken);
+        } catch (Exception ex) {
+            expectedException1 = ex;
+        }
+        assertNotNull(expectedException1);
+        assertEquals("A DatasetVersion is required.", expectedException1.getMessage());
+
+        
         // Two query parameters.
         externalTool.setToolParameters(Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
@@ -56,7 +74,7 @@ public class ExternalToolHandlerTest {
                 .build().toString());
         Exception expectedException2 = null;
         try {
-            ExternalToolHandler externalToolHandler2 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken);
+            ExternalToolHandler externalToolHandler2 = new ExternalToolHandler(externalTool, nullDataFile, nullDatasetVersion, nullApiToken);
         } catch (Exception ex) {
             expectedException2 = ex;
         }
@@ -86,7 +104,7 @@ public class ExternalToolHandlerTest {
         dataFile.setFileMetadatas(fmdl);
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
-        ExternalToolHandler externalToolHandler3 = new ExternalToolHandler(externalTool, dataFile, apiToken);
+        ExternalToolHandler externalToolHandler3 = new ExternalToolHandler(externalTool, dataFile, dv, apiToken);
         String result3 = externalToolHandler3.getQueryParametersForUrl();
         System.out.println("result3: " + result3);
         assertEquals("?key1=42&key2=7196b5ce-f200-4286-8809-03ffdbc255d7", result3);
@@ -102,7 +120,7 @@ public class ExternalToolHandlerTest {
                         )
                 )
                 .build().toString());
-        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, nullApiToken);
+        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, nullDatasetVersion, nullApiToken);
         String result4 = externalToolHandler4.getQueryParametersForUrl();
         System.out.println("result4: " + result4);
         assertEquals("?key1=42", result4);
@@ -120,7 +138,7 @@ public class ExternalToolHandlerTest {
                 .build().toString());
         Exception expectedException = null;
         try {
-            ExternalToolHandler externalToolHandler5 = new ExternalToolHandler(externalTool, dataFile, nullApiToken);
+            ExternalToolHandler externalToolHandler5 = new ExternalToolHandler(externalTool, dataFile, nullDatasetVersion, nullApiToken);
             String result5 = externalToolHandler5.getQueryParametersForUrl();
             System.out.println("result5: " + result5);
         } catch (Exception ex) {
