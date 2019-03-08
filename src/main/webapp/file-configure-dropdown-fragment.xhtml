@@ -30,7 +30,7 @@
                             update="@([id$=configureToolPopup])"
                             action="#{configureFragmentBean.setConfigurePopupTool(tool)}"
                             oncomplete="PF('configureToolPopup').show()">
-                            <f:actionListener binding="#{configureFragmentBean.setConfigureFileId(fileId)}" />
+                            <f:actionListener binding="#{configureFragmentBean.setConfigureToolInfo(fileId, fileMetadata.datasetVersion)}" />
                             #{tool.displayName}
                         </p:commandLink>
                     </li>
