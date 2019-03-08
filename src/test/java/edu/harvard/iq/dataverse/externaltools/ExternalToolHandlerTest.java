@@ -52,8 +52,10 @@ public class ExternalToolHandlerTest {
                         )
                 )
                 .build().toString());
+        DataFile dataFile = new DataFile();
+        dataFile.setId(42l);
         try {
-            ExternalToolHandler externalToolHandler1 = new ExternalToolHandler(externalTool, nullDataFile, nullDatasetVersion, nullApiToken);
+            ExternalToolHandler externalToolHandler1 = new ExternalToolHandler(externalTool, dataFile, nullDatasetVersion, nullApiToken);
         } catch (Exception ex) {
             expectedException1 = ex;
         }
@@ -92,8 +94,7 @@ public class ExternalToolHandlerTest {
                         )
                 )
                 .build().toString());
-        DataFile dataFile = new DataFile();
-        dataFile.setId(42l);
+
         FileMetadata fmd = new FileMetadata();
         DatasetVersion dv = new DatasetVersion();
         Dataset ds = new Dataset();
