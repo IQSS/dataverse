@@ -139,7 +139,7 @@ public class ExternalToolHandlerTest {
                 .build().toString());
         Exception expectedException = null;
         try {
-            ExternalToolHandler externalToolHandler5 = new ExternalToolHandler(externalTool, dataFile, nullDatasetVersion, nullApiToken);
+            ExternalToolHandler externalToolHandler5 = new ExternalToolHandler(externalTool, dataFile, dv, nullApiToken);
             String result5 = externalToolHandler5.getQueryParametersForUrl();
             System.out.println("result5: " + result5);
         } catch (Exception ex) {
