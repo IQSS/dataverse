@@ -23,53 +23,53 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class UserNameValidatorTest {
 
-    public String userName;
     public boolean isValid;
+    public String userName;
 
-    public UserNameValidatorTest(String userName, boolean isValid) {
-        this.userName = userName;
+    public UserNameValidatorTest(boolean isValid, String userName) {
         this.isValid = isValid;
+        this.userName = userName;
     }
 
     @Parameters
     public static Collection<Object[]> parameters() {
         return Arrays.asList(new Object[][] {
             // good usernames
-            { "sarah", true },
-            { ".-_5Arah_-.", true },
+            { true, "sarah" },
+            { true, ".-_5Arah_-." },
 
             // dont allow accents
-            { "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ", false },
+            { false, "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ" },
 
             // dont allow chinese characters
-            { "谁日吧爸好", false },
+            { false, "谁日吧爸好" },
 
             // dont allow middle white space
-            { "sarah f", false },
+            { false, "sarah f" },
 
             // dont allow leading white space
-            { " sarah", false },
+            { false, " sarah" },
 
             // dont allow trailing white space
-            { "sarah ", false },
+            { false, "sarah " },
 
             // dont allow symbols
-            { "sarah!", false },
-            { "sarah?", false },
-            { "sarah:(", false },
-            { "💲🅰️®️🅰️🚧", false },
+            { false, "sarah!" },
+            { false, "sarah?" },
+            { false, "sarah:(" },
+            { false, "💲🅰️®️🅰️🚧" },
 
             // only allow between 2 and 60 characters
-            { "q", false },
-            { "q2", true },
-            { "q2jsalfhjopiwurtiosfhkdhasjkdhfgkfhkfrhnefcn4cqonroclmooi4oiqwhrfq4jrlqhaskdalwehrlwhflhklasdjfglq0kkajfelirhilwhakjgv", false },
-            { "", false },
-            { null, false }
+            { false, "q" },
+            { true, "q2" },
+            { false, "q2jsalfhjopiwurtiosfhkdhasjkdhfgkfhkfrhnefcn4cqonroclmooi4oiqwhrfq4jrlqhaskdalwehrlwhflhklasdjfglq0kkajfelirhilwhakjgv" },
+            { false, "" },
+            { false, null }
         });
     }
 
     @Test
     public void testIsUserNameValid() {
-        assertEquals(UserNameValidator.isUserNameValid(userName, null), isValid);
+        assertEquals(isValid, UserNameValidator.isUserNameValid(userName, null));
     }
 }
