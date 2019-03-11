@@ -165,6 +165,7 @@ Here are the configuration options for handles:
 - :ref:`:Authority <:Authority>`
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
+- :ref:`:IndependentHandleService <:IndependentHandleService>` (optional)
 
 Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
 
@@ -1087,6 +1088,14 @@ If you don't want to register file-based PIDs for your installation, set:
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
 Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
+
+:IndependentHandleService
++++++++++++++++++++++++++++
+
+Specific for Handle PIDs. Set this setting to true if you want to use a Handle service which is setup to work 'independently' (No communication with the Global Handle Registry). 
+By default this setting is absent and Dataverse assumes it to be false.
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:IndependentHandleService``
 
 :ApplicationTermsOfUse
 ++++++++++++++++++++++

@@ -258,7 +258,7 @@
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload or empty fileMetadata.dataFile.id) ? 'disabled' : ''}" 
                                actionListener="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse,fileMetadata, 'subset')}"
                                update="@widgetVar(downloadDataSubsetPopup)"
-                               oncomplete="PF('downloadDataSubsetPopup').show()"
+                               oncomplete="PF('downloadDataSubsetPopup').show();bind_bsui_components();"
                                value="#{bundle['file.downloadBtn.format.datasubset']}"
                                />
                 <p:commandLink id="fileDowloadDataSubsetButtonPopupReq" rendered="#{downloadPopupRequired}"
