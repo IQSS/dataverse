@@ -7,8 +7,10 @@ Setup:
 - download/prepare dependencies: `./0prep.sh`
 - build dcm/dv0dcm images with docker-compose: `docker-compose -f docker-compose.yml build`
 - start containers: `docker-compose -f docker-compose.yml up -d`
-- wait for container to show "healthy" (aka - `docker ps`), then wait another 4-5 minutes (even though it shows healthy, glassfish is still standing itself up), then run dataverse app installation: `docker exec -it dvsrv /opt/dv/install.bash`
+- wait for container to show "healthy" (aka - `docker ps`), then run dataverse app installation: `docker exec -it dvsrv /opt/dv/install.bash`
+- for development, you probably want to use the `FAKE` DOI provider: `docker exec -it dvsrv /opt/dv/configure_doi.bash`
 - configure dataverse application to use DCM: `docker exec -it dvsrv /opt/dv/configure_dcm.sh`
+- TODO configure dataverse application to use RSAL (if desired)
 
 Operation:
 The dataverse installation is accessible at `http://localhost:8084`.
