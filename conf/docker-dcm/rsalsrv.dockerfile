@@ -1,10 +1,10 @@
 FROM centos:7
 ARG RPMFILE=rsal-0.1-0.noarch.rpm
 RUN yum update; yum install -y epel-release 
-COPY dist/${RPMFILE} /tmp/
+COPY ${RPMFILE} /tmp/
 RUN yum localinstall -y /tmp/${RPMFILE}
 COPY cfg/rsal/rsyncd.conf /etc/rsyncd.conf
-COPY cfg/rsal/entrypoint.sh /
+COPY cfg/rsal/entrypoint-rsal.sh /
 COPY cfg/rsal/lighttpd-modules.conf /etc/lighttpd/modules.conf
 COPY cfg/rsal/lighttpd.conf /etc/lighttpd/lighttpd.conf
 RUN mkdir -p /public/FK2 
