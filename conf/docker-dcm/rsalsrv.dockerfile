@@ -4,7 +4,7 @@ RUN yum update; yum install -y epel-release
 COPY ${RPMFILE} /tmp/
 RUN yum localinstall -y /tmp/${RPMFILE}
 COPY cfg/rsal/rsyncd.conf /etc/rsyncd.conf
-COPY cfg/rsal/entrypoint-rsal.sh /
+COPY cfg/rsal/entrypoint-rsal.sh /entrypoint.sh
 COPY cfg/rsal/lighttpd-modules.conf /etc/lighttpd/modules.conf
 COPY cfg/rsal/lighttpd.conf /etc/lighttpd/lighttpd.conf
 RUN mkdir -p /public/FK2 
