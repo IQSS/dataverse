@@ -314,7 +314,7 @@ public class Admin extends AbstractApiBean {
 	}
         
         @PUT
-        @Path("authenticatedUsers/{baseIdentifier}/mergeIntoUser/{consumedIdentifier}")
+        @Path("authenticatedUsers/{baseIdentifier}/mergeInUser/{consumedIdentifier}")
         public Response mergeInAuthenticatedUser(@PathParam("baseIdentifier") String baseIdentifier, @PathParam("consumedIdentifier") String consumedIdentifier) {
             
             if(null == baseIdentifier || baseIdentifier.isEmpty()) {

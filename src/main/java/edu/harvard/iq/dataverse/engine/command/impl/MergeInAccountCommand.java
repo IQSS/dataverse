@@ -147,7 +147,9 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         //  AuthenticatedUserLookup
         //  apiToken
         ApiToken toRemove = ctxt.authentication().findApiTokenByUser(consumedAU);
-        ctxt.em().remove(toRemove);
+        if(null != toRemove) { //not all users have apiTokens
+            ctxt.em().remove(toRemove);
+        }
         AuthenticatedUserLookup consumedAUL = consumedAU.getAuthenticatedUserLookup();
         ctxt.em().remove(consumedAUL);
         ctxt.em().remove(consumedAU);

@@ -1921,8 +1921,8 @@ public class UtilIT {
     }
     
     static Response mergeAccounts(String baseId, String consumedId) {
-        System.out.print(String.format("/api/admin/authenticatedUsers/%s/mergeIntoUser/%s", baseId, consumedId  ));
-        String apiPath = String.format("/api/admin/authenticatedUsers/%s/mergeIntoUser/%s", baseId, consumedId  );
+        System.out.print(String.format("/api/admin/authenticatedUsers/%s/mergeInUser/%s", baseId, consumedId  ));
+        String apiPath = String.format("/api/admin/authenticatedUsers/%s/mergeInUser/%s", baseId, consumedId  );
         return given()
                 .put(apiPath);
     }
