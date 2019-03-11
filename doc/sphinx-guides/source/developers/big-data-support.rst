@@ -144,6 +144,7 @@ Using the DCM Docker Containers
 For using these commands, you will need to connect to the shell prompt inside various containers (e.g. ``docker exec -it dvsrv /bin/bash``)
 
 - Create a dataset and download rsync upload script
+
   - connect to client container: ``docker exec -it dcm_client bash``
   - create dataset: ``cd /mnt ; ./create.bash`` ; this will echo the database ID to stdout
   - download transfer script: ``./get_transfer.bash $database_id_from_create_script``
