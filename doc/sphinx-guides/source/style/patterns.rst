@@ -199,42 +199,18 @@ Forms fulfill various functions across the site, but we try to style them consis
   <div class="panel panel-default code-example">
     <div class="panel-body">
 
-		<div class="form-horizontal">
-			<div class="form-group">
+		      <div class="form-horizontal">
+			       <div class="form-group">
                 <label for="userNameEmail" class="col-sm-3 control-label">
-                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Between 2-60 characters, and can use &quot;a-z&quot;, &quot;0-9&quot;, &quot;_&quot; for your username.">
-                        Username <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </span>
+                    Username 
                 </label>
                 <div class="col-sm-4">
                 	<input name="userName" type="text" value="" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-default form-control" role="textbox" aria-disabled="false" aria-readonly="false">
                 </div>
             </div>
             <div class="form-group">
-                <label for="firstName" class="col-sm-3 control-label">
-                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="The first name or name you would like to use for this account.">
-                        Given Name <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </span>
-                </label>
-                <div class="col-sm-4">
-                	<input name="firstName" type="text" value="" tabindex="4" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="lastName" class="col-sm-3 control-label">
-                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="The last name you would like to use for this account.">
-                        Family Name <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </span>
-                </label>
-                <div class="col-sm-4">
-                	<input name="lastName" type="text" value="" tabindex="5" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
-                </div>
-            </div>
-            <div class="form-group">
                 <label for="email" class="col-sm-3 control-label">
-                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="" title="">
-                        Email <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </span>
+                    Email 
                 </label>
                 <div class="col-sm-4">
                 	<input name="email" type="text" value="" tabindex="6" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
@@ -250,14 +226,71 @@ Forms fulfill various functions across the site, but we try to style them consis
   <div class="form-horizontal">
     <div class="form-group">
       <label for="userNameEmail" class="col-sm-3 control-label">
-        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Between 2-60 characters, and can use &quot;a-z&quot;, &quot;0-9&quot;, &quot;_&quot; for your username.">
-          Username <span class="glyphicon glyphicon-asterisk text-danger"></span>
-        </span>
+        #{bundle['user.username']} 
       </label>
       <div class="col-sm-4">
-        <input name="userName" type="text" value="" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-disabled form-control" role="textbox" aria-disabled="true" aria-readonly="false">
+        <p:inputText id="userName" styleClass="form-control"></p>
       </div>
     </div>
+  </div>
+
+Here are additional form elements that are common across many pages, including required asterisks, icon tooltips, placeholder text, input info message with popover link, and validation error message.
+
+.. raw:: html
+
+  <div class="panel panel-default code-example">
+    <div class="panel-body">
+
+      <div class="form-group form-col-container col-sm-9 edit-compound-field">
+          <div class="form-col-container col-sm-12">
+              <p class="help-block">
+                  This field supports only certain <span class="text-info popoverHTML">HTML tags</span>.
+              </p>
+              <label class="control-label" for="metadata_dsDescriptionValue">
+                  Text <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                  <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto right" data-original-title="A summary describing the purpose, nature, and scope of the Dataset."></span>
+              </label>
+              <div>
+                  <textarea id="datasetForm:description" name="datasetForm:description" cols="60" rows="5" tabindex="1" maxlength="2147483647" class="ui-inputfield ui-inputtextarea ui-widget ui-state-default ui-corner-all form-control ui-inputtextarea-resizable" role="textbox" aria-disabled="false" aria-readonly="false" aria-multiline="true" data-autosize-on="true" placeholder="" style="overflow: hidden; word-wrap: break-word; height: 114px;"></textarea>
+                  
+                  <div aria-live="polite" class="ui-message ui-message-error ui-widget ui-corner-all">
+                      <span class="ui-message-error-detail">Description Text is required.</span>
+                  </div>
+              </div>
+          </div>
+          <div class="form-col-container col-sm-6">
+               <label class="control-label" for="metadata_dsDescriptionDate">
+                   Date
+                   <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto right" data-original-title="In cases where a Dataset contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. The date attribute follows the ISO convention of YYYY-MM-DD."></span>
+              </label>
+              <div>
+                <input id="datasetForm:inputText" name="datasetForm:inputText" type="text" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control " role="textbox" aria-disabled="false" aria-readonly="false" placeholder="YYYY-MM-DD">
+              </div>
+            </div>
+        </div>
+    </div>
+
+.. code-block:: html
+
+  <div class="form-group form-col-container col-sm-9 edit-compound-field">
+      <div class="form-col-container col-sm-12">
+          <p class="help-block">
+              <h:outputFormat value="#{bundle.htmlAllowedMsg}" escape="false">
+                  <f:param value="#{bundle.htmlAllowedTags}"/>
+              </h:outputFormat>
+          </p>
+          <label class="control-label" for="metadata_#{subdsf.datasetFieldType.name}">
+              #{subdsf.datasetFieldType.localeTitle}
+              <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" />
+              <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto right" data-original-title="#{subdsf.datasetFieldType.localeDescription}"></span>
+          </label>
+          <div>
+              <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" tabindex="#{block.index+1}" rows="5" cols="60" styleClass="form-control" />
+              <div class="alert-danger" jsf:rendered="#{!empty subdsf.validationMessage}">
+                  <strong>#{subdsf.validationMessage}</strong>
+              </div>
+          </div>
+      </div>
   </div>
 
 
@@ -510,16 +543,19 @@ For our help/information, success, warning, and error message blocks we use a cu
 
   <div class="panel panel-default code-example">
     <div class="panel-body">
-      <div class="color-swatches">
+      <div class="messagePanel">
         <div class="alert alert-dismissable alert-info">
-            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-	        <span class="glyphicon glyphicon-info-sign"></span>&nbsp;<strong>Edit Dataset Metadata - Add more metadata about this dataset to help others easily find it.</strong>&nbsp;
-	    </div>
-	    <div class="alert alert-success">
-            <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&nbsp;<strong>Success!</strong> – The metadata for this dataset has been updated.
+          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+	        <span class="glyphicon glyphicon-info-sign"></span>&nbsp;<strong>Edit Dataset Metadata</strong> - Add more metadata about this dataset to help others easily find it.
+	      </div>
+	      <div class="alert alert-success">
+          <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&nbsp;<strong>Success!</strong> – The metadata for this dataset has been updated.
+        </div>
+        <div class="alert alert-warning">
+          <span class="glyphicon glyphicon glyphicon-warning-sign"></span>&nbsp;<strong>File Upload in Progress</strong> – This dataset is locked while the data files are being transferred and verified.
         </div>
         <div class="alert alert-danger">
-			<span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;<strong>Error</strong> – The username, email address, or password you entered is invalid. Need assistance accessing your account? If you believe this is an error, please contact <a href="#" class="ui-commandlink ui-widget" onclick="return false;">Root Support</a> for assistance.
+          <span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;<strong>Error</strong> – The username, email address, or password you entered is invalid. Need assistance accessing your account? If you believe this is an error, please contact <a href="#" class="ui-commandlink ui-widget" onclick="return false;">Root Support</a> for assistance.
         </div>
       </div>
     </div>
@@ -531,6 +567,62 @@ For our help/information, success, warning, and error message blocks we use a cu
    <div class="alert alert-info" role="alert">...</div>
    <div class="alert alert-warning" role="alert">...</div>
    <div class="alert alert-danger" role="alert">...</div>
+
+
+Message Classes
+---------------
+
+Style classes can be added to ``p``, ``div``, ``span`` and other elements to add emphasis to inline message blocks.
+
+.. raw:: html
+
+  <div class="panel panel-default code-example">
+    <div class="panel-body">
+
+      <p class="help-block">
+        <span class="text-muted">Select dataverses to feature on the homepage of this dataverse.</span>
+      </p>
+
+      <p class="help-block">
+        <span class="glyphicon glyphicon-ok-sign text-success"></span> <span class="text-success">Search query returned 1,000 datasets!</span>
+      </p>
+
+      <p class="help-block">
+        <span class="glyphicon glyphicon-asterisk text-info"></span> <span class="text-info">Permissions with an asterisk icon indicate actions that can be performed by users not logged into Dataverse.</span>
+      </p>
+
+      <p class="help-block">
+        <span class="glyphicon glyphicon-warning-sign text-warning"></span> <span class="text-warning">Are you sure you want to remove all roles for user dataverseUser?</span>
+      </p>
+
+      <p class="help-block">
+        <span class="glyphicon glyphicon-exclamation-sign text-danger"></span> <span class="text-danger">Please select two versions to view the differences.</span>
+      </p>
+
+    </div>
+  </div>
+
+.. code-block:: html
+    
+      <p class="help-block">
+        <span class="text-muted">...</span>
+      </p>
+
+      <p class="help-block">
+        <span class="glyphicon glyphicon-ok-sign text-success"></span> <span class="text-success">...</span>
+      </p>
+
+      <p class="help-block">
+        <span class="glyphicon glyphicon-asterisk text-info"></span> <span class="text-info">...</span>
+      </p>
+
+      <p class="help-block">
+        <span class="glyphicon glyphicon-warning-sign text-warning"></span> <span class="text-warning">...</span>
+      </p>
+
+      <p class="help-block">
+        <span class="glyphicon glyphicon-exclamation-sign text-danger"></span> <span class="text-danger">...</span>
+      </p>
 
 
 Images
@@ -571,24 +663,14 @@ The most common of our containers, the `Panels component <http://getbootstrap.co
 
         <div class="panel-group">
             <div class="panel panel-default">
-                <div data-toggle="collapse" data-target="#panelCollapse0" class="panel-heading text-info">
-                    Panel Heading &nbsp;<span class="glyphicon glyphicon-chevron-up"></span>
+                <div data-toggle="collapse" data-target="#panelCollapse0" class="panel-heading">
+                    <span class="text-info">Panel Heading &nbsp;<span class="glyphicon glyphicon-chevron-up"></span></span>
                 </div>
                 <div id="panelCollapse0" class="collapse in">
                     <div class="panel-body metadata-panel-body">
                         <div class="form-group col-sm-12">
                             <label for="metadata_dsDescription" class="col-sm-3 control-label">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Label description.">
-                                    Label
-                                </span>
-                            </label>
-                            <div class="col-sm-9">Value</div>
-                        </div>
-                        <div class="form-group col-sm-12">
-                            <label for="metadata_subject" class="col-sm-3 control-label">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Label description.">
-                                    Label
-                                </span>
+                                Label
                             </label>
                             <div class="col-sm-9">Value</div>
                         </div>
@@ -610,24 +692,12 @@ The most common of our containers, the `Panels component <http://getbootstrap.co
 
   <div class="panel panel-default">
     <div data-toggle="collapse" data-target="#panelCollapse0" class="panel-heading">
-      Panel Heading &#160;<span class="glyphicon glyphicon-chevron-up"/>
+      <span class="text-info">Panel Heading &#160;<span class="glyphicon glyphicon-chevron-up"/></span>
     </div>
     <div id="panelCollapse0" class="panel-body form-horizontal collapse in">
       <div class="form-group">
         <label class="col-sm-4 control-label">
-          <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Label description.">
-            Label
-          </span>
-        </label>
-        <div class="col-sm-6">
-          Value
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="col-sm-4 control-label">
-          <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="Label description.">
-            Label
-          </span>
+          Label
         </label>
         <div class="col-sm-6">
           Value
@@ -661,9 +731,6 @@ We use the `TabView component <https://www.primefaces.org/showcase/ui/panel/tabV
 	      		</li>
 		      	<li class="ui-state-default ui-corner-top" role="tab" aria-expanded="false" aria-selected="false" tabindex="-1">
 		      		<a href="#" onclick="return false;" tabindex="-1">Content Tab 3</a>
-	      		</li>
-		      	<li class="ui-state-default ui-corner-top" role="tab" aria-expanded="false" aria-selected="false" tabindex="-1">
-		      		<a href="#" onclick="return false;" tabindex="-1">Content Tab 4</a>
 	      		</li>
 	      	</ul>
 

@@ -434,7 +434,7 @@ public class DataFile extends DvObject implements Comparable {
         return getLatestFileMetadata();
     }
     
-    private FileMetadata getLatestFileMetadata() {
+    public FileMetadata getLatestFileMetadata() {
         FileMetadata fmd = null;
 
         // for newly added or harvested, just return the one fmd

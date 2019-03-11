@@ -29,10 +29,10 @@
             </div>
         </div>
         <div class="form-group row">
-            <label class="col-xs-12 col-lg-3 control-label" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">
-                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}">
-                    #{bundle['file.dataFilesTab.dataAccess.local.label']}
-                </span>
+            <label class="col-xs-12 col-lg-3 control-label">
+                #{bundle['file.dataFilesTab.dataAccess.local.label']}
+                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}"></span>
             </label>
             <div class="col-sm-9">
                 <code>
@@ -42,9 +42,9 @@
         </div>
         <div class="form-group row">
             <label class="col-xs-12 col-lg-3 control-label">
-                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.download.tooltip']}">
-                    #{bundle['file.dataFilesTab.dataAccess.download.label']}
-                </span>
+                #{bundle['file.dataFilesTab.dataAccess.download.label']}
+                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.dataAccess.download.tooltip']}"></span>
             </label>
             <div class="col-xs-12 col-lg-9 row">
                 <ui:repeat value="#{repositoryStorageAbstractionLayerPage.getRsyncSites(datasetVersion)}" var="site">
@@ -57,9 +57,9 @@
         </div>
         <div class="form-group row">
             <label class="col-xs-12 col-lg-3 control-label">
-                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.dataAccess.verify.tooltip']}">
-                    #{bundle['file.dataFilesTab.dataAccess.verify.label']}
-                </span>
+                #{bundle['file.dataFilesTab.dataAccess.verify.label']}
+                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.dataAccess.verify.tooltip']}"></span>
             </label>
             <div class="col-sm-9">
                 <code>
