@@ -139,7 +139,8 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         //Access Request is not an entity. have to update with native query
         
         ctxt.em().createNativeQuery("UPDATE fileaccessrequests SET authenticated_user_id="+ongoingAU.getId()+" WHERE authenticated_user_id="+consumedAU.getId()).executeUpdate();
-               
+        
+        ctxt.actionLog().changeUserIdentifierInHistory(consumedAU.getIdentifier(), ongoingAU.getIdentifier());
         
         //delete:
         //  builtin user - if applicable
@@ -157,7 +158,8 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         if (consumedBuiltinUser != null){
             ctxt.em().remove(consumedBuiltinUser); 
         }
- 
+        
+        
     }
     
 }

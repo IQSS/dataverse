@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine;
 
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
@@ -233,6 +234,11 @@ public class TestCommandContext implements CommandContext {
     
     @Override
     public ConfirmEmailServiceBean confirmEmail() {
+        return null;
+    }
+    
+    @Override
+    public ActionLogServiceBean actionLog() {
         return null;
     }
 }

@@ -335,7 +335,7 @@ public class Admin extends AbstractApiBean {
 
 
             try {
-                execCommand(new MergeInAccountCommand(createDataverseRequest(consumedAuthenticatedUser), consumedAuthenticatedUser,  baseAuthenticatedUser));
+                execCommand(new MergeInAccountCommand(createDataverseRequest(baseAuthenticatedUser), consumedAuthenticatedUser,  baseAuthenticatedUser));
             } catch (Exception e){
                 return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
             }

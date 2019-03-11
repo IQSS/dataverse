@@ -489,6 +489,11 @@ public class EjbDataverseEngine {
                 public ConfirmEmailServiceBean confirmEmail() {
                     return confirmEmailService;
                 }
+                
+                @Override
+                public ActionLogServiceBean actionLog() {
+                    return logSvc;
+                }
 
             };
         }
