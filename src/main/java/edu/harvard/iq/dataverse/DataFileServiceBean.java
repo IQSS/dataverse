@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
@@ -9,12 +11,14 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -1578,4 +1582,99 @@ public class DataFileServiceBean implements java.io.Serializable {
         return u;
     }
     
+    public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
+        // Verify that the DataFile no longer exists: 
+        if (find(dataFileId) != null) {
+            throw new IOException("Attempted to permanently delete a physical file still associated with an existing DvObject "
+                    + "(id: " + dataFileId + ", location: " + storageLocation);
+        }
+        StorageIO directStorageAccess = DataAccess.getDirectStorageIO(storageLocation);
+        directStorageAccess.delete();
+    }
+    
+    public void finalizeFileDeletes(Map<Long, String> storageLocations) {
+        storageLocations.keySet().stream().forEach((dataFileId) -> {
+            String storageLocation = storageLocations.get(dataFileId);
+
+            try {
+                finalizeFileDelete(dataFileId, storageLocation);
+            } catch (IOException ioex) {
+                logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                        + dataFileId + ", storage location: " + storageLocation);
+            }
+        });
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(DatasetVersion datasetVersion) {
+        return getPhysicalFilesToDelete(datasetVersion, false);
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(DatasetVersion datasetVersion, boolean destroy) {
+        // Gather the locations of the physical files associated with DRAFT
+        // (unpublished) DataFiles (or ALL the DataFiles, if "destroy") in the 
+        // DatasetVersion, that will need to be deleted once the 
+        // DeleteDatasetVersionCommand execution has been finalized:
+
+        return getPhysicalFilesToDelete(datasetVersion.getFileMetadatas(), destroy);
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(List<FileMetadata> fileMetadatasToDelete) {
+        return getPhysicalFilesToDelete(fileMetadatasToDelete, false);
+    }
+    
+    public Map<Long, String> getPhysicalFilesToDelete(List<FileMetadata> fileMetadatasToDelete, boolean destroy) {
+        Map<Long, String> deleteStorageLocations = new HashMap<>();
+
+        Iterator<FileMetadata> dfIt = fileMetadatasToDelete.iterator();
+        while (dfIt.hasNext()) {
+            DataFile df = dfIt.next().getDataFile();
+
+            if (destroy || !df.isReleased()) {
+
+                String storageLocation = getPhysicalFileToDelete(df);
+                if (storageLocation != null) {
+                    deleteStorageLocations.put(df.getId(), storageLocation);
+                }
+
+            }
+        }
+
+        return deleteStorageLocations;
+    }
+  
+    public Map<Long, String> getPhysicalFilesToDelete(Dataset dataset) {
+        // Gather the locations of ALL the physical files associated with 
+        // a DATASET that is being DESTROYED, that will need to be deleted
+        // once the DestroyDataset command execution has been finalized. 
+        // Once again, note that we are selecting all the files from the dataset
+        // - not just drafts. 
+
+        Map<Long, String> deleteStorageLocations = new HashMap<>();
+
+        Iterator<DataFile> dfIt = dataset.getFiles().iterator();
+        while (dfIt.hasNext()) {
+            DataFile df = dfIt.next();
+
+            String storageLocation = getPhysicalFileToDelete(df);
+            if (storageLocation != null) {
+                deleteStorageLocations.put(df.getId(), storageLocation);
+            }
+
+        }
+
+        return deleteStorageLocations;
+    }
+    
+    public String getPhysicalFileToDelete(DataFile dataFile) {
+        try {
+            StorageIO<DataFile> storageIO = dataFile.getStorageIO();
+            return storageIO.getStorageLocation();
+
+        } catch (IOException ioex) {
+            // something potentially wrong with the physical file,
+            // or connection to the physical storage? 
+            // we don't care (?) - we'll still try to delete the datafile from the database.
+        }
+        return null;
+    }
 }
