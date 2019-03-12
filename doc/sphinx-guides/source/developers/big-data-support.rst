@@ -114,7 +114,7 @@ Docker Image Set-up
 ^^^^^^^^^^^^^^^^^^^
 
 - Install docker if you do not have it
-- Follow these steps (extracted from ``docker-aio/readme.md`` & ``docker-dcm/readme.txt``) :
+- Follow these steps (extracted from ``docker-aio/readme.md`` & ``docker-dcm/readme.md``) :
 
   - ``cd conf/docker-aio`` and run ``./0prep_deps.sh`` to create Glassfish and Solr tarballs in conf/docker-aio/dv/deps.
   - Run ``./1prep.sh``
@@ -224,6 +224,12 @@ Additional DCM docker development tips
 
 Repository Storage Abstraction Layer (RSAL)
 -------------------------------------------
+
+
+Steps to set up a RSAL via Docker for Development
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- See ``docker-dcm/readme.md``
 
 Configuring the RSAL Mock
 ~~~~~~~~~~~~~~~~~~~~~~~~~
