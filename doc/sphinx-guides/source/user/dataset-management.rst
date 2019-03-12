@@ -180,11 +180,13 @@ Metadata found in the header section of `Flexible Image Transport System (FITS) 
 Compressed Files
 ----------------
 
-Compressed files in zip format are unpacked automatically. If it fails to unpack, for whatever reason, it will upload as is. If the number of files inside are more than a set limit (1,000 by default, configurable by the Administrator), you will get an error message and the zip file will uploads as is.
+Compressed files in zip format are unpacked automatically. If a .zip file fails to unpack for whatever reason, it will upload as is. If the number of files inside are more than a set limit (1,000 by default, configurable by the Administrator), you will get an error message and the .zip file will upload as is.
 
-.. note:: If the uploaded zip file contains sub-folders, the names of the folders will be preserved as the ``DirectoryLabel`` attributes in the ``FileMetadata`` objects of the corresponding individual datafiles. These labels are displayed in the file metadata as the File Path, and is used to restore the folder structure in multi-file, zipped download bundles (see :doc:`/api/dataaccess` for more information). 
+If the uploaded .zip file contains a folder structure, Dataverse will keep track of this structure. A file's location within this folder structure is displayed in the file metadata as the File Path. When you download the contents of the dataset, this folder structure will be preserved and files will appear in their original locations. 
 
-Support for unpacking tar files will be added when this ticket is closed: https://github.com/IQSS/dataverse/issues/2195.
+.. note:: If you upload multiple .zip files to one dataset, any subdirectories that are identical across multiple .zips will be merged together when the user downloads the full dataset.
+
+
 
 Other File Types
 ----------------
