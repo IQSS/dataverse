@@ -511,7 +511,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public String getDisplayName() {
         if (isHasParent() && !parentDatasetFieldType.getTitle().equals(title)) {
             return parentDatasetFieldType.getLocaleTitle()  + ": " + getLocaleTitle();
-            // The ": " is a solution to French and Spanish tranlation. Another solution is return onlu the parent title:
+            // The ": " is a solution to French and Spanish translation. Another solution is return only the parent title:
             // return parentDatasetFieldType.getLocaleTitle()
         } else {
             return getLocaleTitle();
