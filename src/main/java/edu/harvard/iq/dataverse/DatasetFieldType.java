@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.MissingResourceException;
-import java.util.logging.Logger;
 import javax.faces.model.SelectItem;
 import javax.persistence.*;
 
@@ -31,9 +30,6 @@ import javax.persistence.*;
 @Entity
 @Table(indexes = {@Index(columnList="metadatablock_id"),@Index(columnList="parentdatasetfieldtype_id")})
 public class DatasetFieldType implements Serializable, Comparable<DatasetFieldType> {
-    
-        private static final Logger logger = Logger.getLogger(DatasetFieldType.class.getCanonicalName());
-
 
     /**
      * The set of possible metatypes of the field. Used for validation and layout.
@@ -514,11 +510,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     
     public String getDisplayName() {
         if (isHasParent() && !parentDatasetFieldType.getTitle().equals(title)) {
-            logger.info (" AAAAAA JUAN getDisplayName isHasParent " + title);
-
-            return parentDatasetFieldType.getLocaleTitle()  + " " + getLocaleTitle();
+        return parentDatasetFieldType.getLocaleTitle() + ": " + getLocaleTitle(); 
+        // The ": " is a solution to correct French and Spanish translation. Another solution is return only the parent title:
+        // return parentDatasetFieldType.getLocaleTitle();
         } else {
-            logger.info (" AAAAAA JUAN getDisplayName not isHasParent " + title);
             return getLocaleTitle();
         }
     }
@@ -568,16 +563,12 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     public String getLocaleTitle() {
         if(getMetadataBlock()  == null) {
-            logger.info (" AAAAAA JUAN 1 " + title);
             return title;
         }
         else {
             try {
-                logger.info (" AAAAAA JUAN 2 " + "datasetfieldtype." + getName() + ".title" + "     " + getMetadataBlock().getName() + "   " + 
-                        BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".title", getMetadataBlock().getName()));
                 return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".title", getMetadataBlock().getName());
             } catch (MissingResourceException e) {
-            logger.info (" AAAAAA JUAN 3 " + title);
                 return title;
             }
         }
