@@ -353,21 +353,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             setSize(objectMetadata.getContentLength());
         }
     }
-
-    /*@Override
-    public void delete() throws IOException {
-        open();
-        if (key == null) {
-            throw new IOException("Delete called with null key");
-        }
-        try {
-            DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
-            s3.deleteObject(deleteObjRequest);
-        } catch (AmazonClientException ase) {
-            logger.warning("Caught an AmazonClientException in S3AccessIO.delete(): " + ase.getMessage());
-            throw new IOException("Failed to delete object" + dvObject.getId());
-        }
-    }*/
     
     @Override
     public void delete() throws IOException {
@@ -376,9 +361,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         if (key == null) {
             throw new IOException("Delete called with null key");
-        }
+        }        
         // Verify that it exists, before we attempt to delete it?
-        // (probably unnecessar - attempting to delete it will fail if it doesn't exist - ?)
+        // (probably unnecessary - attempting to delete it will fail if it doesn't exist - ?)
         try {
             DeleteObjectRequest deleteObjRequest = new DeleteObjectRequest(bucketName, key);
             s3.deleteObject(deleteObjRequest);
@@ -386,6 +371,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             logger.warning("Caught an AmazonClientException in S3AccessIO.delete(): " + ase.getMessage());
             throw new IOException("Failed to delete storage location " + getStorageLocation());
         }
+        
+        // Delete all the cached aux files as well:
+        deleteAllAuxObjects();
+
     }
 
     @Override
@@ -619,9 +608,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public void deleteAllAuxObjects() throws IOException {
-        if (!this.canWrite()) {
+        if (!isDirectAccess() && !this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
+        
         String prefix = getDestinationKey("");
 
         List<S3ObjectSummary> storedAuxFilesSummary = null;
@@ -724,7 +714,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     String getDestinationKey(String auxItemTag) throws IOException {
-        if (dvObject instanceof DataFile) {
+        if (isDirectAccess() || dvObject instanceof DataFile) {
             return getMainFileKey() + "." + auxItemTag;
         } else if (dvObject instanceof Dataset) {
             if (key == null) {
