@@ -103,6 +103,7 @@ Optional steps for setting up the S3 Docker DCM Variant
 
   - Add AWS bucket info to dcmsrv
     - Add AWS credentials to ``~/.aws/credentials``
+
       - ``[default]``
       - ``aws_access_key_id =``
       - ``aws_secret_access_key =``
@@ -117,6 +118,7 @@ Optional steps for setting up the S3 Docker DCM Variant
 
   - Add AWS bucket info to Dataverse
     - Add AWS credentials to ``~/.aws/credentials``
+    
       - ``[default]``
       - ``aws_access_key_id =``
       - ``aws_secret_access_key =``

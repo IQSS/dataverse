@@ -1089,6 +1089,8 @@ If you don't want to register file-based PIDs for your installation, set:
 
 Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
 
+.. _:IndependentHandleService:
+
 :IndependentHandleService
 +++++++++++++++++++++++++++
 
