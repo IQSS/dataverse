@@ -55,10 +55,11 @@ public class FileMetadata implements Serializable {
     @Column( nullable=false )
     private String label = "";
     
-    @Pattern(regexp="|[^/\\\\]|^[^/\\\\]+.*[^/\\\\]+$",
-            message = "{directoryname.illegalCharacters}")
+    
+    @ValidateDataFileDirectoryName(message = "{directoryname.illegalCharacters}")
     @Expose
     @Column ( nullable=true )
+
     private String directoryLabel;
     @Column(columnDefinition = "TEXT")
     private String description = "";
@@ -120,6 +121,22 @@ public class FileMetadata implements Serializable {
     }
 
     public void setDirectoryLabel(String directoryLabel) {
+        //Strip off beginning and ending \
+        if (directoryLabel != null) {
+            while (directoryLabel.startsWith("\\")) {
+                directoryLabel = directoryLabel.substring(1);
+            }
+            while (directoryLabel.endsWith("\\")) {
+                directoryLabel = directoryLabel.substring(0, directoryLabel.length() - 1);
+            }
+            while (directoryLabel.startsWith("/")) {
+                directoryLabel = directoryLabel.substring(1);
+            }
+            while (directoryLabel.endsWith("/")) {
+                directoryLabel = directoryLabel.substring(0, directoryLabel.length() - 1);
+            }
+        }
+
         this.directoryLabel = directoryLabel;
     }
 
