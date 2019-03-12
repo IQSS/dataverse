@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 package edu.harvard.iq.dataverse;
- 
+
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
