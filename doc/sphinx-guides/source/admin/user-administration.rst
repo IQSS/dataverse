@@ -56,14 +56,3 @@ Using the API token 7ae33670-be21-491d-a244-008149856437 as an example:
 
 You should expect the output ``DELETE 1`` after issuing the command above.
 
-Combining Accounts
-------------------
-
-If a user has created multiple accounts and has been performed actions under both accounts that need to be preserved, these accounts can be combined.  One account can be merged into another account and all data associated with both accounts will be combined in the surviving account.
-
-This command::
-
-	curl -X POST http://$server/api/admin/authenticatedUsers/$continuingIdentifier/mergeIntoUser/$toMergeIdentifier
-
-moves account data from $toMergeIdentifier into the account $continuingIdentifier and deletes the account of $toMergeIdentifier.
-

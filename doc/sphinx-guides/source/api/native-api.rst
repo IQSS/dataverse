@@ -1207,6 +1207,17 @@ POSTed JSON example::
       "email": "pete@mailinator.com"
     }
 
+Combining Accounts
+~~~~~~~~~~~~~~~~~~
+
+If a user has created multiple accounts and has been performed actions under both accounts that need to be preserved, these accounts can be combined.  One account can be merged into another account and all data associated with both accounts will be combined in the surviving account::
+
+    POST https://$SERVER/api/admin/authenticatedUsers/$continuingIdentifier/mergeIntoUser/$toMergeIdentifier
+
+Example: ``curl -X POST http://$server/api/admin/authenticatedUsers/toKeepIdentifier/mergeIntoUser/toMergeIdentifier``
+
+This action moves account data from toMergeIdentifier into the account toKeepIdentifier and deletes the account of toMergeIdentifier.
+
 Make User a SuperUser
 ~~~~~~~~~~~~~~~~~~~~~
 
