@@ -63,7 +63,7 @@ If a user has created multiple accounts and has been performed actions under bot
 
 This command::
 
-	curl -X PUT -d http://$server/api/admin/authenticatedUsers/$continuingIdentifier/mergeIntoUser/$toMergeIdentifier
+	curl -X POST http://$server/api/admin/authenticatedUsers/$continuingIdentifier/mergeIntoUser/$toMergeIdentifier
 
 moves account data from $toMergeIdentifier into the account $continuingIdentifier and deletes the account of $toMergeIdentifier.
 

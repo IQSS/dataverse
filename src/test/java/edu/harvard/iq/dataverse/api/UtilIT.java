@@ -1924,7 +1924,7 @@ public class UtilIT {
         System.out.print(String.format("/api/admin/authenticatedUsers/%s/mergeInUser/%s", baseId, consumedId  ));
         String apiPath = String.format("/api/admin/authenticatedUsers/%s/mergeInUser/%s", baseId, consumedId  );
         return given()
-                .put(apiPath);
+                .post(apiPath);
     }
     
     

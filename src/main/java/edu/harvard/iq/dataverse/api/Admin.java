@@ -313,7 +313,7 @@ public class Admin extends AbstractApiBean {
 		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
 	}
         
-        @PUT
+        @POST
         @Path("authenticatedUsers/{baseIdentifier}/mergeInUser/{consumedIdentifier}")
         public Response mergeInAuthenticatedUser(@PathParam("baseIdentifier") String baseIdentifier, @PathParam("consumedIdentifier") String consumedIdentifier) {
             
@@ -340,7 +340,7 @@ public class Admin extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
             }
 
-            return ok("All account data for " + consumedIdentifier + " have been merged into " + baseIdentifier + " .");
+            return ok("All account data for " + consumedIdentifier + " has been merged into " + baseIdentifier + " .");
         }
         
         
