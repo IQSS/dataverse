@@ -7,12 +7,16 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author jchengan
  */
 public class DateUtil {
+
+    private static final Logger logger = Logger.getLogger(DateUtil.class.getCanonicalName());
 
     public static String formatDate(Date dateToformat) {
         String formattedDate;
@@ -21,6 +25,7 @@ public class DateUtil {
             Locale currentLocale = BundleUtil.getCurrentLocale();
             dateFormatter = DateFormat.getDateInstance(DateFormat.DEFAULT, currentLocale);
             formattedDate = dateFormatter.format(dateToformat);
+
             return formattedDate;
         } catch(Exception e) {
             return null;
@@ -31,13 +36,22 @@ public class DateUtil {
         String formattedDate = "";
         DateFormat inputFormat = new SimpleDateFormat(format);
         Date _date = null;
+        logger.log(Level.INFO, "******** DATE ******: Date from solr11: {0}", dateToformat);
         try {
             _date = inputFormat.parse(dateToformat);
             formattedDate = formatDate(_date);
             return formattedDate;
         } catch (ParseException e) {
-            e.printStackTrace();
-            return null;
+            try {
+                format="dd-MMM-yyyy";
+                inputFormat = new SimpleDateFormat(format);
+                _date = inputFormat.parse(dateToformat);
+                formattedDate = formatDate(_date);
+                return formattedDate;
+            } catch (ParseException ex) {
+                ex.printStackTrace();
+                return null;
+            }
         }
     }
 
