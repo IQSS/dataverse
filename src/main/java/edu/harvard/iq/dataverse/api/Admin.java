@@ -77,6 +77,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -333,7 +334,6 @@ public class Admin extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "User " + consumedIdentifier + " not found in AuthenticatedUser");
             }
 
-
             try {
                 execCommand(new MergeInAccountCommand(createDataverseRequest(baseAuthenticatedUser), consumedAuthenticatedUser,  baseAuthenticatedUser));
             } catch (Exception e){
@@ -343,6 +343,31 @@ public class Admin extends AbstractApiBean {
             return ok("All account data for " + consumedIdentifier + " has been merged into " + baseIdentifier + " .");
         }
         
+        @Path("authenticatedUsers/{identifier}/changeIdentifier/{newIdentifier}")
+        public Response changeAuthenticatedUserIdentifier(@PathParam("identifier") String oldIdentifier, @PathParam("newIdentifier")  String newIdentifier) {
+
+            if(null == oldIdentifier || oldIdentifier.isEmpty()) {
+                return error(Response.Status.BAD_REQUEST, "Old identifier provided to change is empty.");
+            } else if(null == newIdentifier || newIdentifier.isEmpty()) {
+                return error(Response.Status.BAD_REQUEST, "New identifier provided to change is empty.");
+            }
+            
+            AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(oldIdentifier);
+            if (authenticatedUser == null) {
+                return error(Response.Status.BAD_REQUEST, "User " + oldIdentifier + " not found in AuthenticatedUser");
+            }
+            
+
+            
+
+            try {
+                execCommand(new ChangeUserIdentifierCommand(createDataverseRequest(authenticatedUser), authenticatedUser,  newIdentifier));
+            } catch (Exception e){
+                return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
+            }
+            
+            return ok("UserIdentifier changed from " + oldIdentifier + " to " + newIdentifier);
+        }
         
 	@POST
 	@Path("publishDataverseAsCreator/{id}")
@@ -1423,4 +1448,6 @@ public class Admin extends AbstractApiBean {
         return error(Response.Status.BAD_REQUEST,
                 "InheritParentRoleAssignments does not list any roles on this instance");
     }
+    
+
 }

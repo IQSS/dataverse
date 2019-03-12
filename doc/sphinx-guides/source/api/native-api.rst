@@ -1207,6 +1207,7 @@ POSTed JSON example::
       "email": "pete@mailinator.com"
     }
 
+
 Combining Accounts
 ~~~~~~~~~~~~~~~~~~
 
@@ -1217,6 +1218,15 @@ If a user has created multiple accounts and has been performed actions under bot
 Example: ``curl -X POST http://$server/api/admin/authenticatedUsers/toKeepIdentifier/mergeIntoUser/toMergeIdentifier``
 
 This action moves account data from toMergeIdentifier into the account toKeepIdentifier and deletes the account of toMergeIdentifier.
+
+Change User Identifier
+~~~~~~~~~~~~~~~~~~~~~~
+
+The body of the PUT request is the new identifier for the user. Changes identifier for user in ``AuthenticatedUser``, ``BuiltinUser``, ``AuthenticatedUserLookup`` & ``RoleAssignment``. ::
+
+    PUT http://$SERVER/api/admin/authenticatedUsers/$oldIdentifier/changeIdentifier/$newIdentifier
+
+Example: ``curl -X POST  https://demo.dataverse.org/api/admin/authenticatedUsers/oldIdentifier/changeIdentifier/newIdentifier``
 
 Make User a SuperUser
 ~~~~~~~~~~~~~~~~~~~~~

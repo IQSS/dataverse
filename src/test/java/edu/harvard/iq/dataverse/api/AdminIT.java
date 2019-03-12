@@ -18,6 +18,7 @@ import org.junit.BeforeClass;
 import java.util.UUID;
 import javax.validation.constraints.AssertTrue;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
@@ -461,6 +462,59 @@ public class AdminIT {
         Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
         assertEquals(200, deleteSuperuser.getStatusCode());
 
+    }
+    
+    @Test
+    public void testChangeAuthenticatedUserIdentifier() {
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(200, createUser.getStatusCode());
+        String usernameOfUser = UtilIT.getUsernameFromResponse(createUser);
+        
+        Response createUserForAlreadyExists = UtilIT.createRandomUser();
+        createUserForAlreadyExists.prettyPrint();
+        assertEquals(200, createUserForAlreadyExists.getStatusCode());
+        String usernameOfUserAlreadyExists = UtilIT.getUsernameFromResponse(createUserForAlreadyExists);
+        
+        String newUsername = "newUser_" + UtilIT.getRandomString(4);
+        Response changeAuthIdResponse = UtilIT.changeAuthenticatedUserIdentifier(usernameOfUser, newUsername, superuserApiToken);
+        changeAuthIdResponse.prettyPrint();
+        changeAuthIdResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+
+        //Try changing to already existing username
+        Response changeAuthIdResponseBadAlreadyExists= UtilIT.changeAuthenticatedUserIdentifier(newUsername, usernameOfUserAlreadyExists, superuserApiToken);
+        changeAuthIdResponseBadAlreadyExists.prettyPrint();
+        changeAuthIdResponseBadAlreadyExists.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+        
+        String newUsernameBad = ""; //one character, should fail before bean validation even
+        //Without second param url is not found.
+        Response changeAuthIdResponseBad = UtilIT.changeAuthenticatedUserIdentifier(newUsername, newUsernameBad, superuserApiToken);
+        changeAuthIdResponseBad.prettyPrint();
+        changeAuthIdResponseBad.then().assertThat()
+                .statusCode(NOT_FOUND.getStatusCode());
+        
+        String newUsernameBad2 = "q"; //one character, should fail bean validation
+        Response changeAuthIdResponseBad2 = UtilIT.changeAuthenticatedUserIdentifier(newUsername, newUsernameBad2, superuserApiToken);
+        changeAuthIdResponseBad2.prettyPrint();
+        changeAuthIdResponseBad2.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+        
+        //if this fails likely one of the converts that said they failed actually didn't!
+        Response deleteUserToConvert = UtilIT.deleteUser(newUsername);
+        assertEquals(200, deleteUserToConvert.getStatusCode());
+
+        Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
+        assertEquals(200, deleteSuperuser.getStatusCode());
     }
 
     @Test
