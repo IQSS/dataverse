@@ -343,6 +343,7 @@ public class Admin extends AbstractApiBean {
             return ok("All account data for " + consumedIdentifier + " has been merged into " + baseIdentifier + " .");
         }
         
+        @POST
         @Path("authenticatedUsers/{identifier}/changeIdentifier/{newIdentifier}")
         public Response changeAuthenticatedUserIdentifier(@PathParam("identifier") String oldIdentifier, @PathParam("newIdentifier")  String newIdentifier) {
 
