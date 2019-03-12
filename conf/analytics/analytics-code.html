@@ -1,0 +1,112 @@
+<script type="text/javascript"
+	src="/javax.faces.resource/jquery/jquery.js.xhtml?ln=primefaces&amp;v=6.2"></script>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async
+	src="https://www.googletagmanager.com/gtag/js?id=<YOUR CODE>"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', '<YOUR CODE>');
+</script>
+
+
+<!-- This script adds events to google analytics, leveraging the btn-* css classes -->
+<script>
+
+$(document)
+    .ready(
+        function() {
+<!-- Explore Tool buttons -->
+$('.btn-explore').click(function() {
+  var label =getFileId($(this));
+  gtag('event', 'Explore',{'event_category' : $(this).text(),
+                         'event_label' : label});
+});
+
+$('.btn-compute').click(function() {
+  gtag('event', 'Compute',{'event_category' : $(this).attr('value'),
+                         'event_label' : getFileId($(this))});
+});
+
+$('.btn-share').click(function() {
+  var label='Unknown';
+  if($('#fileForm').length >0) {
+    label=stripId($('#fileForm').attr('action'));
+  } else {
+    if($('#datasetForm').length >0) {
+      label=stripId($('#datasetForm').attr('action'));
+    }
+  }
+  gtag('event', 'Share',{'event_category' : $(this).text(),
+                         'event_label' : label});
+});
+
+$( document ).on( "click", ".btn-export",function() {$(this).parent().find('a').click(function() {
+    var label='Unknown';
+    if($('#datasetForm').length >0) {
+      label=stripId($('#datasetForm').attr('action'));
+    }
+
+    gtag('event', 'Export Metadata',{'event_category' : $(this).text(),
+                                  'event_label' : label});
+  });
+});
+
+$('.btn-preview').click(function() {
+  gtag('event', 'WorldMap',{'event_category' : $(this).text(),
+                         'event_label' : getFileId($(this))});
+});
+
+$('.btn-request').click(function() {
+  gtag('event', 'Access',{'event_category' : $(this).text(),
+                         'event_label' : getFileId($(this))});
+});
+
+$('.btn-download').click(function() {
+  gtag('event', 'Access',{'event_category' : $(this).text(),
+                         'event_label' : getFileId($(this))});
+});
+ 
+$('.btn-contact').click(function() {
+  var label='Unknown';
+  if($('#fileForm').length >0) {
+    label=stripId($('#fileForm').attr('action'));
+  } else {
+    if($('#datasetForm').length >0) {
+      label=stripId($('#datasetForm').attr('action'));
+    }
+  }
+  gtag('event', 'Contact',{'event_category' : $(this).text(),
+                                  'event_label' : label});
+});
+
+//Other available buttons: .btn-access, .btn-copy
+});
+
+function getFileId(target) {
+  var label ='Unknown';
+  var row = target.parents('tr')[0];
+  if(row != null) {
+    label = $(row).find('td.col-file-metadata>a').attr('href');
+  } else {
+    label = $('#fileForm').attr('action');
+  }
+  label=stripId(label);
+  return label;
+}
+
+function stripId(label) {
+  var index=label.indexOf('&');
+  if(index==-1) index=label.length;
+  if(label.indexOf('persistentId=')>=0) {
+    label=label.substring(label.indexOf('persistentId=')+13,index);
+  }
+  if(label.indexOf('fileId=')>=0) {
+    label=label.substring(label.indexOf('fileId=')+7,index);
+  }
+  return(label);
+}
+</script>
