@@ -182,7 +182,7 @@ Compressed Files
 
 Compressed files in zip format are unpacked automatically. If it fails to unpack, for whatever reason, it will upload as is. If the number of files inside are more than a set limit (1,000 by default, configurable by the Administrator), you will get an error message and the zip file will uploads as is.
 
-.. note:: If the uploaded zip file contains sub-folders, the names of the folders will be preserved as the ``DirectoryLabel`` attributes in the ``FileMetadata`` objects of the corresponding individual datafiles. As of writing this - v.4.11 - these labels are only used to restore the folder structure in multi-file, zipped download bundles (see :doc:`/api/dataaccess` for more information). In the future folder structure will be supported for organizing files on the dataset page as well. 
+.. note:: If the uploaded zip file contains sub-folders, the names of the folders will be preserved as the ``DirectoryLabel`` attributes in the ``FileMetadata`` objects of the corresponding individual datafiles. These labels are displayed in the file metadata as the File Path, and is used to restore the folder structure in multi-file, zipped download bundles (see :doc:`/api/dataaccess` for more information). 
 
 Support for unpacking tar files will be added when this ticket is closed: https://github.com/IQSS/dataverse/issues/2195.
 
@@ -211,6 +211,11 @@ Go to the dataset you would like to edit, where you will see the listing of file
 You will not have to leave the dataset page to complete these action, except for editing file metadata, which will bring you to the Edit Files page. There you will have to click the "Save Changes" button to apply your edits and return to the dataset page.
 
 If you restrict files, you will also prompted with a popup asking you to fill out the Terms of Access for the files. If Terms of Access already exist, you will be asked to confirm them. Note that some Dataverse installations do not allow for file restrictions.
+
+File Path
+---------
+
+The file path is a text string which displays file organization and supports reproducibility. It is automatically populated with the file hierarchy directory structure for files deposited via a compressed zip file that contains sub-folders. It can also be manually added or edited on the Edit Files pg, just like any other metadata values. This value is saved as the ``DirectoryLabel`` and is used to preserve and recreate the directory structure for bundled downloads using the select checkboxes and Download button at the top of the file table.
 
 File Tags
 ---------
