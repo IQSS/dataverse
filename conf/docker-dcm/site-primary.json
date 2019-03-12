@@ -1,0 +1,6 @@
+{
+	"hostname": "rsal",
+	"name": "LibraScholar University",
+	"primaryStorage": true,
+	"transferProtocols": "rsync,posix"
+}
