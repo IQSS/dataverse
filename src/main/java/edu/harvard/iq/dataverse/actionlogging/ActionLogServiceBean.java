@@ -39,7 +39,7 @@ public class ActionLogServiceBean {
         em.createNativeQuery(
                 "UPDATE actionlogrecord "
                         + "SET useridentifier='"+newIdentifier+"', "
-                        + "info='merged from "+oldIdentifier+" | ' || info "
+                        + "info='orig from "+oldIdentifier+" | ' || info "
                         + "WHERE useridentifier='"+oldIdentifier+"'"
         ).executeUpdate();
     }
