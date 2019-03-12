@@ -313,7 +313,7 @@ public class Admin extends AbstractApiBean {
 		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
 	}
         
-        @PUT
+        @POST
         @Path("authenticatedUsers/{identifier}/changeIdentifier/{newIdentifier}")
         public Response changeAuthenticatedUserIdentifier(@PathParam("identifier") String oldIdentifier, @PathParam("newIdentifier")  String newIdentifier) {
 

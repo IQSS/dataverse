@@ -1214,7 +1214,7 @@ The body of the PUT request is the new identifier for the user. Changes identifi
 
     PUT http://$SERVER/api/admin/authenticatedUsers/$oldIdentifier/changeIdentifier/$newIdentifier
 
-Example: ``curl -X PUT -d  https://demo.dataverse.org/api/admin/authenticatedUsers/oldIdentifier/changeIdentifier/newIdentifier``
+Example: ``curl -X POST  https://demo.dataverse.org/api/admin/authenticatedUsers/oldIdentifier/changeIdentifier/newIdentifier``
 
 Make User a SuperUser
 ~~~~~~~~~~~~~~~~~~~~~
