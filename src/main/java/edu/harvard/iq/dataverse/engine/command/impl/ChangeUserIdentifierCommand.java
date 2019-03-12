@@ -33,15 +33,16 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
 
     final AuthenticatedUser au;
     final String newIdentifier;
-
+    final String oldIdentifier;
     
     public ChangeUserIdentifierCommand(DataverseRequest aRequest, AuthenticatedUser au, String newIdentifier) {
         super(
-                aRequest,
-                (DvObject) null
+            aRequest,
+            (DvObject) null
         );
         this.au = au;
         this.newIdentifier = newIdentifier;
+        this.oldIdentifier = au.getUserIdentifier();
     }
     
     @Override
@@ -54,7 +55,7 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
         }
         
         List<RoleAssignment> raList = ctxt.roleAssignees().getAssignmentsFor(au.getIdentifier()); //only AuthenticatedUser supported
-        BuiltinUser bu = ctxt.builtinUsers().findByUserName(au.getUserIdentifier());
+        BuiltinUser bu = ctxt.builtinUsers().findByUserName(oldIdentifier);
         au.setUserIdentifier(newIdentifier);
         
         if (bu != null) {
@@ -75,15 +76,18 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
             }
         }
         
+        ctxt.actionLog().changeUserIdentifierInHistory("@" + oldIdentifier, "@" + newIdentifier);
+        
         AuthenticatedUserLookup aul = au.getAuthenticatedUserLookup();
         aul.setPersistentUserId(newIdentifier);
         
         for(RoleAssignment ra : raList) {
-            if(ra.getAssigneeIdentifier().charAt(0) == '@') {
-                ra.setAssigneeIdentifier("@" + newIdentifier);
-            } else {
-                throw new IllegalCommandException("Original userIdentifier provided does not seem to be an AuthenticatedUser", this);
-            }
+            ra.setAssigneeIdentifier("@" + newIdentifier);
         }
+    }
+    
+    @Override
+    public String describe() {
+        return "User " + oldIdentifier + " renamed to " + newIdentifier;
     }
 }
