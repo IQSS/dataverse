@@ -340,7 +340,7 @@ public class Admin extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
             }
 
-            return ok("Role Assignements for " + consumedIdentifier + " have been merged into " + baseIdentifier + ".");
+            return ok("All account data for " + consumedIdentifier + " have been merged into " + baseIdentifier + " .");
         }
         
         
