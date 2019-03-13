@@ -5,15 +5,19 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.util.regex.Pattern;
-import javax.validation.ConstraintValidatorContext;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.mockito.Mockito;
+
+import javax.validation.ConstraintValidatorContext;
+import java.util.regex.Pattern;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -51,7 +55,7 @@ public class DatasetFieldValueValidatorTest {
         DatasetFieldValue value = new DatasetFieldValue();
         DatasetField df = new DatasetField();
         DatasetFieldType dft = new DatasetFieldType();
-        dft.setFieldType(DatasetFieldType.FieldType.TEXT);
+        dft.setFieldType(FieldType.TEXT);
         //Test Text against regular expression that takes a 5 character string
         dft.setValidationFormat("^[a-zA-Z ]{5,5}$");
         df.setDatasetFieldType(dft);
@@ -75,7 +79,7 @@ public class DatasetFieldValueValidatorTest {
         assertEquals(false, result);
         
         //Now lets try Dates
-        dft.setFieldType(DatasetFieldType.FieldType.DATE);   
+        dft.setFieldType(FieldType.DATE);
         dft.setValidationFormat(null);
         value.setValue("1999AD");
         result = instance.isValid(value, ctx);
@@ -102,7 +106,7 @@ public class DatasetFieldValueValidatorTest {
         assertEquals(false, result);  
         
         //Float
-        dft.setFieldType(DatasetFieldType.FieldType.FLOAT); 
+        dft.setFieldType(FieldType.FLOAT);
         value.setValue("44");
         result = instance.isValid(value, ctx);
         assertEquals(true, result);
@@ -112,7 +116,7 @@ public class DatasetFieldValueValidatorTest {
         assertEquals(false, result);
         
         //Integer
-        dft.setFieldType(DatasetFieldType.FieldType.INT); 
+        dft.setFieldType(FieldType.INT);
         value.setValue("44");
         result = instance.isValid(value, ctx);
         assertEquals(true, result);
@@ -126,7 +130,7 @@ public class DatasetFieldValueValidatorTest {
         assertEquals(false, result);
         
         //URL
-        dft.setFieldType(DatasetFieldType.FieldType.URL); 
+        dft.setFieldType(FieldType.URL);
         value.setValue("http://cnn.com");
         result = instance.isValid(value, ctx);
         assertEquals(true, result);

@@ -6,7 +6,14 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 
+import javax.ejb.EJBException;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,15 +32,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import javax.ejb.EJBException;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -88,8 +86,8 @@ public class DataCitation {
             DatasetField dsf = dsv.getDatasetField(dsfType);
             if (dsf != null) {
                 optionalValues.add(dsf);
-                
-                if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
+
+                if (dsf.getDatasetFieldType().getFieldType().equals(FieldType.URL)) {
                     optionalURLcount++;
                 }
             }
@@ -217,8 +215,8 @@ public class DataCitation {
         for (DatasetField dsf : optionalValues) {
             String displayName = dsf.getDatasetFieldType().getDisplayName();
             String displayValue;
-            
-            if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
+
+            if (dsf.getDatasetFieldType().getFieldType().equals(FieldType.URL)) {
                 displayValue = formatURL(dsf.getDisplayValue(), dsf.getDisplayValue(), html);
                 if (optionalURLcount == 1) {
                     displayName = "URL";

@@ -4,216 +4,163 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:jsf="http://xmlns.jcp.org/jsf">
-    <h:head>
-    </h:head>
+      xmlns:jsf="http://xmlns.jcp.org/jsf" xmlns:o="http://omnifaces.org/ui"
+>
+<h:head>
+</h:head>
 
-    <h:body>
-        <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="thisPageTitle" value="#{bundle['dataverse.search.advancedSearch']} - #{AdvancedSearchPage.dataverse.name}"/>
-            <ui:param name="pageTitle" value="#{thisPageTitle}"/>
-            <ui:param name="dataverse" value="#{AdvancedSearchPage.dataverse}"/>
-            <ui:param name="ownerId" value="#{DataversePage.ownerId}"/>
-            <ui:define name="body">
-                <f:metadata>
-                    <f:viewAction action="#{AdvancedSearchPage.init}"/>
-                    <f:viewParam name="dataverseIdentifier" value="#{AdvancedSearchPage.dataverseIdentifier}"/>
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(AdvancedSearchPage.dataverse, bundle['dataverse.search.advancedSearch'])}"/>
-                </f:metadata>
-                <!-- Search Panel -->
-                <div class="panel-group">
-                    <h:form id="advancedSearchForm">
-                        <p:focus/>
-                        <div class="button-block margin-bottom">
-                            <p:commandButton value="#{bundle.find}" action="#{AdvancedSearchPage.find()}"/>
+<h:body>
+    <ui:composition template="/dataverse_template.xhtml">
+        <ui:param name="thisPageTitle"
+                  value="#{bundle['dataverse.search.advancedSearch']} - #{AdvancedSearchPage.dataverse.name}"/>
+        <ui:param name="pageTitle" value="#{thisPageTitle}"/>
+        <ui:param name="dataverse" value="#{AdvancedSearchPage.dataverse}"/>
+        <ui:param name="ownerId" value="#{DataversePage.ownerId}"/>
+        <ui:define name="body">
+            <f:metadata>
+                <o:importConstants type="edu.harvard.iq.dataverse.search.SearchFieldType" var="fieldTypeEnums"/>
+                <f:viewAction action="#{AdvancedSearchPage.init}"/>
+                <f:viewParam name="dataverseIdentifier" value="#{AdvancedSearchPage.dataverseIdentifier}"/>
+                <f:viewAction
+                        action="#{dataverseHeaderFragment.initBreadcrumbs(AdvancedSearchPage.dataverse, bundle['dataverse.search.advancedSearch'])}"/>
+            </f:metadata>
+            <!-- Search Panel -->
+            <div class="panel-group">
+                <h:form id="advancedSearchForm">
+                    <p:focus/>
+                    <div class="button-block margin-bottom">
+                        <p:commandButton value="#{bundle.find}" action="#{AdvancedSearchPage.find()}"/>
+                    </div>
+                    <!-- Dataverses Block -->
+                    <div class="panel panel-default">
+                        <div data-toggle="collapse" data-target="#panelCollapseDataversesFieldList"
+                             class="panel-heading">
+                            <h:outputText
+                                    value="#{AdvancedSearchPage.dataversesSearchBlock.blockDisplayName}"/> &#160;<span
+                                class="glyphicon glyphicon-chevron-up"/>
                         </div>
-                        <div class="panel panel-default">
-                            <div data-toggle="collapse" data-target="#panelCollapseDataversesFieldList" class="panel-heading">
-                                <h:outputText value="#{bundle['advanced.search.header.dataverses']}"/> &#160;<span class="glyphicon glyphicon-chevron-up"/>
-                            </div>
-                            <div id="panelCollapseDataversesFieldList" class="panel-body form-horizontal collapse in">
+                        <div id="panelCollapseDataversesFieldList" class="panel-body form-horizontal collapse in">
+                            <ui:repeat value="#{AdvancedSearchPage.dataversesSearchBlock.searchFields}"
+                                       var="searchField">
                                 <div class="form-group">
                                     <label class="col-sm-4 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.dataverses.name.tip']}">
-                                            #{bundle.name}
+                                        <span data-toggle="tooltip" data-placement="auto right"
+                                              class="tooltiplabel text-info"
+                                              data-original-title="#{searchField.description}">
+                                            #{searchField.displayName}
                                         </span>
                                     </label>
                                     <div class="col-sm-6">
-                                        <p:inputText id="dvFieldName" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldName}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.identifier.title']}">
-                                            #{bundle.identifier}
-                                        </span>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <p:inputText id="dvFieldAlias" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldAlias}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.dataverses.affiliation.tip']}">
-                                            #{bundle.affiliation}
-                                        </span>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <p:inputText id="dvFieldAffiliation" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldAffiliation}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.dataverses.description.tip']}">
-                                            #{bundle.description}
-                                        </span>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <p:inputText id="dvFieldDescription" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldDescription}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.dataverses.subject.tip']}">
-                                            #{bundle.subject}
-                                        </span>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <div class="ui-inputfield form-control select-scroll-block">
-                                            <p:selectManyCheckbox value="#{AdvancedSearchPage.dvFieldSubject}" layout="pageDirection">
-                                                <f:selectItems value="#{AdvancedSearchPage.dvFieldSubjectValues}" var="cvv"
-                                                               itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv.strValue}"/>
+                                        <p:inputText id="dvFieldName" styleClass="form-control"
+                                                     rendered="#{searchField.searchFieldType == fieldTypeEnums.TEXT}"
+                                                     value="#{searchField.fieldValue}"/>
+
+                                        <div class="ui-inputfield form-control select-scroll-block"
+                                             jsf:rendered="#{searchField.searchFieldType == fieldTypeEnums.CHECKBOX}">
+                                            <p:selectManyCheckbox value="#{searchField.checkedFieldValues}"
+                                                                  layout="pageDirection">
+                                                <f:selectItems value="#{searchField.checkboxLabelAndValue}"
+                                                               var="cvs"
+                                                               itemLabel="#{cvs._1()}"
+                                                               itemValue="#{cvs._2()}"/>
                                             </p:selectManyCheckbox>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </ui:repeat>
                         </div>
+                    </div>
 
-                        <ui:repeat value="#{AdvancedSearchPage.metadataBlocks}" var="mdb" varStatus="status">
-                            <div class="panel panel-default" jsf:rendered="#{not empty AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}">
-                                <div data-toggle="collapse" data-target="#panelCollapseCitationFieldList#{mdb.id}" class="panel-heading">
-                                    <h:outputText value="#{bundle['advanced.search.header.datasets']}: #{mdb.localeDisplayName}"/> &#160;<span class="glyphicon #{status.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
-                                </div>
-                                <div id="panelCollapseCitationFieldList#{mdb.id}" class="collapse #{status.first?'in':''} panel-body form-horizontal">
-                                    <ui:repeat value="#{AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}" var="item">
-                                        <div class="form-group">
-                                            <label class="col-sm-4 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{item.localeDescription}">
+                    <ui:repeat value="#{AdvancedSearchPage.metadataSearchBlocks}" var="mdb" varStatus="status">
+                        <div class="panel panel-default"
+                             jsf:rendered="#{not empty mdb}">
+                            <div data-toggle="collapse"
+                                 data-target="#panelCollapseCitationFieldList#{status.index}"
+                                 class="panel-heading">
+                                <h:outputText
+                                        value="#{bundle['advanced.search.header.datasets']}: #{mdb.blockDisplayName}"/> &#160;<span
+                                    class="glyphicon #{status.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
+                            </div>
+                            <div id="panelCollapseCitationFieldList#{status.index}"
+                                 class="collapse #{status.first?'in':''} panel-body form-horizontal">
+
+                                <ui:repeat value="#{mdb.searchFields}"
+                                           var="item">
+
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">
+                                                <span data-toggle="tooltip" data-placement="auto right"
+                                                      class="tooltiplabel text-info"
+                                                      data-original-title="#{item.description}">
                                                     #{item.displayName}
                                                 </span>
-                                            </label>
-                                            <div class="col-sm-6">
-                                                <p:inputText id="searchValue" styleClass="form-control" value="#{item.searchValue}" rendered="#{empty item.controlledVocabularyValues}"/>
-                                                <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{!empty item.controlledVocabularyValues}">
-                                                    <p:selectManyCheckbox value="#{item.listValues}" layout="pageDirection">
-                                                        <f:selectItems value="#{item.controlledVocabularyValues}" var="cvs"
-                                                                       itemLabel="#{cvs.localeStrValue}" itemValue="#{cvs.strValue}"/>
-                                                    </p:selectManyCheckbox>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </ui:repeat>
-                                    <ui:fragment rendered="#{mdb.id == '1'}">
-                                        <div class="form-group">
-                                            <label class="col-sm-4 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.publicationYear.tip']}">
-                                                    #{bundle['dataset.metadata.publicationYear']}
-                                                </span>
-                                            </label>
-                                            <div class="col-sm-6">
-                                                <p:inputText id="dvFieldNamez" styleClass="form-control" value="#{AdvancedSearchPage.dsPublicationDate}"/>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="col-sm-4 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.persistentId.tip']}">
-                                                    #{bundle['dataset.metadata.persistentId']}
-                                                </span>
-                                            </label>
-                                            <div class="col-sm-6">
-                                                <p:inputText id="dsPersistentIdentifier" styleClass="form-control" value="#{AdvancedSearchPage.dsPersistentId}"/>
-                                            </div>
-                                        </div>
-                                    </ui:fragment>
-                                </div>
-                            </div>
-                        </ui:repeat>
+                                        </label>
 
-                        <div class="panel panel-default">
-                            <div data-toggle="collapse" data-target="#panelCollapseFilesFieldList" class="panel-heading">
-                                <h:outputText value="#{bundle['advanced.search.header.files']}"/> &#160;<span class="glyphicon glyphicon-chevron-up"/>
-                            </div>
-                            <div id="panelCollapseFilesFieldList" class="panel-body form-horizontal collapse in">
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.files.name.tip']}">
-                                            #{bundle.name}
-                                        </span>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <p:inputText id="fileFieldName" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldName}"/>
+                                        <div class="col-sm-6">
+                                            <p:inputText id="stringSearchValue" styleClass="form-control"
+                                                         value="#{item.fieldValue}"
+                                                         rendered="#{item.searchFieldType == fieldTypeEnums.TEXT}"/>
+                                            <div>
+                                                <p:inputNumber id="rangeSearchMinimum" style="padding-right: 5px"
+                                                               placeholder="#{bundle['advanced.search.metadata.from']}"
+                                                               value="#{item.minimum}"
+                                                               rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"/>
+                                                <p:outputLabel for="rangeSearchMaximum"
+                                                               value="&#8212;"
+                                                               rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"/>
+                                                <p:inputNumber id="rangeSearchMaximum" style="padding-left: 5px"
+                                                               placeholder="#{bundle['advanced.search.metadata.to']}"
+                                                               value="#{item.maximum}"
+                                                               rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"/>
+                                            </div>
+                                            <div class="ui-inputfield form-control select-scroll-block"
+                                                 jsf:rendered="#{item.searchFieldType == fieldTypeEnums.CHECKBOX}">
+                                                <p:selectManyCheckbox value="#{item.checkedFieldValues}"
+                                                                      layout="pageDirection">
+                                                    <f:selectItems value="#{item.checkboxLabelAndValue}"
+                                                                   var="checkBoxTuple"
+                                                                   itemLabel="#{checkBoxTuple._1()}"
+                                                                   itemValue="#{checkBoxTuple._2()}"/>
+                                                </p:selectManyCheckbox>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.files.description.tip']}">
-                                            #{bundle.description}
-                                        </span>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <p:inputText id="fileFieldDescription" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldDescription}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.files.fileType.tip']}">
-                                            #{bundle['advanced.search.files.fileType']}
-                                        </span>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <p:inputText id="fileFieldFiletype" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldFiletype}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.files.persistentId.tip']}">
-                                            #{bundle['advanced.search.files.persistentId']}
-                                        </span>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <p:inputText id="fileFieldPersistentId" styleClass="form-control" value="#{AdvancedSearchPage.filePersistentId}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.files.variableName.tip']}">
-                                            #{bundle['advanced.search.files.variableName']}
-                                        </span>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <p:inputText id="fileFieldVariableName" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldVariableName}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-4 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['advanced.search.files.variableLabel.tip']}">
-                                            #{bundle['advanced.search.files.variableLabel']}
-                                        </span>
-                                    </label>
-                                    <div class="col-sm-6">
-                                        <p:inputText id="fileFieldVariableLabel" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldVariableLabel}"/>
-                                    </div>
-                                </div>
+                                </ui:repeat>
                             </div>
                         </div>
+                    </ui:repeat>
 
-                        <div class="button-block">
-                            <p:commandButton value="#{bundle.find}" action="#{AdvancedSearchPage.find()}"/>
+                    <div class="panel panel-default">
+                        <div data-toggle="collapse" data-target="#panelCollapseFilesFieldList" class="panel-heading">
+                            <h:outputText value="#{AdvancedSearchPage.filesSearchBlock.blockDisplayName}"/> &#160;<span
+                                class="glyphicon glyphicon-chevron-up"/>
                         </div>
-                    </h:form>
-                </div>
-            </ui:define>
-        </ui:composition>
-    </h:body>
+                        <div id="panelCollapseFilesFieldList" class="panel-body form-horizontal collapse in">
+                            <ui:repeat value="#{AdvancedSearchPage.filesSearchBlock.searchFields}"
+                                       var="fileSearchFields">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right"
+                                              class="tooltiplabel text-info"
+                                              data-original-title="#{fileSearchFields.description}">
+                                            #{fileSearchFields.displayName}
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-6">
+                                        <p:inputText id="fileFieldName" styleClass="form-control"
+                                                     value="#{fileSearchFields.fieldValue}"/>
+                                    </div>
+                                </div>
+                            </ui:repeat>
+                        </div>
+                    </div>
+
+                    <div class="button-block">
+                        <p:commandButton value="#{bundle.find}" action="#{AdvancedSearchPage.find()}"/>
+                    </div>
+                </h:form>
+            </div>
+        </ui:define>
+    </ui:composition>
+</h:body>
 </html>

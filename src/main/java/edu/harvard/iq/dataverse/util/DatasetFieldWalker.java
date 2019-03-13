@@ -5,13 +5,13 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.FieldType;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.logging.Logger;
 
 /**
@@ -83,7 +83,7 @@ public class DatasetFieldWalker {
             
         } else if ( datasetFieldType.isPrimitive() ) {
             for ( DatasetFieldValue pv : sort(fld.getDatasetFieldValues(), DatasetFieldValue.DisplayOrder) ) {
-                if (settingsService != null && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false) && DatasetFieldType.FieldType.EMAIL.equals(pv.getDatasetField().getDatasetFieldType().getFieldType())) {
+                if (settingsService != null && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false) && FieldType.EMAIL.equals(pv.getDatasetField().getDatasetFieldType().getFieldType())) {
                     continue;
                 }
                 l.primitiveValue(pv);

@@ -5,16 +5,16 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.FieldType;
 import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.workflow.Workflow;
-import javax.json.JsonObject;
 import org.junit.Test;
 
+import javax.json.JsonObject;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -38,7 +38,7 @@ public class BriefJsonPrinterTest {
         dsv.setVersionState(DatasetVersion.VersionState.DEACCESSIONED);
         
         DatasetField titleFld = new DatasetField();
-        titleFld.setDatasetFieldType( new DatasetFieldType(DatasetFieldConstant.title, DatasetFieldType.FieldType.TEXT, false) );
+        titleFld.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.title, FieldType.TEXT, false));
         titleFld.setSingleValue("Dataset Title");
         dsv.setDatasetFields( Collections.singletonList(titleFld) );
         

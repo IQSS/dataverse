@@ -5,10 +5,10 @@ import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
+import edu.harvard.iq.dataverse.FieldType;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -130,9 +130,9 @@ public class MocksFactory {
         mtb.setDisplayName("Test Block #1-" + retVal.getId());
         mtb.setId(nextId());
         mtb.setDatasetFieldTypes( Arrays.asList(
-                new DatasetFieldType("JustAString", DatasetFieldType.FieldType.TEXT, false),
-                new DatasetFieldType("ManyStrings", DatasetFieldType.FieldType.TEXT, true),
-                new DatasetFieldType("AnEmail", DatasetFieldType.FieldType.EMAIL, false)
+                new DatasetFieldType("JustAString", FieldType.TEXT, false),
+                new DatasetFieldType("ManyStrings", FieldType.TEXT, true),
+                new DatasetFieldType("AnEmail", FieldType.EMAIL, false)
         ));
         
         retVal.setMetadataBlocks( Arrays.asList(mtb) );

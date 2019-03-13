@@ -9,16 +9,9 @@ package edu.harvard.iq.dataverse;
  *
  * @author skraffmiller
  */
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -33,7 +26,16 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import org.apache.commons.lang.StringUtils;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 @Entity
 @ValidateDatasetFieldType
@@ -637,10 +639,10 @@ public class DatasetField implements Serializable {
         if (this.getDatasetFieldType() == null || this.getDatasetFieldType().getFieldType() == null){
             return false;
         }
-        
-        if (this.datasetFieldType.getFieldType().equals(DatasetFieldType.FieldType.TEXT)){
+
+        if (this.datasetFieldType.getFieldType().equals(FieldType.TEXT)) {
             return true;
-        } else if (this.datasetFieldType.getFieldType().equals(DatasetFieldType.FieldType.TEXTBOX)){
+        } else if (this.datasetFieldType.getFieldType().equals(FieldType.TEXTBOX)) {
             return true;
         }
     

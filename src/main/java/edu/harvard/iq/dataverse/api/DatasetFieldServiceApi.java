@@ -5,24 +5,22 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.ControlledVocabularyValueServiceBean;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
+import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.FieldType;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import org.apache.commons.lang.StringUtils;
+
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Consumes;
@@ -31,14 +29,18 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
-import org.apache.commons.lang.StringUtils;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
-import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import javax.ws.rs.core.Response.Status;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.persistence.NoResultException;
-import javax.persistence.TypedQuery;
-import javax.ws.rs.core.Response.Status;
+
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
 
 @Path("admin/datasetfield")
 public class DatasetFieldServiceApi extends AbstractApiBean {

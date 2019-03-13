@@ -5,14 +5,16 @@
  */
 package edu.harvard.iq.dataverse;
 
-import javax.validation.ConstraintValidatorContext;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.mockito.Mockito;
+
+import javax.validation.ConstraintValidatorContext;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -68,7 +70,7 @@ public class DatasetFieldValidatorTest {
         value.setDatasetVersion(datasetVersion);
         
         DatasetFieldValue dfv = new DatasetFieldValue();
-        DatasetFieldType dft = new DatasetFieldType("test", DatasetFieldType.FieldType.TEXT, false);
+        DatasetFieldType dft = new DatasetFieldType("test", FieldType.TEXT, false);
         dft.setRequired(true);
         value.setDatasetFieldType(dft);
         value.setSingleValue("");

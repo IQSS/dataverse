@@ -25,9 +25,9 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.MissingResourceException;
 
 
 /**
@@ -46,13 +46,7 @@ import java.util.MissingResourceException;
 @Table(indexes = {@Index(columnList="metadatablock_id"),@Index(columnList="parentdatasetfieldtype_id")})
 public class DatasetFieldType implements Serializable, Comparable<DatasetFieldType> {
 
-    /**
-     * The set of possible metatypes of the field. Used for validation and layout.
-     */
-    public enum FieldType {
-        TEXT, TEXTBOX, DATE, EMAIL, URL, FLOAT, INT, NONE
-    };    
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

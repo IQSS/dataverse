@@ -262,19 +262,19 @@
     <field name="contributorType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="controlOperations" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="country" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Depth" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="coverage.ObjectCount" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="coverage.ObjectDensity" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="coverage.Depth" type="tfloat" multiValued="false" stored="true" indexed="true"/>
+    <field name="coverage.ObjectCount" type="tint" multiValued="false" stored="true" indexed="true"/>
+    <field name="coverage.ObjectDensity" type="tfloat" multiValued="false" stored="true" indexed="true"/>
     <field name="coverage.Polarization" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="coverage.Redshift.MaximumValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Redshift.MinimumValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.RedshiftValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.SkyFraction" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="coverage.Redshift.MaximumValue" type="tfloat" multiValued="true" stored="true" indexed="true"/>
+    <field name="coverage.Redshift.MinimumValue" type="tfloat" multiValued="true" stored="true" indexed="true"/>
+    <field name="coverage.RedshiftValue" type="tfloat" multiValued="true" stored="true" indexed="true"/>
+    <field name="coverage.SkyFraction" type="tfloat" multiValued="false" stored="true" indexed="true"/>
     <field name="coverage.Spatial" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="coverage.Spectral.Bandpass" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Spectral.CentralWavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Spectral.MaximumWavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="coverage.Spectral.MinimumWavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="coverage.Spectral.CentralWavelength" type="tfloat" multiValued="true" stored="true" indexed="true"/>
+    <field name="coverage.Spectral.MaximumWavelength" type="tfloat" multiValued="true" stored="true" indexed="true"/>
+    <field name="coverage.Spectral.MinimumWavelength" type="tfloat" multiValued="true" stored="true" indexed="true"/>
     <field name="coverage.Spectral.Wavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="coverage.Temporal" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="coverage.Temporal.StartTime" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -399,7 +399,7 @@
     <field name="relatedDatasets" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="relatedMaterial" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="researchInstrument" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="resolution.Redshift" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="resolution.Redshift" type="tfloat" multiValued="false" stored="true" indexed="true"/>
     <field name="resolution.Spatial" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="resolution.Spectral" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="resolution.Temporal" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -431,7 +431,7 @@
     <field name="studyFactorType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="subject" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="subtitle" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="targetSampleActualSize" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="targetSampleActualSize" type="tint" multiValued="false" stored="true" indexed="true"/>
     <field name="targetSampleSize" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="targetSampleSizeFormula" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="timeMethod" type="text_en" multiValued="false" stored="true" indexed="true"/>

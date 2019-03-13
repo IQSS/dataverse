@@ -8,7 +8,13 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.assertEquals;
@@ -386,7 +392,7 @@ public class DataCitationTest {
 
     private DatasetField createAuthorField(String value) {
         DatasetField author = new DatasetField();
-        author.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.author, DatasetFieldType.FieldType.TEXT, false));
+        author.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.author, FieldType.TEXT, false));
         List<DatasetFieldCompoundValue> compoundValues = new LinkedList<>();
         DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
         compoundValue.setParentDatasetField(author);
@@ -405,7 +411,7 @@ public class DataCitationTest {
     DatasetField constructPrimitive(String fieldName, String value) {
         DatasetField field = new DatasetField();
         field.setDatasetFieldType(
-           new DatasetFieldType(fieldName, DatasetFieldType.FieldType.TEXT, false));
+                new DatasetFieldType(fieldName, FieldType.TEXT, false));
         field.setDatasetFieldValues(
            Collections.singletonList(
               new DatasetFieldValue(field, value)));
