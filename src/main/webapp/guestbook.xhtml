@@ -4,199 +4,234 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-    <h:head>
-    </h:head>
+<h:head>
+</h:head>
 
-    <h:body>
-        <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : GuestbookPage.guestbook.name} - #{GuestbookPage.guestbook.dataverse.name} Dataverse"/>
-            <ui:param name="dataverse" value="#{GuestbookPage.guestbook.dataverse}"/>
-            <ui:param name="guestbook" value="#{GuestbookPage.guestbook}"/>
-            <ui:param name="showMessagePanel" value="#{true}"/>
-            <ui:define name="body">
-                <f:metadata>
-                    <f:viewParam name="id" value="#{GuestbookPage.guestbookId}"/>
-                    <f:viewParam name="ownerId" value="#{GuestbookPage.ownerId}"/>
-                    <f:viewParam name="sourceId" value="#{GuestbookPage.sourceId}"/>
-                    <f:viewParam name="editMode" value="#{GuestbookPage.editMode}"/>
-                    <f:viewAction action="#{GuestbookPage.init}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(GuestbookPage.dataverse, (GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : GuestbookPage.guestbook.name))}"/>
-                </f:metadata>
+<h:body>
+    <ui:composition template="/dataverse_template.xhtml">
+        <ui:param name="pageTitle"
+                  value="#{GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : GuestbookPage.guestbook.name} - #{GuestbookPage.guestbook.dataverse.name} Dataverse"/>
+        <ui:param name="dataverse" value="#{GuestbookPage.guestbook.dataverse}"/>
+        <ui:param name="guestbook" value="#{GuestbookPage.guestbook}"/>
+        <ui:param name="showMessagePanel" value="#{true}"/>
+        <ui:define name="body">
+            <f:metadata>
+                <f:viewParam name="id" value="#{GuestbookPage.guestbookId}"/>
+                <f:viewParam name="ownerId" value="#{GuestbookPage.ownerId}"/>
+                <f:viewParam name="sourceId" value="#{GuestbookPage.sourceId}"/>
+                <f:viewParam name="editMode" value="#{GuestbookPage.editMode}"/>
+                <f:viewAction action="#{GuestbookPage.init}"/>
+                <f:viewAction
+                        action="#{dataverseHeaderFragment.initBreadcrumbs(GuestbookPage.dataverse, (GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : GuestbookPage.guestbook.name))}"/>
+            </f:metadata>
 
-                <h:form id="guestbookForm">
-                    <!-- Header / Button Panel -->
-                    <ui:fragment rendered="#{empty GuestbookPage.editMode}">
-                        <!-- View mode -->
-                        <div class="row form-horizontal">
-                            <div class="col-xs-6 form-group">
-                                <label class="col-sm-3 control-label" for="guestbookNameStatic">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.guestbook.name.tip']}">
+            <h:form id="guestbookForm">
+                <!-- Header / Button Panel -->
+                <ui:fragment rendered="#{empty GuestbookPage.editMode}">
+                    <!-- View mode -->
+                    <div class="row form-horizontal">
+                        <div class="col-xs-6 form-group">
+                            <label class="col-sm-3 control-label" for="guestbookNameStatic">
+                                    <span data-toggle="tooltip" data-placement="auto right"
+                                          class="tooltiplabel text-info"
+                                          data-original-title="#{bundle['dataset.manageGuestbooks.guestbook.name.tip']}">
                                         #{bundle['dataset.manageGuestbooks.guestbook.name']}
                                     </span>
-                                </label>
-                                <div class="col-sm-9">
-                                    <p class="form-control-static">
-                                        <h:outputText value="#{GuestbookPage.guestbook.name}"/>
-                                    </p>
-                                </div>
+                            </label>
+                            <div class="col-sm-9">
+                                <p class="form-control-static">
+                                    <h:outputText value="#{GuestbookPage.guestbook.name}"/>
+                                </p>
                             </div>
                         </div>
-                    </ui:fragment>
+                    </div>
+                </ui:fragment>
 
-                    <!-- Tabs -->
-                    <div class="form-horizontal" jsf:rendered="#{!empty GuestbookPage.editMode}">
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label" for="guestbookName">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.guestbook.name.tip']}">
-                                    #{bundle['dataset.manageGuestbooks.guestbook.name']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
+                <!-- Tabs -->
+                <div class="form-horizontal" jsf:rendered="#{!empty GuestbookPage.editMode}">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" for="guestbookName">
+                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info"
+                                      data-original-title="#{bundle['dataset.manageGuestbooks.guestbook.name.tip']}">
+                                    #{bundle['dataset.manageGuestbooks.guestbook.name']} <span
+                                        class="glyphicon glyphicon-asterisk text-danger"
+                                        title="#{bundle.requiredField}"></span>
                                 </span>
-                            </label>
-                            <div class="col-sm-6">
-                                <p:inputText id="guestbookName" styleClass="form-control" value="#{GuestbookPage.guestbook.name}"/>
-                                <p:message for="guestbookName"/>
+                        </label>
+                        <div class="col-sm-6">
+                            <p:inputText id="guestbookName" styleClass="form-control"
+                                         value="#{GuestbookPage.guestbook.name}"/>
+                            <p:message for="guestbookName"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" for="dataCollected">
+                            #{bundle['dataset.manageGuestbooks.guestbook.dataCollected']}
+                        </label>
+                        <div class="col-sm-9">
+                            <p class="help-block">#{bundle['dataset.manageGuestbooks.guestbook.dataCollected.description']}</p>
+                            <div class="checkbox">
+                                <label jsf:for="nameRequiredCb">
+                                    <input type="checkbox" jsf:id="nameRequiredCb"
+                                           jsf:value="#{GuestbookPage.guestbook.nameRequired}"/> #{bundle.name}
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label jsf:for="emailRequiredCb">
+                                    <input type="checkbox" jsf:id="emailRequiredCb"
+                                           jsf:value="#{GuestbookPage.guestbook.emailRequired}"/> #{bundle.email}
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label jsf:for="institutionRequiredCb">
+                                    <input type="checkbox" jsf:id="institutionRequiredCb"
+                                           jsf:value="#{GuestbookPage.guestbook.institutionRequired}"/> #{bundle.institution}
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label jsf:for="positionRequiredCb">
+                                    <input type="checkbox" jsf:id="positionRequiredCb"
+                                           jsf:value="#{GuestbookPage.guestbook.positionRequired}"/> #{bundle.position}
+                                </label>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label" for="dataCollected">
-                                #{bundle['dataset.manageGuestbooks.guestbook.dataCollected']}
-                            </label>
-                            <div class="col-sm-9">
-                                <p class="help-block">#{bundle['dataset.manageGuestbooks.guestbook.dataCollected.description']}</p>
-                                <div class="checkbox">
-                                    <label jsf:for="nameRequiredCb">
-                                      <input type="checkbox" jsf:id="nameRequiredCb" jsf:value="#{GuestbookPage.guestbook.nameRequired}"/> #{bundle.name}
-                                    </label>
-                                </div>
-                                <div class="checkbox">
-                                    <label jsf:for="emailRequiredCb">
-                                      <input type="checkbox" jsf:id="emailRequiredCb" jsf:value="#{GuestbookPage.guestbook.emailRequired}"/> #{bundle.email}
-                                    </label>
-                                </div>
-                                <div class="checkbox">
-                                    <label jsf:for="institutionRequiredCb">
-                                      <input type="checkbox" jsf:id="institutionRequiredCb" jsf:value="#{GuestbookPage.guestbook.institutionRequired}"/> #{bundle.institution}
-                                    </label>
-                                </div>
-                                <div class="checkbox">
-                                    <label jsf:for="positionRequiredCb">
-                                      <input type="checkbox" jsf:id="positionRequiredCb" jsf:value="#{GuestbookPage.guestbook.positionRequired}"/> #{bundle.position}
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
-                                #{bundle['dataset.manageGuestbooks.guestbook.customQuestions']}
-                            </label>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
+                            #{bundle['dataset.manageGuestbooks.guestbook.customQuestions']}
+                        </label>
 
-                            <!-- Compound fields -->
-                            <div class="col-sm-9">
-                                <p class="help-block">#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.description']}</p>
-                                <p:fragment id="customQuestions" rendered="#{showMessagePanel}">
-                                    <ui:repeat value="#{GuestbookPage.guestbook.customQuestions}" var="cq" varStatus="valCount">
-                                        <div class="form-group">
-                                            <!-- Sub Fields -->
-                                            <div class="col-sm-9">
-                                                <div class="col-sm-3">
-                                                    <label class="control-label" jsf:for="questionOptions">
-                                                        #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType']}
-                                                    </label>
+                        <!-- Compound fields -->
+                        <div class="col-sm-9">
+                            <p class="help-block">#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.description']}</p>
+                            <p:fragment id="customQuestions" rendered="#{showMessagePanel}">
+                                <ui:repeat value="#{GuestbookPage.guestbook.customQuestions}" var="cq"
+                                           varStatus="valCount">
+                                    <div class="form-group">
+                                        <!-- Sub Fields -->
+                                        <div class="col-sm-9">
+                                            <div class="col-sm-3">
+                                                <label class="control-label" jsf:for="questionOptions">
+                                                    #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType']}
+                                                </label>
+                                                <div>
                                                     <div>
-                                                        <div>
-                                                            <h:selectOneMenu id="questionOptions" styleClass="form-control" value="#{cq.questionType}"
-                                                                             onchange="#{GuestbookPage.toggleQuestionType(cq)}">
-                                                                <f:selectItem itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.text']}" itemValue="text" />
-                                                                <f:selectItem itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.multiple']}" itemValue="options" />
-                                                                <p:ajax update=":guestbookForm:customQuestions" />
-                                                                <f:param name="SKIP_VALIDATION" value="true"/>
-                                                            </h:selectOneMenu>
-                                                        </div>
+                                                        <h:selectOneMenu id="questionOptions" styleClass="form-control"
+                                                                         value="#{cq.questionType}"
+                                                                         onchange="#{GuestbookPage.toggleQuestionType(cq)}">
+                                                            <f:selectItem
+                                                                    itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.text']}"
+                                                                    itemValue="text"/>
+                                                            <f:selectItem
+                                                                    itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.multiple']}"
+                                                                    itemValue="options"/>
+                                                            <p:ajax update=":guestbookForm:customQuestions"/>
+                                                            <f:param name="SKIP_VALIDATION" value="true"/>
+                                                        </h:selectOneMenu>
                                                     </div>
                                                 </div>
-                                                <div class="col-sm-9">
-                                                    <label class="control-label" jsf:for="questionText">
-                                                        #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionText']}
-                                                    </label>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <label class="control-label" jsf:for="questionText">
+                                                    #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionText']}
+                                                </label>
+                                                <div>
                                                     <div>
-                                                        <div>
-                                                            <p:inputText id="questionText" styleClass="form-control" value="#{cq.questionString}">                                                                    
+                                                        <p:inputText id="questionText" styleClass="form-control"
+                                                                     value="#{cq.questionString}">
+                                                            <f:validateBean disabled="#{param['SKIP_VALIDATION']}"/>
+                                                        </p:inputText>
+                                                        <p:message for="questionText" display="text"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-offset-3 col-sm-9"
+                                                 jsf:rendered="#{cq.questionType eq 'options'}">
+                                                <label class="control-label" jsf:for="questionResponseOptions">
+                                                    #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.responseOptions']}
+                                                </label>
+                                                <ui:repeat value="#{cq.customQuestionValues}" varStatus="resCount"
+                                                           var="value">
+                                                    <div class="form-group">
+                                                        <div class="col-sm-8">
+                                                            <p:inputText id="responseText" styleClass="form-control"
+                                                                         value="#{value.valueString}">
                                                                 <f:validateBean disabled="#{param['SKIP_VALIDATION']}"/>
                                                             </p:inputText>
-                                                            <p:message for="questionText" display="text"/>
+                                                            <p:message for="responseText" display="text"/>
+                                                        </div>
+                                                        <div class="col-sm-4 field-add-delete">
+                                                            <p:commandLink
+                                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip nolabel-field-btn"
+                                                                    title="#{bundle.add}"
+                                                                    update=":guestbookForm:customQuestions"
+                                                                    oncomplete="javascript:bind_bsui_components();"
+                                                                    actionListener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}">
+                                                                <f:param name="SKIP_VALIDATION" value="true"/>
+                                                                <span class="glyphicon glyphicon-plus no-text"/>
+                                                            </p:commandLink>
+                                                            <p:commandLink
+                                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip nolabel-field-btn"
+                                                                    title="#{bundle.delete}"
+                                                                    rendered="#{cq.customQuestionValues.size() > 1}"
+                                                                    update=":guestbookForm:customQuestions"
+                                                                    oncomplete="javascript:bind_bsui_components();"
+                                                                    actionListener="#{GuestbookPage.removeCustomQuestionValue(cq, resCount.index)}">
+                                                                <f:param name="SKIP_VALIDATION" value="true"/>
+                                                                <span class="glyphicon glyphicon-minus no-text"/>
+                                                            </p:commandLink>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div class="col-sm-offset-3 col-sm-9" jsf:rendered="#{cq.questionType eq 'options'}">
-                                                    <label class="control-label" jsf:for="questionResponseOptions">
-                                                        #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.responseOptions']}
-                                                    </label>
-                                                    <ui:repeat value="#{cq.customQuestionValues}" varStatus="resCount" var="value">
-                                                        <div class="form-group">
-                                                            <div class="col-sm-8">
-                                                                <p:inputText id="responseText" styleClass="form-control" value="#{value.valueString}">
-                                                                    <f:validateBean disabled="#{param['SKIP_VALIDATION']}"/>
-                                                                </p:inputText>
-                                                                <p:message for="responseText" display="text"/>
-                                                            </div>
-                                                            <div class="col-sm-4 field-add-delete">
-                                                                <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip nolabel-field-btn" 
-                                                                               title="#{bundle.add}">
-                                                                    <p:ajax update=":guestbookForm:customQuestions" oncomplete="javascript:bind_bsui_components();" listener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}" />
-                                                                    <f:param name="SKIP_VALIDATION" value="true"/>
-                                                                    <span class="glyphicon glyphicon-plus no-text"/>
-                                                                </p:commandLink>
-                                                                <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip nolabel-field-btn" 
-                                                                               title="#{bundle.delete}" rendered="#{cq.customQuestionValues.size() > 1}">
-                                                                    <p:ajax update=":guestbookForm:customQuestions" oncomplete="javascript:bind_bsui_components();" listener="#{GuestbookPage.removeCustomQuestionValue(cq, resCount.index)}" />
-                                                                    <f:param name="SKIP_VALIDATION" value="true"/>
-                                                                    <span class="glyphicon glyphicon-minus no-text"/>
-                                                                </p:commandLink>
-                                                            </div>
-                                                        </div>
-                                                    </ui:repeat>
-                                                </div>
-                                                <div class="col-sm-9 checkbox">
-                                                    <label jsf:for="cqRequiredCb">
-                                                      <input type="checkbox" jsf:id="cqRequiredCb" jsf:value="#{cq.required}"/> #{bundle.requiredField}
-                                                    </label>
-                                                </div>
+                                                </ui:repeat>
                                             </div>
-                                            <div class="col-sm-3 field-add-delete">
-                                                <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn"
-                                                               title="#{bundle.add}">
-                                                    <p:ajax update=":guestbookForm:customQuestions" oncomplete="javascript:bind_bsui_components();" listener="#{GuestbookPage.addCustomQuestion(valCount.index + 1 )}" />
-                                                    <f:param name="SKIP_VALIDATION" value="true"/>
-                                                    <span class="glyphicon glyphicon-plus no-text"/>
-                                                </p:commandLink>
-                                                <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn" rendered="#{GuestbookPage.guestbook.customQuestions.size() > 1}"
-                                                               title="#{bundle.delete}">
-                                                    <p:ajax update=":guestbookForm:customQuestions" oncomplete="javascript:bind_bsui_components();" listener="#{GuestbookPage.removeCustomQuestion(valCount.index)}" />
-                                                    <f:param name="SKIP_VALIDATION" value="true"/>
-                                                    <span class="glyphicon glyphicon-minus no-text"/>
-                                                </p:commandLink>
+                                            <div class="col-sm-9 checkbox">
+                                                <label jsf:for="cqRequiredCb">
+                                                    <input type="checkbox" jsf:id="cqRequiredCb"
+                                                           jsf:value="#{cq.required}"/> #{bundle.requiredField}
+                                                </label>
                                             </div>
                                         </div>
-                                    </ui:repeat>
-                                </p:fragment>
-                            </div>
+                                        <div class="col-sm-3 field-add-delete">
+                                            <p:commandLink
+                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn"
+                                                    title="#{bundle.add}" update=":guestbookForm:customQuestions"
+                                                    oncomplete="javascript:bind_bsui_components();"
+                                                    actionListener="#{GuestbookPage.addCustomQuestion(valCount.index + 1 )}">
+                                                <f:param name="SKIP_VALIDATION" value="true"/>
+                                                <span class="glyphicon glyphicon-plus no-text"/>
+                                            </p:commandLink>
+                                            <p:commandLink
+                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn"
+                                                    rendered="#{GuestbookPage.guestbook.customQuestions.size() > 1}"
+                                                    title="#{bundle.delete}" update=":guestbookForm:customQuestions"
+                                                    oncomplete="javascript:bind_bsui_components();"
+                                                    actionListener="#{GuestbookPage.removeCustomQuestion(valCount.index)}">
+                                                <f:param name="SKIP_VALIDATION" value="true"/>
+                                                <span class="glyphicon glyphicon-minus no-text"/>
+                                            </p:commandLink>
+                                        </div>
+                                    </div>
+                                </ui:repeat>
+                            </p:fragment>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Create/Save Dataset Button Panel -->
-                    <div class="button-block" jsf:rendered="#{!empty GuestbookPage.editMode}">
-                        <h:commandButton type="submit" action="#{GuestbookPage.save()}" class="btn btn-default"
-                                         value="#{GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : bundle.saveChanges}">
-                            <f:param name="SKIP_VALIDATION" value="true"/>
-                        </h:commandButton>
-                        <h:button class="btn btn-default" value="#{bundle.cancel}" outcome="/manage-guestbooks.xhtml?dataverseId=#{GuestbookPage.dataverse.id}" />
-                    </div>
+                <!-- Create/Save Dataset Button Panel -->
+                <div class="button-block" jsf:rendered="#{!empty GuestbookPage.editMode}">
+                    <h:commandButton type="submit" action="#{GuestbookPage.save()}" class="btn btn-default"
+                                     value="#{GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : bundle.saveChanges}">
+                        <f:param name="SKIP_VALIDATION" value="true"/>
+                    </h:commandButton>
+                    <h:button class="btn btn-default" value="#{bundle.cancel}"
+                              outcome="/manage-guestbooks.xhtml?dataverseId=#{GuestbookPage.dataverse.id}"/>
+                </div>
 
-                </h:form>
-            </ui:define>
-        </ui:composition>
-    </h:body>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
 </html>
 
