@@ -43,7 +43,7 @@
                 <meta property="og:title" content="#{DatasetPage.title}" />
                 <meta property="og:type" content="article" />
                 <meta property="og:url" content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" />
-                <meta property="og:image" content="#{DatasetPage.dataverseSiteUrl.concat(resource['images/fav/favicon.ico'])}" />
+                <meta property="og:image" content="#{resource['images/fav/favicon.ico']}" />
                 <meta property="og:site_name" content="#{DatasetPage.publisher}" />
                 <meta property="og:description" content="#{(DatasetPage.description.length()>150 ? DatasetPage.description.substring(0,147).concat('...'): DatasetPage.description)}" />
                 <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
