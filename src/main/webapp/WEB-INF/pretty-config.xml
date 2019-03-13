@@ -7,6 +7,11 @@
         <view-id value="/dataverse.xhtml" />
     </url-mapping>
     
+    <url-mapping id="dataverseslash">
+        <pattern value="/dataverse/#{alias}/" />
+        <view-id value="/dataverse.xhtml" />
+    </url-mapping>
+    
     <url-mapping id="iframe">
         <pattern value="/iframe/#{alias}" />
         <view-id value="/iframe.xhtml" />
