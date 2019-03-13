@@ -18,11 +18,11 @@ public class ConfirmEmailUtilTest {
     public static class ConfirmEmailUtilParamTest {
 
         public String timeAsFriendlyString;
-        public int timeInSeconds;
+        public int timeInMinutes;
 
         public ConfirmEmailUtilParamTest(String timeAsFriendlyString, int timeInSeconds) {
             this.timeAsFriendlyString = timeAsFriendlyString;
-            this.timeInSeconds = timeInSeconds;
+            this.timeInMinutes = timeInSeconds;
         }
 
         @Parameters
@@ -30,10 +30,10 @@ public class ConfirmEmailUtilTest {
             return Arrays.asList(
                     new Object[][] { 
                         { "48 hours", 2880 }, 
-                        { "24 hours", 1440 }, 
-                        { "1.5 hours", 90 }, 
+                        { "24 hours", 1440 },
+                        { "2.75 hours", 165 },
                         { "2.5 hours", 150 },
-                        { "2.75 hours", 165 }, 
+                        { "1.5 hours", 90 }, 
                         { "1 hour", 60 }, 
                         { "30 minutes", 30 }, 
                         { "1 minute", 1 } 
@@ -43,7 +43,7 @@ public class ConfirmEmailUtilTest {
 
         @Test
         public void friendlyExpirationTimeTest() {
-            assertEquals(timeAsFriendlyString, ConfirmEmailUtil.friendlyExpirationTime(timeInSeconds));
+            assertEquals(timeAsFriendlyString, ConfirmEmailUtil.friendlyExpirationTime(timeInMinutes));
         }
     }
 
