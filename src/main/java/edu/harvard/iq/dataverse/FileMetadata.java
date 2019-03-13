@@ -33,6 +33,7 @@ import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import org.hibernate.validator.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
@@ -121,20 +122,9 @@ public class FileMetadata implements Serializable {
     }
 
     public void setDirectoryLabel(String directoryLabel) {
-        //Strip off beginning and ending \
+        //Strip off beginning and ending \ // - .
         if (directoryLabel != null) {
-            while (directoryLabel.startsWith("\\")) {
-                directoryLabel = directoryLabel.substring(1);
-            }
-            while (directoryLabel.endsWith("\\")) {
-                directoryLabel = directoryLabel.substring(0, directoryLabel.length() - 1);
-            }
-            while (directoryLabel.startsWith("/")) {
-                directoryLabel = directoryLabel.substring(1);
-            }
-            while (directoryLabel.endsWith("/")) {
-                directoryLabel = directoryLabel.substring(0, directoryLabel.length() - 1);
-            }
+            directoryLabel = StringUtil.sanitizeFileDirectory(directoryLabel);
         }
 
         this.directoryLabel = directoryLabel;

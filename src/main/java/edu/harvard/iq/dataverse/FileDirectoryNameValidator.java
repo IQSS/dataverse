@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.validation.ConstraintValidator;
@@ -28,30 +29,17 @@ public class FileDirectoryNameValidator implements ConstraintValidator<ValidateD
     }
     
     public static boolean isFileDirectoryNameValid(String value, ConstraintValidatorContext context) {
-        
+
         if (value == null || value.isEmpty()) {
             return true;
         }
-
-        while (value.startsWith("\\")) {
-            value = value.substring(1);
-        }
-        while (value.endsWith("\\")) {
-            value = value.substring(0, value.length() - 1);
-        }
-        while (value.startsWith("/")) {
-            value = value.substring(1);
-        }
-        while (value.endsWith("/")) {
-            value = value.substring(0, value.length() - 1);
-        }
-
+        value = StringUtil.sanitizeFileDirectory(value);
         String validCharacters = "([\\w-]*\\\\*/)*\\w*([\\w-.])+";
         validCharacters += "{1,60}";
         Pattern p = Pattern.compile(validCharacters);
         Matcher m = p.matcher(value);
         return m.matches();
-        
+
     }
     
 }

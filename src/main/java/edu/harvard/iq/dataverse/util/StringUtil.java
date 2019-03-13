@@ -180,6 +180,19 @@ public class StringUtil {
         }
     }
     
+    public static String sanitizeFileDirectory(String value){
+        
+        while (value.startsWith("\\") || value.startsWith("/") || value.startsWith("-") || value.startsWith(".")){
+            value = value.substring(1);
+        }
+        while (value.endsWith("\\") || value.endsWith("/") || value.endsWith("-") || value.endsWith(".")){
+            value = value.substring(0, value.length() - 1);
+        }
+        
+        return value;
+    }
+    
+    
     private static SecretKeySpec generateKeyFromString(final String secKey) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         byte[] key = (secKey).getBytes("UTF-8");
         MessageDigest sha = MessageDigest.getInstance("SHA-1");
