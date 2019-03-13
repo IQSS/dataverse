@@ -180,7 +180,7 @@ Metadata found in the header section of `Flexible Image Transport System (FITS) 
 Compressed Files
 ----------------
 
-Compressed files in zip format are unpacked automatically. If a .zip file fails to unpack for whatever reason, it will upload as is. If the number of files inside are more than a set limit (1,000 by default, configurable by the Administrator), you will get an error message and the .zip file will upload as is.
+Compressed files in .zip format are unpacked automatically. If a .zip file fails to unpack for whatever reason, it will upload as is. If the number of files inside are more than a set limit (1,000 by default, configurable by the Administrator), you will get an error message and the .zip file will upload as is.
 
 If the uploaded .zip file contains a folder structure, Dataverse will keep track of this structure. A file's location within this folder structure is displayed in the file metadata as the File Path. When you download the contents of the dataset, this folder structure will be preserved and files will appear in their original locations. 
 
@@ -217,7 +217,10 @@ If you restrict files, you will also prompted with a popup asking you to fill ou
 File Path
 ---------
 
-The file path is a text string which displays file organization and supports reproducibility. It is automatically populated with the file hierarchy directory structure for files deposited via a compressed zip file that contains sub-folders. It can also be manually added or edited on the Edit Files pg, just like any other metadata values. This value is saved as the ``DirectoryLabel`` and is used to preserve and recreate the directory structure for bundled downloads using the select checkboxes and Download button at the top of the file table.
+The File Path metadata field is Dataverse's way of representing a file's location in a folder structure. When a user uploads a .zip file containing a folder structure, Dataverse automatically fills in the File Path information for each file contained in the .zip. If a user downloads the full dataset or a selection of files from it, they will receive a folder structure with each file positioned according to its File Path.
+
+A file's File Path can be manually added or edited on the Edit Files page. Changing a file's File Path will change its location in the folder structure that is created when a user downloads the full dataset or a selection of files from it.
+
 
 File Tags
 ---------
