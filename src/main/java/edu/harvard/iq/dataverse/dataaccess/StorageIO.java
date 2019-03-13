@@ -38,8 +38,8 @@ import java.util.Iterator;
 import java.util.List;
 
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.methods.GetMethod;
+//import org.apache.commons.httpclient.Header;
+//import org.apache.commons.httpclient.methods.GetMethod;
 
 
 /**
@@ -84,21 +84,13 @@ public abstract class StorageIO<T extends DvObject> {
     }
 
     public abstract String getStorageLocation() throws IOException;
-    // do we need this method?
 
     // This method will return a Path, if the storage method is a 
     // local filesystem. Otherwise should throw an IOException. 
     public abstract Path getFileSystemPath() throws IOException;
-    
+        
     public abstract boolean exists() throws IOException; 
-
-    // This method will delete the physical file (object), if delete
-    // functionality is supported by the physical driver. 
-    // TODO: this method should throw something other than IOException 
-    // if delete functionality is not supported by the access driver!
-    // -- L.A. 4.0. beta
-    // (there is now a dedicated exception for this purpose: UnsupportedDataAccessOperationException,
-    // that extends IOException -- 4.6.2) 
+        
     public abstract void delete() throws IOException;
     
     // this method for copies a local Path (for ex., a
@@ -192,7 +184,7 @@ public abstract class StorageIO<T extends DvObject> {
     protected Channel channel;
     protected DvObject dvObject;
 
-    private int status;
+    /*private int status;*/
     private long size;
     
     private String mimeType;
@@ -207,8 +199,8 @@ public abstract class StorageIO<T extends DvObject> {
     private String swiftContainerName;
 
     private boolean isLocalFile = false;
-    private boolean isRemoteAccess = false;
-    private boolean isHttpAccess = false;
+    /*private boolean isRemoteAccess = false;*/
+    /*private boolean isHttpAccess = false;*/
     private boolean noVarHeader = false;
 
     // For remote downloads:
@@ -218,12 +210,11 @@ public abstract class StorageIO<T extends DvObject> {
 
     private String swiftFileName;
 
-
+    private String remoteUrl;
     
     // For HTTP-based downloads:
-    private String remoteUrl;
-    private GetMethod method = null;
-    private Header[] responseHeaders;
+    /*private GetMethod method = null;
+    private Header[] responseHeaders;*/
 
     // getters:
     
@@ -268,9 +259,9 @@ public abstract class StorageIO<T extends DvObject> {
         return req;
     }
 
-    public int getStatus() {
+    /*public int getStatus() {
         return status;
-    }
+    }*/
 
     public long getSize() {
         return size;
@@ -324,25 +315,33 @@ public abstract class StorageIO<T extends DvObject> {
         return swiftContainerName;
     }
 
-    public GetMethod getHTTPMethod() {
+    /*public GetMethod getHTTPMethod() {
         return method;
     }
 
     public Header[] getResponseHeaders() {
         return responseHeaders;
-    }
+    }*/
 
     public boolean isLocalFile() {
         return isLocalFile;
     }
+    
+    // "Direct Access" StorageIO is used to access a physical storage 
+    // location not associated with any dvObject. (For example, when we 
+    // are deleting a physical file left behind by a DataFile that's 
+    // already been deleted from the database). 
+    public boolean isDirectAccess() {
+        return dvObject == null; 
+    }
 
-    public boolean isRemoteAccess() {
+    /*public boolean isRemoteAccess() {
         return isRemoteAccess;
-    }
+    }*/
 
-    public boolean isHttpAccess() {
+    /*public boolean isHttpAccess() {
         return isHttpAccess;
-    }
+    }*/
 
     public boolean isDownloadSupported() {
         return isDownloadSupported;
@@ -360,7 +359,7 @@ public abstract class StorageIO<T extends DvObject> {
         return noVarHeader;
     }
 
-        // setters:
+    // setters:
     public void setDvObject(T f) {
         dvObject = f;
     }
@@ -369,9 +368,9 @@ public abstract class StorageIO<T extends DvObject> {
         req = dar;
     }
 
-    public void setStatus(int s) {
+    /*public void setStatus(int s) {
         status = s;
-    }
+    }*/
 
     public void setSize(long s) {
         size = s;
@@ -429,25 +428,25 @@ public abstract class StorageIO<T extends DvObject> {
         swiftContainerName = u;
     }
 
-    public void setHTTPMethod(GetMethod hm) {
+    /*public void setHTTPMethod(GetMethod hm) {
         method = hm;
-    }
+    }*/
 
-    public void setResponseHeaders(Header[] headers) {
+    /*public void setResponseHeaders(Header[] headers) {
         responseHeaders = headers;
-    }
+    }*/
 
     public void setIsLocalFile(boolean f) {
         isLocalFile = f;
     }
 
-    public void setIsRemoteAccess(boolean r) {
+    /*public void setIsRemoteAccess(boolean r) {
         isRemoteAccess = r;
-    }
+    }*/
 
-    public void setIsHttpAccess(boolean h) {
+    /*public void setIsHttpAccess(boolean h) {
         isHttpAccess = h;
-    }
+    }*/
 
     public void setIsDownloadSupported(boolean d) {
         isDownloadSupported = d;
@@ -466,11 +465,11 @@ public abstract class StorageIO<T extends DvObject> {
     }
 
         // connection management methods:
-    public void releaseConnection() {
+    /*public void releaseConnection() {
         if (method != null) {
             method.releaseConnection();
         }
-    }
+    }*/
 
     public void closeInputStream() {
         if (in != null) {
