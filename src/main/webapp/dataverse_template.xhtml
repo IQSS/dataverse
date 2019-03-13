@@ -25,7 +25,13 @@
             <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
             <meta name="description" content="#{MarkupChecker:stripAllTags(DataversePage.dataverse.description)}"/>
         </f:facet>
-        <link type="image/png" rel="icon" href="#{resource['images/favicondataverse.png']}" />
+        <link rel="apple-touch-icon" sizes="180x180" href="#{resource['images/fav/apple-touch-icon.png']}">
+        <link rel="icon" type="image/png" sizes="32x32" href="#{resource['images/fav/favicon-32x32.png']}">
+        <link rel="icon" type="image/png" sizes="16x16" href="#{resource['images/fav/favicon-16x16.png']}">
+        <link rel="manifest" href="#{resource['images/fav/site.webmanifest']}">
+        <link rel="mask-icon" href="#{resource['images/fav/safari-pinned-tab.svg']}" color="#da532c">
+        <meta name="msapplication-TileColor" content="#da532c">
+        <meta name="theme-color" content="#ffffff">
         <link type="image/png" rel="image_src" href="#{resource['images/dataverseproject.png']}" />
         <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap.min.css']}?version=#{systemConfig.getVersion()}" />
         <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap-theme.min.css']}?version=#{systemConfig.getVersion()}" />
