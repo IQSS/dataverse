@@ -188,12 +188,18 @@ public class FilePage implements java.io.Serializable {
            
            this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
            
-          //  this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
-
+            // Find external tools based on their type, the file content type, and whether
+            // ingest has created a derived file for that type
+            // Currently, tabular data files are the only type of derived file created, so
+            // isTabularData() works - true for tabular types where a .tab file has been
+            // created and false for other mimetypes
+            String contentType = file.getContentType();
+            //For tabular data, indicate successful ingest by returning a contentType for the derived .tab file
             if (file.isTabularData()) {
-                configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
-                exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
+                contentType=DataFileServiceBean.MIME_TYPE_TSV_ALT;
             }
+            configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE, contentType);
+            exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE, contentType);
 
         } else {
 
@@ -331,43 +337,41 @@ public class FilePage implements java.io.Serializable {
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
     public String deleteFile() {
-        
+
         String fileNames = this.getFileMetadata().getLabel();
 
         editDataset = this.getFileMetadata().getDataFile().getOwner();
-        
+
         FileMetadata markedForDelete = null;
-        
-        for (FileMetadata fmd : editDataset.getEditVersion().getFileMetadatas() ){
-            
-            if (fmd.getDataFile().getId().equals(this.getFile().getId())){
+
+        for (FileMetadata fmd : editDataset.getEditVersion().getFileMetadatas()) {
+
+            if (fmd.getDataFile().getId().equals(this.getFile().getId())) {
                 markedForDelete = fmd;
             }
         }
 
-            if (markedForDelete.getId() != null) {
-                // the file already exists as part of this dataset
-                // so all we remove is the file from the fileMetadatas (for display)
-                // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
-                editDataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
-                filesToBeDeleted.add(markedForDelete);
-                
-            } else {
-                 List<FileMetadata> filesToKeep = new ArrayList<>();
-                 for (FileMetadata fmo: editDataset.getEditVersion().getFileMetadatas()){
-                      if (!fmo.getDataFile().getId().equals(this.getFile().getId())){
-                          filesToKeep.add(fmo);
-                      }
-                 }
-                 editDataset.getEditVersion().setFileMetadatas(filesToKeep);
-            }
+        if (markedForDelete.getId() != null) {
+            // the file already exists as part of this dataset
+            // so all we remove is the file from the fileMetadatas (for display)
+            // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
+            editDataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+            filesToBeDeleted.add(markedForDelete);
 
-    
+        } else {
+            List<FileMetadata> filesToKeep = new ArrayList<>();
+            for (FileMetadata fmo : editDataset.getEditVersion().getFileMetadatas()) {
+                if (!fmo.getDataFile().getId().equals(this.getFile().getId())) {
+                    filesToKeep.add(fmo);
+                }
+            }
+            editDataset.getEditVersion().setFileMetadatas(filesToKeep);
+        }
 
         fileDeleteInProgress = true;
         save();
         return returnToDatasetOnly();
-        
+
     }
     
     private int activeTabIndex;
@@ -531,9 +535,20 @@ public class FilePage implements java.io.Serializable {
                
 
         Command<Dataset> cmd;
+        boolean updateCommandSuccess = false;
+        Long deleteFileId = null;
+        String deleteStorageLocation = null;
+
+        if (!filesToBeDeleted.isEmpty()) { 
+            // We want to delete the file (there's always only one file with this page)
+            
+            deleteStorageLocation = datafileService.getPhysicalFileToDelete(filesToBeDeleted.get(0).getDataFile());
+        }
+        
         try {
             cmd = new UpdateDatasetVersionCommand(editDataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
             commandEngine.submit(cmd);
+            updateCommandSuccess = true;
 
         } catch (EJBException ex) {
             
@@ -557,6 +572,22 @@ public class FilePage implements java.io.Serializable {
 
 
         if (fileDeleteInProgress) {
+            
+            if (updateCommandSuccess) {
+                if (deleteStorageLocation != null) {
+                    // Finalize the delete of the physical file 
+                    // (File service will double-check that the datafile no 
+                    // longer exists in the database, before proceeding to 
+                    // delete the physical file)
+                    try {
+                        datafileService.finalizeFileDelete(deleteFileId, deleteStorageLocation);
+                    } catch (IOException ioex) {
+                        logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                                + deleteFileId + ", storage location: " + deleteStorageLocation);
+                    }
+                }
+            }
+            
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.message.deleteSuccess"));
             fileDeleteInProgress = false;
         } else {
@@ -837,7 +868,7 @@ public class FilePage implements java.io.Serializable {
             e.printStackTrace();
         }
         
-        return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), persistentId);
+        return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), persistentId, fileId);
     }
 
     public List<ExternalTool> getConfigureTools() {

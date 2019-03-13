@@ -372,7 +372,7 @@ For these deletes your JSON file must include an exact match of those dataset fi
 Publish a Dataset
 ~~~~~~~~~~~~~~~~~
 
-Publishes the dataset whose id is passed. If this is the first version of the dataset, its version number will be set to ``1.0``. Otherwise, the new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0). ::
+Publishes the dataset whose id is passed. If this is the first version of the dataset, its version number will be set to ``1.0``. Otherwise, the new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0). Superusers can pass ``type=updatecurrent`` to update metadata without changing the version number::
 
     POST http://$SERVER/api/datasets/$id/actions/:publish?type=$type&key=$apiKey
 
