@@ -1207,6 +1207,7 @@ POSTed JSON example::
       "email": "pete@mailinator.com"
     }
 
+.. _combining-accounts-label:
 
 Combining Accounts
 ~~~~~~~~~~~~~~~~~~
@@ -1218,6 +1219,8 @@ If a user has created multiple accounts and has been performed actions under bot
 Example: ``curl -X POST http://$server/api/admin/authenticatedUsers/jsmith2/mergeIntoUser/jsmith``
 
 This action moves account data from jsmith2 into the account jsmith and deletes the account of jsmith2.
+
+.. _renaming-accounts-label:
 
 Change User Identifier
 ~~~~~~~~~~~~~~~~~~~~~~
