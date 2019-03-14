@@ -1921,17 +1921,35 @@ public class UtilIT {
     }
     
     static Response changeAuthenticatedUserIdentifier(String oldIdentifier, String newIdentifier, String apiToken) {
-        Response response = given()
+        Response response;
+        String path = String.format("/api/users/%s/changeIdentifier/%s", oldIdentifier, newIdentifier );
+        
+        if(null == apiToken) {
+            response = given()
+                .post(path);
+        } else {
+            response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("/api/users/" + oldIdentifier + "/changeIdentifier/"+ newIdentifier );
+                .post(path);
+        }
+        
         return response;
     }
     
-    static Response mergeAccounts(String baseId, String consumedId) {
-        System.out.print(String.format("/api/users/%s/mergeIntoUser/%s", consumedId, baseId ));
-        String apiPath = String.format("/api/users/%s/mergeIntoUser/%s", consumedId, baseId );
-        return given()
-                .post(apiPath);
+    static Response mergeAccounts(String baseId, String consumedId, String apiToken) {
+        Response response;
+        String path = String.format("/api/users/%s/mergeIntoUser/%s", consumedId, baseId );
+        
+        if(null == apiToken) {
+            response = given()
+                .post(path);
+        } else {
+            response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post(path);
+        }
+        
+        return response;
     }
     
     

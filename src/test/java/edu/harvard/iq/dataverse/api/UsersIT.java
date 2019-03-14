@@ -14,6 +14,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.BeforeClass;
@@ -31,7 +32,7 @@ public class UsersIT {
 
     }
     
-     @Test
+    @Test
     public void testChangeAuthenticatedUserIdentifier() {
         Response createSuperuser = UtilIT.createRandomUser();
         String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
@@ -44,6 +45,7 @@ public class UsersIT {
         createUser.prettyPrint();
         assertEquals(200, createUser.getStatusCode());
         String usernameOfUser = UtilIT.getUsernameFromResponse(createUser);
+        String userApiToken = UtilIT.getApiTokenFromResponse(createUser);
         
         Response createUserForAlreadyExists = UtilIT.createRandomUser();
         createUserForAlreadyExists.prettyPrint();
@@ -56,6 +58,17 @@ public class UsersIT {
         changeAuthIdResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         
+        //No api token
+        Response changeAuthIdResponseNoToken = UtilIT.changeAuthenticatedUserIdentifier(usernameOfUser, newUsername, null);
+        changeAuthIdResponseNoToken.prettyPrint();
+        changeAuthIdResponseNoToken.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+        
+        //Users own api token
+        Response changeAuthIdResponseNormalToken = UtilIT.changeAuthenticatedUserIdentifier(usernameOfUser, newUsername, userApiToken);
+        changeAuthIdResponseNormalToken.prettyPrint();
+        changeAuthIdResponseNormalToken.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
 
         //Try changing to already existing username
         Response changeAuthIdResponseBadAlreadyExists= UtilIT.changeAuthenticatedUserIdentifier(newUsername, usernameOfUserAlreadyExists, superuserApiToken);
@@ -86,13 +99,20 @@ public class UsersIT {
     
     @Test
     public void testMergeAccounts(){
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String usernameConsumed = UtilIT.getUsernameFromResponse(createUser);
-        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String normalApiToken = UtilIT.getApiTokenFromResponse(createUser);
         
         
-        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        Response createDataverse = UtilIT.createRandomDataverse(normalApiToken);
         createDataverse.prettyPrint();
         createDataverse.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
@@ -100,16 +120,16 @@ public class UsersIT {
         String dataverseAlias = JsonPath.from(createDataverse.body().asString()).getString("data.alias");
 
         String pathToJsonFile = "src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-hdl.json";
-        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, normalApiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
-        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, normalApiToken);
         datasetAsJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
         
         String randomString = UtilIT.getRandomIdentifier();
 
-        Response mergeAccounts = UtilIT.mergeAccounts(randomString, usernameConsumed);
+        Response mergeAccounts = UtilIT.mergeAccounts(randomString, usernameConsumed, superuserApiToken);
         assertEquals(400, mergeAccounts.getStatusCode());
         mergeAccounts.prettyPrint();
         
@@ -118,15 +138,27 @@ public class UsersIT {
         String targetname = UtilIT.getUsernameFromResponse(targetUser);
         String targetToken = UtilIT.getApiTokenFromResponse(targetUser);
         
-        mergeAccounts = UtilIT.mergeAccounts(targetname, usernameConsumed);
+        mergeAccounts = UtilIT.mergeAccounts(targetname, usernameConsumed, superuserApiToken);
         assertEquals(200, mergeAccounts.getStatusCode());
         mergeAccounts.prettyPrint();
         
+        //No api token
+        Response mergeResponseNoToken = UtilIT.mergeAccounts(targetname, usernameConsumed, null);
+        mergeResponseNoToken.prettyPrint();
+        mergeResponseNoToken.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+        
+        //Users own api token
+        Response mergeResponseNormalToken = UtilIT.mergeAccounts(targetname, usernameConsumed, normalApiToken);
+        mergeResponseNormalToken.prettyPrint();
+        mergeResponseNormalToken.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+        
         //After merging user see that old one is gone and new one exists
-        Response getConsumedUserResponse =  UtilIT.getAuthenticatedUser(usernameConsumed, apiToken);
+        Response getConsumedUserResponse =  UtilIT.getAuthenticatedUser(usernameConsumed, normalApiToken);
         assertEquals(400, getConsumedUserResponse.getStatusCode());
         
-        Response getPersistedUserResponse =  UtilIT.getAuthenticatedUser(targetname, apiToken);
+        Response getPersistedUserResponse =  UtilIT.getAuthenticatedUser(targetname, normalApiToken);
         assertEquals(200, getPersistedUserResponse.getStatusCode());
         
         //Make sure that you can publish the dataverse/dataset as the newly assigned user
@@ -140,8 +172,6 @@ public class UsersIT {
         publishDatasetResponse.prettyPrint();
         
     }
-
-    
     
     /** Note: the below commands do not actually live in Users.java. They live in Admin.java */
 

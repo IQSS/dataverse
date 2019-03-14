@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.api;
 
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
 import java.util.logging.Logger;
@@ -22,14 +23,22 @@ import javax.ws.rs.core.Response;
  */
 @Stateless
 @Path("users")
-public class Users extends AbstractApiBean{
+public class Users extends AbstractApiBean {
     
     private static final Logger logger = Logger.getLogger(Users.class.getName());
     
     @POST
     @Path("{consumedIdentifier}/mergeIntoUser/{baseIdentifier}")
     public Response mergeInAuthenticatedUser(@PathParam("consumedIdentifier") String consumedIdentifier, @PathParam("baseIdentifier") String baseIdentifier) {
-
+        try {
+            User u = findUserOrDie();
+            if(!u.isSuperuser()) {
+                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can merge users"));
+            }
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+        
         if(null == baseIdentifier || baseIdentifier.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "Base identifier provided to change is empty.");
         } else if(null == consumedIdentifier || consumedIdentifier.isEmpty()) {
@@ -58,7 +67,15 @@ public class Users extends AbstractApiBean{
     @POST
     @Path("{identifier}/changeIdentifier/{newIdentifier}")
     public Response changeAuthenticatedUserIdentifier(@PathParam("identifier") String oldIdentifier, @PathParam("newIdentifier")  String newIdentifier) {
-
+        try {
+            User u = findUserOrDie();
+            if(!u.isSuperuser()) {
+                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can change userIdentifiers"));
+            }
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+        
         if(null == oldIdentifier || oldIdentifier.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "Old identifier provided to change is empty.");
         } else if(null == newIdentifier || newIdentifier.isEmpty()) {
