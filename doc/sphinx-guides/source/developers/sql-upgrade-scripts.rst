@@ -26,13 +26,21 @@ How to Create a SQL Upgrade Script
 
 We assume you have already read the :doc:`version-control` section and have been keeping your feature branch up to date with the "develop" branch.
 
-First, compare https://github.com/IQSS/dataverse/tree/develop/src/main/resources/db/migration to your local ``src/main/resources/db/migration`` directory to make sure you have all of the SQL migration scripts. If you are missing any, merge the "develop" branch into your branch.
-
-Create a new file called something like ``V1.1__5513-database-variablemetadata.sql`` that has a unique file name and follows the Flyway file naming conventions at https://flywaydb.org/documentation/migrations#naming . For the "description" you should include the GitHub issue you are working on, as in the example above.
+Create a new file called something like ``V4.11__5513-database-variablemetadata.sql`` in the ``src/main/resources/db/migration`` directory. Use the previously released version (4.11 in the example above) rather than what we guess will be the next released version (which is often uncertain). For the "description" you should the name of your branch, which should include the GitHub issue you are working on, as in the example above. To read more about Flyway file naming conventions, see https://flywaydb.org/documentation/migrations#naming
 
 The SQL migration script you wrote will be part of the war file and executed when the war file is deployed. To see a history of Flyway database migrations that have been applied, look at the ``flyway_schema_history`` table.
 
 As with any task related to Dataverse development, if you need any help writing SQL upgrade scripts, please reach out using any of the channels mentioned under "Getting Help" in the :doc:`intro` section.
+
+Troubleshooting
+---------------
+
+Renaming SQL Upgrade Scripts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Please note that if you need to rename your script (because a new version of Dataverse was released, for example), you will see the error "FlywayException: Validate failed: Detected applied migration not resolved locally" when you attempt to deploy and deployment will fail.
+
+To resolve this problem, delete the old migration from the ``flyway_schema_history`` table and attempt to redeploy.
 
 ----
 
