@@ -18,18 +18,18 @@ public class PasswordValidatorTest {
     public boolean mustContainSpecialCharacters;
     public boolean mustContainCapitalLetters;
     public boolean mustContainNumbers;
-    public int minLenght;
-    public int maxLenght;
+    public int minLength;
+    public int maxLength;
 
     public PasswordValidatorTest(String password, boolean expected, boolean mustContainSpecialCharacters,
-            boolean mustContainCapitalLetters, boolean mustContainNumbers, int minLenght, int maxLenght) {
+            boolean mustContainCapitalLetters, boolean mustContainNumbers, int minLength, int maxLength) {
         this.password = password;
         this.expected = expected;
         this.mustContainSpecialCharacters = mustContainSpecialCharacters;
         this.mustContainCapitalLetters = mustContainCapitalLetters;
         this.mustContainNumbers = mustContainNumbers;
-        this.minLenght = minLenght;
-        this.maxLenght = maxLenght;
+        this.minLength = minLength;
+        this.maxLength = maxLength;
     }
 
     @Parameters
@@ -68,7 +68,7 @@ public class PasswordValidatorTest {
     @Test
     public void testValidatePassword() {
         PasswordValidator validator = PasswordValidator.buildValidator(mustContainSpecialCharacters,
-                mustContainCapitalLetters, mustContainNumbers, minLenght, maxLenght);
+                mustContainCapitalLetters, mustContainNumbers, minLength, maxLength);
         boolean isValidPassword = validator.validatePassword(password);
         assertEquals(expected, isValidPassword);
     }
