@@ -164,7 +164,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
     
     @Override
     public String describe() {
-        return "User " + consumedAU.getUserIdentifier() + " ( type: " + consumedAU.getAuthenticatedUserLookup().getAuthenticationProviderId() + " ) merged into " +ongoingAU.getUserIdentifier();
+        return "User " + consumedAU.getUserIdentifier() + " ( type: " + consumedAU.getAuthenticatedUserLookup().getAuthenticationProviderId() + " | persistentUserId: "+ consumedAU.getAuthenticatedUserLookup().getPersistentUserId() + " ) merged into " +ongoingAU.getUserIdentifier();
     }
     
 }
