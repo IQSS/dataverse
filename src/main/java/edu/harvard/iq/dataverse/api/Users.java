@@ -30,8 +30,9 @@ public class Users extends AbstractApiBean {
     @POST
     @Path("{consumedIdentifier}/mergeIntoUser/{baseIdentifier}")
     public Response mergeInAuthenticatedUser(@PathParam("consumedIdentifier") String consumedIdentifier, @PathParam("baseIdentifier") String baseIdentifier) {
+        User u;
         try {
-            User u = findUserOrDie();
+            u = findUserOrDie();
             if(!u.isSuperuser()) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can merge users"));
             }
@@ -56,7 +57,7 @@ public class Users extends AbstractApiBean {
         }
 
         try {
-            execCommand(new MergeInAccountCommand(createDataverseRequest(consumedAuthenticatedUser), consumedAuthenticatedUser,  baseAuthenticatedUser));
+            execCommand(new MergeInAccountCommand(createDataverseRequest(u), consumedAuthenticatedUser,  baseAuthenticatedUser));
         } catch (Exception e){
             return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
         }
@@ -67,8 +68,9 @@ public class Users extends AbstractApiBean {
     @POST
     @Path("{identifier}/changeIdentifier/{newIdentifier}")
     public Response changeAuthenticatedUserIdentifier(@PathParam("identifier") String oldIdentifier, @PathParam("newIdentifier")  String newIdentifier) {
+        User u;
         try {
-            User u = findUserOrDie();
+            u = findUserOrDie();
             if(!u.isSuperuser()) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can change userIdentifiers"));
             }
@@ -88,7 +90,7 @@ public class Users extends AbstractApiBean {
         }
 
         try {
-            execCommand(new ChangeUserIdentifierCommand(createDataverseRequest(authenticatedUser), authenticatedUser,  newIdentifier));
+            execCommand(new ChangeUserIdentifierCommand(createDataverseRequest(u), authenticatedUser,  newIdentifier));
         } catch (Exception e){
             return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
         }
