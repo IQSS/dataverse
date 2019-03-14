@@ -28,7 +28,7 @@ public class RepositoryStorageAbstractionLayerUtilTest {
         assertEquals("Harvard Medical School, USA", result.get(0).getName());
         assertEquals("dv.sbgrid.org", result.get(0).getFqdn());
         assertEquals("10.5072/FK2/identifierPartOfPersistentID", result.get(0).getFullRemotePathToDirectory());
-        assertEquals("rsync -av rsync://dv.sbgrid.org/10.5072/FK2/identifierPartOfPersistentID", result.get(0).getRsyncDownloadcommand());
+        assertEquals("rsync -av rsync://dv.sbgrid.org/10.5072/FK2/identifierPartOfPersistentID .", result.get(0).getRsyncDownloadcommand());
     }
 
     @Test
