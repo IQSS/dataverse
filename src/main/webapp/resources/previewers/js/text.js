@@ -71,5 +71,5 @@ var whiteList = {
     video: []
   };
 options = {"whiteList":whiteList};  // Custom rules
-    $('.preview').append($("<div/>").html(filterXSS(data,options)));
+    $('.preview').append($("<pre/>").html(filterXSS(data,options)));
 }
