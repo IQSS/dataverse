@@ -121,14 +121,14 @@ public class Admin extends AbstractApiBean {
 	DatasetServiceBean datasetService;
 	@EJB
 	DatasetVersionServiceBean datasetversionService;
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
-    @EJB
-    EjbDataverseEngine commandEngine;
-    @EJB
-    GroupServiceBean groupService;
-    @EJB
-    SettingsServiceBean settingsService;
+        @Inject
+        DataverseRequestServiceBean dvRequestService;
+        @EJB
+        EjbDataverseEngine commandEngine;
+        @EJB
+        GroupServiceBean groupService;
+        @EJB
+        SettingsServiceBean settingsService;
 
 	// Make the session available
 	@Inject
@@ -314,61 +314,7 @@ public class Admin extends AbstractApiBean {
 		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
 	}
         
-        @POST
-        @Path("authenticatedUsers/{consumedIdentifier}/mergeIntoUser/{baseIdentifier}")
-        public Response mergeInAuthenticatedUser(@PathParam("consumedIdentifier") String consumedIdentifier, @PathParam("baseIdentifier") String baseIdentifier) {
-            
-            if(null == baseIdentifier || baseIdentifier.isEmpty()) {
-                return error(Response.Status.BAD_REQUEST, "Base identifier provided to change is empty.");
-            } else if(null == consumedIdentifier || consumedIdentifier.isEmpty()) {
-                return error(Response.Status.BAD_REQUEST, "Identifier to merge in is empty.");
-            }
-            
-            AuthenticatedUser baseAuthenticatedUser = authSvc.getAuthenticatedUser(baseIdentifier);
-            if (baseAuthenticatedUser == null) {
-                return error(Response.Status.BAD_REQUEST, "User " + baseIdentifier + " not found in AuthenticatedUser");
-            }
-            
-            AuthenticatedUser consumedAuthenticatedUser = authSvc.getAuthenticatedUser(consumedIdentifier);
-            if (consumedAuthenticatedUser == null) {
-                return error(Response.Status.BAD_REQUEST, "User " + consumedIdentifier + " not found in AuthenticatedUser");
-            }
-
-            try {
-                execCommand(new MergeInAccountCommand(createDataverseRequest(consumedAuthenticatedUser), consumedAuthenticatedUser,  baseAuthenticatedUser));
-            } catch (Exception e){
-                return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
-            }
-
-            return ok("All account data for " + consumedIdentifier + " has been merged into " + baseIdentifier + " .");
-        }
         
-        @POST
-        @Path("authenticatedUsers/{identifier}/changeIdentifier/{newIdentifier}")
-        public Response changeAuthenticatedUserIdentifier(@PathParam("identifier") String oldIdentifier, @PathParam("newIdentifier")  String newIdentifier) {
-
-            if(null == oldIdentifier || oldIdentifier.isEmpty()) {
-                return error(Response.Status.BAD_REQUEST, "Old identifier provided to change is empty.");
-            } else if(null == newIdentifier || newIdentifier.isEmpty()) {
-                return error(Response.Status.BAD_REQUEST, "New identifier provided to change is empty.");
-            }
-            
-            AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(oldIdentifier);
-            if (authenticatedUser == null) {
-                return error(Response.Status.BAD_REQUEST, "User " + oldIdentifier + " not found in AuthenticatedUser");
-            }
-            
-
-            
-
-            try {
-                execCommand(new ChangeUserIdentifierCommand(createDataverseRequest(authenticatedUser), authenticatedUser,  newIdentifier));
-            } catch (Exception e){
-                return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
-            }
-            
-            return ok("UserIdentifier changed from " + oldIdentifier + " to " + newIdentifier);
-        }
         
 	@POST
 	@Path("publishDataverseAsCreator/{id}")

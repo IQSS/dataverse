@@ -1045,13 +1045,6 @@ public class UtilIT {
                 .put("/api/admin/authenticatedUsers/convert/builtin2oauth");
         return response;
     }
-    
-    static Response changeAuthenticatedUserIdentifier(String oldIdentifier, String newIdentifier, String apiToken) {
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("/api/admin/authenticatedUsers/" + oldIdentifier + "/changeIdentifier/"+ newIdentifier );
-        return response;
-    }
 
     static Response restrictFile(String fileIdOrPersistentId, boolean restrict, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
@@ -1927,9 +1920,16 @@ public class UtilIT {
         return given().get(apiPath);
     }
     
+    static Response changeAuthenticatedUserIdentifier(String oldIdentifier, String newIdentifier, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/users/" + oldIdentifier + "/changeIdentifier/"+ newIdentifier );
+        return response;
+    }
+    
     static Response mergeAccounts(String baseId, String consumedId) {
-        System.out.print(String.format("/api/admin/authenticatedUsers/%s/mergeIntoUser/%s", consumedId, baseId ));
-        String apiPath = String.format("/api/admin/authenticatedUsers/%s/mergeIntoUser/%s", consumedId, baseId );
+        System.out.print(String.format("/api/users/%s/mergeIntoUser/%s", consumedId, baseId ));
+        String apiPath = String.format("/api/users/%s/mergeIntoUser/%s", consumedId, baseId );
         return given()
                 .post(apiPath);
     }
